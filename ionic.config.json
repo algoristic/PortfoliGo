@@ -1,0 +1,7 @@
+{
+  "name": "PortfoliGo",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
