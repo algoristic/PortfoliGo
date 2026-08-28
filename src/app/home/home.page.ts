@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { IonHeader, IonToolbar, IonTitle, IonContent, IonText } from '@ionic/angular';
+import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular';
+
 import { LogoComponent } from '../components/logo/logo.component';
 
 @Component({
