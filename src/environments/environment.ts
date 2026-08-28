@@ -6,7 +6,7 @@ import { Environment } from './environment.model';
 
 export const environment: Environment = {
   production: false,
-  ngrxDevTools: {
+  ngrxDevToolsConfig: {
     name: 'portfoli-go',
     maxAge: 50,
     connectInZone: true,

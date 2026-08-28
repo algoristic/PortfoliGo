@@ -17,10 +17,11 @@ import { routes } from './app/app.routes';
 import { provideNgRxDevTools } from './app/ngrx/utils/ngrx.providers';
 import { environment } from './environments/environment';
 import { provideStore } from '@ngrx/store';
+import { provideIonicRouteStrategy } from './app/ionic/utils/ionic.providers';
 
 bootstrapApplication(AppComponent, {
   providers: [
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    provideIonicRouteStrategy(),
     provideIonicAngular(),
     provideRouter(
       routes,
@@ -30,6 +31,6 @@ bootstrapApplication(AppComponent, {
     ),
     provideStore({ router: routerReducer }),
     provideRouterStore(),
-    provideNgRxDevTools(environment.ngrxDevTools),
+    provideNgRxDevTools(environment.ngrxDevToolsConfig),
   ],
 });
