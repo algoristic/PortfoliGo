@@ -14,6 +14,9 @@
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
+      "i18n": {
+        "sourceLocale": "de"
+      },
       "architect": {
         "build": {
           "builder": "@angular/build:application",
@@ -23,7 +26,7 @@
               "browser": ""
             },
             "index": "src/index.html",
-            "polyfills": [],
+            "polyfills": ["@angular/localize/init"],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
