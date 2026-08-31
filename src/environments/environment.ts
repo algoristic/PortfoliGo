@@ -2,6 +2,7 @@
 // `ng build` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 
+import { commonSettings } from './environment.common';
 import { Environment } from './environment.model';
 
 export const environment: Environment = {
@@ -11,6 +12,7 @@ export const environment: Environment = {
     maxAge: 50,
     connectInZone: true,
   },
+  ...commonSettings,
 };
 
 /*
