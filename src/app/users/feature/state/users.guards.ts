@@ -1,14 +1,16 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, RedirectCommand, Router } from '@angular/router';
+
+import { combineLatest, filter, map, switchMap } from 'rxjs';
+
 import { UsersFacade } from './users.facade';
-import { filter, map, switchMap } from 'rxjs';
 
 export function isAuthenticated(): CanActivateFn {
   return () => {
     const usersFacade = inject(UsersFacade);
     const router = inject(Router);
-    return usersFacade.loaded$.pipe(
-      filter((loaded) => !!loaded),
+    return combineLatest([usersFacade.loadedUsers$, usersFacade.loadedActiveUser$]).pipe(
+      filter(([loadedUsers, loadedActiveUser]) => !!loadedUsers && !!loadedActiveUser),
       switchMap(() =>
         usersFacade.activeUser$.pipe(
           map((activeUser) => {
@@ -30,7 +32,7 @@ export function isUserAvailable(): CanActivateFn {
   return () => {
     const usersFacade = inject(UsersFacade);
     const router = inject(Router);
-    return usersFacade.loaded$.pipe(
+    return usersFacade.loadedUsers$.pipe(
       filter((loaded) => !!loaded),
       switchMap(() =>
         usersFacade.users$.pipe(

@@ -1,43 +1,210 @@
+@let users = usersFacade.users$ | async;
+
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>
-      <app-logo></app-logo>
-    </ion-title>
+    @if (users && users.length > 0) {
+      <ion-button
+        fill="clear"
+        shape="round"
+        slot="start"
+        (click)="router.navigate(['user/select'])">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    }
+    <ion-title>Profil erstellen</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content color="light" [fullscreen]="true">
   <div class="ion-padding">
-    <ion-text>
-      <p>Herzlich wilkommen bei <app-inline-logo variant="italic"></app-inline-logo>!</p>
-    </ion-text>
-    <ion-text>
-      <p>Erstellen Sie einen neuen Nutzer, um zu starten:</p>
+    <ion-text color="dark">
+      <h1>
+        <ng-container i18n="@@featureUsers-createUserPage-welcome">Willkommen bei </ng-container>
+        <app-inline-logo></app-inline-logo>
+      </h1>
+      <p i18n="@@featureUsers-createUserPage-userPrompt">Lege ein Profil an, um zu starten.</p>
     </ion-text>
   </div>
-  <form [formGroup]="createUserForm">
-    <ion-list>
-      <ion-item>
-        <ion-input
-          formControlName="name"
-          label="Benutzername"
-          labelPlacement="floating"></ion-input>
-      </ion-item>
-      <ion-item>
-        <!-- TODO input-masks -->
-        <ion-input
-          formControlName="startingCapital"
-          label="Startkapital"
-          labelPlacement="floating"
-          type="number"></ion-input>
-      </ion-item>
-      <ion-item>
-        <ion-input
-          formControlName="monthlySavingsAmount"
-          label="Monatlicher Sparbetrag"
-          labelPlacement="floating"
-          type="number"></ion-input>
-      </ion-item>
-    </ion-list>
+
+  <form [formGroup]="createUserForm" (ngSubmit)="submit()">
+    <div class="ion-padding-horizontal">
+      <ion-input
+        formControlName="name"
+        type="text"
+        labelPlacement="floating"
+        label="Benutzername"
+        placeholder="Wie dürfen wir dich nennen?"
+        errorText="Bitte gib einen Benutzernamen ein."
+        i18n-label="@@featureUsers-createUserPage-createUserForm-name-label"
+        i18n-placeholder="@@featureUsers-createUserPage-createUserForm-name-placeholder"
+        i18n-errorText="@@featureUsers-createUserPage-createUserForm-name-errorText"
+        [class.ion-invalid]="name.invalid && (name.touched || createUserForm.touched)">
+      </ion-input>
+      <ion-input
+        formControlName="startingCapital"
+        type="text"
+        inputmode="decimal"
+        labelPlacement="floating"
+        label="Startkapital"
+        helperText="Zwischen {{ config.startingCapital.min | maskito: currency }} und {{
+          config.startingCapital.max | maskito: currency
+        }}"
+        i18n-label="@@featureUsers-createUserPage-createUserForm-startingCapital-label"
+        i18n-helperText="@@featureUsers-createUserPage-createUserForm-startingCapital-helperText"
+        [maskito]="currency"
+        [maskitoElement]="maskPredicate"
+        [errorText]="startingCapitalError"
+        [class.ion-invalid]="
+          startingCapital.invalid && (startingCapital.touched || createUserForm.touched)
+        ">
+        <ion-button
+          id="click-info-starting-capital"
+          type="button"
+          fill="clear"
+          slot="end"
+          aria-label="Informationen zum Startkapital"
+          i18n-aria-label="@@featureUsers-createUserPage-startingCapitalInfo-ariaLabel">
+          <ion-icon name="information-circle-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-input>
+      <ion-input
+        formControlName="monthlySavingsAmount"
+        type="text"
+        inputmode="decimal"
+        labelPlacement="floating"
+        label="Monatlicher Sparbetrag"
+        helperText="Zwischen {{ config.monthlySavingsAmount.min | maskito: currency }} und {{
+          config.monthlySavingsAmount.max | maskito: currency
+        }} pro Monat"
+        i18n-label="@@featureUsers-createUserPage-createUserForm-monthlySavingsAmount-label"
+        i18n-helperText="
+          @@featureUsers-createUserPage-createUserForm-monthlySavingsAmount-helperText"
+        [maskito]="currency"
+        [maskitoElement]="maskPredicate"
+        [errorText]="monthlySavingsAmountError"
+        [class.ion-invalid]="
+          monthlySavingsAmount.invalid && (monthlySavingsAmount.touched || createUserForm.touched)
+        ">
+        <ion-button
+          id="click-info-monthly-savings-amount"
+          type="button"
+          fill="clear"
+          slot="end"
+          aria-label="Informationen zum monatlichen Sparbetrag"
+          i18n-aria-label="@@featureUsers-createUserPage-monthlySavingsInfo-ariaLabel">
+          <ion-icon name="information-circle-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-input>
+    </div>
+
+    <ion-modal
+      #startingCapitalModal
+      trigger="click-info-starting-capital"
+      cssClass="value-info-modal">
+      <ng-template>
+        <ion-header class="ion-no-border">
+          <ion-toolbar>
+            <ion-title i18n="@@featureUsers-createUserPage-startingCapitalInfo-title"
+              >Startkapital</ion-title
+            >
+            <ion-buttons slot="end">
+              <ion-button
+                type="button"
+                (click)="startingCapitalModal.dismiss()"
+                aria-label="Schließen"
+                i18n-aria-label="@@featureUsers-createUserPage-infoModal-close">
+                <ion-icon name="close" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <div class="ion-padding">
+            <div>
+              <ion-icon name="wallet-outline" size="large"></ion-icon>
+            </div>
+            <p i18n="@@featureUsers-createUserPage-startingCapitalInfo-description">
+              Das Startkapital ist der Betrag, den du zu Beginn bereits zum Investieren zur
+              Verfügung hast. Dazu zählen zum Beispiel Ersparnisse, die du direkt in dein Portfolio
+              einbringen möchtest.
+            </p>
+            <p>
+              <strong i18n="@@featureUsers-createUserPage-startingCapitalInfo-exampleTitle"
+                >Beispiel:</strong
+              ><br />
+              <span i18n="@@featureUsers-createUserPage-startingCapitalInfo-exampleText"
+                >Bei 10.000 € Startkapital beginnt deine Berechnung mit einem Portfoliowert von
+                10.000 €.</span
+              >
+            </p>
+            <ion-note i18n="@@featureUsers-createUserPage-startingCapitalInfo-note"
+              >Du kannst auch mit 0 € starten und dein Vermögen nur durch regelmäßiges Sparen
+              aufbauen.</ion-note
+            >
+          </div>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
+    <ion-modal
+      #monthlySavingsModal
+      trigger="click-info-monthly-savings-amount"
+      cssClass="value-info-modal">
+      <ng-template>
+        <ion-header class="ion-no-border">
+          <ion-toolbar>
+            <ion-title i18n="@@featureUsers-createUserPage-monthlySavingsInfo-title"
+              >Monatlicher Sparbetrag</ion-title
+            >
+            <ion-buttons slot="end">
+              <ion-button
+                type="button"
+                (click)="monthlySavingsModal.dismiss()"
+                aria-label="Schließen"
+                i18n-aria-label="@@featureUsers-createUserPage-infoModal-close">
+                <ion-icon name="close" slot="icon-only"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <div class="ion-padding">
+            <div>
+              <ion-icon name="calendar-outline" size="large"></ion-icon>
+            </div>
+            <p i18n="@@featureUsers-createUserPage-monthlySavingsInfo-description">
+              Der <ion-text color="secondary">monatliche Sparbetrag</ion-text> ist die Summe, die
+              dir jeden Monat zusätzlich zum investieren zur Verfügung steht. Eine regelmäßige
+              Einzahlung lässt dein Portfolio Schritt für Schritt wachsen.
+            </p>
+            <p i18n="@@featureUsers-createUserPage-monthlySavingsInfo-description-2">
+              Der Betrag wird monatlich deinem Barvermögen gutgeschrieben und kann dann investiert
+              werden.
+            </p>
+            <p>
+              <strong i18n="@@featureUsers-createUserPage-monthlySavingsInfo-exampleTitle"
+                >Beispiel</strong
+              ><br />
+              <span i18n="@@featureUsers-createUserPage-monthlySavingsInfo-exampleText"
+                >Mit 250 € pro Monat stehen dir 3.000 € pro Jahr, zusätzlich zu deinem Startkapital,
+                zum Investieren zur Verfügung.</span
+              >
+            </p>
+            <p>
+              <ion-note i18n="@@featureUsers-createUserPage-monthlySavingsInfo-note"
+                >Wähle einen Betrag, den du langfristig und zuverlässig zurücklegen
+                kannst.</ion-note
+              >
+            </p>
+          </div>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
+    <div class="ion-padding-horizontal ion-padding-top">
+      <ion-button expand="block" type="submit" i18n="@@featureUsers-createUserPage-submit"
+        >Profil erstellen</ion-button
+      >
+    </div>
   </form>
 </ion-content>

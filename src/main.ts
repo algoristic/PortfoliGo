@@ -18,8 +18,30 @@ import { provideIndexedDb, withStorage } from './app/idb/data-access/service/idb
 import { provideIonicRouteStrategy } from './app/ionic/utils/ionic.providers';
 import { provideNgRxDevTools } from './app/ngrx/utils/ngrx.providers';
 import { usersStorage } from './app/users/data-access/service/users-service.providers';
-import { environment } from './environments/environment';
+import { provideNewUserSettings } from './app/users/feature/create-user/create-user.providers';
 import { provideUsersState } from './app/users/feature/state/users.providers';
+import { environment } from './environments/environment';
+import { addIcons } from 'ionicons';
+import {
+  arrowBackOutline,
+  arrowForwardOutline,
+  calendarOutline,
+  checkmarkCircleOutline,
+  close,
+  informationCircleOutline,
+  trashOutline,
+  walletOutline,
+} from 'ionicons/icons';
+
+addIcons({
+  informationCircleOutline,
+  calendarOutline,
+  close,
+  walletOutline,
+  arrowBackOutline,
+  arrowForwardOutline,
+  trashOutline,
+});
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -36,5 +58,6 @@ bootstrapApplication(AppComponent, {
     provideNgRxDevTools(environment.ngrxDevToolsConfig),
     provideIndexedDb(environment.idbConfig, withStorage(usersStorage)),
     provideUsersState(),
+    provideNewUserSettings(environment.newUser),
   ],
 });

@@ -1,12 +1,12 @@
 import { EnvironmentProviders, inject, provideAppInitializer, Provider } from '@angular/core';
+import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 
+import { UsersEffects } from './users.effects';
 import { UsersFacade } from './users.facade';
 import * as fromUsers from './users.reducer';
 
 import { provideUsersService } from '../../data-access/service/users-service.providers';
-import { provideEffects } from '@ngrx/effects';
-import { UsersEffects } from './users.effects';
 
 export function provideUsersState(): Array<Provider | EnvironmentProviders> {
   return [

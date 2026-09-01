@@ -7,5 +7,8 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="ion-padding">
-  <ion-text i18n="@@homePage-helloWorld">Hallo Welt</ion-text>
+  @let activeUser = usersFacade.activeUser$ | async;
+  @if (activeUser) {
+    <ion-text i18n="@@homePage-helloWorld">Hallo {{ activeUser.name }}</ion-text>
+  }
 </ion-content>

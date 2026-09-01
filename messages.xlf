@@ -2,6 +2,115 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="de" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="homePage-helloWorld" datatype="html">
+        <source>Hallo Welt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/home/home.page.html</context>
+          <context context-type="linenumber">10,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-welcome" datatype="html">
+        <source>Willkommen bei</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.html</context>
+          <context context-type="linenumber">13,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-userPrompt" datatype="html">
+        <source>Lege ein Profil an, um zu starten.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.html</context>
+          <context context-type="linenumber">16,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-createUserForm-name-label" datatype="html">
+        <source>Benutzername</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.html</context>
+          <context context-type="linenumber">26,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-createUserForm-name-placeholder" datatype="html">
+        <source>Wie dürfen wir dich nennen?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.html</context>
+          <context context-type="linenumber">27,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-createUserForm-name-errorText" datatype="html">
+        <source>Bitte gib einen Benutzernamen ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.html</context>
+          <context context-type="linenumber">28,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-createUserForm-startingCapital-label" datatype="html">
+        <source>Startkapital</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.html</context>
+          <context context-type="linenumber">38,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-createUserForm-startingCapital-helperText" datatype="html">
+        <source>Zwischen <x id="INTERPOLATION" equiv-text="{{ config.startingCapital.min | maskito: currency }}"/> und <x id="INTERPOLATION_1" equiv-text="{{
+          config.startingCapital.max | maskito: currency
+        }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.html</context>
+          <context context-type="linenumber">39,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-createUserForm-monthlySavingsAmount-label" datatype="html">
+        <source>Monatlicher Sparbetrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.html</context>
+          <context context-type="linenumber">55,56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-createUserForm-monthlySavingsAmount-helperText" datatype="html">
+        <source>Zwischen <x id="INTERPOLATION" equiv-text="{{ config.monthlySavingsAmount.min | maskito: currency }}"/> und <x id="INTERPOLATION_1" equiv-text="{{
+          config.monthlySavingsAmount.max | maskito: currency
+        }}"/> pro Monat</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.html</context>
+          <context context-type="linenumber">56,59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-submit" datatype="html">
+        <source>Profil erstellen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.html</context>
+          <context context-type="linenumber">76,80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-error-numberRequired" datatype="html">
+        <source>Bitte gib einen Betrag ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.ts</context>
+          <context context-type="linenumber">155</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-error-numberInvalid" datatype="html">
+        <source>Bitte gib einen gueltigen Geldbetrag ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.ts</context>
+          <context context-type="linenumber">159</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-error-numberMin" datatype="html">
+        <source>Der Betrag darf nicht unter <x id="PH" equiv-text="minimum.toLocaleString(&apos;de-DE&apos;, { minimumFractionDigits: 2 })"/> € liegen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.ts</context>
+          <context context-type="linenumber">163</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureUsers-createUserPage-error-numberMax" datatype="html">
+        <source>Der Betrag darf <x id="PH" equiv-text="maximum.toLocaleString(&apos;de-DE&apos;, { minimumFractionDigits: 2 })"/> € nicht uebersteigen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.ts</context>
+          <context context-type="linenumber">167</context>
+        </context-group>
+      </trans-unit>
     </body>
   </file>
 </xliff>
