@@ -7,6 +7,7 @@ export const CURRENCY_CONFIG = new InjectionToken<CurrencyConfig>('CURRENCY_CONF
   factory: () => ({
     decimalSeparator: ',',
     thousandSeparator: '.',
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
     postfix: ' €',
   }),

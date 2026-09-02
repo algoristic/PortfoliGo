@@ -1,12 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   IonButton,
@@ -75,7 +70,7 @@ export class CreateUserPage {
       nonNullable: true,
     }),
     startingCapital: new FormControl<string>(
-      maskitoTransform(this.config.startingCapital.initial.toString(), this.currency),
+      maskitoTransform(this.config.startingCapital.initial.toLocaleString(), this.currency),
       {
         validators: [
           Validators.required,
@@ -89,7 +84,7 @@ export class CreateUserPage {
       },
     ),
     monthlySavingsAmount: new FormControl<string>(
-      maskitoTransform(this.config.monthlySavingsAmount.initial.toString(), this.currency),
+      maskitoTransform(this.config.monthlySavingsAmount.initial.toLocaleString(), this.currency),
       {
         validators: [
           Validators.required,

@@ -13,5 +13,7 @@
   }
 
   @let balance = transactionsFacade.balance$ | async;
-  <p>Konto: {{ balance }}</p>
+  @if (balance) {
+    <p>Konto: {{ balance.toLocaleString() | maskito: currency }}</p>
+  }
 </ion-content>
