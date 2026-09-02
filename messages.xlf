@@ -182,28 +182,28 @@
         <source>Bitte gib einen Betrag ein.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.ts</context>
-          <context context-type="linenumber">185</context>
+          <context context-type="linenumber">167</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureUsers-createUserPage-error-numberInvalid" datatype="html">
         <source>Bitte gib einen gültigen Geldbetrag ein.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.ts</context>
-          <context context-type="linenumber">189</context>
+          <context context-type="linenumber">171</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureUsers-createUserPage-error-numberMin" datatype="html">
-        <source>Der Betrag darf nicht unter <x id="PH" equiv-text="minimum.toLocaleString(&apos;de-DE&apos;, { minimumFractionDigits: 2 })"/> € liegen.</source>
+        <source>Der Betrag darf nicht unter <x id="PH" equiv-text="maskitoTransform(minimum.toString(), this.currency)"/> € liegen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.ts</context>
-          <context context-type="linenumber">193</context>
+          <context context-type="linenumber">175</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureUsers-createUserPage-error-numberMax" datatype="html">
-        <source>Der Betrag darf <x id="PH" equiv-text="maximum.toLocaleString(&apos;de-DE&apos;, { minimumFractionDigits: 2 })"/> € nicht übersteigen.</source>
+        <source>Der Betrag darf <x id="PH" equiv-text="maskitoTransform(maximum.toString(), this.currency)"/> nicht übersteigen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/users/feature/create-user/create-user.page.ts</context>
-          <context context-type="linenumber">197</context>
+          <context context-type="linenumber">179</context>
         </context-group>
       </trans-unit>
     </body>

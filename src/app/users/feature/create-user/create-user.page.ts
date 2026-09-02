@@ -5,8 +5,6 @@ import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
-  ValidationErrors,
-  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -24,41 +22,16 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import { MaskitoDirective, MaskitoPipe } from '@maskito/angular';
-import { MaskitoElementPredicate, MaskitoOptions, maskitoTransform } from '@maskito/core';
-import { maskitoNumber, MaskitoNumberParams, maskitoParseNumber } from '@maskito/kit';
+import { MaskitoElementPredicate, maskitoTransform } from '@maskito/core';
+import { maskitoParseNumber } from '@maskito/kit';
 
 import { CREATE_USER_CONFIG } from './create-user.config';
 
+import { CURRENCY, CURRENCY_CONFIG } from '../../../currency/util/currency.config';
+import { CurrencyValidators } from '../../../currency/util/currency.validators';
 import { InlineLogoComponent } from '../../../shell/ui/inline-logo/inline-logo.component';
 import { UsersFacade } from '../state/users.facade';
 import { CreateUserProperties } from '../state/users.model';
-
-const CURRENCY_PARAMS: MaskitoNumberParams = {
-  decimalSeparator: ',',
-  thousandSeparator: '.',
-  maximumFractionDigits: 2,
-  postfix: ' €',
-};
-
-function currencyRangeValidator(min: number, max: number): ValidatorFn {
-  return (control): ValidationErrors | null => {
-    if (!control.value) {
-      return null;
-    }
-
-    const value = maskitoParseNumber(String(control.value), CURRENCY_PARAMS);
-
-    if (!Number.isFinite(value)) {
-      return { number: { actual: control.value } };
-    }
-
-    if (value < min) {
-      return { min: { min, actual: value } };
-    }
-
-    return value > max ? { max: { max, actual: value } } : null;
-  };
-}
 
 @Component({
   selector: 'app-create-user',
@@ -87,10 +60,11 @@ export class CreateUserPage {
   config = inject(CREATE_USER_CONFIG);
   usersFacade = inject(UsersFacade);
   router = inject(Router);
+  currencyConfig = inject(CURRENCY_CONFIG);
+  currency = inject(CURRENCY);
 
   creatingUser = toSignal(this.usersFacade.creatingUser$);
 
-  readonly currency: MaskitoOptions = maskitoNumber(CURRENCY_PARAMS);
   readonly maskPredicate: MaskitoElementPredicate = async (el) => {
     return (el as HTMLIonInputElement).getInputElement();
   };
@@ -105,7 +79,11 @@ export class CreateUserPage {
       {
         validators: [
           Validators.required,
-          currencyRangeValidator(this.config.startingCapital.min, this.config.startingCapital.max),
+          CurrencyValidators.currencyRange(
+            this.config.startingCapital.min,
+            this.config.startingCapital.max,
+            this.currencyConfig,
+          ),
         ],
         nonNullable: true,
       },
@@ -115,9 +93,10 @@ export class CreateUserPage {
       {
         validators: [
           Validators.required,
-          currencyRangeValidator(
+          CurrencyValidators.currencyRange(
             this.config.monthlySavingsAmount.min,
             this.config.monthlySavingsAmount.max,
+            this.currencyConfig,
           ),
         ],
         nonNullable: true,
@@ -173,8 +152,11 @@ export class CreateUserPage {
     const rawProperties = this.createUserForm.getRawValue();
     const properties: CreateUserProperties = {
       name: rawProperties.name,
-      startingCapital: maskitoParseNumber(rawProperties.startingCapital, CURRENCY_PARAMS),
-      monthlySavingsAmount: maskitoParseNumber(rawProperties.monthlySavingsAmount, CURRENCY_PARAMS),
+      startingCapital: maskitoParseNumber(rawProperties.startingCapital, this.currencyConfig),
+      monthlySavingsAmount: maskitoParseNumber(
+        rawProperties.monthlySavingsAmount,
+        this.currencyConfig,
+      ),
     };
 
     this.usersFacade.submitUser(properties);
@@ -190,11 +172,11 @@ export class CreateUserPage {
     }
 
     if (control.hasError('min')) {
-      return $localize`:@@featureUsers-createUserPage-error-numberMin:Der Betrag darf nicht unter ${minimum.toLocaleString('de-DE', { minimumFractionDigits: 2 })} € liegen.`;
+      return $localize`:@@featureUsers-createUserPage-error-numberMin:Der Betrag darf nicht unter ${maskitoTransform(minimum.toString(), this.currency)} € liegen.`;
     }
 
     if (control.hasError('max')) {
-      return $localize`:@@featureUsers-createUserPage-error-numberMax:Der Betrag darf ${maximum.toLocaleString('de-DE', { minimumFractionDigits: 2 })} € nicht übersteigen.`;
+      return $localize`:@@featureUsers-createUserPage-error-numberMax:Der Betrag darf ${maskitoTransform(maximum.toString(), this.currency)} nicht übersteigen.`;
     }
 
     return '';
