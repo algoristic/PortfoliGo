@@ -9,6 +9,9 @@
 <ion-content [fullscreen]="true" class="ion-padding">
   @let activeUser = usersFacade.activeUser$ | async;
   @if (activeUser) {
-    <ion-text i18n="@@homePage-helloWorld">Hallo {{ activeUser.name }}</ion-text>
+    <p>Hallo {{ activeUser.name }}</p>
   }
+
+  @let balance = transactionsFacade.balance$ | async;
+  <p>Konto: {{ balance }}</p>
 </ion-content>

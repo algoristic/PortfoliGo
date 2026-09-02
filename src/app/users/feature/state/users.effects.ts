@@ -1,12 +1,13 @@
 import { inject, Injectable } from '@angular/core';
+import { Router } from '@angular/router';
+import { LoadingController } from '@ionic/angular';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { from, map, switchMap, tap } from 'rxjs';
 
 import * as UsersActions from './users.actions';
 
+import * as TransactionsActions from '../../../transactions/feature/state/transactions.actions';
 import { UsersService } from '../../data-access/service/users.service';
-import { LoadingController } from '@ionic/angular';
-import { Router } from '@angular/router';
 
 @Injectable()
 export class UsersEffects {
@@ -42,6 +43,20 @@ export class UsersEffects {
         this.usersService
           .createUser(properties.name, properties.monthlySavingsAmount)
           .pipe(map((user) => UsersActions.createdUser({ user }))),
+      ),
+    ),
+  );
+
+  depositInitialCapital$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(UsersActions.submittedUser),
+      switchMap(({ properties }) =>
+        this.actions$.pipe(
+          ofType(UsersActions.createdUser),
+          map(({ user }) =>
+            TransactionsActions.depositInitialCapital({ user, amount: properties.startingCapital }),
+          ),
+        ),
       ),
     ),
   );

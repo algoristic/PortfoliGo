@@ -4,6 +4,11 @@ import { isUserAvailable } from './state/users.guards';
 
 export const usersRoutes: Routes = [
   {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: 'select',
+  },
+  {
     path: 'select',
     canActivate: [isUserAvailable()],
     loadComponent: async () => {

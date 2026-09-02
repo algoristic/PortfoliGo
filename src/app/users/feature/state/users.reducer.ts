@@ -5,7 +5,7 @@ import * as UsersActions from './users.actions';
 
 import { User } from '../../domain/models/users.model';
 
-export const USERS_FEATURE_KEY = 'users';
+export const USERS_FEATURE_KEY = 'users' as const;
 
 export interface UsersState extends EntityState<User> {
   loadedUsers: boolean;

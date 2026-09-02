@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormControl,
@@ -9,6 +9,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
+import { Router } from '@angular/router';
 import {
   IonButton,
   IonButtons,
@@ -29,18 +30,8 @@ import { maskitoNumber, MaskitoNumberParams, maskitoParseNumber } from '@maskito
 import { CREATE_USER_CONFIG } from './create-user.config';
 
 import { InlineLogoComponent } from '../../../shell/ui/inline-logo/inline-logo.component';
-import { LogoComponent } from '../../../shell/ui/logo/logo.component';
 import { UsersFacade } from '../state/users.facade';
 import { CreateUserProperties } from '../state/users.model';
-import { addIcons } from 'ionicons';
-import {
-  calendarOutline,
-  checkmarkCircleOutline,
-  close,
-  informationCircleOutline,
-  walletOutline,
-} from 'ionicons/icons';
-import { Router } from '@angular/router';
 
 const CURRENCY_PARAMS: MaskitoNumberParams = {
   decimalSeparator: ',',
@@ -89,7 +80,6 @@ function currencyRangeValidator(min: number, max: number): ValidatorFn {
     IonToolbar,
     MaskitoDirective,
     MaskitoPipe,
-    LogoComponent,
     InlineLogoComponent,
   ],
 })

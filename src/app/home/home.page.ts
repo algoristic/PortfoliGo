@@ -1,15 +1,17 @@
+import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { IonContent, IonHeader, IonText, IonTitle, IonToolbar } from '@ionic/angular';
+import { IonContent, IonHeader, IonTitle, IonToolbar } from '@ionic/angular';
 
 import { LogoComponent } from '../shell/ui/logo/logo.component';
+import { TransactionsFacade } from '../transactions/feature/state/transactions.facade';
 import { UsersFacade } from '../users/feature/state/users.facade';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
-  imports: [CommonModule, IonHeader, IonToolbar, IonTitle, IonContent, IonText, LogoComponent],
+  imports: [CommonModule, IonHeader, IonToolbar, IonTitle, IonContent, LogoComponent],
 })
 export class HomePage {
   usersFacade = inject(UsersFacade);
+  transactionsFacade = inject(TransactionsFacade);
 }

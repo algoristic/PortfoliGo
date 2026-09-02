@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import {
   IonAvatar,
   IonButton,
@@ -13,8 +13,9 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
+
 import { UsersFacade } from '../state/users.facade';
-import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-select-user',

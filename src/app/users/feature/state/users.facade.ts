@@ -4,6 +4,7 @@ import { select, Store } from '@ngrx/store';
 import * as UsersActions from './users.actions';
 import { CreateUserProperties } from './users.model';
 import * as UsersSelectors from './users.selectors';
+
 import { User } from '../../domain/models/users.model';
 
 @Injectable()

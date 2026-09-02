@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+import { initTransactions } from './transactions/feature/state/transactions.guards';
 import { isAuthenticated } from './users/feature/state/users.guards';
 
 export const routes: Routes = [
@@ -11,7 +12,7 @@ export const routes: Routes = [
   {
     // TODO create own feature
     path: 'home',
-    canActivate: [isAuthenticated()],
+    canActivate: [isAuthenticated(), initTransactions()],
     loadComponent: async () => {
       return (await import('./home/home.page')).HomePage;
     },
