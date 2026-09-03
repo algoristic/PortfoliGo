@@ -3,7 +3,7 @@ import { Environment } from './environment.model';
 export const commonSettings: Pick<Environment, 'idbConfig' | 'newUser'> = {
   idbConfig: {
     databaseName: 'portfoligo',
-    databaseVersion: 1,
+    databaseVersion: 2,
     databaseStorages: [],
   },
   newUser: {
