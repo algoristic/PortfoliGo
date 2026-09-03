@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { initTransactions } from './transactions/feature/state/transactions.guards';
 import { isAuthenticated } from './users/feature/state/users.guards';
+import { provideEngine } from './engine/feature/state/engine.providers';
 
 export const routes: Routes = [
   {
@@ -13,9 +14,16 @@ export const routes: Routes = [
     // TODO create own feature
     path: 'app',
     canActivate: [isAuthenticated(), initTransactions()],
-    loadComponent: async () => {
-      return (await import('./landing/feature/landing/landing.page')).LandingPage;
-    },
+    providers: [provideEngine()],
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: async () => {
+          return (await import('./landing/feature/landing/landing.page')).LandingPage;
+        },
+      },
+    ],
   },
   {
     path: 'user',
