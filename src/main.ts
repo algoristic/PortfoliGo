@@ -20,6 +20,8 @@ import {
   calendarOutline,
   close,
   informationCircleOutline,
+  logOutOutline,
+  personOutline,
   trashOutline,
   walletOutline,
 } from 'ionicons/icons';
@@ -44,6 +46,8 @@ addIcons({
   arrowBackOutline,
   arrowForwardOutline,
   trashOutline,
+  personOutline,
+  logOutOutline,
 });
 
 bootstrapApplication(AppComponent, {

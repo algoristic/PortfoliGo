@@ -19,8 +19,8 @@ export const routes: Routes = [
       {
         path: '',
         pathMatch: 'full',
-        loadComponent: async () => {
-          return (await import('./landing/feature/landing/landing.page')).LandingPage;
+        loadChildren: async () => {
+          return (await import('./landing/feature/landing.routes')).landingRoutes;
         },
       },
     ],
