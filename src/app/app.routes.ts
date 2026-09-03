@@ -7,14 +7,14 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'home',
+    redirectTo: 'app',
   },
   {
     // TODO create own feature
-    path: 'home',
+    path: 'app',
     canActivate: [isAuthenticated(), initTransactions()],
     loadComponent: async () => {
-      return (await import('./home/home.page')).HomePage;
+      return (await import('./landing/feature/landing/landing.page')).LandingPage;
     },
   },
   {

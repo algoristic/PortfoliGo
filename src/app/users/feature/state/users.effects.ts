@@ -85,7 +85,7 @@ export class UsersEffects {
     () =>
       this.actions$.pipe(
         ofType(UsersActions.setNewUserActive),
-        tap(() => this.router.navigate(['home'])),
+        tap(() => this.router.navigate(['app'])),
       ),
     { dispatch: false },
   );
@@ -111,7 +111,7 @@ export class UsersEffects {
     () =>
       this.actions$.pipe(
         ofType(UsersActions.selectedActiveUser),
-        tap(() => this.router.navigate(['home'])),
+        tap(() => this.router.navigate(['app'])),
       ),
     { dispatch: false },
   );
