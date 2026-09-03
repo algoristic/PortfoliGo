@@ -6,5 +6,4 @@ export interface Environment {
   production: boolean;
   ngrxDevToolsConfig: NgRxDevToolsConfig;
   idbConfig: IndexedDbConfig;
-  newUser: CreateUserConfig;
 }

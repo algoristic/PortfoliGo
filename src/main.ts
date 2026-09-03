@@ -33,7 +33,6 @@ import { provideNgRxDevTools } from './app/ngrx/utils/ngrx.providers';
 import { transactionsStorage } from './app/transactions/data-access/services/transactions-service.providers';
 import { provideTransactionsState } from './app/transactions/feature/state/transactions.providers';
 import { usersStorage } from './app/users/data-access/service/users-service.providers';
-import { provideNewUserSettings } from './app/users/feature/create-user/create-user.providers';
 import { provideUsersState } from './app/users/feature/state/users.providers';
 import { environment } from './environments/environment';
 
@@ -66,7 +65,6 @@ bootstrapApplication(AppComponent, {
       withStorage(transactionsStorage),
     ),
     provideUsersState(),
-    provideNewUserSettings(environment.newUser),
     provideTransactionsState(),
     provideCurrency(),
   ],
