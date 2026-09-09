@@ -8,13 +8,13 @@ import { User } from '../../../users/domain/models/users.model';
 
 @Injectable()
 export class TransactionsFacade {
-  private readonly store = inject(Store);
+  readonly #store = inject(Store);
 
-  balance$ = this.store.pipe(select(TransactionsSelectors.selectBalance));
-  transactions$ = this.store.pipe(select(TransactionsSelectors.selectTransactions));
-  loaded$ = this.store.pipe(select(TransactionsSelectors.selectLoaded));
+  balance$ = this.#store.pipe(select(TransactionsSelectors.selectBalance));
+  transactions$ = this.#store.pipe(select(TransactionsSelectors.selectTransactions));
+  loaded$ = this.#store.pipe(select(TransactionsSelectors.selectLoaded));
 
   init(user: User): void {
-    this.store.dispatch(TransactionsActions.init({ user }));
+    this.#store.dispatch(TransactionsActions.init({ user }));
   }
 }

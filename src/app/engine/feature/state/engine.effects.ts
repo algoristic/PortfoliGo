@@ -3,5 +3,5 @@ import { EngineService } from '../../data-access/service/engine.service';
 
 @Injectable()
 export class EngineEffects {
-  private readonly service = inject(EngineService);
+  readonly #service = inject(EngineService);
 }

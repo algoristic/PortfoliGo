@@ -9,27 +9,27 @@ import { User } from '../../domain/models/users.model';
 
 @Injectable()
 export class UsersFacade {
-  private readonly store = inject(Store);
+  readonly #store = inject(Store);
 
-  users$ = this.store.pipe(select(UsersSelectors.selectUsers));
-  activeUser$ = this.store.pipe(select(UsersSelectors.selectActiveUser));
-  loadedUsers$ = this.store.pipe(select(UsersSelectors.selectLoadedUsers));
-  loadedActiveUser$ = this.store.pipe(select(UsersSelectors.selectLoadedActiveUser));
-  creatingUser$ = this.store.pipe(select(UsersSelectors.selectCreatingUser));
+  users$ = this.#store.pipe(select(UsersSelectors.selectUsers));
+  activeUser$ = this.#store.pipe(select(UsersSelectors.selectActiveUser));
+  loadedUsers$ = this.#store.pipe(select(UsersSelectors.selectLoadedUsers));
+  loadedActiveUser$ = this.#store.pipe(select(UsersSelectors.selectLoadedActiveUser));
+  creatingUser$ = this.#store.pipe(select(UsersSelectors.selectCreatingUser));
 
   init(): void {
-    this.store.dispatch(UsersActions.initUsersState());
+    this.#store.dispatch(UsersActions.initUsersState());
   }
 
   submitUser(properties: CreateUserProperties): void {
-    this.store.dispatch(UsersActions.submittedUser({ properties }));
+    this.#store.dispatch(UsersActions.submittedUser({ properties }));
   }
 
   selectActiveUser(user: User): void {
-    this.store.dispatch(UsersActions.selectedActiveUser({ user }));
+    this.#store.dispatch(UsersActions.selectedActiveUser({ user }));
   }
 
   requestDeleteUser(user: User): void {
-    this.store.dispatch(UsersActions.requestDeleteUser({ user }));
+    this.#store.dispatch(UsersActions.requestDeleteUser({ user }));
   }
 }

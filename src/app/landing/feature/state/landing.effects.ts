@@ -7,15 +7,15 @@ import { tap } from 'rxjs';
 
 @Injectable()
 export class LandingEffects {
-  private readonly actions$ = inject(Actions);
-  private readonly router = inject(Router);
+  readonly #actions$ = inject(Actions);
+  readonly #router = inject(Router);
 
   // TODO richtiges logout des aktiven nutzers hier... (localStorage löschen etc.)
   logout$ = createEffect(
     () =>
-      this.actions$.pipe(
+      this.#actions$.pipe(
         ofType(LandingActions.requestedLogout),
-        tap(() => this.router.navigate(['user/select'])),
+        tap(() => this.#router.navigate(['user/select'])),
       ),
     { dispatch: false },
   );

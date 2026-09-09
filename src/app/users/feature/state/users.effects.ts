@@ -11,25 +11,25 @@ import { UsersService } from '../../data-access/service/users.service';
 
 @Injectable()
 export class UsersEffects {
-  private readonly actions$ = inject(Actions);
-  private readonly router = inject(Router);
-  private readonly usersService = inject(UsersService);
-  private readonly loadingController = inject(LoadingController);
+  readonly #actions$ = inject(Actions);
+  readonly #router = inject(Router);
+  readonly #usersService = inject(UsersService);
+  readonly #loadingController = inject(LoadingController);
 
   loadUsers$ = createEffect(() =>
-    this.actions$.pipe(
+    this.#actions$.pipe(
       ofType(UsersActions.initUsersState),
       switchMap(() =>
-        this.usersService.getUsers().pipe(map((users) => UsersActions.loadedUsers({ users }))),
+        this.#usersService.getUsers().pipe(map((users) => UsersActions.loadedUsers({ users }))),
       ),
     ),
   );
 
   loadActiveUserId$ = createEffect(() =>
-    this.actions$.pipe(
+    this.#actions$.pipe(
       ofType(UsersActions.initUsersState),
       switchMap(() =>
-        this.usersService
+        this.#usersService
           .getActiveUserId()
           .pipe(map((activeUserId) => UsersActions.loadedActiveUserId({ activeUserId }))),
       ),
@@ -37,10 +37,10 @@ export class UsersEffects {
   );
 
   createUser$ = createEffect(() =>
-    this.actions$.pipe(
+    this.#actions$.pipe(
       ofType(UsersActions.submittedUser),
       switchMap(({ properties }) =>
-        this.usersService
+        this.#usersService
           .createUser(properties.name, properties.monthlySavingsAmount)
           .pipe(map((user) => UsersActions.createdUser({ user }))),
       ),
@@ -48,10 +48,10 @@ export class UsersEffects {
   );
 
   depositInitialCapital$ = createEffect(() =>
-    this.actions$.pipe(
+    this.#actions$.pipe(
       ofType(UsersActions.submittedUser),
       switchMap(({ properties }) =>
-        this.actions$.pipe(
+        this.#actions$.pipe(
           ofType(UsersActions.createdUser),
           map(({ user }) =>
             TransactionsActions.depositInitialCapital({ user, amount: properties.startingCapital }),
@@ -62,10 +62,10 @@ export class UsersEffects {
   );
 
   setNewUserActive$ = createEffect(() =>
-    this.actions$.pipe(
+    this.#actions$.pipe(
       ofType(UsersActions.createdUser),
       switchMap(({ user }) =>
-        this.usersService
+        this.#usersService
           .setActiveUserId(user.id)
           .pipe(map((activeUserId) => UsersActions.setNewUserActive({ activeUserId }))),
       ),
@@ -73,30 +73,30 @@ export class UsersEffects {
   );
 
   requestDeleteUser$ = createEffect(() =>
-    this.actions$.pipe(
+    this.#actions$.pipe(
       ofType(UsersActions.requestDeleteUser),
       switchMap(({ user }) =>
-        this.usersService.deleteUser(user).pipe(map(() => UsersActions.deletedUser({ user }))),
+        this.#usersService.deleteUser(user).pipe(map(() => UsersActions.deletedUser({ user }))),
       ),
     ),
   );
 
   redirectNewUser$ = createEffect(
     () =>
-      this.actions$.pipe(
+      this.#actions$.pipe(
         ofType(UsersActions.setNewUserActive),
-        tap(() => this.router.navigate(['app'])),
+        tap(() => this.#router.navigate(['app'])),
       ),
     { dispatch: false },
   );
 
   blockScreenWhileCreatingUser$ = createEffect(
     () =>
-      this.actions$.pipe(
+      this.#actions$.pipe(
         ofType(UsersActions.submittedUser),
         switchMap(() =>
           from(
-            this.loadingController.create({
+            this.#loadingController.create({
               message: 'Profil wird angelegt',
               duration: 2000,
             }),
@@ -109,9 +109,9 @@ export class UsersEffects {
 
   selectActiveUser$ = createEffect(
     () =>
-      this.actions$.pipe(
+      this.#actions$.pipe(
         ofType(UsersActions.selectedActiveUser),
-        tap(() => this.router.navigate(['app'])),
+        tap(() => this.#router.navigate(['app'])),
       ),
     { dispatch: false },
   );

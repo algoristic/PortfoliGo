@@ -10,19 +10,19 @@ import { User } from '../../domain/models/users.model';
 
 @Injectable()
 export class UsersService {
-  private readonly idbService = inject(IndexedDbService);
-  private readonly localStorageService = inject(LocalStorageService);
+  readonly #idbService = inject(IndexedDbService);
+  readonly #localStorageService = inject(LocalStorageService);
 
   getUsers(): Observable<User[]> {
-    return this.idbService.getAll(usersStorage.name);
+    return this.#idbService.getAll(usersStorage.name);
   }
 
   getActiveUserId(): Observable<string | undefined> {
-    return this.localStorageService.getFromStorage(activeUserIdKey);
+    return this.#localStorageService.getFromStorage(activeUserIdKey);
   }
 
   setActiveUserId(id: string): Observable<string> {
-    return this.localStorageService.addToStorage(activeUserIdKey, id);
+    return this.#localStorageService.addToStorage(activeUserIdKey, id);
   }
 
   createUser(name: string, monthlySavingsAmount: number): Observable<User> {
@@ -34,10 +34,10 @@ export class UsersService {
       createdAt: new Date().toISOString(),
     };
 
-    return this.idbService.add(usersStorage.name, id, newUser);
+    return this.#idbService.add(usersStorage.name, id, newUser);
   }
 
   deleteUser(user: User): Observable<User | undefined> {
-    return this.idbService.remove(usersStorage.name, user.id);
+    return this.#idbService.remove(usersStorage.name, user.id);
   }
 }

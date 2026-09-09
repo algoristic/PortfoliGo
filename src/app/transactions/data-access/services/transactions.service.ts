@@ -10,13 +10,13 @@ import { Transaction } from '../../domain/models/transactions.model';
 
 @Injectable()
 export class TransactionsService {
-  private readonly idbService = inject(IndexedDbService);
+  readonly #idbService = inject(IndexedDbService);
 
   getTransActionsForUser(user: User): Observable<Transaction[]> {
-    return this.idbService.getMany(transactionsStorage.name, transactionsUserIndex, user.id);
+    return this.#idbService.getMany(transactionsStorage.name, transactionsUserIndex, user.id);
   }
 
   executeTransaction(transaction: Transaction): Observable<Transaction> {
-    return this.idbService.add(transactionsStorage.name, transaction.id, transaction);
+    return this.#idbService.add(transactionsStorage.name, transaction.id, transaction);
   }
 }

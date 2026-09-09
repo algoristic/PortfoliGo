@@ -5,9 +5,9 @@ import * as LandingActions from './landing.actions';
 
 @Injectable()
 export class LandingFacade {
-  private readonly store = inject(Store);
+  readonly #store = inject(Store);
 
   logout(): void {
-    this.store.dispatch(LandingActions.requestedLogout());
+    this.#store.dispatch(LandingActions.requestedLogout());
   }
 }
