@@ -122,7 +122,7 @@ export class CreateUserPage {
   }
 
   get startingCapitalError(): string {
-    return this.currencyError(
+    return this.#currencyError(
       this.startingCapital,
       this.config.startingCapital.min,
       this.config.startingCapital.max,
@@ -130,7 +130,7 @@ export class CreateUserPage {
   }
 
   get monthlySavingsAmountError(): string {
-    return this.currencyError(
+    return this.#currencyError(
       this.monthlySavingsAmount,
       this.config.monthlySavingsAmount.min,
       this.config.monthlySavingsAmount.max,
@@ -157,7 +157,7 @@ export class CreateUserPage {
     this.usersFacade.submitUser(properties);
   }
 
-  private currencyError(control: FormControl<string>, minimum: number, maximum: number): string {
+  #currencyError(control: FormControl<string>, minimum: number, maximum: number): string {
     if (control.hasError('required')) {
       return $localize`:@@featureUsers-createUserPage-error-numberRequired:Bitte gib einen Betrag ein.`;
     }
