@@ -1,34 +1,3 @@
 import { Routes } from '@angular/router';
 
-import { initTransactions } from './transactions/feature/state/transactions.guards';
-import { isAuthenticated } from './users/feature/state/users.guards';
-import { provideEngine } from './engine/feature/state/engine.providers';
-
-export const routes: Routes = [
-  {
-    path: '',
-    pathMatch: 'full',
-    redirectTo: 'app',
-  },
-  {
-    // TODO create own feature
-    path: 'app',
-    canActivate: [isAuthenticated(), initTransactions()],
-    providers: [provideEngine()],
-    children: [
-      {
-        path: '',
-        pathMatch: 'full',
-        loadChildren: async () => {
-          return (await import('./landing/feature/landing.routes')).landingRoutes;
-        },
-      },
-    ],
-  },
-  {
-    path: 'user',
-    loadChildren: async () => {
-      return (await import('./users/feature/users.routes')).usersRoutes;
-    },
-  },
-];
+export const routes: Routes = [];
