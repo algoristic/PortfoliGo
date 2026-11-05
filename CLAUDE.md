@@ -110,7 +110,7 @@ export class SectionOrderItemsComponent {
 - Visibility:
   - Template-facing members have no modifier. Don't use `protected`.
   - Class-only members are ECMAScript private fields: `readonly #router = inject(Router)`, `#formatLabel(…)`. Don't use the `private` keyword or a `_` prefix.
-- Signal APIs only: `input()`, `input.required()`, `output()`, `computed()`, `viewChild()`. Don't put `readonly` on them.
+- Signal APIs only: `input()`, `input.required()`, `output()`, `model()` (only for custom form controls), `computed()`, `linkedSignal()`, `viewChild()`. Don't put `readonly` on them.
 - Outputs are named as past-tense events: `clickedBack`, `selectedItem`, `submittedOrderDetails`, `markedFile`.
 - Template handlers are named `onX(...)` (`onSelectItem`). For form or dialog actions use plain verbs (`submit()`, `confirm()`, `decline()`).
 - Member order:
@@ -149,9 +149,72 @@ export class SectionOrderItemsComponent {
 
 ### Forms
 
-- Use Reactive Forms only, with no `ngModel`: `new FormGroup({ name: new FormControl(name, { nonNullable: true }) })`.
-- When the form is initialised from a signal input, build the `FormGroup` inside `computed()`.
-- A form component emits a typed result through an output (`submittedGeneralInformation`). Saving happens in the feature layer.
+New forms use **Signal Forms** (`@angular/forms/signals`). Don't use Reactive Forms (`FormGroup`, `FormControl`), template-driven forms or `ngModel`. Existing Reactive Forms stay as they are until a migration is requested (see §0), and a component never mixes both APIs.
+
+```ts
+export class FormGeneralInformationComponent {
+  info = input.required<GeneralInformation>();
+
+  submittedGeneralInformation = output<GeneralInformationModel>();
+
+  generalInformationModel = linkedSignal<GeneralInformationModel>(() => ({
+    name: this.info().name,
+  }));
+  generalInformationForm = form(
+    this.generalInformationModel,
+    (path) => {
+      required(path.name, {
+        message: $localize`:@@uiOrders-formGeneralInformation-nameRequired:Bitte gib einen Namen ein.`,
+      });
+    },
+    {
+      submission: {
+        action: async (field) => this.submittedGeneralInformation.emit(field().value()),
+      },
+    },
+  );
+}
+```
+
+```angular
+@let _name = generalInformationForm.name();
+
+<form [formRoot]="generalInformationForm">
+  <input [formField]="generalInformationForm.name" data-testid="orders.general-information.name" />
+  @if (_name.touched() && _name.invalid()) {
+    @for (error of _name.errors(); track error.kind) {
+      <span>{{ error.message }}</span>
+    }
+  }
+  <button
+    type="submit"
+    data-testid="orders.general-information.submit"
+    i18n="@@uiOrders-formGeneralInformation-submit">
+    Speichern
+  </button>
+</form>
+```
+
+- **Model:** a writable signal that holds exactly the values the controls edit (e.g. strings for masked inputs). Its type goes in the component's `*.model.ts`. Name the pair `<name>Model` and `<name>Form`.
+  - Empty forms start from `signal({...})`.
+  - Forms filled from an input use `linkedSignal(() => …)`. It resets when the input changes, and user edits stay local. Don't build forms inside `computed()`.
+  - If the input can receive new references for the same entity while the user is editing (polling, selectors that project new objects), reset only on identity change. The key must be its own `computed`, because a `source: () => this.info().id` would still make the linked signal depend on `info` itself:
+
+    ```ts
+    #infoId = computed(() => this.info().id);
+    generalInformationModel = linkedSignal({
+      source: this.#infoId,
+      computation: () => ({ name: untracked(this.info).name }),
+    });
+    ```
+
+- **Schema:** validation and field state (`disabled`, `hidden`, `readonly`) are declared in the schema function, reactive via `when`, and never toggled imperatively from effects. Write `$localize` messages inline in the schema (`message:`); the schema runs when `form()` is created, before class-field labels exist.
+  - Custom rules: `validate(path.x, ({ value }) => (… ? { kind: 'x', message: … } : null))`. Async rules use `validateAsync`/`validateHttp`.
+  - Reusable rule sets are `schema<T>(…)` constants or functions that take a `SchemaPath`, in the domain or util layer.
+- **Binding:** import `FormField` and `FormRoot` from `@angular/forms/signals` and bind every control with `[formField]`. This works for native inputs, for custom controls that implement `FormValueControl`/`FormCheckboxControl`, and for third-party components through their `ControlValueAccessor`. New custom controls implement `FormValueControl` (`value = model<T>()`), not `ControlValueAccessor`.
+- **Submission:** define `submission.action` in the `form()` options and bind `<form [formRoot]="xForm">`. Submitting marks all fields as touched and runs the action only when the form is valid. A form component maps the model if needed and emits a typed result through an output (`submittedGeneralInformation`); saving happens in the feature layer.
+- **Template state:** read field state through its signals (`xForm.name().invalid()`, `.touched()`, `.errors()`) and show errors only for touched fields.
+- Don't use `@angular/forms/signals/compat` unless a migration is explicitly requested.
 
 ### Dialogs
 
@@ -430,6 +493,7 @@ describe('OrdersEffects', () => {
   - **Facades:** use `provideMockStore` + `vi.spyOn(store, 'dispatch')`.
   - **HTTP services:** use `provideHttpClient()` + `provideHttpClientTesting()` with `HttpTestingController`, and `httpMock.verify()` in `afterEach`.
   - **Functional guards:** use `TestBed.runInInjectionContext(() => guard()(route, state))` + `firstValueFrom`.
+  - **Reusable form schemas and rules:** create the form with `TestBed.runInInjectionContext(() => form(signal(model), schema))` and assert on `xForm.field().errors()`.
 - Mocks:
   - Plain objects with `vi.fn()`, typed `Mocked<Pick<…>>` (`import type { Mocked } from 'vitest'`).
   - Packages that don't load in the test environment (e.g. heavy ESM UI libraries) are replaced via `vi.mock(...)`.
@@ -447,23 +511,24 @@ describe('OrdersEffects', () => {
 
 ## 12. Patterns to avoid
 
-| Don't                                                                                 | Use instead                                             |
-| ------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `@Input()` / `@Output()` / `EventEmitter`, `@ViewChild`                               | `input()`, `output()`, `viewChild()`                    |
-| Constructor injection                                                                 | `inject()` field initializers                           |
-| `private` keyword, `_` prefix for private members                                     | `#` private fields                                      |
-| `standalone: true`, NgModules, explicit `changeDetection`                             | framework defaults                                      |
-| `unsubscribe$ = new Subject()` + `takeUntil` + `ngOnDestroy`; subscribing into fields | `@let … \| async`, `toSignal()`, `takeUntilDestroyed()` |
-| `*ngIf`, `*ngFor`                                                                     | `@if`, `@for` with `track`                              |
-| `ngModel`                                                                             | Reactive Forms                                          |
-| Class interceptors registered via `HTTP_INTERCEPTORS`                                 | functional `HttpInterceptorFn` + `withInterceptors`     |
-| Class guards, resolvers, `APP_INITIALIZER`                                            | functional guard factories, `provideAppInitializer`     |
-| `provideState`/`provideEffects` inline in route definitions                           | `provideXState()` in `<name>.providers.ts`              |
-| Loading data in `ngOnInit` / `ActivatedRoute` in components                           | enter/leave guard factories + router-store selectors    |
-| `withLatestFrom` in effects                                                           | `concatLatestFrom`                                      |
-| `createActionGroup`, `createFeature`, functional effects, ComponentStore, SignalStore | classic actions, reducer, effects class and facade      |
-| `error: any`, `errorMessage: string` in state                                         | `error: unknown`; user feedback via toast effects       |
-| TS `enum`                                                                             | `as const` list + derived type                          |
-| i18n texts without ID or with IDs that don't follow the scheme                        | `@@<layer><Domain>-<componentOrClass>-<key>`            |
-| Hard-coded hex colours / `rem` spacing                                                | design-system CSS variables and classes                 |
-| Dialogs opened from ui components; dialog folders named `<name>-dialog`               | dialogs opened from effects; `dialog-<name>/`           |
+| Don't                                                                                 | Use instead                                                              |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `@Input()` / `@Output()` / `EventEmitter`, `@ViewChild`                               | `input()`, `output()`, `viewChild()`                                     |
+| Constructor injection                                                                 | `inject()` field initializers                                            |
+| `private` keyword, `_` prefix for private members                                     | `#` private fields                                                       |
+| `standalone: true`, NgModules, explicit `changeDetection`                             | framework defaults                                                       |
+| `unsubscribe$ = new Subject()` + `takeUntil` + `ngOnDestroy`; subscribing into fields | `@let … \| async`, `toSignal()`, `takeUntilDestroyed()`                  |
+| `*ngIf`, `*ngFor`                                                                     | `@if`, `@for` with `track`                                               |
+| Reactive Forms (`FormGroup`, `FormControl`), `ngModel`, forms built in `computed()`   | Signal Forms: `form()` on a `signal`/`linkedSignal` model, `[formField]` |
+| `ControlValueAccessor` for new custom form controls                                   | `FormValueControl` / `FormCheckboxControl`                               |
+| Class interceptors registered via `HTTP_INTERCEPTORS`                                 | functional `HttpInterceptorFn` + `withInterceptors`                      |
+| Class guards, resolvers, `APP_INITIALIZER`                                            | functional guard factories, `provideAppInitializer`                      |
+| `provideState`/`provideEffects` inline in route definitions                           | `provideXState()` in `<name>.providers.ts`                               |
+| Loading data in `ngOnInit` / `ActivatedRoute` in components                           | enter/leave guard factories + router-store selectors                     |
+| `withLatestFrom` in effects                                                           | `concatLatestFrom`                                                       |
+| `createActionGroup`, `createFeature`, functional effects, ComponentStore, SignalStore | classic actions, reducer, effects class and facade                       |
+| `error: any`, `errorMessage: string` in state                                         | `error: unknown`; user feedback via toast effects                        |
+| TS `enum`                                                                             | `as const` list + derived type                                           |
+| i18n texts without ID or with IDs that don't follow the scheme                        | `@@<layer><Domain>-<componentOrClass>-<key>`                             |
+| Hard-coded hex colours / `rem` spacing                                                | design-system CSS variables and classes                                  |
+| Dialogs opened from ui components; dialog folders named `<name>-dialog`               | dialogs opened from effects; `dialog-<name>/`                            |
