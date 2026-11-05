@@ -1,0 +1,469 @@
+# CLAUDE.md
+
+Rules for implementing Angular code in this repository, so that generated code looks like code a team member would write. If a `CLAUDE.md` in a parent directory says something different, this file wins.
+
+## 0. How to use this file
+
+- **When editing existing files, keep them internally consistent.** Don't mix styles within one file, and don't refactor unrelated code unless you are asked to.
+- When this file and the surrounding code disagree, ask instead of guessing.
+- Reuse existing services, tokens, validators and helpers before building new ones.
+
+## 1. Architecture: domains and layers
+
+Code is grouped by domain first, then by layer: `src/app/<domain>/<layer>/…`, e.g. `users/feature`, `users/data-access`, `users/domain`. The app root (`main.ts`, root component, root routes) only bootstraps and wires things up. All functionality lives in the domain folders.
+
+| Layer         | Contains                                                                     | May depend on                          |
+| ------------- | ---------------------------------------------------------------------------- | -------------------------------------- |
+| `feature`     | routes, pages, smart components, NgRx state (actions/reducer/effects/facade) | feature, ui, data-access, domain, util |
+| `ui`          | presentational components (inputs/outputs only), pipes, form components      | ui, domain, util                       |
+| `data-access` | HTTP/WebSocket/storage services, config tokens, mock interceptors            | data-access, domain, util              |
+| `domain`      | models (interfaces, `as const` lists) and pure domain logic                  | domain, util                           |
+| `util`        | generic helpers without domain knowledge                                     | util                                   |
+
+Nothing enforces these rules automatically, so check your imports. If a dependency doesn't fit, move the code to the right layer instead of importing across.
+
+## 2. Folder structure per layer
+
+**feature:**
+
+```
+<domain>/feature/
+├── <domain>.routes.ts              # export const <domain>Routes: Routes
+├── <name>/                         # routed page: <name>.page.{ts,html,scss}
+├── section-*/ dialog-*/            # smart sub-components and dialogs
+└── state/
+    ├── <domain>.actions.ts
+    ├── <domain>.reducer.ts
+    ├── <domain>.selectors.ts
+    ├── <domain>.effects.ts
+    ├── <domain>.facade.ts
+    ├── <domain>.guards.ts          # enter/leave guard factories
+    ├── <domain>.providers.ts       # provide<Domain>State()
+    ├── <domain>.model.ts           # state-related types (e.g. submitted payloads)
+    └── <domain>.utils.ts           # pure helpers for effects/reducer
+```
+
+**ui:** one folder per component (`section-*`, `form-*`, `dialog-*`). Component-specific types go in a sibling `<component>.model.ts`. Pipes live under `pipes/<name>/<name>.pipe.ts`.
+
+**data-access:**
+
+```
+<domain>/data-access/service/
+├── <name>.service.ts               # <Name>Service
+├── <name>-service.providers.ts     # provide<Name>Service()
+├── <name>-service.config.ts        # <Name>ServiceConfig + <NAME>_SERVICE_CONFIG token
+├── <name>-service.mock.ts          # <name>ServiceMock: HttpInterceptorFn
+├── <name>-service.model.ts         # transport-only types (events, payloads)
+├── <name>-service.utils.ts         # type guards etc.
+└── mock-*.data.json                # mock fixtures
+```
+
+**domain:** models in `models/<name>.model.ts`. Pure domain functions go in `*-logic.ts` or `*.utils.ts` if needed.
+
+## 3. Components and templates
+
+### Naming and metadata
+
+- Routed pages are named `<name>.page.{ts,html,scss}` with the class `<Name>Page`. All other components are named `<name>.component.{ts,html,scss}` with the class `<Name>Component`.
+- The selector is `<prefix>-<name>`, using the project prefix from `angular.json`.
+- Name prefixes for non-page components by role: `section-` for parts of a page, `dialog-` for dialog content, `form-` for form components.
+- Standalone is implicit, so don't write `standalone: true`. NgModules are not used.
+- Metadata order is `selector`, `imports`, `templateUrl`, `styleUrl` (singular). Use separate template and style files, even if the scss is empty.
+- Don't set `changeDetection`. The framework default applies (OnPush since Angular 22).
+- Write code that works zoneless: everything the template shows must come from signals, the `async` pipe or template events. Never assign plain fields from subscriptions, promises or timers and expect the view to update. Don't use `NgZone`.
+- `imports`:
+  - `CommonModule` when the template needs common pipes such as `async`.
+  - `RouterModule` for router directives.
+  - Import UI library components the way the library exports them (standalone components or NgModules), and only those the template uses.
+
+### Class members
+
+```ts
+// feature component; ui components have no injections, only inputs/outputs
+export class SectionOrderItemsComponent {
+  facade = inject(OrdersFacade); // read by the template → public, no modifier
+  readonly #router = inject(Router); // only used in the class → private field
+
+  items = input.required<OrderItem[]>();
+  activeItem = input<string>();
+  countries = input<Country[] | null>(); // fed from `| async` → allow null
+
+  selectedItem = output<string>(); // outputs are past-tense events
+  clickedBack = output<void>();
+
+  itemCount = computed(() => this.items().length);
+  order = toSignal(this.facade.order$); // only if the class (not the template) needs the value
+
+  title = $localize`:@@featureOrders-sectionOrderItems-title:Positionen`;
+
+  onSelectItem(itemId: string): void {
+    this.selectedItem.emit(itemId);
+  }
+
+  #formatLabel(item: OrderItem): string {
+    return `${item.position} – ${item.name}`;
+  }
+}
+```
+
+- DI uses only `inject()` field initializers, never constructor injection.
+- Visibility:
+  - Template-facing members have no modifier. Don't use `protected`.
+  - Class-only members are ECMAScript private fields: `readonly #router = inject(Router)`, `#formatLabel(…)`. Don't use the `private` keyword or a `_` prefix.
+- Signal APIs only: `input()`, `input.required()`, `output()`, `computed()`, `viewChild()`. Don't put `readonly` on them.
+- Outputs are named as past-tense events: `clickedBack`, `selectedItem`, `submittedOrderDetails`, `markedFile`.
+- Template handlers are named `onX(...)` (`onSelectItem`). For form or dialog actions use plain verbs (`submit()`, `confirm()`, `decline()`).
+- Member order:
+  1. `inject()`
+  2. inputs
+  3. constants
+  4. outputs
+  5. view queries
+  6. derived state (`computed`, `toSignal`)
+  7. `$localize` labels
+  8. lifecycle hooks
+  9. handlers
+  10. private helpers
+- Methods have explicit return types. Lifecycle hooks come with `implements OnInit` etc.
+- **No manual `.subscribe()` in components.** Read state through `@let … | async` in the template or `toSignal()`. If a subscription is unavoidable, use `takeUntilDestroyed()`.
+
+### Templates
+
+```angular
+@let order = ordersFacade.order$ | async;
+@let markedItemIds = ordersFacade.markedItemIds$ | async;
+@let isMaxOneMarked = (markedItemIds ?? []).length < 2;
+
+@if (order && isMaxOneMarked) {
+  @for (item of order.items; track item.id) {
+    <app-section-item [item]="item" (selectedItem)="onSelectItem($event)"></app-section-item>
+  }
+}
+```
+
+- Collect all stream reads in a `@let x = facade.x$ | async;` block at the top of the template.
+- Use only built-in control flow (`@if`, `@for`, `@switch`, `@defer`), never `*ngIf`/`*ngFor`.
+- `@for` always tracks by an identity field (`track item.id`), or by `$index` for primitives.
+- To unwrap a signal under the same name, use an underscore alias: `@let _form = form();`.
+- **`data-testid` on interactive elements** (buttons, inputs, list entries, dialog actions). Use the dot-separated scheme `<feature>.<area>.<element>`, e.g. `data-testid="orders.create-order.submit"`. For dynamic values write `[attr.data-testid]="'orders.item-list.' + id + '.toggle-collapse'"`.
+
+### Forms
+
+- Use Reactive Forms only, with no `ngModel`: `new FormGroup({ name: new FormControl(name, { nonNullable: true }) })`.
+- When the form is initialised from a signal input, build the `FormGroup` inside `computed()`.
+- A form component emits a typed result through an output (`submittedGeneralInformation`). Saving happens in the feature layer.
+
+### Dialogs
+
+- Dialog content components live in `dialog-<name>/`.
+- Open dialogs typed, with data and result types in the dialog's `*.model.ts`.
+- Open dialogs from **effects**, not from ui components. Map the closed result to an action, e.g. `filter(Boolean), map(() => action)`. Confirmations use a shared confirm dialog instead of ad-hoc ones.
+
+### ui layer
+
+ui components are purely presentational, with data in through inputs and events out through outputs. No facades, `Store`, services, `Router` or dialogs.
+
+## 4. Styling
+
+- Each component has one `.component.scss` / `.page.scss`. Use `:host` for host styling. Don't override `ViewEncapsulation`.
+- **Use design tokens only**:
+  - colours, surfaces and spacing via the design system's CSS custom properties (`var(--…)`), never hard-coded hex/rgb values or `rem` spacing;
+  - typography and spacing via the design system's classes in templates.
+- Don't mix in other UI frameworks (Angular Material, Bootstrap utility classes, …).
+- Custom class names follow BEM (`block__element--modifier`).
+- Use `::ng-deep` only to reach into UI library internals, and scope it under `:host`.
+
+## 5. i18n
+
+The source locale is **German** (`de`).
+
+- Every user-facing text gets an **explicit custom ID**, without meaning or description.
+- ID scheme: `@@<layer><Domain>-<componentOrClass>-<key>`.
+  - `<layer><Domain>` is the layer and domain the text lives in, in camelCase (`users/feature` → `featureUsers`, `orders/ui` → `uiOrders`).
+  - `<componentOrClass>` is the class name in camelCase without the `Component` suffix (`createUserPage`, `sectionOrderItems`, `ordersEffects`).
+  - `<key>` may have several segments (`createUserForm-name-label`).
+  - Examples: `@@featureUsers-createUserPage-submit`, `@@uiOrders-formGeneralInformation-name`, `@@featureOrders-ordersEffects-loadOrdersFailure`.
+  - Never reuse an ID for a different text.
+- In TypeScript, create class-field labels: ``label = $localize`:@@featureX-xPage-label:Text`;``
+- In templates: `<span i18n="@@uiX-sectionX-title">Titel</span>`, `<ng-container i18n="@@…">`, and `i18n-<attr>="@@…"` for attributes (e.g. `i18n-label`).
+- After adding or changing texts, run `ng extract-i18n` and keep the updated source `messages.xlf` in the change.
+
+## 6. State management (NgRx)
+
+State lives in the classic global NgRx Store. Don't introduce `createActionGroup`, `createFeature`, functional effects, ComponentStore, SignalStore or signal-based state services.
+
+**Actions** (`<name>.actions.ts`) are named as events, with a `[<Feature>/Page]` or `[<Feature>/API]` source:
+
+```ts
+export const enterOrdersPage = createAction('[Orders/Page] Enter orders page');
+export const clickedStartExport = createAction('[Orders/Page] Clicked start export');
+export const retrievedOrder = createAction(
+  '[Orders/API] Retrieved order',
+  props<{ order: Order }>(),
+);
+export const deleteOrderSuccess = createAction(
+  '[Orders/API] Delete order success',
+  props<{ orderId: string }>(),
+);
+export const deleteOrderFailure = createAction(
+  '[Orders/API] Delete order failure',
+  props<{ error: unknown }>(),
+);
+```
+
+- Prefixes: `enterX`/`leaveX` for route lifecycle, `clickedX`/`submittedX` for user events, `retrievedX`/`receivedX`/`loadedX` for data arrivals, `xSuccess`/`xFailure` for API results.
+- Errors are always `props<{ error: unknown }>()`.
+
+**Reducer** (`<name>.reducer.ts`):
+
+```ts
+export const ORDERS_FEATURE_KEY = 'orders';
+
+export interface OrdersState {
+  loaded: boolean;
+  details?: Order;
+  error?: unknown;
+}
+
+const initialOrdersState: OrdersState = { loaded: false };
+
+const reducer = createReducer(
+  initialOrdersState,
+  on(OrdersActions.enterOrdersPage, () => initialOrdersState),
+  on(OrdersActions.retrievedOrder, (state, { order }) => ({ ...state, details: order })),
+);
+
+export function ordersReducer(state: OrdersState | undefined, action: Action): OrdersState {
+  return reducer(state, action);
+}
+```
+
+- Feature keys are camelCase strings. Use `@ngrx/entity` adapters for larger keyed collections.
+
+**Selectors** (`<name>.selectors.ts`):
+
+- `const selectState = createFeatureSelector<XState>(X_FEATURE_KEY);`, then `export const selectX = createSelector(selectState, (state) => state.x);`
+- Read route params here via the router-store selectors (`getRouterSelectors()` from `@ngrx/router-store`, e.g. `selectRouteParam('orderId')`), not via `ActivatedRoute` in components.
+
+**Effects** (`<name>.effects.ts`):
+
+- Write an `@Injectable()` class with `readonly #x = inject(...)` fields and `createEffect(() => this.#actions$.pipe(ofType(...), ...))`.
+- Read store state with `concatLatestFrom(() => this.#store.pipe(select(...)))` from `@ngrx/operators` (add the package when it's first needed), not `withLatestFrom`.
+- Put `catchError((error) => of(xFailure({ error })))` inside the inner `switchMap` pipe, so the effect stream survives.
+- Side effects use `{ dispatch: false }` effects that react to actions:
+  - toasts and loading indicators via the UI library's services, with `$localize` texts;
+  - page title via `Title.setTitle(...)` on `enterXPage`;
+  - navigation via `Router`;
+  - dialogs.
+- Close long-lived streams (WebSocket, polling, timers) with `takeUntil(this.#actions$.pipe(ofType(leaveX)))`.
+
+**Facade** (`<name>.facade.ts`), the only entry point for components:
+
+```ts
+@Injectable()
+export class OrdersFacade {
+  readonly #store = inject(Store);
+
+  order$ = this.#store.pipe(select(OrdersSelectors.selectOrder));
+
+  startExport(): void {
+    this.#store.dispatch(OrdersActions.clickedStartExport());
+  }
+}
+```
+
+- Components never inject `Store` directly.
+
+**Providers** (`<name>.providers.ts`):
+
+```ts
+export function provideOrdersState(): Array<Provider | EnvironmentProviders> {
+  return [
+    OrdersFacade,
+    provideState(fromOrders.ORDERS_FEATURE_KEY, fromOrders.ordersReducer),
+    provideEffects(OrdersEffects),
+    provideOrdersService(),
+  ];
+}
+```
+
+- Register route-scoped state in the route: `providers: [provideOrdersState()]`. App-wide state is registered in the application's bootstrap providers.
+
+**Loading data** is triggered by route guards (`<name>.guards.ts`), not by `ngOnInit`:
+
+```ts
+export function enterOrdersPage(): CanActivateFn {
+  return () => {
+    inject(OrdersFacade).enterOrdersPage();
+    return true;
+  };
+}
+// routes: canActivate: [enterOrdersPage()], canDeactivate: [leaveOrdersPage()]
+```
+
+- App-wide state that has to be ready before any route may instead be initialised in its `provideXState()` via `provideAppInitializer(() => inject(XFacade).init())`.
+
+## 7. Data access
+
+**Service:**
+
+```ts
+@Injectable()
+export class OrdersService {
+  readonly #http = inject(HttpClient);
+  readonly #config = inject(ORDERS_SERVICE_CONFIG);
+
+  getOrder(orderId: string): Observable<Order> {
+    return this.#http.get<Order>(`${this.#config.serviceUrl}/orders/${orderId}`);
+  }
+}
+```
+
+- Services are `@Injectable()` without `providedIn` and are provided through `provide<Name>Service()` in `<name>-service.providers.ts`. The `provideXState()` that uses the service includes it.
+- Methods return typed Observables of domain interfaces. Only map DTOs when the API shape really differs.
+- Use `HttpClient`, not `httpResource`/`resource`. Handle errors in effects; local fallbacks like `404 → of([])` are fine in the service.
+
+**Config token** (`<name>-service.config.ts`):
+
+```ts
+export interface OrdersServiceConfig {
+  serviceUrl: string;
+  useMock?: boolean;
+}
+
+export const ORDERS_SERVICE_CONFIG = new InjectionToken<OrdersServiceConfig>(
+  'ORDERS_SERVICE_CONFIG',
+);
+```
+
+- Config tokens are provided at bootstrap, from `environment`. **Only bootstrap code imports environment files**; everything else gets its configuration through injection tokens.
+- New environment values go in the environment interface/model and in every `environment*.ts`.
+
+**Mock** (`<name>-service.mock.ts`):
+
+- A functional `HttpInterceptorFn` named `<name>ServiceMock`.
+- It passes through unless `config.useMock` is set and the URL starts with `config.serviceUrl`.
+- It returns `mock-*.data.json` fixtures with an artificial random delay.
+- Register it in `withInterceptors([...])` at bootstrap.
+
+**Other rules:**
+
+- Interceptors are functional (`HttpInterceptorFn`), registered with `provideHttpClient(withInterceptors([...]))`.
+- Message type guards for WebSocket or other untyped transports go in `<name>-service.utils.ts`.
+
+## 8. Routing and bootstrap
+
+- Each feature has `<domain>.routes.ts` exporting `export const <domain>Routes: Routes`.
+- Features are lazy-loaded; pages inside a feature use `loadComponent`:
+
+  ```ts
+  {
+    path: 'orders',
+    loadChildren: async () => {
+      return (await import('./orders/feature/orders.routes')).ordersRoutes;
+    },
+  },
+  ```
+
+- Guards are functional only: `CanActivateFn`/`CanDeactivateFn` factories, called in the route definition. No class guards and no resolvers. Redirect with `RedirectCommand`.
+- App-level wiring (router, store, router store, devtools, config tokens, interceptors, app-wide state) happens in the bootstrap providers. Use `provideAppInitializer(...)`, never `APP_INITIALIZER`.
+
+## 9. Domain models and TypeScript
+
+- Use `interface` for object shapes and `type` for unions, aliases and `Pick`/`Omit` derivations.
+- Enum-like values use an `as const` list with a derived type, **not** a TS `enum`:
+
+  ```ts
+  export const ORDER_TYPES = ['standard', 'express'] as const;
+  export type OrderType = (typeof ORDER_TYPES)[number];
+  ```
+
+- Model files are named `*.model.ts`.
+- Code compiles under `strict` and `strictTemplates`. Use `unknown` instead of `any`, and don't use non-null assertions to silence real nullability.
+- Unused parameters and variables get a `_` prefix. Unused imports are a lint error.
+- Imports are sorted by eslint (`import/order`, alphabetical, groups separated by blank lines). Run `ng lint --fix` instead of sorting by hand.
+- Formatting is done by Prettier (`.prettierrc`), not by hand. `bracketSameLine` and strict HTML whitespace are intentional, so closing tags like `"></ion-input>` or `>Text</ion-title\n>` are expected.
+- Identifiers and comments are in English; only i18n source texts are German.
+- Comments are sparse: no JSDoc on obvious members and no section banners. Comment only non-obvious decisions.
+
+## 10. Testing
+
+- **Logic is always tested:** reducers, selectors, effects, facades, services, guards, interceptors, validators and pure functions (`*.utils.ts`, `*-logic.ts`).
+- Components, directives and pipes are not unit-tested.
+- Specs sit next to the file: `<name>.<kind>.spec.ts`. They run with Vitest through `ng test` (globals such as `describe`, `it`, `vi` are available).
+
+```ts
+describe('OrdersEffects', () => {
+  let effects: OrdersEffects;
+  let actions$: Subject<Action>;
+  let service: Mocked<Pick<OrdersService, 'getOrder'>>;
+  const err = new Error('load failed');
+
+  beforeEach(() => {
+    actions$ = new Subject();
+    service = { getOrder: vi.fn() };
+    TestBed.configureTestingModule({
+      providers: [
+        OrdersEffects,
+        provideMockActions(() => actions$.asObservable()),
+        { provide: OrdersService, useValue: service },
+      ],
+    });
+    effects = TestBed.inject(OrdersEffects);
+  });
+
+  describe('loadOrder$', () => {
+    it('dispatches loadOrderFailure when the service errors', async () => {
+      service.getOrder.mockReturnValue(throwError(() => err));
+      const result = firstValueFrom(effects.loadOrder$);
+      actions$.next(OrdersActions.enterOrdersPage());
+      expect(await result).toEqual(OrdersActions.loadOrderFailure({ error: err }));
+    });
+  });
+});
+```
+
+- Structure: `describe('<ClassOrFunction>')`, nested `describe` per method or effect, and `it('<verb>s … when …')` in English without "should".
+- What to test, and how:
+  - **Reducers:** call directly with an action.
+  - **Selectors:** test via `selectX.projector(state)`.
+  - **Facades:** use `provideMockStore` + `vi.spyOn(store, 'dispatch')`.
+  - **HTTP services:** use `provideHttpClient()` + `provideHttpClientTesting()` with `HttpTestingController`, and `httpMock.verify()` in `afterEach`.
+  - **Functional guards:** use `TestBed.runInInjectionContext(() => guard()(route, state))` + `firstValueFrom`.
+- Mocks:
+  - Plain objects with `vi.fn()`, typed `Mocked<Pick<…>>` (`import type { Mocked } from 'vitest'`).
+  - Packages that don't load in the test environment (e.g. heavy ESM UI libraries) are replaced via `vi.mock(...)`.
+- Await Observables with `firstValueFrom`/`lastValueFrom` instead of `done` callbacks. Don't use marble testing or `fakeAsync`.
+
+## 11. Verify your changes
+
+| Task           | Command                        |
+| -------------- | ------------------------------ |
+| Type-check     | `ng build`                     |
+| Lint (and fix) | `ng lint --fix`                |
+| Unit tests     | `ng test --watch=false`        |
+| Format         | `npx prettier --write <files>` |
+| Extract i18n   | `ng extract-i18n`              |
+
+## 12. Patterns to avoid
+
+| Don't                                                                                 | Use instead                                             |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `@Input()` / `@Output()` / `EventEmitter`, `@ViewChild`                               | `input()`, `output()`, `viewChild()`                    |
+| Constructor injection                                                                 | `inject()` field initializers                           |
+| `private` keyword, `_` prefix for private members                                     | `#` private fields                                      |
+| `standalone: true`, NgModules, explicit `changeDetection`                             | framework defaults                                      |
+| `unsubscribe$ = new Subject()` + `takeUntil` + `ngOnDestroy`; subscribing into fields | `@let … \| async`, `toSignal()`, `takeUntilDestroyed()` |
+| `*ngIf`, `*ngFor`                                                                     | `@if`, `@for` with `track`                              |
+| `ngModel`                                                                             | Reactive Forms                                          |
+| Class interceptors registered via `HTTP_INTERCEPTORS`                                 | functional `HttpInterceptorFn` + `withInterceptors`     |
+| Class guards, resolvers, `APP_INITIALIZER`                                            | functional guard factories, `provideAppInitializer`     |
+| `provideState`/`provideEffects` inline in route definitions                           | `provideXState()` in `<name>.providers.ts`              |
+| Loading data in `ngOnInit` / `ActivatedRoute` in components                           | enter/leave guard factories + router-store selectors    |
+| `withLatestFrom` in effects                                                           | `concatLatestFrom`                                      |
+| `createActionGroup`, `createFeature`, functional effects, ComponentStore, SignalStore | classic actions, reducer, effects class and facade      |
+| `error: any`, `errorMessage: string` in state                                         | `error: unknown`; user feedback via toast effects       |
+| TS `enum`                                                                             | `as const` list + derived type                          |
+| i18n texts without ID or with IDs that don't follow the scheme                        | `@@<layer><Domain>-<componentOrClass>-<key>`            |
+| Hard-coded hex colours / `rem` spacing                                                | design-system CSS variables and classes                 |
+| Dialogs opened from ui components; dialog folders named `<name>-dialog`               | dialogs opened from effects; `dialog-<name>/`           |
