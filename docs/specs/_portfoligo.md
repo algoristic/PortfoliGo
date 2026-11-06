@@ -2,6 +2,10 @@
 
 Wir entwickeln eine Web-App, mit der man im Browser ein Börsenplanspiel spielen kann: PortfoliGo.
 
+## Aufgabe
+
+Dieses Dokument dient als meine Initiale Ideensammlung. Deine Aufgabe ist es eine Produktspezifikation mit User-Stories und technischer Spezifikation zu erstellen. Wir strukturieren meine Ideen gemeinsam, entwickeln ein sauberes Konzept und erarbeiten einen Projektplan, der dann in weiteren Sessions abgearbeitet werden kann.
+
 ## Technischer Rahmen
 
 Die gesamte App funktioniert Frontend-seitig; es gibt kein Backend.
@@ -69,6 +73,23 @@ Aber: es werden keine komplett zufälligen Kurse generiert. Vielmehr simulieren 
 
 ### Weitere (unstrukturierte) Ideen
 
-Es gibt einen Newsticker, der einen über Marktentwicklungen informiert.
+Es gibt einen Newsticker, der einen über Marktentwicklungen informiert. (Für später vormerken.)
 
-Prestiges, wie aus Idle-Games, kommen in Form von Erben - die dann auf Basis des bisherigen Spiels (nach Abzug einer Erbschaftssteuer) mit verbesserten Startbedingungen starten.
+Es gibt Benachrichtigungen, wenn bspw. ein Konto des Spielers nicht gedeckt ist, von dem Geld abgebucht werden müsste.
+
+Prestiges, wie aus Idle-Games, kommen in Form von Erben - die dann auf Basis des bisherigen Spiels (nach Abzug einer Erbschaftssteuer) mit verbesserten Startbedingungen starten. (Für später vormerken.)
+
+Der Anwender kann komplexe Regeln festlegen, nach denen Käufe oder Verkäufe getätigt werden können. Auf diese Weise soll der Anwender mit seinem Spieler in der sicheren Umgebung der App Trading-Strategien verproben können. Beispiele für solche Regeln:
+
+- "wenn X > 50, dann verkaufen"
+- "wenn SMA20(X) > SMA50(X), dann kaufen"
+- etc.
+  (Für später vormerken - ich vermute, dass Konzeption und Implementierungsaufwand bei diesem Feature sehr groß werden.)
+
+## Oberfläche - UI/UX
+
+Die App soll bewusst nicht wie ein Spiel aussehen, sondern wie eine moderne Trading-Plattform.
+
+Für die Darstellung von Kursverläufen prüfen wir, ob sich eine eigene Implementierung lohnt, oder wir auf eine externe Bibliothek, wie "lightweight-charts" von TradingView, zurückgreifen.
+
+Der Anwender hat bei einem Kursverlauf die Möglichkeit einfache Indikatoren (wie Smoothed Moving Average) über den Kursverlauf zu legen, also einfache technische Analysen durchzuführen. Hier begrenzen wir am Anfang das Feature-Set, um es bei Bedarf später erweitern zu können.
