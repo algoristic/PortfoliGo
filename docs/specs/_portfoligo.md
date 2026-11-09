@@ -4,7 +4,7 @@ Wir entwickeln eine Web-App, mit der man im Browser ein Börsenplanspiel spielen
 
 ## Aufgabe
 
-Dieses Dokument dient als meine Initiale Ideensammlung. Deine Aufgabe ist es eine Produktspezifikation mit User-Stories und technischer Spezifikation zu erstellen. Wir strukturieren meine Ideen gemeinsam, entwickeln ein sauberes Konzept und erarbeiten einen Projektplan, der dann in weiteren Sessions abgearbeitet werden kann.
+Dieses Dokument dient als meine Initiale Ideensammlung. Deine Aufgabe ist es eine Produktspezifikation mit User-Stories und technischer Spezifikation zu erstellen. Wir strukturieren meine Ideen gemeinsam, entwickeln ein sauberes Konzept und erarbeiten einen Projektplan mit Meilensteinen, der dann in weiteren Sessions abgearbeitet werden kann.
 
 ## Technischer Rahmen
 
