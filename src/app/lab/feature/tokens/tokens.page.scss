@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+// Example of tokens in component SCSS: `var(--pgo-*)`, no Tailwind directives.
+.tokens__panel {
+  border: 1px solid var(--pgo-border);
+  background-color: var(--pgo-surface);
+}
+
+.tokens__swatch {
+  border: 1px solid var(--pgo-border);
+}

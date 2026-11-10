@@ -2,6 +2,83 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="de" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featureLab-tokensPage-title" datatype="html">
+        <source>Design-Tokens</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
+          <context context-type="linenumber">4,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-tokensPage-intro" datatype="html">
+        <source> Semantische Farben, Schrift und Kontraste in beiden Erscheinungsbildern. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
+          <context context-type="linenumber">6,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-tokensPage-themeDark" datatype="html">
+        <source>Dunkel</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
+          <context context-type="linenumber">21,23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-tokensPage-themeLight" datatype="html">
+        <source>Hell</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
+          <context context-type="linenumber">24,27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-tokensPage-colors" datatype="html">
+        <source> Farben </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
+          <context context-type="linenumber">30,32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-tokensPage-text" datatype="html">
+        <source> Text </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
+          <context context-type="linenumber">45,47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-tokensPage-numbers" datatype="html">
+        <source> Zahlen (tabular-nums) </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
+          <context context-type="linenumber">60,62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-tokensPage-contrast" datatype="html">
+        <source> Kontraste (mindestens <x id="INTERPOLATION" equiv-text="{{ minimumRatio }}"/>:1) </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
+          <context context-type="linenumber">71,73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-tokensPage-foreground" datatype="html">
+        <source> Text </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
+          <context context-type="linenumber">77,79</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-tokensPage-background" datatype="html">
+        <source> Hintergrund </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
+          <context context-type="linenumber">80,82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-tokensPage-ratio" datatype="html">
+        <source> Verhältnis </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
+          <context context-type="linenumber">83,85</context>
+        </context-group>
+      </trans-unit>
     </body>
   </file>
 </xliff>

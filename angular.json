@@ -30,7 +30,7 @@
                 "output": "assets"
               }
             ],
-            "styles": ["src/global.scss"],
+            "styles": ["src/styles.css"],
             "scripts": [],
             "browser": "src/main.ts"
           },

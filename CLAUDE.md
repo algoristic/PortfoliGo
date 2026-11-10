@@ -33,13 +33,14 @@ Rules for implementing Angular code in this repository, so that generated code l
 - Market prices are a pure function of seed, simulation version and game time (`priceAt`, bridge model, E-20).
 - Simulation code follows the determinism rules in TS §4.5.
 - Domain folders and slices follow TS §11.1 and §11.3.
-- The additions and exceptions to this file proposed in TS §11.2 apply only once they are adopted (AP 0.2).
+- The additions and exceptions from TS §11.2 are part of this file since AP 0.2 (marked as exceptions where they deviate).
 
 **Repo facts the rules below don't state:**
 
 - Component/directive prefix `app`; eslint enforces the class suffixes `Page`/`Component`.
 - Prettier `printWidth` is 100.
-- No UI framework besides the Angular CDK. Every new runtime dependency needs an entry in TS §16.
+- Styling uses Tailwind CSS v4 with the semantic `--pgo-*` tokens in `src/styles.css` (§4). No UI framework besides the Angular CDK. Every new runtime dependency needs an entry in TS §16.
+- **Exact dependency versions:** every version in `package.json` is pinned exactly (`"4.3.5"`), never a range with `^`, `~`, `>=` or `*`. The project `.npmrc` sets `save-exact=true`, so `npm i <pkg>` saves exact versions; check `package.json` after installing anyway. Updates are deliberate version bumps.
 - `npm run build` writes to `www/`. Every push to `main` builds and deploys via SFTP (`.github/workflows/publish.yml`).
 
 **Commands** (in addition to §11):
@@ -73,6 +74,10 @@ Code is grouped by domain first, then by layer: `src/app/<domain>/<layer>/…`, 
 | `util`        | generic helpers without domain knowledge                                     | util                                   |
 
 Nothing enforces these rules automatically, so check your imports. If a dependency doesn't fit, move the code to the right layer instead of importing across.
+
+- **Framework-free layers:** `domain` and `util` import nothing from `@angular/*`, `@ngrx/*` or `rxjs`. That way the code runs in the Web Worker and in tests without TestBed.
+- **Worker:** the engine worker imports only `domain`, `util` and framework-free persistence modules, and never creates an Angular injector. Simulation code follows the determinism rules in TS §4.5.
+- **Texts and access:** user-facing texts exist only in Angular (i18n, §5); the engine returns codes, which the `feature` or `ui` layer maps to `$localize` texts. Components never access IndexedDB, localStorage or the worker directly, only through facades.
 
 ## 2. Folder structure per layer
 
@@ -262,7 +267,7 @@ export class FormGeneralInformationComponent {
 
 - **Schema:** validation and field state (`disabled`, `hidden`, `readonly`) are declared in the schema function, reactive via `when`, and never toggled imperatively from effects. Write `$localize` messages inline in the schema (`message:`); the schema runs when `form()` is created, before class-field labels exist.
   - Custom rules: `validate(path.x, ({ value }) => (… ? { kind: 'x', message: … } : null))`. Async rules use `validateAsync`/`validateHttp`.
-  - Reusable rule sets are `schema<T>(…)` constants or functions that take a `SchemaPath`, in the domain or util layer.
+  - Reusable rule sets are `schema<T>(…)` constants or functions that take a `SchemaPath`. **Exception:** they live in the `ui` layer (like pipes); the pure check and formatting functions they call live in `domain` or `util`.
 - **Binding:** import `FormField` and `FormRoot` from `@angular/forms/signals` and bind every control with `[formField]`. This works for native inputs, for custom controls that implement `FormValueControl`/`FormCheckboxControl`, and for third-party components through their `ControlValueAccessor`. New custom controls implement `FormValueControl` (`value = model<T>()`), not `ControlValueAccessor`.
 - **Submission:** define `submission.action` in the `form()` options and bind `<form [formRoot]="xForm">`. Submitting marks all fields as touched and runs the action only when the form is valid. A form component maps the model if needed and emits a typed result through an output (`submittedGeneralInformation`); saving happens in the feature layer.
 - **Template state:** read field state through its signals (`xForm.name().invalid()`, `.touched()`, `.errors()`) and show errors only for touched fields.
@@ -280,13 +285,18 @@ ui components are purely presentational, with data in through inputs and events 
 
 ## 4. Styling
 
-- Each component has one `.component.scss` / `.page.scss`. Use `:host` for host styling. Don't override `ViewEncapsulation`.
-- **Use design tokens only**:
-  - colours, surfaces and spacing via the design system's CSS custom properties (`var(--…)`), never hard-coded hex/rgb values or `rem` spacing;
-  - typography and spacing via the design system's classes in templates.
-- Don't mix in other UI frameworks (Angular Material, Bootstrap utility classes, …).
-- Custom class names follow BEM (`block__element--modifier`).
-- Use `::ng-deep` only to reach into UI library internals, and scope it under `:host`.
+Styling uses **Tailwind CSS v4** with semantic tokens (TS §11.5). `src/styles.css` is the only global stylesheet: it imports Tailwind, defines the `--pgo-*` tokens for light (`:root`, `.light`) and dark (`.dark`) and maps them to Tailwind colours via `@theme inline`. The default palette is disabled.
+
+- **Templates use utility classes**, colours only from the tokens: `bg-bg`, `bg-surface`, `bg-surface-raised`, `border-border`, `text-fg`, `text-fg-muted`, `text-accent`, `text-up`, `text-down`, `text-warning`. Spacing, sizes and typography come from Tailwind's scale.
+- **No arbitrary values** (`p-[13px]`, `bg-[#123456]`) and no default colours (`bg-red-500` produces no styles anyway). New colours are new tokens in `src/styles.css`, with text contrast ≥ 4.5:1 in both themes (check on `#/lab/tokens`).
+- Write class names in full. Tailwind finds classes by scanning the sources, so don't assemble them from strings (`'bg-' + x`). Component variants use signal inputs and a `computed` class mapping with complete class names.
+- Numbers (amounts, prices, percentages) get `tabular-nums`.
+- Dark mode is the class `dark` on `<html>`. Because the tokens switch, components rarely need the `dark:` variant.
+- **Component SCSS** (one `.component.scss` / `.page.scss` per component) is only for `:host` and special cases. There, tokens are read as `var(--pgo-*)`; never hard-coded hex/rgb values or `rem` spacing. No Tailwind directives (`@apply`, `@reference`, `@theme`) in component styles.
+- Use `:host` for host styling. Don't override `ViewEncapsulation`.
+- Icons come from `bootstrap-icons`. Don't mix in other UI frameworks (Angular Material, Bootstrap utility classes, …).
+- Custom class names in SCSS follow BEM (`block__element--modifier`).
+- Use `::ng-deep` only to reach into library internals, and scope it under `:host`.
 
 ## 5. i18n
 
@@ -403,6 +413,7 @@ export function provideOrdersState(): Array<Provider | EnvironmentProviders> {
 ```
 
 - Register route-scoped state in the route: `providers: [provideOrdersState()]`. App-wide state is registered in the application's bootstrap providers.
+- **Exception (engine and game slices, TS §11.2):** `provideEngineService()` is registered exactly once in the bootstrap providers, so there is exactly one worker. Slice providers don't include the `EngineService`. The slices of the game area are registered exactly once at the shell route `/game/:playerId` (`provideGameState()`), so effects are not instantiated twice.
 
 **Loading data** is triggered by route guards (`<name>.guards.ts`), not by `ngOnInit`:
 
@@ -416,6 +427,7 @@ export function enterOrdersPage(): CanActivateFn {
 // routes: canActivate: [enterOrdersPage()], canDeactivate: [leaveOrdersPage()]
 ```
 
+- Subscriptions and queries for a page are started by its enter guard and ended by its leave guard. When the required data changes on the page (filters, next page, chart range), effects react to the user's action. The store holds only what the current view needs (one statement page, the candles of the visible chart), never complete journals or histories.
 - App-wide state that has to be ready before any route may instead be initialised in its `provideXState()` via `provideAppInitializer(() => inject(XFacade).init())`.
 
 ## 7. Data access
@@ -434,7 +446,7 @@ export class OrdersService {
 }
 ```
 
-- Services are `@Injectable()` without `providedIn` and are provided through `provide<Name>Service()` in `<name>-service.providers.ts`. The `provideXState()` that uses the service includes it.
+- Services are `@Injectable()` without `providedIn` and are provided through `provide<Name>Service()` in `<name>-service.providers.ts`. The `provideXState()` that uses the service includes it, except for the `EngineService` (§6).
 - Methods return typed Observables of domain interfaces. Only map DTOs when the API shape really differs.
 - Use `HttpClient`, not `httpResource`/`resource`. Handle errors in effects; local fallbacks like `404 → of([])` are fine in the service.
 
@@ -582,5 +594,8 @@ describe('OrdersEffects', () => {
 | `error: any`, `errorMessage: string` in state                                         | `error: unknown`; user feedback via toast effects                        |
 | TS `enum`                                                                             | `as const` list + derived type                                           |
 | i18n texts without ID or with IDs that don't follow the scheme                        | `@@<layer><Domain>-<componentOrClass>-<key>`                             |
-| Hard-coded hex colours / `rem` spacing                                                | design-system CSS variables and classes                                  |
+| Hard-coded hex colours / `rem` spacing                                                | `--pgo-*` tokens: utilities, `var(--pgo-*)` in SCSS                      |
+| Arbitrary values (`p-[13px]`), default colours (`bg-red-500`)                         | Tailwind scale and token colours; new tokens in `styles.css`             |
+| `@apply`/`@reference` in component SCSS, global Sass                                  | utilities in templates; global styles only in `styles.css`               |
+| Class names assembled from strings (`'bg-' + x`)                                      | complete class names in a `computed` mapping                             |
 | Dialogs opened from ui components; dialog folders named `<name>-dialog`               | dialogs opened from effects; `dialog-<name>/`                            |

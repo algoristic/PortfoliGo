@@ -1,0 +1,62 @@
+@import '@fontsource-variable/inter';
+/* Scan only `src/` for class names; the repository root contains unrelated files. */
+@import 'tailwindcss' source('.');
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Disable the default palette so that only the semantic tokens below exist as colours. */
+@theme {
+  --color-*: initial;
+}
+
+/* `inline` puts `var(--pgo-*)` directly into the utilities; component SCSS uses `var(--pgo-*)`. */
+@theme inline {
+  --color-bg: var(--pgo-bg);
+  --color-surface: var(--pgo-surface);
+  --color-surface-raised: var(--pgo-surface-raised);
+  --color-border: var(--pgo-border);
+  --color-fg: var(--pgo-fg);
+  --color-fg-muted: var(--pgo-fg-muted);
+  --color-accent: var(--pgo-accent);
+  --color-up: var(--pgo-up);
+  --color-down: var(--pgo-down);
+  --color-warning: var(--pgo-warning);
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Hex values, so they can also be handed to lightweight-charts. Text tokens keep ≥ 4.5:1 on bg/surface/surface-raised. */
+:root,
+.light {
+  color-scheme: light;
+  --pgo-bg: #f3f5f8;
+  --pgo-surface: #ffffff;
+  --pgo-surface-raised: #fafbfc;
+  --pgo-border: #d0d7de;
+  --pgo-fg: #1f2328;
+  --pgo-fg-muted: #59636e;
+  --pgo-accent: #0b5cd5;
+  --pgo-up: #0f7b3f;
+  --pgo-down: #c62828;
+  --pgo-warning: #8a5a00;
+}
+
+.dark {
+  color-scheme: dark;
+  --pgo-bg: #0b0f14;
+  --pgo-surface: #121821;
+  --pgo-surface-raised: #1a2230;
+  --pgo-border: #2a3442;
+  --pgo-fg: #e6edf3;
+  --pgo-fg-muted: #9aa7b4;
+  --pgo-accent: #4c9eff;
+  --pgo-up: #26c281;
+  --pgo-down: #ff6b6b;
+  --pgo-warning: #f0b429;
+}
+
+@layer base {
+  body {
+    background-color: var(--pgo-bg);
+    color: var(--pgo-fg);
+  }
+}

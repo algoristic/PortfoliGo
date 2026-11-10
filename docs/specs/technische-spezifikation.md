@@ -35,6 +35,7 @@ Dieses Dokument beschreibt, _wie_ PortfoliGo gebaut wird. Die allgemeinen Code-K
 - **Node:** Angular CLI 22 verlangt Node ≥ 22.22.3 (steht in `.nvmrc`). Die Standard-Shell nutzt derzeit 22.12.0, daher vor jeder Session `nvm use`.
 - **Reste des Ionic-Prototyps:** `ionic.config.json`, `capacitor.config.ts`, Ionic-Schematics in `angular.json`, `--ion-*`-Variablen in `src/theme/variables.scss`, Ionic-Hinweise in `src/test-setup.ts` und `.vscode/settings.json`, Ionic CLI in der CI, `author`/`homepage` in `package.json`.
 - **Seit AP 0.1 (10.11.2026):** Ionic-Reste und `uuid` entfernt, Browserslist nach §1.3 angehoben; `ng build` ohne Warnung, `ng lint` und `ng test` grün. Die Umgebung (`src/environments/`) enthält nur noch `production`, `storeDevtools` (`StoreDevtoolsOptions | null`) und `devPages` (Flag für Labor und Entwicklerseiten); die IndexedDB-Konfiguration kommt nicht mehr aus der Umgebung, sondern aus dem Schema in `persistence/data-access` (AP 0.3).
+- **Seit AP 0.2 (10.11.2026):** Tailwind CSS v4 über `@tailwindcss/postcss` (`.postcssrc.json`), globaler Einstieg `src/styles.css` mit den Tokens `--pgo-*` (§11.5), Inter Variable selbst gehostet, `prettier-plugin-tailwindcss`. Das Theme folgt vorläufig `prefers-color-scheme` (`ColorSchemeService` in `shared/data-access`). Token-Übersicht mit Kontrastprüfung unter `#/lab/tokens`. Die Ergänzungen aus §11.2 stehen in `CLAUDE.md`.
 
 ### 1.2 Abhängigkeiten
 
@@ -49,9 +50,10 @@ Dieses Dokument beschreibt, _wie_ PortfoliGo gebaut wird. Die allgemeinen Code-K
 | `idb`                                                                | Promise-Wrapper für IndexedDB                 | vorhanden                       |
 | `lightweight-charts`                                                 | interaktive Kurscharts (E-04)                 | neu (Spike AP 1.7, fest ab M4)  |
 | `bootstrap-icons`                                                    | Icons                                         | vorhanden                       |
-| `tailwindcss`, `@tailwindcss/postcss`, `postcss` (dev)               | Styling (E-06)                                | neu (M0)                        |
+| `tailwindcss`, `@tailwindcss/postcss`, `postcss` (dev)               | Styling (E-06)                                | vorhanden (AP 0.2)              |
 | `fake-indexeddb` (dev)                                               | IndexedDB in Unit-Tests                       | neu (M0)                        |
-| `prettier-plugin-tailwindcss` (dev)                                  | Sortierung der Utility-Klassen                | optional                        |
+| `prettier-plugin-tailwindcss` (dev)                                  | Sortierung der Utility-Klassen                | vorhanden (AP 0.2)              |
+| `@fontsource-variable/inter`                                         | Schrift Inter (SIL OFL), selbst gehostet      | vorhanden (AP 0.2)              |
 | `uuid`                                                               | –                                             | entfernt, `crypto.randomUUID()` |
 
 **Regel:** Außer dem Angular CDK kommen keine UI-Frameworks oder Komponentenbibliotheken hinzu. NgRx ist eine State-Bibliothek und durch `CLAUDE.md` gesetzt. Jede neue Laufzeitabhängigkeit braucht einen Eintrag in §16.
@@ -986,7 +988,7 @@ src/
 
 ### 11.2 Ergänzungen für CLAUDE.md
 
-Vorgeschlagen zur Aufnahme in `CLAUDE.md` (AP 0.2, nach Freigabe). Punkte, die von `CLAUDE.md` abweichen, sind als Ausnahme markiert.
+Am 10.11.2026 freigegeben und in AP 0.2 in `CLAUDE.md` übernommen (§1, §3, §4, §6, §7). Punkte, die von den allgemeinen Regeln abweichen, sind dort als Ausnahme markiert.
 
 1. **Framework-freie Schichten:** `domain` und `util` importieren nichts aus `@angular/*`, `@ngrx/*` oder `rxjs`. So läuft der Code im Worker und in Tests ohne TestBed.
 2. **Formular-Schemas und Pipes** (Ausnahme zu `CLAUDE.md` §3, „Reusable rule sets … in the domain or util layer"): Signal-Forms-`schema`-Funktionen und Pipes liegen im `ui`-Layer. Die reinen Prüf- und Formatierungsfunktionen, die sie aufrufen, liegen in `domain` bzw. `util`.
@@ -1038,12 +1040,13 @@ Hash-Routing bleibt (statisches Hosting unter einem Unterpfad). Pfade sind engli
 
 ### 11.5 Design-System mit Tailwind CSS v4 (E-06)
 
-- **Setup:** `tailwindcss`, `@tailwindcss/postcss` und `postcss`; `.postcssrc.json` mit dem Plugin `@tailwindcss/postcss`; `src/styles.css` als globaler Einstieg in `angular.json` (ersetzt `global.scss` und `theme/variables.scss`).
+- **Setup:** `tailwindcss`, `@tailwindcss/postcss` und `postcss`; `.postcssrc.json` mit dem Plugin `@tailwindcss/postcss`; `src/styles.css` als globaler Einstieg in `angular.json` (ersetzt `global.scss` und `theme/variables.scss`). `source('.')` begrenzt die Klassensuche auf `src/`.
 - **Sass:** Tailwind v4 ist laut Hersteller nicht für die Kombination mit Sass gedacht. Globale Styles sind daher CSS. Komponenten-SCSS (`CLAUDE.md` §4) bleibt für `:host` und Sonderfälle, enthält aber keine Tailwind-Direktiven (`@apply`, `@reference`).
-- **Tokens:** semantische CSS-Variablen `--pgo-*` in `:root` (hell) und `.dark` (dunkel), per `@theme inline` als Tailwind-Farben verfügbar. Mit `inline` erzeugt Tailwind keine eigenen `--color-*`-Variablen, sondern setzt `var(--pgo-*)` direkt in die Utilities ein. **Komponenten-SCSS nutzt deshalb `var(--pgo-*)`.** Die Standardpalette wird abgeschaltet, damit nur Tokens verwendet werden. Werte als Hex oder RGB, damit sie auch an lightweight-charts übergeben werden können.
+- **Tokens:** semantische CSS-Variablen `--pgo-*` in `:root, .light` (hell) und `.dark` (dunkel; `.light` erlaubt helle Flächen innerhalb von `.dark`, z. B. auf der Token-Seite), per `@theme inline` als Tailwind-Farben verfügbar. Mit `inline` erzeugt Tailwind keine eigenen `--color-*`-Variablen, sondern setzt `var(--pgo-*)` direkt in die Utilities ein. **Komponenten-SCSS nutzt deshalb `var(--pgo-*)`.** Die Standardpalette wird abgeschaltet, damit nur Tokens verwendet werden. Werte als Hex oder RGB, damit sie auch an lightweight-charts übergeben werden können.
 
 ```css
-@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import 'tailwindcss' source('.');
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -1061,14 +1064,15 @@ Hash-Routing bleibt (statisches Hosting unter einem Unterpfad). Pfade sind engli
   --color-up: var(--pgo-up);
   --color-down: var(--pgo-down);
   --color-warning: var(--pgo-warning);
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
 }
 ```
 
 - **Regeln:** Utility-Klassen im Template; keine Arbitrary Values (`p-[13px]`, `bg-[#123456]`) und keine Standardfarben; Varianten von Komponenten über Signal-Inputs und ein `computed`-Klassenmapping; optional Klassensortierung per Prettier-Plugin.
-- **Schrift:** Inter (SIL OFL) selbst gehostet oder System-Schriften – keine externen CDNs (NF-04). Zahlen mit `tabular-nums`.
+- **Schrift:** Inter Variable (SIL OFL), selbst gehostet über `@fontsource-variable/inter` und mitgebündelt – keine externen CDNs (NF-04). Per `unicode-range` lädt der Browser nur die benötigten Teilmengen (für Deutsch: latin). Zahlen mit `tabular-nums`.
+- **Kontraste:** Alle Text-Tokens (`fg`, `fg-muted`, `accent`, `up`, `down`, `warning`) erreichen auf `bg`, `surface` und `surface-raised` in beiden Themes mindestens 4,5:1. Die Entwicklerseite `#/lab/tokens` misst die Werte mit `contrastRatio` (`shared/util/contrast.ts`).
 - **Icons:** `bootstrap-icons` (vorhanden).
-- **Dark Mode:** Klasse `dark` am `<html>`-Element, gesetzt von einem Effect der Einstellungen (System, Dunkel, Hell).
+- **Dark Mode:** Klasse `dark` am `<html>`-Element. Bis AP 6.2 setzt sie der `ColorSchemeService` (`shared/data-access/color-scheme`, per `provideAppInitializer`) nach `prefers-color-scheme`; danach ein Effect der Einstellungen (System, Dunkel, Hell). Vor dem Bootstrap folgt die Seite über `<meta name="color-scheme">` dem System. Weicht die gewählte Einstellung davon ab, muss die Klasse früher gesetzt werden, damit nichts flackert (AP 6.2).
 
 ### 11.6 Angular CDK
 
@@ -1233,7 +1237,7 @@ Status: **Vorschlag** = von Claude vorgeschlagen, Bestätigung durch den Product
 | E-03 | Zufall          | Zufallsströme aus Seed-Schlüssel und Schlüssel per 128-Bit-Hash, `sfc32`, eigene `detExp`/`detLog` (§4)                                                                                                                              | Vorschlag                         |
 | E-04 | Charts          | lightweight-charts für interaktive Charts, eigene SVG-Komponenten für Sparklines und Donuts (§11.7)                                                                                                                                  | Vorschlag – Spike in AP 1.7       |
 | E-05 | Plattform       | PWA im MVP; Capacitor als optionaler Meilenstein N1, Android zuerst; Ports jetzt vorbereiten (§13)                                                                                                                                   | Vorschlag – Diskussion            |
-| E-06 | Styling         | Tailwind CSS v4 mit semantischen Tokens, Dark Mode als Standard, globaler Einstieg als CSS, Browserslist angehoben (§11.5, §1.3)                                                                                                     | entschieden (10.11.2026)          |
+| E-06 | Styling         | Tailwind CSS v4 mit semantischen Tokens, Dark Mode als Standard, globaler Einstieg als CSS, Browserslist angehoben (§11.5, §1.3); Schrift Inter Variable über `@fontsource-variable/inter`                                           | entschieden (10.11.2026)          |
 | E-07 | State           | Klassischer NgRx-Store nach `CLAUDE.md`, Projektionen aus der Engine, gedrosselt (§11.3)                                                                                                                                             | entschieden (`CLAUDE.md`)         |
 | E-08 | Persistenz      | Snapshots, Kommando-Log (write-ahead, mit Uhrzustand) und Journal in IndexedDB; Welt und Faktorhistorie werden neu erzeugt, Intraday-Kurse bei Bedarf berechnet; Tageskerzen gespeichert, aber reproduzierbar (§6.8, §9)             | Vorschlag                         |
 | E-09 | Zahlen          | Geld in Cent, Stück in Millionstel (beides ganzzahlig), Kurse als Gleitkomma mit Preisraster (§7.1, §6.7)                                                                                                                            | Vorschlag                         |
