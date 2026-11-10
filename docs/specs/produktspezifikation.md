@@ -270,7 +270,7 @@ Als Anwender möchte ich die Banken der Welt mit ihren Konditionen vergleichen, 
 Als Anwender möchte ich bei jeder Bank Konten und Depots eröffnen, damit ich mein Geld dort anlegen kann, wo es sich lohnt.
 
 - Kontotypen je nach Angebot der Bank: Girokonto, Tagesgeldkonto, Depot (immer mit Verrechnungskonto).
-- **(Vorschlag, E-17)** Die Eröffnung erfolgt sofort; das neue Konto erscheint in der Kontenübersicht.
+- Die Eröffnung erfolgt sofort (E-17); das neue Konto erscheint in der Kontenübersicht.
 
 **US-BK-03 – Konto schließen** · Stufe 1 · M
 Als Anwender möchte ich nicht mehr benötigte Konten schließen, damit keine Gebühren mehr anfallen.
@@ -283,7 +283,7 @@ Als Anwender möchte ich nicht mehr benötigte Konten schließen, damit keine Ge
 Als Anwender möchte ich Geld zwischen meinen Konten bewegen, damit ich es dorthin bringe, wo ich es brauche.
 
 - Überweisungen zwischen eigenen Konten (Girokonto, Tagesgeld, Verrechnungskonto) mit Betrag und Verwendungszweck.
-- **(Vorschlag, E-17)** Ausführung sofort und kostenlos (Echtzeitüberweisung).
+- Ausführung sofort und kostenlos (Echtzeitüberweisung, E-17).
 - Überwiesen werden kann höchstens der verfügbare Betrag (Guthaben plus Dispo, falls vorhanden).
 
 **US-BK-05 – Gehaltskonto festlegen** · Stufe 1 · M
@@ -302,7 +302,7 @@ Als Anwender möchte ich alle Buchungen eines Kontos sehen, damit ich jede Beweg
 **US-BK-07 – Überziehung und Dispo** · Stufe 1 · M
 Als Anwender möchte ich gewarnt werden, wenn ein Konto nicht gedeckt ist, damit ich rechtzeitig reagieren kann.
 
-- Girokonten haben einen Dispositionskredit (Limit, Zinssatz). Lastschriften werden auch bei fehlender Deckung ausgeführt; das Konto ist dann überzogen. **(Vorschlag, E-17)** Oberhalb des Limits gilt ein erhöhter Zins (geduldete Überziehung).
+- Girokonten haben einen Dispositionskredit (Limit, Zinssatz). Lastschriften werden auch bei fehlender Deckung ausgeführt; das Konto ist dann überzogen. Oberhalb des Limits gilt ein erhöhter Zins (geduldete Überziehung, E-17).
 - Bei fehlender Deckung und bei Überziehung erhält der Anwender eine Warnung (US-BN-02).
 - Dispozinsen werden monatlich berechnet und belastet.
 - Verrechnungskonten erlauben keine Überziehung durch Käufe: Kauforders ohne Deckung werden abgelehnt. Gebühren und Zinsen der Bank werden trotzdem belastet. Rutscht ein Verrechnungskonto dadurch ins Minus, fallen Sollzinsen an, der Anwender wird gewarnt und neue Käufe sind gesperrt, bis das Konto ausgeglichen ist.
@@ -600,6 +600,8 @@ Als Anwender möchte ich das Verhalten der App an einer Stelle anpassen.
 | US-PF-08 | Risikokennzahlen: Volatilität, maximaler Drawdown, Sharpe-Ratio                                                              | 2     |
 | US-CF-01 | CFD-Handel: CFD-Konto, Long- und Short-Positionen mit Hebel                                                                  | 3     |
 | US-CF-02 | CFD-Margin: Sicherheitsleistung, Finanzierungskosten, Margin-Call und Zwangsglattstellung                                    | 3     |
+| US-MK-19 | Große Welt: deutlich mehr Länder, Börsen, Branchen und Instrumente aller Assetklassen, bei gleichem Spieltempo               | 3     |
+| US-MK-20 | Große Listen bedienen: Screener, Suche und Marktübersicht bleiben auch mit Tausenden Instrumenten schnell und übersichtlich  | 3     |
 | US-RG-01 | Regel anlegen: „wenn Bedingung, dann Aktion", z. B. „wenn SMA20(X) > SMA50(X), dann kaufen"                                  | 3     |
 | US-RG-02 | Regeln aktivieren, deaktivieren und ihre Ausführungen protokollieren                                                         | 3     |
 | US-RG-03 | Backtest einer Regel auf der Kurshistorie                                                                                    | 3     |
@@ -623,11 +625,11 @@ Als Anwender möchte ich das Verhalten der App an einer Stelle anpassen.
 | ----- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | 1     | MVP „Spielbar"              | Spieler, Zeit, Einkommen und Kosten, Banken und Konten, Aktien und ETFs, Handel mit Market-, Limit- und Stop-Orders, Sparpläne, Steuern (vereinfacht), Portfolio und Performance, Charts mit Basisindikatoren, Benachrichtigungen, Export und Import, PWA | M0–M6        |
 | 2     | „Vollständiger Markt"       | Zinsen und Inflation, Anleihen, Tagesgeld und Festgeld am Leitzins, Rohstoffe und ETCs, Edelmetalle, aktive Fonds, Steuerdetails, Fundamentaldaten, Unternehmensereignisse, Kursalarme, Daueraufträge, weitere Indikatoren                                | M7–M9        |
-| 3     | „Trading & Automatisierung" | CFDs, Regelwerk, Backtesting                                                                                                                                                                                                                              | M10–M11      |
-| 4     | „Leben & Welt"              | Lebensereignisse, Upgrades, Versicherungen, Karriere, Newsticker, Erben und Prestige                                                                                                                                                                      | M12–M14      |
+| 3     | „Trading & Automatisierung" | CFDs, große Welt mit deutlich mehr Instrumenten, Regelwerk, Backtesting                                                                                                                                                                                   | M10–M12      |
+| 4     | „Leben & Welt"              | Lebensereignisse, Upgrades, Versicherungen, Karriere, Newsticker, Erben und Prestige                                                                                                                                                                      | M13–M15      |
 | N     | „Native" (optional)         | App für Android und iOS mit Capacitor, vorausgeplante Benachrichtigungen                                                                                                                                                                                  | N1           |
 
-**(Vorschlag, E-12)** Die Ideensammlung nennt Aktien, ETFs/ETCs, CFDs, Anleihen, Rohstoffe und Edelmetalle als Kern des Spiels. Damit das MVP überschaubar bleibt, enthält Stufe 1 nur Aktien und ETFs (plus Indizes als Referenz); die übrigen Klassen folgen in Stufe 2 und 3. Inflation ist in der Ideensammlung für später vorgemerkt und wird in Stufe 2 zusammen mit dem Zinsumfeld umgesetzt, weil beide fachlich zusammenhängen (Leitzins reagiert auf Inflation).
+**(E-12, entschieden)** Die Ideensammlung nennt Aktien, ETFs/ETCs, CFDs, Anleihen, Rohstoffe und Edelmetalle als Kern des Spiels. Damit das MVP überschaubar bleibt, enthält Stufe 1 nur Aktien und ETFs (plus Indizes als Referenz); die übrigen Klassen folgen in Stufe 2 und 3. Inflation ist in der Ideensammlung für später vorgemerkt und wird in Stufe 2 zusammen mit dem Zinsumfeld umgesetzt, weil beide fachlich zusammenhängen (Leitzins reagiert auf Inflation).
 
 ## 9. Nicht-funktionale Anforderungen
 

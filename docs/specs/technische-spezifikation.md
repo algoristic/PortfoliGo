@@ -278,7 +278,7 @@ const rng = createStream(seedKey, `market/instrument/${instrumentId}/${dayIndex}
 ```
 
 - Der Startzustand jedes Stroms ist MurmurHash3 x86_128 über die 16 Bytes von `seedKey` (little-endian) gefolgt von den UTF-8-Bytes eines stabilen Schlüssels; h1–h4 werden zu a, b, c und Zähler von `sfc32` (schnell, gute statistische Qualität, 128-Bit-Zustand). Die ersten 12 Ausgaben werden verworfen. Mit 128 Bit sind Kollisionen zwischen Strömen praktisch ausgeschlossen – bei nur 32 Bit gäbe es schon in einem Spieljahrzehnt Dutzende identische Ströme.
-- Beispiele für Schlüssel: `world/companies`, `world/banks`, `market/regime/<tag>`, `market/factor/<id>/<tag>` (Tagesschritt), `market/factor/<id>/<tag>/bridge/<intervall>` (Minutenwerte), `market/instrument/<id>/<tag>` (Tagesschritt), `market/instrument/<id>/<tag>/bridge` (Minutenwerte), `life/living-costs/<monat>`.
+- Beispiele für Schlüssel: `world/companies`, `world/indices`, `world/etfs`, `world/banks` (je ein Strom pro Stufe der Weltgenerierung, §5.1), `market/regime/<tag>`, `market/factor/<id>/<tag>` (Tagesschritt), `market/factor/<id>/<tag>/bridge/<intervall>` (Minutenwerte), `market/instrument/<id>/<tag>` (Tagesschritt), `market/instrument/<id>/<tag>/bridge` (Minutenwerte), `life/living-costs/<monat>`.
 - **Vorteile:** Ströme sind unabhängig (ein neues Instrument verschiebt keine anderen Kurse); jeder Tag eines Faktors oder Instruments lässt sich einzeln neu erzeugen – die Grundlage des Brückenmodells (§6.1); Spielerentscheidungen ziehen nie aus Marktströmen.
 
 ### 4.3 Verteilungen
@@ -322,7 +322,7 @@ Seed → Weltparameter → Regionen, Länder, Börsen → Sektoren, Branchen →
 
 Die Welt ist deterministisch. Sie wird bei jedem Laden in unter einer Sekunde neu erzeugt und nicht gespeichert (§9), ebenso die Faktorhistorie (§6.8). Den Marktzustand zum Spielstart berechnet die Engine beim Anlegen eines Spielers; der Vorlauf ist danach wie jeder Spieltag minutengenau abrufbar.
 
-### 5.2 Umfang der Standardwelt (Vorschlag, E-13)
+### 5.2 Umfang der Standardwelt (E-13)
 
 | Element               | Anzahl      |
 | --------------------- | ----------- |
@@ -330,11 +330,11 @@ Die Welt ist deterministisch. Sie wird bei jedem Laden in unter einer Sekunde ne
 | Länder bzw. Börsen    | ca. 12      |
 | Sektoren / Branchen   | 11 / ca. 30 |
 | Aktien                | ca. 200     |
-| Indizes               | ca. 12      |
+| Indizes               | 22          |
 | ETF-Emittenten / ETFs | 5 / ca. 30  |
 | Banken                | 6–8         |
 
-Alle Mengen und Verteilungen stehen zentral in einer Weltkonfiguration, damit sie im Simulations-Labor (§14.2) kalibriert werden können. Die Größe der Welt beeinflusst die Rechenzeit im Spiel kaum (§3.2); Grenzen setzen eher Bedienung, Namensgenerator und die exakt berechneten Indizes (§6.6).
+Alle Mengen und Verteilungen stehen zentral in einer Weltkonfiguration (`DEFAULT_WORLD_CONFIG` in `world/domain`), damit sie im Simulations-Labor (§14.2) kalibriert werden können. Die Aktien werden nach festen Gewichten auf Regionen und Länder verteilt (Nordamerika 40 %, Europa 30 %, Asien-Pazifik 18 %, Schwellenländer 12 %), die Branchen werden zufällig nach Gewicht gezogen. Länder, Börsen, Sektoren und Branchen sind fest vorgegeben und hängen nicht vom Seed ab. Die Größe der Welt beeinflusst die Rechenzeit im Spiel kaum (§3.2); Grenzen setzen eher Bedienung, Namensgenerator und die exakt berechneten Indizes (§6.6). Eine deutlich größere Welt ist als Meilenstein M11 geplant (§5.8).
 
 ### 5.3 Klassifikation und Modellwirkung
 
@@ -350,27 +350,28 @@ Alle Mengen und Verteilungen stehen zentral in einer Weltkonfiguration, damit si
 
 ### 5.4 Unternehmen
 
-- **Stammdaten:** stabile `id` (z. B. `stk-0042`), Name, Ticker (2–5 Zeichen, eindeutig), fiktive Kennung im ISIN-Format mit Prüfziffer und einem nicht vergebenen Länderpräfix (keine Verwechslung mit echten Wertpapieren), Land, Börse, Sektor, Branche, Gründungsjahr, Mitarbeiterzahl.
-- **Kurzprofil:** Die Engine erzeugt keinen Fließtext, sondern einen Vorlagen-Code mit Parametern (z. B. Branche, Schwerpunkt, Gründungsjahr). Der Text entsteht in der UI per `$localize` (§8.6).
-- **Größe:** Marktkapitalisierung aus einer schiefen Verteilung (lognormal oder Pareto: wenige sehr große, viele kleine Unternehmen); daraus Aktienanzahl und Startkurs (plausibler Bereich, z. B. 5–500 €).
-- **Modellparameter:** Stil, Konjunkturabhängigkeit, Faktorladungen, idiosynkratische Volatilität, Sprungintensität, Dividendenrendite und -frequenz.
+- **Stammdaten:** stabile `id` (z. B. `stk-0042`), Name, Ticker (2–5 Zeichen, eindeutig), fiktive Kennung im ISIN-Format mit Prüfziffer und dem Präfix `QP` aus dem benutzerdefinierten ISO-3166-Bereich QM–QZ, das kein echtes Wertpapier trägt, Land, Börse, Sektor, Branche, Gründungsjahr, Mitarbeiterzahl.
+- **Kurzprofil:** Die Engine erzeugt keinen Fließtext, sondern einen Vorlagen-Code mit Parametern (Vorlage `market-leader`, `challenger`, `specialist` oder `family-owned`, Schwerpunkt-Code der Branche; Branche, Land und Gründungsjahr stehen in den Stammdaten). Der Text entsteht in der UI per `$localize` (§8.6).
+- **Größe:** Marktkapitalisierung aus einer schiefen Verteilung (lognormal oder Pareto: wenige sehr große, viele kleine Unternehmen); daraus Aktienanzahl und Startkurs zur Epoche (lognormal, 5–500 €) sowie Streubesitz (50–100 %). Größenklassen: Large Cap ab 10 Mrd. €, Mid Cap ab 2 Mrd. €.
+- **Modellparameter:** Stil, Konjunkturabhängigkeit, Faktorladungen, idiosynkratische Volatilität, Sprungintensität, Dividendenrendite und -frequenz. Sie entstehen aus den Neigungen der Branche plus Zufall; die Risikoklasse 1–5 folgt aus der geschätzten Gesamtvolatilität. Die Startwerte stehen in der Weltkonfiguration und werden in AP 1.9 kalibriert.
 - **Sparplanfähigkeit:** Attribut `savingsPlanEligible`; bei Aktien für Large Caps gesetzt.
-- **Namen:** Wortbausteine je Branche und Rechtsform je Land (AG, SE, Inc., Corp., plc, S.A., N.V., K.K. …). Eine Blockliste verhindert reale Marken und Unternehmensnamen; Dubletten sind ausgeschlossen.
+- **Namen:** Wortbausteine je Branche und Rechtsform je Land (AG, SE, Inc., Corp., plc, S.A., N.V., K.K. …). Eine Blockliste verhindert reale Marken und Unternehmensnamen (kurze Einträge treffen ganze Wörter, längere auch Wortanfänge und zusammengeschriebene Wörter); Dubletten sind ausgeschlossen, weil jeder fiktive Namenskern (z. B. `Velora`) je Welt nur einmal vorkommt – auch über Banken, Emittenten und Indizes hinweg. Die Bausteine ergeben rund 840 Kerne; das reicht für die Standardwelt, aber nicht für die große Welt aus M11 – dort muss der Namensgenerator erweitert werden (§5.8).
 
 ### 5.5 Indizes
 
-- Weltindex (alle Aktien), je Region ein breiter Index und ein Leitindex (Top 30–50), Sektorindizes, ein Small-Cap- und ein Dividendenindex.
-- Je Index ein Kurs- und ein Performanceindex (§6.6), gewichtet nach Marktkapitalisierung; optional mit Kappung je Wert.
+- Weltindex (alle Aktien), je Region ein breiter Index und ein Leitindex, je Sektor ein weltweiter Index, ein Small-Cap-Index (alle Small Caps) und ein Dividendenindex (die 30 Werte mit der höchsten Dividendenrendite), zusammen 22 Indizes.
+- Leitindizes enthalten die größten Werte der Region nach Streubesitz-Marktkapitalisierung; ihre Größe steht je Region in der Weltkonfiguration (Nordamerika 40, Europa 30, Asien-Pazifik 20, Schwellenländer 12), weil die kleineren Regionen für Top 30–50 zu wenige Aktien haben.
+- Je Index ein Kurs- und ein Performanceindex (§6.6), gewichtet nach Streubesitz-Marktkapitalisierung; optional mit Kappung je Wert (Standard: Leitindizes 15 %, Sektorindizes 25 %, Dividendenindex 10 %).
 - In Stufe 1 ist die Zusammensetzung fest; Anpassungen folgen in Stufe 2.
 - Indexnamen sind fiktiv (Wortbausteine und Anzahl der Werte).
 
 ### 5.6 ETFs
 
-Emittent, abgebildeter Index, Ertragsverwendung (ausschüttend: quartalsweise oder jährlich; thesaurierend), TER (0,05–0,65 %), Replikation (Angabe), Fondsvolumen. Alle ETFs sind sparplanfähig (`savingsPlanEligible`). Es gibt mehrere ETFs auf denselben Index mit unterschiedlicher TER, damit sich der Kostenvergleich lohnt.
+Emittent, abgebildeter Index, Ertragsverwendung (ausschüttend: quartalsweise oder jährlich; thesaurierend), TER (0,05–0,65 %), Replikation (Angabe), Fondsvolumen. Alle ETFs sind sparplanfähig (`savingsPlanEligible`). Es gibt mehrere ETFs auf denselben Index mit unterschiedlicher TER, damit sich der Kostenvergleich lohnt; ETFs auf denselben Index stammen von verschiedenen Emittenten. Die Standardwelt hat 30 ETFs auf Welt-, Regions-, Leit-, vier Sektor-, Small-Cap- und Dividendenindizes (Dividenden-ETFs schütten immer aus). Alle ETFs werden an der deutschen Börse gehandelt.
 
 ### 5.7 Banken
 
-Die Konditionen werden innerhalb typischer Spannen gezogen (Vorschlag, E-17):
+Die Konditionen werden innerhalb typischer Spannen gezogen (E-17):
 
 | Typ                   | Girokonto                                   | Dispo   | Zinsen                    | Depot                            | Order                                         | Sparplan  | Handelsplatz                                 |
 | --------------------- | ------------------------------------------- | ------- | ------------------------- | -------------------------------- | --------------------------------------------- | --------- | -------------------------------------------- |
@@ -379,7 +380,27 @@ Die Konditionen werden innerhalb typischer Spannen gezogen (Vorschlag, E-17):
 | Onlinebroker          | –                                           | –       | –                         | kostenlos                        | 4–6 € pauschal + Börsenentgelt                | 0–1,50 €  | Börse                                        |
 | Neobroker             | –                                           | –       | Verrechnungskonto 1–2,5 % | kostenlos                        | 0–1 €                                         | kostenlos | Market Maker (Spread-Aufschlag), Bruchstücke |
 
-Die Hausbank ist immer eine Filialbank. Brokertypen führen nur Depots mit Verrechnungskonto. Jede Bank hat zusätzlich einen Sollzins für negative Verrechnungskonten (§7.4).
+Die Standardwelt hat je zwei Filial- und Direktbanken sowie je ein bis zwei Online- und Neobroker. Beträge werden auf 10 Cent, Sätze auf 0,05 Prozentpunkte gerundet (Depotgebühr und Spread-Aufschlag auf 0,01, Überziehungsaufschlag auf 0,5 Prozentpunkte). Die Hausbank ist immer eine Filialbank. Brokertypen führen nur Depots mit Verrechnungskonto. Jede Bank hat zusätzlich einen Sollzins für negative Verrechnungskonten (§7.4).
+
+### 5.8 Große Welt (M11)
+
+Meilenstein M11 vergrößert die Welt deutlich: mehr Länder, Börsen und Branchen, einige Tausend bis 10.000 Aktien, entsprechend mehr Indizes und ETFs sowie die Assetklassen aus M7 und M8. Die Zielgröße wird vor dem Start festgelegt. Das Brückenmodell ist dafür ausgelegt (§3.2: 10.000 Aktien und 120 Faktoren gemessen), einige Bausteine der Standardwelt aber nicht. Checkliste:
+
+| Bereich                   | Stand in der Standardwelt                                                                                       | Nötig für die große Welt                                                                                                                                                                                                               |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Namensgenerator (§5.4)    | 42 Anfangs- × 20 Endsilben ≈ 840 Namenskerne je Welt, gemeinsam für Unternehmen, Banken, Emittenten und Indizes | deutlich mehr Kerne (mehr und dreisilbige Bausteine, Namensstile je Region), weil jeder Kern nur einmal vorkommt; Blockliste erweitern; Laufzeit der Prüfung messen                                                                    |
+| Ticker und Kennungen      | Ticker aus dem Namen (2–5 Buchstaben) mit Zufallsersatz; ISIN-Format mit Präfix `QP` (36⁹ Kombinationen)        | Ticker ggf. mit Börsenkürzel, damit sie lesbar bleiben; Kennungen reichen                                                                                                                                                              |
+| Taxonomie (§5.2, §5.3)    | 12 Länder und Börsen, 31 Branchen, fest im Code                                                                 | mehr Länder und Börsen (mit Feiertagen und Fremdwährungen aus M9), Unterbranchen; mehr Faktor-Stützpunkte je Tag (§6.2) durch zusätzliche Handelszeiten                                                                                |
+| Indizes (§5.5, §6.6)      | alle exakt aus den Minutenkursen, deshalb live praktisch alle Tagesverläufe nötig                               | Näherung für breite Indizes (aggregierte Faktorladungen, Sprünge zu ihrer Minute, ggf. zweistufige Brücke) – vorher messen; Leit- und Sektorindizes bleiben exakt; Indexanpassungen mit Divisor (Stufe 2)                              |
+| Live-Betrieb (§3.2, §6.1) | Minutenverläufe aller Instrumente                                                                               | Minutenverläufe nur für beobachtete, gehaltene und per Order betroffene Instrumente sowie exakte Indizes; Last bei 1 w/s neu messen (Budget §14.3)                                                                                     |
+| Tageskerzen (§6.8)        | Hoch und Tief für alle Instrumente im Hintergrund (rund 5 ms je Handelstag, Vorlauf rund 13 s)                  | linear hochgerechnet bei 10.000 Aktien rund 0,25 s je Handelstag und über 10 Minuten für den Vorlauf: Hoch und Tief nur bei Bedarf und für beobachtete Instrumente, Rest erst beim Abruf                                               |
+| Speicher (§9.6)           | rund 1 MB Tageskerzen je Spieljahr                                                                              | bei 10.000 Aktien rund 40 MB je Spieljahr: Kerzen nur für gehaltene und beobachtete Instrumente speichern, andere bei Abruf neu berechnen (sie sind reproduzierbar, E-08); NF-07 und §14.3 anpassen                                    |
+| Spielstart und Vorlauf    | Weltgenerierung rund 10 ms, Vorlauf von zehn Jahren ≤ 0,5 s (Budget AP 1.4)                                     | Generierung rund 0,5 s, Vorlauf ein Mehrfaches: Faktorhistorie vorziehen und Instrumente spätestens bei Bedarf rechnen, ggf. Marktzustand je Seed zwischenspeichern; Budget „Spielstart < 2 s“ (NF-02) neu festlegen                   |
+| Export und Import (§10)   | Marktzustand vom Tagesbeginn für rund 250 Instrumente                                                           | Größe des Marktzustands messen, ggf. komprimieren; Import-Budget (NF-02) prüfen                                                                                                                                                        |
+| Worker und Snapshots      | Marktzustand in Typed Arrays                                                                                    | Speicherbedarf des Workers und der Snapshots messen; die Welt selbst wird weiterhin nicht gespeichert                                                                                                                                  |
+| UI (§11.3, §11.10)        | Listen mit rund 250 Instrumenten; Quotes nur für sichtbare Zeilen                                               | virtuelles Scrollen in Screener und Marktübersicht, Suchindex im Worker, Filtern, Sortieren und Blättern in der Engine statt kompletter Listen im Store                                                                                |
+| Kalibrierung (§6.9)       | Ziele für 200 Aktien und 48 Faktoren                                                                            | mit der großen Welt neu prüfen (Korrelationen, Indexvolatilität, Rechenzeit der statistischen Tests)                                                                                                                                   |
+| Versionen (§15)           | `simVersion` 1                                                                                                  | Die große Welt ändert die Welt jedes Seeds: neue `simVersion`; bestehende Spieler laufen mit der alten Version weiter, die Generatoren bleiben versioniert. Offen: Weltgröße als Wahl beim Anlegen eines Spielers (Standard oder groß) |
 
 ## 6. Marktmodell
 
@@ -484,7 +505,7 @@ Minuten: U(o + j) = U_open + B(j) + Σ_(τ ≤ o + j) J
 
 ### 6.5 Dividenden
 
-- Frequenz nach Region: jährlich (Europa), halbjährlich (Asien-Pazifik), quartalsweise (Nordamerika). Die Ex-Tage jedes Unternehmens liegen in einem festen Jahresrhythmus aus dem Seed.
+- Frequenz nach Region: jährlich (Europa, Schwellenländer), halbjährlich (Asien-Pazifik), quartalsweise (Nordamerika). Die Ex-Tage jedes Unternehmens liegen in einem festen Jahresrhythmus aus dem Seed.
 - **Höhe:** Zielrendite × Schlusskurs des letzten Handelstags vor der Ankündigung ÷ Frequenz, auf Cent gerundet. Kurse des Ankündigungstags selbst gehen nicht ein – der Tagesschritt kennt sie vorab, die Ankündigung würde sie sonst verraten. Die Ankündigung erfolgt 20 Handelstage vor dem Ex-Tag; ab dann ist der Termin im Kalender sichtbar.
 - **Ex-Tag:** Abschlag zur Eröffnung im Tagesschritt (`U_i` sinkt um `ln(P / (P − D))`, `P` = Eröffnungskurs vor dem Abschlag). Anspruch hat, wer am Vortag zum Handelsschluss hält.
 - **Zahltag:** Ex-Tag + 2 Bankarbeitstage; Gutschrift nach Steuer auf das Verrechnungskonto.
@@ -494,7 +515,7 @@ Minuten: U(o + j) = U_open + B(j) + Σ_(τ ≤ o + j) J
 
 - **Kursindex:** `I(t) = Σ_i n_i · P_i(t) / D` mit Streubesitz-Aktienanzahl `n_i` und Divisor `D`. Der Divisor wird bei Änderungen der Zusammensetzung angepasst (Stufe 2).
 - **Exakt zu jeder Minute:** Indexstände innerhalb des Tages sind die gewichtete Summe der Minutenkurse aller Werte; Werte geschlossener Börsen gehen mit ihrem letzten Kurs ein. Das kostet rund 17 µs je Wert und Handelstag, in der Standardwelt also rund 3,4 ms je Handelstag für alle Indizes zusammen. Eine billige Näherung aus aggregierten Faktorladungen weicht für schmale Indizes zu stark ab (Messung am Ende dieses Abschnitts).
-- **Große Welten (später):** Ein exakter Weltindex über 10.000 Werte kostet rund 0,17 s je Handelstag. Für sehr breite Indizes ist deshalb eine Näherung möglich (aggregierte Faktorladungen, Sprünge zu ihrer Minute, exakte Stützpunkte, ggf. zweistufig). Die Methode ist je Index Teil der Weltkonfiguration und hängt nie davon ab, ob ein Index beobachtet wird.
+- **Große Welten (später):** Ein exakter Weltindex über 10.000 Werte kostet rund 0,17 s je Handelstag. Für sehr breite Indizes ist deshalb eine Näherung möglich (aggregierte Faktorladungen, Sprünge zu ihrer Minute, exakte Stützpunkte, ggf. zweistufig). Die Methode ist je Index Teil der Weltkonfiguration und hängt nie davon ab, ob ein Index beobachtet wird. Umsetzung in M11 (§5.8).
 - **Performanceindex:** `TR(t) = I(t) · R`. Der Reinvestitionsfaktor `R` wird an jedem Ex-Tag eines Konstituenten zu dessen Handelsbeginn um dessen Dividendenanteil erhöht.
 - **Indikative Werte:** Für Instrumente geschlossener Börsen gibt es einen indikativen Kurs `P_i · exp(Σ_k β_ik · (F_k(t) − F_k(t_Schluss)))` mit den Faktorständen aus den Brücken (§6.2). Ein ETF auf einen nordamerikanischen Index, der vormittags an einer europäischen Börse gehandelt wird, bewegt sich so plausibel – wie bei einem Market Maker, der Terminkurse einpreist.
 - **Thesaurierende ETFs:** `NAV(t) = k · TR(t)`.
@@ -531,7 +552,7 @@ ask    = roundUp(mid × (1 + spread/2), priceStep(mid))     mit ask − bid ≥ 
   - **Live** berechnet die Engine in der Standardwelt die Minutenverläufe aller Instrumente – die exakten Indizes brauchen sie ohnehin – und schreibt die Tageskerzen zum Handelsschluss (§3.8).
   - Nach **Stapelbetrieb** (Vorlauf beim Anlegen, Nachberechnung, Vorspulen, Import) liegen zunächst nur Eröffnung und Schluss vor. Ein zeitgeteilter **Hintergrundauftrag** im Worker ergänzt Hoch und Tief, die neuesten Tage zuerst (Standardwelt: rund 5 ms je Handelstag, für zehn Jahre Vorlauf rund 13 s, Rohwerte). Zeiträume, die ein Chart gerade anfordert, haben Vorrang; bis dahin zeigt der Chart für die fehlenden Tage einen Hinweis.
 - **Speicherung (E-08):** Tageskerzen liegen je Instrument und Spieljahr als `Float32Array` im Store `candles` – in der Standardwelt rund 1 MB je Spieljahr, für den Vorlauf rund 10 MB. Sie sind reproduzierbar: Der Store darf verworfen und vom Hintergrundauftrag neu aufgebaut werden. Tageskerzen, die älter als 20 Spieljahre sind, werden zu Wochenkerzen verdichtet; einzelne Tage lassen sich bei Bedarf exakt neu berechnen.
-- **Faktorhistorie:** Sie wird beim Laden aus den Tagesschritten seit der Epoche neu berechnet (nur Faktoren; Schätzung: wenige Millisekunden je Spieljahr) und nicht gespeichert. Im Arbeitsspeicher bleiben die Faktorzustände zu Monatsbeginn; einzelne Tage entstehen daraus bei Bedarf neu. Für sehr lange Spiele (M14) können diese Zustände gespeichert werden.
+- **Faktorhistorie:** Sie wird beim Laden aus den Tagesschritten seit der Epoche neu berechnet (nur Faktoren; Schätzung: wenige Millisekunden je Spieljahr) und nicht gespeichert. Im Arbeitsspeicher bleiben die Faktorzustände zu Monatsbeginn; einzelne Tage entstehen daraus bei Bedarf neu. Für sehr lange Spiele (M15) können diese Zustände gespeichert werden.
 - **Historie eines Instruments:** Seine Tagesstützpunkte lassen sich allein aus der Faktorhistorie und seinen eigenen Strömen neu berechnen (§4.2), ohne andere Instrumente. Jeder vergangene Tag ist so minutengenau abrufbar.
 - **Vorlauf:** Von der Epoche (01.01.2020) bis zum Spielstart laufen dieselben Tagesschritte wie im Spiel; ein Sonderverfahren gibt es nicht. Charts aller Zeiträume haben ab dem ersten Spieltag Daten, auch Intraday-Charts.
 - **Chart-Auflösung je Zeitraum:** 1T → 1m bzw. 5m, 5T → 15m, 1M → 1h, 6M bis 5J → 1d, Max → 1d bzw. 1w. Zwischenstufen werden beim Abruf aggregiert.
@@ -640,7 +661,7 @@ interface DepotConditions {
 }
 ```
 
-Gebühren werden von genau einer Funktion je Modell berechnet. Die Kostenvorschau in der UI ruft dieselbe Funktion auf wie die Ausführung in der Engine.
+Die Typen liegen in `banking/domain/models/bank-conditions.model.ts`; `BankConditions` fasst Girokonto und Tagesgeld (bei Brokern jeweils `null`) sowie das Depot einer Bank zusammen, die Weltgenerierung erzeugt sie (§5.7). Gebühren werden von genau einer Funktion je Modell berechnet. Die Kostenvorschau in der UI ruft dieselbe Funktion auf wie die Ausführung in der Engine.
 
 ### 7.4 Haushalt, periodische Buchungen und Kontoabschluss
 
@@ -656,9 +677,9 @@ Gebühren werden von genau einer Funktion je Modell berechnet. Die Kostenvorscha
 | Dividende     | Zahltag                                                 | Verrechnungskonto      | Stück am Ex-Vortag × Dividende, abzüglich Steuer                                       |
 | Sparplan      | Ausführungstag, Handelsbeginn                           | Verrechnungskonto      | §7.8                                                                                   |
 
-- **Dispo (Vorschlag, E-17):** Limit = 2 × Nettoeinkommen, Zinssatz je Bank. Darüber geduldete Überziehung mit 3–5 Prozentpunkten Aufschlag. Ereignisse: `account-uncovered` (Saldo wird negativ) und `overdraft-limit-exceeded`.
+- **Dispo (E-17):** Limit = 2 × Nettoeinkommen, Zinssatz je Bank. Darüber geduldete Überziehung mit 3–5 Prozentpunkten Aufschlag. Ereignisse: `account-uncovered` (Saldo wird negativ) und `overdraft-limit-exceeded`.
 - **Verrechnungskonten:** Kauforders ohne Deckung werden abgelehnt. Von der Bank veranlasste Belastungen (Gebühren, Zinsen) werden immer gebucht; ein Verrechnungskonto kann dadurch negativ werden. Dann fällt Sollzins an, der Anwender wird gewarnt (`account-uncovered`) und neue Kauforders sind gesperrt, bis das Konto ausgeglichen ist. Steuern können kein Konto ins Minus treiben, weil ein Einbehalt nie größer ist als 25 % der auslösenden Gutschrift.
-- **Überweisungen und Kontoeröffnungen (Vorschlag, E-17):** sofort und kostenlos (Echtzeitüberweisung).
+- **Überweisungen und Kontoeröffnungen (E-17):** sofort und kostenlos (Echtzeitüberweisung).
 - **Kontoabschluss:** Beim Schließen werden zuerst aufgelaufene Zinsen und anteilige Gebühren bis zum Schließtag gebucht. Ein Restguthaben geht per Überweisung auf ein gewähltes eigenes Konto; ein negativer Saldo muss vorher ausgeglichen werden. Depots müssen leer sein und dürfen keine offenen Orders oder Sparpläne haben.
 - **Monatswerte:** Die Engine summiert je Monat Einkommen, Lebenshaltung, Gebühren, Zinsen, Steuern und Erträge (Grundlage der Monatsübersicht, US-EK-03).
 
@@ -889,7 +910,7 @@ Alle Werte sind versioniertes JSON (`{ "v": 1, "data": … }`; Einträge mit and
 | Transaktionen, Orders, Benachrichtigungen | ca. 0,5 MB pro Spieljahr                                                                            |
 | Snapshots (drei)                          | < 1 MB                                                                                              |
 
-Ein Spieler braucht damit rund 15 MB plus höchstens 1,5 MB je Spieljahr (NF-07); nach 20 Spieljahren sinkt der Zuwachs durch die Verdichtung auf unter 1 MB je Spieljahr. Bei 1 w/s (rund 70 Spieljahre pro Spielstunde) bleibt auch ein Spieler mit hundert Spieljahren unter 100 MB.
+Ein Spieler braucht damit rund 15 MB plus höchstens 1,5 MB je Spieljahr (NF-07); nach 20 Spieljahren sinkt der Zuwachs durch die Verdichtung auf unter 1 MB je Spieljahr. Bei 1 w/s (rund 70 Spieljahre pro Spielstunde) bleibt auch ein Spieler mit hundert Spieljahren unter 100 MB. Die Schätzung gilt für die Standardwelt; für die große Welt (M11) müssen Kerzen selektiv gespeichert werden (§5.8).
 
 ### 9.7 Migrationen
 
@@ -1204,7 +1225,7 @@ Eine Entwicklerseite (`/lab`, nur mit Umgebungs-Flag) erzeugt zu einem Seed die 
 
 ### 14.3 Performance-Budgets
 
-Gemessen wird auf dem Entwicklungsrechner; die Messung ist Teil der jeweiligen Abnahme.
+Gemessen wird auf dem Entwicklungsrechner; die Messung ist Teil der jeweiligen Abnahme. Die Budgets gelten für die Standardwelt; für die große Welt legt M11 eigene fest (§5.8).
 
 | Messgröße                                           | Budget                                                  |
 | --------------------------------------------------- | ------------------------------------------------------- |
@@ -1251,12 +1272,12 @@ Status: **Vorschlag** = von Claude vorgeschlagen, Bestätigung durch den Product
 | E-09 | Zahlen          | Geld in Cent, Stück in Millionstel (beides ganzzahlig), Kurse als Gleitkomma mit Preisraster (§7.1, §6.7)                                                                                                                            | entschieden (10.11.2026)     |
 | E-10 | Export          | base64(JSON) mit Spieler- und Marktzustand (Stand: Beginn des Export-Tags), ohne Kerzen; Import sofort spielbar, Kurshistorie im Hintergrund, Prüfsummenvergleich (§10)                                                              | Vorschlag                    |
 | E-11 | Steuern         | 25 % pauschal, Sparerpauschbetrag 1.000 €, ein Verlusttopf, bankübergreifend, ohne Soli und Kirchensteuer (§7.7)                                                                                                                     | Vorschlag                    |
-| E-12 | Umfang Stufe 1  | Aktien und ETFs (plus Indizes); übrige Assetklassen ab Stufe 2/3; Inflation mit dem Zinsumfeld in Stufe 2                                                                                                                            | Vorschlag – bitte bestätigen |
-| E-13 | Welt            | Reale Regionen und Länder; fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen (§5)                                                                                                                               | Vorschlag                    |
+| E-12 | Umfang Stufe 1  | Aktien und ETFs (plus Indizes); übrige Assetklassen ab Stufe 2/3; Inflation mit dem Zinsumfeld in Stufe 2                                                                                                                            | entschieden (10.11.2026)     |
+| E-13 | Welt            | Reale Regionen und Länder; fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen (§5)                                                                                                                               | entschieden (10.11.2026)     |
 | E-14 | Spielerstart    | Lebenshaltungskosten als Parameter bei der Erstellung; Hausbank ist eine Filialbank; Start pausiert                                                                                                                                  | Vorschlag                    |
 | E-15 | Routing         | Hash-Routing bleibt; Routenpfade englisch (§11.4)                                                                                                                                                                                    | entschieden (10.11.2026)     |
 | E-16 | Angular Aria    | `@angular/aria` neben dem CDK zugelassen, für Tabs und Menüs, später Listbox/Combobox (§11.6)                                                                                                                                        | entschieden (10.11.2026)     |
-| E-17 | Banking         | Kontoeröffnung und Überweisungen sofort und kostenlos; Dispo mit geduldeter Überziehung; Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (§7.4)                                                                          | Vorschlag                    |
+| E-17 | Banking         | Kontoeröffnung und Überweisungen sofort und kostenlos; Dispo mit geduldeter Überziehung; Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (§7.4)                                                                          | entschieden (10.11.2026)     |
 | E-18 | Handelszeiten   | Börsen mit Handelszeiten je Region; Orders jederzeit erteilbar, Ausführung in der Handelszeit (§3.3)                                                                                                                                 | Vorschlag                    |
 | E-19 | Buchungstermine | Bank-Lauf 06:00 an Bankarbeitstagen; Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag des Monats; Kontoführung monatlich, Depotgebühr quartalsweise (§7.4)                                                                  | Vorschlag                    |
 | E-20 | Kursberechnung  | Brückenmodell: Tagesschritt mit Stützpunkten für alle Instrumente, Minutenkurse als Brownsche Brücken bei Bedarf, exakte Indizes, Abfragen nur bis zum aktuellen Tick (§3.2, §6.1, §6.6)                                             | entschieden (10.11.2026)     |
@@ -1269,7 +1290,7 @@ Status: **Vorschlag** = von Claude vorgeschlagen, Bestätigung durch den Product
 | R2  | Browserübergreifender Determinismus                                                             | gleicher Seed, unterschiedliche Welt                           | deterministische Mathematik, Regeln aus §4.5, Golden Master, Prüfsummenvergleich beim Import                                                                                                 |
 | R3  | Spielstände brechen bei Modelländerungen                                                        | Frust, Datenverlust                                            | `simVersion`, Kompatibilitätszusage erst ab 1.0, Export                                                                                                                                      |
 | R4  | Browser löscht Speicher                                                                         | Fortschritt verloren                                           | `persist()`, PWA-Installation, Backup-Erinnerung, Export                                                                                                                                     |
-| R5  | Performance bei hoher Geschwindigkeit und sehr langen Spielen                                   | Ruckeln, lange Ladezeiten, Speicher                            | Brückenmodell (§3.2), Worker, Budgets (§14.3), frühe Messungen, Verdichtung alter Tageskerzen, Import mit Marktzustand (§10)                                                                 |
+| R5  | Performance bei hoher Geschwindigkeit und sehr langen Spielen                                   | Ruckeln, lange Ladezeiten, Speicher                            | Brückenmodell (§3.2), Worker, Budgets (§14.3), frühe Messungen, Verdichtung alter Tageskerzen, Import mit Marktzustand (§10); Checkliste für die große Welt (§5.8)                           |
 | R6  | Scope Creep durch Realismuswünsche                                                              | MVP verzögert sich                                             | Stufenplan, dokumentierte Vereinfachungen, Muss/Soll-Priorisierung                                                                                                                           |
 | R7  | Komplexität der Brücke zwischen Worker und NgRx                                                 | Fehler, schwer testbar                                         | klares Protokoll, Fake-Worker, reine Engine, Provider-Regel aus §11.2                                                                                                                        |
 | R8  | Ähnlichkeit zu realen Unternehmen und Marken, Lizenzpflichten                                   | rechtliche Probleme                                            | Blocklisten, fiktive Namen und Kennungen, TradingView-Attribution, Hinweis „keine Anlageberatung"                                                                                            |
