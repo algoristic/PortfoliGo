@@ -75,7 +75,7 @@ Claude liest dann `CLAUDE.md`, das AP samt Abhängigkeiten und Änderungsprotoko
 2. Betroffene Entscheidungen klären: Steht eine, die das AP braucht, noch auf „Vorschlag", fragt Claude nach, bevor darauf aufgebaut wird (§3 nennt für jede Entscheidung das AP, vor dem sie fallen muss).
 3. In kleinen, testbaren Schritten umsetzen.
 4. Prüfen: `ng lint --fix`, `ng test --watch=false`, `ng build`; bei geänderten Texten `ng extract-i18n`; Formatierung mit Prettier.
-5. Status (§4) und Änderungsprotokoll (§7) aktualisieren. Weicht die Umsetzung von der Spezifikation ab, wird die Spezifikation angepasst.
+5. Status (§4, Tabelle und Abhängigkeitsgraph) und Änderungsprotokoll (§7) aktualisieren. Weicht die Umsetzung von der Spezifikation ab, wird die Spezifikation angepasst.
 6. Commits nur auf ausdrückliche Anweisung.
 
 ### 2.4 Definition of Done (für jedes AP)
@@ -96,7 +96,6 @@ Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevo
 
 | ID   | Frage                                                                                                                             | Vorschlag                                                                                                              | Spätestens vor |
 | ---- | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------- |
-| E-09 | Geld in Cent, Stück in Millionstel, Kurse mit Preisraster                                                                         | Ja                                                                                                                     | AP 0.3         |
 | E-15 | Hash-Routing und englische Routenpfade                                                                                            | Ja                                                                                                                     | AP 0.4         |
 | E-16 | Darf Angular Aria (`@angular/aria`) neben dem CDK genutzt werden?                                                                 | Status prüfen; zulassen, wenn stabil                                                                                   | AP 0.4         |
 | E-03 | Zufallsströme per 128-Bit-Hash, `sfc32`, eigene `detExp`/`detLog`                                                                 | Ja                                                                                                                     | AP 1.1         |
@@ -115,7 +114,7 @@ Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevo
 | E-05 | Capacitor                                                                                                                         | PWA im MVP; Capacitor als optionaler Meilenstein N1                                                                    | AP 6.3         |
 | –    | Wird die App öffentlich bereitgestellt? Dann Impressum und Datenschutzhinweis nötig                                               | klären                                                                                                                 | AP 6.5         |
 
-**Bereits entschieden:** E-07 (`CLAUDE.md`), E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6) E-06 – Tailwind CSS v4 mit angehobener Browserslist und Inter Variable als selbst gehostete Schrift (10.11.2026) sowie die Ergänzungen für `CLAUDE.md` aus TS §11.2 (10.11.2026, übernommen in AP 0.2). Das Deployment ist laut Product Owner unter `https://algoristic.de/portfoligo/` per HTTPS erreichbar.
+**Bereits entschieden:** E-07 (`CLAUDE.md`), E-09 – Geld in Cent, Stück in Millionstel, Kurse als Gleitkomma mit Preisraster (10.11.2026), E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6), E-06 – Tailwind CSS v4 mit angehobener Browserslist und Inter Variable als selbst gehostete Schrift (10.11.2026) sowie die Ergänzungen für `CLAUDE.md` aus TS §11.2 (10.11.2026, übernommen in AP 0.2). Das Deployment ist laut Product Owner unter `https://algoristic.de/portfoligo/` per HTTPS erreichbar.
 
 ## 4. Statusübersicht
 
@@ -125,7 +124,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | --- | ------------------------------------------------ | ------ | ------------ |
 | 0.1 | Aufräumen und Baseline                           | fertig | –            |
 | 0.2 | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig | 0.1          |
-| 0.3 | App-Bootstrap und Infrastruktur                  | offen  | 0.1          |
+| 0.3 | App-Bootstrap und Infrastruktur                  | fertig | 0.1          |
 | 0.4 | App-Shell und UI-Grundkomponenten                | offen  | 0.2, 0.3     |
 | 1.1 | Deterministischer Zufall und Mathematik          | offen  | 0.1          |
 | 1.2 | Spielkalender und Zeitmodell                     | offen  | 0.1          |
@@ -165,6 +164,134 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 6.4 | Performance und Robustheit                       | offen  | 6.1          |
 | 6.5 | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3          |
 | 6.6 | Release 1.0                                      | offen  | 6.4, 6.5     |
+
+### Abhängigkeitsgraph
+
+Die Pfeile zeigen von der Voraussetzung zum abhängigen AP. Fertige APs sind grün, APs in Arbeit gelb markiert. Der Graph wird zusammen mit der Tabelle gepflegt (Status und Abhängigkeiten).
+
+```mermaid
+flowchart TD
+  subgraph M0["M0 – Fundament"]
+    direction TB
+    AP0_1["0.1 Aufräumen und Baseline"]
+    AP0_2["0.2 Design-System-Grundlage (Tailwind v4, Tokens)"]
+    AP0_3["0.3 App-Bootstrap und Infrastruktur"]
+    AP0_4["0.4 App-Shell und UI-Grundkomponenten"]
+  end
+  subgraph M1["M1 – Simulationskern"]
+    direction TB
+    AP1_1["1.1 Deterministischer Zufall und Mathematik"]
+    AP1_2["1.2 Spielkalender und Zeitmodell"]
+    AP1_3["1.3 Weltgenerierung: Taxonomie, Unternehmen, Banken"]
+    AP1_4["1.4 Marktmodell: Tagesschritt und Vorlauf"]
+    AP1_5["1.5 Brücken, Minutenkurse und Kerzen"]
+    AP1_6["1.6 Indizes, ETFs, Dividenden, Geld- und Briefkurse"]
+    AP1_7["1.7 Simulations-Labor: Welt, Simulation, Chart-Spike"]
+    AP1_8["1.8 Simulations-Labor: Statistik"]
+    AP1_9["1.9 Kalibrierung des Marktmodells"]
+  end
+  subgraph M2["M2 – Engine, Spieler und Persistenz"]
+    direction TB
+    AP2_1["2.1 GameEngine und Terminplaner"]
+    AP2_2["2.2 Worker-Host, Protokoll und EngineService"]
+    AP2_3["2.3 Persistenz im Worker und Wiederherstellung"]
+    AP2_4["2.4 Spielerverwaltung"]
+    AP2_5["2.5 Spielsitzung und Uhr"]
+  end
+  subgraph M3["M3 – Banking und Haushalt"]
+    direction TB
+    AP3_1["3.1 Hauptbuch und Kontenmodell"]
+    AP3_2["3.2 Haushalt und periodische Buchungen"]
+    AP3_3["3.3 Bankkommandos und Banking-Slice"]
+    AP3_4["3.4 Kontenübersicht und Kontoauszug"]
+    AP3_5["3.5 Bankenvergleich, Dialoge und Monatsübersicht"]
+    AP3_6["3.6 Benachrichtigungen"]
+  end
+  subgraph M4["M4 – Märkte und Charts"]
+    direction TB
+    AP4_1["4.1 Marktdaten-Feed und Market-Slice"]
+    AP4_2["4.2 Chart-Komponenten"]
+    AP4_3["4.3 Indikatoren"]
+    AP4_4["4.4 Marktübersicht, Screener und Watchlist"]
+    AP4_5["4.5 Instrument-Detailseite"]
+  end
+  subgraph M5["M5 – Handel, Depot und Steuern"]
+    direction TB
+    AP5_1["5.1 Depot und Orderausführung"]
+    AP5_2["5.2 Positionen, Lots, Ausschüttungen und Depotgebühr"]
+    AP5_3["5.3 Steuern"]
+    AP5_4["5.4 Order-Ticket und Orderbuch"]
+    AP5_5["5.5 Depot, Positionen und Steuerübersicht (UI)"]
+    AP5_6["5.6 Sparpläne"]
+    AP5_7["5.7 Dashboard und Performance"]
+  end
+  subgraph M6["M6 – Export, PWA und Release 1.0"]
+    direction TB
+    AP6_1["6.1 Export und Import"]
+    AP6_2["6.2 Einstellungen"]
+    AP6_3["6.3 PWA und Browser-Benachrichtigungen"]
+    AP6_4["6.4 Performance und Robustheit"]
+    AP6_5["6.5 Barrierefreiheit, Hilfen und Hinweise"]
+    AP6_6["6.6 Release 1.0"]
+  end
+  AP0_1 --> AP0_2
+  AP0_1 --> AP0_3
+  AP0_2 --> AP0_4
+  AP0_3 --> AP0_4
+  AP0_1 --> AP1_1
+  AP0_1 --> AP1_2
+  AP1_1 --> AP1_3
+  AP1_2 --> AP1_4
+  AP1_3 --> AP1_4
+  AP1_4 --> AP1_5
+  AP1_5 --> AP1_6
+  AP1_6 --> AP1_7
+  AP0_4 --> AP1_7
+  AP1_7 --> AP1_8
+  AP1_8 --> AP1_9
+  AP1_6 --> AP2_1
+  AP2_1 --> AP2_2
+  AP0_3 --> AP2_2
+  AP2_2 --> AP2_3
+  AP2_3 --> AP2_4
+  AP0_4 --> AP2_4
+  AP2_4 --> AP2_5
+  AP2_4 --> AP3_1
+  AP3_1 --> AP3_2
+  AP3_2 --> AP3_3
+  AP2_5 --> AP3_3
+  AP3_3 --> AP3_4
+  AP3_4 --> AP3_5
+  AP3_3 --> AP3_6
+  AP2_5 --> AP4_1
+  AP4_1 --> AP4_2
+  AP1_7 --> AP4_2
+  AP4_2 --> AP4_3
+  AP4_2 --> AP4_4
+  AP4_3 --> AP4_5
+  AP4_4 --> AP4_5
+  AP3_3 --> AP5_1
+  AP1_6 --> AP5_1
+  AP5_1 --> AP5_2
+  AP5_2 --> AP5_3
+  AP5_3 --> AP5_4
+  AP4_5 --> AP5_4
+  AP5_4 --> AP5_5
+  AP5_5 --> AP5_6
+  AP5_5 --> AP5_7
+  AP5_6 --> AP6_1
+  AP5_7 --> AP6_1
+  AP6_1 --> AP6_2
+  AP3_6 --> AP6_2
+  AP6_2 --> AP6_3
+  AP6_1 --> AP6_4
+  AP6_3 --> AP6_5
+  AP6_4 --> AP6_6
+  AP6_5 --> AP6_6
+  classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
+  classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
+  class AP0_1,AP0_2,AP0_3 done
+```
 
 ## 5. Stufe 1: Meilensteine M0–M6
 
@@ -240,7 +367,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 
 #### AP 1.2 – Spielkalender und Zeitmodell
 
-- **Umfang:** `clock/domain`: Tick ↔ Datum, Wochentag, Tagesindex, Monats- und Jahresgrenzen, Bankarbeitstage, erster und letzter Bankarbeitstag; Handelszeiten (offen, nächste Öffnung und Schließung); Geschwindigkeitsstufen als `as const`-Liste; Ziel-Tick aus Anker und Wanduhr als reine Funktion.
+- **Umfang:** `clock/domain`: Tick ↔ Datum, Wochentag, Tagesindex, Monats- und Jahresgrenzen, Bankarbeitstage, erster und letzter Bankarbeitstag; Handelszeiten (offen, nächste Öffnung und Schließung); Geschwindigkeitsstufen als `as const`-Liste; Ziel-Tick aus Anker und Wanduhr als reine Funktion; Formatierung der Spielzeit (`formatGameTime`, aus AP 0.3 verschoben, TS §11.9).
 - **Abnahme:** Tests inklusive Schaltjahren, Monatsenden, Wochenenden und Handelszeitgrenzen; der Spielstart ist Tick 5.389.920 (Mo, 01.04.2030, 00:00).
 - **Referenzen:** TS §3.1, §3.3–§3.5; E-02, E-18
 - **Abhängig von:** AP 0.1
@@ -567,11 +694,12 @@ Die Reihenfolge ab M7 ist ein Vorschlag und wird nach dem MVP gemeinsam priorisi
 
 ## 7. Änderungsprotokoll
 
-| Datum      | Änderung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 09.11.2026 | Erstfassung von Produktspezifikation, technischer Spezifikation und Projektplan auf Basis der Ideensammlung. Baseline geprüft (Build ok mit Browserslist-Warnung, 1 Lint-Fehler, keine Tests). Benchmark zum Tick-Modell: 1 Spieljahr ≈ 2,0 s Rohsimulation (TS §3.2).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| 09.11.2026 | Überarbeitung nach unabhängigem Review: Write-ahead-Kommandos mit Uhrzustand, beobachtungsunabhängige abgeleitete Marktwerte, Export mit Marktzustand für lange Spiele, Preisraster gegen verschwindende Spreads, korrigierte ETF-Ausschüttung, HTTPS-Pflicht, Besitzer je IndexedDB-Store, Provider-Regel für den `EngineService`, Spielstart am 01.04.2030, neue Entscheidungen E-18/E-19; APs 1.7, 3.4 und 6.4 geteilt und Abhängigkeiten korrigiert (jetzt 42 APs).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| 10.11.2026 | Brückenmodell übernommen (E-20; Begründung, Prototyp-Messungen und Vergleich mit dem Minutenmodell in TS §3.2, §6.1 und §6.6): Kurse aus Tagesschritt und Brownschen Brücken bei Bedarf statt Minutensimulation; Vorlauf mit demselben Modell und minutengenau, kein März-Sonderlauf; Intraday-Kerzen werden nicht mehr gespeichert, Tageskerzen sind reproduzierbar und werden nach Stapelbetrieb im Hintergrund ergänzt; Export mit Marktzustand vom Tagesbeginn; Dividendenhöhe aus dem Schlusskurs vor der Ankündigung; Abfragegrenze; neue Budgets (NF-02, NF-07, TS §14.3). AP 1.4–1.6 neu geschnitten (Tagesschritt und Vorlauf; Brücken, Minutenkurse und Kerzen; Indizes, ETFs, Dividenden, Geld- und Briefkurse), AP 5.1 hängt jetzt von AP 1.6 ab; weiterhin 42 APs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 10.11.2026 | AP 0.1 umgesetzt: Ionic-Reste, `uuid` und `environment.common.ts` entfernt; Umgebung neu geordnet (`production`, `storeDevtools`, `devPages` als Flag für Labor und Entwicklerseiten; `idbConfig` entfällt, das IndexedDB-Schema kommt in AP 0.3 aus `persistence/data-access`); `index.html` mit `lang="de"` und ohne Zoomsperre; Browserslist nach E-06 (entschieden); `AppComponent` mit `RouterOutlet` und eigener Template- und Style-Datei; erster Test (`environment.spec.ts`); der `matchMedia`-Polyfill in `src/test-setup.ts` bleibt für den CDK-`BreakpointObserver` (AP 0.4); `messages.xlf` von Prototyp-IDs geleert. CI: Lint, Test und Build vor dem Deployment, neue Prüfung für Pull Requests (`pull-request.yml`). HTTPS-Zieladresse laut Product Owner `https://algoristic.de/portfoligo/`. Offen: `.vscode/settings.json` löschen und `.vscode/extensions.json` auf `Angular.ng-template` umstellen (in der Session schreibgeschützt), HTTPS-Abruf selbst prüfen (in der Session vom Netzwerkfilter blockiert).                                                                                                                                                                                                                                                                                                      |
-| 10.11.2026 | AP 0.1 abgeschlossen (`.vscode/settings.json` entfernt, `.vscode/extensions.json` empfiehlt `Angular.ng-template`, HTTPS-Adresse vom Product Owner bestätigt). AP 0.2 umgesetzt: Tailwind CSS v4 über `@tailwindcss/postcss` und `.postcssrc.json`, `src/styles.css` ersetzt `src/global.scss` (Klassensuche per `source('.')` auf `src/` begrenzt, Standardpalette abgeschaltet – `bg-red-500` erzeugt keine Regel, `transparent` und `current` bleiben); Tokens `--pgo-*` für Hell (`:root`, `.light`) und Dunkel (`.dark`), alle Text-Tokens ≥ 4,5:1 auf den drei Hintergründen; Inter Variable selbst gehostet (`@fontsource-variable/inter`, neu in TS §1.2 und E-06); `prettier-plugin-tailwindcss`; `ColorSchemeService` in `shared/data-access/color-scheme` setzt die Klasse `dark` nach `prefers-color-scheme` (Einstellung folgt in AP 6.2, dann ggf. frühes Setzen gegen Flackern); `contrastRatio` in `shared/util`; Entwicklerseite `#/lab/tokens` (`lab/feature`) mit Farben, Texten, `tabular-nums` und gemessenen Kontrasten, Beispiel für `var(--pgo-*)` in Komponenten-SCSS. Die Lab-Route wird nur bei `devPages` registriert; der Lazy-Chunk liegt trotzdem im Produktions-Build, ist dort aber nicht erreichbar (esbuild faltet `environment.devPages` nicht). Ergänzungen aus TS §11.2 in `CLAUDE.md` übernommen. |
-| 10.11.2026 | Grundsatz: alle Versionen in `package.json` exakt fixiert (keine `^`/`~`), `.npmrc` mit `save-exact=true`; Regel in `CLAUDE.md`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| Datum      | Änderung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09.11.2026 | Erstfassung von Produktspezifikation, technischer Spezifikation und Projektplan auf Basis der Ideensammlung. Baseline geprüft (Build ok mit Browserslist-Warnung, 1 Lint-Fehler, keine Tests). Benchmark zum Tick-Modell: 1 Spieljahr ≈ 2,0 s Rohsimulation (TS §3.2).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| 09.11.2026 | Überarbeitung nach unabhängigem Review: Write-ahead-Kommandos mit Uhrzustand, beobachtungsunabhängige abgeleitete Marktwerte, Export mit Marktzustand für lange Spiele, Preisraster gegen verschwindende Spreads, korrigierte ETF-Ausschüttung, HTTPS-Pflicht, Besitzer je IndexedDB-Store, Provider-Regel für den `EngineService`, Spielstart am 01.04.2030, neue Entscheidungen E-18/E-19; APs 1.7, 3.4 und 6.4 geteilt und Abhängigkeiten korrigiert (jetzt 42 APs).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| 10.11.2026 | Brückenmodell übernommen (E-20; Begründung, Prototyp-Messungen und Vergleich mit dem Minutenmodell in TS §3.2, §6.1 und §6.6): Kurse aus Tagesschritt und Brownschen Brücken bei Bedarf statt Minutensimulation; Vorlauf mit demselben Modell und minutengenau, kein März-Sonderlauf; Intraday-Kerzen werden nicht mehr gespeichert, Tageskerzen sind reproduzierbar und werden nach Stapelbetrieb im Hintergrund ergänzt; Export mit Marktzustand vom Tagesbeginn; Dividendenhöhe aus dem Schlusskurs vor der Ankündigung; Abfragegrenze; neue Budgets (NF-02, NF-07, TS §14.3). AP 1.4–1.6 neu geschnitten (Tagesschritt und Vorlauf; Brücken, Minutenkurse und Kerzen; Indizes, ETFs, Dividenden, Geld- und Briefkurse), AP 5.1 hängt jetzt von AP 1.6 ab; weiterhin 42 APs.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| 10.11.2026 | AP 0.1 umgesetzt: Ionic-Reste, `uuid` und `environment.common.ts` entfernt; Umgebung neu geordnet (`production`, `storeDevtools`, `devPages` als Flag für Labor und Entwicklerseiten; `idbConfig` entfällt, das IndexedDB-Schema kommt in AP 0.3 aus `persistence/data-access`); `index.html` mit `lang="de"` und ohne Zoomsperre; Browserslist nach E-06 (entschieden); `AppComponent` mit `RouterOutlet` und eigener Template- und Style-Datei; erster Test (`environment.spec.ts`); der `matchMedia`-Polyfill in `src/test-setup.ts` bleibt für den CDK-`BreakpointObserver` (AP 0.4); `messages.xlf` von Prototyp-IDs geleert. CI: Lint, Test und Build vor dem Deployment, neue Prüfung für Pull Requests (`pull-request.yml`). HTTPS-Zieladresse laut Product Owner `https://algoristic.de/portfoligo/`. Offen: `.vscode/settings.json` löschen und `.vscode/extensions.json` auf `Angular.ng-template` umstellen (in der Session schreibgeschützt), HTTPS-Abruf selbst prüfen (in der Session vom Netzwerkfilter blockiert).                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 10.11.2026 | AP 0.1 abgeschlossen (`.vscode/settings.json` entfernt, `.vscode/extensions.json` empfiehlt `Angular.ng-template`, HTTPS-Adresse vom Product Owner bestätigt). AP 0.2 umgesetzt: Tailwind CSS v4 über `@tailwindcss/postcss` und `.postcssrc.json`, `src/styles.css` ersetzt `src/global.scss` (Klassensuche per `source('.')` auf `src/` begrenzt, Standardpalette abgeschaltet – `bg-red-500` erzeugt keine Regel, `transparent` und `current` bleiben); Tokens `--pgo-*` für Hell (`:root`, `.light`) und Dunkel (`.dark`), alle Text-Tokens ≥ 4,5:1 auf den drei Hintergründen; Inter Variable selbst gehostet (`@fontsource-variable/inter`, neu in TS §1.2 und E-06); `prettier-plugin-tailwindcss`; `ColorSchemeService` in `shared/data-access/color-scheme` setzt die Klasse `dark` nach `prefers-color-scheme` (Einstellung folgt in AP 6.2, dann ggf. frühes Setzen gegen Flackern); `contrastRatio` in `shared/util`; Entwicklerseite `#/lab/tokens` (`lab/feature`) mit Farben, Texten, `tabular-nums` und gemessenen Kontrasten, Beispiel für `var(--pgo-*)` in Komponenten-SCSS. Die Lab-Route wird nur bei `devPages` registriert; der Lazy-Chunk liegt trotzdem im Produktions-Build, ist dort aber nicht erreichbar (esbuild faltet `environment.devPages` nicht). Ergänzungen aus TS §11.2 in `CLAUDE.md` übernommen.                                                                                              |
+| 10.11.2026 | Grundsatz: alle Versionen in `package.json` exakt fixiert (keine `^`/`~`), `.npmrc` mit `save-exact=true`; Regel in `CLAUDE.md`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 10.11.2026 | E-09 entschieden. AP 0.3 umgesetzt: `src/app/app.config.ts` mit Hash-Router, Store, Effects, Router Store, Devtools nur bei gesetztem `storeDevtools`, `LOCALE_ID` `de` und `registerLocaleData`; `main.ts` bootet mit `appConfig`. `@angular/cdk` 22.0.1 und `fake-indexeddb` (dev) installiert. `persistence/data-access`: framework-freies IndexedDB-Schema (`portfoligo`, Version 3, Stores nach TS §9.1 mit In-line-Schlüsseln, multiEntry-Index `byAccount` für Transaktionen), nummerierte Migrationen (Schritt 3 verwirft die Stores des Prototyps), `openPortfoligoDb()` für UI und Worker, `IndexedDbService` (ohne Config-Token, weil das Schema feststeht) und `LocalStorageService` mit typisierten Schlüsseln und dem Format `{ v, data }` (auch für einfache Werte wie `pgo.lastPlayerId`; TS §9.3 angepasst). `shared/domain`: `Cents`, `MicroUnits`, kaufmännische Rundung mit Korrektur von Gleitkomma-Artefakten, Kurswert, Satzanwendung, Preisraster und Geld-/Briefkurs mit mindestens einem Rasterschritt. `shared/util`: `formatCents`, `formatPrice`, `formatPercent`, `formatSignedPercent`, `formatCompact`; weil `util` nicht von `domain` abhängen darf, bekommt `formatPrice` die Nachkommastellen als Parameter, die Pipe `formatPrice` ermittelt sie über `priceDecimals`. `shared/ui`: Pipes über den Formatierungsfunktionen. `formatGameTime` ist nach AP 1.2 verschoben (braucht das Zeitmodell). |

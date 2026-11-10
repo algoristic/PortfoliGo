@@ -11,6 +11,7 @@
   },
   "private": true,
   "dependencies": {
+    "@angular/cdk": "22.0.1",
     "@angular/common": "22.0.1",
     "@angular/compiler": "22.0.1",
     "@angular/core": "22.0.1",
@@ -39,6 +40,7 @@
     "eslint": "9.16.0",
     "eslint-plugin-import": "2.32.0",
     "eslint-plugin-unused-imports": "4.4.1",
+    "fake-indexeddb": "6.2.8",
     "jsdom": "26.0.0",
     "postcss": "8.5.32",
     "prettier": "3.9.6",

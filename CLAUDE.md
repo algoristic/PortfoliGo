@@ -21,8 +21,9 @@ Rules for implementing Angular code in this repository, so that generated code l
 
 **Current state:**
 
-- `src/` is an empty bootstrap: `main.ts` with hash router, store and router store, an empty `app.routes.ts` and an `AppComponent` with a router outlet.
-- `ng build`, `ng lint` and `ng test` are green (AP 0.1). CI runs all three before deploying.
+- Bootstrap: `main.ts` boots `AppComponent` with `app.config.ts` (hash router, store, effects, router store, devtools, `LOCALE_ID` `de`); `app.routes.ts` only has the dev-only `lab` route so far.
+- Infrastructure (AP 0.3): IndexedDB schema, migrations, `IndexedDbService` and `LocalStorageService` in `persistence/data-access`; money types, rounding and price grid in `shared/domain`; formatting functions in `shared/util` with pipes in `shared/ui/pipes`. Reuse them instead of rounding or formatting ad hoc.
+- `ng build`, `ng lint` and `ng test` are green. CI runs all three before deploying.
 - Environment values (`src/environments/`): `production`, `storeDevtools` (`null` = off) and `devPages` (flag for the lab and developer pages). Only bootstrap code imports them.
 - An earlier Ionic prototype was deleted; don't build on it. View prototype code with `git show 9bab719^:<path>`.
 

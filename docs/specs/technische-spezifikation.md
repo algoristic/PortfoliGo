@@ -36,13 +36,14 @@ Dieses Dokument beschreibt, _wie_ PortfoliGo gebaut wird. Die allgemeinen Code-K
 - **Reste des Ionic-Prototyps:** `ionic.config.json`, `capacitor.config.ts`, Ionic-Schematics in `angular.json`, `--ion-*`-Variablen in `src/theme/variables.scss`, Ionic-Hinweise in `src/test-setup.ts` und `.vscode/settings.json`, Ionic CLI in der CI, `author`/`homepage` in `package.json`.
 - **Seit AP 0.1 (10.11.2026):** Ionic-Reste und `uuid` entfernt, Browserslist nach §1.3 angehoben; `ng build` ohne Warnung, `ng lint` und `ng test` grün. Die Umgebung (`src/environments/`) enthält nur noch `production`, `storeDevtools` (`StoreDevtoolsOptions | null`) und `devPages` (Flag für Labor und Entwicklerseiten); die IndexedDB-Konfiguration kommt nicht mehr aus der Umgebung, sondern aus dem Schema in `persistence/data-access` (AP 0.3).
 - **Seit AP 0.2 (10.11.2026):** Tailwind CSS v4 über `@tailwindcss/postcss` (`.postcssrc.json`), globaler Einstieg `src/styles.css` mit den Tokens `--pgo-*` (§11.5), Inter Variable selbst gehostet, `prettier-plugin-tailwindcss`. Das Theme folgt vorläufig `prefers-color-scheme` (`ColorSchemeService` in `shared/data-access`). Token-Übersicht mit Kontrastprüfung unter `#/lab/tokens`. Die Ergänzungen aus §11.2 stehen in `CLAUDE.md`.
+- **Seit AP 0.3 (10.11.2026):** `app.config.ts` mit Router, Store, Effects, Router Store, Devtools (nur Entwicklung) und `LOCALE_ID` `de`; `@angular/cdk` und `fake-indexeddb` installiert. `persistence/data-access` enthält das framework-freie IndexedDB-Schema mit Migrationen (§9.1, §9.7), `IndexedDbService` und `LocalStorageService` (§9.3); `shared/domain` Geldtypen, Rundung und Preisraster (§6.7, §7.1); `shared/util` und `shared/ui` die Formatierungsfunktionen und Pipes (§11.9).
 
 ### 1.2 Abhängigkeiten
 
 | Paket                                                                | Zweck                                         | Status                          |
 | -------------------------------------------------------------------- | --------------------------------------------- | ------------------------------- |
 | `@angular/*`                                                         | Framework                                     | vorhanden                       |
-| `@angular/cdk`                                                       | Overlay, Dialog, A11y, Scrolling, Table u. a. | neu (M0)                        |
+| `@angular/cdk`                                                       | Overlay, Dialog, A11y, Scrolling, Table u. a. | vorhanden (AP 0.3)              |
 | `@angular/service-worker`                                            | PWA                                           | neu (M6)                        |
 | `@ngrx/store`, `effects`, `entity`, `router-store`, `store-devtools` | State Management                              | vorhanden                       |
 | `@ngrx/operators`                                                    | `concatLatestFrom` in Effects                 | bei erstem Bedarf               |
@@ -51,7 +52,7 @@ Dieses Dokument beschreibt, _wie_ PortfoliGo gebaut wird. Die allgemeinen Code-K
 | `lightweight-charts`                                                 | interaktive Kurscharts (E-04)                 | neu (Spike AP 1.7, fest ab M4)  |
 | `bootstrap-icons`                                                    | Icons                                         | vorhanden                       |
 | `tailwindcss`, `@tailwindcss/postcss`, `postcss` (dev)               | Styling (E-06)                                | vorhanden (AP 0.2)              |
-| `fake-indexeddb` (dev)                                               | IndexedDB in Unit-Tests                       | neu (M0)                        |
+| `fake-indexeddb` (dev)                                               | IndexedDB in Unit-Tests                       | vorhanden (AP 0.3)              |
 | `prettier-plugin-tailwindcss` (dev)                                  | Sortierung der Utility-Klassen                | vorhanden (AP 0.2)              |
 | `@fontsource-variable/inter`                                         | Schrift Inter (SIL OFL), selbst gehostet      | vorhanden (AP 0.2)              |
 | `uuid`                                                               | –                                             | entfernt, `crypto.randomUUID()` |
@@ -863,7 +864,7 @@ Wegen des Determinismus geht höchstens Spielfortschritt seit der letzten Uhr-Sp
 | `pgo.ui.tables`    | Sortierung und Spalten je Tabelle                                                                            |
 | `pgo.backup`       | letzter Export je Spieler, Erinnerungsintervall                                                              |
 
-Alle Werte sind versioniertes JSON (`{ "v": 1, … }`) und betreffen nur die Darstellung auf diesem Gerät. Alles, was das Spiel beeinflusst – Watchlist, Auto-Pause, Verhalten im Hintergrund –, gehört zum Spielerzustand in der Engine und wird mit exportiert.
+Alle Werte sind versioniertes JSON (`{ "v": 1, "data": … }`; Einträge mit anderer Version gelten als nicht vorhanden) und betreffen nur die Darstellung auf diesem Gerät. Alles, was das Spiel beeinflusst – Watchlist, Auto-Pause, Verhalten im Hintergrund –, gehört zum Spielerzustand in der Engine und wird mit exportiert.
 
 ### 9.4 Mehrere Tabs
 
@@ -1113,7 +1114,7 @@ Signal Forms nach `CLAUDE.md` §3. Eine eigene Betragseingabe (`FormValueControl
 ### 11.9 Formatierung und i18n
 
 - `registerLocaleData(localeDe)` und `LOCALE_ID` `de`.
-- Reine Formatierungsfunktionen in `shared/util` (`formatCents`, `formatPrice` nach Preisraster, `formatPercent`, `formatSignedPercent`, `formatCompact`, `formatGameTime`); dünne Pipes darüber in `shared/ui`. Die Funktionen werden getestet, die Pipes nicht (`CLAUDE.md` §10).
+- Reine Formatierungsfunktionen in `shared/util` (`formatCents`, `formatPrice` nach Preisraster, `formatPercent`, `formatSignedPercent`, `formatCompact`); dünne Pipes darüber in `shared/ui`. Weil `util` nicht von `domain` abhängt, erhält `formatPrice` die Nachkommastellen als Parameter; die Pipe `formatPrice` leitet sie per `priceDecimals` aus dem Preisraster ab. `formatGameTime` braucht das Zeitmodell und entsteht in AP 1.2 im Bereich `clock`. Die Funktionen werden getestet, die Pipes nicht (`CLAUDE.md` §10).
 - i18n-IDs nach `CLAUDE.md` §5. Engine-Codes werden in der jeweiligen `feature`- bzw. `ui`-Schicht auf `$localize`-Texte abgebildet.
 
 ### 11.10 Barrierefreiheit
@@ -1240,7 +1241,7 @@ Status: **Vorschlag** = von Claude vorgeschlagen, Bestätigung durch den Product
 | E-06 | Styling         | Tailwind CSS v4 mit semantischen Tokens, Dark Mode als Standard, globaler Einstieg als CSS, Browserslist angehoben (§11.5, §1.3); Schrift Inter Variable über `@fontsource-variable/inter`                                           | entschieden (10.11.2026)          |
 | E-07 | State           | Klassischer NgRx-Store nach `CLAUDE.md`, Projektionen aus der Engine, gedrosselt (§11.3)                                                                                                                                             | entschieden (`CLAUDE.md`)         |
 | E-08 | Persistenz      | Snapshots, Kommando-Log (write-ahead, mit Uhrzustand) und Journal in IndexedDB; Welt und Faktorhistorie werden neu erzeugt, Intraday-Kurse bei Bedarf berechnet; Tageskerzen gespeichert, aber reproduzierbar (§6.8, §9)             | Vorschlag                         |
-| E-09 | Zahlen          | Geld in Cent, Stück in Millionstel (beides ganzzahlig), Kurse als Gleitkomma mit Preisraster (§7.1, §6.7)                                                                                                                            | Vorschlag                         |
+| E-09 | Zahlen          | Geld in Cent, Stück in Millionstel (beides ganzzahlig), Kurse als Gleitkomma mit Preisraster (§7.1, §6.7)                                                                                                                            | entschieden (10.11.2026)          |
 | E-10 | Export          | base64(JSON) mit Spieler- und Marktzustand (Stand: Beginn des Export-Tags), ohne Kerzen; Import sofort spielbar, Kurshistorie im Hintergrund, Prüfsummenvergleich (§10)                                                              | Vorschlag                         |
 | E-11 | Steuern         | 25 % pauschal, Sparerpauschbetrag 1.000 €, ein Verlusttopf, bankübergreifend, ohne Soli und Kirchensteuer (§7.7)                                                                                                                     | Vorschlag                         |
 | E-12 | Umfang Stufe 1  | Aktien und ETFs (plus Indizes); übrige Assetklassen ab Stufe 2/3; Inflation mit dem Zinsumfeld in Stufe 2                                                                                                                            | Vorschlag – bitte bestätigen      |
