@@ -63,7 +63,7 @@
         <div
           ngMenuItem
           value="switch-player"
-          class="flex cursor-pointer items-center gap-3 rounded px-3 py-2 text-sm hover:bg-surface focus:bg-surface"
+          class="flex cursor-pointer items-center gap-3 rounded px-3 py-2 text-sm hover:bg-surface focus-visible:bg-surface"
           data-testid="shell.header.player-menu.switch-player">
           <i class="bi bi-people text-fg-muted" aria-hidden="true"></i>
           <ng-container i18n="@@uiShell-sectionHeader-switchPlayer">Spieler wechseln</ng-container>
@@ -71,10 +71,16 @@
         <div
           ngMenuItem
           value="settings"
-          class="flex cursor-pointer items-center gap-3 rounded px-3 py-2 text-sm hover:bg-surface focus:bg-surface"
+          class="flex cursor-pointer items-center gap-3 rounded px-3 py-2 text-sm hover:bg-surface focus-visible:bg-surface"
+          [class.text-accent]="isSettingsActive()"
+          [class.font-medium]="isSettingsActive()"
+          [attr.aria-current]="isSettingsActive() ? 'page' : null"
           data-testid="shell.header.player-menu.settings">
-          <i class="bi bi-gear text-fg-muted" aria-hidden="true"></i>
-          <ng-container i18n="@@uiShell-sectionHeader-settings">Einstellungen</ng-container>
+          <i class="bi bi-gear" [class.text-fg-muted]="!isSettingsActive()" aria-hidden="true"></i>
+          <span class="flex-1" i18n="@@uiShell-sectionHeader-settings">Einstellungen</span>
+          @if (isSettingsActive()) {
+            <i class="bi bi-check2" aria-hidden="true"></i>
+          }
         </div>
         <div
           ngMenuItem

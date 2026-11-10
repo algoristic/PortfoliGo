@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+import { provideShellState } from './state/shell.providers';
+
 /** Game area at `/game/:playerId` (TS §11.4); `enterGame`/`leaveGame` and `provideGameState()` follow in AP 2.5. */
 export const shellRoutes: Routes = [
   {
@@ -7,6 +9,7 @@ export const shellRoutes: Routes = [
     loadComponent: async () => {
       return (await import('./shell/shell.page')).ShellPage;
     },
+    providers: [provideShellState()],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {

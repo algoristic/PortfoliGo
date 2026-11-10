@@ -1,5 +1,5 @@
 import { Menu, MenuItem, MenuTrigger } from '@angular/aria/menu';
-import { Component, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 import { PlayerMenuAction } from './section-header.model';
@@ -15,8 +15,11 @@ import { IconButtonDirective } from '../../../shared/ui/icon-button/icon-button.
 })
 export class SectionHeaderComponent {
   compact = input(false);
+  activePath = input<string | null>();
 
   selectedPlayerMenuAction = output<PlayerMenuAction>();
+
+  isSettingsActive = computed(() => this.activePath() === 'settings');
 
   clockLabel = $localize`:@@uiShell-sectionHeader-clockLabel:Spielzeit`;
   netWorthLabel = $localize`:@@uiShell-sectionHeader-netWorthLabel:Gesamtvermögen`;

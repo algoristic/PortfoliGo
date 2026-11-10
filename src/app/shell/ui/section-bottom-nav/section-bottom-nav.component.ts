@@ -1,5 +1,5 @@
 import { Menu, MenuItem, MenuTrigger } from '@angular/aria/menu';
-import { Component, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 import { NavItem } from '../models/nav-item.model';
@@ -13,8 +13,11 @@ import { NavItem } from '../models/nav-item.model';
 export class SectionBottomNavComponent {
   items = input.required<NavItem[]>();
   moreItems = input.required<NavItem[]>();
+  activePath = input<string | null>();
 
   selectedMenuItem = output<string>();
+
+  isMoreActive = computed(() => this.moreItems().some((item) => item.path === this.activePath()));
 
   navLabel = $localize`:@@uiShell-sectionBottomNav-navLabel:Hauptnavigation`;
   moreLabel = $localize`:@@uiShell-sectionBottomNav-more:Mehr`;

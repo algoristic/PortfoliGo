@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
+import { provideMockStore } from '@ngrx/store/testing';
 
 import { routes } from './app.routes';
 import { provideToastService } from './shared/ui/toast/toast-service.providers';
@@ -10,7 +11,9 @@ describe('routes', () => {
   let router: Router;
 
   beforeEach(async () => {
-    TestBed.configureTestingModule({ providers: [provideRouter(routes), provideToastService()] });
+    TestBed.configureTestingModule({
+      providers: [provideRouter(routes), provideMockStore(), provideToastService()],
+    });
     harness = await RouterTestingHarness.create();
     router = TestBed.inject(Router);
   });

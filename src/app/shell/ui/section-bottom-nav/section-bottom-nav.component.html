@@ -19,7 +19,8 @@
       <button
         ngMenuTrigger
         type="button"
-        class="flex h-16 w-full flex-col items-center justify-center gap-1 px-1 text-center text-xs leading-tight font-medium text-fg-muted hover:text-fg"
+        class="flex h-16 w-full flex-col items-center justify-center gap-1 px-1 text-center text-xs leading-tight font-medium"
+        [class]="isMoreActive() ? 'text-accent' : 'text-fg-muted hover:text-fg'"
         data-testid="shell.bottom-nav.more"
         [menu]="moreMenu">
         <i class="bi bi-three-dots text-lg" aria-hidden="true"></i>
@@ -32,16 +33,24 @@
         [attr.aria-label]="moreLabel"
         (itemSelected)="onSelectMenuItem($event)">
         @for (item of moreItems(); track item.path) {
+          @let isActive = item.path === activePath();
           <div
             ngMenuItem
-            class="flex cursor-pointer items-center gap-3 rounded px-3 py-2 text-sm hover:bg-surface focus:bg-surface"
+            class="flex cursor-pointer items-center gap-3 rounded px-3 py-2 text-sm hover:bg-surface focus-visible:bg-surface"
+            [class.text-accent]="isActive"
+            [class.font-medium]="isActive"
+            [attr.aria-current]="isActive ? 'page' : null"
             [value]="item.path"
             [attr.data-testid]="'shell.bottom-nav.more.' + item.path">
             <i
-              class="bi text-base text-fg-muted"
+              class="bi text-base"
               [class]="'bi-' + item.icon"
+              [class.text-fg-muted]="!isActive"
               aria-hidden="true"></i>
-            {{ item.label }}
+            <span class="flex-1">{{ item.label }}</span>
+            @if (isActive) {
+              <i class="bi bi-check2" aria-hidden="true"></i>
+            }
           </div>
         }
       </div>
