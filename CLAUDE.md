@@ -21,7 +21,9 @@ Rules for implementing Angular code in this repository, so that generated code l
 
 **Current state:**
 
-- Bootstrap: `main.ts` boots `AppComponent` with `app.config.ts` (hash router, store, effects, router store, devtools, `LOCALE_ID` `de`); `app.routes.ts` only has the dev-only `lab` route so far.
+- Bootstrap: `main.ts` boots `AppComponent` with `app.config.ts` (hash router, `PageTitleStrategy`, store, effects, router store, devtools, `LOCALE_ID` `de`, `ToastService`).
+- Routing and shell (AP 0.4): `''`/`**` → `/players`; the game area `/game/:playerId` (`shell/feature/shell.routes.ts`) lazy-loads the route files of the domains (TS §11.4). Most pages are still placeholders in their target domain folders; fill them in place. Routes set `title` via `$localize`.
+- UI building blocks (AP 0.4) live in `shared/ui`, shown at `#/lab/components`: `appButton`/`appIconButton` (attribute directives on native `<button>`/`<a>`), `app-panel`, `app-badge`, `app-tabs` (Angular Aria), `app-empty-state`, `app-skeleton`, `app-stat-tile`, `app-price-change`, `ToastService`, `app-dialog` and `openConfirmDialog`. Reuse them. Tabs and menus use `@angular/aria` (E-16); everything else from the CDK.
 - Infrastructure (AP 0.3): IndexedDB schema, migrations, `IndexedDbService` and `LocalStorageService` in `persistence/data-access`; money types, rounding and price grid in `shared/domain`; formatting functions in `shared/util` with pipes in `shared/ui/pipes`. Reuse them instead of rounding or formatting ad hoc.
 - `ng build`, `ng lint` and `ng test` are green. CI runs all three before deploying.
 - Environment values (`src/environments/`): `production`, `storeDevtools` (`null` = off) and `devPages` (flag for the lab and developer pages). Only bootstrap code imports them.
@@ -283,6 +285,8 @@ export class FormGeneralInformationComponent {
 ### ui layer
 
 ui components are purely presentational, with data in through inputs and events out through outputs. No facades, `Store`, services, `Router` or dialogs.
+
+**Exception (own UI library, TS §11.2 point 8):** `shared/ui` plays the role of a component library. It contains the `ToastService` (provided once at bootstrap via `provideToastService()`) and `openConfirmDialog(dialog, data)`, and the confirm dialog injects `DialogRef`/`DIALOG_DATA`. Effects use these for toasts and confirmations; components in other `ui` folders still don't.
 
 ## 4. Styling
 

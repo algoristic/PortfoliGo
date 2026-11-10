@@ -1,0 +1,12 @@
+<div class="flex h-full flex-col gap-2" aria-hidden="true">
+  @if (block()) {
+    <div
+      class="h-full min-h-16 animate-pulse rounded-md bg-surface-raised motion-reduce:animate-none"></div>
+  } @else {
+    @for (index of lineIndexes(); track index) {
+      <div
+        class="h-4 animate-pulse rounded bg-surface-raised motion-reduce:animate-none"
+        [class]="$last && lines() > 1 ? 'w-2/3' : 'w-full'"></div>
+    }
+  }
+</div>

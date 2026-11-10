@@ -1,0 +1,31 @@
+<div ngTabs>
+  <div
+    ngTabList
+    class="flex gap-1 overflow-x-auto border-b border-border"
+    [attr.aria-label]="label()"
+    [selectedTab]="currentTab()"
+    (selectedTabChange)="onSelectTab($event)">
+    @for (tab of tabs(); track tab.id) {
+      <button
+        ngTab
+        type="button"
+        class="-mb-px border-b-2 px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors"
+        [class]="
+          tab.id === currentTab()
+            ? 'border-accent text-fg'
+            : 'border-transparent text-fg-muted hover:text-fg'
+        "
+        [value]="tab.id"
+        [attr.data-testid]="testId() + '.' + tab.id + '.tab'">
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+  @for (panel of panels(); track panel.tabId()) {
+    <div ngTabPanel class="pt-4" [value]="panel.tabId()">
+      <ng-template ngTabContent>
+        <ng-container [ngTemplateOutlet]="panel.template"></ng-container>
+      </ng-template>
+    </div>
+  }
+</div>

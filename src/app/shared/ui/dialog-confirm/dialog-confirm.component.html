@@ -1,0 +1,16 @@
+<app-dialog [heading]="data.heading" testId="dialog-confirm" (clickedClose)="decline()">
+  <p>{{ data.message }}</p>
+  <ng-container dialogActions>
+    <button appButton type="button" data-testid="dialog-confirm.decline" (click)="decline()">
+      {{ declineLabel }}
+    </button>
+    <button
+      appButton
+      type="button"
+      data-testid="dialog-confirm.confirm"
+      [variant]="data.tone === 'danger' ? 'danger' : 'primary'"
+      (click)="confirm()">
+      {{ confirmLabel }}
+    </button>
+  </ng-container>
+</app-dialog>

@@ -1,0 +1,31 @@
+<main class="mx-auto flex min-h-dvh max-w-2xl flex-col gap-4 px-4 py-8">
+  <p class="text-lg font-semibold text-accent">PortfoliGo</p>
+  <h1 class="text-2xl font-semibold" i18n="@@featurePlayers-playersPage-title">Spielerauswahl</h1>
+
+  <app-panel>
+    <app-empty-state
+      icon="people"
+      heading="Noch keine Spieler"
+      i18n-heading="@@featurePlayers-playersPage-emptyHeading"
+      text="Spieler anlegen und auswählen folgt in AP 2.4. Bis dahin zeigt die Vorschau den leeren Spielbereich."
+      i18n-text="@@featurePlayers-playersPage-emptyText">
+      <div class="flex flex-wrap justify-center gap-2">
+        <a
+          appButton
+          variant="primary"
+          routerLink="new"
+          data-testid="players.list.create"
+          i18n="@@featurePlayers-playersPage-create"
+          >Neuer Spieler</a
+        >
+        <a
+          appButton
+          routerLink="/game/preview"
+          data-testid="players.list.preview"
+          i18n="@@featurePlayers-playersPage-preview"
+          >Vorschau des Spielbereichs</a
+        >
+      </div>
+    </app-empty-state>
+  </app-panel>
+</main>

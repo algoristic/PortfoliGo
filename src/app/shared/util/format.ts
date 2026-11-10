@@ -1,4 +1,7 @@
 const LOCALE = 'de-DE';
+const HYPHEN_MINUS = '-';
+/** Typographic minus sign (U+2212) for changes, as required by PS §10.4. */
+const MINUS_SIGN = '\u2212';
 
 const formats = new Map<string, Intl.NumberFormat>();
 
@@ -22,16 +25,32 @@ export function formatPercent(ratio: number, fractionDigits = 2): string {
   return numberFormat(percentOptions(fractionDigits)).format(ratio);
 }
 
-/** Like `formatPercent`, but with an explicit sign for non-zero values, e.g. `+2,50 %`. */
+/**
+ * Like `formatPercent`, but for changes: an explicit sign for values that don't round to zero
+ * and a typographic minus, e.g. `+2,50 %`, `−2,50 %`.
+ */
 export function formatSignedPercent(ratio: number, fractionDigits = 2): string {
-  return numberFormat({ ...percentOptions(fractionDigits), signDisplay: 'exceptZero' }).format(
-    ratio,
+  return withMinusSign(
+    numberFormat({ ...percentOptions(fractionDigits), signDisplay: 'exceptZero' }).format(ratio),
+  );
+}
+
+/** Like `formatCents`, but for changes, e.g. `+312,40 €`, `−45,10 €`. */
+export function formatSignedCents(cents: number): string {
+  return withMinusSign(
+    numberFormat({ style: 'currency', currency: 'EUR', signDisplay: 'exceptZero' }).format(
+      cents / 100,
+    ),
   );
 }
 
 /** Formats large numbers in short form, e.g. `1234567` → `1,2 Mio.`. */
 export function formatCompact(value: number): string {
   return numberFormat({ notation: 'compact', maximumFractionDigits: 1 }).format(value);
+}
+
+function withMinusSign(formatted: string): string {
+  return formatted.replace(HYPHEN_MINUS, MINUS_SIGN);
 }
 
 function percentOptions(fractionDigits: number): Intl.NumberFormatOptions {

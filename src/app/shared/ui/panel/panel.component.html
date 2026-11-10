@@ -1,0 +1,13 @@
+<section class="rounded-lg border border-border bg-surface">
+  @if (heading()) {
+    <header class="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+      <h2 class="text-sm font-semibold">{{ heading() }}</h2>
+      <div class="flex items-center gap-1">
+        <ng-content select="[panelActions]" />
+      </div>
+    </header>
+  }
+  <div class="p-4">
+    <ng-content />
+  </div>
+</section>

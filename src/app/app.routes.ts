@@ -11,4 +11,20 @@ const devRoutes: Routes = [
   },
 ];
 
-export const routes: Routes = [...(environment.devPages ? devRoutes : [])];
+export const routes: Routes = [
+  { path: '', pathMatch: 'full', redirectTo: 'players' },
+  {
+    path: 'players',
+    loadChildren: async () => {
+      return (await import('./players/feature/players.routes')).playersRoutes;
+    },
+  },
+  {
+    path: 'game/:playerId',
+    loadChildren: async () => {
+      return (await import('./shell/feature/shell.routes')).shellRoutes;
+    },
+  },
+  ...(environment.devPages ? devRoutes : []),
+  { path: '**', redirectTo: 'players' },
+];

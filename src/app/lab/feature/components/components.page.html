@@ -1,0 +1,125 @@
+@let _confirmResult = confirmResult();
+
+<main class="mx-auto flex min-h-dvh max-w-5xl flex-col gap-6 bg-bg p-6 text-fg">
+  <h1 class="text-2xl font-semibold" i18n="@@featureLab-componentsPage-title">UI-Bausteine</h1>
+
+  <app-panel heading="Buttons" i18n-heading="@@featureLab-componentsPage-buttons">
+    <div class="flex flex-wrap items-center gap-2">
+      @for (variant of buttonVariants; track variant) {
+        <button
+          appButton
+          type="button"
+          [variant]="variant"
+          [attr.data-testid]="'lab.components.button.' + variant">
+          {{ variant }}
+        </button>
+      }
+      <button appButton type="button" size="sm" data-testid="lab.components.button.small">
+        sm
+      </button>
+      <button appButton type="button" disabled data-testid="lab.components.button.disabled">
+        disabled
+      </button>
+      <button
+        appIconButton
+        type="button"
+        label="Aktualisieren"
+        i18n-label="@@featureLab-componentsPage-refresh"
+        data-testid="lab.components.icon-button">
+        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+      </button>
+    </div>
+  </app-panel>
+
+  <app-panel heading="Badges und Kursveränderung" i18n-heading="@@featureLab-componentsPage-badges">
+    <div class="flex flex-wrap items-center gap-2">
+      @for (tone of badgeTones; track tone) {
+        <app-badge [tone]="tone">{{ tone }}</app-badge>
+      }
+    </div>
+    <div class="mt-4 flex flex-wrap items-center gap-4">
+      @for (change of changes; track $index) {
+        <app-price-change [value]="change"></app-price-change>
+      }
+      <app-price-change [value]="31240" mode="cents"></app-price-change>
+      <app-price-change [value]="-4510" mode="cents"></app-price-change>
+    </div>
+  </app-panel>
+
+  <div class="grid gap-4 sm:grid-cols-3">
+    <app-stat-tile
+      label="Gesamtvermögen"
+      i18n-label="@@featureLab-componentsPage-netWorth"
+      [value]="netWorth"
+      [change]="0.0129"></app-stat-tile>
+    <app-stat-tile
+      label="Heute"
+      i18n-label="@@featureLab-componentsPage-today"
+      value="312,40 €"
+      [change]="31240"
+      changeMode="cents"></app-stat-tile>
+    <app-stat-tile
+      label="Ohne Veränderung"
+      i18n-label="@@featureLab-componentsPage-noChange"
+      value="1.000,00 €"></app-stat-tile>
+  </div>
+
+  <app-panel heading="Tabs" i18n-heading="@@featureLab-componentsPage-tabs">
+    <app-tabs
+      label="Beispiel-Tabs"
+      i18n-label="@@featureLab-componentsPage-tabsLabel"
+      testId="lab.components.tabs"
+      [tabs]="tabs">
+      <ng-template appTabPanel="overview">
+        <p i18n="@@featureLab-componentsPage-tabOverviewContent">Inhalt der Übersicht.</p>
+      </ng-template>
+      <ng-template appTabPanel="chart">
+        <app-skeleton class="h-32" [block]="true"></app-skeleton>
+      </ng-template>
+      <ng-template appTabPanel="profile">
+        <app-skeleton [lines]="3"></app-skeleton>
+      </ng-template>
+    </app-tabs>
+  </app-panel>
+
+  <app-panel heading="Leerzustand" i18n-heading="@@featureLab-componentsPage-emptyState">
+    <app-empty-state
+      icon="star"
+      heading="Noch keine Watchlist"
+      i18n-heading="@@featureLab-componentsPage-emptyHeading"
+      text="Füge Instrumente hinzu, um sie hier zu verfolgen."
+      i18n-text="@@featureLab-componentsPage-emptyText"></app-empty-state>
+  </app-panel>
+
+  <app-panel heading="Toasts und Dialoge" i18n-heading="@@featureLab-componentsPage-overlays">
+    <div class="flex flex-wrap items-center gap-2">
+      @for (tone of toastTones; track tone) {
+        <button
+          appButton
+          type="button"
+          [attr.data-testid]="'lab.components.toast.' + tone"
+          (click)="onShowToast(tone)">
+          Toast {{ tone }}
+        </button>
+      }
+      <button
+        appButton
+        variant="danger"
+        type="button"
+        data-testid="lab.components.confirm"
+        i18n="@@featureLab-componentsPage-openConfirm"
+        (click)="onOpenConfirmDialog()">
+        Bestätigungsdialog öffnen
+      </button>
+      @if (_confirmResult !== null) {
+        <span class="text-sm text-fg-muted" data-testid="lab.components.confirm-result">
+          @if (_confirmResult) {
+            <ng-container i18n="@@featureLab-componentsPage-confirmed">Bestätigt</ng-container>
+          } @else {
+            <ng-container i18n="@@featureLab-componentsPage-declined">Abgebrochen</ng-container>
+          }
+        </span>
+      }
+    </div>
+  </app-panel>
+</main>

@@ -2,6 +2,286 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="de" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featureBanking-accountStatementPage-title" datatype="html">
+        <source>Kontoauszug</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
+          <context context-type="linenumber">2,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountStatementPage-emptyHeading" datatype="html">
+        <source>Noch keine Inhalte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountStatementPage-emptyText" datatype="html">
+        <source>Diese Ansicht entsteht in AP 3.4.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
+          <context context-type="linenumber">10,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountsPage-title" datatype="html">
+        <source>Konten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
+          <context context-type="linenumber">1,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountsPage-emptyHeading" datatype="html">
+        <source>Noch keine Inhalte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountsPage-emptyText" datatype="html">
+        <source>Diese Ansicht entsteht in AP 3.4.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountsRoutes-accountsTitle" datatype="html">
+        <source>Konten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/banking.routes.ts</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountsRoutes-accountStatementTitle" datatype="html">
+        <source>Kontoauszug</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/banking.routes.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-banksRoutes-banksTitle" datatype="html">
+        <source>Bankenvergleich</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/banking.routes.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-banksPage-title" datatype="html">
+        <source>Bankenvergleich</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/banks/banks.page.html</context>
+          <context context-type="linenumber">1,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-banksPage-emptyHeading" datatype="html">
+        <source>Noch keine Inhalte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/banks/banks.page.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-banksPage-emptyText" datatype="html">
+        <source>Diese Ansicht entsteht in AP 3.5.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/banks/banks.page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureDashboard-dashboardRoutes-dashboardTitle" datatype="html">
+        <source>Übersicht</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/feature/dashboard.routes.ts</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureDashboard-dashboardPage-title" datatype="html">
+        <source>Übersicht</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/feature/dashboard/dashboard.page.html</context>
+          <context context-type="linenumber">1,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureDashboard-dashboardPage-emptyHeading" datatype="html">
+        <source>Noch keine Inhalte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/feature/dashboard/dashboard.page.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureDashboard-dashboardPage-emptyText" datatype="html">
+        <source>Diese Ansicht entsteht in AP 5.7.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/feature/dashboard/dashboard.page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-title" datatype="html">
+        <source>UI-Bausteine</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">4,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-buttons" datatype="html">
+        <source>Buttons</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-refresh" datatype="html">
+        <source>Aktualisieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">26,27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-badges" datatype="html">
+        <source>Badges und Kursveränderung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-netWorth" datatype="html">
+        <source>Gesamtvermögen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">51,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-today" datatype="html">
+        <source>Heute</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-noChange" datatype="html">
+        <source>Ohne Veränderung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">62,63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-tabs" datatype="html">
+        <source>Tabs</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">67</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-tabsLabel" datatype="html">
+        <source>Beispiel-Tabs</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">69,70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-tabOverviewContent" datatype="html">
+        <source>Inhalt der Übersicht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">74,76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-emptyState" datatype="html">
+        <source>Leerzustand</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-emptyHeading" datatype="html">
+        <source>Noch keine Watchlist</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">88,89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-emptyText" datatype="html">
+        <source>Füge Instrumente hinzu, um sie hier zu verfolgen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">90,91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-overlays" datatype="html">
+        <source>Toasts und Dialoge</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">94</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-openConfirm" datatype="html">
+        <source> Bestätigungsdialog öffnen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">112,114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-confirmed" datatype="html">
+        <source>Bestätigt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">117,119</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-declined" datatype="html">
+        <source>Abgebrochen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">119,122</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-tabOverview" datatype="html">
+        <source>Übersicht</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-tabChart" datatype="html">
+        <source>Chart</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-tabProfile" datatype="html">
+        <source>Profil</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-toastMessage" datatype="html">
+        <source>Beispielhinweis</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
+          <context context-type="linenumber">60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-confirmHeading" datatype="html">
+        <source>Spieler löschen?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
+          <context context-type="linenumber">61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-confirmMessage" datatype="html">
+        <source>Der Spieler wird endgültig gelöscht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
+          <context context-type="linenumber">62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-confirmLabel" datatype="html">
+        <source>Löschen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
+          <context context-type="linenumber">63</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureLab-tokensPage-title" datatype="html">
         <source>Design-Tokens</source>
         <context-group purpose="location">
@@ -48,35 +328,476 @@
         <source> Zahlen (tabular-nums) </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">60,62</context>
+          <context context-type="linenumber">58,60</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-contrast" datatype="html">
         <source> Kontraste (mindestens <x id="INTERPOLATION" equiv-text="{{ minimumRatio }}"/>:1) </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">71,73</context>
+          <context context-type="linenumber">69,71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-foreground" datatype="html">
         <source> Text </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">77,79</context>
+          <context context-type="linenumber">75,77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-background" datatype="html">
         <source> Hintergrund </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">80,82</context>
+          <context context-type="linenumber">78,80</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-ratio" datatype="html">
         <source> Verhältnis </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">83,85</context>
+          <context context-type="linenumber">81,83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentPage-title" datatype="html">
+        <source>Instrument</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
+          <context context-type="linenumber">1,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentPage-emptyHeading" datatype="html">
+        <source>Noch keine Inhalte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentPage-emptyText" datatype="html">
+        <source>Diese Ansicht entsteht in AP 4.5.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketRoutes-marketsTitle" datatype="html">
+        <source>Märkte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/market.routes.ts</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketRoutes-instrumentTitle" datatype="html">
+        <source>Instrument</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/market.routes.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketsPage-title" datatype="html">
+        <source>Märkte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/markets/markets.page.html</context>
+          <context context-type="linenumber">1,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketsPage-emptyHeading" datatype="html">
+        <source>Noch keine Inhalte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/markets/markets.page.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketsPage-emptyText" datatype="html">
+        <source>Diese Ansicht entsteht in AP 4.4.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/markets/markets.page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureNotifications-notificationsRoutes-notificationsTitle" datatype="html">
+        <source>Benachrichtigungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/feature/notifications.routes.ts</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureNotifications-notificationsPage-title" datatype="html">
+        <source>Benachrichtigungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/feature/notifications/notifications.page.html</context>
+          <context context-type="linenumber">2,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureNotifications-notificationsPage-emptyHeading" datatype="html">
+        <source>Noch keine Inhalte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/feature/notifications/notifications.page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureNotifications-notificationsPage-emptyText" datatype="html">
+        <source>Diese Ansicht entsteht in AP 3.6.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/feature/notifications/notifications.page.html</context>
+          <context context-type="linenumber">10,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-newPlayerPage-title" datatype="html">
+        <source>Spieler anlegen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/new-player/new-player.page.html</context>
+          <context context-type="linenumber">4,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-newPlayerPage-emptyHeading" datatype="html">
+        <source>Noch keine Inhalte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/new-player/new-player.page.html</context>
+          <context context-type="linenumber">10,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-newPlayerPage-emptyText" datatype="html">
+        <source>Das Formular entsteht in AP 2.4.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/new-player/new-player.page.html</context>
+          <context context-type="linenumber">12,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-newPlayerPage-back" datatype="html">
+        <source>Zur Spielerauswahl</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/new-player/new-player.page.html</context>
+          <context context-type="linenumber">19,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersRoutes-playersTitle" datatype="html">
+        <source>Spielerauswahl</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players.routes.ts</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersRoutes-newPlayerTitle" datatype="html">
+        <source>Spieler anlegen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players.routes.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-title" datatype="html">
+        <source>Spielerauswahl</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
+          <context context-type="linenumber">3,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-emptyHeading" datatype="html">
+        <source>Noch keine Spieler</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-emptyText" datatype="html">
+        <source>Spieler anlegen und auswählen folgt in AP 2.4. Bis dahin zeigt die Vorschau den leeren Spielbereich.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
+          <context context-type="linenumber">10,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-create" datatype="html">
+        <source>Neuer Spieler</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
+          <context context-type="linenumber">19,23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-preview" datatype="html">
+        <source>Vorschau des Spielbereichs</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
+          <context context-type="linenumber">26,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioRoutes-portfolioTitle" datatype="html">
+        <source>Depot</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio.routes.ts</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-title" datatype="html">
+        <source>Depot</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
+          <context context-type="linenumber">1,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-emptyHeading" datatype="html">
+        <source>Noch keine Inhalte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-emptyText" datatype="html">
+        <source>Diese Ansicht entsteht in AP 5.5.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureSettings-settingsRoutes-settingsTitle" datatype="html">
+        <source>Einstellungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/feature/settings.routes.ts</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureSettings-settingsPage-title" datatype="html">
+        <source>Einstellungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
+          <context context-type="linenumber">1,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureSettings-settingsPage-emptyHeading" datatype="html">
+        <source>Noch keine Inhalte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureSettings-settingsPage-emptyText" datatype="html">
+        <source>Diese Ansicht entsteht in AP 6.2.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShared-dialogConfirm-confirm" datatype="html">
+        <source>Bestätigen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/ui/dialog-confirm/dialog-confirm.component.ts</context>
+          <context context-type="linenumber">19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShared-dialogConfirm-decline" datatype="html">
+        <source>Abbrechen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/ui/dialog-confirm/dialog-confirm.component.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShared-dialog-close" datatype="html">
+        <source>Schließen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/ui/dialog/dialog.component.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShared-toastContainer-dismiss" datatype="html">
+        <source>Hinweis schließen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/ui/toast/toast-container.component.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-shellPage-navDashboard" datatype="html">
+        <source>Übersicht</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-shellPage-navMarkets" datatype="html">
+        <source>Märkte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-shellPage-navPortfolio" datatype="html">
+        <source>Depot</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-shellPage-navAccounts" datatype="html">
+        <source>Konten &amp; Banken</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-shellPage-navOrders" datatype="html">
+        <source>Orders</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-shellPage-navTaxes" datatype="html">
+        <source>Steuern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
+          <context context-type="linenumber">61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-shellPage-navNotifications" datatype="html">
+        <source>Benachrichtigungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-shellPage-navSettings" datatype="html">
+        <source>Einstellungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-shellPage-skipToContent" datatype="html">
+        <source>Zum Inhalt springen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sectionBottomNav-navLabel" datatype="html">
+        <source>Hauptnavigation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/section-bottom-nav/section-bottom-nav.component.ts</context>
+          <context context-type="linenumber">19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sectionBottomNav-more" datatype="html">
+        <source>Mehr</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/section-bottom-nav/section-bottom-nav.component.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sectionHeader-switchPlayer" datatype="html">
+        <source>Spieler wechseln</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/section-header/section-header.component.html</context>
+          <context context-type="linenumber">69,72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sectionHeader-settings" datatype="html">
+        <source>Einstellungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/section-header/section-header.component.html</context>
+          <context context-type="linenumber">77,80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sectionHeader-export" datatype="html">
+        <source>Exportieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/section-header/section-header.component.html</context>
+          <context context-type="linenumber">86,88</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sectionHeader-clockLabel" datatype="html">
+        <source>Spielzeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/section-header/section-header.component.ts</context>
+          <context context-type="linenumber">21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sectionHeader-netWorthLabel" datatype="html">
+        <source>Gesamtvermögen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/section-header/section-header.component.ts</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sectionHeader-searchLabel" datatype="html">
+        <source>Suchen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/section-header/section-header.component.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sectionHeader-notificationsLabel" datatype="html">
+        <source>Benachrichtigungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/section-header/section-header.component.ts</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sectionHeader-playerMenuLabel" datatype="html">
+        <source>Spielermenü</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/section-header/section-header.component.ts</context>
+          <context context-type="linenumber">25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sectionSideNav-navLabel" datatype="html">
+        <source>Hauptnavigation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/section-side-nav/section-side-nav.component.ts</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTaxes-taxesRoutes-taxesTitle" datatype="html">
+        <source>Steuern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/taxes/feature/taxes.routes.ts</context>
+          <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTaxes-taxesPage-title" datatype="html">
+        <source>Steuern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/taxes/feature/taxes/taxes.page.html</context>
+          <context context-type="linenumber">1,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTaxes-taxesPage-emptyHeading" datatype="html">
+        <source>Noch keine Inhalte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/taxes/feature/taxes/taxes.page.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTaxes-taxesPage-emptyText" datatype="html">
+        <source>Diese Ansicht entsteht in AP 5.3.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/taxes/feature/taxes/taxes.page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-ordersPage-title" datatype="html">
+        <source>Orders</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/orders/orders.page.html</context>
+          <context context-type="linenumber">1,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-ordersPage-emptyHeading" datatype="html">
+        <source>Noch keine Inhalte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/orders/orders.page.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-ordersPage-emptyText" datatype="html">
+        <source>Diese Ansicht entsteht in AP 5.4.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/orders/orders.page.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingRoutes-ordersTitle" datatype="html">
+        <source>Orders</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/trading.routes.ts</context>
+          <context context-type="linenumber">6</context>
         </context-group>
       </trans-unit>
     </body>

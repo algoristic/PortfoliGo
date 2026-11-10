@@ -8,9 +8,9 @@
 # You can see what browsers were selected by your queries by running:
 #   npx browserslist
 
-# Minimum versions of Tailwind CSS v4 (E-06, docs/specs/technische-spezifikation.md §1.3).
-Chrome >=111
-Edge >=111
+# Minimum versions of Angular 22.2 and Tailwind CSS v4 (E-06, docs/specs/technische-spezifikation.md §1.3).
+Chrome >=119
+Edge >=119
 Firefox >=128
-Safari >=16.4
-iOS >=16.4
+Safari >=17.0
+iOS >=17.0

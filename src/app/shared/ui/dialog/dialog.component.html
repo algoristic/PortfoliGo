@@ -1,0 +1,20 @@
+<div class="flex w-full flex-col rounded-lg border border-border bg-surface text-fg shadow-xl">
+  <header class="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+    <h2 class="text-base font-semibold">{{ heading() }}</h2>
+    <button
+      type="button"
+      class="-m-1 rounded p-1 text-fg-muted hover:text-fg"
+      [attr.aria-label]="closeLabel"
+      [attr.title]="closeLabel"
+      [attr.data-testid]="testId() + '.close'"
+      (click)="onClose()">
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
+    </button>
+  </header>
+  <div class="overflow-y-auto px-4 py-4 text-sm">
+    <ng-content />
+  </div>
+  <footer class="flex flex-wrap justify-end gap-2 border-t border-border px-4 py-3">
+    <ng-content select="[dialogActions]" />
+  </footer>
+</div>

@@ -3,11 +3,13 @@ import {
   formatCompact,
   formatPercent,
   formatPrice,
+  formatSignedCents,
   formatSignedPercent,
 } from './format';
 
 // Intl separates the number and the unit with a non-breaking space.
 const NBSP = ' ';
+const MINUS = '\u2212';
 
 describe('format', () => {
   describe('formatCents', () => {
@@ -39,12 +41,25 @@ describe('format', () => {
   describe('formatSignedPercent', () => {
     it('adds a sign to non-zero values', () => {
       expect(formatSignedPercent(0.025)).toBe(`+2,50${NBSP}%`);
-      expect(formatSignedPercent(-0.025)).toBe(`-2,50${NBSP}%`);
+      expect(formatSignedPercent(-0.025)).toBe(`${MINUS}2,50${NBSP}%`);
     });
 
     it('omits the sign when the value rounds to zero', () => {
       expect(formatSignedPercent(0)).toBe(`0,00${NBSP}%`);
       expect(formatSignedPercent(-0.00001)).toBe(`0,00${NBSP}%`);
+    });
+  });
+
+  describe('formatSignedCents', () => {
+    it('adds a sign and uses the typographic minus', () => {
+      expect(formatSignedCents(31240)).toBe(`+312,40${NBSP}€`);
+      expect(formatSignedCents(-4510)).toBe(`${MINUS}45,10${NBSP}€`);
+      expect(formatSignedCents(-123456)).toBe(`${MINUS}1.234,56${NBSP}€`);
+    });
+
+    it('omits the sign for zero', () => {
+      expect(formatSignedCents(0)).toBe(`0,00${NBSP}€`);
+      expect(formatSignedCents(-0)).toBe(`0,00${NBSP}€`);
     });
   });
 

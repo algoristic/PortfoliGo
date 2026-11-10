@@ -8,4 +8,10 @@ export const labRoutes: Routes = [
       return (await import('./tokens/tokens.page')).TokensPage;
     },
   },
+  {
+    path: 'components',
+    loadComponent: async () => {
+      return (await import('./components/components.page')).ComponentsPage;
+    },
+  },
 ];

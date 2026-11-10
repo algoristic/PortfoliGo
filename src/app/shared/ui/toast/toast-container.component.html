@@ -1,0 +1,22 @@
+<ol class="flex w-full flex-col gap-2" aria-live="polite" aria-relevant="additions">
+  @for (toast of toasts(); track toast.id) {
+    <li
+      class="flex items-start gap-3 rounded-lg border border-border bg-surface-raised p-3 text-sm text-fg shadow-lg"
+      [attr.data-testid]="'toast.' + toast.id">
+      <i
+        class="bi mt-0.5 text-base"
+        [class]="toneClasses[toast.tone] + ' ' + toneIcons[toast.tone]"
+        aria-hidden="true"></i>
+      <p class="flex-1">{{ toast.message }}</p>
+      <button
+        type="button"
+        class="-m-1 rounded p-1 text-fg-muted hover:text-fg"
+        [attr.aria-label]="dismissLabel"
+        [attr.title]="dismissLabel"
+        [attr.data-testid]="'toast.' + toast.id + '.dismiss'"
+        (click)="onDismiss(toast.id)">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+    </li>
+  }
+</ol>
