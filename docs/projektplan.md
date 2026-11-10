@@ -96,8 +96,6 @@ Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevo
 
 | ID   | Frage                                                                                                                             | Vorschlag                                                                                                              | Spätestens vor |
 | ---- | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------- |
-| E-06 | Tailwind CSS v4 und damit höhere Browser-Mindestversionen?                                                                        | Ja: Chrome/Edge ≥ 111, Firefox ≥ 128, Safari/iOS ≥ 16.4                                                                | AP 0.1         |
-| –    | Ist die Zieladresse des Deployments per HTTPS erreichbar? (Pflicht, TS §1.3)                                                      | prüfen                                                                                                                 | AP 0.1         |
 | –    | Ergänzungen und Ausnahmen für `CLAUDE.md` aus TS §11.2 übernehmen?                                                                | Ja                                                                                                                     | AP 0.2         |
 | E-09 | Geld in Cent, Stück in Millionstel, Kurse mit Preisraster                                                                         | Ja                                                                                                                     | AP 0.3         |
 | E-15 | Hash-Routing und englische Routenpfade                                                                                            | Ja                                                                                                                     | AP 0.4         |
@@ -118,56 +116,56 @@ Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevo
 | E-05 | Capacitor                                                                                                                         | PWA im MVP; Capacitor als optionaler Meilenstein N1                                                                    | AP 6.3         |
 | –    | Wird die App öffentlich bereitgestellt? Dann Impressum und Datenschutzhinweis nötig                                               | klären                                                                                                                 | AP 6.5         |
 
-**Bereits entschieden:** E-07 (`CLAUDE.md`) und E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6).
+**Bereits entschieden:** E-07 (`CLAUDE.md`), E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6) und E-06 – Tailwind CSS v4 mit angehobener Browserslist (10.11.2026). Das Deployment ist laut Product Owner unter `https://algoristic.de/portfoligo/` per HTTPS erreichbar.
 
 ## 4. Statusübersicht
 
 Status: **offen**, **in Arbeit**, **fertig**.
 
-| AP  | Titel                                            | Status | Abhängig von |
-| --- | ------------------------------------------------ | ------ | ------------ |
-| 0.1 | Aufräumen und Baseline                           | offen  | –            |
-| 0.2 | Design-System-Grundlage (Tailwind v4, Tokens)    | offen  | 0.1          |
-| 0.3 | App-Bootstrap und Infrastruktur                  | offen  | 0.1          |
-| 0.4 | App-Shell und UI-Grundkomponenten                | offen  | 0.2, 0.3     |
-| 1.1 | Deterministischer Zufall und Mathematik          | offen  | 0.1          |
-| 1.2 | Spielkalender und Zeitmodell                     | offen  | 0.1          |
-| 1.3 | Weltgenerierung: Taxonomie, Unternehmen, Banken  | offen  | 1.1          |
-| 1.4 | Marktmodell: Tagesschritt und Vorlauf            | offen  | 1.2, 1.3     |
-| 1.5 | Brücken, Minutenkurse und Kerzen                 | offen  | 1.4          |
-| 1.6 | Indizes, ETFs, Dividenden, Geld- und Briefkurse  | offen  | 1.5          |
-| 1.7 | Simulations-Labor: Welt, Simulation, Chart-Spike | offen  | 1.6, 0.4     |
-| 1.8 | Simulations-Labor: Statistik                     | offen  | 1.7          |
-| 1.9 | Kalibrierung des Marktmodells                    | offen  | 1.8          |
-| 2.1 | GameEngine und Terminplaner                      | offen  | 1.6          |
-| 2.2 | Worker-Host, Protokoll und EngineService         | offen  | 2.1, 0.3     |
-| 2.3 | Persistenz im Worker und Wiederherstellung       | offen  | 2.2          |
-| 2.4 | Spielerverwaltung                                | offen  | 2.3, 0.4     |
-| 2.5 | Spielsitzung und Uhr                             | offen  | 2.4          |
-| 3.1 | Hauptbuch und Kontenmodell                       | offen  | 2.4          |
-| 3.2 | Haushalt und periodische Buchungen               | offen  | 3.1          |
-| 3.3 | Bankkommandos und Banking-Slice                  | offen  | 3.2, 2.5     |
-| 3.4 | Kontenübersicht und Kontoauszug                  | offen  | 3.3          |
-| 3.5 | Bankenvergleich, Dialoge und Monatsübersicht     | offen  | 3.4          |
-| 3.6 | Benachrichtigungen                               | offen  | 3.3          |
-| 4.1 | Marktdaten-Feed und Market-Slice                 | offen  | 2.5          |
-| 4.2 | Chart-Komponenten                                | offen  | 4.1, 1.7     |
-| 4.3 | Indikatoren                                      | offen  | 4.2          |
-| 4.4 | Marktübersicht, Screener und Watchlist           | offen  | 4.2          |
-| 4.5 | Instrument-Detailseite                           | offen  | 4.3, 4.4     |
-| 5.1 | Depot und Orderausführung                        | offen  | 3.3, 1.6     |
-| 5.2 | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1          |
-| 5.3 | Steuern                                          | offen  | 5.2          |
-| 5.4 | Order-Ticket und Orderbuch                       | offen  | 5.3, 4.5     |
-| 5.5 | Depot, Positionen und Steuerübersicht (UI)       | offen  | 5.4          |
-| 5.6 | Sparpläne                                        | offen  | 5.5          |
-| 5.7 | Dashboard und Performance                        | offen  | 5.5          |
-| 6.1 | Export und Import                                | offen  | 5.6, 5.7     |
-| 6.2 | Einstellungen                                    | offen  | 6.1, 3.6     |
-| 6.3 | PWA und Browser-Benachrichtigungen               | offen  | 6.2          |
-| 6.4 | Performance und Robustheit                       | offen  | 6.1          |
-| 6.5 | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3          |
-| 6.6 | Release 1.0                                      | offen  | 6.4, 6.5     |
+| AP  | Titel                                            | Status    | Abhängig von |
+| --- | ------------------------------------------------ | --------- | ------------ |
+| 0.1 | Aufräumen und Baseline                           | in Arbeit | –            |
+| 0.2 | Design-System-Grundlage (Tailwind v4, Tokens)    | offen     | 0.1          |
+| 0.3 | App-Bootstrap und Infrastruktur                  | offen     | 0.1          |
+| 0.4 | App-Shell und UI-Grundkomponenten                | offen     | 0.2, 0.3     |
+| 1.1 | Deterministischer Zufall und Mathematik          | offen     | 0.1          |
+| 1.2 | Spielkalender und Zeitmodell                     | offen     | 0.1          |
+| 1.3 | Weltgenerierung: Taxonomie, Unternehmen, Banken  | offen     | 1.1          |
+| 1.4 | Marktmodell: Tagesschritt und Vorlauf            | offen     | 1.2, 1.3     |
+| 1.5 | Brücken, Minutenkurse und Kerzen                 | offen     | 1.4          |
+| 1.6 | Indizes, ETFs, Dividenden, Geld- und Briefkurse  | offen     | 1.5          |
+| 1.7 | Simulations-Labor: Welt, Simulation, Chart-Spike | offen     | 1.6, 0.4     |
+| 1.8 | Simulations-Labor: Statistik                     | offen     | 1.7          |
+| 1.9 | Kalibrierung des Marktmodells                    | offen     | 1.8          |
+| 2.1 | GameEngine und Terminplaner                      | offen     | 1.6          |
+| 2.2 | Worker-Host, Protokoll und EngineService         | offen     | 2.1, 0.3     |
+| 2.3 | Persistenz im Worker und Wiederherstellung       | offen     | 2.2          |
+| 2.4 | Spielerverwaltung                                | offen     | 2.3, 0.4     |
+| 2.5 | Spielsitzung und Uhr                             | offen     | 2.4          |
+| 3.1 | Hauptbuch und Kontenmodell                       | offen     | 2.4          |
+| 3.2 | Haushalt und periodische Buchungen               | offen     | 3.1          |
+| 3.3 | Bankkommandos und Banking-Slice                  | offen     | 3.2, 2.5     |
+| 3.4 | Kontenübersicht und Kontoauszug                  | offen     | 3.3          |
+| 3.5 | Bankenvergleich, Dialoge und Monatsübersicht     | offen     | 3.4          |
+| 3.6 | Benachrichtigungen                               | offen     | 3.3          |
+| 4.1 | Marktdaten-Feed und Market-Slice                 | offen     | 2.5          |
+| 4.2 | Chart-Komponenten                                | offen     | 4.1, 1.7     |
+| 4.3 | Indikatoren                                      | offen     | 4.2          |
+| 4.4 | Marktübersicht, Screener und Watchlist           | offen     | 4.2          |
+| 4.5 | Instrument-Detailseite                           | offen     | 4.3, 4.4     |
+| 5.1 | Depot und Orderausführung                        | offen     | 3.3, 1.6     |
+| 5.2 | Positionen, Lots, Ausschüttungen und Depotgebühr | offen     | 5.1          |
+| 5.3 | Steuern                                          | offen     | 5.2          |
+| 5.4 | Order-Ticket und Orderbuch                       | offen     | 5.3, 4.5     |
+| 5.5 | Depot, Positionen und Steuerübersicht (UI)       | offen     | 5.4          |
+| 5.6 | Sparpläne                                        | offen     | 5.5          |
+| 5.7 | Dashboard und Performance                        | offen     | 5.5          |
+| 6.1 | Export und Import                                | offen     | 5.6, 5.7     |
+| 6.2 | Einstellungen                                    | offen     | 6.1, 3.6     |
+| 6.3 | PWA und Browser-Benachrichtigungen               | offen     | 6.2          |
+| 6.4 | Performance und Robustheit                       | offen     | 6.1          |
+| 6.5 | Barrierefreiheit, Hilfen und Hinweise            | offen     | 6.3          |
+| 6.6 | Release 1.0                                      | offen     | 6.4, 6.5     |
 
 ## 5. Stufe 1: Meilensteine M0–M6
 
@@ -570,8 +568,9 @@ Die Reihenfolge ab M7 ist ein Vorschlag und wird nach dem MVP gemeinsam priorisi
 
 ## 7. Änderungsprotokoll
 
-| Datum      | Änderung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 09.11.2026 | Erstfassung von Produktspezifikation, technischer Spezifikation und Projektplan auf Basis der Ideensammlung. Baseline geprüft (Build ok mit Browserslist-Warnung, 1 Lint-Fehler, keine Tests). Benchmark zum Tick-Modell: 1 Spieljahr ≈ 2,0 s Rohsimulation (TS §3.2).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| 09.11.2026 | Überarbeitung nach unabhängigem Review: Write-ahead-Kommandos mit Uhrzustand, beobachtungsunabhängige abgeleitete Marktwerte, Export mit Marktzustand für lange Spiele, Preisraster gegen verschwindende Spreads, korrigierte ETF-Ausschüttung, HTTPS-Pflicht, Besitzer je IndexedDB-Store, Provider-Regel für den `EngineService`, Spielstart am 01.04.2030, neue Entscheidungen E-18/E-19; APs 1.7, 3.4 und 6.4 geteilt und Abhängigkeiten korrigiert (jetzt 42 APs).                                                                                                                                                                                                                                                                                                         |
-| 10.11.2026 | Brückenmodell übernommen (E-20; Begründung, Prototyp-Messungen und Vergleich mit dem Minutenmodell in TS §3.2, §6.1 und §6.6): Kurse aus Tagesschritt und Brownschen Brücken bei Bedarf statt Minutensimulation; Vorlauf mit demselben Modell und minutengenau, kein März-Sonderlauf; Intraday-Kerzen werden nicht mehr gespeichert, Tageskerzen sind reproduzierbar und werden nach Stapelbetrieb im Hintergrund ergänzt; Export mit Marktzustand vom Tagesbeginn; Dividendenhöhe aus dem Schlusskurs vor der Ankündigung; Abfragegrenze; neue Budgets (NF-02, NF-07, TS §14.3). AP 1.4–1.6 neu geschnitten (Tagesschritt und Vorlauf; Brücken, Minutenkurse und Kerzen; Indizes, ETFs, Dividenden, Geld- und Briefkurse), AP 5.1 hängt jetzt von AP 1.6 ab; weiterhin 42 APs. |
+| Datum      | Änderung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09.11.2026 | Erstfassung von Produktspezifikation, technischer Spezifikation und Projektplan auf Basis der Ideensammlung. Baseline geprüft (Build ok mit Browserslist-Warnung, 1 Lint-Fehler, keine Tests). Benchmark zum Tick-Modell: 1 Spieljahr ≈ 2,0 s Rohsimulation (TS §3.2).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| 09.11.2026 | Überarbeitung nach unabhängigem Review: Write-ahead-Kommandos mit Uhrzustand, beobachtungsunabhängige abgeleitete Marktwerte, Export mit Marktzustand für lange Spiele, Preisraster gegen verschwindende Spreads, korrigierte ETF-Ausschüttung, HTTPS-Pflicht, Besitzer je IndexedDB-Store, Provider-Regel für den `EngineService`, Spielstart am 01.04.2030, neue Entscheidungen E-18/E-19; APs 1.7, 3.4 und 6.4 geteilt und Abhängigkeiten korrigiert (jetzt 42 APs).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| 10.11.2026 | Brückenmodell übernommen (E-20; Begründung, Prototyp-Messungen und Vergleich mit dem Minutenmodell in TS §3.2, §6.1 und §6.6): Kurse aus Tagesschritt und Brownschen Brücken bei Bedarf statt Minutensimulation; Vorlauf mit demselben Modell und minutengenau, kein März-Sonderlauf; Intraday-Kerzen werden nicht mehr gespeichert, Tageskerzen sind reproduzierbar und werden nach Stapelbetrieb im Hintergrund ergänzt; Export mit Marktzustand vom Tagesbeginn; Dividendenhöhe aus dem Schlusskurs vor der Ankündigung; Abfragegrenze; neue Budgets (NF-02, NF-07, TS §14.3). AP 1.4–1.6 neu geschnitten (Tagesschritt und Vorlauf; Brücken, Minutenkurse und Kerzen; Indizes, ETFs, Dividenden, Geld- und Briefkurse), AP 5.1 hängt jetzt von AP 1.6 ab; weiterhin 42 APs.                                                                                                                                                                                                                                                     |
+| 10.11.2026 | AP 0.1 umgesetzt: Ionic-Reste, `uuid` und `environment.common.ts` entfernt; Umgebung neu geordnet (`production`, `storeDevtools`, `devPages` als Flag für Labor und Entwicklerseiten; `idbConfig` entfällt, das IndexedDB-Schema kommt in AP 0.3 aus `persistence/data-access`); `index.html` mit `lang="de"` und ohne Zoomsperre; Browserslist nach E-06 (entschieden); `AppComponent` mit `RouterOutlet` und eigener Template- und Style-Datei; erster Test (`environment.spec.ts`); der `matchMedia`-Polyfill in `src/test-setup.ts` bleibt für den CDK-`BreakpointObserver` (AP 0.4); `messages.xlf` von Prototyp-IDs geleert. CI: Lint, Test und Build vor dem Deployment, neue Prüfung für Pull Requests (`pull-request.yml`). HTTPS-Zieladresse laut Product Owner `https://algoristic.de/portfoligo/`. Offen: `.vscode/settings.json` löschen und `.vscode/extensions.json` auf `Angular.ng-template` umstellen (in der Session schreibgeschützt), HTTPS-Abruf selbst prüfen (in der Session vom Netzwerkfilter blockiert). |

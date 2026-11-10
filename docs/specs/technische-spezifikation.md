@@ -34,24 +34,25 @@ Dieses Dokument beschreibt, _wie_ PortfoliGo gebaut wird. Die allgemeinen Code-K
 - **Baseline:** `ng build` läuft, warnt aber, weil `.browserslistrc` Browser außerhalb der Angular-22-Unterstützung enthält. `ng lint` meldet einen Fehler: `src/environments/environment.model.ts` importiert Dateien des gelöschten Prototyps. `ng test` bricht ab, weil es noch keine Tests gibt.
 - **Node:** Angular CLI 22 verlangt Node ≥ 22.22.3 (steht in `.nvmrc`). Die Standard-Shell nutzt derzeit 22.12.0, daher vor jeder Session `nvm use`.
 - **Reste des Ionic-Prototyps:** `ionic.config.json`, `capacitor.config.ts`, Ionic-Schematics in `angular.json`, `--ion-*`-Variablen in `src/theme/variables.scss`, Ionic-Hinweise in `src/test-setup.ts` und `.vscode/settings.json`, Ionic CLI in der CI, `author`/`homepage` in `package.json`.
+- **Seit AP 0.1 (10.11.2026):** Ionic-Reste und `uuid` entfernt, Browserslist nach §1.3 angehoben; `ng build` ohne Warnung, `ng lint` und `ng test` grün. Die Umgebung (`src/environments/`) enthält nur noch `production`, `storeDevtools` (`StoreDevtoolsOptions | null`) und `devPages` (Flag für Labor und Entwicklerseiten); die IndexedDB-Konfiguration kommt nicht mehr aus der Umgebung, sondern aus dem Schema in `persistence/data-access` (AP 0.3).
 
 ### 1.2 Abhängigkeiten
 
-| Paket                                                                | Zweck                                         | Status                           |
-| -------------------------------------------------------------------- | --------------------------------------------- | -------------------------------- |
-| `@angular/*`                                                         | Framework                                     | vorhanden                        |
-| `@angular/cdk`                                                       | Overlay, Dialog, A11y, Scrolling, Table u. a. | neu (M0)                         |
-| `@angular/service-worker`                                            | PWA                                           | neu (M6)                         |
-| `@ngrx/store`, `effects`, `entity`, `router-store`, `store-devtools` | State Management                              | vorhanden                        |
-| `@ngrx/operators`                                                    | `concatLatestFrom` in Effects                 | bei erstem Bedarf                |
-| `rxjs`                                                               | Streams                                       | vorhanden                        |
-| `idb`                                                                | Promise-Wrapper für IndexedDB                 | vorhanden                        |
-| `lightweight-charts`                                                 | interaktive Kurscharts (E-04)                 | neu (Spike AP 1.7, fest ab M4)   |
-| `bootstrap-icons`                                                    | Icons                                         | vorhanden                        |
-| `tailwindcss`, `@tailwindcss/postcss`, `postcss` (dev)               | Styling (E-06)                                | neu (M0)                         |
-| `fake-indexeddb` (dev)                                               | IndexedDB in Unit-Tests                       | neu (M0)                         |
-| `prettier-plugin-tailwindcss` (dev)                                  | Sortierung der Utility-Klassen                | optional                         |
-| `uuid`                                                               | –                                             | entfernen, `crypto.randomUUID()` |
+| Paket                                                                | Zweck                                         | Status                          |
+| -------------------------------------------------------------------- | --------------------------------------------- | ------------------------------- |
+| `@angular/*`                                                         | Framework                                     | vorhanden                       |
+| `@angular/cdk`                                                       | Overlay, Dialog, A11y, Scrolling, Table u. a. | neu (M0)                        |
+| `@angular/service-worker`                                            | PWA                                           | neu (M6)                        |
+| `@ngrx/store`, `effects`, `entity`, `router-store`, `store-devtools` | State Management                              | vorhanden                       |
+| `@ngrx/operators`                                                    | `concatLatestFrom` in Effects                 | bei erstem Bedarf               |
+| `rxjs`                                                               | Streams                                       | vorhanden                       |
+| `idb`                                                                | Promise-Wrapper für IndexedDB                 | vorhanden                       |
+| `lightweight-charts`                                                 | interaktive Kurscharts (E-04)                 | neu (Spike AP 1.7, fest ab M4)  |
+| `bootstrap-icons`                                                    | Icons                                         | vorhanden                       |
+| `tailwindcss`, `@tailwindcss/postcss`, `postcss` (dev)               | Styling (E-06)                                | neu (M0)                        |
+| `fake-indexeddb` (dev)                                               | IndexedDB in Unit-Tests                       | neu (M0)                        |
+| `prettier-plugin-tailwindcss` (dev)                                  | Sortierung der Utility-Klassen                | optional                        |
+| `uuid`                                                               | –                                             | entfernt, `crypto.randomUUID()` |
 
 **Regel:** Außer dem Angular CDK kommen keine UI-Frameworks oder Komponentenbibliotheken hinzu. NgRx ist eine State-Bibliothek und durch `CLAUDE.md` gesetzt. Jede neue Laufzeitabhängigkeit braucht einen Eintrag in §16.
 
@@ -61,7 +62,7 @@ Dieses Dokument beschreibt, _wie_ PortfoliGo gebaut wird. Die allgemeinen Code-K
 
 Genutzte Plattform-APIs: Web Worker (Modul-Worker), IndexedDB, Web Locks, Page Visibility, Web Crypto (`subtle.digest`, `randomUUID`), Storage Manager (`persist`), Notification API, Service Worker, Clipboard.
 
-**HTTPS ist Pflicht.** Web Crypto (`subtle`, `randomUUID`), Web Locks, Service Worker, `storage.persist()` und Benachrichtigungen gibt es nur in einem sicheren Kontext (HTTPS oder `localhost`). Die Produktion läuft daher ausschließlich über HTTPS. Für Tests auf Mobilgeräten im lokalen Netz wird `ng serve --ssl` verwendet. Spielkritische Berechnungen wie der Seed-Schlüssel kommen ohne diese APIs aus (§4.1).
+**HTTPS ist Pflicht.** Web Crypto (`subtle`, `randomUUID`), Web Locks, Service Worker, `storage.persist()` und Benachrichtigungen gibt es nur in einem sicheren Kontext (HTTPS oder `localhost`). Die Produktion läuft daher ausschließlich über HTTPS (`https://algoristic.de/portfoligo/`). Für Tests auf Mobilgeräten im lokalen Netz wird `ng serve --ssl` verwendet. Spielkritische Berechnungen wie der Seed-Schlüssel kommen ohne diese APIs aus (§4.1).
 
 ## 2. Architektur
 
@@ -1206,7 +1207,7 @@ Gemessen wird auf dem Entwicklungsrechner; die Messung ist Teil der jeweiligen A
 
 ### 14.4 CI und Deployment
 
-GitHub Actions mit Node aus `.nvmrc`: `npm ci`, `ng lint`, `ng test --watch=false`, `ng build`; Deployment per SFTP nur nach Erfolg auf `main`. Optional ein Prettier-Check. Die Zieladresse muss per HTTPS erreichbar sein (§1.3).
+GitHub Actions mit Node aus `.nvmrc`: `npm ci`, `ng lint`, `ng test --watch=false`, `ng build` (`build-latest.yml`); bei Pull Requests auf `main` ohne Deployment (`pull-request.yml`), auf `main` danach Deployment per SFTP nur nach Erfolg (`publish.yml`). Optional ein Prettier-Check. Die Zieladresse muss per HTTPS erreichbar sein (§1.3).
 
 ## 15. Versionierung und Kompatibilität
 
@@ -1232,7 +1233,7 @@ Status: **Vorschlag** = von Claude vorgeschlagen, Bestätigung durch den Product
 | E-03 | Zufall          | Zufallsströme aus Seed-Schlüssel und Schlüssel per 128-Bit-Hash, `sfc32`, eigene `detExp`/`detLog` (§4)                                                                                                                              | Vorschlag                         |
 | E-04 | Charts          | lightweight-charts für interaktive Charts, eigene SVG-Komponenten für Sparklines und Donuts (§11.7)                                                                                                                                  | Vorschlag – Spike in AP 1.7       |
 | E-05 | Plattform       | PWA im MVP; Capacitor als optionaler Meilenstein N1, Android zuerst; Ports jetzt vorbereiten (§13)                                                                                                                                   | Vorschlag – Diskussion            |
-| E-06 | Styling         | Tailwind CSS v4 mit semantischen Tokens, Dark Mode als Standard, globaler Einstieg als CSS, Browserslist angehoben (§11.5, §1.3)                                                                                                     | Vorschlag                         |
+| E-06 | Styling         | Tailwind CSS v4 mit semantischen Tokens, Dark Mode als Standard, globaler Einstieg als CSS, Browserslist angehoben (§11.5, §1.3)                                                                                                     | entschieden (10.11.2026)          |
 | E-07 | State           | Klassischer NgRx-Store nach `CLAUDE.md`, Projektionen aus der Engine, gedrosselt (§11.3)                                                                                                                                             | entschieden (`CLAUDE.md`)         |
 | E-08 | Persistenz      | Snapshots, Kommando-Log (write-ahead, mit Uhrzustand) und Journal in IndexedDB; Welt und Faktorhistorie werden neu erzeugt, Intraday-Kurse bei Bedarf berechnet; Tageskerzen gespeichert, aber reproduzierbar (§6.8, §9)             | Vorschlag                         |
 | E-09 | Zahlen          | Geld in Cent, Stück in Millionstel (beides ganzzahlig), Kurse als Gleitkomma mit Preisraster (§7.1, §6.7)                                                                                                                            | Vorschlag                         |

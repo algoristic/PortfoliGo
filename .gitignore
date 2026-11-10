@@ -17,13 +17,8 @@ log.txt
 /.versions
 /coverage
 
-# Ionic
-/.ionic
-/www
-/platforms
-/plugins
-
 # Compiled output
+/www
 /dist
 /tmp
 /out-tsc

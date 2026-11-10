@@ -21,12 +21,10 @@ Rules for implementing Angular code in this repository, so that generated code l
 
 **Current state:**
 
-- `src/` is an empty bootstrap: `main.ts` with hash router, store and router store, and an empty `app.routes.ts`.
-- An earlier Ionic prototype was deleted. Its leftovers (`ionic.config.json`, `capacitor.config.ts`, Ionic schematics in `angular.json`, `src/theme/variables.scss`) are removed in AP 0.1; don't build on them. View prototype code with `git show 9bab719^:<path>`.
-- Until AP 0.1 is done:
-  - `ng lint` fails because of orphan imports in `src/environments/environment.model.ts`.
-  - `ng test` fails because there are no specs yet.
-  - `ng build` warns about `.browserslistrc`.
+- `src/` is an empty bootstrap: `main.ts` with hash router, store and router store, an empty `app.routes.ts` and an `AppComponent` with a router outlet.
+- `ng build`, `ng lint` and `ng test` are green (AP 0.1). CI runs all three before deploying.
+- Environment values (`src/environments/`): `production`, `storeDevtools` (`null` = off) and `devPages` (flag for the lab and developer pages). Only bootstrap code imports them.
+- An earlier Ionic prototype was deleted; don't build on it. View prototype code with `git show 9bab719^:<path>`.
 
 **Planned architecture (TS §2, §11):**
 

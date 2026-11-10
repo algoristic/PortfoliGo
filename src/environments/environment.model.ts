@@ -1,9 +1,9 @@
-import { IndexedDbConfig } from '../app/idb/data-access/service/idb.config';
-import { NgRxDevToolsConfig } from '../app/ngrx/utils/ngrx.providers';
-import { CreateUserConfig } from '../app/users/feature/create-user/create-user.config';
+import { StoreDevtoolsOptions } from '@ngrx/store-devtools';
 
 export interface Environment {
   production: boolean;
-  ngrxDevToolsConfig: NgRxDevToolsConfig;
-  idbConfig: IndexedDbConfig;
+  /** `null` disables the NgRx Store Devtools. */
+  storeDevtools: StoreDevtoolsOptions | null;
+  /** Enables the simulation lab (`/lab`) and other developer pages. */
+  devPages: boolean;
 }
