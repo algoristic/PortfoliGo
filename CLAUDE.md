@@ -1,6 +1,60 @@
 # CLAUDE.md
 
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 Rules for implementing Angular code in this repository, so that generated code looks like code a team member would write. If a `CLAUDE.md` in a parent directory says something different, this file wins.
+
+## Project context
+
+**PortfoliGo** is a browser-based stock-market and personal-finance simulation game (PWA, German UI). The source of truth for what to build lives in `docs/`, and planning information lives only there:
+
+- `docs/specs/produktspezifikation.md` (PS): vision, domain model, user stories (`US-xx-nn`), UI/UX concept.
+- `docs/specs/technische-spezifikation.md` (TS): architecture, time and market model, engine, persistence, frontend architecture (§11), decisions `E-xx` (§16).
+- `docs/projektplan.md`: milestones M0–M6 split into work packages (`AP x.y`), status table (§4), open decisions (§3), change log (§7).
+
+**Session workflow:** Work happens one AP at a time ("Setze AP x.y aus `docs/projektplan.md` um"). Follow projektplan §2.3 and the Definition of Done in §2.4:
+
+- Check that the AP's dependencies are done.
+- Ask before building on a decision that is still "Vorschlag".
+- Update the status and the change log.
+- If the implementation deviates from the spec, update the spec.
+
+**Current state:**
+
+- `src/` is an empty bootstrap: `main.ts` with hash router, store and router store, and an empty `app.routes.ts`.
+- An earlier Ionic prototype was deleted. Its leftovers (`ionic.config.json`, `capacitor.config.ts`, Ionic schematics in `angular.json`, `src/theme/variables.scss`) are removed in AP 0.1; don't build on them. View prototype code with `git show 9bab719^:<path>`.
+- Until AP 0.1 is done:
+  - `ng lint` fails because of orphan imports in `src/environments/environment.model.ts`.
+  - `ng test` fails because there are no specs yet.
+  - `ng build` warns about `.browserslistrc`.
+
+**Planned architecture (TS §2, §11):**
+
+- A pure, deterministic `GameEngine` runs in a Web Worker and is authoritative for all game rules.
+- The UI sends commands through an `EngineService`, and NgRx holds only throttled projections (TS §11.3).
+- Market prices are a pure function of seed, simulation version and game time (`priceAt`, bridge model, E-20).
+- Simulation code follows the determinism rules in TS §4.5.
+- Domain folders and slices follow TS §11.1 and §11.3.
+- The additions and exceptions to this file proposed in TS §11.2 apply only once they are adopted (AP 0.2).
+
+**Repo facts the rules below don't state:**
+
+- Component/directive prefix `app`; eslint enforces the class suffixes `Page`/`Component`.
+- Prettier `printWidth` is 100.
+- No UI framework besides the Angular CDK. Every new runtime dependency needs an entry in TS §16.
+- `npm run build` writes to `www/`. Every push to `main` builds and deploys via SFTP (`.github/workflows/publish.yml`).
+
+**Commands** (in addition to §11):
+
+| Task              | Command                                                                                       |
+| ----------------- | --------------------------------------------------------------------------------------------- |
+| Select Node first | `nvm use` (`.nvmrc` = 22.22.3; the shell default 22.12 is too old for Angular CLI 22)         |
+| Dev server        | `npm start` (port 4711); `ng serve --ssl --host 0.0.0.0` for phones (HTTPS-only browser APIs) |
+| Single spec file  | `ng test --watch=false --include src/app/<path>/<name>.spec.ts`                               |
+| Tests by name     | `ng test --watch=false --filter '<regex>'`                                                    |
+| Extract i18n      | `npm run translate` → root `messages.xlf`                                                     |
+
+Tests run with Vitest under jsdom (`@angular/build:unit-test`, setup in `src/test-setup.ts`).
 
 ## 0. How to use this file
 
