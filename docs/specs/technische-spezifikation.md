@@ -267,9 +267,9 @@ Kommandos der UI werden zwischen zwei Ticks angewendet und mit dem Tick protokol
 
 ### 4.1 Seed
 
-- Der Seed ist frei wählbarer Text. Vorschläge sind gut teilbar, z. B. `kupfer-falke-731` (zwei Wörter und eine Zahl).
+- Der Seed ist frei wählbarer Text. Vorschläge sind gut teilbar, z. B. `kupfer-falke-731`: zwei deutsche Wörter aus festen Listen (je 100, nur `a–z`, ohne Umlaute) und eine Zahl von 100 bis 999 (`generateSeed` in `simulation/util`). Die Zufallsquelle für Vorschläge übergibt der Aufrufer (`crypto.getRandomValues`); sie gehört nicht zur Simulation.
 - Normalisierung: Leerraum am Rand entfernen, Kleinschreibung, Unicode-Normalform NFC.
-- Ableitung: Ein 128-Bit-Hash (z. B. MurmurHash3 x86_128, in TypeScript implementiert) des normalisierten Seeds ergibt den **Seed-Schlüssel** `seedKey` (4 × uint32). Er braucht keine kryptografische Stärke, ist synchron berechenbar und funktioniert ohne sicheren Kontext.
+- Ableitung: MurmurHash3 x86_128 (Hash-Seed 0, in TypeScript implementiert) über die UTF-8-Bytes des normalisierten Seeds ergibt den **Seed-Schlüssel** `seedKey` (4 × uint32, h1–h4). Er braucht keine kryptografische Stärke, ist synchron berechenbar und funktioniert ohne sicheren Kontext.
 
 ### 4.2 Zufallsströme
 
@@ -277,19 +277,19 @@ Kommandos der UI werden zwischen zwei Ticks angewendet und mit dem Tick protokol
 const rng = createStream(seedKey, `market/instrument/${instrumentId}/${dayIndex}`);
 ```
 
-- Der Startzustand jedes Stroms ist ein 128-Bit-Hash aus `seedKey` und einem stabilen Schlüssel. Generator: `sfc32` (schnell, gute statistische Qualität, 128-Bit-Zustand); die ersten Ausgaben werden verworfen. Mit 128 Bit sind Kollisionen zwischen Strömen praktisch ausgeschlossen – bei nur 32 Bit gäbe es schon in einem Spieljahrzehnt Dutzende identische Ströme.
+- Der Startzustand jedes Stroms ist MurmurHash3 x86_128 über die 16 Bytes von `seedKey` (little-endian) gefolgt von den UTF-8-Bytes eines stabilen Schlüssels; h1–h4 werden zu a, b, c und Zähler von `sfc32` (schnell, gute statistische Qualität, 128-Bit-Zustand). Die ersten 12 Ausgaben werden verworfen. Mit 128 Bit sind Kollisionen zwischen Strömen praktisch ausgeschlossen – bei nur 32 Bit gäbe es schon in einem Spieljahrzehnt Dutzende identische Ströme.
 - Beispiele für Schlüssel: `world/companies`, `world/banks`, `market/regime/<tag>`, `market/factor/<id>/<tag>` (Tagesschritt), `market/factor/<id>/<tag>/bridge/<intervall>` (Minutenwerte), `market/instrument/<id>/<tag>` (Tagesschritt), `market/instrument/<id>/<tag>/bridge` (Minutenwerte), `life/living-costs/<monat>`.
 - **Vorteile:** Ströme sind unabhängig (ein neues Instrument verschiebt keine anderen Kurse); jeder Tag eines Faktors oder Instruments lässt sich einzeln neu erzeugen – die Grundlage des Brückenmodells (§6.1); Spielerentscheidungen ziehen nie aus Marktströmen.
 
 ### 4.3 Verteilungen
 
-Gleichverteilung (32 oder 53 Bit), Normalverteilung (Marsaglia-Polarmethode), Poisson (Inversion für kleine λ), Lognormal, gewichtete Auswahl, Mischen (Fisher-Yates). Alle als reine Funktionen über einem Strom.
+Gleichverteilung (32 oder 53 Bit; ganzzahlig ohne Modulo-Verzerrung), Normalverteilung (Marsaglia-Polarmethode; der zweite Wert eines Paars wird im Strom gemerkt und beim nächsten Aufruf verwendet), Poisson (Inversion für 0 ≤ λ ≤ 30), Lognormal, gewichtete Auswahl, Mischen (Fisher-Yates). Alle als reine Funktionen über einem Strom (`simulation/util/distributions.ts`).
 
 ### 4.4 Deterministische Mathematik
 
 `Math.exp`, `Math.log`, `Math.pow`, `Math.sin` usw. sind laut ECMAScript implementierungsabhängig; V8, SpiderMonkey und JavaScriptCore können im letzten Bit abweichen. Über viele Ticks und an Schwellen (Limit erreicht? Rundung auf Cent?) würde das browserübergreifend zu anderen Ergebnissen führen.
 
-Deshalb nutzt Simulationscode nur IEEE-754-exakte Operationen (`+ − × ÷`, `Math.sqrt`, `Math.floor`, `Math.round`, `Math.abs`, `Math.min`, `Math.max`) und eigene Implementierungen `detExp` und `detLog` (Portierung aus fdlibm oder gleichwertig, Genauigkeit ≤ 1 ulp, bitidentisch auf allen Engines). Potenzen werden über `detExp(b × detLog(a))` oder Multiplikation gebildet. Die UI darf `Math.*` frei verwenden.
+Deshalb nutzt Simulationscode nur IEEE-754-exakte Operationen (`+ − × ÷`, `Math.sqrt`, `Math.floor`, `Math.round`, `Math.abs`, `Math.min`, `Math.max`) und eigene Implementierungen `detExp` und `detLog` (Portierung von fdlibm 5.3 `e_exp.c` und `e_log.c`, Genauigkeit ≤ 1 ulp, bitidentisch auf allen Engines). Potenzen werden über `detExp(b × detLog(a))` oder Multiplikation gebildet, nicht mit `**`. Die UI darf `Math.*` frei verwenden. Eine ESLint-Regel für `simulation`, `world` und `market` (`domain`, `util`, ohne Specs) verbietet die nicht exakten `Math`-Funktionen, `**`, `Math.random`, `Date.now`, `new Date`, `performance.now` und `crypto`.
 
 ### 4.5 Regeln für Simulationscode
 
@@ -304,7 +304,7 @@ Deshalb nutzt Simulationscode nur IEEE-754-exakte Operationen (`+ − × ÷`, `M
 
 ### 4.6 Tests
 
-- **Golden Master:** Seed `golden-1`, ein Spieljahr; die Prüfsumme über alle Tagesschlusskurse und über die Minutenkurse einer festen Stichprobe von Instrument-Tagen (Float64-Bytes) ist als Konstante eingecheckt. Bricht der Test, ändert sich die Welt für bestehende Seeds – dann ist `simVersion` zu erhöhen (§15).
+- **Golden Master:** Seed `golden-1`, ein Spieljahr; die Prüfsumme über alle Tagesschlusskurse und über die Minutenkurse einer festen Stichprobe von Instrument-Tagen ist als Konstante eingecheckt. Prüfsumme: inkrementeller MurmurHash3 x86_128 über die Float64-Bytes (little-endian), als 32 Hex-Zeichen; `-0` und `0` unterscheiden sich, NaN wird kanonisch gehasht (`Checksum` in `simulation/util`). Bricht der Test, ändert sich die Welt für bestehende Seeds – dann ist `simVersion` zu erhöhen (§15).
 - **Granularität:** ein Lauf am Stück gegenüber 1.000 Teilstücken – identisch.
 - **Snapshot:** Snapshot, Restore und Weiterlauf gegenüber ununterbrochenem Lauf – identisch.
 - **Beobachtungsunabhängigkeit:** Die Markt-Prüfsumme ist mit und ohne Abfragen, Abos und Orders identisch.
@@ -1242,7 +1242,7 @@ Status: **Vorschlag** = von Claude vorgeschlagen, Bestätigung durch den Product
 | ---- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- |
 | E-01 | Architektur     | Autoritative, deterministische Engine im Web Worker; UI mit NgRx hält nur Projektionen (§2)                                                                                                                                          | Vorschlag                    |
 | E-02 | Zeitmodell      | Tick = 1 Spielminute; fester Kalender (Epoche 01.01.2020, Start Mo 01.04.2030 00:00); Stufen aus §3.4; im Hintergrund und geschlossen Echtzeit (Spielereinstellung, alternativ Pause); eine Pause des Anwenders bleibt bestehen (§3) | Vorschlag – bitte bestätigen |
-| E-03 | Zufall          | Zufallsströme aus Seed-Schlüssel und Schlüssel per 128-Bit-Hash, `sfc32`, eigene `detExp`/`detLog` (§4)                                                                                                                              | Vorschlag                    |
+| E-03 | Zufall          | Zufallsströme aus Seed-Schlüssel und Schlüssel per 128-Bit-Hash, `sfc32`, eigene `detExp`/`detLog` (§4)                                                                                                                              | entschieden (10.11.2026)     |
 | E-04 | Charts          | lightweight-charts für interaktive Charts, eigene SVG-Komponenten für Sparklines und Donuts (§11.7)                                                                                                                                  | Vorschlag – Spike in AP 1.7  |
 | E-05 | Plattform       | PWA im MVP; Capacitor als optionaler Meilenstein N1, Android zuerst; Ports jetzt vorbereiten (§13)                                                                                                                                   | Vorschlag – Diskussion       |
 | E-06 | Styling         | Tailwind CSS v4 mit semantischen Tokens, Dark Mode als Standard, globaler Einstieg als CSS, Browserslist angehoben (§11.5, §1.3); Schrift Inter Variable über `@fontsource-variable/inter`                                           | entschieden (10.11.2026)     |

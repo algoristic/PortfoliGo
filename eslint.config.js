@@ -57,6 +57,59 @@ module.exports = tseslint.config(
     },
   },
   {
+    // Determinism rules for simulation code (TS §4.4, §4.5); the UI may use Math.* freely.
+    files: ['src/app/{simulation,world,market}/{domain,util}/**/*.ts'],
+    ignores: ['**/*.spec.ts'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        ...[
+          'random',
+          'exp',
+          'expm1',
+          'log',
+          'log1p',
+          'log2',
+          'log10',
+          'pow',
+          'sin',
+          'cos',
+          'tan',
+          'asin',
+          'acos',
+          'atan',
+          'atan2',
+          'sinh',
+          'cosh',
+          'tanh',
+          'cbrt',
+          'hypot',
+        ].map((property) => ({
+          object: 'Math',
+          property,
+          message: 'Not deterministic across engines: use detExp/detLog (TS §4.4) or streams.',
+        })),
+        { object: 'Date', property: 'now', message: 'Time comes from the tick (TS §4.5).' },
+        { object: 'performance', property: 'now', message: 'Time comes from the tick (TS §4.5).' },
+      ],
+      'no-restricted-globals': [
+        'error',
+        { name: 'crypto', message: 'Randomness comes from streams (TS §4.5).' },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'BinaryExpression[operator="**"]',
+          message: 'Not deterministic across engines: use multiplication or detExp/detLog.',
+        },
+        {
+          selector: 'NewExpression[callee.name="Date"]',
+          message: 'Time comes from the tick (TS §4.5).',
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.html'],
     extends: [...angular.configs.templateRecommended],
     rules: {},
