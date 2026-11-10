@@ -1,6 +1,6 @@
 # PortfoliGo – Technische Spezifikation
 
-> **Status:** Entwurf v0.1 · **Stand:** 09.11.2026 · **Grundlage:** [Ideensammlung](./_portfoligo.md)
+> **Status:** Entwurf v0.2 · **Stand:** 10.11.2026
 > **Siehe auch:** [Produktspezifikation](./produktspezifikation.md) · [Projektplan](../projektplan.md)
 
 Dieses Dokument beschreibt, _wie_ PortfoliGo gebaut wird. Die allgemeinen Code-Konventionen stehen in [`CLAUDE.md`](../../CLAUDE.md) und gelten unverändert; hier stehen die projektspezifischen Entscheidungen. Wo dieses Dokument Ergänzungen oder Ausnahmen zu `CLAUDE.md` vorschlägt, sind sie in [§11.2](#112-ergänzungen-für-claudemd) gesammelt. Entscheidungen und ihr Status stehen in [§16](#16-entscheidungen), Risiken in [§17](#17-risiken).
@@ -93,7 +93,7 @@ flowchart LR
 
 1. **Die Engine ist autoritativ.** Alle Spielregeln laufen im Worker. Die UI sendet Kommandos und zeigt Projektionen; sie rechnet keine Spielregeln nach (Ausnahme: Vorschauen, die dieselben Domain-Funktionen nutzen).
 2. **Die Engine ist rein.** `GameEngine` hat keine Abhängigkeit zu DOM, Angular, Uhr oder Speicher. Dadurch ist sie in Vitest ohne TestBed testbar und vollständig reproduzierbar. I/O findet nur im Worker-Host statt.
-3. **Der Markt hängt nicht vom Spieler ab:** Markt = f(Seed, Simulationsversion, Spielzeit). Auch Beobachten (Abfragen, Abos) und Handeln verändern den Marktzustand nicht (§6.6).
+3. **Der Markt hängt nicht vom Spieler ab:** Markt = f(Seed, Simulationsversion, Spielzeit). Jeder Kurs ist eine reine Funktion der Spielzeit (`priceAt`, §6.1); vergangene Kurse werden bei Bedarf neu berechnet statt gespeichert. Auch Beobachten (Abfragen, Abos) und Handeln verändern den Marktzustand nicht (§6.6).
 4. **Der Spielerzustand ist reproduzierbar:** Spielerzustand = f(Startbedingungen, Markt, Kommandos). Kommandos sind die einzige nicht-deterministische Eingabe; darauf beruht die Persistenz (§9).
 5. **Market-Data-Feed-Prinzip:** Die UI abonniert Kurse nur für die Instrumente, die die aktuelle Ansicht braucht, und erhält Projektionen gedrosselt (§8.4) – wie ein Client einer echten Handelsplattform.
 
@@ -130,31 +130,58 @@ type Tick = number; // ganze Spielminuten seit der Epoche 01.01.2020, 00:00 Uhr 
 
 - **Epoche** 01.01.2020, 00:00 Uhr. **Spielstart (Vorschlag, E-02):** Montag, 01.04.2030, 00:00 Uhr = Tick 5.389.920.
 - Der Start an einem Monatsersten sorgt für einen vollständigen ersten Monat: Der Bank-Lauf um 06:00 Uhr bucht die Lebenshaltung, das erste Gehalt folgt am Monatsende.
-- Die gut zehn Jahre vor dem Start sind Vorlauf: bis Ende Februar 2030 in Tagesauflösung, der März 2030 bereits im Minutentakt (§6.8).
+- Die gut zehn Jahre vor dem Start sind Vorlauf. Er entsteht mit demselben Modell wie das Spiel und ist ebenso minutengenau abrufbar (§6.8).
 - Der Kalender ist für alle Spieler gleich. Nur so ergibt derselbe Seed dieselbe Welt, und fiktive Zukunftsdaten werden nicht mit echten Kursverläufen verwechselt.
 - Eine Spielzeitzone ohne Sommerzeit (angelehnt an MEZ). Umrechnungen nutzen ausschließlich UTC-Arithmetik (`Date.UTC`, `getUTC*`), nie die lokale Zeitzone.
 - Reine Kalenderfunktionen in `clock/domain`: Tick ↔ Datum, Wochentag, Tagesindex, Monats- und Jahresgrenzen, Bankarbeitstage (Mo–Fr; Feiertage ab Stufe 2), erster und letzter Bankarbeitstag eines Monats.
 
 ### 3.2 Tick: eine Spielminute (E-02)
 
-Ein Tick ist die kleinste Zeiteinheit für Kurse, Orders und Buchungen.
+Ein Tick ist die kleinste Zeiteinheit für Kurse, Orders und Buchungen. Kurse werden dabei nicht Minute für Minute fortgeschrieben, sondern mit dem **Brückenmodell** berechnet (E-20, §6.1): Ein Tagesschritt legt um 00:00 Uhr die Stützpunkte eines Handelstags fest, Minutenkurse entstehen bei Bedarf als Brownsche Brücke dazwischen. Der Aufwand hängt so an den Instrumenten, die minutengenau gebraucht werden, nicht an der Größe der Welt. Das ist ausschlaggebend, weil die Welt mit den Assetklassen späterer Stufen deutlich größer wird (PS §8).
 
-**Messung** (Mini-Benchmark, Node 22.22/V8, Entwicklungsrechner, 09.11.2026): 48 Faktoren, die wochentags rund um die Uhr laufen, und 200 Aktien mit 8,5 Stunden Handelszeit und je sechs Faktorladungen. Ergebnis: **1 Spieljahr ≈ 2,0 s** Rechenzeit, 1 Spielwoche ≈ 38 ms. Bei 1 w/s belegt die Rohsimulation also rund 4 % eines Kerns. Gemessen wurde mit `Math.exp` und `Math.log`; mit den deterministischen Varianten (§4.4) wird in AP 1.4 nachgemessen. Für Indizes, Orders, Aggregation und Persistenz wird ein Faktor 2 eingeplant.
+**Messung** (Prototyp vom 09.11.2026, Node 22.22/V8, Entwicklungsrechner; Rohwerte ohne Orders, Persistenz und Ereignisse). Der Prototyp bildet das Modell aus §6 vereinfacht nach: vier Börsenregionen mit den Handelszeiten aus §3.3 und 10 Faktor-Stützpunkten je Tag; Aktien mit sechs Faktorladungen (Welt, Region, vier weitere), Volatilität 20–45 % p. a., Overnight-Anteil 25 %, vier Sprünge pro Jahr (Mittel −1 %, Streuung 9 %); `sfc32` je Faktor bzw. Instrument und Tag mit vereinfachtem Seeding; `Math.exp`/`Math.log` statt `detExp`/`detLog`.
+
+| Vorgang                                                               | Standardwelt (200 Aktien, 48 Faktoren) | große Welt (10.000 Aktien, 120 Faktoren)                     |
+| --------------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------ |
+| Tagesschritte aller Faktoren und Aktien je Spieljahr                  | 10 ms                                  | 295 ms                                                       |
+| Minutenverläufe aller Faktoren je Spieljahr                           | 350 ms                                 | 763 ms                                                       |
+| Minutenverlauf einer Aktie für einen Handelstag                       | 17 µs                                  | 17 µs                                                        |
+| 1 Spieljahr live                                                      | 1,3 s (alle Aktien minutengenau)       | 1,3 s (50 Instrumente minutengenau, breite Indizes genähert) |
+| Last bei 1 w/s                                                        | 2,4 % eines Kerns                      | 2,5 % eines Kerns                                            |
+| 1 Spieljahr nachberechnen ohne offene Orders                          | 0,01 s                                 | 0,3 s                                                        |
+| Minutenchart einer Aktie für einen beliebigen vergangenen Tag         | 0,2 ms                                 | 0,2 ms                                                       |
+| Tageskerzen einer Aktie mit Hoch und Tief über 10 Jahre neu berechnen | 0,42 s                                 | 0,42 s                                                       |
+
+Für `detExp`/`detLog` (§4.4) sowie Orders, Persistenz und Ereignisse wird ein Faktor 4 eingeplant; nachgemessen wird in AP 1.4 und AP 1.5. Nicht gemessen sind Smartphones, ein eigener Strom je Faktor-Intervall (spart bei Neuberechnungen geschätzt rund zwei Drittel der Faktorbrücken, weil nur die Intervalle der Handelszeit nötig sind) und zweistufige Brücken für breite Indizes (§6.6).
 
 Folgerungen:
 
-- 1 w/s ist problemlos möglich. Eine Stufe 1 Monat/s (rund 15–35 % eines Kerns) kann nach Messung freigeschaltet werden.
-- Nachberechnung: ein Monat ≈ 0,2–0,4 s, ein Jahr ≈ 2–4 s.
+- 1 w/s belegt mit der Standardwelt rund 10 % eines Kerns. Eine Stufe 1 M/s ist möglich.
+- Nachberechnung und Vorspulen rechnen Tagesschritte und nur die Minutenverläufe, die offene Orders brauchen (§3.7): ein Spieljahr ohne offene Orders in deutlich unter einer Sekunde, mit Orders auf ETFs (exakte Indizes, §6.6) in wenigen Sekunden.
 - Bei 1 w/s vergehen rund 70 Spieljahre pro Spielstunde. Lange Spiele sind also der Normalfall; Speicher (§9.6) sowie Export und Import (§10) sind darauf ausgelegt.
-- Bei Echtzeit (1 s/s) ändern sich Kurse einmal pro Minute. Für später vorgemerkt: Sekundenwerte zwischen zwei Minuten per deterministischer Brownscher Brücke.
+- Eine größere Welt und weitere Assetklassen kosten live kaum zusätzliche Rechenzeit (§6.10).
+- Bei Echtzeit (1 s/s) ändern sich Kurse einmal pro Minute. Für später vorgemerkt: Sekundenwerte zwischen zwei Minuten, ebenfalls per Brücke.
 
-Verworfene Alternativen:
+**Verworfen: Minutenmodell** – jede Aktie in jeder Handelsminute fortschreiben. Es ist einfacher, aber der Aufwand wächst mit der Größe der Welt (Messung wie oben, inklusive Kursberechnung und Kerzen-Aggregation je Minute):
 
-| Alternative                                 | Bewertung                                                                                                                                                                                                               |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1 Tick = 1 Stunde                           | Zu grob für Intraday-Handel und Echtzeit; Kurse stünden bei 1 s/s eine Stunde still.                                                                                                                                    |
-| 1 Tick = 1 Sekunde                          | 60-fache Last ohne spielerischen Mehrwert.                                                                                                                                                                              |
-| Tages-Simulation mit Intraday-Interpolation | Sehr schnelle Nachberechnung, aber deutlich komplexer (Brücken, konsistente Hoch- und Tiefkurse, bedarfsweise Erzeugung). Vorgemerkt als Optimierung, falls die Wiederherstellung langer Kurshistorien zu langsam wird. |
+| Aktien (Faktoren) | 1 Spieljahr rechnen (Rohwert) | Last bei 1 w/s (Rohwert) |
+| ----------------- | ----------------------------- | ------------------------ |
+| 200 (48)          | 2,4 s                         | 4,7 % eines Kerns        |
+| 1.000 (60)        | 7,9 s                         | 15 %                     |
+| 2.000 (80)        | 15 s                          | 29 %                     |
+| 10.000 (120)      | 77 s                          | 149 %                    |
+
+- Selbst mit großzügigen Budgets (1 w/s unter 25 % eines Kerns, ein Jahr Nachberechnung unter 10 s, jeweils mit Faktor 2 für Orders und Persistenz) wäre bei rund 600–800 Aktien Schluss.
+- Bei 10.000 Aktien wäre 1 w/s nicht erreichbar – mit Orders und Persistenz bräuchte es rund drei Kerne –, und das Nachrechnen der Kurshistorie eines Spielers mit 70 Spieljahren dauerte beim Import rund 3 Stunden.
+- Der Vorlauf bräuchte ein zweites Verfahren in Tagesschritten mit genäherten Hoch- und Tiefkursen, das zum Minutenmodell passend kalibriert werden müsste.
+- Intraday-Kerzen müssten gespeichert werden: rund 30 MB je Spieler in der Standardwelt, rund 1,2 GB bei 10.000 Aktien.
+
+Weitere verworfene Alternativen:
+
+| Alternative        | Bewertung                                                                            |
+| ------------------ | ------------------------------------------------------------------------------------ |
+| 1 Tick = 1 Stunde  | Zu grob für Intraday-Handel und Echtzeit; Kurse stünden bei 1 s/s eine Stunde still. |
+| 1 Tick = 1 Sekunde | 60-mal mehr Ticks für Uhr, Orders und Ereignisse ohne spielerischen Mehrwert.        |
 
 ### 3.3 Handelszeiten (E-18)
 
@@ -212,20 +239,21 @@ targetTick(now) = anchorTick + floor((now − anchorRealTime) / 1000 × ticksPer
 
 - **Nachberechnung beim Laden:** Δ = jetzt − `lastSeenAt` (negative Werte werden zu 0, z. B. bei zurückgestellter Systemuhr). Ist das Spiel nicht pausiert und `backgroundMode` = `realtime`, wird bis `savedTick + Δ / 60 s` im Stapelbetrieb gerechnet. Der Fortschritt wird etwa alle 100 ms gemeldet. Kommandos sind währenddessen gesperrt. Ereignisse werden gespeichert, aber nicht als Toast gezeigt, sondern für den Abwesenheitsbericht zusammengefasst.
 - **Vorspulen:** derselbe Stapelbetrieb bis zum Ziel; abbrechbar nach dem laufenden Tick; bricht ab, wenn ein Ereignis mit Auto-Pause eintritt.
+- **Stapelbetrieb:** Tagesschritte für den ganzen Markt (§6.1); Minutenkurse nur dort, wo offene Orders sie brauchen – für Instrumente mit offenen Orders und für Indizes hinter ETFs mit offenen Orders. Sparpläne nutzen den Eröffnungskurs, Dividenden und Bank-Lauf sind Tagesgrößen. Hoch- und Tiefkurse der übersprungenen Tage ergänzt danach ein Hintergrundauftrag (§6.8).
 - **Determinismus:** Stapelbetrieb und Live-Betrieb liefern identische Ergebnisse (Test, §4.6).
 
 ### 3.8 Ablauf eines Ticks
 
 1. **Terminplaner:** alle Termine mit Fälligkeit ≤ Tick, in fester Reihenfolge:
-   - Tageswechsel: Zinsabgrenzung, Tageswerte, tägliche Fortschreibung der ETF- und Indexzustände (§6.6).
+   - Tageswechsel: an Handelstagen zuerst der **Markt-Tagesschritt** (§6.1) – Marktphase, Trends, Volatilitäten und Stützpunkte der Faktoren, dann die Tagesstützpunkte aller Instrumente (Eröffnung mit Overnight-Effekt und Ex-Tag-Abschlag, Schluss, Sprünge) und die tägliche Fortschreibung der ETF- und Indexzustände (§6.6). Danach Zinsabgrenzung und Tageswerte.
    - Bank-Lauf: zuerst Gutschriften (Gehalt, Dividenden, Zinsen), dann Lastschriften (Lebenshaltung, Gebühren).
+   - Handelsbeginn je Börse: Ex-Tag-Wirkung auf Index- und ETF-Zustände (`R`, Ausschüttungstopf), Sparpläne zum Eröffnungskurs.
+   - Handelsschluss je Börse: Tageskerzen der Instrumente und Indizes festschreiben, deren Handel endet (§6.8).
    - Orderablauf, Monats- und Jahresabschluss.
-2. **Faktoren** fortschreiben (wochentags); zum Tagesbeginn zuerst Marktphase und Trends.
-3. **Instrumente** offener Börsen fortschreiben. Bei Handelsbeginn: Overnight-Effekt, Ex-Dividenden-Abschlag, geplante Sprünge. Bei Handelsschluss: Tageskerze abschließen.
-4. **Handel:** Sparpläne zur Eröffnung, danach Orders der Instrumente mit geändertem Kurs prüfen und ausführen. Indexstände, ETF-Kurse sowie Geld und Brief sind dabei reine Funktionen des Kernzustands (§6.6).
-5. **Konten:** Deckung prüfen, Ereignisse erzeugen, ggf. Auto-Pause auslösen.
-6. **Aggregation:** Kerzen und Tagesreihen.
-7. **Ereignisse** puffern; der Worker-Host leitet sie gedrosselt an die UI weiter.
+2. **Handel:** für jede offene Order eines Instruments mit offener Börse den Kurs `priceAt(instrument, tick)` bestimmen, prüfen und ggf. ausführen. Geld und Brief sind reine Funktionen des Kurses (§6.7). Faktoren und Instrumente werden pro Tick nicht fortgeschrieben.
+3. **Konten:** Deckung prüfen, Ereignisse erzeugen, ggf. Auto-Pause auslösen.
+4. **Tagesreihen** fortschreiben (Vermögen zum Tagesende).
+5. **Ereignisse** puffern; der Worker-Host leitet sie gedrosselt an die UI weiter und berechnet dabei die Quotes der Abos per `priceAt` (§8.4).
 
 Kommandos der UI werden zwischen zwei Ticks angewendet und mit dem Tick protokolliert, nach dem sie wirksam werden (§8.5).
 
@@ -244,8 +272,8 @@ const rng = createStream(seedKey, `market/instrument/${instrumentId}/${dayIndex}
 ```
 
 - Der Startzustand jedes Stroms ist ein 128-Bit-Hash aus `seedKey` und einem stabilen Schlüssel. Generator: `sfc32` (schnell, gute statistische Qualität, 128-Bit-Zustand); die ersten Ausgaben werden verworfen. Mit 128 Bit sind Kollisionen zwischen Strömen praktisch ausgeschlossen – bei nur 32 Bit gäbe es schon in einem Spieljahrzehnt Dutzende identische Ströme.
-- Beispiele für Schlüssel: `world/companies`, `world/banks`, `market/regime/<tag>`, `market/factor/<id>/<tag>`, `market/instrument/<id>/<tag>`, `life/living-costs/<monat>`.
-- **Vorteile:** Ströme sind unabhängig (ein neues Instrument verschiebt keine anderen Kurse); jeder Tag eines Instruments lässt sich einzeln neu erzeugen; Spielerentscheidungen ziehen nie aus Marktströmen.
+- Beispiele für Schlüssel: `world/companies`, `world/banks`, `market/regime/<tag>`, `market/factor/<id>/<tag>` (Tagesschritt), `market/factor/<id>/<tag>/bridge/<intervall>` (Minutenwerte), `market/instrument/<id>/<tag>` (Tagesschritt), `market/instrument/<id>/<tag>/bridge` (Minutenwerte), `life/living-costs/<monat>`.
+- **Vorteile:** Ströme sind unabhängig (ein neues Instrument verschiebt keine anderen Kurse); jeder Tag eines Faktors oder Instruments lässt sich einzeln neu erzeugen – die Grundlage des Brückenmodells (§6.1); Spielerentscheidungen ziehen nie aus Marktströmen.
 
 ### 4.3 Verteilungen
 
@@ -265,22 +293,28 @@ Deshalb nutzt Simulationscode nur IEEE-754-exakte Operationen (`+ − × ÷`, `M
 4. Geldbeträge nur über die zentralen Rundungsfunktionen (§7.1).
 5. Ergebnisse dürfen nicht davon abhängen, wie viele Ticks pro Durchlauf verarbeitet werden.
 6. Abfragen, Abos, Caches und Orders verändern den Marktzustand nie (§6.6).
+7. Abfragen und Ereignisse enthalten nie Kurse nach dem aktuellen Tick. Der Tagesschritt kennt die Schlusskurse des Tages schon um 00:00 Uhr; sie bleiben intern (§6.1, §8.2).
+8. Der Endpunkt einer Brücke wird als Stützpunkt gesetzt, nie aus der Brücke errechnet (§6.1).
 
 ### 4.6 Tests
 
-- **Golden Master:** Seed `golden-1`, ein Spieljahr; die Prüfsumme über alle Tagesschlusskurse (Float64-Bytes) ist als Konstante eingecheckt. Bricht der Test, ändert sich die Welt für bestehende Seeds – dann ist `simVersion` zu erhöhen (§15).
+- **Golden Master:** Seed `golden-1`, ein Spieljahr; die Prüfsumme über alle Tagesschlusskurse und über die Minutenkurse einer festen Stichprobe von Instrument-Tagen (Float64-Bytes) ist als Konstante eingecheckt. Bricht der Test, ändert sich die Welt für bestehende Seeds – dann ist `simVersion` zu erhöhen (§15).
 - **Granularität:** ein Lauf am Stück gegenüber 1.000 Teilstücken – identisch.
 - **Snapshot:** Snapshot, Restore und Weiterlauf gegenüber ununterbrochenem Lauf – identisch.
 - **Beobachtungsunabhängigkeit:** Die Markt-Prüfsumme ist mit und ohne Abfragen, Abos und Orders identisch.
 - **Stromunabhängigkeit:** Ein zusätzliches Instrument ändert die Kurse der übrigen nicht.
+- **Bedarf gegen Vorabberechnung:** Minutenkurse, Kerzen und Indexstände sind bitgleich – ob bei Bedarf, vorab oder nach dem Verwerfen aller Caches berechnet. Die neu berechnete Historie eines einzelnen Instruments entspricht der des Gesamtlaufs.
+- **Stützpunkte:** Brücken treffen Eröffnung und Schluss bitgenau.
+- **Statistische Gleichwertigkeit:** Minutenvolatilität, Korrelation der Minutenrenditen und Tagesspanne entsprechen innerhalb fester Toleranzen einer Referenz-Simulation Minute für Minute (Testhelfer, kein Produktivcode). Die Referenz-Simulation schreibt Faktoren und unternehmensspezifischen Anteil mit denselben Parametern (Tagesvolatilitäten aus dem Tagesschritt) Minute für Minute fort; Sprünge treten je Handelsminute mit Wahrscheinlichkeit `λ / (261 · L)` auf. Verglichen wird über mindestens 3.000 Handelstage ohne Sprünge; die Prototyp-Werte in §6.1 geben die Größenordnung der Toleranzen vor.
+- **Abfragegrenze:** Keine Abfrage und kein Ereignis enthält Werte nach dem aktuellen Tick.
 
 ## 5. Weltgenerierung
 
 ### 5.1 Ablauf
 
-Seed → Weltparameter → Regionen, Länder, Börsen → Sektoren, Branchen → Unternehmen → Indizes → ETF-Emittenten und ETFs → Banken → Vorlauf-Historie in Tagesauflösung bis einen Monat vor Spielstart → Marktzustand dieses Tages.
+Seed → Weltparameter → Regionen, Länder, Börsen → Sektoren, Branchen → Unternehmen → Indizes → ETF-Emittenten und ETFs → Banken → Tagesschritte von der Epoche bis zum Spielstart (§6.1) → Marktzustand zum Spielstart.
 
-Die Welt und die Tageshistorie sind deterministisch. Sie werden bei jedem Laden in unter einer Sekunde neu erzeugt und nicht gespeichert (§9). Der letzte Monat vor dem Start wird beim Anlegen im Minutentakt simuliert (§6.8).
+Die Welt ist deterministisch. Sie wird bei jedem Laden in unter einer Sekunde neu erzeugt und nicht gespeichert (§9), ebenso die Faktorhistorie (§6.8). Den Marktzustand zum Spielstart berechnet die Engine beim Anlegen eines Spielers; der Vorlauf ist danach wie jeder Spieltag minutengenau abrufbar.
 
 ### 5.2 Umfang der Standardwelt (Vorschlag, E-13)
 
@@ -294,7 +328,7 @@ Die Welt und die Tageshistorie sind deterministisch. Sie werden bei jedem Laden 
 | ETF-Emittenten / ETFs | 5 / ca. 30  |
 | Banken                | 6–8         |
 
-Alle Mengen und Verteilungen stehen zentral in einer Weltkonfiguration, damit sie im Simulations-Labor (§14.2) kalibriert werden können.
+Alle Mengen und Verteilungen stehen zentral in einer Weltkonfiguration, damit sie im Simulations-Labor (§14.2) kalibriert werden können. Die Größe der Welt beeinflusst die Rechenzeit im Spiel kaum (§3.2); Grenzen setzen eher Bedienung, Namensgenerator und die exakt berechneten Indizes (§6.6).
 
 ### 5.3 Klassifikation und Modellwirkung
 
@@ -343,7 +377,7 @@ Die Hausbank ist immer eine Filialbank. Brokertypen führen nur Depots mit Verre
 
 ## 6. Marktmodell
 
-### 6.1 Struktur
+### 6.1 Struktur und Berechnung (E-20)
 
 Der Markt ist ein Mehrfaktormodell auf Log-Kursen:
 
@@ -351,10 +385,41 @@ Der Markt ist ein Mehrfaktormodell auf Log-Kursen:
 ln P_i(t) = c_i + Σ_k β_ik · F_k(t) + U_i(t)
 ```
 
-- `F_k(t)` ist der kumulierte Log-Stand von Faktor k. Faktoren laufen **wochentags jede Minute, rund um die Uhr**.
-- `U_i(t)` ist der unternehmensspezifische (idiosynkratische) Anteil. Er läuft nur während der Handelszeit der Börse von Instrument i, plus Sondereffekte bei Handelsbeginn.
+- `F_k(t)` ist der kumulierte Log-Stand von Faktor k. Faktoren bewegen sich **wochentags rund um die Uhr**.
+- `U_i(t)` ist der unternehmensspezifische (idiosynkratische) Anteil. Er bewegt sich nur während der Handelszeit der Börse von Instrument i, plus Sondereffekte bei Handelsbeginn.
 - `c_i` ist eine Konstante aus dem Startkurs.
 - Ist die Börse geschlossen, bleibt der offizielle Kurs stehen. Bei Handelsbeginn springt er auf den Modellwert. So entsteht die Overnight-Lücke automatisch aus allem, was die Faktoren während der Schließzeit bewegt hat – „Asien schließt schwach, Europa eröffnet schwächer".
+
+**Berechnung: Brückenmodell.** Kurse werden nicht Minute für Minute fortgeschrieben (Begründung und Messungen: §3.2):
+
+1. **Tagesschritt:** An jedem Handelstag um 00:00 Uhr berechnet die Engine für alle Faktoren und Instrumente die Stützpunkte des Tages – die Faktorstände an den Grenzen der Handelszeiten (§6.2) sowie Eröffnung, Schluss und Sprünge jedes Instruments (§6.4).
+2. **Brücke:** Minutenwerte zwischen zwei Stützpunkten entstehen als Brownsche Brücke – ein Zufallspfad, der beide Stützpunkte exakt trifft – aus einem eigenen Strom je Faktor bzw. Instrument und Tag (§4.2).
+3. **Bedarf:** Minutenwerte werden nur berechnet, wenn sie gebraucht werden (offene Orders, Abos, Indizes, Charts), und je Faktor bzw. Instrument und Tag zwischengespeichert. In der Standardwelt braucht der Live-Betrieb wegen der exakten Indizes (§6.6) praktisch alle Tagesverläufe.
+
+```text
+Brownsche Brücke von X_a (Minute a) nach X_b (Minute b) mit Varianz v_m je Minute
+und Restvarianz R_j = v_j + v_(j+1) + … + v_(b−1):
+
+X_(j+1) = X_j + (v_j / R_j) · (X_b − X_j) + √(v_j · (R_j − v_j) / R_j) · z_j      für j = a … b − 2
+X_b wird als Stützpunkt gesetzt, nicht aus der Brücke errechnet.
+```
+
+- **Reine Funktion:** Jeder Kurs ist eine Funktion `priceAt(instrumentId, tick)` von Welt, Stützpunkten und Strömen. Ob und wann sie aufgerufen wird, ändert kein Ergebnis; die Beobachtungsunabhängigkeit (§4.6) folgt aus der Konstruktion. Der Cache der Tagesverläufe ist reine Optimierung und gehört weder in den Snapshot noch in die Prüfsumme.
+- **Gleichwertigkeit:** Bei gleicher Varianz je Minute hat die Brücke exakt dieselbe gemeinsame Verteilung wie eine Simulation Minute für Minute (Messung unten).
+- **Stützpunkte setzen:** In Gleitkomma gilt `a + (b − a) = b` nicht immer. Ein um ein ulp abweichender Schlusskurs könnte am Preisraster (§6.7) anders gerundet werden; deshalb Regel 8 in §4.5.
+- **Keine Vorschau:** Der Tagesschritt kennt um 00:00 Uhr bereits die Schlusskurse des Tages. Sie bleiben intern: Abfragen und Ereignisse enthalten nie Werte nach dem aktuellen Tick (§4.5, §8.2).
+- **Tagesprofil der Volatilität:** Die Varianzen `v_m` des unternehmensspezifischen Anteils dürfen über den Handelstag variieren (höher zur Eröffnung und zum Schluss), ohne die Stützpunkte zu ändern. Der Parameter ist ab AP 1.5 vorgesehen (Standard: gleichmäßig) und wird in AP 1.9 kalibriert. Ohne ihn ist die Volatilität innerhalb eines Tages konstant; Volatilitäts-Cluster und Leverage-Effekt wirken von Tag zu Tag (§6.2).
+
+**Gleichwertigkeit im Prototyp** (§3.2): 3.000 Handelstage, zwei Aktien derselben Region mit gemeinsamen Faktoren, verglichen mit einer Simulation Minute für Minute mit identischen Parametern (Tagesvolatilitäten der Faktoren aus demselben Lauf).
+
+| Kennzahl                                | ohne Sprünge: Brücke / Minute | mit Sprüngen: Brücke / Minute |
+| --------------------------------------- | ----------------------------- | ----------------------------- |
+| Volatilität der Minutenrenditen (p. a.) | 29,39 % / 29,36 %             | 34,40 % / 34,14 %             |
+| Korrelation der Minutenrenditen         | 0,175 / 0,174                 | 0,122 / 0,130                 |
+| mittlere Tagesspanne (Hoch − Tief)      | 2,81 % / 2,80 %               | 2,91 % / 2,88 %               |
+| Volatilität Eröffnung → Schluss (p. a.) | 29,02 % / 28,68 %             | 34,29 % / 33,96 %             |
+
+Ohne Sprünge stimmen die Werte bis auf die Stichprobenschwankung überein. Mit Sprüngen schwanken sie stärker, weil rund 45 Sprünge je Aktie einen großen Teil der Varianz ausmachen; die Abweichungen liegen im Rahmen dieser Schwankung.
 
 ### 6.2 Faktoren
 
@@ -367,17 +432,19 @@ ln P_i(t) = c_i + Σ_k β_ik · F_k(t) + U_i(t)
 | Stil (Value – Growth) | 1      | Stilrotation                 |
 | Größe (Small – Large) | 1      | Small-Cap-Prämie und -Risiko |
 
-Dynamik je Faktor, pro Minute (Δ = 1 / (261 · 1440) Jahre):
+Dynamik je Faktor im Tagesschritt (Handelstag, Δ_T = 1/261 Jahr). Reihenfolge: Marktphase (§6.3), Trend, Stützpunkte, Volatilität für den Folgetag.
 
 ```text
-F_k(t+Δ)    = F_k(t) + (m_k − ½·s_k²)·Δ + s_k·√Δ·z
-ln s_k(t+Δ) = ln s_k + κ_s·(ln s̄_k − ln s_k)·Δ + ξ_k·√Δ·z'      mit corr(z, z') = ρ < 0
-m_k (täglich): m_k ← m_k + κ_m·(m̄_k − m_k)·Δ_T + η_k·√Δ_T·z''   (Δ_T = ein Tag)
+m_k ← m_k + κ_m·(m̄_k − m_k)·Δ_T + η_k·√Δ_T·z_m
+F_k(g_j) = F_k(g_(j−1)) + (m_k − ½·s_k²)·Δ_j + s_k·√Δ_j·z_j                für die Stützpunkte g_1 … g_n des Tages
+ln s_k ← ln s_k + κ_s·(ln s̄_k − ln s_k)·Δ_T + ξ_k·√Δ_T·(ρ·ẑ_k + √(1 − ρ²)·z_s)   mit ρ < 0
 ```
 
+- **Stützpunkte** `g_0 = 00:00 < g_1 < … < g_n = 24:00`: alle Eröffnungs- und Schlusszeiten der Börsen (Standardwelt: rund 12). `Δ_j` ist der Abstand zweier Stützpunkte in Jahren (Minuten / (261 · 1440)).
+- **Minutenwerte** zwischen zwei Stützpunkten: Brücke (§6.1) mit Varianz `s_k² · Δ` je Minute (Δ = 1 / (261 · 1440) Jahre); ein Strom je Faktor, Tag und Intervall, sodass jedes Intervall einzeln erzeugt werden kann.
 - `m_k` ist die erwartete (arithmetische) Rendite des Faktors. Die Trends folgen einem Ornstein-Uhlenbeck-Prozess mit Halbwertszeit von Monaten bis Jahren und erzeugen Booms und Flauten ganzer Sektoren und Branchen. Beispiel aus der Ideensammlung: Energie insgesamt positiv, Öl & Gas negativ, Erneuerbare stark positiv.
-- **Stochastische Volatilität `s_k`** mit Leverage-Effekt (fallende Kurse, steigende Vola) erzeugt Volatilitäts-Cluster.
-- Am Wochenende ruhen die Faktoren. Optional in Stufe 2: Wochenend-Nachrichten als Sprung zur Montagseröffnung.
+- **Stochastische Volatilität `s_k`** gilt jeweils für einen Tag. Der Leverage-Effekt (fallende Kurse, steigende Vola) wirkt über die standardisierte Tagesrendite `ẑ_k` auf den Folgetag und erzeugt Volatilitäts-Cluster.
+- Am Wochenende ruhen die Faktoren; der Stand am Freitag um 24:00 Uhr ist der Stand am Montag um 00:00 Uhr. Optional in Stufe 2: Wochenend-Nachrichten als Sprung zur Montagseröffnung.
 
 ### 6.3 Marktphasen
 
@@ -394,33 +461,50 @@ Bei typischen Zeitanteilen (40 / 35 / 17 / 8 %) ergibt das für den Weltfaktor r
 
 ### 6.4 Unternehmensspezifischer Anteil
 
+Tagesschritt je Instrument (Handelstag, Börse mit Handelszeit von `o` bis `c`, `L = c − o` Handelsminuten):
+
 ```text
-U_i(t+Δ_h) = U_i(t) + (α_i − ½·σ_i²)·Δ_h + σ_i·√Δ_h·ε + J_i      (Δ_h = eine Handelsminute)
+U_open  = U_close(Vortag) + √0,25 · σ_i · √Δ_T · ε_on − Ex-Tag-Abschlag (§6.5)
+U_close = U_open + (α_i − ½·σ_i²)·Δ_T + √0,75 · σ_i · √Δ_T · ε + Σ J
+Minuten: U(o + j) = U_open + B(j) + Σ_(τ ≤ o + j) J
+         mit B = Brücke (§6.1) von 0 nach U_close − U_open − Σ J über L Minuten
 ```
 
-- `σ_i` je nach Größe und Risiko (Large Cap etwa 15–25 %, Small Cap 30–50 % p. a.); optional mit der Marktvolatilität skaliert.
+- `σ_i` je nach Größe und Risiko (Large Cap etwa 15–25 %, Small Cap 30–50 % p. a.); optional mit der Marktvolatilität des Tages skaliert.
 - `α_i` ist eine kleine dauerhafte Abweichung (z. B. N(0; 2 %) p. a.), damit es dauerhaft bessere und schlechtere Unternehmen gibt.
-- **Overnight:** Bei Handelsbeginn kommt ein zusätzlicher Schock hinzu. Er trägt etwa 25 % der unternehmensspezifischen Tagesvarianz; die Handelszeit entsprechend weniger.
-- **Sprünge `J_i`:** Poisson-Prozess mit 2–6 Sprüngen pro Jahr, Größe normalverteilt mit leicht negativem Mittel (z. B. −1 %) und 6–12 % Streuung. Anzahl und Minuten der Sprünge eines Tages werden zu Tagesbeginn aus dem Tagesstrom gezogen. Jeder Sprung ist ein strukturiertes Ereignis und damit später Stoff für den Newsticker.
-- Kursuntergrenze 0,01 €. Aktiensplits (Stufe 2) halten Kurse in plausiblen Bereichen.
+- **Overnight:** Der Schock zur Eröffnung trägt etwa 25 % der unternehmensspezifischen Tagesvarianz, die Handelszeit den Rest.
+- **Sprünge `J`:** Poisson-Prozess mit 2–6 Sprüngen pro Jahr, Größe normalverteilt mit leicht negativem Mittel (z. B. −1 %) und 6–12 % Streuung. Anzahl, Minuten `τ` und Größen der Sprünge eines Tages zieht der Tagesschritt; die Brücke addiert jeden Sprung ab seiner Minute. Jeder Sprung ist ein strukturiertes Ereignis, das zu seiner Minute ausgelöst wird – später Stoff für den Newsticker.
+- Kursuntergrenze 0,01 € (in der Kursfunktion, für Stützpunkte und Minutenkurse gleich). Aktiensplits (Stufe 2) halten Kurse in plausiblen Bereichen.
 
 ### 6.5 Dividenden
 
 - Frequenz nach Region: jährlich (Europa), halbjährlich (Asien-Pazifik), quartalsweise (Nordamerika). Die Ex-Tage jedes Unternehmens liegen in einem festen Jahresrhythmus aus dem Seed.
-- **Höhe:** Zielrendite × Kurs am Ankündigungstag ÷ Frequenz, auf Cent gerundet. Die Ankündigung erfolgt 20 Handelstage vor dem Ex-Tag; ab dann ist der Termin im Kalender sichtbar.
-- **Ex-Tag:** Abschlag zur Eröffnung (`U_i` sinkt um `ln(P / (P − D))`). Anspruch hat, wer am Vortag zum Handelsschluss hält.
+- **Höhe:** Zielrendite × Schlusskurs des letzten Handelstags vor der Ankündigung ÷ Frequenz, auf Cent gerundet. Kurse des Ankündigungstags selbst gehen nicht ein – der Tagesschritt kennt sie vorab, die Ankündigung würde sie sonst verraten. Die Ankündigung erfolgt 20 Handelstage vor dem Ex-Tag; ab dann ist der Termin im Kalender sichtbar.
+- **Ex-Tag:** Abschlag zur Eröffnung im Tagesschritt (`U_i` sinkt um `ln(P / (P − D))`, `P` = Eröffnungskurs vor dem Abschlag). Anspruch hat, wer am Vortag zum Handelsschluss hält.
 - **Zahltag:** Ex-Tag + 2 Bankarbeitstage; Gutschrift nach Steuer auf das Verrechnungskonto.
 - Stufe 2: Dividende aus Gewinn und Ausschüttungsquote, Kürzungen in Krisen.
 
 ### 6.6 Indizes, ETFs und abgeleitete Werte
 
 - **Kursindex:** `I(t) = Σ_i n_i · P_i(t) / D` mit Streubesitz-Aktienanzahl `n_i` und Divisor `D`. Der Divisor wird bei Änderungen der Zusammensetzung angepasst (Stufe 2).
-- **Performanceindex:** `TR(t) = I(t) · R`. Der Reinvestitionsfaktor `R` wird an jedem Ex-Tag eines Konstituenten um dessen Dividendenanteil erhöht.
-- **Indikative Werte:** Für Instrumente geschlossener Börsen gibt es einen indikativen Kurs `P_i · exp(Σ_k β_ik · (F_k(t) − F_k(t_Schluss)))`. Ein ETF auf einen nordamerikanischen Index, der vormittags an einer europäischen Börse gehandelt wird, bewegt sich so plausibel – wie bei einem Market Maker, der Terminkurse einpreist.
+- **Exakt zu jeder Minute:** Indexstände innerhalb des Tages sind die gewichtete Summe der Minutenkurse aller Werte; Werte geschlossener Börsen gehen mit ihrem letzten Kurs ein. Das kostet rund 17 µs je Wert und Handelstag, in der Standardwelt also rund 3,4 ms je Handelstag für alle Indizes zusammen. Eine billige Näherung aus aggregierten Faktorladungen weicht für schmale Indizes zu stark ab (Messung am Ende dieses Abschnitts).
+- **Große Welten (später):** Ein exakter Weltindex über 10.000 Werte kostet rund 0,17 s je Handelstag. Für sehr breite Indizes ist deshalb eine Näherung möglich (aggregierte Faktorladungen, Sprünge zu ihrer Minute, exakte Stützpunkte, ggf. zweistufig). Die Methode ist je Index Teil der Weltkonfiguration und hängt nie davon ab, ob ein Index beobachtet wird.
+- **Performanceindex:** `TR(t) = I(t) · R`. Der Reinvestitionsfaktor `R` wird an jedem Ex-Tag eines Konstituenten zu dessen Handelsbeginn um dessen Dividendenanteil erhöht.
+- **Indikative Werte:** Für Instrumente geschlossener Börsen gibt es einen indikativen Kurs `P_i · exp(Σ_k β_ik · (F_k(t) − F_k(t_Schluss)))` mit den Faktorständen aus den Brücken (§6.2). Ein ETF auf einen nordamerikanischen Index, der vormittags an einer europäischen Börse gehandelt wird, bewegt sich so plausibel – wie bei einem Market Maker, der Terminkurse einpreist.
 - **Thesaurierende ETFs:** `NAV(t) = k · TR(t)`.
 - **Ausschüttende ETFs:** `NAV(t) = k · I(t) + Topf`. Die Dividenden der Konstituenten fließen am jeweiligen Ex-Tag anteilig in den Ausschüttungstopf. Am Ex-Tag des ETFs wird der Topf ausgeschüttet; der NAV sinkt um genau diesen Betrag. Vor Kosten und Steuern haben beide Varianten dieselbe Gesamtrendite (Test).
 - **TER und Tracking:** wirken täglich als Faktor auf `k` (`k ← k · (1 − TER/365) · (1 + Tracking-Rauschen)`).
-- **Abgeleitete Werte sind reine Funktionen:** Indexstände, indikative Werte, ETF-NAV sowie Geld und Brief werden aus dem Kernzustand (Kurse, Faktorstände, `D`, `R`, `k`, Topf) berechnet und verändern ihn nie. Sie dürfen bei Bedarf berechnet und zwischengespeichert werden; solche Caches gehören weder in den Snapshot noch in die Prüfsumme. Alle zustandsbehafteten Größen (`R`, `k`, Topf, `D`) werden ausschließlich vom Terminplaner in fester Reihenfolge fortgeschrieben. Deshalb verändern Abfragen, Abos und Orders den Markt nicht (§4.6).
+- **Abgeleitete Werte sind reine Funktionen:** Indexstände, indikative Werte, ETF-NAV sowie Geld und Brief werden aus dem Kernzustand (Kurse aus `priceAt`, Faktorstände, `D`, `R`, `k`, Topf) berechnet und verändern ihn nie. Sie dürfen bei Bedarf berechnet und zwischengespeichert werden; solche Caches gehören weder in den Snapshot noch in die Prüfsumme. Alle zustandsbehafteten Größen (`R`, `k`, Topf, `D`) werden ausschließlich vom Terminplaner in fester Reihenfolge fortgeschrieben. Deshalb verändern Abfragen, Abos und Orders den Markt nicht (§4.6).
+
+**Messung zur Index-Näherung** (Prototyp, §3.2): exakter Index gegen die Näherung aus aggregierten Faktorladungen, die an Eröffnung und Schluss exakt ist; 200 Handelstage, europäischer Index. Die Gewichte sind lognormal verteilt (σ = 1,5) und damit ähnlich konzentriert wie bei echten Indizes – effektiv zählt rund ein Zehntel der Werte.
+
+| Werte im Index | größte Abweichung je Tag: Median / 99 %-Quantil | mit Sprüngen zu ihrer Minute: Median / 99 %-Quantil | Tagesspanne des Index (Median) |
+| -------------- | ----------------------------------------------- | --------------------------------------------------- | ------------------------------ |
+| 20             | 0,53 % / 1,96 %                                 | 0,51 % / 1,05 %                                     | 1,37 %                         |
+| 200            | 0,36 % / 1,00 %                                 | 0,35 % / 0,77 %                                     | 1,23 %                         |
+| 1.000          | 0,16 % / 0,44 %                                 | 0,15 % / 0,24 %                                     | 1,07 %                         |
+
+Gemessen an der typischen Tagesspanne ist die Abweichung für Leit- und Sektorindizes zu groß; deshalb rechnet die Standardwelt alle Indizes exakt. Werden die Sprünge der Werte zu ihrer Minute eingerechnet, sinken vor allem die Ausreißer; der Rest stammt aus der Diffusion der Einzelwerte. Eine zweistufige Brücke (exakter Index auf einem 15-Minuten-Raster, Näherung dazwischen) sollte die Abweichung deutlich verringern; das ist nicht gemessen.
 
 ### 6.7 Geld- und Briefkurs
 
@@ -436,30 +520,35 @@ ask    = roundUp(mid × (1 + spread/2), priceStep(mid))     mit ask − bid ≥ 
 
 ### 6.8 Kerzen und Historie
 
-- **Live:** Minutenwerte werden je Instrument zu Kerzen 1m → 1h → 1d aggregiert (Open, High, Low, Close; Volumen ab Stufe 2).
-- **Speicherung (Vorschlag, E-08):** 1d vollständig, 1h rollierend für zwei Spieljahre, 1m rollierend für fünf Handelstage. Tageskerzen, die älter als 20 Spieljahre sind, werden zu Wochenkerzen verdichtet. Kerzen liegen getrennt vom Snapshot in Blöcken je Instrument und Zeitraum als `Float32Array`.
-- **Vorlauf-Historie:** von der Epoche bis Ende Februar 2030 in Tagesauflösung, mit demselben Modell in Tagesschritten (Faktoren, Phasen, Sprünge, Dividenden); Hoch- und Tiefkurse aus einer Näherung der Tagesspanne. Sie ist deterministisch und wird bei jedem Laden in unter einer Sekunde neu erzeugt statt gespeichert.
-- **Letzter Monat vor dem Start:** Beim Anlegen eines Spielers simuliert die Engine den März 2030 bereits im Minutentakt (rund 0,2–0,4 s) und speichert die Kerzen wie im Spiel. So haben auch die Zeiträume 1T, 5T und 1M ab dem ersten Spieltag Daten.
-- **Optimierung (später):** Intraday-Kerzen vergangener Tage aus gespeicherten Tages-Marktzuständen bei Bedarf neu erzeugen, statt sie zu speichern.
+- **Intraday-Kerzen** (1m bis 1h) entstehen bei jeder Abfrage aus den Minutenkursen (§6.1) und werden nie gespeichert. Ein Aktien-Tag kostet rund 17 µs plus die Brücken seiner Faktoren, ein Index-Tag die Minutenkurse aller Werte (Standardwelt: rund 5 ms, Rohwert).
+- **Tageskerzen** (Open, High, Low, Close; Volumen ab Stufe 2): Eröffnung und Schluss sind Stützpunkte, Hoch und Tief stammen aus dem Minutenverlauf.
+  - **Live** berechnet die Engine in der Standardwelt die Minutenverläufe aller Instrumente – die exakten Indizes brauchen sie ohnehin – und schreibt die Tageskerzen zum Handelsschluss (§3.8).
+  - Nach **Stapelbetrieb** (Vorlauf beim Anlegen, Nachberechnung, Vorspulen, Import) liegen zunächst nur Eröffnung und Schluss vor. Ein zeitgeteilter **Hintergrundauftrag** im Worker ergänzt Hoch und Tief, die neuesten Tage zuerst (Standardwelt: rund 5 ms je Handelstag, für zehn Jahre Vorlauf rund 13 s, Rohwerte). Zeiträume, die ein Chart gerade anfordert, haben Vorrang; bis dahin zeigt der Chart für die fehlenden Tage einen Hinweis.
+- **Speicherung (E-08):** Tageskerzen liegen je Instrument und Spieljahr als `Float32Array` im Store `candles` – in der Standardwelt rund 1 MB je Spieljahr, für den Vorlauf rund 10 MB. Sie sind reproduzierbar: Der Store darf verworfen und vom Hintergrundauftrag neu aufgebaut werden. Tageskerzen, die älter als 20 Spieljahre sind, werden zu Wochenkerzen verdichtet; einzelne Tage lassen sich bei Bedarf exakt neu berechnen.
+- **Faktorhistorie:** Sie wird beim Laden aus den Tagesschritten seit der Epoche neu berechnet (nur Faktoren; Schätzung: wenige Millisekunden je Spieljahr) und nicht gespeichert. Im Arbeitsspeicher bleiben die Faktorzustände zu Monatsbeginn; einzelne Tage entstehen daraus bei Bedarf neu. Für sehr lange Spiele (M14) können diese Zustände gespeichert werden.
+- **Historie eines Instruments:** Seine Tagesstützpunkte lassen sich allein aus der Faktorhistorie und seinen eigenen Strömen neu berechnen (§4.2), ohne andere Instrumente. Jeder vergangene Tag ist so minutengenau abrufbar.
+- **Vorlauf:** Von der Epoche (01.01.2020) bis zum Spielstart laufen dieselben Tagesschritte wie im Spiel; ein Sonderverfahren gibt es nicht. Charts aller Zeiträume haben ab dem ersten Spieltag Daten, auch Intraday-Charts.
 - **Chart-Auflösung je Zeitraum:** 1T → 1m bzw. 5m, 5T → 15m, 1M → 1h, 6M bis 5J → 1d, Max → 1d bzw. 1w. Zwischenstufen werden beim Abruf aggregiert.
 - **Zeitachse:** Spielzeit als UTC-Zeitstempel; Charts formatieren in UTC und zeigen so die Spielzeit unverfälscht.
 
 ### 6.9 Kalibrierung
 
-| Größe                                              | Ziel                                                                           |
-| -------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Weltindex (Performanceindex), geometrische Rendite | 6–8 % p. a. langfristig; der Kursindex liegt um die Dividendenrendite darunter |
-| Weltindex, Volatilität                             | 14–18 % p. a.                                                                  |
-| Einzelaktien, Volatilität                          | Large Cap 20–30 %, Small Cap 35–60 % p. a.                                     |
-| Korrelation innerhalb / zwischen Sektoren          | ca. 0,5–0,6 / ca. 0,2–0,35                                                     |
-| Bärenmärkte (Weltindex > 20 % unter Hoch)          | etwa einer alle 5–8 Jahre                                                      |
-| Tagesrenditen                                      | breite Ränder (Kurtosis > 5), Volatilitäts-Cluster                             |
-| Dividendenrendite                                  | 0–7 %, im Weltindex 2–3 %                                                      |
+| Größe                                              | Ziel                                                                            |
+| -------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Weltindex (Performanceindex), geometrische Rendite | 6–8 % p. a. langfristig; der Kursindex liegt um die Dividendenrendite darunter  |
+| Weltindex, Volatilität                             | 14–18 % p. a.                                                                   |
+| Einzelaktien, Volatilität                          | Large Cap 20–30 %, Small Cap 35–60 % p. a.                                      |
+| Korrelation innerhalb / zwischen Sektoren          | ca. 0,5–0,6 / ca. 0,2–0,35                                                      |
+| Bärenmärkte (Weltindex > 20 % unter Hoch)          | etwa einer alle 5–8 Jahre                                                       |
+| Tagesrenditen                                      | breite Ränder (Kurtosis > 5), Volatilitäts-Cluster                              |
+| Tagesverlauf                                       | Volatilität zur Eröffnung und zum Schluss höher als mittags (Tagesprofil, §6.1) |
+| Dividendenrendite                                  | 0–7 %, im Weltindex 2–3 %                                                       |
 
 Geprüft wird im Simulations-Labor (§14.2) und mit statistischen Tests auf festen Seeds (§14.1).
 
 ### 6.10 Erweiterungen ab Stufe 2 (Skizze)
 
+- **Gemeinsames Schema:** Neue Assetklassen folgen dem Brückenmodell (§6.1) – Tagesschritt mit Stützpunkten, Minutenwerte per Brücke nur bei Bedarf. Für Prozesse mit Rückkehr zum Mittelwert (Rohstoffe, Zinsen) gibt es die Brücke des Ornstein-Uhlenbeck-Prozesses. Aktive Fonds haben wie in der Realität nur einen Tageskurs (NAV), Anleihen bewerten sich aus der Zinskurve, CFDs sind ein Hebel auf einen Basiswert ohne eigenen Kursprozess. So wächst die Rechenzeit im Spiel kaum mit der Zahl der Instrumente (§3.2).
 - **Zinsen und Inflation:** Verbraucherpreise als eigener Prozess, gekoppelt an die Marktphase. Der Leitzins wird alle sechs Wochen entschieden und reagiert auf Inflation und Konjunktur. Die Zinskurve folgt Nelson-Siegel mit Niveau und Steigung als Ornstein-Uhlenbeck-Prozessen, Kreditaufschläge hängen vom Rating ab und steigen in Krisen. Wirkung: Anleihekurse (Barwert), Tagesgeldzinsen der Banken, Zinsfaktor für Aktien (Growth negativ, Banken positiv), Lohn- und Kostenentwicklung, Realwertanzeige.
 - **Anleihen:** Kupon, Laufzeit, Rating, Stückzinsen, Rückzahlung zu 100 %, Ausfälle bei schlechtem Rating.
 - **Rohstoffe:** mean-reverting Log-Preis (Schwartz-Ein-Faktor-Modell) mit Sprüngen und Saisonalität. Kopplung an Branchen: Öl wirkt positiv auf Öl & Gas, negativ auf Fluggesellschaften. Gold ist in Krisen ein sicherer Hafen (negative Ladung auf den Weltfaktor).
@@ -600,7 +689,7 @@ stateDiagram-v2
 | Stop S           | wenn Brief ≥ S: als Market            | wenn Geld ≤ S: als Market            |
 | Stop-Limit S / L | wenn Brief ≥ S: als Limit L           | wenn Geld ≤ S: als Limit L           |
 
-- Geprüft wird pro Tick, aber nur für Instrumente mit geändertem Kurs. Bei Handelsbeginn wird zuerst die Lücke angewendet, dann geprüft – ein Stop-Loss kann so realistisch unter dem Stopkurs ausgeführt werden.
+- Geprüft wird pro Tick für jede offene Order eines Instruments mit offener Börse, zum Kurs `priceAt(instrument, tick)` (§6.1). Bei Handelsbeginn gilt sofort der Eröffnungskurs mit Lücke – ein Stop-Loss kann so realistisch unter dem Stopkurs ausgeführt werden.
 - Keine Teilausführungen, keine Marktwirkung, unbegrenzte Liquidität.
 - **Deckung:** Eine Kauforder reserviert den geschätzten Betrag inklusive Kosten, bei Market- und Stop-Orders mit 5 % Puffer. Fehlt bei Ausführung die Deckung, wird die Order abgelehnt. Die Reservierung endet mit Ausführung, Storno oder Ablauf.
 - **Verkauf** nur bis zur freien Stückzahl (abzüglich der Stücke in offenen Verkaufsorders). Kein Leerverkauf; Short-Positionen gibt es nur über CFDs (Stufe 3).
@@ -648,8 +737,9 @@ year end: net_y < 0 → lossCarryForward_y = net_y; der Sparerpauschbetrag verf�
 
 - **`GameEngine`** (rein, `engine/domain`): hält die statische `World` und den dynamischen `GameState` (Markt, Spieler, Terminplaner, Zähler). API: `applyCommand(command)`, `step()`, `runUntil(targetTick, shouldYield)`, `drainEvents()`, `snapshot()`, `GameEngine.restore(world, snapshot)`. `shouldYield` ist ein Callback des Hosts; die Engine selbst kennt keine Uhr.
 - **Systeme:** Funktionen über dem Zustand, aufgerufen in der Reihenfolge aus §3.8.
+- **Kursquelle:** `priceAt(instrumentId, tick)` über Tagesstützpunkten und Brücken (§6.1), mit einem Cache der Tagesverläufe. Der Cache gehört nicht zum Zustand.
 - **Terminplaner:** Prioritätswarteschlange (Binärheap) nach Tick und fester Rangfolge für Tageswechsel, Bank-Lauf, Dividenden, Sparpläne, Orderablauf sowie Monats- und Jahresabschluss.
-- **Worker-Host** (`engine/data-access/worker/engine.worker.ts`): Takt (§3.5), Sichtbarkeit (§3.6), Persistenz (§9), Abos und Drosselung (§8.4), Web Lock, Fehlerbehandlung.
+- **Worker-Host** (`engine/data-access/worker/engine.worker.ts`): Takt (§3.5), Sichtbarkeit (§3.6), Persistenz (§9), Abos und Drosselung (§8.4), Hintergrundauftrag für Tageskerzen (§6.8), Web Lock, Fehlerbehandlung.
 - **Ereignisvorschau:** Der Host kann eine Kopie des Zustands ohne Anwender-Eingriffe einige Tage vorausrechnen. An die UI (Widget „Demnächst") gehen nur **planbare, marktunabhängige Termine**: Gehalt, Lastschriften, Gebühren, Sparpläne, angekündigte Dividenden, Orderablauf. Marktabhängige Ereignisse (ausgelöste Stops, Ausführungen) würden künftige Kurse verraten; sie dienen nur der nativen Vorausplanung von Benachrichtigungen (§13) und werden nie vorab angezeigt.
 
 ### 8.2 Kommandos (UI → Worker)
@@ -669,19 +759,21 @@ year end: net_y < 0 → lossCarryForward_y = net_y; der Sparerpauschbetrag verf�
 | `updateWatchlist`, `setAutoPause`, `setBackgroundMode`, `renamePlayer`, `markNotificationsRead` | Spielereinstellungen und Benachrichtigungen (`setAutoPause` je Ereignis-Code)                                                            |
 | `exportPlayer`, `importPlayer`                                                                  | §10                                                                                                                                      |
 
+**Abfragegrenze:** Die Abfrage-API der Engine beschneidet jede Antwort zentral auf Werte bis zum aktuellen Tick (§4.5, Regel 7) – auch Kerzen aus dem Store `candles`, der nach einer Wiederherstellung Tage nach dem aktuellen Tick enthalten kann (§9.2).
+
 ### 8.3 Ereignisse (Worker → UI)
 
-| Ereignis       | Inhalt                                                                                                 |
-| -------------- | ------------------------------------------------------------------------------------------------------ |
-| `clock`        | Tick, Geschwindigkeit, Pause, Auslastung (höchstens 10 pro Sekunde)                                    |
-| `quotes`       | Geld, Brief, Letzter, Veränderung der abonnierten Instrumente (gedrosselt)                             |
-| `candle`       | geänderte oder neue Kerze eines abonnierten Charts                                                     |
-| `projection`   | geänderte Teilprojektionen: Konten, Positionen, Orders, Sparpläne, Steuern, Vermögen                   |
-| `notification` | neue Benachrichtigung (sofort; bei hoher Geschwindigkeit gebündelt)                                    |
-| `progress`     | Fortschritt von Initialisierung, Nachberechnung, Vorspulen, Import, Wiederherstellung der Kurshistorie |
-| `report`       | Abwesenheitsbericht                                                                                    |
-| `reply`        | Antwort auf ein Kommando (`ok` mit Daten oder `error` mit Fehlercode)                                  |
-| `fatal`        | nicht behebbarer Fehler                                                                                |
+| Ereignis       | Inhalt                                                                                                    |
+| -------------- | --------------------------------------------------------------------------------------------------------- |
+| `clock`        | Tick, Geschwindigkeit, Pause, Auslastung (höchstens 10 pro Sekunde)                                       |
+| `quotes`       | Geld, Brief, Letzter, Veränderung der abonnierten Instrumente (gedrosselt)                                |
+| `candle`       | geänderte oder neue Kerze eines abonnierten Charts                                                        |
+| `projection`   | geänderte Teilprojektionen: Konten, Positionen, Orders, Sparpläne, Steuern, Vermögen                      |
+| `notification` | neue Benachrichtigung (sofort; bei hoher Geschwindigkeit gebündelt)                                       |
+| `progress`     | Fortschritt von Initialisierung, Nachberechnung, Vorspulen, Import und Hintergrundauftrag für Tageskerzen |
+| `report`       | Abwesenheitsbericht                                                                                       |
+| `reply`        | Antwort auf ein Kommando (`ok` mit Daten oder `error` mit Fehlercode)                                     |
+| `fatal`        | nicht behebbarer Fehler                                                                                   |
 
 ```ts
 interface EngineMessage<TType extends string, TPayload> {
@@ -697,7 +789,7 @@ Typ-Guards für eingehende Nachrichten liegen in `engine-service.utils.ts` (`CLA
 
 ### 8.4 Abos und Drosselung
 
-- Kurse gehen nur an abonnierte Instrumente. Abos setzen Route-Guards (beim Betreten und Verlassen einer Seite) und Effects (z. B. wenn sich die Filter im Screener oder die Watchlist ändern), siehe §11.3. Der `EngineService` zählt Abos pro Instrument, weil mehrere Ansichten dasselbe Instrument brauchen können.
+- Kurse gehen nur an abonnierte Instrumente; der Worker-Host berechnet sie beim gedrosselten Versand per `priceAt` (§6.1). Abos setzen Route-Guards (beim Betreten und Verlassen einer Seite) und Effects (z. B. wenn sich die Filter im Screener oder die Watchlist ändern), siehe §11.3. Der `EngineService` zählt Abos pro Instrument, weil mehrere Ansichten dasselbe Instrument brauchen können.
 - Takt der UI-Ereignisse: `clock` höchstens 10 pro Sekunde, `quotes` und `projection` höchstens 4 pro Sekunde (konfigurierbar).
 - Projektionen sind Deltas je Teilbereich (nur geänderte Entitäten); der Store übernimmt sie über Entity-Adapter.
 
@@ -722,22 +814,22 @@ Die Engine liefert Codes und Parameter, keine Texte – auch nicht für Kurzprof
 
 Datenbank `portfoligo`, Version ≥ 3 (der Prototyp nutzte Version 2; dessen Stores werden bei der Migration entfernt).
 
-| Store           | Schlüssel                                      | Besitzer | Inhalt                                                                         |
-| --------------- | ---------------------------------------------- | -------- | ------------------------------------------------------------------------------ |
-| `players`       | `id`                                           | UI       | Profil: Name, Seed, `seedKey`, Startbedingungen, `simVersion`, Erstellungszeit |
-| `runtime`       | `playerId`                                     | Worker   | Uhrzustand, `lastSeenAt`, Kurzinfo für die Liste (Vermögen, Spielzeit)         |
-| `snapshots`     | `[playerId, tick]`                             | Worker   | serialisierter Markt- und Spielerzustand (die letzten drei)                    |
-| `commands`      | `[playerId, seq]`                              | Worker   | Kommando-Log mit Tick                                                          |
-| `transactions`  | `[playerId, seq]`, Index je Konto (multiEntry) | Worker   | Hauptbuch                                                                      |
-| `orders`        | `[playerId, orderId]`                          | Worker   | Orderhistorie                                                                  |
-| `notifications` | `[playerId, seq]`                              | Worker   | Benachrichtigungen (begrenzt, z. B. 1.000)                                     |
-| `candles`       | `[playerId, instrumentId, resolution, bucket]` | Worker   | Kerzenblöcke als `Float32Array`                                                |
-| `series`        | `[playerId, name, year]`                       | Worker   | Tagesreihen (Vermögen, Zuflüsse, Monatswerte, Benchmark)                       |
-| `meta`          | `key`                                          | beide    | Schema- und App-Version                                                        |
+| Store           | Schlüssel                                      | Besitzer | Inhalt                                                                                                               |
+| --------------- | ---------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
+| `players`       | `id`                                           | UI       | Profil: Name, Seed, `seedKey`, Startbedingungen, `simVersion`, Erstellungszeit                                       |
+| `runtime`       | `playerId`                                     | Worker   | Uhrzustand, `lastSeenAt`, Kurzinfo für die Liste (Vermögen, Spielzeit)                                               |
+| `snapshots`     | `[playerId, tick]`                             | Worker   | serialisierter Markt- und Spielerzustand (die letzten drei)                                                          |
+| `commands`      | `[playerId, seq]`                              | Worker   | Kommando-Log mit Tick                                                                                                |
+| `transactions`  | `[playerId, seq]`, Index je Konto (multiEntry) | Worker   | Hauptbuch                                                                                                            |
+| `orders`        | `[playerId, orderId]`                          | Worker   | Orderhistorie                                                                                                        |
+| `notifications` | `[playerId, seq]`                              | Worker   | Benachrichtigungen (begrenzt, z. B. 1.000)                                                                           |
+| `candles`       | `[playerId, instrumentId, resolution, bucket]` | Worker   | Tageskerzen (nach 20 Spieljahren Wochenkerzen) je Instrument und Spieljahr als `Float32Array`; reproduzierbar (§6.8) |
+| `series`        | `[playerId, name, year]`                       | Worker   | Tagesreihen (Vermögen, Zuflüsse, Monatswerte, Benchmark)                                                             |
+| `meta`          | `key`                                          | beide    | Schema- und App-Version                                                                                              |
 
 - Jeder Datensatz hat genau einen Besitzer. UI und Worker schreiben nie denselben Datensatz; so überschreibt der Worker z. B. keine Umbenennung.
 - Umbenennungen ändern das Profil per Read-Modify-Write: während des Spiels über das Kommando `renamePlayer`, außerhalb über den `PlayersService`.
-- Die Welt und die Tageshistorie werden nicht gespeichert, sondern beim Laden neu erzeugt (§5.1, §6.8).
+- Die Welt und die Faktorhistorie werden nicht gespeichert, sondern beim Laden neu erzeugt; Intraday-Kurse entstehen bei Bedarf (§5.1, §6.8).
 
 ### 9.2 Speicherstrategie und Wiederherstellung (E-08)
 
@@ -746,13 +838,13 @@ Datenbank `portfoligo`, Version ≥ 3 (der Prototyp nutzte Version 2; dessen Sto
 | Kommandos                                 | vor der Anwendung, zusammen mit dem Uhrzustand in einer Transaktion (§8.5)                         |
 | Uhrzustand (`runtime`)                    | mit jedem Kommando, bei Geschwindigkeits- und Pausenwechsel, alle 5 s, bei `hidden` und `pagehide` |
 | Transaktionen, Orders, Benachrichtigungen | gebündelt, spätestens nach 1 s Echtzeit                                                            |
-| Kerzen, Tagesreihen                       | bei Blockabschluss bzw. gebündelt                                                                  |
+| Tageskerzen, Tagesreihen                  | gebündelt; Tageskerzen live zum Handelsschluss und aus dem Hintergrundauftrag (§6.8)               |
 | Snapshot                                  | alle 30 s Echtzeit, bei `hidden` und `pagehide`, nach Nachberechnung und Import                    |
 
 **Wiederherstellung:**
 
-1. Welt und Tageshistorie erzeugen, letzten Snapshot laden.
-2. Alle abgeleiteten Daten nach dem Snapshot-Tick verwerfen (Transaktionen, Orders, Benachrichtigungen, Kerzen, Tagesreihen).
+1. Welt und Faktorhistorie erzeugen, letzten Snapshot laden.
+2. Spielerdaten nach dem Snapshot-Tick verwerfen (Transaktionen, Orders, Benachrichtigungen, Tagesreihen). Tageskerzen bleiben gültig, weil Kurse nicht vom Spieler abhängen; die Abfragegrenze (§8.2) verhindert, dass Tage nach dem aktuellen Tick sichtbar werden.
 3. Bis zum größeren Wert aus gespeichertem Uhrzustand und letztem Kommando-Tick neu simulieren und dabei die protokollierten Kommandos an ihrem Tick anwenden.
 4. Normale Nachberechnung bis jetzt (§3.7).
 
@@ -780,19 +872,18 @@ Alle Werte sind versioniertes JSON (`{ "v": 1, … }`) und betreffen nur die Dar
 
 - Nach dem ersten angelegten Spieler wird `navigator.storage.persist()` angefragt; das Ergebnis steht in den Einstellungen.
 - Safari löscht skriptbeschreibbaren Speicher einer Website (auch IndexedDB) nach sieben Tagen Safari-Nutzung ohne Interaktion mit ihr. Zum Home-Bildschirm hinzugefügte Web-Apps sind ausgenommen. Daher: Installationshinweis (US-UI-07) und Backup-Erinnerung (US-EX-03).
-- `QuotaExceededError` erzeugt eine kritische Benachrichtigung, bietet den Export an und dünnt alte Intraday-Kerzen aus.
+- `QuotaExceededError` erzeugt eine kritische Benachrichtigung, bietet den Export an und verwirft die ältesten Tageskerzen; sie lassen sich bei Bedarf neu berechnen (§6.8).
 
 ### 9.6 Speicherbedarf (Schätzung je Spieler, ca. 250 Instrumente)
 
-| Daten                                     | Umfang                                                                           |
-| ----------------------------------------- | -------------------------------------------------------------------------------- |
-| 1h-Kerzen (rollierend zwei Jahre)         | ca. 18 MB                                                                        |
-| 1m-Kerzen (rollierend fünf Handelstage)   | ca. 10 MB                                                                        |
-| 1d-Kerzen                                 | ca. 1 MB pro Spieljahr; nach 20 Jahren als Wochenkerzen ca. 0,2 MB pro Spieljahr |
-| Transaktionen, Orders, Benachrichtigungen | < 1 MB pro Spieljahr                                                             |
-| Snapshots (drei)                          | < 1 MB                                                                           |
+| Daten                                     | Umfang                                                                                              |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Tageskerzen                               | ca. 1 MB pro Spieljahr, Vorlauf ca. 10 MB; nach 20 Jahren als Wochenkerzen ca. 0,2 MB pro Spieljahr |
+| Intraday-Kerzen                           | keine – sie entstehen bei Bedarf (§6.8)                                                             |
+| Transaktionen, Orders, Benachrichtigungen | ca. 0,5 MB pro Spieljahr                                                                            |
+| Snapshots (drei)                          | < 1 MB                                                                                              |
 
-Ein Spieler braucht damit rund 30 MB plus höchstens 1 MB je Spieljahr (NF-07). Bei 1 w/s (rund 70 Spieljahre pro Spielstunde) bleibt auch ein Spieler mit hundert Spieljahren unter 100 MB.
+Ein Spieler braucht damit rund 15 MB plus höchstens 1,5 MB je Spieljahr (NF-07); nach 20 Spieljahren sinkt der Zuwachs durch die Verdichtung auf unter 1 MB je Spieljahr. Bei 1 w/s (rund 70 Spieljahre pro Spielstunde) bleibt auch ein Spieler mit hundert Spieljahren unter 100 MB.
 
 ### 9.7 Migrationen
 
@@ -839,7 +930,7 @@ Inhalt: base64( UTF-8( JSON ) )
 
 - Beträge in Cent (`1000000` = 10.000,00 €).
 - `state` ist der Spielerzustand (Konten, Positionen und Lots, offene Orders, Sparpläne, Steuerstatus, Watchlist, Auto-Pause, Verhalten im Hintergrund).
-- `market` ist der Marktzustand zum Export-Tick (Faktoren, Instrumente, Index- und ETF-Zustände, Phase, geplante Marktereignisse; deutlich unter 1 MB). Die Welt selbst und alle Kerzen fehlen – sie entstehen aus dem Seed neu.
+- `market` ist der Marktzustand zu Beginn des Export-Tags, 00:00 Uhr (Faktoren, Instrumente, Index- und ETF-Zustände, Phase; deutlich unter 1 MB). Die Stützpunkte des laufenden Tags fehlen, weil sie dessen Schlusskurse verrieten; der Import zieht sie aus denselben Strömen neu. Die Welt selbst und alle Kerzen fehlen ebenfalls – sie entstehen aus dem Seed neu.
 - `marketChecksum` ist die Prüfsumme des Marktzustands, `checksum` die SHA-256-Summe des kanonischen JSON ohne dieses Feld.
 
 ### 10.2 Export
@@ -850,15 +941,15 @@ UI → `exportPlayer` → der Worker schreibt ausstehende Daten, baut das JSON i
 
 1. Datei oder Text einlesen, base64 dekodieren, JSON parsen.
 2. Prüfen: `format`, `formatVersion`, `simVersion`, `checksum`, Struktur (handgeschriebene Typ-Guards, keine Schema-Bibliothek).
-3. Der Worker legt einen neuen Spieler an (neue ID, Name mit Zusatz „(Import)"), erzeugt Welt und Tageshistorie und übernimmt Spieler- und Marktzustand. **Der Spieler ist sofort spielbar.**
-4. Im Hintergrund wird die Kurshistorie seit Spielstart wiederhergestellt: Ein Markt-Lauf ohne Spieler vom Marktzustand am 01.03.2030 bis zum Export-Tick erzeugt die Kerzen, etwa 2–4 s je Spieljahr, mit Fortschrittsanzeige. Bis dahin zeigen Charts für diesen Zeitraum einen Hinweis.
-5. Am Ende vergleicht der Worker den Marktzustand des Laufs mit `marketChecksum`. Eine Abweichung deutet auf eine Determinismus-Lücke hin; der Anwender wird informiert, das Spiel läuft mit dem exportierten Marktzustand weiter.
+3. Der Worker legt einen neuen Spieler an (neue ID, Name mit Zusatz „(Import)"), erzeugt Welt und Faktorhistorie, übernimmt den Marktzustand vom Beginn des Export-Tags, rechnet den Markt bis zum Export-Tick vor und übernimmt den Spielerzustand. **Der Spieler ist sofort spielbar.**
+4. Im Hintergrund rechnet der Worker die Tagesschritte von der Epoche bis zum Export-Tag nach (Standardwelt: rund 1 s für 70 Spieljahre, Rohwert-Schätzung). Daraus entstehen Eröffnung und Schluss aller Tageskerzen sowie der Marktzustand für den Prüfsummenvergleich; Hoch und Tief ergänzt anschließend der Hintergrundauftrag aus §6.8. Bis dahin zeigen Charts für fehlende Zeiträume einen Hinweis.
+5. Danach vergleicht der Worker den Marktzustand des Laufs mit `marketChecksum`. Eine Abweichung deutet auf eine Determinismus-Lücke hin; der Anwender wird informiert, das Spiel läuft mit dem exportierten Marktzustand weiter.
 6. Beim Öffnen gilt die normale Nachberechnung ab `lastSeenAt` – der Import verhält sich wie ein seit dem Export geschlossenes Spiel.
 
 ### 10.4 Grenzen
 
 - Die Exportgröße wächst mit Hauptbuch und Tagesreihen (einige MB bei sehr langen Spielen). Kompression mit `CompressionStream('gzip')` ist als Formatversion 2 vorgemerkt.
-- Die Wiederherstellung der Historie läuft zeitgeteilt mit dem Spiel oder in einem zweiten Worker, damit das Spiel flüssig bleibt.
+- Nachrechnen und Hintergrundauftrag laufen zeitgeteilt mit dem Spiel, damit es flüssig bleibt. Für einen Spieler mit 70 Spieljahren plus Vorlauf braucht der Hintergrundauftrag rund 100 s (Rohwert-Schätzung: 5 ms je Handelstag), die jüngsten Jahre sind nach wenigen Sekunden fertig.
 
 ## 11. Frontend-Architektur
 
@@ -1085,32 +1176,33 @@ Signal Forms nach `CLAUDE.md` §3. Eine eigene Betragseingabe (`FormValueControl
 
 ### 14.1 Teststrategie
 
-| Ebene         | Was                                                                                                                                   | Wie                                                                                                                            |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Domain, Util  | Kalender, Zufall, Mathematik, Weltgenerierung, Marktmodell, Hauptbuch, Gebühren, Steuern, Orders, Performance, Indikatoren, Statistik | Vitest, reine Funktionen, tabellarische Fälle                                                                                  |
-| Determinismus | Golden Master, Stapel- gegen Live-Betrieb, Snapshot und Replay, Beobachtungs- und Stromunabhängigkeit                                 | Vitest, Prüfsummen (§4.6)                                                                                                      |
-| Statistik     | Kalibrierungsziele (§6.9) mit Toleranzen auf festen Seeds                                                                             | Vitest; langsamere Tests ggf. als eigene Suite                                                                                 |
-| NgRx          | Reducer, Selektoren, Effects, Facades, Guards                                                                                         | nach `CLAUDE.md` §10                                                                                                           |
-| Services      | `EngineService` mit Fake-Worker, IndexedDB mit `fake-indexeddb`, localStorage                                                         | Vitest                                                                                                                         |
-| Komponenten   | nicht per Unit-Test (`CLAUDE.md` §10)                                                                                                 | manuelle Prüfung, axe-Prüfung (Browser-Erweiterung); E2E optional später (Playwright als Dev-Abhängigkeit, Entscheidung offen) |
+| Ebene         | Was                                                                                                                                                             | Wie                                                                                                                            |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Domain, Util  | Kalender, Zufall, Mathematik, Weltgenerierung, Marktmodell, Hauptbuch, Gebühren, Steuern, Orders, Performance, Indikatoren, Statistik                           | Vitest, reine Funktionen, tabellarische Fälle                                                                                  |
+| Determinismus | Golden Master, Stapel- gegen Live-Betrieb, Snapshot und Replay, Beobachtungs- und Stromunabhängigkeit, Bedarf gegen Vorabberechnung, Stützpunkte, Abfragegrenze | Vitest, Prüfsummen (§4.6)                                                                                                      |
+| Statistik     | Kalibrierungsziele (§6.9) mit Toleranzen auf festen Seeds; Gleichwertigkeit der Brücken mit einer Referenz-Minutensimulation                                    | Vitest; langsamere Tests ggf. als eigene Suite                                                                                 |
+| NgRx          | Reducer, Selektoren, Effects, Facades, Guards                                                                                                                   | nach `CLAUDE.md` §10                                                                                                           |
+| Services      | `EngineService` mit Fake-Worker, IndexedDB mit `fake-indexeddb`, localStorage                                                                                   | Vitest                                                                                                                         |
+| Komponenten   | nicht per Unit-Test (`CLAUDE.md` §10)                                                                                                                           | manuelle Prüfung, axe-Prüfung (Browser-Erweiterung); E2E optional später (Playwright als Dev-Abhängigkeit, Entscheidung offen) |
 
 ### 14.2 Simulations-Labor
 
-Eine Entwicklerseite (`/lab`, nur mit Umgebungs-Flag) erzeugt zu einem Seed die Welt und simuliert einen wählbaren Zeitraum. Sie zeigt Weltübersicht (Unternehmen, Indizes, ETFs, Banken), Charts (Indizes, Sektoren, Einzelwerte), Statistiken (Rendite, Volatilität, Korrelationsmatrix, Drawdowns, Phasen-Zeitleiste, Verteilung der Tagesrenditen) im Vergleich zu den Kalibrierungszielen sowie den Durchsatz in Ticks pro Sekunde. Die Statistikfunktionen liegen in `analysis/domain` und dienen später auch den Risikokennzahlen (US-PF-08).
+Eine Entwicklerseite (`/lab`, nur mit Umgebungs-Flag) erzeugt zu einem Seed die Welt und simuliert einen wählbaren Zeitraum. Sie zeigt Weltübersicht (Unternehmen, Indizes, ETFs, Banken), Charts (Indizes, Sektoren, Einzelwerte), Statistiken (Rendite, Volatilität, Korrelationsmatrix, Drawdowns, Phasen-Zeitleiste, Verteilung der Tagesrenditen) im Vergleich zu den Kalibrierungszielen, eine Intraday-Statistik (Minutenvolatilität, Tagesspanne, Tagesprofil) im Vergleich zur Referenz-Minutensimulation sowie den Durchsatz in Spieltagen pro Sekunde, getrennt nach Tagesschritten und Minutenverläufen. Die Statistikfunktionen liegen in `analysis/domain` und dienen später auch den Risikokennzahlen (US-PF-08).
 
 ### 14.3 Performance-Budgets
 
 Gemessen wird auf dem Entwicklungsrechner; die Messung ist Teil der jeweiligen Abnahme.
 
-| Messgröße                             | Budget                                       |
-| ------------------------------------- | -------------------------------------------- |
-| Engine bei 1 w/s (Standardwelt)       | < 25 % eines Kerns                           |
-| Nachberechnung 30 Tage / 1 Jahr       | < 2 s / < 10 s                               |
-| Spielstart (Welt, Historie, Vormonat) | < 3 s                                        |
-| Import bis spielbar                   | < 5 s; Kurshistorie danach im Hintergrund    |
-| Main-Thread-Arbeit je UI-Update       | < 4 ms (auch bei Quotes für 250 Instrumente) |
-| Initiales Bundle (gzip)               | < 300 kB, Charts lazy                        |
-| Speicher je Spieler                   | < 30 MB + 1 MB je Spieljahr                  |
+| Messgröße                                           | Budget                                                  |
+| --------------------------------------------------- | ------------------------------------------------------- |
+| Engine bei 1 w/s (Standardwelt)                     | < 15 % eines Kerns                                      |
+| Nachberechnung 30 Tage / 1 Jahr                     | < 1 s / < 5 s, auch mit offenen Orders auf ETFs         |
+| Spielstart (Welt, Vorlauf)                          | < 2 s; Hoch und Tief des Vorlaufs danach im Hintergrund |
+| Import bis spielbar                                 | < 3 s; Kurshistorie danach im Hintergrund               |
+| Minutenchart (1T) eines beliebigen vergangenen Tags | < 50 ms                                                 |
+| Main-Thread-Arbeit je UI-Update                     | < 4 ms (auch bei Quotes für 250 Instrumente)            |
+| Initiales Bundle (gzip)                             | < 300 kB, Charts lazy                                   |
+| Speicher je Spieler                                 | < 15 MB + 1,5 MB je Spieljahr                           |
 
 ### 14.4 CI und Deployment
 
@@ -1142,9 +1234,9 @@ Status: **Vorschlag** = von Claude vorgeschlagen, Bestätigung durch den Product
 | E-05 | Plattform       | PWA im MVP; Capacitor als optionaler Meilenstein N1, Android zuerst; Ports jetzt vorbereiten (§13)                                                                                                                                   | Vorschlag – Diskussion            |
 | E-06 | Styling         | Tailwind CSS v4 mit semantischen Tokens, Dark Mode als Standard, globaler Einstieg als CSS, Browserslist angehoben (§11.5, §1.3)                                                                                                     | Vorschlag                         |
 | E-07 | State           | Klassischer NgRx-Store nach `CLAUDE.md`, Projektionen aus der Engine, gedrosselt (§11.3)                                                                                                                                             | entschieden (`CLAUDE.md`)         |
-| E-08 | Persistenz      | Snapshots, Kommando-Log (write-ahead, mit Uhrzustand) und Journal in IndexedDB; Welt und Tageshistorie werden neu erzeugt (§9)                                                                                                       | Vorschlag                         |
+| E-08 | Persistenz      | Snapshots, Kommando-Log (write-ahead, mit Uhrzustand) und Journal in IndexedDB; Welt und Faktorhistorie werden neu erzeugt, Intraday-Kurse bei Bedarf berechnet; Tageskerzen gespeichert, aber reproduzierbar (§6.8, §9)             | Vorschlag                         |
 | E-09 | Zahlen          | Geld in Cent, Stück in Millionstel (beides ganzzahlig), Kurse als Gleitkomma mit Preisraster (§7.1, §6.7)                                                                                                                            | Vorschlag                         |
-| E-10 | Export          | base64(JSON) mit Spieler- und Marktzustand, ohne Kerzen; Import sofort spielbar, Historie im Hintergrund, Prüfsummenvergleich (§10)                                                                                                  | Vorschlag                         |
+| E-10 | Export          | base64(JSON) mit Spieler- und Marktzustand (Stand: Beginn des Export-Tags), ohne Kerzen; Import sofort spielbar, Kurshistorie im Hintergrund, Prüfsummenvergleich (§10)                                                              | Vorschlag                         |
 | E-11 | Steuern         | 25 % pauschal, Sparerpauschbetrag 1.000 €, ein Verlusttopf, bankübergreifend, ohne Soli und Kirchensteuer (§7.7)                                                                                                                     | Vorschlag                         |
 | E-12 | Umfang Stufe 1  | Aktien und ETFs (plus Indizes); übrige Assetklassen ab Stufe 2/3; Inflation mit dem Zinsumfeld in Stufe 2                                                                                                                            | Vorschlag – bitte bestätigen      |
 | E-13 | Welt            | Reale Regionen und Länder; fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen (§5)                                                                                                                               | Vorschlag                         |
@@ -1154,18 +1246,20 @@ Status: **Vorschlag** = von Claude vorgeschlagen, Bestätigung durch den Product
 | E-17 | Banking         | Kontoeröffnung und Überweisungen sofort und kostenlos; Dispo mit geduldeter Überziehung; Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (§7.4)                                                                          | Vorschlag                         |
 | E-18 | Handelszeiten   | Börsen mit Handelszeiten je Region; Orders jederzeit erteilbar, Ausführung in der Handelszeit (§3.3)                                                                                                                                 | Vorschlag                         |
 | E-19 | Buchungstermine | Bank-Lauf 06:00 an Bankarbeitstagen; Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag des Monats; Kontoführung monatlich, Depotgebühr quartalsweise (§7.4)                                                                  | Vorschlag                         |
+| E-20 | Kursberechnung  | Brückenmodell: Tagesschritt mit Stützpunkten für alle Instrumente, Minutenkurse als Brownsche Brücken bei Bedarf, exakte Indizes, Abfragen nur bis zum aktuellen Tick (§3.2, §6.1, §6.6)                                             | entschieden (10.11.2026)          |
 
 ## 17. Risiken
 
-| Nr. | Risiko                                                                  | Auswirkung                                          | Gegenmaßnahme                                                                                     |
-| --- | ----------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| R1  | Marktmodell wirkt unrealistisch, Kalibrierung dauert                    | Glaubwürdigkeit, Spielspaß                          | Simulations-Labor früh (M1), Kalibrierungsziele, zentrale Parameter                               |
-| R2  | Browserübergreifender Determinismus                                     | gleicher Seed, unterschiedliche Welt                | deterministische Mathematik, Regeln aus §4.5, Golden Master, Prüfsummenvergleich beim Import      |
-| R3  | Spielstände brechen bei Modelländerungen                                | Frust, Datenverlust                                 | `simVersion`, Kompatibilitätszusage erst ab 1.0, Export                                           |
-| R4  | Browser löscht Speicher                                                 | Fortschritt verloren                                | `persist()`, PWA-Installation, Backup-Erinnerung, Export                                          |
-| R5  | Performance bei hoher Geschwindigkeit und sehr langen Spielen           | Ruckeln, lange Ladezeiten, Speicher                 | Worker, Budgets (§14.3), frühe Messungen, Verdichtung alter Kerzen, Import mit Marktzustand (§10) |
-| R6  | Scope Creep durch Realismuswünsche                                      | MVP verzögert sich                                  | Stufenplan, dokumentierte Vereinfachungen, Muss/Soll-Priorisierung                                |
-| R7  | Komplexität der Brücke zwischen Worker und NgRx                         | Fehler, schwer testbar                              | klares Protokoll, Fake-Worker, reine Engine, Provider-Regel aus §11.2                             |
-| R8  | Ähnlichkeit zu realen Unternehmen und Marken, Lizenzpflichten           | rechtliche Probleme                                 | Blocklisten, fiktive Namen und Kennungen, TradingView-Attribution, Hinweis „keine Anlageberatung" |
-| R9  | Tailwind v4 und SCSS-Konventionen vertragen sich nicht                  | Build- und Stilprobleme                             | Regeln aus §11.5, Ergänzung von `CLAUDE.md`                                                       |
-| R10 | Vorausspielen: Ein zweiter Spieler mit demselben Seed kennt die Zukunft | Vergleiche zwischen Spielern verlieren Aussagekraft | bewusst akzeptiert; Vergleichbarkeit beruht auf Fairplay (PS §3)                                  |
+| Nr. | Risiko                                                                                          | Auswirkung                                                     | Gegenmaßnahme                                                                                                                                                                                |
+| --- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | Marktmodell wirkt unrealistisch, Kalibrierung dauert                                            | Glaubwürdigkeit, Spielspaß                                     | Simulations-Labor früh (M1), Kalibrierungsziele, zentrale Parameter                                                                                                                          |
+| R2  | Browserübergreifender Determinismus                                                             | gleicher Seed, unterschiedliche Welt                           | deterministische Mathematik, Regeln aus §4.5, Golden Master, Prüfsummenvergleich beim Import                                                                                                 |
+| R3  | Spielstände brechen bei Modelländerungen                                                        | Frust, Datenverlust                                            | `simVersion`, Kompatibilitätszusage erst ab 1.0, Export                                                                                                                                      |
+| R4  | Browser löscht Speicher                                                                         | Fortschritt verloren                                           | `persist()`, PWA-Installation, Backup-Erinnerung, Export                                                                                                                                     |
+| R5  | Performance bei hoher Geschwindigkeit und sehr langen Spielen                                   | Ruckeln, lange Ladezeiten, Speicher                            | Brückenmodell (§3.2), Worker, Budgets (§14.3), frühe Messungen, Verdichtung alter Tageskerzen, Import mit Marktzustand (§10)                                                                 |
+| R6  | Scope Creep durch Realismuswünsche                                                              | MVP verzögert sich                                             | Stufenplan, dokumentierte Vereinfachungen, Muss/Soll-Priorisierung                                                                                                                           |
+| R7  | Komplexität der Brücke zwischen Worker und NgRx                                                 | Fehler, schwer testbar                                         | klares Protokoll, Fake-Worker, reine Engine, Provider-Regel aus §11.2                                                                                                                        |
+| R8  | Ähnlichkeit zu realen Unternehmen und Marken, Lizenzpflichten                                   | rechtliche Probleme                                            | Blocklisten, fiktive Namen und Kennungen, TradingView-Attribution, Hinweis „keine Anlageberatung"                                                                                            |
+| R9  | Tailwind v4 und SCSS-Konventionen vertragen sich nicht                                          | Build- und Stilprobleme                                        | Regeln aus §11.5, Ergänzung von `CLAUDE.md`                                                                                                                                                  |
+| R10 | Vorausspielen: Ein zweiter Spieler mit demselben Seed kennt die Zukunft                         | Vergleiche zwischen Spielern verlieren Aussagekraft            | bewusst akzeptiert; Vergleichbarkeit beruht auf Fairplay (PS §3)                                                                                                                             |
+| R11 | Fehler im Brückenmodell (Stützpunkte, Sitzungsgrenzen, Sprünge) oder Herausgabe künftiger Kurse | falsche oder inkonsistente Kurse; Tagesschlüsse vorab sichtbar | Regeln 7 und 8 in §4.5, Tests aus §4.6 (Stützpunkte, Bedarf gegen Vorabberechnung, statistische Gleichwertigkeit, Abfragegrenze), Labor-Vergleich mit der Referenz-Minutensimulation (§14.2) |

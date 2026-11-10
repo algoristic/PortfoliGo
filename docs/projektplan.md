@@ -1,7 +1,7 @@
 # PortfoliGo – Projektplan
 
-> **Status:** Entwurf v0.1 · **Stand:** 09.11.2026
-> **Grundlagen:** [Ideensammlung](./specs/_portfoligo.md) · [Produktspezifikation](./specs/produktspezifikation.md) (PS) · [Technische Spezifikation](./specs/technische-spezifikation.md) (TS)
+> **Status:** Entwurf v0.2 · **Stand:** 10.11.2026
+> **Grundlagen:** [Produktspezifikation](./specs/produktspezifikation.md) (PS) · [Technische Spezifikation](./specs/technische-spezifikation.md) (TS)
 
 Dieser Plan zerlegt PortfoliGo in Meilensteine und Arbeitspakete (AP). Ein AP ist so geschnitten, dass es in **einer Session** umgesetzt werden kann. Verweise wie `US-SP-01` zeigen auf User Stories der Produktspezifikation, `TS §3.2` auf Abschnitte der technischen Spezifikation, `E-02` auf Entscheidungen (TS §16).
 
@@ -110,13 +110,15 @@ Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevo
 | E-17 | Banking: Eröffnung und Überweisung sofort; Dispo mit geduldeter Überziehung; Gebühren dürfen Verrechnungskonten ins Minus bringen | Ja                                                                                                                     | AP 1.3         |
 | E-04 | Chart-Bibliothek                                                                                                                  | lightweight-charts mit TradingView-Attribution; eigene SVG-Sparklines                                                  | AP 1.7         |
 | E-01 | Engine im Web Worker, NgRx hält nur Projektionen                                                                                  | Ja                                                                                                                     | AP 2.1         |
-| E-08 | Persistenz: Snapshots, Kommando-Log mit Uhrzustand, Journal                                                                       | Ja                                                                                                                     | AP 2.3         |
+| E-08 | Persistenz: Snapshots, Kommando-Log mit Uhrzustand, Journal; Tageskerzen gespeichert, aber reproduzierbar                         | Ja                                                                                                                     | AP 2.3         |
 | E-14 | Lebenshaltungskosten als Startparameter, Hausbank als Filialbank, Start pausiert                                                  | Ja; Vorgaben 10.000 € / 2.500 € / 1.800 €                                                                              | AP 2.4         |
 | E-19 | Buchungstermine                                                                                                                   | Bank-Lauf 06:00; Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag                                             | AP 3.2         |
 | E-11 | Steuervereinfachungen in Stufe 1                                                                                                  | 25 % pauschal, 1.000 € Pauschbetrag, ein Verlusttopf, ohne Soli/KiSt                                                   | AP 5.3         |
-| E-10 | Exportformat                                                                                                                      | base64(JSON) mit Spieler- und Marktzustand; Kurshistorie nach dem Import im Hintergrund                                | AP 6.1         |
+| E-10 | Exportformat                                                                                                                      | base64(JSON) mit Spieler- und Marktzustand vom Beginn des Export-Tags; Kurshistorie nach dem Import im Hintergrund     | AP 6.1         |
 | E-05 | Capacitor                                                                                                                         | PWA im MVP; Capacitor als optionaler Meilenstein N1                                                                    | AP 6.3         |
 | –    | Wird die App öffentlich bereitgestellt? Dann Impressum und Datenschutzhinweis nötig                                               | klären                                                                                                                 | AP 6.5         |
+
+**Bereits entschieden:** E-07 (`CLAUDE.md`) und E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6).
 
 ## 4. Statusübersicht
 
@@ -131,9 +133,9 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 1.1 | Deterministischer Zufall und Mathematik          | offen  | 0.1          |
 | 1.2 | Spielkalender und Zeitmodell                     | offen  | 0.1          |
 | 1.3 | Weltgenerierung: Taxonomie, Unternehmen, Banken  | offen  | 1.1          |
-| 1.4 | Marktmodell: Faktoren, Marktphasen, Aktienkurse  | offen  | 1.2, 1.3     |
-| 1.5 | Indizes, ETFs, Dividenden, Geld- und Briefkurse  | offen  | 1.4          |
-| 1.6 | Kerzen, Vorlauf-Historie und Markt-Snapshot      | offen  | 1.5          |
+| 1.4 | Marktmodell: Tagesschritt und Vorlauf            | offen  | 1.2, 1.3     |
+| 1.5 | Brücken, Minutenkurse und Kerzen                 | offen  | 1.4          |
+| 1.6 | Indizes, ETFs, Dividenden, Geld- und Briefkurse  | offen  | 1.5          |
 | 1.7 | Simulations-Labor: Welt, Simulation, Chart-Spike | offen  | 1.6, 0.4     |
 | 1.8 | Simulations-Labor: Statistik                     | offen  | 1.7          |
 | 1.9 | Kalibrierung des Marktmodells                    | offen  | 1.8          |
@@ -153,7 +155,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 4.3 | Indikatoren                                      | offen  | 4.2          |
 | 4.4 | Marktübersicht, Screener und Watchlist           | offen  | 4.2          |
 | 4.5 | Instrument-Detailseite                           | offen  | 4.3, 4.4     |
-| 5.1 | Depot und Orderausführung                        | offen  | 3.3, 1.5     |
+| 5.1 | Depot und Orderausführung                        | offen  | 3.3, 1.6     |
 | 5.2 | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1          |
 | 5.3 | Steuern                                          | offen  | 5.2          |
 | 5.4 | Order-Ticket und Orderbuch                       | offen  | 5.3, 4.5     |
@@ -253,29 +255,35 @@ Status: **offen**, **in Arbeit**, **fertig**.
 - **Referenzen:** TS §5, §7.3; PS §4.4, §6; E-12, E-13, E-17
 - **Abhängig von:** AP 1.1
 
-#### AP 1.4 – Marktmodell: Faktoren, Marktphasen, Aktienkurse
+#### AP 1.4 – Marktmodell: Tagesschritt und Vorlauf
 
-- **Umfang:** `market/domain`: Marktzustand in Typed Arrays; Faktorprozesse mit Trends, stochastischer Volatilität und Marktphasen; Aktienkurse je Handelsminute mit Overnight-Effekt, Sprüngen und Kursuntergrenze; Minutenschritt und Tagesschritt (für die Historie).
-- **Abnahme:** Golden-Master-Test und Granularitätstest (TS §4.6); Benchmark mit `detExp`/`detLog`: ein Spieljahr in ≤ 4 s auf dem Entwicklungsrechner.
-- **Referenzen:** TS §3.2, §4.6, §6.1–§6.4; E-02
+- **Umfang:** `market/domain`: Marktzustand in Typed Arrays; Tagesschritt nach TS §6.1–§6.4 – Marktphasen, Trends und Volatilität der Faktoren mit Stützpunkten an den Grenzen der Handelszeiten, Tagesstützpunkte der Aktien mit Overnight-Schock, Sprüngen (Anzahl, Minute, Größe) und Kursuntergrenze; Vorlauf als Tagesschritte ab der Epoche; Faktorhistorie mit Zuständen zu Monatsbeginn; Neuberechnung der Historie eines einzelnen Instruments; Snapshot und Restore des Marktzustands; Markt-Prüfsumme.
+- **Abnahme:** Tests aus TS §4.6: Golden Master über die Tagesschlusskurse, Granularität, Snapshot mit Restore und Weiterlauf, Stromunabhängigkeit; die neu berechnete Historie eines einzelnen Instruments entspricht der des Gesamtlaufs. Benchmark mit `detExp`/`detLog`: zehn Jahre Vorlauf der Standardwelt in ≤ 0,5 s auf dem Entwicklungsrechner.
+- **Referenzen:** TS §3.2, §4.2, §4.6, §6.1–§6.4, §6.8; E-02, E-20
 - **Abhängig von:** AP 1.2, AP 1.3
 
-#### AP 1.5 – Indizes, ETFs, Dividenden, Geld- und Briefkurse
+#### AP 1.5 – Brücken, Minutenkurse und Kerzen
 
-- **Umfang:** Kurs- und Performanceindizes, indikative Werte, ETF-NAV (thesaurierend und ausschüttend mit Ausschüttungstopf, TER, Tracking), Dividendenkalender (Ankündigung, Ex-Tag, Zahltag als Ereignis), Spread-Modell mit Preisraster und Quotes. Abgeleitete Werte als reine Funktionen, zustandsbehaftete Größen nur über den Tagesablauf (TS §6.6).
+- **Umfang:**
+  - Brücken für Faktoren (ein Strom je Faktor, Tag und Intervall) und Aktien (Sprünge ab ihrer Minute) nach TS §6.1–§6.4; Endpunkte als Stützpunkte gesetzt; Tagesprofil der Volatilität als Parameter (Standard: gleichmäßig).
+  - `priceAt(instrumentId, tick)` mit Cache der Tagesverläufe und offiziellem Kurs bei geschlossener Börse.
+  - Kerzen aller Auflösungen bei Abfrage; Tageskerzen mit Hoch und Tief; Ergänzung fehlender Hoch- und Tiefkurse als zeitteilbare Funktion für den Hintergrundauftrag (TS §6.8); Abfragegrenze (TS §4.5, Regel 7).
+  - Testhelfer: Referenz-Simulation Minute für Minute nach TS §4.6; die Prototyp-Werte in TS §6.1 geben die Größenordnung der Toleranzen vor.
+- **Abnahme:** Tests aus TS §4.6: Stützpunkte bitgenau getroffen; Bedarf, Vorabberechnung und Neuberechnung nach Verwerfen der Caches bitgleich; statistische Gleichwertigkeit mit der Referenz-Simulation innerhalb fester Toleranzen; Abfragegrenze; Golden Master um die Minutenkurse einer festen Stichprobe erweitert. Benchmark mit `detExp`/`detLog`: ein Spieljahr mit allen Minutenverläufen der Standardwelt in ≤ 4 s; Minutenchart eines vergangenen Tags in < 50 ms.
+- **Schnitt:** Wird das AP zu groß, zuerst Brücken und `priceAt` (AP 1.5a), dann Kerzen und Abfragegrenze (AP 1.5b).
+- **Referenzen:** TS §4.5, §4.6, §6.1, §6.2, §6.4, §6.8, §14.3; E-20
+- **Abhängig von:** AP 1.4
+
+#### AP 1.6 – Indizes, ETFs, Dividenden, Geld- und Briefkurse
+
+- **Umfang:** Kurs- und Performanceindizes, innerhalb des Tages exakt aus den Minutenkursen aller Werte; indikative Werte aus den Faktorbrücken; ETF-NAV (thesaurierend und ausschüttend mit Ausschüttungstopf, TER, Tracking); Dividendenkalender (Ankündigung mit dem Schlusskurs vor der Ankündigung, Ex-Tag-Abschlag im Tagesschritt, Zahltag als Ereignis); Tageskerzen der Indizes und ETFs; Spread-Modell mit Preisraster und Quotes. Abgeleitete Werte als reine Funktionen, zustandsbehaftete Größen nur über den Terminplaner (TS §6.6).
 - **Abnahme:** Tests:
-  - Index entspricht der gewichteten Summe; TER-Abschlag ≈ TER p. a.; Ex-Tag-Abschlag.
+  - Index entspricht zu jeder Minute der gewichteten Summe; TER-Abschlag ≈ TER p. a.; Ex-Tag-Abschlag.
   - Thesaurierender und ausschüttender ETF haben vor Kosten dieselbe Gesamtrendite.
   - Geld < Brief bei jedem Kurs (auch unter 10 €); Spreads im vorgesehenen Rahmen.
   - Beobachtungsunabhängigkeit: Abfragen ändern die Markt-Prüfsumme nicht.
-- **Referenzen:** TS §6.5–§6.7, §4.6
-- **Abhängig von:** AP 1.4
-
-#### AP 1.6 – Kerzen, Vorlauf-Historie und Markt-Snapshot
-
-- **Umfang:** Aggregation 1m → 1h → 1d; Vorlauf-Historie in Tagesauflösung bis Ende Februar 2030 mit Hoch/Tief-Näherung; Simulation des März 2030 im Minutentakt; Snapshot und Restore des Marktzustands; Abfrage „Kerzen für Instrument, Auflösung und Zeitraum"; Markt-Prüfsumme.
-- **Abnahme:** Snapshot, Restore und Weiterlauf sind identisch zum ununterbrochenen Lauf; Tageshistorie in unter 1 s; Märzsimulation in unter 0,5 s.
-- **Referenzen:** TS §6.8, §4.6
+  - Die Dividendenhöhe hängt nicht von Kursen des Ankündigungstags ab.
+- **Referenzen:** TS §6.5–§6.8, §4.6
 - **Abhängig von:** AP 1.5
 
 #### AP 1.7 – Simulations-Labor: Welt, Simulation, Chart-Spike
@@ -289,14 +297,14 @@ Status: **offen**, **in Arbeit**, **fertig**.
 
 #### AP 1.8 – Simulations-Labor: Statistik
 
-- **Umfang:** `analysis/domain`: Statistikfunktionen (Rendite, Volatilität, Korrelation, Drawdown, Verteilung der Tagesrenditen); Statistikansicht im Labor nach TS §14.2 mit Vergleich zu den Kalibrierungszielen, Phasen-Zeitleiste und Durchsatz in Ticks pro Sekunde.
+- **Umfang:** `analysis/domain`: Statistikfunktionen (Rendite, Volatilität, Korrelation, Drawdown, Verteilung der Tagesrenditen); Statistikansicht im Labor nach TS §14.2 mit Vergleich zu den Kalibrierungszielen, Phasen-Zeitleiste, Intraday-Statistik im Vergleich zur Referenz-Minutensimulation aus AP 1.5 und Durchsatz in Spieltagen pro Sekunde.
 - **Abnahme:** Tests der Statistikfunktionen mit Referenzwerten; die Ansicht zeigt alle Größen aus TS §6.9 für einen gewählten Seed und Zeitraum.
 - **Referenzen:** TS §6.9, §14.2
 - **Abhängig von:** AP 1.7
 
 #### AP 1.9 – Kalibrierung des Marktmodells
 
-- **Umfang:** Parameter mit mehreren Seeds gegen die Ziele aus TS §6.9 abstimmen; statistische Tests mit Toleranzen; finale Parameter in TS §6 nachtragen.
+- **Umfang:** Parameter mit mehreren Seeds gegen die Ziele aus TS §6.9 abstimmen, einschließlich Tagesprofil der Volatilität (TS §6.1); statistische Tests mit Toleranzen; finale Parameter in TS §6 nachtragen.
 - **Abnahme:** Kalibrierungsziele auf mindestens fünf Seeds erreicht oder Abweichungen begründet; statistische Testsuite grün.
 - **Referenzen:** TS §6.9, §14.1; Risiko R1
 - **Abhängig von:** AP 1.8
@@ -325,16 +333,17 @@ Status: **offen**, **in Arbeit**, **fertig**.
 
 #### AP 2.3 – Persistenz im Worker und Wiederherstellung
 
-- **Umfang:** IndexedDB-Schema Version 3 (TS §9.1) mit Migration und Besitzern je Store; Kommando-Annahme nach dem Write-ahead-Protokoll (TS §8.5); Speicherstrategie (TS §9.2); Laden als Welt + Historie + Snapshot + Replay + Nachberechnung mit Fortschritt; Web Lock je Spieler (TS §9.4); `navigator.storage.persist()`.
+- **Umfang:** IndexedDB-Schema Version 3 (TS §9.1) mit Migration und Besitzern je Store; Kommando-Annahme nach dem Write-ahead-Protokoll (TS §8.5); Speicherstrategie (TS §9.2); Laden als Welt + Faktorhistorie + Snapshot + Replay + Nachberechnung mit Fortschritt; Tageskerzen im Store `candles` mit dem zeitgeteilten Hintergrundauftrag für fehlende Hoch- und Tiefkurse (TS §6.8); Web Lock je Spieler (TS §9.4); `navigator.storage.persist()`.
 - **Abnahme:** Tests mit `fake-indexeddb`:
-  - Speichern und Laden; Replay; Verwerfen abgeleiteter Daten nach dem Snapshot-Tick.
+  - Speichern und Laden; Replay; Verwerfen der Spielerdaten nach dem Snapshot-Tick, Tageskerzen bleiben erhalten.
+  - Nach Verwerfen des Stores `candles` baut der Hintergrundauftrag identische Tageskerzen auf.
   - Absturz kurz nach einem Kommando, das nach der letzten periodischen Uhr-Speicherung kam: Das Kommando wirkt nach der Wiederherstellung an seinem ursprünglichen Tick.
 - **Referenzen:** TS §3.7, §8.5, §9; US-ZT-04, US-SP-02; E-08
 - **Abhängig von:** AP 2.2
 
 #### AP 2.4 – Spielerverwaltung
 
-- **Umfang:** `players` (domain, data-access, feature): Profilmodell, `PlayersService` (Read-Modify-Write auf eigene Datensätze), Players-Slice nach `CLAUDE.md` §6; Seiten „Spielerauswahl" (umbenennen; löschen mit Bestätigung und Lock-Prüfung) und „Spieler anlegen" (Signal Forms, Voreinstellungen, Seed-Generator, Validierung, Betragseingabe als `FormValueControl<Cents>`); Initialisierung beim ersten Laden im Worker (Welt, Historie, März 2030, Uhr).
+- **Umfang:** `players` (domain, data-access, feature): Profilmodell, `PlayersService` (Read-Modify-Write auf eigene Datensätze), Players-Slice nach `CLAUDE.md` §6; Seiten „Spielerauswahl" (umbenennen; löschen mit Bestätigung und Lock-Prüfung) und „Spieler anlegen" (Signal Forms, Voreinstellungen, Seed-Generator, Validierung, Betragseingabe als `FormValueControl<Cents>`); Initialisierung beim ersten Laden im Worker (Welt, Vorlauf bis zum Spielstart, Uhr).
 - **Abnahme:** Tests für Slice, Service und Validierungsregeln. Spieler lassen sich anlegen, umbenennen und löschen (inklusive aller Daten); ein gesperrter Spieler lässt sich nicht löschen; die Auswahl öffnet die (noch leere) Shell.
 - **Referenzen:** US-SP-01–US-SP-03; TS §4.1, §9.1, §9.4, §11.8; E-14
 - **Abhängig von:** AP 2.3, AP 0.4
@@ -446,7 +455,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 - **Umfang:** Depot mit Verrechnungskonto eröffnen; Orderarten und Gültigkeit; Prüfung je Tick; Ausführung zu Geld- und Briefkurs; Gebühren; Reservierung, Ablehnung und Ablauf; Sonderfall Pause; Sperre neuer Käufe bei negativem Verrechnungskonto; Ereignisse.
 - **Abnahme:** Tests für alle Orderarten und Zustandsübergänge (inkl. Storno und Ablauf ausgelöster Stop-Limit-Orders), Kurslücken, Reservierungen und Gebührenmodelle; die Markt-Prüfsumme ist mit und ohne Orders identisch.
 - **Referenzen:** US-HD-01–US-HD-03; TS §7.4, §7.5
-- **Abhängig von:** AP 3.3, AP 1.5
+- **Abhängig von:** AP 3.3, AP 1.6
 
 #### AP 5.2 – Positionen, Lots, Ausschüttungen und Depotgebühr
 
@@ -497,11 +506,12 @@ Status: **offen**, **in Arbeit**, **fertig**.
 
 #### AP 6.1 – Export und Import
 
-- **Umfang:** Export (TS §10.2); Import (TS §10.3) mit Validierung, sofortiger Spielbarkeit, Wiederherstellung der Kurshistorie im Hintergrund, Prüfsummenvergleich, Fortschritt und verständlichen Fehlermeldungen; Backup-Erinnerung.
+- **Umfang:** Export (TS §10.2) mit dem Marktzustand vom Beginn des Export-Tags; Import (TS §10.3) mit Validierung, sofortiger Spielbarkeit, Nachrechnen der Kurshistorie im Hintergrund, Prüfsummenvergleich, Fortschritt und verständlichen Fehlermeldungen; Backup-Erinnerung.
 - **Abnahme:**
   - Tests für Format, Validierung und Prüfsumme.
-  - Nach Export und Import ist der Spielerzustand zum Export-Tick identisch (abgesehen von ID und Name); die Markt-Prüfsumme der wiederhergestellten Historie stimmt.
-  - Ein Spieler mit 50 Spieljahren ist nach unter 5 s spielbar; Datei und Zwischenablage funktionieren.
+  - Nach Export und Import ist der Spielerzustand zum Export-Tick identisch (abgesehen von ID und Name); die Markt-Prüfsumme der nachgerechneten Historie stimmt.
+  - Die Exportdatei enthält keine Stützpunkte des laufenden Tags.
+  - Ein Spieler mit 50 Spieljahren ist nach unter 3 s spielbar; Datei und Zwischenablage funktionieren.
 - **Referenzen:** US-EX-01–US-EX-03; TS §10; E-10
 - **Abhängig von:** AP 5.6, AP 5.7
 
@@ -560,7 +570,8 @@ Die Reihenfolge ab M7 ist ein Vorschlag und wird nach dem MVP gemeinsam priorisi
 
 ## 7. Änderungsprotokoll
 
-| Datum      | Änderung                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 09.11.2026 | Erstfassung von Produktspezifikation, technischer Spezifikation und Projektplan auf Basis der Ideensammlung. Baseline geprüft (Build ok mit Browserslist-Warnung, 1 Lint-Fehler, keine Tests). Benchmark zum Tick-Modell: 1 Spieljahr ≈ 2,0 s Rohsimulation (TS §3.2).                                                                                                                                                                                                  |
-| 09.11.2026 | Überarbeitung nach unabhängigem Review: Write-ahead-Kommandos mit Uhrzustand, beobachtungsunabhängige abgeleitete Marktwerte, Export mit Marktzustand für lange Spiele, Preisraster gegen verschwindende Spreads, korrigierte ETF-Ausschüttung, HTTPS-Pflicht, Besitzer je IndexedDB-Store, Provider-Regel für den `EngineService`, Spielstart am 01.04.2030, neue Entscheidungen E-18/E-19; APs 1.7, 3.4 und 6.4 geteilt und Abhängigkeiten korrigiert (jetzt 42 APs). |
+| Datum      | Änderung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 09.11.2026 | Erstfassung von Produktspezifikation, technischer Spezifikation und Projektplan auf Basis der Ideensammlung. Baseline geprüft (Build ok mit Browserslist-Warnung, 1 Lint-Fehler, keine Tests). Benchmark zum Tick-Modell: 1 Spieljahr ≈ 2,0 s Rohsimulation (TS §3.2).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 09.11.2026 | Überarbeitung nach unabhängigem Review: Write-ahead-Kommandos mit Uhrzustand, beobachtungsunabhängige abgeleitete Marktwerte, Export mit Marktzustand für lange Spiele, Preisraster gegen verschwindende Spreads, korrigierte ETF-Ausschüttung, HTTPS-Pflicht, Besitzer je IndexedDB-Store, Provider-Regel für den `EngineService`, Spielstart am 01.04.2030, neue Entscheidungen E-18/E-19; APs 1.7, 3.4 und 6.4 geteilt und Abhängigkeiten korrigiert (jetzt 42 APs).                                                                                                                                                                                                                                                                                                         |
+| 10.11.2026 | Brückenmodell übernommen (E-20; Begründung, Prototyp-Messungen und Vergleich mit dem Minutenmodell in TS §3.2, §6.1 und §6.6): Kurse aus Tagesschritt und Brownschen Brücken bei Bedarf statt Minutensimulation; Vorlauf mit demselben Modell und minutengenau, kein März-Sonderlauf; Intraday-Kerzen werden nicht mehr gespeichert, Tageskerzen sind reproduzierbar und werden nach Stapelbetrieb im Hintergrund ergänzt; Export mit Marktzustand vom Tagesbeginn; Dividendenhöhe aus dem Schlusskurs vor der Ankündigung; Abfragegrenze; neue Budgets (NF-02, NF-07, TS §14.3). AP 1.4–1.6 neu geschnitten (Tagesschritt und Vorlauf; Brücken, Minutenkurse und Kerzen; Indizes, ETFs, Dividenden, Geld- und Briefkurse), AP 5.1 hängt jetzt von AP 1.6 ab; weiterhin 42 APs. |
