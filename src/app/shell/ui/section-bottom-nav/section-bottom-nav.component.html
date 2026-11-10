@@ -4,7 +4,7 @@
       <li>
         <a
           #link="routerLinkActive"
-          class="flex h-16 flex-col items-center justify-center gap-1 text-xs font-medium"
+          class="flex h-16 flex-col items-center justify-center gap-1 px-1 text-center text-xs leading-tight font-medium"
           [class]="link.isActive ? 'text-accent' : 'text-fg-muted hover:text-fg'"
           [routerLink]="item.path"
           routerLinkActive
@@ -19,7 +19,7 @@
       <button
         ngMenuTrigger
         type="button"
-        class="flex h-16 w-full flex-col items-center justify-center gap-1 text-xs font-medium text-fg-muted hover:text-fg"
+        class="flex h-16 w-full flex-col items-center justify-center gap-1 px-1 text-center text-xs leading-tight font-medium text-fg-muted hover:text-fg"
         data-testid="shell.bottom-nav.more"
         [menu]="moreMenu">
         <i class="bi bi-three-dots text-lg" aria-hidden="true"></i>

@@ -118,50 +118,50 @@ Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevo
 
 Status: **offen**, **in Arbeit**, **fertig**.
 
-| AP  | Titel                                            | Status    | Abhängig von |
-| --- | ------------------------------------------------ | --------- | ------------ |
-| 0.1 | Aufräumen und Baseline                           | fertig    | –            |
-| 0.2 | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig    | 0.1          |
-| 0.3 | App-Bootstrap und Infrastruktur                  | fertig    | 0.1          |
-| 0.4 | App-Shell und UI-Grundkomponenten                | in Arbeit | 0.2, 0.3     |
-| 1.1 | Deterministischer Zufall und Mathematik          | offen     | 0.1          |
-| 1.2 | Spielkalender und Zeitmodell                     | offen     | 0.1          |
-| 1.3 | Weltgenerierung: Taxonomie, Unternehmen, Banken  | offen     | 1.1          |
-| 1.4 | Marktmodell: Tagesschritt und Vorlauf            | offen     | 1.2, 1.3     |
-| 1.5 | Brücken, Minutenkurse und Kerzen                 | offen     | 1.4          |
-| 1.6 | Indizes, ETFs, Dividenden, Geld- und Briefkurse  | offen     | 1.5          |
-| 1.7 | Simulations-Labor: Welt, Simulation, Chart-Spike | offen     | 1.6, 0.4     |
-| 1.8 | Simulations-Labor: Statistik                     | offen     | 1.7          |
-| 1.9 | Kalibrierung des Marktmodells                    | offen     | 1.8          |
-| 2.1 | GameEngine und Terminplaner                      | offen     | 1.6          |
-| 2.2 | Worker-Host, Protokoll und EngineService         | offen     | 2.1, 0.3     |
-| 2.3 | Persistenz im Worker und Wiederherstellung       | offen     | 2.2          |
-| 2.4 | Spielerverwaltung                                | offen     | 2.3, 0.4     |
-| 2.5 | Spielsitzung und Uhr                             | offen     | 2.4          |
-| 3.1 | Hauptbuch und Kontenmodell                       | offen     | 2.4          |
-| 3.2 | Haushalt und periodische Buchungen               | offen     | 3.1          |
-| 3.3 | Bankkommandos und Banking-Slice                  | offen     | 3.2, 2.5     |
-| 3.4 | Kontenübersicht und Kontoauszug                  | offen     | 3.3          |
-| 3.5 | Bankenvergleich, Dialoge und Monatsübersicht     | offen     | 3.4          |
-| 3.6 | Benachrichtigungen                               | offen     | 3.3          |
-| 4.1 | Marktdaten-Feed und Market-Slice                 | offen     | 2.5          |
-| 4.2 | Chart-Komponenten                                | offen     | 4.1, 1.7     |
-| 4.3 | Indikatoren                                      | offen     | 4.2          |
-| 4.4 | Marktübersicht, Screener und Watchlist           | offen     | 4.2          |
-| 4.5 | Instrument-Detailseite                           | offen     | 4.3, 4.4     |
-| 5.1 | Depot und Orderausführung                        | offen     | 3.3, 1.6     |
-| 5.2 | Positionen, Lots, Ausschüttungen und Depotgebühr | offen     | 5.1          |
-| 5.3 | Steuern                                          | offen     | 5.2          |
-| 5.4 | Order-Ticket und Orderbuch                       | offen     | 5.3, 4.5     |
-| 5.5 | Depot, Positionen und Steuerübersicht (UI)       | offen     | 5.4          |
-| 5.6 | Sparpläne                                        | offen     | 5.5          |
-| 5.7 | Dashboard und Performance                        | offen     | 5.5          |
-| 6.1 | Export und Import                                | offen     | 5.6, 5.7     |
-| 6.2 | Einstellungen                                    | offen     | 6.1, 3.6     |
-| 6.3 | PWA und Browser-Benachrichtigungen               | offen     | 6.2          |
-| 6.4 | Performance und Robustheit                       | offen     | 6.1          |
-| 6.5 | Barrierefreiheit, Hilfen und Hinweise            | offen     | 6.3          |
-| 6.6 | Release 1.0                                      | offen     | 6.4, 6.5     |
+| AP  | Titel                                            | Status | Abhängig von |
+| --- | ------------------------------------------------ | ------ | ------------ |
+| 0.1 | Aufräumen und Baseline                           | fertig | –            |
+| 0.2 | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig | 0.1          |
+| 0.3 | App-Bootstrap und Infrastruktur                  | fertig | 0.1          |
+| 0.4 | App-Shell und UI-Grundkomponenten                | fertig | 0.2, 0.3     |
+| 1.1 | Deterministischer Zufall und Mathematik          | offen  | 0.1          |
+| 1.2 | Spielkalender und Zeitmodell                     | offen  | 0.1          |
+| 1.3 | Weltgenerierung: Taxonomie, Unternehmen, Banken  | offen  | 1.1          |
+| 1.4 | Marktmodell: Tagesschritt und Vorlauf            | offen  | 1.2, 1.3     |
+| 1.5 | Brücken, Minutenkurse und Kerzen                 | offen  | 1.4          |
+| 1.6 | Indizes, ETFs, Dividenden, Geld- und Briefkurse  | offen  | 1.5          |
+| 1.7 | Simulations-Labor: Welt, Simulation, Chart-Spike | offen  | 1.6, 0.4     |
+| 1.8 | Simulations-Labor: Statistik                     | offen  | 1.7          |
+| 1.9 | Kalibrierung des Marktmodells                    | offen  | 1.8          |
+| 2.1 | GameEngine und Terminplaner                      | offen  | 1.6          |
+| 2.2 | Worker-Host, Protokoll und EngineService         | offen  | 2.1, 0.3     |
+| 2.3 | Persistenz im Worker und Wiederherstellung       | offen  | 2.2          |
+| 2.4 | Spielerverwaltung                                | offen  | 2.3, 0.4     |
+| 2.5 | Spielsitzung und Uhr                             | offen  | 2.4          |
+| 3.1 | Hauptbuch und Kontenmodell                       | offen  | 2.4          |
+| 3.2 | Haushalt und periodische Buchungen               | offen  | 3.1          |
+| 3.3 | Bankkommandos und Banking-Slice                  | offen  | 3.2, 2.5     |
+| 3.4 | Kontenübersicht und Kontoauszug                  | offen  | 3.3          |
+| 3.5 | Bankenvergleich, Dialoge und Monatsübersicht     | offen  | 3.4          |
+| 3.6 | Benachrichtigungen                               | offen  | 3.3          |
+| 4.1 | Marktdaten-Feed und Market-Slice                 | offen  | 2.5          |
+| 4.2 | Chart-Komponenten                                | offen  | 4.1, 1.7     |
+| 4.3 | Indikatoren                                      | offen  | 4.2          |
+| 4.4 | Marktübersicht, Screener und Watchlist           | offen  | 4.2          |
+| 4.5 | Instrument-Detailseite                           | offen  | 4.3, 4.4     |
+| 5.1 | Depot und Orderausführung                        | offen  | 3.3, 1.6     |
+| 5.2 | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1          |
+| 5.3 | Steuern                                          | offen  | 5.2          |
+| 5.4 | Order-Ticket und Orderbuch                       | offen  | 5.3, 4.5     |
+| 5.5 | Depot, Positionen und Steuerübersicht (UI)       | offen  | 5.4          |
+| 5.6 | Sparpläne                                        | offen  | 5.5          |
+| 5.7 | Dashboard und Performance                        | offen  | 5.5          |
+| 6.1 | Export und Import                                | offen  | 5.6, 5.7     |
+| 6.2 | Einstellungen                                    | offen  | 6.1, 3.6     |
+| 6.3 | PWA und Browser-Benachrichtigungen               | offen  | 6.2          |
+| 6.4 | Performance und Robustheit                       | offen  | 6.1          |
+| 6.5 | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3          |
+| 6.6 | Release 1.0                                      | offen  | 6.4, 6.5     |
 
 ### Abhängigkeitsgraph
 
@@ -288,8 +288,7 @@ flowchart TD
   AP6_5 --> AP6_6
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP0_1,AP0_2,AP0_3 done
-  class AP0_4 active
+  class AP0_1,AP0_2,AP0_3,AP0_4 done
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6
@@ -703,3 +702,4 @@ Die Reihenfolge ab M7 ist ein Vorschlag und wird nach dem MVP gemeinsam priorisi
 | 10.11.2026 | Grundsatz: alle Versionen in `package.json` exakt fixiert (keine `^`/`~`), `.npmrc` mit `save-exact=true`; Regel in `CLAUDE.md`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | 10.11.2026 | E-09 entschieden. AP 0.3 umgesetzt: `src/app/app.config.ts` mit Hash-Router, Store, Effects, Router Store, Devtools nur bei gesetztem `storeDevtools`, `LOCALE_ID` `de` und `registerLocaleData`; `main.ts` bootet mit `appConfig`. `@angular/cdk` 22.0.1 und `fake-indexeddb` (dev) installiert. `persistence/data-access`: framework-freies IndexedDB-Schema (`portfoligo`, Version 3, Stores nach TS §9.1 mit In-line-Schlüsseln, multiEntry-Index `byAccount` für Transaktionen), nummerierte Migrationen (Schritt 3 verwirft die Stores des Prototyps), `openPortfoligoDb()` für UI und Worker, `IndexedDbService` (ohne Config-Token, weil das Schema feststeht) und `LocalStorageService` mit typisierten Schlüsseln und dem Format `{ v, data }` (auch für einfache Werte wie `pgo.lastPlayerId`; TS §9.3 angepasst). `shared/domain`: `Cents`, `MicroUnits`, kaufmännische Rundung mit Korrektur von Gleitkomma-Artefakten, Kurswert, Satzanwendung, Preisraster und Geld-/Briefkurs mit mindestens einem Rasterschritt. `shared/util`: `formatCents`, `formatPrice`, `formatPercent`, `formatSignedPercent`, `formatCompact`; weil `util` nicht von `domain` abhängen darf, bekommt `formatPrice` die Nachkommastellen als Parameter, die Pipe `formatPrice` ermittelt sie über `priceDecimals`. `shared/ui`: Pipes über den Formatierungsfunktionen. `formatGameTime` ist nach AP 1.2 verschoben (braucht das Zeitmodell).                                                                                                                                                                                                                                                                                                                                                                                            |
 | 10.11.2026 | E-15 und E-16 entschieden. AP 0.4 umgesetzt: Angular 22.2 (Framework 22.2.5, CLI/Build/CDK 22.2.6) und `@angular/aria` 22.2.6 (verlangt exakt die CDK-Version); dadurch Browserslist auf Chrome/Edge ≥ 119, Safari/iOS ≥ 17.0 angehoben (Angular-Baseline, TS §1.3). Routen-Gerüst nach TS §11.4: `''` und `**` → `/players`, Spielerauswahl und „Spieler anlegen“ als Platzhalter (mit Vorschau-Link nach `/game/preview` bis AP 2.4), Shell unter `/game/:playerId` mit lazy geladenen Platzhalterseiten direkt in den Ziel-Domänen (`dashboard`, `market`, `portfolio`, `banking`, `trading`, `taxes`, `notifications`, `settings`); Seitentitel über `PageTitleStrategy`. Shell: Kopfzeile mit Platzhaltern für Uhr, Gesamtvermögen und Suche, Glocke und Spielermenü (Aria-Menu), Seitennavigation ab 48rem, sonst untere Leiste mit vier Bereichen und „Mehr“-Menü, Skip-Link. `shared/ui`: `appButton`/`appIconButton` als Attribut-Direktiven, Panel, Badge, Tabs (Aria), Leerzustand, Skeleton, Kennzahl-Kachel, Kursveränderung, `ToastService` mit Container im CDK-Overlay, Dialog-Rahmen und Bestätigungsdialog mit `openConfirmDialog` für Effects; `shared/ui` gilt als eigene UI-Bibliothek und darf diese Services enthalten (TS §11.2, Punkt 8). `shared/util`: `changeDirection`, `formatSignedCents`; `formatSignedPercent` nutzt jetzt das typografische Minus (PS §10.4). Globale Styles: Bootstrap-Icons-Font, CDK-Overlay-CSS, Fokusring per `:focus-visible`. Entwicklerseite `#/lab/components`. Tests laufen jetzt mit den `$localize`-Typen. Browser-Prüfung in der Session nicht möglich (Chrome startet in der Sandbox nicht); Menüs, Tabs, Navigation und Skip-Link per jsdom geprüft – die manuelle Sichtprüfung auf Desktop und Smartphone steht noch aus, deshalb ist AP 0.4 noch „in Arbeit“. |
+| 10.11.2026 | AP 0.4 abgeschlossen: Sichtprüfung auf Desktop und Smartphone durch den Product Owner. Korrektur: zweizeilige Beschriftungen in der unteren Leiste („Konten & Banken“) waren linksbündig und sind jetzt zentriert (`text-center`, `leading-tight`, `px-1`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
