@@ -3,10 +3,10 @@ import { environment as productionEnvironment } from './environment.prod';
 
 describe('environment', () => {
   describe('production', () => {
-    it('disables store devtools and developer pages', () => {
+    it('disables store devtools and enables developer pages for now', () => {
       expect(productionEnvironment.production).toBe(true);
       expect(productionEnvironment.storeDevtools).toBeNull();
-      expect(productionEnvironment.devPages).toBe(false);
+      expect(productionEnvironment.devPages).toBe(true);
     });
   });
 

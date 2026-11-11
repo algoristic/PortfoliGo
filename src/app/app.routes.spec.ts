@@ -50,6 +50,11 @@ describe('routes', () => {
     expect(router.url).toBe(`/game/p1/${path}`);
   });
 
+  it.each(['lab/components', 'lab/tokens'])('resolves the lab path %s', async (path) => {
+    await harness.navigateByUrl(`/${path}`);
+    expect(router.url).toBe(`/${path}`);
+  });
+
   it('resolves the new player page', async () => {
     await harness.navigateByUrl('/players/new');
     expect(router.url).toBe('/players/new');

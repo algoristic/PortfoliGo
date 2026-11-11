@@ -1063,7 +1063,7 @@ src/
     ├── settings/           # feature · data-access
     ├── persistence/        # data-access: IndexedDB-Schema und -Service, LocalStorageService
     ├── shared/             # ui: Design-System-Komponenten, Pipes, Formular-Schemas · util: Formatierung · domain: Geld, Mengen
-    └── lab/                # feature: Simulations-Labor (nur Entwicklung)
+    └── lab/                # feature: Simulations-Labor und Entwicklerseiten
 ```
 
 ### 11.2 Ergänzungen für CLAUDE.md
@@ -1115,7 +1115,9 @@ Am 10.11.2026 freigegeben und in AP 0.2 in `CLAUDE.md` übernommen (§1, §3, §
 | `/game/:playerId/taxes`                             | Steuern                             |                          |
 | `/game/:playerId/notifications`                     | Benachrichtigungen                  |                          |
 | `/game/:playerId/settings`                          | Einstellungen                       |                          |
-| `/lab`                                              | Simulations-Labor (nur Entwicklung) | Umgebungs-Flag           |
+| `/lab`                                              | Simulations-Labor, Entwicklerseiten | `devPages` (vorerst an)  |
+
+Das Labor (`/lab`) hat einen eigenen Rahmen mit Navigation zwischen Simulation, UI-Bausteinen und Design-Tokens und einen Link zurück zur App.
 
 Hash-Routing bleibt (statisches Hosting unter einem Unterpfad). Pfade sind englisch wie der übrige Code (E-15). Die leere Route führt zur Spielerauswahl; dort ist der zuletzt genutzte Spieler vorausgewählt (US-SP-02).
 
@@ -1284,7 +1286,7 @@ Signal Forms nach `CLAUDE.md` §3. Eine eigene Betragseingabe (`FormValueControl
 
 ### 14.2 Simulations-Labor
 
-Eine Entwicklerseite (`/lab`, nur mit Umgebungs-Flag) erzeugt zu einem Seed die Welt und simuliert einen wählbaren Zeitraum. Sie zeigt Weltübersicht (Unternehmen, Indizes, ETFs, Banken), Charts (Indizes, Sektoren, Einzelwerte), Statistiken (Rendite, Volatilität, Korrelationsmatrix, Drawdowns, Phasen-Zeitleiste, Verteilung der Tagesrenditen) im Vergleich zu den Kalibrierungszielen, eine Intraday-Statistik (Minutenvolatilität, Tagesspanne, Tagesprofil) im Vergleich zur Referenz-Minutensimulation sowie den Durchsatz in Spieltagen pro Sekunde, getrennt nach Tagesschritten und Minutenverläufen. Die Statistikfunktionen liegen in `analysis/domain` und dienen später auch den Risikokennzahlen (US-PF-08). Umgesetzt in AP 1.8a: Die Statistik gilt für einen wählbaren Zeitraum (ab Epoche oder ab Spielstart bis zum aktuellen Tag) und entsteht im Worker aus den Tagesstützpunkten, die aus den Monatsbeginn-Zuständen nachgerechnet werden (`collectMarketSample` und `computeLabStatistics` in `lab/domain`); die Korrelationsmatrix zeigt Sektorpaare mit Aktien derselben Region. Intraday-Statistik, Durchsatz der Minutenverläufe, Overnight-Anteil, Langzeit-Kennzahlen und Selbsttest folgen in AP 1.8b.
+Eine Entwicklerseite (`/lab/simulation`, mit Umgebungs-Flag `devPages`; vorerst auch in Produktion freigegeben und von der Spielerauswahl verlinkt) erzeugt zu einem Seed die Welt und simuliert einen wählbaren Zeitraum. Sie zeigt Weltübersicht (Unternehmen, Indizes, ETFs, Banken), Charts (Indizes, Sektoren, Einzelwerte), Statistiken (Rendite, Volatilität, Korrelationsmatrix, Drawdowns, Phasen-Zeitleiste, Verteilung der Tagesrenditen) im Vergleich zu den Kalibrierungszielen, eine Intraday-Statistik (Minutenvolatilität, Tagesspanne, Tagesprofil) im Vergleich zur Referenz-Minutensimulation sowie den Durchsatz in Spieltagen pro Sekunde, getrennt nach Tagesschritten und Minutenverläufen. Die Statistikfunktionen liegen in `analysis/domain` und dienen später auch den Risikokennzahlen (US-PF-08). Umgesetzt in AP 1.8a: Die Statistik gilt für einen wählbaren Zeitraum (ab Epoche oder ab Spielstart bis zum aktuellen Tag) und entsteht im Worker aus den Tagesstützpunkten, die aus den Monatsbeginn-Zuständen nachgerechnet werden (`collectMarketSample` und `computeLabStatistics` in `lab/domain`); die Korrelationsmatrix zeigt Sektorpaare mit Aktien derselben Region. Intraday-Statistik, Durchsatz der Minutenverläufe, Overnight-Anteil, Langzeit-Kennzahlen und Selbsttest folgen in AP 1.8b.
 
 ### 14.3 Performance-Budgets
 

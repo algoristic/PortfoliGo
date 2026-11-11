@@ -1,0 +1,23 @@
+<div class="flex min-h-dvh flex-col bg-bg text-fg">
+  <header
+    class="sticky top-0 z-20 flex flex-wrap items-center gap-x-6 gap-y-1 border-b border-border bg-surface px-4 py-2">
+    <p class="flex shrink-0 gap-2 text-lg font-semibold">
+      <span class="text-accent">PortfoliGo</span>
+      <span class="text-fg-muted" i18n="@@featureLab-labPage-title">Labor</span>
+    </p>
+    <app-section-lab-nav
+      class="order-last w-full md:order-none md:w-auto md:flex-1"
+      [items]="navItems"></app-section-lab-nav>
+    <a
+      class="ml-auto flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap text-fg-muted transition-colors hover:bg-surface-raised hover:text-fg"
+      routerLink="/players"
+      data-testid="lab.header.app">
+      <i class="bi bi-box-arrow-left text-base" aria-hidden="true"></i>
+      <span i18n="@@featureLab-labPage-app">Zur App</span>
+    </a>
+  </header>
+
+  <main id="content" class="min-w-0 flex-1">
+    <router-outlet />
+  </main>
+</div>

@@ -286,7 +286,56 @@
         <source>Simulations-Labor</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/lab.routes.ts</context>
-          <context context-type="linenumber">22</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-labRoutes-componentsTitle" datatype="html">
+        <source>UI-Bausteine</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/lab.routes.ts</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-labRoutes-tokensTitle" datatype="html">
+        <source>Design-Tokens</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/lab.routes.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-labPage-title" datatype="html">
+        <source>Labor</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/lab/lab.page.html</context>
+          <context context-type="linenumber">6,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-labPage-app" datatype="html">
+        <source>Zur App</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/lab/lab.page.html</context>
+          <context context-type="linenumber">16,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-labPage-navSimulation" datatype="html">
+        <source>Simulation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/lab/lab.page.ts</context>
+          <context context-type="linenumber">19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-labPage-navComponents" datatype="html">
+        <source>UI-Bausteine</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/lab/lab.page.ts</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-labPage-navTokens" datatype="html">
+        <source>Design-Tokens</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/lab/lab.page.ts</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-sectionSeriesChart-series" datatype="html">
@@ -1356,6 +1405,13 @@
           <context context-type="linenumber">81,83</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiLab-sectionLabNav-navLabel" datatype="html">
+        <source>Labor-Navigation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/ui/section-lab-nav/section-lab-nav.component.ts</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiLab-sectionPhaseTimeline-typical" datatype="html">
         <source>(typisch <x id="INTERPOLATION" equiv-text="{{ formatShare(share.typical) }}"/>)</source>
         <context-group purpose="location">
@@ -1577,7 +1633,14 @@
         <source>Vorschau des Spielbereichs</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
-          <context context-type="linenumber">26,29</context>
+          <context context-type="linenumber">26,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-lab" datatype="html">
+        <source>Labor</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
+          <context context-type="linenumber">34,36</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePortfolio-portfolioRoutes-portfolioTitle" datatype="html">

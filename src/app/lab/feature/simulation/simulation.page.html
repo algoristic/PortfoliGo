@@ -17,7 +17,7 @@
 @let loadingStatistics = labFacade.loadingStatistics$ | async;
 @let _seed = seedForm.seed();
 
-<main class="mx-auto flex min-h-dvh max-w-6xl flex-col gap-6 bg-bg p-6 text-fg">
+<div class="mx-auto flex max-w-6xl flex-col gap-6 p-6">
   <h1 class="text-2xl font-semibold" i18n="@@featureLab-simulationPage-title">Simulations-Labor</h1>
 
   <app-panel heading="Welt" i18n-heading="@@featureLab-simulationPage-world">
@@ -160,4 +160,4 @@
       text="Gib einen Seed ein und erzeuge eine Welt; Vorlauf und Simulation laufen im Web Worker."
       i18n-text="@@featureLab-simulationPage-emptyText"></app-empty-state>
   }
-</main>
+</div>
