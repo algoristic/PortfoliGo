@@ -1,7 +1,15 @@
 import { RouterTestingHarness } from '@angular/router/testing';
 
 import { installChartPlatform } from '../../../../testing/chart-platform';
-import { byTestId, click, queryByTestId, textOf, typeText, wheel } from '../../../../testing/dom';
+import {
+  byTestId,
+  click,
+  queryByTestId,
+  select,
+  textOf,
+  typeText,
+  wheel,
+} from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
 import { formatGameTime } from '../../../clock/domain/game-time-format';
 import { TICKS_PER_DAY } from '../../../clock/domain/models/time.model';
@@ -67,6 +75,10 @@ describe('SimulationPage', () => {
     return { range: '1w', resolution, chartType: 'candles' };
   }
 
+  function tableRows(testId: string): number {
+    return byTestId(page, testId).querySelectorAll('tbody tr').length;
+  }
+
   describe('world', () => {
     it('generates the world of the seed and shows its game time and chart', async () => {
       expect(queryByTestId(page, 'lab.simulation.game-time')).toBeNull();
@@ -88,11 +100,43 @@ describe('SimulationPage', () => {
       expect(queryByTestId(page, 'lab.simulation.game-time')).toBeNull();
     });
 
+    it('lists the companies and, on their tab, the ETFs of the world', async () => {
+      await generateWorld();
+      const overview = oracle.overview();
+      expect(tableRows('lab.simulation.companies')).toBe(overview.companies.length);
+      await act(() => click(byTestId(page, 'lab.simulation.world-tabs.etfs.tab')));
+      expect(tableRows('lab.simulation.etfs')).toBe(overview.etfs.length);
+    });
+
     it('advances the game time by the simulated days', async () => {
       await generateWorld();
       await act(() => click(byTestId(page, 'lab.simulation.simulate.7')));
       expect(textOf(byTestId(page, 'lab.simulation.game-time'))).toContain(
         formatGameTime(oracle.now + 7 * TICKS_PER_DAY),
+      );
+    });
+  });
+
+  describe('series', () => {
+    it('shows the candles of the chosen series', async () => {
+      await generateWorld();
+      // Another share: indices would build a year from the minute curves of all constituents.
+      const share = oracle.overview().series.filter((option) => option.kind === 'stock')[1];
+      if (share === undefined) {
+        throw new Error('The world has only one share');
+      }
+      await act(() =>
+        select(byTestId<HTMLSelectElement>(page, 'lab.simulation.chart.series'), `${share.series}`),
+      );
+      expect(textOf(byTestId(page, 'lab.simulation.chart.series-name'))).toContain(share.name);
+      expect(shownCandles()).toBe(
+        oracleCandles(
+          candleRequest(
+            share.series,
+            { range: '1y', resolution: '1d', chartType: 'candles' },
+            oracle.now,
+          ),
+        ),
       );
     });
   });

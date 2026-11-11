@@ -82,7 +82,7 @@
 
   <p class="flex flex-wrap gap-x-4 text-sm text-fg-muted tabular-nums">
     @if (_selectedOption) {
-      <span class="font-medium text-fg">
+      <span class="font-medium text-fg" data-testid="lab.simulation.chart.series-name">
         {{ _selectedOption.name }} · {{ kindLabels[_selectedOption.kind] }}
       </span>
     }

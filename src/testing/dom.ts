@@ -42,3 +42,35 @@ export function wheel(element: Element, deltaY: number): void {
     }),
   );
 }
+
+// Browsers still set the legacy `keyCode`, and parts of the CDK (e.g. Escape in dialogs) read it.
+const KEY_CODES: Record<string, number> = {
+  Tab: 9,
+  Enter: 13,
+  Escape: 27,
+  ' ': 32,
+  End: 35,
+  Home: 36,
+  ArrowLeft: 37,
+  ArrowUp: 38,
+  ArrowRight: 39,
+  ArrowDown: 40,
+};
+
+/** Presses a key on the element; widgets such as tabs, menus and dialogs react to `keydown`. */
+export function press(element: Element, key: string): void {
+  element.dispatchEvent(
+    new KeyboardEvent('keydown', {
+      key,
+      keyCode: KEY_CODES[key] ?? 0,
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+}
+
+/** Chooses the option with `value` like the user does and reports it with a `change` event. */
+export function select(element: HTMLSelectElement, value: string): void {
+  element.value = value;
+  element.dispatchEvent(new Event('change', { bubbles: true }));
+}
