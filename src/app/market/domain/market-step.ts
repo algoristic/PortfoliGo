@@ -13,7 +13,7 @@ const INITIAL_JUMP_CAPACITY = 16;
 export interface AdvanceMarketOptions {
   /** Called after every trading day; `day` is reused and only valid during the call. */
   onDay?: (day: Readonly<MarketDay>) => void;
-  /** Receives the factor state at every month start that is passed (TS §6.8). */
+  /** Receives the market state at every month start that is passed (TS §6.8). */
   history?: FactorHistory;
 }
 
@@ -43,6 +43,25 @@ export function createMarketDay(layout: MarketLayout): MarketDay {
     jumpMinute: new Int32Array(INITIAL_JUMP_CAPACITY),
     jumpSize: new Float64Array(INITIAL_JUMP_CAPACITY),
     jumpTotal: 0,
+  };
+}
+
+/** Copy of a market day that shares no arrays with the original; jump arrays are trimmed. */
+export function copyMarketDay(day: Readonly<MarketDay>): MarketDay {
+  return {
+    day: day.day,
+    phase: day.phase,
+    factorLevels: day.factorLevels.slice(),
+    factorVols: day.factorVols.slice(),
+    idioOpen: day.idioOpen.slice(),
+    idioClose: day.idioClose.slice(),
+    logOpen: day.logOpen.slice(),
+    logClose: day.logClose.slice(),
+    jumpStart: day.jumpStart.slice(),
+    jumpCount: day.jumpCount.slice(),
+    jumpMinute: day.jumpMinute.slice(0, day.jumpTotal),
+    jumpSize: day.jumpSize.slice(0, day.jumpTotal),
+    jumpTotal: day.jumpTotal,
   };
 }
 
@@ -118,5 +137,6 @@ function recordMonthStart(history: FactorHistory, state: MarketState): void {
     trend: state.trend.slice(),
     logVol: state.logVol.slice(),
     level: state.level.slice(),
+    idioClose: state.idioClose.slice(),
   });
 }

@@ -159,7 +159,7 @@ Ein Tick ist die kleinste Zeiteinheit für Kurse, Orders und Buchungen. Kurse we
 | Minutenchart einer Aktie für einen beliebigen vergangenen Tag         | 0,2 ms                                 | 0,2 ms                                                       |
 | Tageskerzen einer Aktie mit Hoch und Tief über 10 Jahre neu berechnen | 0,42 s                                 | 0,42 s                                                       |
 
-Für `detExp`/`detLog` (§4.4) sowie Orders, Persistenz und Ereignisse wird ein Faktor 4 eingeplant; nachgemessen wird in AP 1.4 und AP 1.5. **Nachmessung AP 1.4** (Vitest, Entwicklungsrechner, mit `detExp`/`detLog` und Seeding nach §4.2): zehn Jahre Tagesschritte der Standardwelt (2.673 Handelstage, 49 Faktoren, 200 Aktien) in 0,40–0,48 s, also rund 45 ms je Spieljahr. Den größten Teil kostet das Erzeugen der rund 250 Ströme je Tag; `StreamFamily` (§4.2) hält das bei rund 0,34 µs je Strom. Nicht gemessen sind Smartphones, ein eigener Strom je Faktor-Intervall (spart bei Neuberechnungen geschätzt rund zwei Drittel der Faktorbrücken, weil nur die Intervalle der Handelszeit nötig sind) und zweistufige Brücken für breite Indizes (§6.6).
+Für `detExp`/`detLog` (§4.4) sowie Orders, Persistenz und Ereignisse wird ein Faktor 4 eingeplant; nachgemessen wird in AP 1.4 und AP 1.5. **Nachmessung AP 1.4** (Vitest, Entwicklungsrechner, mit `detExp`/`detLog` und Seeding nach §4.2): zehn Jahre Tagesschritte der Standardwelt (2.673 Handelstage, 49 Faktoren, 200 Aktien) in 0,40–0,48 s, also rund 45 ms je Spieljahr. Den größten Teil kostet das Erzeugen der rund 250 Ströme je Tag; `StreamFamily` (§4.2) hält das bei rund 0,34 µs je Strom. Nicht gemessen sind Smartphones, ein eigener Strom je Faktor-Intervall (spart bei Neuberechnungen geschätzt rund zwei Drittel der Faktorbrücken, weil nur die Intervalle der Handelszeit nötig sind) und zweistufige Brücken für breite Indizes (§6.6). **Nachmessung AP 1.5** (Vitest, isoliert, Standardwelt): ein Spieljahr mit Tagesschritten und allen Minutenverläufen (49 Faktoren rund um die Uhr, 200 Aktien) in 2,1–2,2 s (Budget ≤ 4 s), unter Last mit parallelen Test-Workern rund 6 s; Minutenchart einer Aktie für einen vergangenen Tag mit kalten Caches in 1,5–2,5 ms (Budget < 50 ms), weil höchstens ein Monat Tagesschritte ab dem letzten Monatsbeginn nachgerechnet wird (§6.8).
 
 Folgerungen:
 
@@ -281,7 +281,7 @@ const rng = createStream(seedKey, `market/instrument/${instrumentId}/${dayIndex}
 
 - Der Startzustand jedes Stroms ist MurmurHash3 x86_128 über die 16 Bytes von `seedKey` (little-endian) gefolgt von den UTF-8-Bytes eines stabilen Schlüssels; h1–h4 werden zu a, b, c und Zähler von `sfc32` (schnell, gute statistische Qualität, 128-Bit-Zustand). Die ersten 12 Ausgaben werden verworfen. Mit 128 Bit sind Kollisionen zwischen Strömen praktisch ausgeschlossen – bei nur 32 Bit gäbe es schon in einem Spieljahrzehnt Dutzende identische Ströme.
 - Beispiele für Schlüssel: `world/companies`, `world/indices`, `world/etfs`, `world/banks` (je ein Strom pro Stufe der Weltgenerierung, §5.1), `market/regime/<tag>`, `market/factor/<id>/init` (Startzustand an der Epoche, §6.2), `market/factor/<id>/<tag>` (Tagesschritt), `market/factor/<id>/<tag>/bridge/<intervall>` (Minutenwerte), `market/instrument/<id>/<tag>` (Tagesschritt), `market/instrument/<id>/<tag>/bridge` (Minutenwerte), `life/living-costs/<monat>`.
-- `<tag>` ist der Tagesindex seit der Epoche (`dayIndex`), Faktor-IDs sind `world`, `region:<id>`, `sector:<id>`, `industry:<id>`, `style` und `size`. Für Schlüssel, die sich nur im angehängten Tagesindex unterscheiden, hasht `StreamFamily` (`simulation/util`) Seed-Schlüssel und Präfix nur einmal; das Ergebnis ist bitgleich zu `createStream` mit dem vollständigen Schlüssel.
+- `<tag>` ist der Tagesindex seit der Epoche (`dayIndex`), Faktor-IDs sind `world`, `region:<id>`, `sector:<id>`, `industry:<id>`, `style` und `size`. Für Schlüssel, die sich nur im angehängten Tagesindex unterscheiden, hasht `StreamFamily` (`simulation/util`) Seed-Schlüssel und Präfix nur einmal; das Ergebnis ist bitgleich zu `createStream` mit dem vollständigen Schlüssel. Ein optionaler Suffix nach dem Tagesindex (`create(tag, utf8Encode('/bridge'))`) deckt die Brückenströme ab.
 - **Vorteile:** Ströme sind unabhängig (ein neues Instrument verschiebt keine anderen Kurse); jeder Tag eines Faktors oder Instruments lässt sich einzeln neu erzeugen – die Grundlage des Brückenmodells (§6.1); Spielerentscheidungen ziehen nie aus Marktströmen.
 
 ### 4.3 Verteilungen
@@ -323,7 +323,7 @@ Deshalb nutzt Simulationscode nur IEEE-754-exakte Operationen (`+ − × ÷`, `M
 
 Seed → Weltparameter → Regionen, Länder, Börsen → Sektoren, Branchen → Unternehmen → Indizes → ETF-Emittenten und ETFs → Banken → Tagesschritte von der Epoche bis zum Spielstart (§6.1) → Marktzustand zum Spielstart.
 
-Die Welt ist deterministisch. Sie wird bei jedem Laden in unter einer Sekunde neu erzeugt und nicht gespeichert (§9), ebenso die Faktorhistorie (§6.8). Den Marktzustand zum Spielstart berechnet die Engine beim Anlegen eines Spielers; der Vorlauf ist danach wie jeder Spieltag minutengenau abrufbar.
+Die Welt ist deterministisch. Sie wird bei jedem Laden in unter einer Sekunde neu erzeugt und nicht gespeichert (§9). Die Marktzustände zu Monatsbeginn (§6.8) werden ebenfalls neu erzeugt oder klein mitgespeichert; das legt AP 2.3 fest. Den Marktzustand zum Spielstart berechnet die Engine beim Anlegen eines Spielers; der Vorlauf ist danach wie jeder Spieltag minutengenau abrufbar.
 
 ### 5.2 Umfang der Standardwelt (E-13)
 
@@ -438,7 +438,12 @@ X_b wird als Stützpunkt gesetzt, nicht aus der Brücke errechnet.
 - **Gleichwertigkeit:** Bei gleicher Varianz je Minute hat die Brücke exakt dieselbe gemeinsame Verteilung wie eine Simulation Minute für Minute (Messung unten).
 - **Stützpunkte setzen:** In Gleitkomma gilt `a + (b − a) = b` nicht immer. Ein um ein ulp abweichender Schlusskurs könnte am Preisraster (§6.7) anders gerundet werden; deshalb Regel 8 in §4.5.
 - **Keine Vorschau:** Der Tagesschritt kennt um 00:00 Uhr bereits die Schlusskurse des Tages. Sie bleiben intern: Abfragen und Ereignisse enthalten nie Werte nach dem aktuellen Tick (§4.5, §8.2).
-- **Tagesprofil der Volatilität:** Die Varianzen `v_m` des unternehmensspezifischen Anteils dürfen über den Handelstag variieren (höher zur Eröffnung und zum Schluss), ohne die Stützpunkte zu ändern. Der Parameter ist ab AP 1.5 vorgesehen (Standard: gleichmäßig) und wird in AP 1.9 kalibriert. Ohne ihn ist die Volatilität innerhalb eines Tages konstant; Volatilitäts-Cluster und Leverage-Effekt wirken von Tag zu Tag (§6.2).
+- **Tagesprofil der Volatilität:** Die Varianzen `v_m` des unternehmensspezifischen Anteils dürfen über den Handelstag variieren (höher zur Eröffnung und zum Schluss), ohne die Stützpunkte zu ändern. Parameter `intradayVolProfile` in `MarketConfig`: relative Gewichte über gleich lange Abschnitte der Handelszeit (Minute j fällt in Abschnitt `⌊j · Abschnitte / L⌋`), Standard `[1]` (gleichmäßig); kalibriert wird er in AP 1.9. Ohne ihn ist die Volatilität innerhalb eines Tages konstant; Volatilitäts-Cluster und Leverage-Effekt wirken von Tag zu Tag (§6.2).
+
+- **Minutenverlauf eines Instruments** (`DayCurves`, `market/domain`): Werte zu den Minuten `o … c`. `P(o)` und `P(c)` sind Eröffnung und Schluss und werden direkt aus den Stützpunkten gesetzt; die inneren Werte sind `c_i + Σ_k β_ik · F_k(m) + U(m)` über `priceFromLog`. Die Faktorbrücken werden je Intervall nur bei Bedarf berechnet, Brückenkoeffizienten je Intervall- bzw. Handelszeitlänge einmal vorab.
+- **`priceAt` und Abfragegrenze** (`PriceSource`, `market/domain`): Während der Handelszeit (`o ≤ m < c`) gilt der Minutenwert, ab `c` der Schluss, vor der Eröffnung und am Wochenende der Schluss des letzten Handelstags, vor dem ersten Handelstag der Startkurs. Jede Abfrage erhält den aktuellen Tick `now`: Ticks nach `now` und noch nicht gerechnete Tage werfen einen Fehler, Verläufe und Kerzen enden bei `now`. Die Engine übergibt jeden frisch gerechneten Tag (`rememberDay`); vergangene Tage werden aus der Historie nachgerechnet (§6.8). Caches halten eine feste Zahl von Tagen (Standard 8, zuletzt genutzte bleiben).
+
+**Messung AP 1.5** (Vitest, Seed `bridge-equivalence-1`, 3.000 Handelstage, zwei Aktien derselben Börse, ohne Sprünge; Brücke / Referenz-Simulation Minute für Minute): Volatilität der Minutenrenditen 23,53 % / 23,53 % und 27,53 % / 27,54 %, Korrelation 0,097 / 0,098, mittlere Tagesspanne 2,24 % / 2,26 % und 2,60 % / 2,61 %, Volatilität Eröffnung → Schluss 22,96 % / 23,81 % und 27,09 % / 27,44 %. Der Test prüft feste Toleranzen (Volatilitäten ±3 %, Spanne ±4 %, Eröffnung → Schluss ±6 % relativ, Korrelation ±0,03).
 
 **Gleichwertigkeit im Prototyp** (§3.2): 3.000 Handelstage, zwei Aktien derselben Region mit gemeinsamen Faktoren, verglichen mit einer Simulation Minute für Minute mit identischen Parametern (Tagesvolatilitäten der Faktoren aus demselben Lauf).
 
@@ -555,13 +560,13 @@ ask    = roundUp(mid × (1 + spread/2), priceStep(mid))     mit ask − bid ≥ 
 
 ### 6.8 Kerzen und Historie
 
-- **Intraday-Kerzen** (1m bis 1h) entstehen bei jeder Abfrage aus den Minutenkursen (§6.1) und werden nie gespeichert. Ein Aktien-Tag kostet rund 17 µs plus die Brücken seiner Faktoren, ein Index-Tag die Minutenkurse aller Werte (Standardwelt: rund 5 ms, Rohwert).
+- **Intraday-Kerzen** (1m bis 1h) entstehen bei jeder Abfrage aus den Minutenkursen (§6.1) und werden nie gespeichert. Eine Kerze für `[t, t + r)` hat `open = P(t)`, `close = P(t + r)` (im letzten Abschnitt der Schluss `P(c)`), Hoch und Tief über `P(t … t + r)`; benachbarte Kerzen schließen so lückenlos aneinander an. Die Abschnitte richten sich nach der Minute des Tages, der erste beginnt bei der Eröffnung. Der laufende Abschnitt ist eine Teilkerze bis `now`. Wochenkerzen entstehen aus Tageskerzen (Woche ab Montag). Ein Aktien-Tag kostet rund 17 µs plus die Brücken seiner Faktoren, ein Index-Tag die Minutenkurse aller Werte (Standardwelt: rund 5 ms, Rohwert).
 - **Tageskerzen** (Open, High, Low, Close; Volumen ab Stufe 2): Eröffnung und Schluss sind Stützpunkte, Hoch und Tief stammen aus dem Minutenverlauf.
   - **Live** berechnet die Engine in der Standardwelt die Minutenverläufe aller Instrumente – die exakten Indizes brauchen sie ohnehin – und schreibt die Tageskerzen zum Handelsschluss (§3.8).
-  - Nach **Stapelbetrieb** (Vorlauf beim Anlegen, Nachberechnung, Vorspulen, Import) liegen zunächst nur Eröffnung und Schluss vor. Ein zeitgeteilter **Hintergrundauftrag** im Worker ergänzt Hoch und Tief, die neuesten Tage zuerst (Standardwelt: rund 5 ms je Handelstag, für zehn Jahre Vorlauf rund 13 s, Rohwerte). Zeiträume, die ein Chart gerade anfordert, haben Vorrang; bis dahin zeigt der Chart für die fehlenden Tage einen Hinweis.
+  - Nach **Stapelbetrieb** (Vorlauf beim Anlegen, Nachberechnung, Vorspulen, Import) liegen zunächst nur Eröffnung und Schluss vor. Ein zeitgeteilter **Hintergrundauftrag** im Worker (`createHighLowFill`, je Aufruf höchstens n Handelstage; die Zeitmessung macht der Aufrufer) ergänzt Hoch und Tief, die neuesten Tage zuerst (Standardwelt: rund 5 ms je Handelstag, für zehn Jahre Vorlauf rund 13 s, Rohwerte). Zeiträume, die ein Chart gerade anfordert, haben Vorrang; bis dahin zeigt der Chart für die fehlenden Tage einen Hinweis.
 - **Speicherung (E-08):** Tageskerzen liegen je Instrument und Spieljahr als `Float32Array` im Store `candles` – in der Standardwelt rund 1 MB je Spieljahr, für den Vorlauf rund 10 MB. Sie sind reproduzierbar: Der Store darf verworfen und vom Hintergrundauftrag neu aufgebaut werden. Tageskerzen, die älter als 20 Spieljahre sind, werden zu Wochenkerzen verdichtet; einzelne Tage lassen sich bei Bedarf exakt neu berechnen.
-- **Faktorhistorie:** Sie wird beim Laden aus den Tagesschritten seit der Epoche neu berechnet (nur Faktoren; Schätzung: wenige Millisekunden je Spieljahr) und nicht gespeichert. Im Arbeitsspeicher bleiben die Faktorzustände zu Monatsbeginn; einzelne Tage entstehen daraus bei Bedarf neu. Für sehr lange Spiele (M15) können diese Zustände gespeichert werden.
-- **Historie eines Instruments:** Seine Tagesstützpunkte lassen sich allein aus der Faktorhistorie und seinen eigenen Strömen neu berechnen (§4.2), ohne andere Instrumente. Jeder vergangene Tag ist so minutengenau abrufbar.
+- **Marktzustände zu Monatsbeginn:** Im Arbeitsspeicher bleiben zu jedem Monatsbeginn die Faktorzustände und die unternehmensspezifischen Anteile `U_i` aller Instrumente (Standardwelt rund 3 kB je Monat). Jeder vergangene Tag entsteht daraus mit höchstens einem Monat Tagesschritten bitgleich neu (`recomputeSupportDays`). Beim Laden (AP 2.3) werden die Einträge entweder mitgespeichert (rund 33 kB je Spieljahr) oder durch volle Tagesschritte seit der Epoche aufgebaut (rund 45 ms je Spieljahr); das legt AP 2.3 fest. Faktorzustände allein ließen sich schneller nachrechnen. `U_i` müsste dann aber je Instrument seit der Epoche nachgerechnet werden, und ab AP 1.6 hängt es über die Ex-Tag-Abschläge von den Faktoren ab.
+- **Historie eines Instruments:** Seine Tagesstützpunkte lassen sich aus den Marktzuständen zu Monatsbeginn und seinen eigenen Strömen neu berechnen (§4.2), ohne andere Instrumente; ab der Epoche reicht dafür die Faktorhistorie (`recomputeInstrumentHistory`). Jeder vergangene Tag ist so minutengenau abrufbar.
 - **Vorlauf:** Von der Epoche (01.01.2020) bis zum Spielstart laufen dieselben Tagesschritte wie im Spiel; ein Sonderverfahren gibt es nicht. Charts aller Zeiträume haben ab dem ersten Spieltag Daten, auch Intraday-Charts.
 - **Chart-Auflösung je Zeitraum:** 1T → 1m bzw. 5m, 5T → 15m, 1M → 1h, 6M bis 5J → 1d, Max → 1d bzw. 1w. Zwischenstufen werden beim Abruf aggregiert.
 - **Zeitachse:** Spielzeit als UTC-Zeitstempel; Charts formatieren in UTC und zeigen so die Spielzeit unverfälscht.
@@ -864,7 +869,7 @@ Datenbank `portfoligo`, Version ≥ 3 (der Prototyp nutzte Version 2; dessen Sto
 
 - Jeder Datensatz hat genau einen Besitzer. UI und Worker schreiben nie denselben Datensatz; so überschreibt der Worker z. B. keine Umbenennung.
 - Umbenennungen ändern das Profil per Read-Modify-Write: während des Spiels über das Kommando `renamePlayer`, außerhalb über den `PlayersService`.
-- Die Welt und die Faktorhistorie werden nicht gespeichert, sondern beim Laden neu erzeugt; Intraday-Kurse entstehen bei Bedarf (§5.1, §6.8).
+- Die Welt wird nicht gespeichert, sondern beim Laden neu erzeugt; die Marktzustände zu Monatsbeginn werden neu erzeugt oder mitgespeichert (AP 2.3, §6.8); Intraday-Kurse entstehen bei Bedarf (§5.1, §6.8).
 
 ### 9.2 Speicherstrategie und Wiederherstellung (E-08)
 
@@ -878,7 +883,7 @@ Datenbank `portfoligo`, Version ≥ 3 (der Prototyp nutzte Version 2; dessen Sto
 
 **Wiederherstellung:**
 
-1. Welt und Faktorhistorie erzeugen, letzten Snapshot laden.
+1. Welt erzeugen, Marktzustände zu Monatsbeginn erzeugen oder laden (§6.8), letzten Snapshot laden.
 2. Spielerdaten nach dem Snapshot-Tick verwerfen (Transaktionen, Orders, Benachrichtigungen, Tagesreihen). Tageskerzen bleiben gültig, weil Kurse nicht vom Spieler abhängen; die Abfragegrenze (§8.2) verhindert, dass Tage nach dem aktuellen Tick sichtbar werden.
 3. Bis zum größeren Wert aus gespeichertem Uhrzustand und letztem Kommando-Tick neu simulieren und dabei die protokollierten Kommandos an ihrem Tick anwenden.
 4. Normale Nachberechnung bis jetzt (§3.7).
@@ -976,7 +981,7 @@ UI → `exportPlayer` → der Worker schreibt ausstehende Daten, baut das JSON i
 
 1. Datei oder Text einlesen, base64 dekodieren, JSON parsen.
 2. Prüfen: `format`, `formatVersion`, `simVersion`, `checksum`, Struktur (handgeschriebene Typ-Guards, keine Schema-Bibliothek).
-3. Der Worker legt einen neuen Spieler an (neue ID, Name mit Zusatz „(Import)"), erzeugt Welt und Faktorhistorie, übernimmt den Marktzustand vom Beginn des Export-Tags, rechnet den Markt bis zum Export-Tick vor und übernimmt den Spielerzustand. **Der Spieler ist sofort spielbar.**
+3. Der Worker legt einen neuen Spieler an (neue ID, Name mit Zusatz „(Import)"), erzeugt die Welt und die Marktzustände zu Monatsbeginn (§6.8), übernimmt den Marktzustand vom Beginn des Export-Tags, rechnet den Markt bis zum Export-Tick vor und übernimmt den Spielerzustand. **Der Spieler ist sofort spielbar.**
 4. Im Hintergrund rechnet der Worker die Tagesschritte von der Epoche bis zum Export-Tag nach (Standardwelt: rund 1 s für 70 Spieljahre, Rohwert-Schätzung). Daraus entstehen Eröffnung und Schluss aller Tageskerzen sowie der Marktzustand für den Prüfsummenvergleich; Hoch und Tief ergänzt anschließend der Hintergrundauftrag aus §6.8. Bis dahin zeigen Charts für fehlende Zeiträume einen Hinweis.
 5. Danach vergleicht der Worker den Marktzustand des Laufs mit `marketChecksum`. Eine Abweichung deutet auf eine Determinismus-Lücke hin; der Anwender wird informiert, das Spiel läuft mit dem exportierten Marktzustand weiter.
 6. Beim Öffnen gilt die normale Nachberechnung ab `lastSeenAt` – der Import verhält sich wie ein seit dem Export geschlossenes Spiel.

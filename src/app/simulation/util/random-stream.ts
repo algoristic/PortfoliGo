@@ -63,10 +63,11 @@ export function createStream(seedKey: SeedKey, key: string): RandomStream {
 }
 
 /**
- * Streams whose keys share a prefix and end in a non-negative integer, such as
- * `market/instrument/<id>/<day>`. `create(n)` equals `createStream(seedKey, prefix + n)` bit for
- * bit, but hashes the seed key and the prefix only once – the day step creates hundreds of
- * thousands of streams.
+ * Streams whose keys share a prefix followed by a non-negative integer, such as
+ * `market/instrument/<id>/<day>`. `create(n, suffix)` equals
+ * `createStream(seedKey, prefix + n + suffix)` bit for bit, but hashes the seed key and the prefix
+ * only once – the day step creates hundreds of thousands of streams. Encode the suffix once with
+ * `utf8Encode`, e.g. `/bridge` for `market/instrument/<id>/<day>/bridge`.
  */
 export class StreamFamily {
   readonly #prefix: Hash128;
@@ -77,7 +78,7 @@ export class StreamFamily {
     this.#prefix = new Hash128().update(wordsToBytes(seedKey)).update(utf8Encode(prefix));
   }
 
-  create(n: number): RandomStream {
+  create(n: number, suffix?: Uint8Array): RandomStream {
     if (!Number.isSafeInteger(n) || n < 0) {
       throw new RangeError(`StreamFamily: invalid key suffix ${n}`);
     }
@@ -90,6 +91,9 @@ export class StreamFamily {
     } while (n > 0);
     while (count > 0) {
       hash.updateByte(this.#digits[--count]);
+    }
+    if (suffix !== undefined) {
+      hash.update(suffix);
     }
     return startStream(hash.digest());
   }

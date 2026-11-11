@@ -58,4 +58,5 @@ export const DEFAULT_MARKET_CONFIG: MarketConfig = {
   },
   overnightShare: 0.25,
   priceFloor: 0.01,
+  intradayVolProfile: [1],
 };

@@ -50,4 +50,10 @@ export interface MarketConfig {
   overnightShare: number;
   /** Lowest price in euros (TS §6.4). */
   priceFloor: number;
+  /**
+   * Intraday profile of the idiosyncratic variance (TS §6.1): relative weights over equally long
+   * parts of the session, e.g. `[2, 1, 1, 2]` for more movement at the open and close. It shapes
+   * the minute bridges only; the support points stay unchanged. `[1]` is uniform.
+   */
+  intradayVolProfile: readonly number[];
 }

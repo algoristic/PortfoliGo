@@ -21,16 +21,21 @@ export interface MarketState {
 /** Copy of the market state that shares no arrays with the running state. */
 export type MarketSnapshot = Readonly<MarketState>;
 
-/** Factor part of the market state, kept at every month start (TS §6.8). */
+/**
+ * Market state at a month start (TS §6.8): the factor part and the idiosyncratic components, so
+ * that every past day can be recomputed from at most one month of day steps.
+ */
 export interface FactorStateEntry {
   day: number;
   phase: MarketPhase;
   trend: Float64Array;
   logVol: Float64Array;
   level: Float64Array;
+  /** `U_i` per instrument at the last close before the month start. */
+  idioClose: Float64Array;
 }
 
-/** Factor states at the start of every month since the epoch, ordered by day. */
+/** Market states at the start of every month since the epoch, ordered by day. */
 export interface FactorHistory {
   monthStarts: FactorStateEntry[];
 }

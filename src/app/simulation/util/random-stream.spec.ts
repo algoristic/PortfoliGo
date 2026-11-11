@@ -1,3 +1,4 @@
+import { utf8Encode } from './hash128';
 import { createStream, RandomStream, StreamFamily } from './random-stream';
 import { deriveSeedKey } from './seed';
 
@@ -122,6 +123,15 @@ describe('StreamFamily', () => {
     for (const day of [0, 7, 10, 999, 2610, 123_456_789]) {
       expect(take(family.create(day), 8)).toEqual(
         take(createStream(seedKey, `market/instrument/cmp-0001/${day}`), 8),
+      );
+    }
+  });
+
+  it('appends a suffix after the number like createStream', () => {
+    const family = new StreamFamily(seedKey, 'market/factor/world/');
+    for (const day of [0, 42, 2610]) {
+      expect(take(family.create(day, utf8Encode('/bridge/3')), 8)).toEqual(
+        take(createStream(seedKey, `market/factor/world/${day}/bridge/3`), 8),
       );
     }
   });
