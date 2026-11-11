@@ -28,14 +28,12 @@ import {
   formatTickMark,
   isPrepended,
   readChartColors,
+  shouldRequestHistory,
   toChartCandles,
   toLinePoints,
 } from './price-chart.utils';
 
 import { Candle } from '../../../market/domain/models/candle.model';
-
-/** Bars before the oldest candle at which the chart asks for older candles. */
-const HISTORY_THRESHOLD_BARS = 10;
 
 type ChartLibrary = typeof import('lightweight-charts');
 
@@ -48,13 +46,19 @@ interface ChartHandle {
  * Price chart on lightweight-charts (TS §11.7, E-04), loaded lazily with a dynamic import. The
  * time axis shows game time; colours follow the `--pgo-*` tokens and change with the theme. The
  * TradingView logo stays on as the required attribution. When the user scrolls or zooms close to
- * the oldest candle, `scrolledToStart` asks for older candles; prepended candles keep the view.
+ * the oldest candle, `scrolledToStart` asks for older candles; prepended candles keep the view. The
+ * fitted view of a new data set starts at the oldest candle too, so only a user gesture arms it.
  */
 @Component({
   selector: 'app-price-chart',
   imports: [],
   templateUrl: './price-chart.component.html',
   styleUrl: './price-chart.component.scss',
+  host: {
+    '(wheel)': 'onUserMove()',
+    '(pointerdown)': 'onUserMove()',
+    '(touchstart)': 'onUserMove()',
+  },
 })
 export class PriceChartComponent {
   readonly #destroyRef = inject(DestroyRef);
@@ -64,7 +68,7 @@ export class PriceChartComponent {
   /** Accessible name of the chart. */
   label = input.required<string>();
 
-  /** Emitted once per data set when the visible range reaches the oldest candle. */
+  /** Emitted once per data set when the user scrolls or zooms the view to the oldest candle. */
   scrolledToStart = output<void>();
 
   container = viewChild.required<ElementRef<HTMLDivElement>>('container');
@@ -75,6 +79,7 @@ export class PriceChartComponent {
   #seriesType?: PriceChartType;
   #renderedCandles: readonly Candle[] = [];
   #historyArmed = false;
+  #userMoved = false;
   #destroyed = false;
 
   constructor() {
@@ -89,6 +94,10 @@ export class PriceChartComponent {
         this.#render(handle, colors, this.candles(), this.chartType());
       }
     });
+  }
+
+  onUserMove(): void {
+    this.#userMoved = true;
   }
 
   async #createChart(): Promise<void> {
@@ -180,15 +189,24 @@ export class PriceChartComponent {
     if (fit) {
       chart.timeScale().fitContent();
     }
+    if (fit) {
+      this.#userMoved = false;
+    }
     if (newCandles) {
       this.#renderedCandles = candles;
       this.#historyArmed = true;
-      this.#checkHistoryStart(chart.timeScale().getVisibleLogicalRange());
     }
   }
 
+  // Only the range event carries the view after an update; the library applies it a frame later.
   #checkHistoryStart(range: LogicalRange | null): void {
-    if (this.#historyArmed && range !== null && range.from < HISTORY_THRESHOLD_BARS) {
+    if (
+      shouldRequestHistory({
+        armed: this.#historyArmed,
+        userMoved: this.#userMoved,
+        from: range?.from ?? null,
+      })
+    ) {
       this.#historyArmed = false;
       this.scrolledToStart.emit();
     }

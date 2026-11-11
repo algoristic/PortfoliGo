@@ -2,8 +2,10 @@ import {
   chartTimeToTick,
   formatChartTime,
   formatTickMark,
+  HISTORY_THRESHOLD_BARS,
   isPrepended,
   readChartColors,
+  shouldRequestHistory,
   tickToChartTime,
   toChartCandles,
   toLinePoints,
@@ -122,6 +124,27 @@ describe('price chart utils', () => {
       expect(isPrepended([], loaded)).toBe(false);
       expect(isPrepended(loaded, [candle(10), candle(20), candle(30)])).toBe(false);
       expect(isPrepended(loaded, [candle(20)])).toBe(false);
+    });
+  });
+
+  describe('shouldRequestHistory', () => {
+    const trigger = { armed: true, userMoved: true, from: 3 };
+
+    it('asks for older candles when the user moved the view to the oldest candle', () => {
+      expect(shouldRequestHistory(trigger)).toBe(true);
+    });
+
+    it('ignores the fitted view of a new data set', () => {
+      expect(shouldRequestHistory({ ...trigger, userMoved: false })).toBe(false);
+    });
+
+    it('asks only once per data set', () => {
+      expect(shouldRequestHistory({ ...trigger, armed: false })).toBe(false);
+    });
+
+    it('waits until the view reaches the threshold', () => {
+      expect(shouldRequestHistory({ ...trigger, from: HISTORY_THRESHOLD_BARS })).toBe(false);
+      expect(shouldRequestHistory({ ...trigger, from: null })).toBe(false);
     });
   });
 });

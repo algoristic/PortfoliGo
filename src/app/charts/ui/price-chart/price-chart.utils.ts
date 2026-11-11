@@ -102,3 +102,20 @@ export function isPrepended(previous: readonly Candle[], next: readonly Candle[]
     next[next.length - 1].tick === previous[previous.length - 1].tick
   );
 }
+
+/** Bars before the oldest candle at which the chart asks for older candles. */
+export const HISTORY_THRESHOLD_BARS = 10;
+
+export interface HistoryTrigger {
+  /** No request for the current candles yet. */
+  armed: boolean;
+  /** The user scrolled or zoomed since the data set was fitted. */
+  userMoved: boolean;
+  /** Logical index of the left edge of the view, `null` without data. */
+  from: number | null;
+}
+
+/** Whether the chart asks for older candles; a fitted view starts at the oldest candle anyway. */
+export function shouldRequestHistory({ armed, userMoved, from }: HistoryTrigger): boolean {
+  return armed && userMoved && from !== null && from < HISTORY_THRESHOLD_BARS;
+}
