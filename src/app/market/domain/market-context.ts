@@ -1,7 +1,9 @@
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
+import { createEtfLayout, EtfLayout } from './etf-layout';
 import { createIndexLayout, IndexLayout } from './index-layout';
 import { createMarketLayout, MarketLayout } from './market-layout';
 import { MARKET_PHASES, MarketConfig, MarketPhase } from './models/market-config.model';
+import { createSpreadLayout, SpreadLayout } from './quote-logic';
 
 import { MINUTES_PER_DAY } from '../../clock/domain/models/time.model';
 import { detExp, detLog } from '../../simulation/util/det-math';
@@ -16,6 +18,8 @@ export interface MarketContext {
   seedKey: SeedKey;
   layout: MarketLayout;
   indices: IndexLayout;
+  etfs: EtfLayout;
+  spreads: SpreadLayout;
   config: MarketConfig;
   /** Length of a trading day in years (Δ_T) and its square root. */
   dayYears: number;
@@ -40,6 +44,8 @@ export interface MarketContext {
   regimeStreams: StreamFamily;
   factorStreams: readonly StreamFamily[];
   instrumentStreams: readonly StreamFamily[];
+  /** Day stream `market/etfs/<day>` for the tracking noise of all ETFs. */
+  etfStreams: StreamFamily;
   /** Expected jumps per trading day (λ_i · Δ_T) and `exp(−λ_i · Δ_T)` per instrument. */
   dailyJumpRate: Float64Array;
   noJumpProbability: Float64Array;
@@ -70,10 +76,13 @@ export function createMarketContext(
 
   const reference = config.phases[config.referencePhase];
   const dayYears = 1 / config.tradingDaysPerYear;
+  const indices = createIndexLayout(world, layout);
   const context: MarketContext = {
     seedKey,
     layout,
-    indices: createIndexLayout(world, layout),
+    indices,
+    etfs: createEtfLayout(world, layout, indices, config),
+    spreads: createSpreadLayout(world, config),
     config,
     dayYears,
     sqrtDayYears: Math.sqrt(dayYears),
@@ -100,6 +109,7 @@ export function createMarketContext(
     instrumentStreams: layout.instrumentIds.map(
       (id) => new StreamFamily(seedKey, `market/instrument/${id}/`),
     ),
+    etfStreams: new StreamFamily(seedKey, 'market/etfs/'),
     dailyJumpRate: layout.jumpIntensity.map((lambda) => lambda * dayYears),
     noJumpProbability: layout.jumpIntensity.map((lambda) => detExp(-(lambda * dayYears))),
     sqrtOvernightShare: Math.sqrt(config.overnightShare),

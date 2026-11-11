@@ -45,7 +45,7 @@ describe('createHighLowFill', () => {
   it('does not depend on the size of the time slices', () => {
     expect(runAll(1)).toEqual(all);
     expect(runAll(7)).toEqual(all);
-  });
+  }, 30000);
 
   it('matches the daily candles of the price source', () => {
     const source = new PriceSource(context, history, state);

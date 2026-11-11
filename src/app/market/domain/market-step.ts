@@ -1,4 +1,5 @@
 import { exDayOnOrAfter } from './dividend-logic';
+import { stepEtfs } from './etf-step';
 import { FactorState, initialFactorState, stepFactors, stepPhase } from './factor-step';
 import { stepIndices } from './index-step';
 import { stepInstrument } from './instrument-step';
@@ -21,6 +22,9 @@ export function createMarketDay(context: MarketContext): MarketDay {
   const { layout } = context;
   const factorCount = layout.factorIds.length;
   const instrumentCount = layout.instrumentIds.length;
+  const boundaryCount = layout.boundaries.length;
+  const indexCount = context.indices.ids.length;
+  const etfCount = context.etfs.ids.length;
   return {
     day: -1,
     phase: 'normal',
@@ -29,6 +33,7 @@ export function createMarketDay(context: MarketContext): MarketDay {
     idioOpen: new Float64Array(instrumentCount),
     idioClose: new Float64Array(instrumentCount),
     prevLogClose: new Float64Array(instrumentCount),
+    prevIdioClose: new Float64Array(instrumentCount),
     logOpen: new Float64Array(instrumentCount),
     logClose: new Float64Array(instrumentCount),
     jumpStart: new Int32Array(instrumentCount),
@@ -39,7 +44,11 @@ export function createMarketDay(context: MarketContext): MarketDay {
     exDividendCents: new Float64Array(instrumentCount),
     announcedCents: new Float64Array(instrumentCount),
     announcedExDay: new Int32Array(instrumentCount).fill(-1),
-    indexReinvest: new Float64Array(context.indices.ids.length * layout.boundaries.length).fill(1),
+    indexReinvest: new Float64Array(indexCount * boundaryCount).fill(1),
+    indexDividendPoints: new Float64Array(indexCount * boundaryCount),
+    etfScale: new Float64Array(etfCount),
+    etfPot: new Float64Array(etfCount * boundaryCount),
+    etfExCents: new Float64Array(etfCount),
   };
 }
 
@@ -53,6 +62,7 @@ export function copyMarketDay(day: Readonly<MarketDay>): MarketDay {
     idioOpen: day.idioOpen.slice(),
     idioClose: day.idioClose.slice(),
     prevLogClose: day.prevLogClose.slice(),
+    prevIdioClose: day.prevIdioClose.slice(),
     logOpen: day.logOpen.slice(),
     logClose: day.logClose.slice(),
     jumpStart: day.jumpStart.slice(),
@@ -64,15 +74,19 @@ export function copyMarketDay(day: Readonly<MarketDay>): MarketDay {
     announcedCents: day.announcedCents.slice(),
     announcedExDay: day.announcedExDay.slice(),
     indexReinvest: day.indexReinvest.slice(),
+    indexDividendPoints: day.indexDividendPoints.slice(),
+    etfScale: day.etfScale.slice(),
+    etfPot: day.etfPot.slice(),
+    etfExCents: day.etfExCents.slice(),
   };
 }
 
 /**
  * Market state at the epoch (day 0): factors from `initialFactorState`, `U_i = 0`, the start
- * prices as last closes, the first ex-dates and `R = 1`.
+ * prices as last closes, the first ex-dates, `R = 1`, `k = k₀` and empty pots.
  */
 export function createMarketState(context: MarketContext): MarketState {
-  const { layout } = context;
+  const { layout, etfs } = context;
   const count = layout.instrumentIds.length;
   return {
     day: 0,
@@ -84,12 +98,17 @@ export function createMarketState(context: MarketContext): MarketState {
     ),
     dividendCents: new Float64Array(count).fill(Number.NaN),
     indexReinvest: new Float64Array(context.indices.ids.length).fill(1),
+    etfScale: etfs.initialScale.slice(),
+    etfPot: new Float64Array(etfs.ids.length),
+    etfNextExDay: Int32Array.from(etfs.distributions, (distribution) =>
+      distribution === null ? -1 : exDayOnOrAfter(distribution.schedule, distribution.frequency, 0),
+    ),
   };
 }
 
 /**
  * Day step for the trading day `state.day` (TS §6.1): market phase, factors, all instruments, then
- * the indices. Writes the support points into `out` and advances the state to the next day.
+ * the indices and the ETFs. Writes the support points into `out` and advances the state to the next day.
  */
 export function stepMarketDay(context: MarketContext, state: MarketState, out: MarketDay): void {
   const day = state.day;
@@ -98,6 +117,7 @@ export function stepMarketDay(context: MarketContext, state: MarketState, out: M
     stepInstrument(context, i, day, state, out);
   }
   stepIndices(context, state, out);
+  stepEtfs(context, state, out);
   state.day = day + 1;
 }
 

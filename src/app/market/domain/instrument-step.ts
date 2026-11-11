@@ -74,6 +74,7 @@ export function stepInstrument(
 
   const prevLogClose = state.logClose[i];
   out.prevLogClose[i] = prevLogClose;
+  out.prevIdioClose[i] = state.idioClose[i];
   announceDividend(context, i, day, state, out);
 
   let idioOpen =

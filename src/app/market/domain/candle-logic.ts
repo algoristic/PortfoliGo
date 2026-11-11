@@ -1,4 +1,4 @@
-import { seriesSupportValue } from './day-curve';
+import { createCurveTables, CurveTables, SupportValues } from './day-curve';
 import { MarketContext } from './market-context';
 import { Candle, IntradayResolution } from './models/candle.model';
 import { MarketDay } from './models/market-day.model';
@@ -58,22 +58,24 @@ export function dailyCandle(
 }
 
 /**
- * Daily candles of all series (shares, then indices, see `series.ts`) right after a day step in
+ * Daily candles of all series (shares, indices, ETFs, see `series.ts`) right after a day step in
  * batch mode: open and close come from the support points, high and low stay `NaN` until the
  * background job completes them (TS §6.8). Contains the close, so it may only be released once
- * the day is over.
+ * the day is over. Pass the tables when calling this for many days.
  */
 export function dailyCandlesFromSupport(
   context: MarketContext,
   day: Readonly<MarketDay>,
+  tables: CurveTables = createCurveTables(context),
 ): Candle[] {
   const tick = dayStartTick(day.day);
+  const support = new SupportValues(tables, day);
   return Array.from({ length: seriesCount(context) }, (_value, series) => ({
     tick,
-    open: seriesSupportValue(context, day, series, 'open'),
+    open: support.value(series, 'open'),
     high: Number.NaN,
     low: Number.NaN,
-    close: seriesSupportValue(context, day, series, 'close'),
+    close: support.value(series, 'close'),
   }));
 }
 

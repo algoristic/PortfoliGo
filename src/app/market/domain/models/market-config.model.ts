@@ -1,3 +1,6 @@
+import { EtfReplication } from '../../../world/domain/models/etf.model';
+import { SizeClass } from '../../../world/domain/models/taxonomy.model';
+
 export const MARKET_PHASES = ['boom', 'normal', 'downturn', 'crisis'] as const;
 export type MarketPhase = (typeof MARKET_PHASES)[number];
 
@@ -39,6 +42,19 @@ export interface FactorParams {
   phaseCoupling: number;
 }
 
+/** Lower and upper bound of a range. */
+export type MarketRange = readonly [number, number];
+
+/** Spread model (TS §6.7); relative spreads (0.001 = 0.1 %). */
+export interface SpreadParams {
+  /** Base spread per size class and for ETFs; larger instruments get the lower end. */
+  base: Readonly<Record<SizeClass | 'etf', MarketRange>>;
+  /** Multiplier per market phase. */
+  phaseFactor: Readonly<Record<MarketPhase, number>>;
+  /** Multiplier when the whole underlying is closed; partly closed scales linearly. */
+  closedUnderlyingFactor: number;
+}
+
 /** Parameters of the market model; start values for the calibration in AP 1.9. */
 export interface MarketConfig {
   tradingDaysPerYear: number;
@@ -56,4 +72,7 @@ export interface MarketConfig {
    * the minute bridges only; the support points stay unchanged. `[1]` is uniform.
    */
   intradayVolProfile: readonly number[];
+  /** Tracking error p. a. per replication (TS §6.6): daily noise on the ETF scale `k`. */
+  etfTrackingError: Readonly<Record<EtfReplication, number>>;
+  spreads: SpreadParams;
 }

@@ -162,6 +162,7 @@ export const DEFAULT_WORLD_CONFIG: WorldConfig = {
     replicationWeights: { 'physical-full': 0.5, 'physical-sampling': 0.35, synthetic: 0.15 },
     quarterlyShare: 0.5,
     fundVolume: { median: 8e8, sigma: 1.2, min: 5e7, max: 8e10 },
+    startPrice: { median: 50, sigma: 0.6, min: 15, max: 150 },
   },
   banks: {
     composition: [

@@ -18,6 +18,8 @@ export interface MarketDay {
   idioClose: Float64Array;
   /** Log price of the previous close (`c_i` before the first trading day). */
   prevLogClose: Float64Array;
+  /** `U_i` at the previous close; with the factor bridges it gives the indicative value. */
+  prevIdioClose: Float64Array;
   /** Log price `c_i + Σ β_ik · F_k + U_i` at the open and at the close (before the price floor). */
   logOpen: Float64Array;
   logClose: Float64Array;
@@ -40,4 +42,15 @@ export interface MarketDay {
    * rises at the open of a constituent's exchange on its ex-date.
    */
   indexReinvest: Float64Array;
+  /**
+   * Dividend points `Σ n_i · D_i / Div` of the constituents of index x that go ex at the open of
+   * boundary j (`x · boundaryCount + j`), else 0.
+   */
+  indexDividendPoints: Float64Array;
+  /** Scale `k` per ETF for the whole day (TS §6.6). */
+  etfScale: Float64Array;
+  /** Distribution pot of ETF e from boundary j on (`e · boundaryCount + j`), in euros per share. */
+  etfPot: Float64Array;
+  /** Distribution in cents per ETF whose ex-date is this day (at the ETF's open), else 0. */
+  etfExCents: Float64Array;
 }

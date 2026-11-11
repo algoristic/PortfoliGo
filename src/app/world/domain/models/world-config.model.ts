@@ -81,6 +81,8 @@ export interface EtfConfig {
   quarterlyShare: number;
   /** Fund volume in euros. */
   fundVolume: LognormalSpec;
+  /** NAV at the epoch in euros. */
+  startPrice: LognormalSpec;
 }
 
 /** Ranges of the conditions per bank type (TS §5.7); amounts in euros, rates as fractions. */

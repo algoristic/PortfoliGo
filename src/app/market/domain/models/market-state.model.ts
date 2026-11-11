@@ -28,6 +28,12 @@ export interface MarketState extends InstrumentState {
   level: Float64Array;
   /** Reinvestment factor `R` per index (TS §6.6) at the end of the last trading day. */
   indexReinvest: Float64Array;
+  /** Scale `k` per ETF (TS §6.6): NAV = k · TR or k · I + pot; TER and tracking act on it daily. */
+  etfScale: Float64Array;
+  /** Distribution pot per distributing ETF in euros per fund share; 0 for accumulating ETFs. */
+  etfPot: Float64Array;
+  /** Next ex-date per distributing ETF, −1 for accumulating ETFs. */
+  etfNextExDay: Int32Array;
 }
 
 /** Copy of the market state that shares no arrays with the running state. */

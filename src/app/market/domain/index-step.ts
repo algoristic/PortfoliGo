@@ -10,7 +10,8 @@ import { CENTS_PER_EURO } from '../../shared/domain/models/money.model';
  * of every index over the boundaries of the day. At the open of an exchange, the dividends of the
  * constituents that go ex there raise `R` by `I_ref / (I_ref − Σ n_i · D_i / Div)`. `I_ref` is
  * the index level from the previous closes, reduced by the dividends already taken out earlier
- * that day – like index providers that use the previous close. Needs no minute values.
+ * that day – like index providers that use the previous close. Needs no minute values. Also
+ * reports the dividend points per boundary for the distribution pots of the ETFs.
  */
 export function stepIndices(context: MarketContext, state: MarketState, out: MarketDay): void {
   const { indices, layout, config } = context;
@@ -32,6 +33,7 @@ export function stepIndices(context: MarketContext, state: MarketState, out: Mar
     }
     if (!anyDividend) {
       out.indexReinvest.fill(reinvest, x * boundaryCount, (x + 1) * boundaryCount);
+      out.indexDividendPoints.fill(0, x * boundaryCount, (x + 1) * boundaryCount);
       continue;
     }
     const divisor = indices.divisor[x];
@@ -42,12 +44,14 @@ export function stepIndices(context: MarketContext, state: MarketState, out: Mar
     }
     reference /= divisor;
     for (let j = 0; j < boundaryCount; j++) {
+      let dividendPoints = 0;
       if (points[j] > 0) {
-        const dividendPoints = points[j] / divisor;
+        dividendPoints = points[j] / divisor;
         reinvest = (reinvest * reference) / (reference - dividendPoints);
         reference -= dividendPoints;
       }
       out.indexReinvest[x * boundaryCount + j] = reinvest;
+      out.indexDividendPoints[x * boundaryCount + j] = dividendPoints;
     }
     state.indexReinvest[x] = reinvest;
   }

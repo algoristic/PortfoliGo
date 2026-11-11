@@ -21,5 +21,8 @@ function copyState(state: Readonly<MarketState>): MarketState {
     nextExDay: state.nextExDay.slice(),
     dividendCents: state.dividendCents.slice(),
     indexReinvest: state.indexReinvest.slice(),
+    etfScale: state.etfScale.slice(),
+    etfPot: state.etfPot.slice(),
+    etfNextExDay: state.etfNextExDay.slice(),
   };
 }

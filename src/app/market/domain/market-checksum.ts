@@ -16,5 +16,8 @@ export function marketChecksum(state: Readonly<MarketState>): string {
     .addFloat64Array(state.nextExDay)
     .addFloat64Array(state.dividendCents)
     .addFloat64Array(state.indexReinvest)
+    .addFloat64Array(state.etfScale)
+    .addFloat64Array(state.etfPot)
+    .addFloat64Array(state.etfNextExDay)
     .digest();
 }

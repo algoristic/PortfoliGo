@@ -10,7 +10,7 @@ import { MarketDay } from './models/market-day.model';
 import { runPrehistory } from './prehistory';
 import { priceFromLog } from './price-logic';
 import { PriceSource } from './price-source';
-import { indexSeries, seriesRef, totalReturnSeries } from './series';
+import { etfSeries, indexSeries, seriesRef, totalReturnSeries } from './series';
 
 import { dateTimeToTick, dayIndex, dayStartTick } from '../../clock/domain/calendar-logic';
 import { MINUTES_PER_DAY } from '../../clock/domain/models/time.model';
@@ -211,7 +211,7 @@ describe('indices', () => {
     const first = indexSeries(context, 0);
     for (const day of days) {
       const candles = dailyCandlesFromSupport(context, day);
-      for (let series = first; series < candles.length; series++) {
+      for (let series = first; series < etfSeries(context, 0); series++) {
         checksum.addFloat64(candles[series].open);
         checksum.addFloat64(candles[series].close);
       }

@@ -11,7 +11,7 @@ import { generateWorld } from './world-generator';
 import { deriveSeedKey } from '../../simulation/util/seed';
 
 /** Changes when the world for existing seeds changes; then `simVersion` must be raised (TS §15). */
-const GOLDEN_1_CHECKSUM = 'ba41f42148b66ec9602f490e288554a1';
+const GOLDEN_1_CHECKSUM = 'aef20df8b8edb99b98a35e668dcbcb43';
 
 const SEEDS = Array.from({ length: 20 }, (_value, index) => `world-test-${index}`);
 const worlds: readonly World[] = SEEDS.map((seed) => generateWorld(deriveSeedKey(seed)));
@@ -272,6 +272,22 @@ describe('generateWorld', () => {
       const etfs = worlds.flatMap((world) => world.etfs);
       expect(share(etfs, (etf) => etf.distribution.kind === 'distributing')).toBeGreaterThan(0.2);
       expect(share(etfs, (etf) => etf.distribution.kind === 'accumulating')).toBeGreaterThan(0.4);
+    });
+
+    it('gives every ETF a start price and the distributing ones an ex-date rhythm', () => {
+      const { startPrice } = DEFAULT_WORLD_CONFIG.etfs;
+      for (const etf of worlds.flatMap((world) => world.etfs)) {
+        expect(etf.startPrice).toBeGreaterThanOrEqual(startPrice.min);
+        expect(etf.startPrice).toBeLessThanOrEqual(startPrice.max);
+        expect(Math.round(etf.startPrice * 100) / 100).toBe(etf.startPrice);
+        if (etf.distribution.kind === 'distributing') {
+          const { frequency, schedule } = etf.distribution;
+          expect(schedule.firstMonth).toBeGreaterThanOrEqual(1);
+          expect(schedule.firstMonth).toBeLessThanOrEqual(12 / DIVIDENDS_PER_YEAR[frequency]);
+          expect(schedule.day).toBeGreaterThanOrEqual(1);
+          expect(schedule.day).toBeLessThanOrEqual(28);
+        }
+      }
     });
   });
 

@@ -1,3 +1,4 @@
+import { stepEtfs } from './etf-step';
 import { stepIndices } from './index-step';
 import { stepInstrument } from './instrument-step';
 import { isMarketDay } from './market-calendar';
@@ -39,8 +40,8 @@ export function recomputeFactorDays(
 /**
  * Recomputes the complete support points of the market days in `[fromDay, toDay)` from the
  * closest month start state, bit for bit equal to the day steps of the original run. With
- * `instrumentIndex`, only that instrument is stepped; the fields of the others and the index
- * fields stay stale. The passed day is reused and only valid during the call.
+ * `instrumentIndex`, only that instrument is stepped; the fields of the others and the index and
+ * ETF fields stay stale. The passed day is reused and only valid during the call.
  */
 export function recomputeSupportDays(
   context: MarketContext,
@@ -95,6 +96,7 @@ function recomputeDays(
     }
     if (allInstruments) {
       stepIndices(context, state, out);
+      stepEtfs(context, state, out);
     }
     if (day >= fromDay) {
       onDay(out);

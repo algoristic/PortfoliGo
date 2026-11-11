@@ -59,4 +59,15 @@ export const DEFAULT_MARKET_CONFIG: MarketConfig = {
   overnightShare: 0.25,
   priceFloor: 0.01,
   intradayVolProfile: [1],
+  etfTrackingError: { 'physical-full': 0.0005, 'physical-sampling': 0.002, synthetic: 0.0003 },
+  spreads: {
+    base: {
+      large: [0.0005, 0.001],
+      mid: [0.001, 0.0025],
+      small: [0.0025, 0.01],
+      etf: [0.0005, 0.003],
+    },
+    phaseFactor: { boom: 1, normal: 1, downturn: 1.5, crisis: 2.5 },
+    closedUnderlyingFactor: 1.75,
+  },
 };

@@ -1,5 +1,5 @@
 import { dailyCandle, intradayCandles, weeklyCandles } from './candle-logic';
-import { createCurveTables, CurveTables, DayCurves } from './day-curve';
+import { createCurveTables, CurveTables, DayCurves, etfValue } from './day-curve';
 import { isMarketDay } from './market-calendar';
 import { MarketContext } from './market-context';
 import { recomputeSupportDays } from './market-history';
@@ -8,10 +8,12 @@ import { Candle, CandleResolution } from './models/candle.model';
 import { MarketDay } from './models/market-day.model';
 import { FactorHistory, MarketState } from './models/market-state.model';
 import { priceFromLog } from './price-logic';
+import { marketSpread, quote } from './quote-logic';
 import { seriesRef } from './series';
 
 import { dayIndex, minuteOfDay, weekdayOfDay } from '../../clock/domain/calendar-logic';
-import { Tick } from '../../clock/domain/models/time.model';
+import { MINUTES_PER_DAY, Tick } from '../../clock/domain/models/time.model';
+import { Quote } from '../../shared/domain/models/quote.model';
 
 export const DEFAULT_CACHED_DAYS = 8;
 
@@ -83,6 +85,37 @@ export class PriceSource {
   }
 
   /**
+   * Indicative value of a series at `tick` (TS §6.6): outside the session of a share, its last
+   * price moves with the factors; indices and ETFs follow from the indicative values of their
+   * constituents. For shares and ETFs it equals `priceAt` during the session. On days without
+   * trading, the official value applies.
+   */
+  indicativeAt(series: number, tick: Tick, now: Tick): number {
+    assertNotAfter(tick, now);
+    const day = dayIndex(tick);
+    if (!isMarketDay(day)) {
+      return this.#lastClose(series, day - 1);
+    }
+    return this.#dayCurves(day).indicativeCurve(series)[minuteOfDay(tick)];
+  }
+
+  /**
+   * Bid and ask of a share or ETF at `tick` (TS §6.7) around `priceAt`: market spread from size,
+   * market phase and closed underlying, plus the venue mark-up of the bank. Indices are not
+   * tradable.
+   */
+  quoteAt(series: number, tick: Tick, now: Tick, venueMarkup: number): Quote {
+    const mid = this.priceAt(series, tick, now);
+    let day = dayIndex(tick);
+    while (day >= 0 && !isMarketDay(day)) {
+      day--;
+    }
+    const phase = day < 0 ? this.#context.config.referencePhase : this.#dayCurves(day).day.phase;
+    const minute = day === dayIndex(tick) ? minuteOfDay(tick) : MINUTES_PER_DAY;
+    return quote(mid, marketSpread(this.#context, series, phase, minute) + venueMarkup);
+  }
+
+  /**
    * Minute values of a series on a trading day from its open; on the day of `now` only up to
    * `now`, before the open empty.
    */
@@ -142,9 +175,9 @@ export class PriceSource {
   }
 
   #session(series: number): { open: number; close: number } {
-    const { layout, indices } = this.#context;
+    const { layout, indices, etfs } = this.#context;
     const { kind, index } = seriesRef(this.#context, series);
-    const source = kind === 'stock' ? layout : indices;
+    const source = kind === 'stock' ? layout : kind === 'etf' ? etfs : indices;
     return {
       open: layout.boundaries[source.openBoundary[index]],
       close: layout.boundaries[source.closeBoundary[index]],
@@ -173,19 +206,27 @@ export class PriceSource {
     return this.#startValue(series);
   }
 
-  /** Value before the first trading day: start price, or the index level from the start prices. */
+  /**
+   * Value before the first trading day: start price, the index level from the start prices, or
+   * `k₀` times that level for an ETF.
+   */
   #startValue(series: number): number {
-    const { layout, indices, config } = this.#context;
+    const { layout, indices, etfs, config } = this.#context;
     const { kind, index } = seriesRef(this.#context, series);
     if (kind === 'stock') {
       return priceFromLog(layout.logBase[index], config.priceFloor);
     }
+    const x = kind === 'etf' ? etfs.indexOf[index] : index;
     let sum = 0;
-    for (let n = indices.memberStart[index]; n < indices.memberStart[index + 1]; n++) {
+    for (let n = indices.memberStart[x]; n < indices.memberStart[x + 1]; n++) {
       sum +=
         indices.shares[n] * priceFromLog(layout.logBase[indices.members[n]], config.priceFloor);
     }
-    return sum / indices.divisor[index];
+    const level = sum / indices.divisor[x];
+    if (kind !== 'etf') {
+      return level;
+    }
+    return etfValue(etfs.initialScale[index], level, 1, 0, etfs.distributions[index] !== null);
   }
 
   #dayCurves(day: number): DayCurves {

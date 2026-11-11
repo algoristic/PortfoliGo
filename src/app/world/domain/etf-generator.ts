@@ -1,6 +1,6 @@
 import { GenerationRegistries, lognormalIn, roundToGrid, uniformIn } from './generator.utils';
 import { formatId, nextIsin, nextTicker } from './identifier-logic';
-import { Etf, ETF_REPLICATIONS, EtfDistribution, EtfIssuer } from './models/etf.model';
+import { Etf, ETF_REPLICATIONS, EtfDistributionFrequency, EtfIssuer } from './models/etf.model';
 import { MarketIndex } from './models/market-index.model';
 import { EtfConfig, EtfProductConfig } from './models/world-config.model';
 import { fillPattern } from './name-logic';
@@ -13,6 +13,15 @@ import { RandomStream } from '../../simulation/util/random-stream';
 /** TER in steps of 0.01 percentage points. */
 const TER_STEPS_PER_UNIT = 10_000;
 const MAX_SHARE_CLASSES = 9;
+
+/** Distribution without its ex-date rhythm, which `assignEtfTerms` draws from its own stream. */
+export type EtfDistributionDraft =
+  { kind: 'accumulating' } | { kind: 'distributing'; frequency: EtfDistributionFrequency };
+
+/** ETF before `assignEtfTerms` adds the start price and the ex-date rhythm. */
+export type EtfDraft = Omit<Etf, 'distribution' | 'startPrice'> & {
+  distribution: EtfDistributionDraft;
+};
 
 export interface IssuerDraft {
   issuer: EtfIssuer;
@@ -32,7 +41,7 @@ function findIndex(
   );
 }
 
-function shareClassName(distribution: EtfDistribution): string {
+function shareClassName(distribution: EtfDistributionDraft): string {
   return distribution.kind === 'accumulating' ? 'Acc' : 'Dist';
 }
 
@@ -56,9 +65,9 @@ export function generateEtfs(
   indices: readonly MarketIndex[],
   config: EtfConfig,
   registries: GenerationRegistries,
-): Etf[] {
+): EtfDraft[] {
   const replicationWeights = ETF_REPLICATIONS.map((kind) => config.replicationWeights[kind]);
-  const etfs: Etf[] = [];
+  const etfs: EtfDraft[] = [];
   for (const product of config.products) {
     const index = findIndex(indices, product);
     if (!index) {
@@ -71,7 +80,7 @@ export function generateEtfs(
     );
     for (let i = 0; i < product.count; i++) {
       const { issuer, brand } = issuers[order[i % order.length]];
-      const distribution: EtfDistribution =
+      const distribution: EtfDistributionDraft =
         rng.nextFloat53() < product.distributingShare
           ? {
               kind: 'distributing',

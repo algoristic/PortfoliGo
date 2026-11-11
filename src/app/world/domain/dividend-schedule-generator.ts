@@ -1,4 +1,4 @@
-import { Company } from './models/company.model';
+import { Company, DividendSchedule } from './models/company.model';
 import { DIVIDENDS_PER_YEAR } from './models/taxonomy.model';
 
 import { uniformInt } from '../../simulation/util/distributions';
@@ -20,8 +20,14 @@ export function assignDividendSchedules(
     if (frequency === null) {
       return company;
     }
-    const firstMonth = uniformInt(rng, 1, MONTHS_PER_YEAR / DIVIDENDS_PER_YEAR[frequency]);
-    const day = uniformInt(rng, 1, LAST_SCHEDULE_DAY);
-    return { ...company, dividend: { ...company.dividend, schedule: { firstMonth, day } } };
+    const schedule = drawDividendSchedule(rng, DIVIDENDS_PER_YEAR[frequency]);
+    return { ...company, dividend: { ...company.dividend, schedule } };
   });
+}
+
+/** First month in `1 … 12 / perYear` and a day in `1 … 28`; the date repeats every 12/perYear months. */
+export function drawDividendSchedule(rng: RandomStream, perYear: number): DividendSchedule {
+  const firstMonth = uniformInt(rng, 1, MONTHS_PER_YEAR / perYear);
+  const day = uniformInt(rng, 1, LAST_SCHEDULE_DAY);
+  return { firstMonth, day };
 }
