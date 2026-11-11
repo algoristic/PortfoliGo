@@ -56,6 +56,24 @@ export class LabWorkerSession {
           result: { ...step, durationMs: this.#clock() - start },
         };
       }
+      case 'simulate-years': {
+        const start = this.#clock();
+        const step = this.#requireSimulation().simulateYears(request.years);
+        return {
+          id: request.id,
+          type: 'simulate-years',
+          result: { ...step, durationMs: this.#clock() - start },
+        };
+      }
+      case 'statistics': {
+        const start = this.#clock();
+        const statistics = this.#requireSimulation().statistics(request.start);
+        return {
+          id: request.id,
+          type: 'statistics',
+          result: { statistics, durationMs: this.#clock() - start },
+        };
+      }
       case 'candles': {
         const start = this.#clock();
         const { series, resolution, fromTick, toTick, source } = request;

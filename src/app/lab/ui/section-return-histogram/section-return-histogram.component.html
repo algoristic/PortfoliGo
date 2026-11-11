@@ -1,0 +1,36 @@
+@let _distribution = distribution();
+
+<div class="flex flex-col gap-2">
+  <div class="flex h-32 items-end gap-px border-b border-border">
+    @for (bar of bars(); track bar.center) {
+      <div
+        class="relative h-full flex-1"
+        [attr.title]="formatNumber(bar.center, 2) + ' σ: ' + bar.count">
+        <div class="absolute inset-x-0 bottom-0 bg-accent" [style.height.%]="bar.height"></div>
+        <div
+          class="absolute inset-x-0 border-t-2 border-fg-muted"
+          [style.bottom.%]="bar.normalHeight"></div>
+      </div>
+    }
+  </div>
+  <div class="flex justify-between text-xs text-fg-muted tabular-nums">
+    <span>{{ formatNumber(_distribution.min, 0) }} σ</span>
+    <span>0</span>
+    <span>+{{ formatNumber(-_distribution.min, 0) }} σ</span>
+  </div>
+  <p class="text-sm">
+    <span i18n="@@uiLab-sectionReturnHistogram-kurtosis">Kurtosis</span>
+    <span class="tabular-nums" data-testid="lab.simulation.statistics.distribution.kurtosis">
+      {{ formatNumber(_distribution.kurtosis) }}</span
+    >
+    ·
+    <span i18n="@@uiLab-sectionReturnHistogram-skewness">Schiefe</span>
+    <span class="tabular-nums"> {{ formatNumber(_distribution.skewness) }}</span>
+    ·
+    <span i18n="@@uiLab-sectionReturnHistogram-outside">außerhalb</span>
+    <span class="tabular-nums"> {{ _distribution.outside }}</span>
+  </p>
+  <p class="text-xs text-fg-muted" i18n="@@uiLab-sectionReturnHistogram-legend">
+    Balken: Tagesrenditen des Weltindex in Standardabweichungen; Linie: Normalverteilung.
+  </p>
+</div>

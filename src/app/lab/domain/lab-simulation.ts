@@ -1,8 +1,18 @@
+import { computeLabStatistics } from './lab-statistics';
+import { collectMarketSample } from './market-sample';
 import { CandleSource } from './models/candle-source.model';
+import { LabStatistics, StatisticsStart } from './models/lab-statistics.model';
 import { WorldOverview } from './models/world-overview.model';
 import { worldOverview } from './world-overview.utils';
 
-import { dayIndex, dayStartTick, weekdayOfDay } from '../../clock/domain/calendar-logic';
+import {
+  dateTimeToTick,
+  dayIndex,
+  dayStartTick,
+  GAME_START_TICK,
+  tickToDateTime,
+  weekdayOfDay,
+} from '../../clock/domain/calendar-logic';
 import { Tick, TICKS_PER_MINUTE } from '../../clock/domain/models/time.model';
 import { weeklyCandles } from '../../market/domain/candle-logic';
 import { SupportValues } from '../../market/domain/day-curve';
@@ -73,6 +83,40 @@ export class LabSimulation {
       onDay: () => marketDays++,
     });
     return { days, marketDays, now: this.now };
+  }
+
+  /**
+   * Steps to the same calendar date `years` later (29 February becomes 1 March in years without
+   * it).
+   */
+  simulateYears(years: number): SimulationStep {
+    if (!Number.isInteger(years) || years < 1) {
+      throw new RangeError(`LabSimulation: invalid number of years ${years}`);
+    }
+    const { state } = this.#requireMarket();
+    const { year, month, day } = tickToDateTime(dayStartTick(state.day));
+    const monthStart = dayIndex(dateTimeToTick({ year: year + years, month, day: 1 }));
+    return this.simulate(monthStart + day - 1 - state.day);
+  }
+
+  /**
+   * Statistics of the market days from the epoch or the game start up to the current day
+   * (TS §14.2, measurement rules in TS §6.9). Recomputed from the month-start states.
+   */
+  statistics(start: StatisticsStart): LabStatistics {
+    const { context, history, state } = this.#requireMarket();
+    const fromDay = start === 'epoch' ? 0 : dayIndex(GAME_START_TICK);
+    if (state.day - fromDay < 1) {
+      throw new RangeError('LabSimulation: simulate past the start of the statistics first');
+    }
+    const sample = collectMarketSample(
+      this.#requirePriceSource().tables,
+      history,
+      this.world,
+      fromDay,
+      state.day,
+    );
+    return computeLabStatistics(sample, this.world, start, context.config.tradingDaysPerYear);
   }
 
   /**

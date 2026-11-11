@@ -1,0 +1,29 @@
+@let _marketDays = marketDays();
+
+<div class="flex flex-col gap-3">
+  <div class="flex h-4 w-full overflow-hidden rounded-sm bg-surface-raised">
+    @for (segment of segments(); track segment.fromTick) {
+      <div
+        data-testid="lab.simulation.statistics.phase-timeline.segment"
+        [class]="phaseClasses[segment.phase]"
+        [style.width.%]="(segment.marketDays / _marketDays) * 100"
+        [attr.title]="segmentTitle(segment)"></div>
+    }
+  </div>
+  <ul class="flex flex-wrap gap-4 text-sm">
+    @for (share of shares(); track share.phase) {
+      <li class="flex items-center gap-2">
+        <span class="size-3 rounded-sm" [class]="phaseClasses[share.phase]"></span>
+        <span>{{ phaseLabels[share.phase] }}</span>
+        <span
+          class="tabular-nums"
+          [attr.data-testid]="'lab.simulation.statistics.phase-share.' + share.phase"
+          >{{ formatShare(share.share) }}</span
+        >
+        <span class="text-fg-muted tabular-nums" i18n="@@uiLab-sectionPhaseTimeline-typical"
+          >(typisch {{ formatShare(share.typical) }})</span
+        >
+      </li>
+    }
+  </ul>
+</div>

@@ -2,7 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { form, FormField, FormRoot, required } from '@angular/forms/signals';
 
-import { SeedFormModel, SIMULATION_STEPS, SimulationStep } from './simulation.page.model';
+import {
+  SeedFormModel,
+  SIMULATION_STEPS,
+  SIMULATION_YEAR_STEPS,
+  SimulationStep,
+  SimulationYearStep,
+} from './simulation.page.model';
 
 import { formatGameTime } from '../../../clock/domain/game-time-format';
 import { Tick } from '../../../clock/domain/models/time.model';
@@ -13,7 +19,9 @@ import { SkeletonComponent } from '../../../shared/ui/skeleton/skeleton.componen
 import { StatTileComponent } from '../../../shared/ui/stat-tile/stat-tile.component';
 import { formatNumber } from '../../../shared/util/format';
 import { generateSeed } from '../../../simulation/util/seed-generator';
+import { StatisticsStart } from '../../domain/models/lab-statistics.model';
 import { SectionSeriesChartComponent } from '../section-series-chart/section-series-chart.component';
+import { SectionStatisticsComponent } from '../section-statistics/section-statistics.component';
 import { SectionWorldTablesComponent } from '../section-world-tables/section-world-tables.component';
 import { LabFacade } from '../state/lab.facade';
 import { LabChartOptions } from '../state/lab.model';
@@ -29,6 +37,7 @@ import { LabChartOptions } from '../state/lab.model';
     FormRoot,
     PanelComponent,
     SectionSeriesChartComponent,
+    SectionStatisticsComponent,
     SectionWorldTablesComponent,
     SkeletonComponent,
     StatTileComponent,
@@ -40,6 +49,7 @@ export class SimulationPage {
   labFacade = inject(LabFacade);
 
   simulationSteps = SIMULATION_STEPS;
+  simulationYearSteps = SIMULATION_YEAR_STEPS;
 
   seedModel = signal<SeedFormModel>({ seed: '' });
   seedForm = form(
@@ -62,6 +72,9 @@ export class SimulationPage {
     30: $localize`:@@featureLab-simulationPage-step30:+30 Tage`,
     365: $localize`:@@featureLab-simulationPage-step365:+365 Tage`,
   };
+  yearStepLabels: Record<SimulationYearStep, string> = {
+    10: $localize`:@@featureLab-simulationPage-step10y:+10 Jahre`,
+  };
 
   onRandomSeed(): void {
     const seed = generateSeed(() => crypto.getRandomValues(new Uint32Array(1))[0]);
@@ -70,6 +83,18 @@ export class SimulationPage {
 
   onSimulate(days: SimulationStep): void {
     this.labFacade.simulate(days);
+  }
+
+  onSimulateYears(years: SimulationYearStep): void {
+    this.labFacade.simulateYears(years);
+  }
+
+  onComputeStatistics(): void {
+    this.labFacade.computeStatistics();
+  }
+
+  onChangeStatisticsStart(start: StatisticsStart): void {
+    this.labFacade.changeStatisticsStart(start);
   }
 
   onSelectSeries(series: number): void {

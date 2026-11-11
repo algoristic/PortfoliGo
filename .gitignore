@@ -87,3 +87,6 @@ Thumbs.db
 /.claude/settings.local.json
 /.claude/skills
 /.claude/workflows
+
+# Playwright MCP output (screenshots, snapshots, console logs)
+/.playwright-mcp

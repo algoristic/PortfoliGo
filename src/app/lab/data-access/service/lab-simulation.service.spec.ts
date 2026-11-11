@@ -100,6 +100,20 @@ describe('LabSimulationService', () => {
     });
   });
 
+  describe('simulateYears', () => {
+    it('posts the request', () => {
+      service.simulateYears(10).subscribe();
+      expect(workers[0].requests).toEqual([{ id: 1, type: 'simulate-years', years: 10 }]);
+    });
+  });
+
+  describe('statistics', () => {
+    it('posts the request', () => {
+      service.statistics('epoch').subscribe();
+      expect(workers[0].requests).toEqual([{ id: 1, type: 'statistics', start: 'epoch' }]);
+    });
+  });
+
   describe('terminate', () => {
     it('stops the worker and starts a new one with the next request', () => {
       service.generate('a').subscribe();

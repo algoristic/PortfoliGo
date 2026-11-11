@@ -32,4 +32,6 @@ export interface LabTimings {
   /** Market days per second of the last simulation run. */
   marketDaysPerSecond?: number;
   candlesMs?: number;
+  /** Duration of the last statistics computation. */
+  statisticsMs?: number;
 }

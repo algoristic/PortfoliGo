@@ -5,6 +5,8 @@ import * as LabActions from './lab.actions';
 import { LabChartOptions } from './lab.model';
 import * as LabSelectors from './lab.selectors';
 
+import { StatisticsStart } from '../../domain/models/lab-statistics.model';
+
 @Injectable()
 export class LabFacade {
   readonly #store = inject(Store);
@@ -24,6 +26,9 @@ export class LabFacade {
   candles$ = this.#store.pipe(select(LabSelectors.selectCandles));
   loadingCandles$ = this.#store.pipe(select(LabSelectors.selectLoadingCandles));
   loadingHistory$ = this.#store.pipe(select(LabSelectors.selectLoadingHistory));
+  statisticsStart$ = this.#store.pipe(select(LabSelectors.selectStatisticsStart));
+  statistics$ = this.#store.pipe(select(LabSelectors.selectStatistics));
+  loadingStatistics$ = this.#store.pipe(select(LabSelectors.selectLoadingStatistics));
 
   enterSimulationPage(): void {
     this.#store.dispatch(LabActions.enterSimulationPage());
@@ -39,6 +44,18 @@ export class LabFacade {
 
   simulate(days: number): void {
     this.#store.dispatch(LabActions.clickedSimulate({ days }));
+  }
+
+  simulateYears(years: number): void {
+    this.#store.dispatch(LabActions.clickedSimulateYears({ years }));
+  }
+
+  computeStatistics(): void {
+    this.#store.dispatch(LabActions.clickedComputeStatistics());
+  }
+
+  changeStatisticsStart(start: StatisticsStart): void {
+    this.#store.dispatch(LabActions.changedStatisticsStart({ start }));
   }
 
   selectSeries(series: number): void {

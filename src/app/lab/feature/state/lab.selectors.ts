@@ -17,6 +17,12 @@ export const selectChartOptions = createSelector(selectState, (state) => state.c
 export const selectCandles = createSelector(selectState, (state) => state.candles);
 export const selectLoadingCandles = createSelector(selectState, (state) => state.loadingCandles);
 export const selectLoadingHistory = createSelector(selectState, (state) => state.loadingHistory);
+export const selectStatisticsStart = createSelector(selectState, (state) => state.statisticsStart);
+export const selectStatistics = createSelector(selectState, (state) => state.statistics);
+export const selectLoadingStatistics = createSelector(
+  selectState,
+  (state) => state.loadingStatistics,
+);
 
 export const selectBusy = createSelector(
   selectStatus,

@@ -45,14 +45,14 @@ flowchart LR
 | Meilenstein | Stufe | Ziel                                               | Ergebnis, das man zeigen kann                                                          | APs |
 | ----------- | ----- | -------------------------------------------------- | -------------------------------------------------------------------------------------- | --- |
 | M0          | 1     | Sauberes Fundament mit Design-System und App-Shell | Navigierbare, leere App im Trading-Look; CI prüft Lint, Tests und Build                | 4   |
-| M1          | 1     | Getesteter, deterministischer Simulationskern      | Simulations-Labor zeigt eine generierte Welt mit Kursverläufen und Statistiken         | 10  |
+| M1          | 1     | Getesteter, deterministischer Simulationskern      | Simulations-Labor zeigt eine generierte Welt mit Kursverläufen und Statistiken         | 11  |
 | M2          | 1     | Spielschleife mit Spielern, Uhr und Persistenz     | Spieler anlegen, Zeit in jeder Geschwindigkeit laufen lassen, schließen, nachberechnen | 6   |
 | M3          | 1     | Geldflüsse: Einkommen, Kosten, Gebühren, Zinsen    | Kontoauszüge füllen sich; Konten eröffnen, Geld überweisen, Warnungen                  | 6   |
 | M4          | 1     | Märkte im Trading-Look                             | Marktübersicht, Screener, Watchlist, Instrumentseite mit Live-Chart und Indikatoren    | 5   |
 | M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Sparpläne, Steuern, Depot, Dashboard mit Benchmark                  | 7   |
 | M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen                                     | 6   |
 
-**Empfohlene Reihenfolge:** erst M1 mit AP 1.8 und AP 1.9 abschließen, dann M2 beginnen. Die Vorschläge E-22 bis E-24 ändern das Marktmodell, und ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15).
+**Empfohlene Reihenfolge:** erst M1 mit AP 1.8a, AP 1.8b und AP 1.9 abschließen, dann M2 beginnen. Die Vorschläge E-22 bis E-24 ändern das Marktmodell, und ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15).
 
 ## 2. Arbeitsweise in Sessions
 
@@ -102,7 +102,7 @@ Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevo
 | ID   | Frage                                                                                                                                                                           | Vorschlag                                                                                                                                                                                                | Spätestens vor                    |
 | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
 | E-26 | Öffentliche Bereitstellung: Die App ist unter `https://algoristic.de/portfoligo/` schon erreichbar; Impressum, Datenschutzhinweis und der Hinweis „keine Anlageberatung“ fehlen | Zugriff bis 1.0 beschränken oder die Hinweise vorziehen; die rechtliche Bewertung liegt beim Product Owner                                                                                               | sofort                            |
-| E-22 | Langzeitverhalten des Marktmodells (TS §6.4)                                                                                                                                    | In AP 1.8 messen, dann eine Gegenmaßnahme wählen; Kaufsperre an der Kursuntergrenze                                                                                                                      | AP 1.9 (Messung in AP 1.8)        |
+| E-22 | Langzeitverhalten des Marktmodells (TS §6.4)                                                                                                                                    | In AP 1.8b messen, dann eine Gegenmaßnahme wählen; Kaufsperre an der Kursuntergrenze                                                                                                                     | AP 1.9 (Messung in AP 1.8b)       |
 | E-23 | Der Spread verrät die Marktphase (TS §6.7)                                                                                                                                      | Spread-Faktor stetig aus der Faktorvolatilität                                                                                                                                                           | AP 1.9                            |
 | E-24 | Faktoren bewegen sich gleichmäßig über 24 Stunden (TS §6.2)                                                                                                                     | Aktivitätsgewicht je Intervall; Kalibrierungsziel für den Overnight-Anteil                                                                                                                               | AP 1.9                            |
 | E-01 | Engine im Web Worker, NgRx hält nur Projektionen                                                                                                                                | Ja                                                                                                                                                                                                       | AP 2.1                            |
@@ -125,52 +125,53 @@ E-01 und E-08 sind in Teilen schon verbaut (Worker des Labors, Stores des Schema
 
 Status: **offen**, **in Arbeit**, **fertig**.
 
-| AP   | Titel                                            | Status | Abhängig von  |
-| ---- | ------------------------------------------------ | ------ | ------------- |
-| 0.1  | Aufräumen und Baseline                           | fertig | –             |
-| 0.2  | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig | 0.1           |
-| 0.3  | App-Bootstrap und Infrastruktur                  | fertig | 0.1           |
-| 0.4  | App-Shell und UI-Grundkomponenten                | fertig | 0.2, 0.3      |
-| 1.1  | Deterministischer Zufall und Mathematik          | fertig | 0.1           |
-| 1.2  | Spielkalender und Zeitmodell                     | fertig | 0.1           |
-| 1.3  | Weltgenerierung: Taxonomie, Unternehmen, Banken  | fertig | 1.1           |
-| 1.4  | Marktmodell: Tagesschritt und Vorlauf            | fertig | 1.2, 1.3      |
-| 1.5  | Brücken, Minutenkurse und Kerzen                 | fertig | 1.4           |
-| 1.6a | Dividenden und Indizes                           | fertig | 1.5           |
-| 1.6b | ETFs, indikative Werte, Geld- und Briefkurse     | fertig | 1.6a          |
-| 1.7  | Simulations-Labor: Welt, Simulation, Chart-Spike | fertig | 1.6b, 0.4     |
-| 1.8  | Simulations-Labor: Statistik                     | offen  | 1.7           |
-| 1.9  | Kalibrierung des Marktmodells                    | offen  | 1.8           |
-| 2.1  | GameEngine und Terminplaner                      | offen  | 1.6b          |
-| 2.2  | Worker-Host, Protokoll und EngineService         | offen  | 2.1, 0.3      |
-| 2.3  | Persistenz im Worker und Wiederherstellung       | offen  | 2.2           |
-| 2.4  | Spielerverwaltung                                | offen  | 2.3, 0.4      |
-| 2.5  | Spielsitzung und Uhr                             | offen  | 2.4           |
-| 2.6  | Einstellungen: Grundlage                         | offen  | 2.5           |
-| 3.1  | Hauptbuch und Kontenmodell                       | offen  | 2.4           |
-| 3.2  | Haushalt und periodische Buchungen               | offen  | 3.1           |
-| 3.3  | Bankkommandos und Banking-Slice                  | offen  | 3.2, 2.5      |
-| 3.4  | Kontenübersicht und Kontoauszug                  | offen  | 3.3           |
-| 3.5  | Bankenvergleich, Dialoge und Monatsübersicht     | offen  | 3.4           |
-| 3.6  | Benachrichtigungen                               | offen  | 3.3, 2.6      |
-| 4.1  | Marktdaten-Feed und Market-Slice                 | offen  | 2.5           |
-| 4.2  | Chart-Komponenten                                | offen  | 4.1, 1.7      |
-| 4.3  | Indikatoren                                      | offen  | 4.2           |
-| 4.4  | Marktübersicht, Screener und Watchlist           | offen  | 4.2           |
-| 4.5  | Instrument-Detailseite                           | offen  | 4.3, 4.4, 1.8 |
-| 5.1  | Depot und Orderausführung                        | offen  | 3.3, 1.6b     |
-| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1           |
-| 5.3  | Steuern                                          | offen  | 5.2           |
-| 5.4  | Order-Ticket und Orderbuch                       | offen  | 5.3, 4.5, 3.6 |
-| 5.5  | Depot, Positionen und Steuerübersicht (UI)       | offen  | 5.4           |
-| 5.6  | Sparpläne                                        | offen  | 5.5           |
-| 5.7  | Dashboard und Performance                        | offen  | 5.5           |
-| 6.1  | Export und Import                                | offen  | 5.6, 5.7      |
-| 6.2  | Einstellungen                                    | offen  | 6.1, 3.6, 2.6 |
-| 6.3  | PWA und Browser-Benachrichtigungen               | offen  | 6.2           |
-| 6.4  | Performance und Robustheit                       | offen  | 6.1, 1.9      |
-| 6.5  | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3           |
-| 6.6  | Release 1.0                                      | offen  | 6.4, 6.5, 3.5 |
+| AP   | Titel                                            | Status | Abhängig von   |
+| ---- | ------------------------------------------------ | ------ | -------------- |
+| 0.1  | Aufräumen und Baseline                           | fertig | –              |
+| 0.2  | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig | 0.1            |
+| 0.3  | App-Bootstrap und Infrastruktur                  | fertig | 0.1            |
+| 0.4  | App-Shell und UI-Grundkomponenten                | fertig | 0.2, 0.3       |
+| 1.1  | Deterministischer Zufall und Mathematik          | fertig | 0.1            |
+| 1.2  | Spielkalender und Zeitmodell                     | fertig | 0.1            |
+| 1.3  | Weltgenerierung: Taxonomie, Unternehmen, Banken  | fertig | 1.1            |
+| 1.4  | Marktmodell: Tagesschritt und Vorlauf            | fertig | 1.2, 1.3       |
+| 1.5  | Brücken, Minutenkurse und Kerzen                 | fertig | 1.4            |
+| 1.6a | Dividenden und Indizes                           | fertig | 1.5            |
+| 1.6b | ETFs, indikative Werte, Geld- und Briefkurse     | fertig | 1.6a           |
+| 1.7  | Simulations-Labor: Welt, Simulation, Chart-Spike | fertig | 1.6b, 0.4      |
+| 1.8a | Simulations-Labor: Statistik                     | fertig | 1.7            |
+| 1.8b | Labor: Intraday, Langzeit, Selbsttest            | offen  | 1.8a           |
+| 1.9  | Kalibrierung des Marktmodells                    | offen  | 1.8b           |
+| 2.1  | GameEngine und Terminplaner                      | offen  | 1.6b           |
+| 2.2  | Worker-Host, Protokoll und EngineService         | offen  | 2.1, 0.3       |
+| 2.3  | Persistenz im Worker und Wiederherstellung       | offen  | 2.2            |
+| 2.4  | Spielerverwaltung                                | offen  | 2.3, 0.4       |
+| 2.5  | Spielsitzung und Uhr                             | offen  | 2.4            |
+| 2.6  | Einstellungen: Grundlage                         | offen  | 2.5            |
+| 3.1  | Hauptbuch und Kontenmodell                       | offen  | 2.4            |
+| 3.2  | Haushalt und periodische Buchungen               | offen  | 3.1            |
+| 3.3  | Bankkommandos und Banking-Slice                  | offen  | 3.2, 2.5       |
+| 3.4  | Kontenübersicht und Kontoauszug                  | offen  | 3.3            |
+| 3.5  | Bankenvergleich, Dialoge und Monatsübersicht     | offen  | 3.4            |
+| 3.6  | Benachrichtigungen                               | offen  | 3.3, 2.6       |
+| 4.1  | Marktdaten-Feed und Market-Slice                 | offen  | 2.5            |
+| 4.2  | Chart-Komponenten                                | offen  | 4.1, 1.7       |
+| 4.3  | Indikatoren                                      | offen  | 4.2            |
+| 4.4  | Marktübersicht, Screener und Watchlist           | offen  | 4.2            |
+| 4.5  | Instrument-Detailseite                           | offen  | 4.3, 4.4, 1.8a |
+| 5.1  | Depot und Orderausführung                        | offen  | 3.3, 1.6b      |
+| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1            |
+| 5.3  | Steuern                                          | offen  | 5.2            |
+| 5.4  | Order-Ticket und Orderbuch                       | offen  | 5.3, 4.5, 3.6  |
+| 5.5  | Depot, Positionen und Steuerübersicht (UI)       | offen  | 5.4            |
+| 5.6  | Sparpläne                                        | offen  | 5.5            |
+| 5.7  | Dashboard und Performance                        | offen  | 5.5            |
+| 6.1  | Export und Import                                | offen  | 5.6, 5.7       |
+| 6.2  | Einstellungen                                    | offen  | 6.1, 3.6, 2.6  |
+| 6.3  | PWA und Browser-Benachrichtigungen               | offen  | 6.2            |
+| 6.4  | Performance und Robustheit                       | offen  | 6.1, 1.9       |
+| 6.5  | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3            |
+| 6.6  | Release 1.0                                      | offen  | 6.4, 6.5, 3.5  |
 
 ### Abhängigkeitsgraph
 
@@ -195,7 +196,8 @@ flowchart TD
     AP1_6a["1.6a Dividenden und Indizes"]
     AP1_6b["1.6b ETFs, indikative Werte, Geld- und Briefkurse"]
     AP1_7["1.7 Simulations-Labor: Welt, Simulation, Chart-Spike"]
-    AP1_8["1.8 Simulations-Labor: Statistik"]
+    AP1_8a["1.8a Simulations-Labor: Statistik"]
+    AP1_8b["1.8b Labor: Intraday, Langzeit, Selbsttest"]
     AP1_9["1.9 Kalibrierung des Marktmodells"]
   end
   subgraph M2["M2 – Engine, Spieler und Persistenz"]
@@ -257,8 +259,9 @@ flowchart TD
   AP1_6a --> AP1_6b
   AP1_6b --> AP1_7
   AP0_4 --> AP1_7
-  AP1_7 --> AP1_8
-  AP1_8 --> AP1_9
+  AP1_7 --> AP1_8a
+  AP1_8a --> AP1_8b
+  AP1_8b --> AP1_9
   AP1_6b --> AP2_1
   AP2_1 --> AP2_2
   AP0_3 --> AP2_2
@@ -282,7 +285,7 @@ flowchart TD
   AP4_2 --> AP4_4
   AP4_3 --> AP4_5
   AP4_4 --> AP4_5
-  AP1_8 --> AP4_5
+  AP1_8a --> AP4_5
   AP3_3 --> AP5_1
   AP1_6b --> AP5_1
   AP5_1 --> AP5_2
@@ -307,7 +310,7 @@ flowchart TD
   AP3_5 --> AP6_6
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP0_1,AP0_2,AP0_3,AP0_4,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7 done
+  class AP0_1,AP0_2,AP0_3,AP0_4,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a done
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6
@@ -448,13 +451,22 @@ AP 1.6 wurde nach §2.5 geteilt (11.11.2026).
 - **Referenzen:** TS §11.7, §14.2; E-04
 - **Abhängig von:** AP 1.6b, AP 0.4
 
-#### AP 1.8 – Simulations-Labor: Statistik
+AP 1.8 wurde nach §2.5 geteilt (11.11.2026).
 
-- **Umfang:** `analysis/domain`: Statistikfunktionen (Rendite, Volatilität, Korrelation, Drawdown, Verteilung der Tagesrenditen); Statistikansicht im Labor nach TS §14.2 mit Vergleich zu den Kalibrierungszielen, Phasen-Zeitleiste, Intraday-Statistik im Vergleich zur Referenz-Minutensimulation aus AP 1.5 und Durchsatz in Spieltagen pro Sekunde. Dazu Langzeit-Kennzahlen über 50 und 100 Spieljahre (Konzentration des Weltindex, Anteil der Kurse unter 1 € und an der Kursuntergrenze, Höchstkurse, Indexvolatilität in rollierenden Fenstern; E-22), der Overnight-Anteil der Varianz von Indizes und Einzelaktien (E-24) und ein Selbsttest, der die Golden-Master-Prüfsummen im Browser und im echten Worker rechnet (TS §4.6).
-- **Abnahme:** Tests der Statistikfunktionen mit Referenzwerten; die Ansicht zeigt alle Größen aus TS §6.9 für einen gewählten Seed und Zeitraum. Der Selbsttest zeigt in Chrome und Firefox die eingecheckten Prüfsummen (Safari unter iOS spätestens in AP 6.6).
-- **Vor der Umsetzung klären:** Messvorschrift je Kalibrierungsziel – Einzelaktien oder Indizes, Tages- oder Monatsrenditen, Zeitraum, Toleranz (TS §6.9).
-- **Referenzen:** TS §4.6, §6.9, §14.2; E-22, E-24
+#### AP 1.8a – Simulations-Labor: Statistik
+
+- **Umfang:** `analysis/domain`: Statistikfunktionen (Rendite, Volatilität, Korrelation, Schiefe, Kurtosis, Autokorrelation, Quantile, Histogramm, Drawdown). Messvorschrift je Kalibrierungsziel (TS §6.9). Statistikansicht im Labor nach TS §14.2 für einen wählbaren Zeitraum (ab Epoche oder ab Spielstart) mit Vergleich zu den Kalibrierungszielen, Phasen-Zeitleiste, Verteilung der Tagesrenditen, Korrelationsmatrix nach Sektor, Volatilität je Größenklasse und Drawdowns des Weltindex; Simulationsschritt „10 Jahre“.
+- **Abnahme:** Tests der Statistikfunktionen mit Referenzwerten; die Ansicht zeigt die Größen aus TS §6.9, die sich aus den Tagesstützpunkten messen lassen; Seitentest mit der Domain als Orakel.
+- **Referenzen:** TS §6.9, §14.2
 - **Abhängig von:** AP 1.7
+
+#### AP 1.8b – Labor: Intraday, Langzeit, Selbsttest
+
+- **Umfang:** Intraday-Statistik (Minutenvolatilität, Tagesspanne, Tagesprofil) im Vergleich zur Referenz-Minutensimulation aus AP 1.5 und Durchsatz der Minutenverläufe; Langzeit-Kennzahlen über 50 und 100 Spieljahre (Konzentration des Weltindex, Anteil der Kurse unter 1 € und an der Kursuntergrenze, Höchstkurse, Indexvolatilität in rollierenden Fenstern; E-22), der Overnight-Anteil der Varianz von Indizes und Einzelaktien (E-24) und ein Selbsttest, der die Golden-Master-Prüfsummen im Browser und im echten Worker rechnet (TS §4.6).
+- **Abnahme:** Die Statistikansicht zeigt auch die übrigen Größen aus TS §6.9 (Status „AP 1.8b“ entfällt). Der Selbsttest zeigt in Chrome und Firefox die eingecheckten Prüfsummen (Safari unter iOS spätestens in AP 6.6).
+- **Vormerkungen** (aus AP 1.8a): Messvorschrift für Tagesprofil, Overnight-Anteil und Langzeit-Kennzahlen steht in TS §6.9. Die Golden-Master-Konstanten liegen bisher nur in den Specs (`world-generator.spec.ts`, `market-step.spec.ts`, `price-source.spec.ts`, `index-curve.spec.ts`, `etf-curve.spec.ts`) und müssen für den Selbsttest in Module außerhalb der Specs. `ReferenceSimulation` nutzt nichts Node-spezifisches und läuft im Worker. Die Statistik rechnet die Tagesschritte aus den Monatsbeginn-Zuständen nach (rund 45 ms je Spieljahr); für den Langzeitlauf die Stichprobe besser schon beim Simulieren sammeln.
+- **Referenzen:** TS §4.6, §6.9, §14.2; E-22, E-24
+- **Abhängig von:** AP 1.8a
 
 #### AP 1.9 – Kalibrierung des Marktmodells
 
@@ -463,7 +475,7 @@ AP 1.6 wurde nach §2.5 geteilt (11.11.2026).
 - **Vormerkungen** (aus AP 1.4 und AP 1.6b): Mit den Startwerten liegt die Volatilität der Einzelaktien im Median bei rund 40 % (die Sprünge tragen allein rund 18 Prozentpunkte bei), und Krisen machen nur 2–4 % statt 8 % der Zeit aus. Zu kalibrieren sind auch Spreads, Tracking-Fehler und Startkurse der ETFs; das Budget des Vorlaufs ist nachzumessen.
 - **Vor der Umsetzung klären:** E-22 (Gegenmaßnahme fürs Langzeitverhalten), E-23 (Spread-Faktor) und E-24 (Aktivitätsgewichte) müssen entschieden sein. Sie ändern das Modell und damit die Golden Master.
 - **Referenzen:** TS §6.2, §6.4, §6.7, §6.9, §14.1; E-22–E-24; Risiken R1, R12
-- **Abhängig von:** AP 1.8
+- **Abhängig von:** AP 1.8b
 
 ### M2 – Engine, Spieler und Persistenz
 
@@ -616,10 +628,10 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 
 #### AP 4.5 – Instrument-Detailseite
 
-- **Umfang:** Kurskopf (Geld, Brief, Spread, Handelsstatus), Chart mit Indikatoren, Kennzahlen (Volatilität und Beta mit den Statistikfunktionen aus AP 1.8), Profil für Aktien und ETFs (Text aus Vorlagen-Code), Dividenden (Historie, nächster Termin), Aktionen (Watchlist; Kaufen und Verkaufen werden in AP 5.4 angebunden). Der Dividendenkalender für Depot und Watchlist (US-MK-06) folgt in AP 5.7.
+- **Umfang:** Kurskopf (Geld, Brief, Spread, Handelsstatus), Chart mit Indikatoren, Kennzahlen (Volatilität und Beta mit den Statistikfunktionen aus AP 1.8a), Profil für Aktien und ETFs (Text aus Vorlagen-Code), Dividenden (Historie, nächster Termin), Aktionen (Watchlist; Kaufen und Verkaufen werden in AP 5.4 angebunden). Der Dividendenkalender für Depot und Watchlist (US-MK-06) folgt in AP 5.7.
 - **Abnahme:** Alle Angaben aus US-MK-03 sichtbar und live aktualisiert. Seitentest: Aktie und ETF öffnen, Angaben prüfen, zur Watchlist hinzufügen.
 - **Referenzen:** US-MK-03, US-MK-06; TS §5.4, §8.6
-- **Abhängig von:** AP 4.3, AP 4.4, AP 1.8
+- **Abhängig von:** AP 4.3, AP 4.4, AP 1.8a
 
 ### M5 – Handel, Depot und Steuern
 
@@ -818,3 +830,4 @@ Die Reihenfolge ab M7 ist ein Vorschlag und wird nach dem MVP gemeinsam priorisi
 | 11.11.2026 | Seiten- und Komponententests eingeführt (Entscheidung des Product Owners: Integrationstests mit echten Abhängigkeiten unter jsdom, Einstieg über die echten Routen, eigene Helfer auf `data-testid`). Ersetzt werden nur Prozess- und Plattformgrenzen: Worker (`provideInProcessLabWorker()`, dafür hat `LAB_WORKER_FACTORY` jetzt einen Root-Default), IndexedDB, Canvas-Zeichnen, Layout und `ResizeObserver`; `lightweight-charts` läuft echt. `provideAppCore()` teilt die App-Provider zwischen App und Tests. Pilot: Lab-Seite und `price-chart`; der Regressionstest schlägt mit dem Stand vor dem Fix fehl (260 statt 130 Kerzen). Dabei zwei Fehler im Chart gefunden und behoben: Ein einzelner Mausrad-Schritt an der ältesten Kerze lud nichts nach, weil die Bibliothek die neue Range meldet, bevor der Host-Listener die Geste vermerkt (Gesten zählen jetzt in der Capture-Phase); nach einem kleinen Block lud der Chart nicht weiter, obwohl der Ausschnitt noch an der ältesten Kerze stand (das Range-Event kommt schon in `setData`). TS angepasst: §11.7, §14.1; Regeln in `CLAUDE.md` §10.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 11.11.2026 | Oberflächentests im Bestand nachgezogen und für neue APs festgelegt (Auftrag des Product Owners). Die Definition of Done (§2.4) verlangt Seiten- bzw. Komponententests für neue Seiten und ui-Komponenten mit eigenem Verhalten; sie werden mit der Komponente geplant (`CLAUDE.md` §10). Neu: Seitentest der Shell (Navigation, Menüs, Seitentitel, Skip-Link, Telefon- und Desktop-Layout über `installViewport`), Komponententests für `app-tabs` und den Bestätigungsdialog mit echtem CDK-Dialog (ersetzt den Test mit gemocktem `Dialog.open`), im Labor-Seitentest Serienauswahl und Welt-Tabellen. Ohne eigenen Test bleiben die Platzhalterseiten (Tests kommen mit ihren APs), die Labor-Seiten „UI-Bausteine“ und „Tokens“ sowie reine Anzeige-Komponenten. `provideEngineService()` gehört in `provideAppCore()`, damit Seitentests die Engine-Verdrahtung mitnutzen (TS §11.2, Punkt 4; Vorgabe für AP 2.2).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | 11.11.2026 | Kritische Prüfung von Projektplan, PS und TS (Auftrag des Product Owners). Neue Vorschläge E-21 bis E-28 (§3, TS §16): Abbuchungskonto für Sparpläne, Langzeitverhalten des Marktmodells, Spread-Faktor aus der Volatilität, Aktivitätsgewichte der Faktoren, Versionsregeln vor und ab 1.0, öffentliche Bereitstellung, Budgets für Mobilgeräte, Umfang von Stufe 1 für Einsteiger; Ergänzungen zu E-05, E-08, E-10 und E-11. Neue Risiken R12–R15 (TS §17). Neu im Plan: AP 2.6 (Einstellungen: Grundlage; jetzt 44 APs), Steuerkern in AP 3.2, Browser-Selbsttest und Langzeit-Kennzahlen in AP 1.8, zusätzliche Abhängigkeiten (AP 4.5 von 1.8, AP 5.4 von 3.6, AP 3.6 und 6.2 von 2.6, AP 6.4 von 1.9, AP 6.6 von 3.5), Vormerkungen aus dem Protokoll und offene Regelfragen in den AP-Texten, Seitentests in den Abnahmen, Zuordnung der User Stories (§5), empfohlene Reihenfolge M1 vor M2 (§1). Korrigiert: Browserversionen in NF-08, überholte Schätzwerte (Messwerttabelle in TS §14.3), Text von E-08, AP 2.3 (Schema-Version, Begriff). Nicht umgesetzt, nur nach Rückfrage: weitere APs teilen (2.3, 2.5, 3.6, 5.1, 5.7, 6.1, 6.5); Ist-Stand und Änderungsprotokoll zusammenführen.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 11.11.2026 | AP 1.8 geteilt (Entscheidung des Product Owners): AP 1.8a Statistik, AP 1.8b Intraday, Langzeit und Selbsttest; AP 1.9 hängt jetzt von AP 1.8b ab, AP 4.5 von AP 1.8a (braucht nur die Statistikfunktionen); jetzt 45 APs. Messvorschrift festgelegt (Product Owner, TS §6.9): Zeitraum im Labor wählbar ab Epoche oder ab Spielstart; Korrelationen aus Tagesrenditen über Aktienpaare derselben Region, Wochenrenditen aller Paare zur Information; übrige Zeilen wie vorgeschlagen, Toleranzen und Grenzen in AP 1.9. AP 1.8a umgesetzt: neues Modul `analysis/domain` (`statistics-logic.ts`: Mittelwert, Stichprobenvarianz, Log-Renditen, annualisierte Volatilität, geometrische Rendite, Pearson-Korrelation, Schiefe, Kurtosis, Autokorrelation, Quantile, Histogramm; `drawdown-logic.ts`: Drawdowns, maximaler Drawdown, Episoden bis zum neuen Hoch); nicht unter der Determinismus-Regel, weil es nie in die Simulation zurückwirkt. `lab/domain`: `collectMarketSample` (ein Durchlauf `recomputeSupportDays` mit `SupportValues`: Phasen, Schlüsse des Weltindex als Kurs- und Performanceindex, Log-Tagesrenditen je Aktie als `Float32Array`, Dividenden), `computeLabStatistics` mit der Zieltabelle `CALIBRATION_TARGETS` (Status im Ziel, abweichend, zu kurz, Info, AP 1.8b), `LabSimulation.statistics(start)` und `simulateYears(years)`; Worker-Requests `statistics` und `simulate-years`. Labor: Panel „Statistik“ mit Zeitraum, Zieltabelle, Phasen-Zeitleiste, Verteilung der Tagesrenditen gegen die Normalverteilung, Volatilität je Größenklasse, Korrelationsmatrix nach Sektor und Drawdowns; Schritt „+10 Jahre“; neue ui-Komponenten in `lab/ui`. Die Statistik wird nach jeder Simulation verworfen und auf Knopfdruck neu berechnet. Tests: Statistik- und Drawdown-Funktionen mit Referenzwerten, Stichprobe gegen die Tageskerzen aus `supportCandles`, Kennzahlen an einer synthetischen Stichprobe, Worker, Service, Slice, Seitentest mit `LabSimulation` als Orakel. **Messwerte** (Vitest isoliert, `demo-seed`): Statistik ab Epoche nach dem Vorlauf rund 0,6 s; über 110 Spieljahre rund 6 s, davon rund 5 s für das Nachrechnen der Tagesschritte; 100 Jahre simulieren rund 4,2 s. Erste Kennzahlen und Abweichungen von den Zielen stehen in TS §6.9 (Vormerkung für AP 1.9). Nicht automatisiert geprüft: Darstellung im Browser. TS angepasst: §4.6, §6.4, §6.9, §14.2, §14.3, §17.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |

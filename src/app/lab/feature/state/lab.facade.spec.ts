@@ -36,6 +36,9 @@ describe('LabFacade', () => {
       facade.leaveSimulationPage();
       facade.generateWorld('lab');
       facade.simulate(30);
+      facade.simulateYears(10);
+      facade.computeStatistics();
+      facade.changeStatisticsStart('game-start');
       facade.selectSeries(4);
       facade.changeChartOptions({ chartType: 'line' });
       facade.loadHistory();
@@ -44,6 +47,9 @@ describe('LabFacade', () => {
         LabActions.leaveSimulationPage(),
         LabActions.submittedSeed({ seed: 'lab' }),
         LabActions.clickedSimulate({ days: 30 }),
+        LabActions.clickedSimulateYears({ years: 10 }),
+        LabActions.clickedComputeStatistics(),
+        LabActions.changedStatisticsStart({ start: 'game-start' }),
         LabActions.selectedSeries({ series: 4 }),
         LabActions.changedChartOptions({ options: { chartType: 'line' } }),
         LabActions.scrolledToChartStart(),

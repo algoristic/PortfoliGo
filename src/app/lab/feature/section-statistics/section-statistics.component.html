@@ -1,0 +1,183 @@
+@let _statistics = statistics();
+@let _start = start();
+@let _statisticsMs = statisticsMs();
+
+<div class="flex flex-col gap-6">
+  <div class="flex flex-wrap items-end gap-4">
+    <div class="flex flex-col gap-1 text-sm">
+      <span class="text-fg-muted" i18n="@@featureLab-sectionStatistics-period">Zeitraum</span>
+      <div class="flex flex-wrap gap-1">
+        @for (option of starts; track option) {
+          <button
+            appButton
+            type="button"
+            size="sm"
+            [variant]="option === _start ? 'primary' : 'secondary'"
+            [attr.aria-pressed]="option === _start"
+            [disabled]="disabled()"
+            [attr.data-testid]="'lab.simulation.statistics.start.' + option"
+            (click)="onSelectStart(option)">
+            {{ startLabels[option] }}
+          </button>
+        }
+      </div>
+    </div>
+    <button
+      appButton
+      type="button"
+      data-testid="lab.simulation.statistics.compute"
+      i18n="@@featureLab-sectionStatistics-compute"
+      [disabled]="disabled() || loading()"
+      (click)="onCompute()">
+      Statistik berechnen
+    </button>
+    @if (_statisticsMs !== undefined) {
+      <span
+        class="text-sm text-fg-muted tabular-nums"
+        data-testid="lab.simulation.statistics.duration"
+        >{{ formatNumber(_statisticsMs) }} ms</span
+      >
+    }
+  </div>
+
+  @if (loading()) {
+    <app-skeleton class="h-48" [block]="true"></app-skeleton>
+  } @else if (_statistics) {
+    <p class="text-sm text-fg-muted tabular-nums" data-testid="lab.simulation.statistics.period">
+      {{ formatDate(_statistics.fromTick) }} – {{ formatDate(_statistics.toTick) }} ·
+      {{ formatNumber(_statistics.marketDays) }}
+      <ng-container i18n="@@featureLab-sectionStatistics-marketDays">Markttage</ng-container>
+      · {{ formatNumber(_statistics.years, 1) }}
+      <ng-container i18n="@@featureLab-sectionStatistics-years">Jahre</ng-container>
+    </p>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm" data-testid="lab.simulation.statistics.targets">
+        <thead class="text-xs text-fg-muted">
+          <tr>
+            <th class="px-2 py-1" i18n="@@featureLab-sectionStatistics-quantity">Größe</th>
+            <th class="px-2 py-1 text-right" i18n="@@featureLab-sectionStatistics-value">
+              Messwert
+            </th>
+            <th class="px-2 py-1 text-right" i18n="@@featureLab-sectionStatistics-target">Ziel</th>
+            <th class="px-2 py-1" i18n="@@featureLab-sectionStatistics-status">Status</th>
+          </tr>
+        </thead>
+        <tbody class="tabular-nums">
+          @for (row of _statistics.targets; track row.id) {
+            <tr class="border-t border-border">
+              <td class="px-2 py-1">{{ targetLabel(row) }}</td>
+              <td
+                class="px-2 py-1 text-right"
+                [attr.data-testid]="'lab.simulation.statistics.target.' + row.id + '.value'">
+                {{ formatValue(row.value, row.unit) }}
+              </td>
+              <td class="px-2 py-1 text-right text-fg-muted">{{ formatTarget(row) }}</td>
+              <td class="px-2 py-1">
+                <app-badge
+                  [tone]="statusTones[row.status]"
+                  [attr.data-testid]="'lab.simulation.statistics.target.' + row.id + '.status'"
+                  >{{ statusLabels[row.status] }}</app-badge
+                >
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <section class="flex flex-col gap-2">
+      <h3 class="text-sm font-semibold" i18n="@@featureLab-sectionStatistics-phases">
+        Marktphasen
+      </h3>
+      <app-section-phase-timeline
+        [segments]="_statistics.phases"
+        [shares]="_statistics.phaseShares"></app-section-phase-timeline>
+    </section>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <section class="flex flex-col gap-2">
+        <h3 class="text-sm font-semibold" i18n="@@featureLab-sectionStatistics-distribution">
+          Verteilung der Tagesrenditen
+        </h3>
+        <app-section-return-histogram
+          [distribution]="_statistics.distribution"></app-section-return-histogram>
+      </section>
+
+      <section class="flex flex-col gap-2">
+        <h3 class="text-sm font-semibold" i18n="@@featureLab-sectionStatistics-sizeVolatility">
+          Volatilität der Aktien p. a.
+        </h3>
+        <table class="w-full text-right text-sm tabular-nums">
+          <thead class="text-xs text-fg-muted">
+            <tr>
+              <th class="px-2 py-1 text-left" i18n="@@featureLab-sectionStatistics-size">Größe</th>
+              <th class="px-2 py-1" i18n="@@featureLab-sectionStatistics-count">Anzahl</th>
+              <th class="px-2 py-1" i18n="@@featureLab-sectionStatistics-p10">10 %</th>
+              <th class="px-2 py-1" i18n="@@featureLab-sectionStatistics-median">Median</th>
+              <th class="px-2 py-1" i18n="@@featureLab-sectionStatistics-p90">90 %</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of _statistics.sizeVolatility; track entry.size) {
+              <tr class="border-t border-border">
+                <td class="px-2 py-1 text-left">{{ sizeLabels[entry.size] }}</td>
+                <td class="px-2 py-1">{{ entry.count }}</td>
+                <td class="px-2 py-1">{{ formatPercent(entry.p10) }}</td>
+                <td class="px-2 py-1">{{ formatPercent(entry.median) }}</td>
+                <td class="px-2 py-1">{{ formatPercent(entry.p90) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <section class="flex flex-col gap-2">
+      <h3 class="text-sm font-semibold" i18n="@@featureLab-sectionStatistics-correlations">
+        Korrelation der Tagesrenditen nach Sektor (Aktien derselben Region)
+      </h3>
+      <app-section-correlation-matrix
+        [matrix]="_statistics.correlations"></app-section-correlation-matrix>
+    </section>
+
+    <section class="flex flex-col gap-2">
+      <h3 class="text-sm font-semibold" i18n="@@featureLab-sectionStatistics-drawdowns">
+        Drawdowns des Weltindex (Performance, ab 20 %)
+      </h3>
+      <p class="text-sm">
+        <span i18n="@@featureLab-sectionStatistics-maxDrawdown">Maximaler Drawdown</span>
+        <span class="tabular-nums" data-testid="lab.simulation.statistics.max-drawdown">
+          {{ formatPercent(_statistics.maxDrawdown) }}</span
+        >
+      </p>
+      @if (_statistics.drawdowns.length > 0) {
+        <table class="w-full text-right text-sm tabular-nums">
+          <thead class="text-xs text-fg-muted">
+            <tr>
+              <th class="px-2 py-1 text-left" i18n="@@featureLab-sectionStatistics-peak">Hoch</th>
+              <th class="px-2 py-1" i18n="@@featureLab-sectionStatistics-trough">Tief</th>
+              <th class="px-2 py-1" i18n="@@featureLab-sectionStatistics-recovery">Erholt</th>
+              <th class="px-2 py-1" i18n="@@featureLab-sectionStatistics-depth">Verlust</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (drawdown of _statistics.drawdowns; track drawdown.peakTick) {
+              <tr class="border-t border-border" data-testid="lab.simulation.statistics.drawdown">
+                <td class="px-2 py-1 text-left">{{ formatDate(drawdown.peakTick) }}</td>
+                <td class="px-2 py-1">{{ formatDate(drawdown.troughTick) }}</td>
+                <td class="px-2 py-1">{{ formatDate(drawdown.recoveryTick) }}</td>
+                <td class="px-2 py-1">{{ formatPercent(drawdown.depth) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  } @else {
+    <p class="text-sm text-fg-muted" i18n="@@featureLab-sectionStatistics-hint">
+      Berechnet die Kennzahlen des gewählten Zeitraums aus den Tagesstützpunkten. Nach jeder
+      Simulation neu berechnen.
+    </p>
+  }
+</div>

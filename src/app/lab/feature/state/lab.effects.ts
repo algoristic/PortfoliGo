@@ -33,11 +33,31 @@ export class LabEffects {
 
   simulate$ = createEffect(() =>
     this.#actions$.pipe(
-      ofType(LabActions.clickedSimulate),
-      exhaustMap(({ days }) =>
-        this.#service.simulate(days).pipe(
+      ofType(LabActions.clickedSimulate, LabActions.clickedSimulateYears),
+      exhaustMap((action) =>
+        (action.type === LabActions.clickedSimulate.type
+          ? this.#service.simulate(action.days)
+          : this.#service.simulateYears(action.years)
+        ).pipe(
           map((period) => LabActions.simulateSuccess({ period })),
           catchError((error: unknown) => of(LabActions.simulateFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
+  computeStatistics$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(LabActions.clickedComputeStatistics, LabActions.changedStatisticsStart),
+      concatLatestFrom(() => [
+        this.#store.pipe(select(LabSelectors.selectStatisticsStart)),
+        this.#store.pipe(select(LabSelectors.selectOverview)),
+      ]),
+      filter(([, , overview]) => overview !== undefined),
+      switchMap(([, start]) =>
+        this.#service.statistics(start).pipe(
+          map((result) => LabActions.computeStatisticsSuccess({ result })),
+          catchError((error: unknown) => of(LabActions.computeStatisticsFailure({ error }))),
         ),
       ),
     ),
@@ -95,6 +115,7 @@ export class LabEffects {
           LabActions.simulateFailure,
           LabActions.loadCandlesFailure,
           LabActions.loadHistoryFailure,
+          LabActions.computeStatisticsFailure,
         ),
         tap(({ error }) =>
           this.#toastService.error(

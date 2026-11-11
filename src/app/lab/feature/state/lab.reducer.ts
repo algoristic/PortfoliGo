@@ -11,6 +11,7 @@ import {
 
 import { Tick } from '../../../clock/domain/models/time.model';
 import { Candle } from '../../../market/domain/models/candle.model';
+import { LabStatistics, StatisticsStart } from '../../domain/models/lab-statistics.model';
 import { WorldOverview } from '../../domain/models/world-overview.model';
 
 export const LAB_FEATURE_KEY = 'lab';
@@ -30,6 +31,10 @@ export interface LabState {
   /** Start of the period the loaded candles cover; older blocks load when the chart scrolls. */
   historyFrom?: Tick;
   loadingHistory: boolean;
+  statisticsStart: StatisticsStart;
+  /** Statistics of the current period; dropped when the period changes. */
+  statistics?: LabStatistics;
+  loadingStatistics: boolean;
   error?: unknown;
 }
 
@@ -41,6 +46,8 @@ export const initialLabState: LabState = {
   candles: [],
   loadingCandles: false,
   loadingHistory: false,
+  statisticsStart: 'epoch',
+  loadingStatistics: false,
 };
 
 const MS_PER_SECOND = 1000;
@@ -52,6 +59,7 @@ const reducer = createReducer(
   on(LabActions.generateWorldSuccess, (state, { world }) => ({
     ...initialLabState,
     chartOptions: state.chartOptions,
+    statisticsStart: state.statisticsStart,
     status: 'ready',
     seed: world.seed,
     overview: world.overview,
@@ -64,7 +72,7 @@ const reducer = createReducer(
     status: readyOrIdle(state),
     error,
   })),
-  on(LabActions.clickedSimulate, (state) => ({
+  on(LabActions.clickedSimulate, LabActions.clickedSimulateYears, (state) => ({
     ...state,
     status: 'simulating',
     error: undefined,
@@ -74,6 +82,7 @@ const reducer = createReducer(
     status: 'ready',
     now: period.now,
     simulatedDays: state.simulatedDays + period.days,
+    statistics: undefined,
     timings: state.timings && {
       ...state.timings,
       simulationMs: period.durationMs,
@@ -85,6 +94,28 @@ const reducer = createReducer(
   on(LabActions.simulateFailure, (state, { error }) => ({
     ...state,
     status: readyOrIdle(state),
+    error,
+  })),
+  on(LabActions.clickedComputeStatistics, (state) => ({
+    ...state,
+    loadingStatistics: state.overview !== undefined,
+  })),
+  on(LabActions.changedStatisticsStart, (state, { start }) => ({
+    ...state,
+    statisticsStart: start,
+    statistics: undefined,
+    loadingStatistics: state.overview !== undefined,
+  })),
+  on(LabActions.computeStatisticsSuccess, (state, { result }) => ({
+    ...state,
+    statistics: result.statistics,
+    loadingStatistics: false,
+    timings: state.timings && { ...state.timings, statisticsMs: result.durationMs },
+  })),
+  on(LabActions.computeStatisticsFailure, (state, { error }) => ({
+    ...state,
+    statistics: undefined,
+    loadingStatistics: false,
     error,
   })),
   on(LabActions.selectedSeries, (state, { series }) => ({

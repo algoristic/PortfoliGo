@@ -12,18 +12,23 @@ import * as LabSelectors from './lab.selectors';
 
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import {
+  ComputedStatistics,
   GeneratedWorld,
   LoadedCandles,
   SimulatedPeriod,
 } from '../../data-access/service/lab-simulation-service.model';
 import { LabSimulationService } from '../../data-access/service/lab-simulation.service';
+import { LabStatistics } from '../../domain/models/lab-statistics.model';
 
 describe('LabEffects', () => {
   let effects: LabEffects;
   let actions$: Subject<Action>;
   let store: MockStore;
   let service: Mocked<
-    Pick<LabSimulationService, 'generate' | 'simulate' | 'candles' | 'terminate'>
+    Pick<
+      LabSimulationService,
+      'generate' | 'simulate' | 'simulateYears' | 'statistics' | 'candles' | 'terminate'
+    >
   >;
   let toastService: Mocked<Pick<ToastService, 'error'>>;
   const err = new Error('worker failed');
@@ -40,6 +45,8 @@ describe('LabEffects', () => {
     service = {
       generate: vi.fn(),
       simulate: vi.fn(),
+      simulateYears: vi.fn(),
+      statistics: vi.fn(),
       candles: vi.fn(),
       terminate: vi.fn(),
     };
@@ -87,11 +94,54 @@ describe('LabEffects', () => {
       expect(await result).toEqual(LabActions.simulateSuccess({ period }));
     });
 
+    it('simulates years', async () => {
+      const period: SimulatedPeriod = { days: 3653, marketDays: 2609, now: 200, durationMs: 3 };
+      service.simulateYears.mockReturnValue(of(period));
+      const result = firstValueFrom(effects.simulate$);
+      actions$.next(LabActions.clickedSimulateYears({ years: 10 }));
+      expect(await result).toEqual(LabActions.simulateSuccess({ period }));
+      expect(service.simulateYears).toHaveBeenCalledWith(10);
+    });
+
     it('dispatches simulateFailure when the worker errors', async () => {
       service.simulate.mockReturnValue(throwError(() => err));
       const result = firstValueFrom(effects.simulate$);
       actions$.next(LabActions.clickedSimulate({ days: 7 }));
       expect(await result).toEqual(LabActions.simulateFailure({ error: err }));
+    });
+  });
+
+  describe('computeStatistics$', () => {
+    const result: ComputedStatistics = {
+      statistics: { start: 'game-start' } as LabStatistics,
+      durationMs: 5,
+    };
+
+    it('computes the statistics for the selected start', async () => {
+      store.overrideSelector(LabSelectors.selectStatisticsStart, 'game-start');
+      store.overrideSelector(LabSelectors.selectOverview, world.overview);
+      service.statistics.mockReturnValue(of(result));
+      const emitted = firstValueFrom(effects.computeStatistics$);
+      actions$.next(LabActions.clickedComputeStatistics());
+      expect(await emitted).toEqual(LabActions.computeStatisticsSuccess({ result }));
+      expect(service.statistics).toHaveBeenCalledWith('game-start');
+    });
+
+    it('does nothing without a world', () => {
+      store.overrideSelector(LabSelectors.selectStatisticsStart, 'epoch');
+      store.overrideSelector(LabSelectors.selectOverview, undefined);
+      effects.computeStatistics$.subscribe();
+      actions$.next(LabActions.changedStatisticsStart({ start: 'epoch' }));
+      expect(service.statistics).not.toHaveBeenCalled();
+    });
+
+    it('dispatches computeStatisticsFailure when the worker errors', async () => {
+      store.overrideSelector(LabSelectors.selectStatisticsStart, 'epoch');
+      store.overrideSelector(LabSelectors.selectOverview, world.overview);
+      service.statistics.mockReturnValue(throwError(() => err));
+      const emitted = firstValueFrom(effects.computeStatistics$);
+      actions$.next(LabActions.clickedComputeStatistics());
+      expect(await emitted).toEqual(LabActions.computeStatisticsFailure({ error: err }));
     });
   });
 

@@ -1,0 +1,36 @@
+@let _matrix = matrix();
+
+<div class="overflow-x-auto">
+  <table class="text-right text-xs tabular-nums">
+    <thead class="text-fg-muted">
+      <tr>
+        <th></th>
+        @for (sectorId of _matrix.sectorIds; track sectorId) {
+          <th class="px-1 py-1 font-normal">{{ sectorId }}</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of _matrix.values; track $index; let r = $index) {
+        <tr class="border-t border-border">
+          <th class="px-1 py-1 text-left font-normal text-fg-muted">
+            {{ _matrix.sectorIds[r] }}
+          </th>
+          @for (value of row; track $index; let c = $index) {
+            <td
+              class="px-1 py-1"
+              [class.font-semibold]="r === c"
+              [attr.data-testid]="
+                'lab.simulation.statistics.correlation.' +
+                _matrix.sectorIds[r] +
+                '.' +
+                _matrix.sectorIds[c]
+              ">
+              {{ formatCorrelation(value) }}
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

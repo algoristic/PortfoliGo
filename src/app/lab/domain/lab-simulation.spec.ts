@@ -1,6 +1,12 @@
 import { LabSimulation } from './lab-simulation';
 
-import { GAME_START_TICK, weekday } from '../../clock/domain/calendar-logic';
+import {
+  dateTimeToTick,
+  dayIndex,
+  dayStartTick,
+  GAME_START_TICK,
+  weekday,
+} from '../../clock/domain/calendar-logic';
 import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '../../clock/domain/models/time.model';
 
 const SEED = 'lab-test';
@@ -76,6 +82,44 @@ describe('LabSimulation', () => {
       expect(twice.candles(3, '1d', GAME_START_TICK, twice.now)).toEqual(
         once.candles(3, '1d', GAME_START_TICK, once.now),
       );
+    });
+  });
+
+  describe('simulateYears', () => {
+    it('advances to the same calendar date years later', () => {
+      const local = new LabSimulation(SEED);
+      local.runPrehistory();
+      const step = local.simulateYears(2);
+      expect(step.days).toBe(
+        dayIndex(dateTimeToTick({ year: 2032, month: 4, day: 1 })) - dayIndex(GAME_START_TICK),
+      );
+      expect(local.now).toBe(dateTimeToTick({ year: 2032, month: 4, day: 1 }) - TICKS_PER_MINUTE);
+    });
+
+    it('rejects invalid numbers of years', () => {
+      expect(() => simulation.simulateYears(0)).toThrow(RangeError);
+    });
+  });
+
+  describe('statistics', () => {
+    it('covers the market days from the epoch up to now', () => {
+      const result = simulation.statistics('epoch');
+      expect(result.start).toBe('epoch');
+      // The epoch 01.01.2020 is a Wednesday, so it is the first market day.
+      expect(result.fromTick).toBe(dayStartTick(0));
+      expect(result.toTick).toBeLessThanOrEqual(GAME_START_TICK);
+      expect(result.phases.reduce((sum, segment) => sum + segment.marketDays, 0)).toBe(
+        result.marketDays,
+      );
+      expect(result.targets.length).toBeGreaterThan(0);
+    });
+
+    it('needs a simulated period after the game start', () => {
+      expect(() => simulation.statistics('game-start')).toThrow(RangeError);
+      const local = new LabSimulation(SEED);
+      local.runPrehistory();
+      local.simulate(30);
+      expect(local.statistics('game-start').fromTick).toBe(GAME_START_TICK);
     });
   });
 

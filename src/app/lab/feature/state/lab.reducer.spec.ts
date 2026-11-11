@@ -3,7 +3,11 @@ import { CandleRequest } from './lab.model';
 import { initialLabState, labReducer, LabState, nextHistoryRequest } from './lab.reducer';
 
 import { TICKS_PER_DAY } from '../../../clock/domain/models/time.model';
-import { GeneratedWorld } from '../../data-access/service/lab-simulation-service.model';
+import {
+  ComputedStatistics,
+  GeneratedWorld,
+} from '../../data-access/service/lab-simulation-service.model';
+import { LabStatistics } from '../../domain/models/lab-statistics.model';
 
 const world: GeneratedWorld = {
   seed: 'lab',
@@ -85,6 +89,61 @@ describe('labReducer', () => {
       simulatedDays: 7,
       loadingCandles: true,
       timings: { worldMs: 20, prehistoryMs: 400, simulationMs: 50, marketDaysPerSecond: 100 },
+    });
+  });
+
+  it('simulates years like days', () => {
+    expect(labReducer(ready(), LabActions.clickedSimulateYears({ years: 10 })).status).toBe(
+      'simulating',
+    );
+  });
+
+  describe('statistics', () => {
+    const result: ComputedStatistics = {
+      statistics: { start: 'epoch', marketDays: 10 } as LabStatistics,
+      durationMs: 30,
+    };
+
+    it('starts loading only with a world', () => {
+      expect(
+        labReducer(initialLabState, LabActions.clickedComputeStatistics()).loadingStatistics,
+      ).toBe(false);
+      expect(labReducer(ready(), LabActions.clickedComputeStatistics()).loadingStatistics).toBe(
+        true,
+      );
+    });
+
+    it('stores the statistics and their duration', () => {
+      const loading = labReducer(ready(), LabActions.clickedComputeStatistics());
+      expect(labReducer(loading, LabActions.computeStatisticsSuccess({ result }))).toMatchObject({
+        statistics: result.statistics,
+        loadingStatistics: false,
+        timings: { statisticsMs: 30 },
+      });
+    });
+
+    it('drops the statistics when the start or the period changes and keeps the start', () => {
+      const shown = labReducer(ready(), LabActions.computeStatisticsSuccess({ result }));
+      const changed = labReducer(shown, LabActions.changedStatisticsStart({ start: 'game-start' }));
+      expect(changed).toMatchObject({ statisticsStart: 'game-start', loadingStatistics: true });
+      expect(changed.statistics).toBeUndefined();
+      const simulated = labReducer(
+        shown,
+        LabActions.simulateSuccess({ period: { days: 1, marketDays: 1, now: 200, durationMs: 1 } }),
+      );
+      expect(simulated.statistics).toBeUndefined();
+      expect(labReducer(changed, LabActions.generateWorldSuccess({ world })).statisticsStart).toBe(
+        'game-start',
+      );
+    });
+
+    it('stops loading on failure', () => {
+      const error = new Error('failed');
+      const loading = labReducer(ready(), LabActions.clickedComputeStatistics());
+      expect(labReducer(loading, LabActions.computeStatisticsFailure({ error }))).toMatchObject({
+        loadingStatistics: false,
+        error,
+      });
     });
   });
 

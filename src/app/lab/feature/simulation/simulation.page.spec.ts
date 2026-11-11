@@ -11,9 +11,11 @@ import {
   wheel,
 } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
-import { formatGameTime } from '../../../clock/domain/game-time-format';
-import { TICKS_PER_DAY } from '../../../clock/domain/models/time.model';
+import { dateTimeToTick, GAME_START_TICK } from '../../../clock/domain/calendar-logic';
+import { formatGameDate, formatGameTime } from '../../../clock/domain/game-time-format';
+import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '../../../clock/domain/models/time.model';
 import { CandleResolution } from '../../../market/domain/models/candle.model';
+import { formatNumber, formatPercent } from '../../../shared/util/format';
 import { provideInProcessLabWorker } from '../../data-access/testing/in-process-lab-worker';
 import { LabSimulation } from '../../domain/lab-simulation';
 import { CandleRequest, LabChartOptions } from '../state/lab.model';
@@ -114,6 +116,63 @@ describe('SimulationPage', () => {
       expect(textOf(byTestId(page, 'lab.simulation.game-time'))).toContain(
         formatGameTime(oracle.now + 7 * TICKS_PER_DAY),
       );
+    });
+
+    it('advances the game time by ten years to the same date', async () => {
+      await generateWorld();
+      await act(() => click(byTestId(page, 'lab.simulation.simulate.10y')));
+      expect(textOf(byTestId(page, 'lab.simulation.game-time'))).toContain(
+        formatGameTime(dateTimeToTick({ year: 2040, month: 4, day: 1 }) - TICKS_PER_MINUTE),
+      );
+    });
+  });
+
+  describe('statistics', () => {
+    it('measures the period from the epoch against the calibration targets', async () => {
+      await generateWorld();
+      await act(() => click(byTestId(page, 'lab.simulation.statistics.compute')));
+      const expected = oracle.statistics('epoch');
+      const target = (id: string): string =>
+        textOf(byTestId(page, `lab.simulation.statistics.target.${id}.value`));
+      const value = (id: string): number =>
+        expected.targets.find((row) => row.id === id)?.value ?? Number.NaN;
+
+      expect(target('world-volatility')).toBe(
+        formatPercent(value('world-volatility'), 1).replace(/\s+/g, ' '),
+      );
+      expect(target('correlation-within')).toBe(formatNumber(value('correlation-within'), 2));
+      // About ten years of prehistory are too short for the long-run return.
+      expect(textOf(byTestId(page, 'lab.simulation.statistics.target.world-return.status'))).toBe(
+        'zu kurz',
+      );
+      expect(
+        page.querySelectorAll('[data-testid="lab.simulation.statistics.phase-timeline.segment"]'),
+      ).toHaveLength(expected.phases.length);
+      expect(textOf(byTestId(page, 'lab.simulation.statistics.distribution.kurtosis'))).toBe(
+        formatNumber(expected.distribution.kurtosis, 2),
+      );
+      const sector = expected.correlations.sectorIds[0];
+      expect(
+        textOf(byTestId(page, `lab.simulation.statistics.correlation.${sector}.${sector}`)),
+      ).toBe(formatNumber(expected.correlations.values[0][0], 2));
+      expect(
+        page.querySelectorAll('[data-testid="lab.simulation.statistics.drawdown"]'),
+      ).toHaveLength(expected.drawdowns.length);
+    });
+
+    it('drops the statistics after a simulation and computes them from the chosen start', async () => {
+      await generateWorld();
+      await act(() => click(byTestId(page, 'lab.simulation.statistics.compute')));
+      expect(queryByTestId(page, 'lab.simulation.statistics.targets')).not.toBeNull();
+
+      await act(() => click(byTestId(page, 'lab.simulation.simulate.30')));
+      expect(queryByTestId(page, 'lab.simulation.statistics.targets')).toBeNull();
+
+      await act(() => click(byTestId(page, 'lab.simulation.statistics.start.game-start')));
+      expect(textOf(byTestId(page, 'lab.simulation.statistics.period'))).toContain(
+        formatGameDate(GAME_START_TICK),
+      );
+      expect(queryByTestId(page, 'lab.simulation.statistics.duration')).not.toBeNull();
     });
   });
 

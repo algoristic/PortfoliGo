@@ -12,6 +12,9 @@
 @let candles = labFacade.candles$ | async;
 @let loadingCandles = labFacade.loadingCandles$ | async;
 @let loadingHistory = labFacade.loadingHistory$ | async;
+@let statisticsStart = labFacade.statisticsStart$ | async;
+@let statistics = labFacade.statistics$ | async;
+@let loadingStatistics = labFacade.loadingStatistics$ | async;
 @let _seed = seedForm.seed();
 
 <main class="mx-auto flex min-h-dvh max-w-6xl flex-col gap-6 bg-bg p-6 text-fg">
@@ -75,6 +78,17 @@
             {{ stepLabels[step] }}
           </button>
         }
+        @for (years of simulationYearSteps; track years) {
+          <button
+            appButton
+            type="button"
+            variant="secondary"
+            [disabled]="busy"
+            [attr.data-testid]="'lab.simulation.simulate.' + years + 'y'"
+            (click)="onSimulateYears(years)">
+            {{ yearStepLabels[years] }}
+          </button>
+        }
       </div>
       <div class="mt-4 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <app-stat-tile
@@ -120,6 +134,17 @@
         (selectedSeries)="onSelectSeries($event)"
         (changedChartOptions)="onChangeChartOptions($event)"
         (scrolledToChartStart)="onScrollToChartStart()"></app-section-series-chart>
+    </app-panel>
+
+    <app-panel heading="Statistik" i18n-heading="@@featureLab-simulationPage-statistics">
+      <app-section-statistics
+        [statistics]="statistics ?? undefined"
+        [start]="statisticsStart ?? 'epoch'"
+        [loading]="loadingStatistics ?? false"
+        [disabled]="busy ?? false"
+        [statisticsMs]="timings.statisticsMs"
+        (changedStart)="onChangeStatisticsStart($event)"
+        (clickedCompute)="onComputeStatistics()"></app-section-statistics>
     </app-panel>
 
     <app-panel heading="Welt-Übersicht" i18n-heading="@@featureLab-simulationPage-overview">

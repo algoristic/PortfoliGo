@@ -1,6 +1,6 @@
 import { LabWorkerSession } from './lab-worker-session';
 
-import { GAME_START_TICK } from '../../../clock/domain/calendar-logic';
+import { dateTimeToTick, GAME_START_TICK } from '../../../clock/domain/calendar-logic';
 import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '../../../clock/domain/models/time.model';
 
 describe('LabWorkerSession', () => {
@@ -61,6 +61,23 @@ describe('LabWorkerSession', () => {
       if (response.type === 'candles') {
         expect(response.result.candles).toHaveLength(5);
         expect(response.result).toMatchObject({ series: 0, resolution: '1d', durationMs: 10 });
+      }
+    });
+
+    it('simulates years and computes statistics of the period after the game start', () => {
+      expect(session.handle({ id: 6, type: 'simulate-years', years: 1 })).toMatchObject({
+        id: 6,
+        type: 'simulate-years',
+        result: { now: dateTimeToTick({ year: 2031, month: 4, day: 8 }) - TICKS_PER_MINUTE },
+      });
+      const response = session.handle({ id: 7, type: 'statistics', start: 'game-start' });
+      expect(response.type).toBe('statistics');
+      if (response.type === 'statistics') {
+        expect(response.result.durationMs).toBe(10);
+        expect(response.result.statistics).toMatchObject({
+          start: 'game-start',
+          fromTick: GAME_START_TICK,
+        });
       }
     });
 

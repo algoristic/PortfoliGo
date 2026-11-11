@@ -3,10 +3,12 @@ import { createAction, props } from '@ngrx/store';
 import { CandleRequest, LabChartOptions } from './lab.model';
 
 import {
+  ComputedStatistics,
   GeneratedWorld,
   LoadedCandles,
   SimulatedPeriod,
 } from '../../data-access/service/lab-simulation-service.model';
+import { StatisticsStart } from '../../domain/models/lab-statistics.model';
 
 export const enterSimulationPage = createAction('[Lab/Page] Enter simulation page');
 export const leaveSimulationPage = createAction('[Lab/Page] Leave simulation page');
@@ -14,6 +16,15 @@ export const submittedSeed = createAction('[Lab/Page] Submitted seed', props<{ s
 export const clickedSimulate = createAction(
   '[Lab/Page] Clicked simulate',
   props<{ days: number }>(),
+);
+export const clickedSimulateYears = createAction(
+  '[Lab/Page] Clicked simulate years',
+  props<{ years: number }>(),
+);
+export const clickedComputeStatistics = createAction('[Lab/Page] Clicked compute statistics');
+export const changedStatisticsStart = createAction(
+  '[Lab/Page] Changed statistics start',
+  props<{ start: StatisticsStart }>(),
 );
 export const selectedSeries = createAction(
   '[Lab/Page] Selected series',
@@ -39,6 +50,14 @@ export const simulateSuccess = createAction(
 );
 export const simulateFailure = createAction(
   '[Lab/API] Simulate failure',
+  props<{ error: unknown }>(),
+);
+export const computeStatisticsSuccess = createAction(
+  '[Lab/API] Compute statistics success',
+  props<{ result: ComputedStatistics }>(),
+);
+export const computeStatisticsFailure = createAction(
+  '[Lab/API] Compute statistics failure',
   props<{ error: unknown }>(),
 );
 export const retrievedCandles = createAction(
