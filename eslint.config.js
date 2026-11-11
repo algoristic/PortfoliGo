@@ -58,7 +58,7 @@ module.exports = tseslint.config(
   },
   {
     // Determinism rules for simulation code (TS §4.4, §4.5); the UI may use Math.* freely.
-    files: ['src/app/{simulation,world,market}/{domain,util}/**/*.ts'],
+    files: ['src/app/{simulation,world,market,clock}/{domain,util}/**/*.ts'],
     ignores: ['**/*.spec.ts'],
     rules: {
       'no-restricted-properties': [

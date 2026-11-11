@@ -73,14 +73,14 @@ Es gibt kein „Game Over" und kein festes Spielziel. Motivation entsteht aus de
 1. Der Anwender legt einen Spieler an: Name, Seed, Startkapital, monatliches Nettoeinkommen und – **(Vorschlag, E-14)** – die monatlichen Lebenshaltungskosten.
 2. Aus dem Seed entsteht die Welt: Börsen, Unternehmen, Indizes, ETFs und Banken, dazu eine Kurshistorie von gut zehn Jahren, damit Charts vom ersten Spieltag an aussagekräftig sind. Jeder vergangene Tag lässt sich minutengenau abrufen, sodass auch Intraday-Charts Daten zeigen.
 3. Das Startkapital liegt auf einem Girokonto bei einer Hausbank. Die Hausbank ist eine Filialbank mit eher teuren Konditionen – ein Anreiz, Banken zu vergleichen.
-4. Das Spiel beginnt pausiert am Spielstartdatum **(Vorschlag: Montag, 01.04.2030, 00:00 Uhr, E-02)**, damit sich der Anwender orientieren kann. Weil es ein Monatserster ist, beginnt das Spiel mit einem vollständigen Monat: Am Morgen werden die Lebenshaltungskosten fällig, am Monatsende kommt das erste Gehalt.
+4. Das Spiel beginnt pausiert am Spielstartdatum Montag, 01.04.2030, 00:00 Uhr (E-02), damit sich der Anwender orientieren kann. Weil es ein Monatserster ist, beginnt das Spiel mit einem vollständigen Monat: Am Morgen werden die Lebenshaltungskosten fällig, am Monatsende kommt das erste Gehalt.
 
 ### 4.3 Zeit
 
-- Die Spielzeit läuft in Ticks. **(Vorschlag, E-02)** Ein Tick entspricht einer Spielminute.
+- Die Spielzeit läuft in Ticks. Ein Tick entspricht einer Spielminute (E-02).
 - Der Anwender wählt die Geschwindigkeit – Echtzeit (1 s/s), 1 min/s, 10 min/s, 1 h/s, 2 h/s, 4 h/s, 1 d/s oder 1 w/s – und kann sie jederzeit ändern oder die Zeit anhalten.
-- Ist die App geschlossen, läuft die Zeit in Echtzeit weiter. Beim nächsten Öffnen wird die verstrichene Zeit nachberechnet. **(Vorschlag, E-02)** Dasselbe gilt, solange die App nicht sichtbar ist (z. B. Hintergrund-Tab); pro Spieler lässt sich stattdessen „im Hintergrund pausieren" einstellen. War das Spiel pausiert, bleibt es pausiert.
-- **(Vorschlag, E-18)** Börsen haben Handelszeiten. Orders lassen sich jederzeit erteilen und werden während der Handelszeit ausgeführt. Nachts und am Wochenende stehen Aktienkurse still. **(Vorschlag, E-19)** Banken buchen nur an Bankarbeitstagen.
+- Ist die App geschlossen, läuft die Zeit in Echtzeit weiter. Beim nächsten Öffnen wird die verstrichene Zeit nachberechnet. Dasselbe gilt, solange die App nicht sichtbar ist (z. B. Hintergrund-Tab); pro Spieler lässt sich stattdessen „im Hintergrund pausieren" einstellen. War das Spiel pausiert, bleibt es pausiert (E-02).
+- Börsen haben Handelszeiten. Orders lassen sich jederzeit erteilen und werden während der Handelszeit ausgeführt (E-18). Nachts und am Wochenende stehen Aktienkurse still. **(Vorschlag, E-19)** Banken buchen nur an Bankarbeitstagen.
 
 ### 4.4 Die simulierte Welt
 
@@ -205,7 +205,7 @@ Als Anwender möchte ich jederzeit sehen, welcher Tag und welche Uhrzeit im Spie
 **US-ZT-02 – Geschwindigkeit wählen** · Stufe 1 · M
 Als Anwender möchte ich die Spielgeschwindigkeit jederzeit ändern, damit ich Phasen überspringen oder genau beobachten kann.
 
-- Stufen **(Vorschlag, E-02)**: Echtzeit (1 s/s), 1 min/s, 10 min/s, 1 h/s, 2 h/s, 4 h/s, 1 d/s, 1 w/s.
+- Stufen (E-02): Echtzeit (1 s/s), 1 min/s, 10 min/s, 1 h/s, 2 h/s, 4 h/s, 1 d/s, 1 w/s.
 - Eine Änderung wirkt sofort. Tastenkürzel: Leertaste für Pause/Weiter, `+`/`−` für schneller/langsamer. Sie greifen nicht, solange ein Eingabefeld oder Bedienelement fokussiert ist, und lassen sich in den Einstellungen abschalten (WCAG 2.1.4).
 - Die gewählte Geschwindigkeit wird pro Spieler gespeichert.
 - Kann das Gerät die Geschwindigkeit nicht halten, wird das angezeigt. Es wird keine Spielzeit übersprungen.
@@ -219,9 +219,9 @@ Als Anwender möchte ich die Zeit komplett anhalten, damit ich in Ruhe analysier
 **US-ZT-04 – Offline-Fortschritt** · Stufe 1 · M
 Als Anwender möchte ich, dass die Zeit weiterläuft, wenn ich die App schließe, damit sich das Spiel wie ein echtes Finanzleben anfühlt.
 
-- Ist die App geschlossen, läuft die Spielzeit in Echtzeit (1 s/s) weiter. **(Vorschlag, E-02)** Dasselbe gilt, solange die App nicht sichtbar ist; wer das nicht möchte, stellt für den Spieler „im Hintergrund pausieren" ein (US-UI-09).
+- Ist die App geschlossen, läuft die Spielzeit in Echtzeit (1 s/s) weiter. Dasselbe gilt, solange die App nicht sichtbar ist (E-02); wer das nicht möchte, stellt für den Spieler „im Hintergrund pausieren" ein (US-UI-09).
 - Beim nächsten Öffnen wird die verstrichene Zeit mit Fortschrittsanzeige nachberechnet. Alle fälligen Vorgänge (Gehalt, Kosten, Orders, Dividenden, Sparpläne) werden in der richtigen Reihenfolge verarbeitet.
-- **(Vorschlag, E-02)** War das Spiel pausiert, bleibt es pausiert und es wird nichts nachberechnet.
+- War das Spiel pausiert, bleibt es pausiert und es wird nichts nachberechnet (E-02).
 - Anschließend erscheint der Abwesenheitsbericht (US-BN-03).
 
 **US-ZT-05 – Vorspulen** · Stufe 1 · S
@@ -572,7 +572,7 @@ Als Anwender möchte ich wissen, dass PortfoliGo ein Spiel mit vereinfachten Reg
 Als Anwender möchte ich das Verhalten der App an einer Stelle anpassen.
 
 - Für dieses Gerät: Erscheinungsbild und Farben, Hervorhebung von Kursänderungen, Tastenkürzel an/aus, Toasts und Browser-Benachrichtigungen je Ereignistyp.
-- Für den Spieler (Teil des Spielstands, wird mit exportiert): Name, Seed (anzeigen, kopieren), automatische Pause je Ereignistyp und das Verhalten im Hintergrund **(Vorschlag, E-02)** – in Echtzeit weiterlaufen (Standard) oder pausieren.
+- Für den Spieler (Teil des Spielstands, wird mit exportiert): Name, Seed (anzeigen, kopieren), automatische Pause je Ereignistyp und das Verhalten im Hintergrund (E-02) – in Echtzeit weiterlaufen (Standard) oder pausieren.
 - Export des Spielers (US-EX-01).
 
 ### 7.12 Spätere Ausbaustufen (Skizze)
