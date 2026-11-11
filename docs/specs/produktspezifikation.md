@@ -1,6 +1,6 @@
 # PortfoliGo – Produktspezifikation
 
-> **Status:** Entwurf v0.2 · **Stand:** 10.11.2026
+> **Status:** Entwurf v0.2 · **Stand:** 11.11.2026
 > **Siehe auch:** [Technische Spezifikation](./technische-spezifikation.md) · [Projektplan](../projektplan.md)
 
 Dieses Dokument beschreibt, _was_ PortfoliGo leisten soll und _warum_. Wie es umgesetzt wird, steht in der technischen Spezifikation. Punkte mit **(Vorschlag)** konkretisieren die Ideensammlung und müssen noch bestätigt werden. Sie sind zusätzlich als Entscheidung `E-xx` in der technischen Spezifikation (§16) geführt.
@@ -73,7 +73,7 @@ Es gibt kein „Game Over" und kein festes Spielziel. Motivation entsteht aus de
 1. Der Anwender legt einen Spieler an: Name, Seed, Startkapital, monatliches Nettoeinkommen und – **(Vorschlag, E-14)** – die monatlichen Lebenshaltungskosten.
 2. Aus dem Seed entsteht die Welt: Börsen, Unternehmen, Indizes, ETFs und Banken, dazu eine Kurshistorie von gut zehn Jahren, damit Charts vom ersten Spieltag an aussagekräftig sind. Jeder vergangene Tag lässt sich minutengenau abrufen, sodass auch Intraday-Charts Daten zeigen.
 3. Das Startkapital liegt auf einem Girokonto bei einer Hausbank. Die Hausbank ist eine Filialbank mit eher teuren Konditionen – ein Anreiz, Banken zu vergleichen.
-4. Das Spiel beginnt pausiert am Spielstartdatum Montag, 01.04.2030, 00:00 Uhr (E-02), damit sich der Anwender orientieren kann. Weil es ein Monatserster ist, beginnt das Spiel mit einem vollständigen Monat: Am Morgen werden die Lebenshaltungskosten fällig, am Monatsende kommt das erste Gehalt.
+4. Das Spiel beginnt pausiert am Spielstartdatum Montag, 01.04.2030, 00:00 Uhr (E-02), damit sich der Anwender orientieren kann. Weil es ein Monatserster ist, beginnt das Spiel mit einem vollständigen Monat: **(Vorschlag, E-19)** Am Morgen werden die Lebenshaltungskosten fällig, am Monatsende kommt das erste Gehalt.
 
 ### 4.3 Zeit
 
@@ -391,6 +391,7 @@ Als Anwender möchte ich regelmäßig automatisch investieren, damit mein Vermö
 - Angaben: Depot, sparplanfähiges Instrument (ETF oder Aktie), Betrag, Ausführungstag (z. B. 1. oder 15.), Intervall (monatlich).
 - Ausführung zur Börseneröffnung am Ausführungstag bzw. am nächsten Handelstag, mit Bruchstücken und den Sparplankosten der Bank.
 - Sparpläne lassen sich pausieren, ändern und löschen. Fehlt die Deckung, fällt die Ausführung aus und der Anwender wird benachrichtigt.
+- **(Vorschlag, E-21)** Abbuchungskonto: Der Sparplan nennt ein eigenes Konto (z. B. das Gehaltskonto). Bei der Ausführung wird der Betrag von dort automatisch aufs Verrechnungskonto überwiesen. Ohne diese Regel bräuchte jeder Sparplan eine monatliche Überweisung von Hand, weil das Gehalt auf dem Girokonto eingeht und Daueraufträge erst in Stufe 2 folgen (US-BK-10).
 
 ### 7.7 Portfolio und Auswertung (PF)
 
@@ -410,7 +411,7 @@ Als Anwender möchte ich alle Positionen eines Depots mit ihrer Entwicklung sehe
 Als Anwender möchte ich sehen, wie mein Vermögen verteilt ist, damit ich Klumpenrisiken erkenne.
 
 - Aufteilung nach Assetklasse, Region und Sektor als Donut mit Tabelle.
-- ETFs werden anhand ihrer Indexzusammensetzung aufgeschlüsselt („Durchschau") (S).
+- ETFs werden anhand ihrer Indexzusammensetzung aufgeschlüsselt („Durchschau") (S). **(Vorschlag, E-28)** Muss statt Soll: Ohne Durchschau sagt die Aufteilung nach Region und Sektor bei einem ETF-Depot nichts aus.
 
 **US-PF-04 – Vermögensverlauf** · Stufe 1 · M
 Als Anwender möchte ich die Entwicklung meines Vermögens über die Zeit sehen, damit ich meinen Fortschritt erkenne.
@@ -423,6 +424,7 @@ Als Anwender möchte ich meine Rendite mit einer einfachen Alternative vergleich
 
 - Zeitgewichtete Rendite seit Spielbeginn, im laufenden Jahr und annualisiert. Einkommen und Lebenshaltungskosten verfälschen sie nicht.
 - Benchmark: Schattenportfolio, in das Startkapital und alle Netto-Zuflüsse ohne Kosten in den Weltindex geflossen wären – Vergleich als Chart und Kennzahl.
+- **(Vorschlag, E-28)** Zweite Vergleichsgröße: das Vermögen, wenn alle Zuflüsse auf dem Gehaltskonto geblieben wären. Die Benchmark ist kostenlos, steuerfrei und voll investiert und deshalb kaum zu schlagen; die zweite Größe zeigt, was das Investieren gebracht hat.
 
 **US-PF-06 – Positionsdetail** · Stufe 1 · M
 Als Anwender möchte ich die Historie einer Position sehen, damit ich meine Entscheidungen nachvollziehe.
@@ -503,6 +505,7 @@ Als Anwender möchte ich auch dann informiert werden, wenn PortfoliGo in einem H
 
 - Nach ausdrücklicher Erlaubnis werden ausgewählte Kategorien als System-Benachrichtigung angezeigt, solange die App geöffnet ist.
 - Benachrichtigungen bei geschlossener App sind nur mit einer nativen App möglich (Option N, US-NA-02).
+- Praktisch wirkt das nur am Desktop: Smartphones halten die App im Hintergrund an, und unter iOS gibt es die Erlaubnis nur für installierte Web-Apps.
 
 ### 7.11 Datensicherung und Oberfläche (EX, UI)
 
@@ -575,6 +578,12 @@ Als Anwender möchte ich das Verhalten der App an einer Stelle anpassen.
 - Für den Spieler (Teil des Spielstands, wird mit exportiert): Name, Seed (anzeigen, kopieren), automatische Pause je Ereignistyp und das Verhalten im Hintergrund (E-02) – in Echtzeit weiterlaufen (Standard) oder pausieren.
 - Export des Spielers (US-EX-01).
 
+**US-UI-10 – Erste Schritte** · Stufe 1 · S · **(Vorschlag, E-28)**
+Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schritte geführt werden, damit ich weiß, wie ich vom Girokonto zum ersten Wertpapier komme.
+
+- Eine Liste auf der Übersicht führt durch: Banken vergleichen, Depot eröffnen, Geld überweisen, erstes Wertpapier kaufen, Sparplan anlegen.
+- Erledigte Schritte werden abgehakt; die Liste lässt sich ausblenden.
+
 ### 7.12 Spätere Ausbaustufen (Skizze)
 
 | ID       | Story (Kurzform)                                                                                                             | Stufe |
@@ -590,6 +599,7 @@ Als Anwender möchte ich das Verhalten der App an einer Stelle anpassen.
 | US-MK-18 | Börsenfeiertage und Direkthandel mit erweiterten Handelszeiten                                                               | 2     |
 | US-BK-10 | Daueraufträge                                                                                                                | 2     |
 | US-BK-11 | Festgeld und Neukunden-Lockzinsen                                                                                            | 2     |
+| US-BK-12 | Depotübertrag: Wertpapiere ohne Verkauf zu einer anderen Bank übertragen **(Vorschlag, E-28)**                               | 2     |
 | US-HD-10 | Trailing-Stop                                                                                                                | 2     |
 | US-HD-11 | Kursalarme („benachrichtige mich, wenn X > 50")                                                                              | 2     |
 | US-ST-10 | Teilfreistellung und Vorabpauschale bei Fonds und ETFs                                                                       | 2     |
@@ -629,23 +639,25 @@ Als Anwender möchte ich das Verhalten der App an einer Stelle anpassen.
 | 4     | „Leben & Welt"              | Lebensereignisse, Upgrades, Versicherungen, Karriere, Newsticker, Erben und Prestige                                                                                                                                                                      | M13–M15      |
 | N     | „Native" (optional)         | App für Android und iOS mit Capacitor, vorausgeplante Benachrichtigungen                                                                                                                                                                                  | N1           |
 
+**Bekannte Grenze von Stufe 1:** Gehalt, Lebenshaltungskosten, Gebühren und Sparerpauschbetrag bleiben nominal fest; Inflation und Gehaltsentwicklung folgen in Stufe 2 und 4. In sehr langen Spielen verlieren Einkommen und Gebühren deshalb gegenüber dem Vermögen an Gewicht. Wie sich der Markt über Jahrzehnte verhält, klärt E-22 (TS §6.4).
+
 **(E-12, entschieden)** Die Ideensammlung nennt Aktien, ETFs/ETCs, CFDs, Anleihen, Rohstoffe und Edelmetalle als Kern des Spiels. Damit das MVP überschaubar bleibt, enthält Stufe 1 nur Aktien und ETFs (plus Indizes als Referenz); die übrigen Klassen folgen in Stufe 2 und 3. Inflation ist in der Ideensammlung für später vorgemerkt und wird in Stufe 2 zusammen mit dem Zinsumfeld umgesetzt, weil beide fachlich zusammenhängen (Leitzins reagiert auf Inflation).
 
 ## 9. Nicht-funktionale Anforderungen
 
-| ID    | Anforderung                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NF-01 | **Bedienung flüssig:** Darstellung mit 60 Bildern pro Sekunde, Reaktion auf Eingaben unter 100 ms – auch bei hoher Spielgeschwindigkeit.                                                                                                                                                                                                                                                                                               |
-| NF-02 | **Simulation schnell:** Die Standardwelt hält 1 w/s mit höchstens 15 % eines Prozessorkerns. Nachberechnung von 30 Tagen unter 1 s, von einem Jahr unter 5 s. Spielstart (Welt und Vorlauf) unter 2 s. Ein Import ist nach unter 3 s spielbar; die Kurshistorie wird danach im Hintergrund ergänzt. Ein Minutenchart eines beliebigen vergangenen Tags erscheint in unter 50 ms. Gemessen wird auf dem Entwicklungsrechner (TS §14.3). |
-| NF-03 | **Offline:** Nach dem ersten Laden vollständig offline nutzbar.                                                                                                                                                                                                                                                                                                                                                                        |
-| NF-04 | **Privatsphäre:** Keine Netzwerkzugriffe außer dem Laden der App; keine Cookies, kein Tracking, keine externen Schriften oder CDNs.                                                                                                                                                                                                                                                                                                    |
-| NF-05 | **Determinismus:** Gleicher Seed und gleiche Simulationsversion ergeben dieselbe Welt – über Browser und Geräte hinweg.                                                                                                                                                                                                                                                                                                                |
-| NF-06 | **Robustheit:** Aktionen des Anwenders gehen nie verloren. Nach einem Absturz geht höchstens der Spielfortschritt der letzten Sekunden Echtzeit verloren.                                                                                                                                                                                                                                                                              |
-| NF-07 | **Speicher:** Ein Spieler belegt höchstens rund 15 MB plus 1,5 MB je Spieljahr; ältere Kursdaten werden verdichtet. Lange Spiele sind normal – bei 1 w/s vergehen rund 70 Spieljahre pro Spielstunde.                                                                                                                                                                                                                                  |
-| NF-08 | **Plattformen:** Aktuelle Versionen von Chrome und Edge (ab 111), Firefox (ab 128), Safari und iOS (ab 16.4); Desktop, Tablet und Smartphone.                                                                                                                                                                                                                                                                                          |
-| NF-09 | **Barrierefreiheit:** WCAG 2.2 AA; Bewegungen werden bei „Bewegung reduzieren" vermieden.                                                                                                                                                                                                                                                                                                                                              |
-| NF-10 | **Sprache:** Deutsch; alle Texte sind für Übersetzungen vorbereitet (i18n).                                                                                                                                                                                                                                                                                                                                                            |
-| NF-11 | **Wartbarkeit:** Code folgt den Konventionen in `CLAUDE.md`; Geschäftslogik ist durch Unit-Tests abgedeckt.                                                                                                                                                                                                                                                                                                                            |
+| ID    | Anforderung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| NF-01 | **Bedienung flüssig:** Darstellung mit 60 Bildern pro Sekunde, Reaktion auf Eingaben unter 100 ms – auch bei hoher Spielgeschwindigkeit.                                                                                                                                                                                                                                                                                                                                                                                    |
+| NF-02 | **Simulation schnell:** Die Standardwelt hält 1 w/s mit höchstens 15 % eines Prozessorkerns. Nachberechnung von 30 Tagen unter 1 s, von einem Jahr unter 5 s. Spielstart (Welt und Vorlauf) unter 2 s. Ein Import ist nach unter 3 s spielbar; die Kurshistorie wird danach im Hintergrund ergänzt. Ein Minutenchart eines beliebigen vergangenen Tags erscheint in unter 50 ms. Gemessen wird auf dem Entwicklungsrechner (TS §14.3). **(Vorschlag, E-27)** Für Smartphones gelten eigene Budgets auf einem Referenzgerät. |
+| NF-03 | **Offline:** Nach dem ersten Laden vollständig offline nutzbar.                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| NF-04 | **Privatsphäre:** Keine Netzwerkzugriffe außer dem Laden der App; keine Cookies, kein Tracking, keine externen Schriften oder CDNs.                                                                                                                                                                                                                                                                                                                                                                                         |
+| NF-05 | **Determinismus:** Gleicher Seed und gleiche Simulationsversion ergeben dieselbe Welt – über Browser und Geräte hinweg. Geprüft wird das mit einem Selbsttest im Browser (TS §4.6).                                                                                                                                                                                                                                                                                                                                         |
+| NF-06 | **Robustheit:** Aktionen des Anwenders gehen nie verloren. Nach einem Absturz geht höchstens der Spielfortschritt der letzten Sekunden Echtzeit verloren.                                                                                                                                                                                                                                                                                                                                                                   |
+| NF-07 | **Speicher:** Ein Spieler belegt höchstens rund 15 MB plus 1,5 MB je Spieljahr; ältere Kursdaten werden verdichtet. Lange Spiele sind normal – bei 1 w/s vergehen rund 70 Spieljahre pro Spielstunde.                                                                                                                                                                                                                                                                                                                       |
+| NF-08 | **Plattformen:** Aktuelle Versionen von Chrome und Edge (ab 119), Firefox (ab 128), Safari und iOS (ab 17.0); Desktop, Tablet und Smartphone.                                                                                                                                                                                                                                                                                                                                                                               |
+| NF-09 | **Barrierefreiheit:** WCAG 2.2 AA; Bewegungen werden bei „Bewegung reduzieren" vermieden.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| NF-10 | **Sprache:** Deutsch; alle Texte sind für Übersetzungen vorbereitet (i18n).                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| NF-11 | **Wartbarkeit:** Code folgt den Konventionen in `CLAUDE.md`; Geschäftslogik ist durch Unit-Tests abgedeckt.                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 ## 10. UI/UX-Konzept
 
@@ -707,4 +719,5 @@ Nicht geplant sind:
 - Echtgeld, echte Kursdaten und die Anbindung echter Broker.
 - Online-Funktionen: Mehrspieler, serverseitige Ranglisten, Benutzerkonten, Cloud-Synchronisation (kein Backend). Ein Vergleich mit anderen ist über geteilte Seeds möglich.
 - Kryptowährungen, Optionen, Futures, Optionsscheine und Zertifikate – vorerst; sie können später als eigene Erweiterung geprüft werden.
+- Depotübertrag zwischen Banken – in Stufe 1: Wer die Depotbank wechselt, verkauft und kauft neu, mit Kosten und Steuern. **(Vorschlag, E-28)** Der Übertrag folgt als US-BK-12 in Stufe 2.
 - Steuerliche Vollständigkeit: Kirchensteuer, Günstigerprüfung, persönlicher Einkommensteuersatz und Steuererklärung werden nicht oder nur stark vereinfacht abgebildet.

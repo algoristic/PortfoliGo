@@ -46,11 +46,13 @@ flowchart LR
 | ----------- | ----- | -------------------------------------------------- | -------------------------------------------------------------------------------------- | --- |
 | M0          | 1     | Sauberes Fundament mit Design-System und App-Shell | Navigierbare, leere App im Trading-Look; CI prüft Lint, Tests und Build                | 4   |
 | M1          | 1     | Getesteter, deterministischer Simulationskern      | Simulations-Labor zeigt eine generierte Welt mit Kursverläufen und Statistiken         | 10  |
-| M2          | 1     | Spielschleife mit Spielern, Uhr und Persistenz     | Spieler anlegen, Zeit in jeder Geschwindigkeit laufen lassen, schließen, nachberechnen | 5   |
+| M2          | 1     | Spielschleife mit Spielern, Uhr und Persistenz     | Spieler anlegen, Zeit in jeder Geschwindigkeit laufen lassen, schließen, nachberechnen | 6   |
 | M3          | 1     | Geldflüsse: Einkommen, Kosten, Gebühren, Zinsen    | Kontoauszüge füllen sich; Konten eröffnen, Geld überweisen, Warnungen                  | 6   |
 | M4          | 1     | Märkte im Trading-Look                             | Marktübersicht, Screener, Watchlist, Instrumentseite mit Live-Chart und Indikatoren    | 5   |
 | M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Sparpläne, Steuern, Depot, Dashboard mit Benchmark                  | 7   |
 | M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen                                     | 6   |
+
+**Empfohlene Reihenfolge:** erst M1 mit AP 1.8 und AP 1.9 abschließen, dann M2 beginnen. Die Vorschläge E-22 bis E-24 ändern das Marktmodell, und ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15).
 
 ## 2. Arbeitsweise in Sessions
 
@@ -87,6 +89,7 @@ Claude liest dann `CLAUDE.md`, das AP samt Abhängigkeiten und Änderungsprotoko
 - Neue Logik ist getestet; neue Seiten und ui-Komponenten mit eigenem Verhalten haben Seiten- bzw. Komponententests, die schon beim Planen des AP feststehen (`CLAUDE.md` §10). Simulationscode hält die Determinismus-Regeln ein (TS §4.5).
 - Neue oder geänderte Texte haben i18n-IDs, `messages.xlf` ist aktualisiert.
 - Statusübersicht und Änderungsprotokoll sind gepflegt.
+- **(Vorschlag, E-25, ab AP 2.3)** Hat sich ein Golden Master geändert, ist `SIM_VERSION` erhöht; hat sich die Struktur des gespeicherten Zustands ohne Migration geändert, `schemaVersion` (TS §15).
 
 ### 2.5 Schnitt der Arbeitspakete
 
@@ -96,16 +99,25 @@ Wird ein AP für eine Session zu groß, teilt Claude es (z. B. AP 3.4a und 3.4b)
 
 Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevor das genannte AP beginnt. Details und Begründungen stehen in TS §16 und den verlinkten Abschnitten. Am einfachsten ist es, alle Vorschläge gesammelt zu bestätigen und nur Abweichungen zu nennen; Claude trägt den Status dann in TS §16 ein.
 
-| ID   | Frage                                                                                                     | Vorschlag                                                                                                          | Spätestens vor |
-| ---- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------- |
-| E-01 | Engine im Web Worker, NgRx hält nur Projektionen                                                          | Ja                                                                                                                 | AP 2.1         |
-| E-08 | Persistenz: Snapshots, Kommando-Log mit Uhrzustand, Journal; Tageskerzen gespeichert, aber reproduzierbar | Ja                                                                                                                 | AP 2.3         |
-| E-14 | Lebenshaltungskosten als Startparameter, Hausbank als Filialbank, Start pausiert                          | Ja; Vorgaben 10.000 € / 2.500 € / 1.800 €                                                                          | AP 2.4         |
-| E-19 | Buchungstermine                                                                                           | Bank-Lauf 06:00; Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag                                         | AP 3.2         |
-| E-11 | Steuervereinfachungen in Stufe 1                                                                          | 25 % pauschal, 1.000 € Pauschbetrag, ein Verlusttopf, ohne Soli/KiSt                                               | AP 5.3         |
-| E-10 | Exportformat                                                                                              | base64(JSON) mit Spieler- und Marktzustand vom Beginn des Export-Tags; Kurshistorie nach dem Import im Hintergrund | AP 6.1         |
-| E-05 | Capacitor                                                                                                 | PWA im MVP; Capacitor als optionaler Meilenstein N1                                                                | AP 6.3         |
-| –    | Wird die App öffentlich bereitgestellt? Dann Impressum und Datenschutzhinweis nötig                       | klären                                                                                                             | AP 6.5         |
+| ID   | Frage                                                                                                                                                                           | Vorschlag                                                                                                                                                                                                | Spätestens vor                    |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| E-26 | Öffentliche Bereitstellung: Die App ist unter `https://algoristic.de/portfoligo/` schon erreichbar; Impressum, Datenschutzhinweis und der Hinweis „keine Anlageberatung“ fehlen | Zugriff bis 1.0 beschränken oder die Hinweise vorziehen; die rechtliche Bewertung liegt beim Product Owner                                                                                               | sofort                            |
+| E-22 | Langzeitverhalten des Marktmodells (TS §6.4)                                                                                                                                    | In AP 1.8 messen, dann eine Gegenmaßnahme wählen; Kaufsperre an der Kursuntergrenze                                                                                                                      | AP 1.9 (Messung in AP 1.8)        |
+| E-23 | Der Spread verrät die Marktphase (TS §6.7)                                                                                                                                      | Spread-Faktor stetig aus der Faktorvolatilität                                                                                                                                                           | AP 1.9                            |
+| E-24 | Faktoren bewegen sich gleichmäßig über 24 Stunden (TS §6.2)                                                                                                                     | Aktivitätsgewicht je Intervall; Kalibrierungsziel für den Overnight-Anteil                                                                                                                               | AP 1.9                            |
+| E-01 | Engine im Web Worker, NgRx hält nur Projektionen                                                                                                                                | Ja                                                                                                                                                                                                       | AP 2.1                            |
+| E-27 | Leistung auf Mobilgeräten (TS §14.3)                                                                                                                                            | Referenzgerät oder vierfache CPU-Drosselung mit eigenen Budgets                                                                                                                                          | AP 2.2                            |
+| E-08 | Persistenz: Snapshots, Kommando-Log mit Uhrzustand, Journal; Tageskerzen gespeichert, aber reproduzierbar                                                                       | Ja. Ergänzungen: Marktzustände zu Monatsbeginn mitspeichern, Write-ahead nur für Spielkommandos, Kommando-Log kürzen, Uhr häufiger sichern, Tageskerzen je Seed prüfen                                   | AP 2.3                            |
+| E-25 | Versionsregeln (TS §15)                                                                                                                                                         | Vor 1.0: `SIM_VERSION` und `schemaVersion`, veraltete Spieler gesperrt. Ab 1.0: Umfang der Zusage festlegen                                                                                              | AP 2.3 (vor 1.0), AP 6.6 (ab 1.0) |
+| E-14 | Lebenshaltungskosten als Startparameter, Hausbank als Filialbank, Start pausiert                                                                                                | Ja; Vorgaben 10.000 € / 2.500 € / 1.800 €                                                                                                                                                                | AP 2.4                            |
+| E-11 | Steuervereinfachungen in Stufe 1                                                                                                                                                | 25 % pauschal, 1.000 € Pauschbetrag, ein Verlusttopf, ohne Soli/KiSt; der Steuerkern entsteht wegen der Zinsen schon in AP 3.2                                                                           | AP 3.2                            |
+| E-19 | Buchungstermine                                                                                                                                                                 | Bank-Lauf 06:00; Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag                                                                                                                               | AP 3.2                            |
+| E-28 | Umfang von Stufe 1 für Einsteiger (PS §7)                                                                                                                                       | ETF-Durchschau als Muss, zweite Vergleichsgröße, Story „Erste Schritte“ (US-UI-10), Depotübertrag als Story in Stufe 2 (US-BK-12)                                                                        | AP 5.5                            |
+| E-21 | Sparpläne brauchen jeden Monat eine Überweisung von Hand (TS §7.8)                                                                                                              | Abbuchungskonto je Sparplan; Alternative: Daueraufträge in Stufe 1                                                                                                                                       | AP 5.6                            |
+| E-05 | Capacitor                                                                                                                                                                       | PWA im MVP; Capacitor als optionaler Meilenstein N1. Ergänzung: „Demnächst“ liest den Terminplaner, die Ereignisvorschau entsteht erst mit N1                                                            | AP 5.7                            |
+| E-10 | Exportformat                                                                                                                                                                    | base64(JSON) mit Spieler- und Marktzustand vom Beginn des Export-Tags; Kurshistorie nach dem Import im Hintergrund. Ergänzungen: gzip schon in Formatversion 1, ohne `commands`, Import startet pausiert | AP 6.1                            |
+
+E-01 und E-08 sind in Teilen schon verbaut (Worker des Labors, Stores des Schemas, `createHighLowFill`, Architektur in `CLAUDE.md`) und sollten jetzt förmlich bestätigt werden. E-21 bis E-28 und die Ergänzungen stammen aus der kritischen Prüfung vom 11.11.2026 (§7).
 
 **Bereits entschieden:** E-07 (`CLAUDE.md`), E-03 – Zufallsströme per MurmurHash3 x86_128, `sfc32`, eigene `detExp`/`detLog` (10.11.2026), E-09 – Geld in Cent, Stück in Millionstel, Kurse als Gleitkomma mit Preisraster (10.11.2026), E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6), E-06 – Tailwind CSS v4 mit angehobener Browserslist und Inter Variable als selbst gehostete Schrift (10.11.2026) sowie die Ergänzungen für `CLAUDE.md` aus TS §11.2 (10.11.2026, übernommen in AP 0.2), E-15 – Hash-Routing mit englischen Routenpfaden (10.11.2026), E-16 – Angular Aria neben dem CDK für Tabs und Menüs (10.11.2026), E-12 – Stufe 1 mit Aktien, ETFs und Indizes, CFDs bleiben in Stufe 3 (10.11.2026), E-13 – reale Regionen und Länder, fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen; Standardwelt nach TS §5.2 (10.11.2026), E-17 – Banking mit sofortiger Eröffnung und Überweisung, Dispo mit geduldeter Überziehung, Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (10.11.2026), E-02 – Tick = 1 Spielminute, Start Mo 01.04.2030 00:00, im Hintergrund Echtzeit (pro Spieler auf Pause umstellbar), eine Pause bleibt Pause (11.11.2026), E-18 – Handelszeiten je Region, Orders jederzeit, Ausführung in der Handelszeit (11.11.2026), E-04 – lightweight-charts 5.3.0 mit TradingView-Logo, lazy geladen; eigene SVG-Sparklines und -Donuts (Spike in AP 1.7, 11.11.2026). Das Deployment ist laut Product Owner unter `https://algoristic.de/portfoligo/` per HTTPS erreichbar.
 
@@ -113,51 +125,52 @@ Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevo
 
 Status: **offen**, **in Arbeit**, **fertig**.
 
-| AP   | Titel                                            | Status | Abhängig von |
-| ---- | ------------------------------------------------ | ------ | ------------ |
-| 0.1  | Aufräumen und Baseline                           | fertig | –            |
-| 0.2  | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig | 0.1          |
-| 0.3  | App-Bootstrap und Infrastruktur                  | fertig | 0.1          |
-| 0.4  | App-Shell und UI-Grundkomponenten                | fertig | 0.2, 0.3     |
-| 1.1  | Deterministischer Zufall und Mathematik          | fertig | 0.1          |
-| 1.2  | Spielkalender und Zeitmodell                     | fertig | 0.1          |
-| 1.3  | Weltgenerierung: Taxonomie, Unternehmen, Banken  | fertig | 1.1          |
-| 1.4  | Marktmodell: Tagesschritt und Vorlauf            | fertig | 1.2, 1.3     |
-| 1.5  | Brücken, Minutenkurse und Kerzen                 | fertig | 1.4          |
-| 1.6a | Dividenden und Indizes                           | fertig | 1.5          |
-| 1.6b | ETFs, indikative Werte, Geld- und Briefkurse     | fertig | 1.6a         |
-| 1.7  | Simulations-Labor: Welt, Simulation, Chart-Spike | fertig | 1.6b, 0.4    |
-| 1.8  | Simulations-Labor: Statistik                     | offen  | 1.7          |
-| 1.9  | Kalibrierung des Marktmodells                    | offen  | 1.8          |
-| 2.1  | GameEngine und Terminplaner                      | offen  | 1.6b         |
-| 2.2  | Worker-Host, Protokoll und EngineService         | offen  | 2.1, 0.3     |
-| 2.3  | Persistenz im Worker und Wiederherstellung       | offen  | 2.2          |
-| 2.4  | Spielerverwaltung                                | offen  | 2.3, 0.4     |
-| 2.5  | Spielsitzung und Uhr                             | offen  | 2.4          |
-| 3.1  | Hauptbuch und Kontenmodell                       | offen  | 2.4          |
-| 3.2  | Haushalt und periodische Buchungen               | offen  | 3.1          |
-| 3.3  | Bankkommandos und Banking-Slice                  | offen  | 3.2, 2.5     |
-| 3.4  | Kontenübersicht und Kontoauszug                  | offen  | 3.3          |
-| 3.5  | Bankenvergleich, Dialoge und Monatsübersicht     | offen  | 3.4          |
-| 3.6  | Benachrichtigungen                               | offen  | 3.3          |
-| 4.1  | Marktdaten-Feed und Market-Slice                 | offen  | 2.5          |
-| 4.2  | Chart-Komponenten                                | offen  | 4.1, 1.7     |
-| 4.3  | Indikatoren                                      | offen  | 4.2          |
-| 4.4  | Marktübersicht, Screener und Watchlist           | offen  | 4.2          |
-| 4.5  | Instrument-Detailseite                           | offen  | 4.3, 4.4     |
-| 5.1  | Depot und Orderausführung                        | offen  | 3.3, 1.6b    |
-| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1          |
-| 5.3  | Steuern                                          | offen  | 5.2          |
-| 5.4  | Order-Ticket und Orderbuch                       | offen  | 5.3, 4.5     |
-| 5.5  | Depot, Positionen und Steuerübersicht (UI)       | offen  | 5.4          |
-| 5.6  | Sparpläne                                        | offen  | 5.5          |
-| 5.7  | Dashboard und Performance                        | offen  | 5.5          |
-| 6.1  | Export und Import                                | offen  | 5.6, 5.7     |
-| 6.2  | Einstellungen                                    | offen  | 6.1, 3.6     |
-| 6.3  | PWA und Browser-Benachrichtigungen               | offen  | 6.2          |
-| 6.4  | Performance und Robustheit                       | offen  | 6.1          |
-| 6.5  | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3          |
-| 6.6  | Release 1.0                                      | offen  | 6.4, 6.5     |
+| AP   | Titel                                            | Status | Abhängig von  |
+| ---- | ------------------------------------------------ | ------ | ------------- |
+| 0.1  | Aufräumen und Baseline                           | fertig | –             |
+| 0.2  | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig | 0.1           |
+| 0.3  | App-Bootstrap und Infrastruktur                  | fertig | 0.1           |
+| 0.4  | App-Shell und UI-Grundkomponenten                | fertig | 0.2, 0.3      |
+| 1.1  | Deterministischer Zufall und Mathematik          | fertig | 0.1           |
+| 1.2  | Spielkalender und Zeitmodell                     | fertig | 0.1           |
+| 1.3  | Weltgenerierung: Taxonomie, Unternehmen, Banken  | fertig | 1.1           |
+| 1.4  | Marktmodell: Tagesschritt und Vorlauf            | fertig | 1.2, 1.3      |
+| 1.5  | Brücken, Minutenkurse und Kerzen                 | fertig | 1.4           |
+| 1.6a | Dividenden und Indizes                           | fertig | 1.5           |
+| 1.6b | ETFs, indikative Werte, Geld- und Briefkurse     | fertig | 1.6a          |
+| 1.7  | Simulations-Labor: Welt, Simulation, Chart-Spike | fertig | 1.6b, 0.4     |
+| 1.8  | Simulations-Labor: Statistik                     | offen  | 1.7           |
+| 1.9  | Kalibrierung des Marktmodells                    | offen  | 1.8           |
+| 2.1  | GameEngine und Terminplaner                      | offen  | 1.6b          |
+| 2.2  | Worker-Host, Protokoll und EngineService         | offen  | 2.1, 0.3      |
+| 2.3  | Persistenz im Worker und Wiederherstellung       | offen  | 2.2           |
+| 2.4  | Spielerverwaltung                                | offen  | 2.3, 0.4      |
+| 2.5  | Spielsitzung und Uhr                             | offen  | 2.4           |
+| 2.6  | Einstellungen: Grundlage                         | offen  | 2.5           |
+| 3.1  | Hauptbuch und Kontenmodell                       | offen  | 2.4           |
+| 3.2  | Haushalt und periodische Buchungen               | offen  | 3.1           |
+| 3.3  | Bankkommandos und Banking-Slice                  | offen  | 3.2, 2.5      |
+| 3.4  | Kontenübersicht und Kontoauszug                  | offen  | 3.3           |
+| 3.5  | Bankenvergleich, Dialoge und Monatsübersicht     | offen  | 3.4           |
+| 3.6  | Benachrichtigungen                               | offen  | 3.3, 2.6      |
+| 4.1  | Marktdaten-Feed und Market-Slice                 | offen  | 2.5           |
+| 4.2  | Chart-Komponenten                                | offen  | 4.1, 1.7      |
+| 4.3  | Indikatoren                                      | offen  | 4.2           |
+| 4.4  | Marktübersicht, Screener und Watchlist           | offen  | 4.2           |
+| 4.5  | Instrument-Detailseite                           | offen  | 4.3, 4.4, 1.8 |
+| 5.1  | Depot und Orderausführung                        | offen  | 3.3, 1.6b     |
+| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1           |
+| 5.3  | Steuern                                          | offen  | 5.2           |
+| 5.4  | Order-Ticket und Orderbuch                       | offen  | 5.3, 4.5, 3.6 |
+| 5.5  | Depot, Positionen und Steuerübersicht (UI)       | offen  | 5.4           |
+| 5.6  | Sparpläne                                        | offen  | 5.5           |
+| 5.7  | Dashboard und Performance                        | offen  | 5.5           |
+| 6.1  | Export und Import                                | offen  | 5.6, 5.7      |
+| 6.2  | Einstellungen                                    | offen  | 6.1, 3.6, 2.6 |
+| 6.3  | PWA und Browser-Benachrichtigungen               | offen  | 6.2           |
+| 6.4  | Performance und Robustheit                       | offen  | 6.1, 1.9      |
+| 6.5  | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3           |
+| 6.6  | Release 1.0                                      | offen  | 6.4, 6.5, 3.5 |
 
 ### Abhängigkeitsgraph
 
@@ -192,6 +205,7 @@ flowchart TD
     AP2_3["2.3 Persistenz im Worker und Wiederherstellung"]
     AP2_4["2.4 Spielerverwaltung"]
     AP2_5["2.5 Spielsitzung und Uhr"]
+    AP2_6["2.6 Einstellungen: Grundlage"]
   end
   subgraph M3["M3 – Banking und Haushalt"]
     direction TB
@@ -252,6 +266,7 @@ flowchart TD
   AP2_3 --> AP2_4
   AP0_4 --> AP2_4
   AP2_4 --> AP2_5
+  AP2_5 --> AP2_6
   AP2_4 --> AP3_1
   AP3_1 --> AP3_2
   AP3_2 --> AP3_3
@@ -259,6 +274,7 @@ flowchart TD
   AP3_3 --> AP3_4
   AP3_4 --> AP3_5
   AP3_3 --> AP3_6
+  AP2_6 --> AP3_6
   AP2_5 --> AP4_1
   AP4_1 --> AP4_2
   AP1_7 --> AP4_2
@@ -266,12 +282,14 @@ flowchart TD
   AP4_2 --> AP4_4
   AP4_3 --> AP4_5
   AP4_4 --> AP4_5
+  AP1_8 --> AP4_5
   AP3_3 --> AP5_1
   AP1_6b --> AP5_1
   AP5_1 --> AP5_2
   AP5_2 --> AP5_3
   AP5_3 --> AP5_4
   AP4_5 --> AP5_4
+  AP3_6 --> AP5_4
   AP5_4 --> AP5_5
   AP5_5 --> AP5_6
   AP5_5 --> AP5_7
@@ -279,11 +297,14 @@ flowchart TD
   AP5_7 --> AP6_1
   AP6_1 --> AP6_2
   AP3_6 --> AP6_2
+  AP2_6 --> AP6_2
   AP6_2 --> AP6_3
   AP6_1 --> AP6_4
+  AP1_9 --> AP6_4
   AP6_3 --> AP6_5
   AP6_4 --> AP6_6
   AP6_5 --> AP6_6
+  AP3_5 --> AP6_6
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
   class AP0_1,AP0_2,AP0_3,AP0_4,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7 done
@@ -429,16 +450,19 @@ AP 1.6 wurde nach §2.5 geteilt (11.11.2026).
 
 #### AP 1.8 – Simulations-Labor: Statistik
 
-- **Umfang:** `analysis/domain`: Statistikfunktionen (Rendite, Volatilität, Korrelation, Drawdown, Verteilung der Tagesrenditen); Statistikansicht im Labor nach TS §14.2 mit Vergleich zu den Kalibrierungszielen, Phasen-Zeitleiste, Intraday-Statistik im Vergleich zur Referenz-Minutensimulation aus AP 1.5 und Durchsatz in Spieltagen pro Sekunde.
-- **Abnahme:** Tests der Statistikfunktionen mit Referenzwerten; die Ansicht zeigt alle Größen aus TS §6.9 für einen gewählten Seed und Zeitraum.
-- **Referenzen:** TS §6.9, §14.2
+- **Umfang:** `analysis/domain`: Statistikfunktionen (Rendite, Volatilität, Korrelation, Drawdown, Verteilung der Tagesrenditen); Statistikansicht im Labor nach TS §14.2 mit Vergleich zu den Kalibrierungszielen, Phasen-Zeitleiste, Intraday-Statistik im Vergleich zur Referenz-Minutensimulation aus AP 1.5 und Durchsatz in Spieltagen pro Sekunde. Dazu Langzeit-Kennzahlen über 50 und 100 Spieljahre (Konzentration des Weltindex, Anteil der Kurse unter 1 € und an der Kursuntergrenze, Höchstkurse, Indexvolatilität in rollierenden Fenstern; E-22), der Overnight-Anteil der Varianz von Indizes und Einzelaktien (E-24) und ein Selbsttest, der die Golden-Master-Prüfsummen im Browser und im echten Worker rechnet (TS §4.6).
+- **Abnahme:** Tests der Statistikfunktionen mit Referenzwerten; die Ansicht zeigt alle Größen aus TS §6.9 für einen gewählten Seed und Zeitraum. Der Selbsttest zeigt in Chrome und Firefox die eingecheckten Prüfsummen (Safari unter iOS spätestens in AP 6.6).
+- **Vor der Umsetzung klären:** Messvorschrift je Kalibrierungsziel – Einzelaktien oder Indizes, Tages- oder Monatsrenditen, Zeitraum, Toleranz (TS §6.9).
+- **Referenzen:** TS §4.6, §6.9, §14.2; E-22, E-24
 - **Abhängig von:** AP 1.7
 
 #### AP 1.9 – Kalibrierung des Marktmodells
 
 - **Umfang:** Parameter mit mehreren Seeds gegen die Ziele aus TS §6.9 abstimmen, einschließlich Tagesprofil der Volatilität (TS §6.1); statistische Tests mit Toleranzen; finale Parameter in TS §6 nachtragen.
-- **Abnahme:** Kalibrierungsziele auf mindestens fünf Seeds erreicht oder Abweichungen begründet; statistische Testsuite grün.
-- **Referenzen:** TS §6.9, §14.1; Risiko R1
+- **Abnahme:** Kalibrierungsziele auf mindestens fünf Seeds erreicht oder Abweichungen begründet; statistische Testsuite grün. Die Langzeit-Kennzahlen über 50 und 100 Spieljahre liegen in den festgelegten Grenzen (E-22).
+- **Vormerkungen** (aus AP 1.4 und AP 1.6b): Mit den Startwerten liegt die Volatilität der Einzelaktien im Median bei rund 40 % (die Sprünge tragen allein rund 18 Prozentpunkte bei), und Krisen machen nur 2–4 % statt 8 % der Zeit aus. Zu kalibrieren sind auch Spreads, Tracking-Fehler und Startkurse der ETFs; das Budget des Vorlaufs ist nachzumessen.
+- **Vor der Umsetzung klären:** E-22 (Gegenmaßnahme fürs Langzeitverhalten), E-23 (Spread-Faktor) und E-24 (Aktivitätsgewichte) müssen entschieden sein. Sie ändern das Modell und damit die Golden Master.
+- **Referenzen:** TS §6.2, §6.4, §6.7, §6.9, §14.1; E-22–E-24; Risiken R1, R12
 - **Abhängig von:** AP 1.8
 
 ### M2 – Engine, Spieler und Persistenz
@@ -450,6 +474,7 @@ AP 1.6 wurde nach §2.5 geteilt (11.11.2026).
 
 - **Umfang:** `engine/domain`: `GameEngine` mit der API aus TS §8.1, `World` und `GameState`, Systemreihenfolge nach TS §3.8 (vorerst Kalender und Markt), Terminplaner als Binärheap, Ereignispuffer, Kommandos mit Tick-Stempel, Snapshot und Restore inklusive (vorerst minimalem) Spielerzustand.
 - **Abnahme:** Tests: Stapel- und Live-Betrieb identisch; Snapshot, Restore und Replay identisch; Reihenfolge des Terminplaners.
+- **Vormerkungen** (aus AP 1.6b): Ereignisse der ETF-Ausschüttung (`MarketDay.etfExCents`, Zahltag über `paymentDay`); Quotes der Abos über `PriceSource.quoteAt`. Die ESLint-Regel für Simulationscode gilt ab hier auch für `engine/domain` (TS §4.4).
 - **Referenzen:** TS §2.2, §3.8, §8.1; E-01
 - **Abhängig von:** AP 1.6b
 
@@ -460,35 +485,49 @@ AP 1.6 wurde nach §2.5 geteilt (11.11.2026).
   - `EngineService` (Observable-API, Korrelation, Fehler, Abo-Zählung) mit `provideEngineService()` – einmal in den Bootstrap-Providern (TS §11.2, Punkt 4); Token für eine Worker-Factory (Tests mit Fake-Worker).
   - Takt (TS §3.5), Sichtbarkeit und `backgroundMode` (TS §3.6), Drosselung (TS §8.4), Auslastungsmeldung.
 - **Abnahme:** Tests: Service mit Fake-Worker (Kommandos, Antworten, Fehler); Taktlogik als reine Funktion. Ein manueller Smoke-Test im Labor zeigt eintreffende `clock`-Ereignisse.
-- **Referenzen:** TS §3.5, §3.6, §8.2–§8.5, §11.2
+- **Vormerkungen:** Für Seitentests braucht es den Worker-Code im Testprozess (wie `provideInProcessLabWorker()`) und die Uhr des Hosts als Testnaht (`CLAUDE.md` §10). Kommando-Klassen nach TS §8.2 (E-08): Abfragen und Abos halten den Takt nicht an. Erste Messung der Engine mit vierfacher CPU-Drosselung (E-27).
+- **Referenzen:** TS §3.5, §3.6, §8.2–§8.5, §11.2, §14.3; E-27
 - **Abhängig von:** AP 2.1, AP 0.3
 
 #### AP 2.3 – Persistenz im Worker und Wiederherstellung
 
-- **Umfang:** IndexedDB-Schema Version 3 (TS §9.1) mit Migration und Besitzern je Store; Kommando-Annahme nach dem Write-ahead-Protokoll (TS §8.5); Speicherstrategie (TS §9.2); Laden als Welt + Faktorhistorie + Snapshot + Replay + Nachberechnung mit Fortschritt; Tageskerzen im Store `candles` mit dem zeitgeteilten Hintergrundauftrag für fehlende Hoch- und Tiefkurse (TS §6.8); Web Lock je Spieler (TS §9.4); `navigator.storage.persist()`.
+- **Umfang:** IndexedDB-Schema nach TS §9.1 mit Besitzern je Store (Version 3 besteht seit AP 0.3, Erweiterungen kommen als Version 4); Kommando-Annahme nach dem Write-ahead-Protokoll (TS §8.5); Speicherstrategie (TS §9.2); Laden als Welt + Marktzustände zu Monatsbeginn + Snapshot + Replay + Nachberechnung mit Fortschritt; Tageskerzen im Store `candles` mit dem zeitgeteilten Hintergrundauftrag für fehlende Hoch- und Tiefkurse (TS §6.8); Web Lock je Spieler (TS §9.4); `navigator.storage.persist()`.
 - **Abnahme:** Tests mit `fake-indexeddb`:
   - Speichern und Laden; Replay; Verwerfen der Spielerdaten nach dem Snapshot-Tick, Tageskerzen bleiben erhalten.
   - Nach Verwerfen des Stores `candles` baut der Hintergrundauftrag identische Tageskerzen auf.
   - Absturz kurz nach einem Kommando, das nach der letzten periodischen Uhr-Speicherung kam: Das Kommando wirkt nach der Wiederherstellung an seinem ursprünglichen Tick.
-- **Referenzen:** TS §3.7, §8.5, §9; US-ZT-04, US-SP-02; E-08
+- **Vormerkungen** (aus AP 1.5): Marktzustände zu Monatsbeginn speichern oder beim Laden durch volle Tagesschritte aufbauen (rund 45 ms je Spieljahr); E-08 schlägt Speichern vor. `SIM_VERSION` und `schemaVersion` als Konstanten einführen (E-25).
+- **Vor der Umsetzung klären:** die Ergänzungen zu E-08 – Write-ahead nur für Spielkommandos, Kürzen des Kommando-Logs, Uhr spätestens nach einem Spieltag sichern, Tageskerzen je Seed statt je Spieler (TS §8.2, §8.5, §9.1, §9.2).
+- **Referenzen:** TS §3.7, §8.5, §9, §15; US-ZT-04, US-SP-02; E-08, E-25
 - **Abhängig von:** AP 2.2
 
 #### AP 2.4 – Spielerverwaltung
 
 - **Umfang:** `players` (domain, data-access, feature): Profilmodell, `PlayersService` (Read-Modify-Write auf eigene Datensätze), Players-Slice nach `CLAUDE.md` §6; Seiten „Spielerauswahl" (umbenennen; löschen mit Bestätigung und Lock-Prüfung) und „Spieler anlegen" (Signal Forms, Voreinstellungen, Seed-Generator, Validierung, Betragseingabe als `FormValueControl<Cents>`); Initialisierung beim ersten Laden im Worker (Welt, Vorlauf bis zum Spielstart, Uhr).
-- **Abnahme:** Tests für Slice, Service und Validierungsregeln. Spieler lassen sich anlegen, umbenennen und löschen (inklusive aller Daten); ein gesperrter Spieler lässt sich nicht löschen; die Auswahl öffnet die (noch leere) Shell.
-- **Referenzen:** US-SP-01–US-SP-03; TS §4.1, §9.1, §9.4, §11.8; E-14
+- **Abnahme:** Tests für Slice, Service und Validierungsregeln. Spieler lassen sich anlegen, umbenennen und löschen (inklusive aller Daten); ein gesperrter Spieler lässt sich nicht löschen; die Auswahl öffnet die (noch leere) Shell. Seitentests: Spieler anlegen mit Validierung, umbenennen, löschen, veralteten Spieler erkennen.
+- **Vor der Umsetzung klären:** Dürfen die Lebenshaltungskosten das Einkommen übersteigen (TS §7.4)? Der Name wird nur über den `PlayersService` geändert, nicht über ein Engine-Kommando (TS §9.1). Spieler mit anderer `SIM_VERSION` oder `schemaVersion` erscheinen als veraltet und lassen sich nicht öffnen (E-25).
+- **Referenzen:** US-SP-01–US-SP-03; TS §4.1, §9.1, §9.4, §11.8, §15; E-14, E-25
 - **Abhängig von:** AP 2.3, AP 0.4
 
 #### AP 2.5 – Spielsitzung und Uhr
 
 - **Umfang:** Session- und Clock-Slice, registriert über `provideGameState()` an der Shell-Route; Guards `enterGame` und `leaveGame`; Kopfzeile mit Datum, Uhrzeit, Wochentag, Börsenstatus je Region, Geschwindigkeitsregler, Pause/Weiter, abschaltbaren Tastenkürzeln und Auslastungsanzeige; Overlay für Initialisierung und Nachberechnung; Vorspulen (S).
-- **Abnahme:** Tests für Slices, Effects und Guards. Manuell:
+- **Abnahme:** Tests für Slices, Effects und Guards. Soweit möglich als Seitentest mit dem Worker-Code im Testprozess und gestellter Uhr, sonst manuell:
   - Ein neuer Spieler startet pausiert am 01.04.2030, 00:00; Geschwindigkeitswechsel wirken sofort.
   - Im Hintergrund läuft Echtzeit; Tab schließen und später öffnen ergibt eine Nachberechnung.
   - Eine Pause bleibt nach dem Neuladen erhalten; ein zweiter Tab mit demselben Spieler erhält einen Hinweis.
+- **Vor der Umsetzung klären:** Börsenstatus der Schwellenländer – ihre Börsen haben eigene Handelszeiten (TS §3.3), „je Region“ reicht dort nicht. Den Schalter zum Abschalten der Tastenkürzel liefert AP 2.6.
 - **Referenzen:** US-ZT-01–US-ZT-05; TS §3, §11.2, §11.10; E-02
 - **Abhängig von:** AP 2.4
+
+#### AP 2.6 – Einstellungen: Grundlage
+
+Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellungen, lange bevor AP 6.2 an der Reihe ist.
+
+- **Umfang:** Settings-Slice mit localStorage (`pgo.settings`) für Geräteeinstellungen; Einstellungsseite mit Erscheinungsbild (System, Dunkel, Hell; die Klasse früh setzen, damit nichts flackert) und Tastenkürzel an/aus; Spielereinstellung „Verhalten im Hintergrund“ über das Kommando `setBackgroundMode`. Spätere APs ergänzen ihre Abschnitte (Auto-Pause in AP 3.6), AP 6.2 vervollständigt die Seite.
+- **Abnahme:** Tests für Slice und Service. Seitentest: Erscheinungsbild wechseln, Tastenkürzel abschalten, Verhalten im Hintergrund umstellen; Geräteeinstellungen bleiben nach dem Neuladen erhalten.
+- **Referenzen:** US-UI-01, US-UI-09, US-ZT-02; TS §3.6, §9.3, §11.5, §11.10
+- **Abhängig von:** AP 2.5
 
 ### M3 – Banking und Haushalt
 
@@ -499,14 +538,16 @@ AP 1.6 wurde nach §2.5 geteilt (11.11.2026).
 
 - **Umfang:** `banking/domain`: Transaktionen und Buchungen mit Invariante, Kontoarten, Salden, Gebühren- und Zinsmodelle (TS §7.3) mit Berechnungsfunktionen; Startkapital als `opening-balance` auf das Girokonto der Hausbank bei der Initialisierung; Speicherung im Store `transactions`.
 - **Abnahme:** Tests: Summe 0 je Transaktion; Saldo gleich Summe der Buchungen; jedes Gebührenmodell; taggenaue Zinsen.
+- **Vormerkungen:** Die ESLint-Regel für Simulationscode gilt ab hier auch für die `domain`-Ordner von `banking`, `trading`, `portfolio` und `taxes` (TS §4.4).
 - **Referenzen:** TS §7.1–§7.3; E-09
 - **Abhängig von:** AP 2.4
 
 #### AP 3.2 – Haushalt und periodische Buchungen
 
-- **Umfang:** Banking-System der Engine: Gehalt, Lebenshaltung mit Schwankung, Kontoführung mit Befreiungsbedingungen, Dispo-, Soll- und Habenzinsen, Ereignisse bei Unterdeckung und Überziehung, Monatswerte für die Monatsübersicht (TS §7.4).
+- **Umfang:** Banking-System der Engine: Gehalt, Lebenshaltung mit Schwankung, Kontoführung mit Befreiungsbedingungen, Dispo-, Soll- und Habenzinsen, Ereignisse bei Unterdeckung und Überziehung, Monatswerte für die Monatsübersicht (TS §7.4). Dazu der Steuerkern in `taxes/domain` (Jahreszustand und Berechnung nach TS §7.7), weil Habenzinsen mit Steuereinbehalt gebucht werden; AP 5.3 baut darauf auf.
 - **Abnahme:** Tests über mehrere simulierte Monate: Termine, Beträge, Determinismus, Gutschriften vor Lastschriften, Monatswerte.
-- **Referenzen:** US-EK-01, US-EK-02, US-BK-07, US-BK-08; TS §7.4; E-17, E-19
+- **Vor der Umsetzung klären** (TS §7.4): Zählen eigene Überweisungen als Geldeingang für die Gebührenbefreiung? Gibt es eine anteilige Gebühr im Eröffnungsmonat? Bekommt die geduldete Überziehung eine Obergrenze?
+- **Referenzen:** US-EK-01, US-EK-02, US-BK-07, US-BK-08; TS §7.4, §7.7; E-11, E-17, E-19
 - **Abhängig von:** AP 3.1
 
 #### AP 3.3 – Bankkommandos und Banking-Slice
@@ -519,23 +560,24 @@ AP 1.6 wurde nach §2.5 geteilt (11.11.2026).
 #### AP 3.4 – Kontenübersicht und Kontoauszug
 
 - **Umfang:** Kontenübersicht (Karten je Konto, Summen); Kontoauszug mit seitenweiser Abfrage (Guard und Effects, TS §11.3), virtuellem Scrollen, Filtern und Suche.
-- **Abnahme:** Kontoauszug mit 10.000 Buchungen scrollt ohne Ruckeln (Main-Thread-Arbeit je Seite < 4 ms); per Tastatur bedienbar; Leerzustände.
+- **Abnahme:** Kontoauszug mit 10.000 Buchungen scrollt ohne Ruckeln (Main-Thread-Arbeit je Seite < 4 ms); per Tastatur bedienbar; Leerzustände. Seitentest: blättern, filtern, suchen, Leerzustand.
+- **Vor der Umsetzung klären:** Wonach sucht die Suche? Buchungstexte entstehen erst in der UI aus Codes (TS §8.6), und der Store hält nur eine Seite. Vorschlag: Suche im Worker über Verwendungszweck, Namen und Betrag.
 - **Referenzen:** US-BK-06; TS §11.3, §14.3
 - **Abhängig von:** AP 3.3
 
 #### AP 3.5 – Bankenvergleich, Dialoge und Monatsübersicht
 
 - **Umfang:** Bankenvergleich mit Sortierung; Dialoge „Konto eröffnen", „Konto schließen" (Zielkonto), „Überweisen" (Signal Forms) und „Gehaltskonto wechseln"; Monatsübersicht aus den Monatswerten.
-- **Abnahme:** Alle Abläufe per Maus und Tastatur bedienbar; Fehlercodes der Engine als verständliche Texte; i18n extrahiert.
+- **Abnahme:** Alle Abläufe per Maus und Tastatur bedienbar; Fehlercodes der Engine als verständliche Texte; i18n extrahiert. Seitentests: Konto eröffnen und schließen, überweisen, Gehaltskonto wechseln, Banken sortieren.
 - **Referenzen:** US-BK-01–US-BK-05, US-EK-03; PS §10.3
 - **Abhängig von:** AP 3.4
 
 #### AP 3.6 – Benachrichtigungen
 
-- **Umfang:** `notifications`: Slice, Benachrichtigungszentrum, Toasts mit Bündelung, Abwesenheitsbericht nach der Nachberechnung, Auto-Pause je Ereignis-Code in der Engine (unterdrückt bei Nachberechnung und verborgener App), begrenzte Speicherung, Zähler in der Kopfzeile.
-- **Abnahme:** Tests für Slice, Effects und die Auto-Pause-Regeln. Eine Überziehung erzeugt eine Warnung und, falls eingestellt, eine Pause; nach der Rückkehr erscheint der Abwesenheitsbericht.
+- **Umfang:** `notifications`: Slice, Benachrichtigungszentrum, Toasts mit Bündelung, Abwesenheitsbericht nach der Nachberechnung, Auto-Pause je Ereignis-Code in der Engine (unterdrückt bei Nachberechnung und verborgener App), begrenzte Speicherung, Zähler in der Kopfzeile. Die Schalter für die Auto-Pause kommen auf die Einstellungsseite aus AP 2.6.
+- **Abnahme:** Tests für Slice, Effects und die Auto-Pause-Regeln. Eine Überziehung erzeugt eine Warnung und, falls eingestellt, eine Pause; nach der Rückkehr erscheint der Abwesenheitsbericht. Seitentest: Warnung im Zentrum und als Toast, Auto-Pause, Abwesenheitsbericht.
 - **Referenzen:** US-BN-01–US-BN-03, US-ZT-06; TS §3.6, §12
-- **Abhängig von:** AP 3.3
+- **Abhängig von:** AP 3.3, AP 2.6
 
 ### M4 – Märkte und Charts
 
@@ -546,13 +588,15 @@ AP 1.6 wurde nach §2.5 geteilt (11.11.2026).
 
 - **Umfang:** Abos (`subscribe`, `unsubscribe`) über Guards und Effects (TS §11.3), `quotes`-Ereignisse, Instrument-Stammdaten als Projektion, Abfragen (Details, Kerzen, Suche, Filter), Market-Slice mit Entity-Adaptern, Referenzzählung der Abos.
 - **Abnahme:** Tests für Service, Effects, Reducer und Selektoren; Kursupdates kommen gedrosselt im Store an; Verlassen einer Seite beendet ihre Abos.
+- **Vormerkungen** (aus AP 1.6a und AP 1.7): Lange Zeiträume von Indizes und ETFs nicht aus Minutenkurven rechnen (rund 2,5 s je Spieljahr), sondern aus den gespeicherten Tageskerzen oder den Stützpunkten (`SupportValues`). Gewinner, Verlierer und Sektorentwicklung rechnet der Worker; die UI abonniert dafür nicht alle Instrumente.
 - **Referenzen:** US-MK-05; TS §8.4, §11.3
 - **Abhängig von:** AP 2.5
 
 #### AP 4.2 – Chart-Komponenten
 
 - **Umfang:** `charts/ui`: Kurschart-Wrapper (TS §11.7), Sparkline und Donut als SVG-Komponenten.
-- **Abnahme:** Chart mit Live-Daten; Theme-Wechsel wirkt; beim Verlassen der Seite wird der Chart entfernt (kein Speicherleck); die Bibliothek wird lazy geladen.
+- **Abnahme:** Chart mit Live-Daten; Theme-Wechsel wirkt; beim Verlassen der Seite wird der Chart entfernt (kein Speicherleck); die Bibliothek wird lazy geladen. Der Komponententest des Kurscharts deckt Live-Updates und Theme-Wechsel ab.
+- **Vormerkungen** (aus AP 1.7): Der Wrapper `charts/ui/price-chart` braucht noch inkrementelle Updates, Overlays und Outputs (TS §11.7).
 - **Referenzen:** US-CH-01; TS §11.7; E-04
 - **Abhängig von:** AP 4.1, AP 1.7
 
@@ -565,17 +609,17 @@ AP 1.6 wurde nach §2.5 geteilt (11.11.2026).
 
 #### AP 4.4 – Marktübersicht, Screener und Watchlist
 
-- **Umfang:** Märkte-Seite (Indizes, Gewinner und Verlierer, Sektoren); Screener mit Filtern nach TS §5.3, Sortierung, virtuellem Scrollen und Sparklines; Watchlist im Spielerzustand (Kommando `updateWatchlist`).
-- **Abnahme:** Filter sind kombinierbar; die Watchlist bleibt nach dem Neuladen erhalten; bei Quotes für 250 Instrumente bleibt die Main-Thread-Arbeit je Update unter 4 ms.
+- **Umfang:** Märkte-Seite (Indizes, Gewinner und Verlierer, Sektoren); Screener mit Filtern nach TS §5.3, Sortierung, virtuellem Scrollen und Sparklines; Watchlist im Spielerzustand (Kommando `updateWatchlist`). Soll: Heatmap der Sektoren (US-MK-01), Reihenfolge der Watchlist per Drag & Drop (US-MK-04).
+- **Abnahme:** Filter sind kombinierbar; die Watchlist bleibt nach dem Neuladen erhalten; bei Quotes für 250 Instrumente bleibt die Main-Thread-Arbeit je Update unter 4 ms. Seitentest: suchen, Filter kombinieren, sortieren, Watchlist ändern.
 - **Referenzen:** US-MK-01, US-MK-02, US-MK-04; TS §14.3
 - **Abhängig von:** AP 4.2
 
 #### AP 4.5 – Instrument-Detailseite
 
-- **Umfang:** Kurskopf (Geld, Brief, Spread, Handelsstatus), Chart mit Indikatoren, Kennzahlen, Profil für Aktien und ETFs (Text aus Vorlagen-Code), Dividenden (Historie, nächster Termin), Aktionen (Watchlist; Kaufen und Verkaufen werden in AP 5.4 angebunden).
-- **Abnahme:** Alle Angaben aus US-MK-03 sichtbar und live aktualisiert.
+- **Umfang:** Kurskopf (Geld, Brief, Spread, Handelsstatus), Chart mit Indikatoren, Kennzahlen (Volatilität und Beta mit den Statistikfunktionen aus AP 1.8), Profil für Aktien und ETFs (Text aus Vorlagen-Code), Dividenden (Historie, nächster Termin), Aktionen (Watchlist; Kaufen und Verkaufen werden in AP 5.4 angebunden). Der Dividendenkalender für Depot und Watchlist (US-MK-06) folgt in AP 5.7.
+- **Abnahme:** Alle Angaben aus US-MK-03 sichtbar und live aktualisiert. Seitentest: Aktie und ETF öffnen, Angaben prüfen, zur Watchlist hinzufügen.
 - **Referenzen:** US-MK-03, US-MK-06; TS §5.4, §8.6
-- **Abhängig von:** AP 4.3, AP 4.4
+- **Abhängig von:** AP 4.3, AP 4.4, AP 1.8
 
 ### M5 – Handel, Depot und Steuern
 
@@ -586,6 +630,7 @@ AP 1.6 wurde nach §2.5 geteilt (11.11.2026).
 
 - **Umfang:** Depot mit Verrechnungskonto eröffnen; Orderarten und Gültigkeit; Prüfung je Tick; Ausführung zu Geld- und Briefkurs; Gebühren; Reservierung, Ablehnung und Ablauf; Sonderfall Pause; Sperre neuer Käufe bei negativem Verrechnungskonto; Ereignisse.
 - **Abnahme:** Tests für alle Orderarten und Zustandsübergänge (inkl. Storno und Ablauf ausgelöster Stop-Limit-Orders), Kurslücken, Reservierungen und Gebührenmodelle; die Markt-Prüfsumme ist mit und ohne Orders identisch.
+- **Vor der Umsetzung klären** (TS §7.5): Stückberechnung bei Betragsorders (bei Erteilung oder Ausführung); „bis Tagesende“ als Kalender- oder Handelstag; Verkauf von Bruchstücken bei Banken ohne Bruchstückhandel; ob Reservierungen den verfügbaren Betrag für Überweisungen und Sparpläne mindern; Bewertung mit oder ohne Aufschlag des Handelsplatzes; Kaufsperre an der Kursuntergrenze (E-22).
 - **Referenzen:** US-HD-01–US-HD-03; TS §7.4, §7.5
 - **Abhängig von:** AP 3.3, AP 1.6b
 
@@ -593,42 +638,44 @@ AP 1.6 wurde nach §2.5 geteilt (11.11.2026).
 
 - **Umfang:** Positionen und Lots nach FIFO mit Anschaffungskosten in Cent, Einstandskurs, realisierte Gewinne und Verluste; Dividenden und ETF-Ausschüttungen an die Bestände am Stichtag, Gutschrift am Zahltag; Depotgebühr quartalsweise auf den durchschnittlichen Depotwert.
 - **Abnahme:** Tests für FIFO-Teilverkäufe (Anschaffungskosten summieren sich exakt), Stichtagsregel, ausschüttende ETFs, Depotgebühr inklusive Belastung eines leeren Verrechnungskontos.
+- **Vor der Umsetzung klären:** Depot schließen zwischen Ex-Tag und Zahltag – sperren oder die Dividende aufs Zielkonto zahlen (TS §7.4)?
 - **Referenzen:** US-PF-06, US-BK-08; TS §6.5, §7.4, §7.6
 - **Abhängig von:** AP 5.1
 
 #### AP 5.3 – Steuern
 
-- **Umfang:** Steuersystem nach TS §7.7: Einbehalt und Erstattung, Sparerpauschbetrag, Verlustvortrag, Jahreswechsel; Steuer-Projektion und Steuer-Slice.
+- **Umfang:** Baut auf dem Steuerkern aus AP 3.2 auf. Steuersystem nach TS §7.7: Einbehalt und Erstattung, Sparerpauschbetrag, Verlustvortrag, Jahreswechsel; Steuer-Projektion und Steuer-Slice.
 - **Abnahme:** Tests mit Jahresszenarien: nur Gewinne, nur Verluste, gemischt, über den Jahreswechsel, mit Zinsen und Dividenden.
 - **Referenzen:** US-ST-01–US-ST-03; TS §7.7; E-11
 - **Abhängig von:** AP 5.2
 
 #### AP 5.4 – Order-Ticket und Orderbuch
 
-- **Umfang:** Trading-Slice; Order-Ticket als Dialog (Signal Forms, Live-Kostenvorschau mit derselben Gebührenfunktion wie die Engine, Deckungsprüfung, Steuervorschau beim Verkauf); Orderbuch mit offenen Orders und Historie, Stornieren und Ändern; Anbindung von Kaufen und Verkaufen auf der Instrumentseite.
-- **Abnahme:** Tests für Slice und Effects; Kauf und Verkauf von der Instrumentseite und Storno aus dem Orderbuch; verständliche Fehlermeldungen.
+- **Umfang:** Trading-Slice; Order-Ticket als Dialog (Signal Forms, Live-Kostenvorschau mit derselben Gebührenfunktion wie die Engine, Deckungsprüfung, Steuervorschau beim Verkauf); Orderbuch mit offenen Orders und Historie, Stornieren und Ändern; Anbindung von Kaufen und Verkaufen auf der Instrumentseite; Depot mit Verrechnungskonto im Dialog „Konto eröffnen“ (Engine seit AP 5.1).
+- **Abnahme:** Tests für Slice und Effects; Kauf und Verkauf von der Instrumentseite und Storno aus dem Orderbuch; verständliche Fehlermeldungen. Seitentests: Depot eröffnen, kaufen mit Kostenvorschau, verkaufen mit Steuervorschau, Order ändern und stornieren.
 - **Referenzen:** US-HD-01–US-HD-04; TS §2.3
-- **Abhängig von:** AP 5.3, AP 4.5
+- **Abhängig von:** AP 5.3, AP 4.5, AP 3.6
 
 #### AP 5.5 – Depot, Positionen und Steuerübersicht (UI)
 
-- **Umfang:** Depotübersicht (Positionen, Summen, Allokation als Donut nach Assetklasse, Region und Sektor) mit Kaufen und Verkaufen aus der Positionsliste; Positionsdetail (Lots, realisierte Gewinne, Dividenden, Trades im Chart als S); Steuerseite.
-- **Abnahme:** Werte stimmen mit der Engine-Projektion überein; Tabellen sortierbar; Kauf und Verkauf aus dem Depot; responsive.
-- **Referenzen:** US-PF-02, US-PF-03, US-PF-06, US-ST-04
+- **Umfang:** Depotübersicht (Positionen, Summen, Allokation als Donut nach Assetklasse, Region und Sektor) mit Kaufen und Verkaufen aus der Positionsliste; Positionsdetail (Lots, realisierte Gewinne, Dividenden, Trades im Chart als S); Steuerseite. ETF-Durchschau in der Allokation (Soll; E-28 schlägt Muss vor).
+- **Abnahme:** Werte stimmen mit der Engine-Projektion überein; Tabellen sortierbar; Kauf und Verkauf aus dem Depot; responsive. Seitentest: Positionen, Allokation, Positionsdetail, Steuerseite.
+- **Referenzen:** US-PF-02, US-PF-03, US-PF-06, US-ST-04; E-28
 - **Abhängig von:** AP 5.4
 
 #### AP 5.6 – Sparpläne
 
-- **Umfang:** Engine (Ausführung immer in Bruchstücken, Kosten, Ausfall), Kommandos und UI (anlegen, ändern, pausieren, löschen; Übersicht im Depot und unter Orders).
-- **Abnahme:** Tests für Ausführungstage, Wochenenden, Bruchstücke und fehlende Deckung; Sparpläne werden auch während der Nachberechnung ausgeführt.
-- **Referenzen:** US-HD-05; TS §7.8
+- **Umfang:** Engine (Ausführung immer in Bruchstücken, Kosten, Ausfall), Kommandos und UI (anlegen, ändern, pausieren, löschen; Übersicht im Depot und unter Orders). Abbuchungskonto nach E-21 (TS §7.8).
+- **Abnahme:** Tests für Ausführungstage, Wochenenden, Bruchstücke und fehlende Deckung; Sparpläne werden auch während der Nachberechnung ausgeführt. Seitentest: Sparplan anlegen, ändern, pausieren, löschen.
+- **Referenzen:** US-HD-05; TS §7.8; E-21
 - **Abhängig von:** AP 5.5
 
 #### AP 5.7 – Dashboard und Performance
 
-- **Umfang:** Tagesreihen (Vermögen, Zuflüsse), zeitgewichtete Rendite, Benchmark-Schattenportfolio; Dashboard mit Gesamtvermögen (Kopfzeile und Kachel), Vermögensverlauf, Cashflow des Monats, Top-Positionen, Watchlist, letzten Benachrichtigungen und „Demnächst" (nur planbare Termine, TS §8.1; S).
-- **Abnahme:** Tests für Rendite (inkl. Tagen mit Vermögen ≤ 0) und Benchmark; Dashboard vollständig.
-- **Referenzen:** US-PF-01, US-PF-04, US-PF-05, US-PF-07; TS §7.9, §8.1
+- **Umfang:** Tagesreihen (Vermögen, Zuflüsse), zeitgewichtete Rendite, Benchmark-Schattenportfolio; Dashboard mit Gesamtvermögen (Kopfzeile und Kachel), Vermögensverlauf, Cashflow des Monats, Top-Positionen, Watchlist, letzten Benachrichtigungen und „Demnächst" (nur planbare Termine, TS §8.1; S). Soll: Erträge und Kosten (US-PF-07), Dividendenkalender für Depot und Watchlist (US-MK-06).
+- **Abnahme:** Tests für Rendite (inkl. Tagen mit Vermögen ≤ 0) und Benchmark; Dashboard vollständig. Seitentest des Dashboards mit Werten aus dem Domain-Code als Orakel.
+- **Vor der Umsetzung klären:** externe Flüsse in der Rendite am Tagesanfang statt am Tagesende ansetzen und „Veränderung heute“ ohne Zuflüsse rechnen (TS §7.9); „Demnächst“ aus Terminplaner und Kalender statt aus einer Vorausrechnung (E-05, TS §8.1); zweite Vergleichsgröße (E-28).
+- **Referenzen:** US-PF-01, US-PF-04, US-PF-05, US-PF-07, US-MK-06; TS §7.9, §8.1; E-05, E-28
 - **Abhängig von:** AP 5.5
 
 ### M6 – Export, PWA und Release 1.0
@@ -644,43 +691,85 @@ AP 1.6 wurde nach §2.5 geteilt (11.11.2026).
   - Nach Export und Import ist der Spielerzustand zum Export-Tick identisch (abgesehen von ID und Name); die Markt-Prüfsumme der nachgerechneten Historie stimmt.
   - Die Exportdatei enthält keine Stützpunkte des laufenden Tags.
   - Ein Spieler mit 50 Spieljahren ist nach unter 3 s spielbar; Datei und Zwischenablage funktionieren.
+  - Seitentest: exportieren, importieren, beschädigte Datei ablehnen.
+- **Vor der Umsetzung klären:** die Ergänzungen zu E-10 – gzip schon in Formatversion 1, Export ohne `commands`, Import startet pausiert (TS §10.1, §10.3). Beim Import legt die UI das Profil an (TS §9.1).
 - **Referenzen:** US-EX-01–US-EX-03; TS §10; E-10
 - **Abhängig von:** AP 5.6, AP 5.7
 
 #### AP 6.2 – Einstellungen
 
-- **Umfang:** Settings-Slice mit localStorage für Geräteeinstellungen (Erscheinungsbild, Gewinn- und Verlustfarben, Hervorhebung von Kursänderungen, Tastenkürzel, Toast und Browser je Ereignis-Code); spielerbezogene Einstellungen als Engine-Kommandos (Name, Seed anzeigen und kopieren, Auto-Pause je Code, Verhalten im Hintergrund, Export).
-- **Abnahme:** Tests für Slice und Service; Geräteeinstellungen bleiben nach dem Neuladen erhalten; Spielereinstellungen wandern mit dem Export.
+- **Umfang:** Baut auf AP 2.6 auf und vervollständigt die Einstellungen: übrige Geräteeinstellungen (Gewinn- und Verlustfarben, Hervorhebung von Kursänderungen, Toast und Browser je Ereignis-Code); spielerbezogene Einstellungen (Name, Seed anzeigen und kopieren, Export).
+- **Abnahme:** Tests für Slice und Service; Geräteeinstellungen bleiben nach dem Neuladen erhalten; Spielereinstellungen wandern mit dem Export. Seitentest der vollständigen Einstellungsseite.
 - **Referenzen:** US-UI-01, US-UI-02, US-UI-09, US-SP-03; TS §3.6, §9.3, §12
-- **Abhängig von:** AP 6.1, AP 3.6
+- **Abhängig von:** AP 6.1, AP 3.6, AP 2.6
 
 #### AP 6.3 – PWA und Browser-Benachrichtigungen
 
 - **Umfang:** `@angular/service-worker` (Manifest, Icons, Offline-Betrieb, Hinweis auf neue Versionen mit Angebot zum Neuladen, Hinweis vor 1.0 zu ungültig werdenden Spielständen), Installationshinweis, `NOTIFICATION_PORT` mit Web-Implementierung über `ServiceWorkerRegistration.showNotification()`, Anzeige des Speicherstatus in den Einstellungen.
-- **Abnahme:** App ist installierbar und offline nutzbar (auch unter Chrome für Android geprüft); nach Erlaubnis erscheinen Benachrichtigungen bei verborgenem Tab.
+- **Abnahme:** App ist installierbar und offline nutzbar (auch unter Chrome für Android geprüft); nach Erlaubnis erscheinen Benachrichtigungen bei verborgenem Tab (am Desktop; Smartphones halten die App im Hintergrund an, PS US-BN-04).
 - **Referenzen:** US-UI-07, US-BN-04, US-EX-03; TS §12, §13, §15; E-05
 - **Abhängig von:** AP 6.2
 
 #### AP 6.4 – Performance und Robustheit
 
-- **Umfang:** Messung gegen die Performance-Budgets (TS §14.3) und Optimierungen; Verdichtung alter Tageskerzen (TS §6.8); Fehlerbehandlung (Worker-Neustart mit Wiederherstellung, `QuotaExceededError`).
+- **Umfang:** Messung gegen die Performance-Budgets (TS §14.3) und Optimierungen; Verdichtung alter Tageskerzen (TS §6.8); Fehlerbehandlung (Worker-Neustart mit Wiederherstellung und Abbruch nach wiederholtem Fehlschlag, TS §8.5; `QuotaExceededError`); Budgets für das Referenz-Mobilgerät (E-27).
 - **Abnahme:** Alle Budgets aus TS §14.3 gemessen und eingehalten oder Abweichungen dokumentiert; ein künstlich ausgelöster Worker-Absturz wird ohne Verlust von Anwender-Aktionen überstanden.
-- **Referenzen:** NF-01, NF-02, NF-06, NF-07; TS §8.5, §9.5, §14.3
-- **Abhängig von:** AP 6.1
+- **Vor der Umsetzung klären:** Die Verdichtung alter Tageskerzen lässt sich auf nach 1.0 verschieben, weil der Store `candles` ohnehin verworfen werden darf (E-08).
+- **Referenzen:** NF-01, NF-02, NF-06, NF-07; TS §8.5, §9.5, §14.3; E-27
+- **Abhängig von:** AP 6.1, AP 1.9
 
 #### AP 6.5 – Barrierefreiheit, Hilfen und Hinweise
 
-- **Umfang:** Barrierefreiheit (Tastatur, Kontraste, Screenreader-Stichproben); Erklärungen und Glossar (S); Befehlspalette (S); rechtliche Hinweise und Lizenzen (TradingView-Attribution); ggf. Impressum und Datenschutzhinweis (§3).
+- **Umfang:** Barrierefreiheit (Tastatur, Kontraste, Screenreader-Stichproben); Erklärungen und Glossar (S); Befehlspalette (S); rechtliche Hinweise und Lizenzen (TradingView-Attribution); Impressum und Datenschutzhinweis, soweit nicht nach E-26 vorgezogen (§3).
 - **Abnahme:** axe-Prüfung aller Hauptansichten ohne schwere oder kritische Verstöße; alle Aktionen per Tastatur erreichbar; Hinweise vorhanden.
 - **Referenzen:** NF-09; US-UI-04–US-UI-06, US-UI-08
 - **Abhängig von:** AP 6.3
 
 #### AP 6.6 – Release 1.0
 
-- **Umfang:** `simVersion` 1 einfrieren und die Kompatibilitätszusage aktivieren (TS §15); Versionsanzeige; README (Spielidee, Entwicklung, Deployment); CI/CD prüfen; Abschlusstest nach Checkliste aller Muss-Stories der Stufe 1.
-- **Abnahme:** Alle Muss-Stories der Stufe 1 erfüllt; Release deployt (Tag und Commit auf Anweisung).
-- **Referenzen:** TS §14.4, §15
-- **Abhängig von:** AP 6.4, AP 6.5
+- **Umfang:** die dann gültige `simVersion` einfrieren und die Kompatibilitätszusage im beschlossenen Umfang aktivieren (TS §15, E-25); Versionsanzeige; README (Spielidee, Entwicklung, Deployment); CI/CD prüfen; Abschlusstest nach Checkliste aller Muss-Stories der Stufe 1.
+- **Abnahme:** Alle APs sind fertig und alle Muss-Stories der Stufe 1 erfüllt (Zuordnung am Ende von §5); der Selbsttest zeigt in Chrome, Firefox und Safari unter iOS dieselben Golden-Master-Prüfsummen (TS §4.6); Release deployt (Tag und Commit auf Anweisung).
+- **Referenzen:** TS §4.6, §14.4, §15; E-25
+- **Abhängig von:** AP 6.4, AP 6.5, AP 3.5
+
+### Zuordnung der User Stories
+
+Stories der Stufe 1 (PS §7) und die Arbeitspakete, die sie umsetzen. AP 6.6 prüft die Muss-Stories nach dieser Liste.
+
+| Stories                                    | Arbeitspakete                                                              |
+| ------------------------------------------ | -------------------------------------------------------------------------- |
+| US-SP-01–03                                | AP 2.4; Seed in den Einstellungen: AP 6.2                                  |
+| US-ZT-01–05                                | AP 2.5 (US-ZT-05 Soll); Schalter für Tastenkürzel und Hintergrund: AP 2.6  |
+| US-ZT-06 (Soll)                            | AP 3.6                                                                     |
+| US-EK-01, US-EK-02                         | AP 3.2                                                                     |
+| US-EK-03                                   | AP 3.5                                                                     |
+| US-BK-01–05                                | AP 3.3 (Kommandos), AP 3.5 (Oberfläche); Depot eröffnen: AP 5.1 und AP 5.4 |
+| US-BK-06                                   | AP 3.4                                                                     |
+| US-BK-07, US-BK-08                         | AP 3.2; Depotgebühr: AP 5.2                                                |
+| US-MK-01, US-MK-02, US-MK-04               | AP 4.4                                                                     |
+| US-MK-03                                   | AP 4.5                                                                     |
+| US-MK-05                                   | AP 4.1                                                                     |
+| US-MK-06 (Soll)                            | AP 4.5 (Termine am Instrument), AP 5.7 (Kalender für Depot und Watchlist)  |
+| US-HD-01–04                                | AP 5.1 (Engine), AP 5.4 (Oberfläche)                                       |
+| US-HD-05                                   | AP 5.6                                                                     |
+| US-PF-01, US-PF-04, US-PF-05               | AP 5.7                                                                     |
+| US-PF-02, US-PF-03, US-PF-06               | AP 5.5; Lots und Erträge in der Engine: AP 5.2                             |
+| US-PF-07 (Soll)                            | AP 5.7                                                                     |
+| US-ST-01–03                                | AP 3.2 (Steuerkern, Zinsen), AP 5.3                                        |
+| US-ST-04                                   | AP 5.5                                                                     |
+| US-CH-01                                   | AP 4.2                                                                     |
+| US-CH-02                                   | AP 4.3                                                                     |
+| US-BN-01–03                                | AP 3.6                                                                     |
+| US-BN-04 (Soll)                            | AP 6.3                                                                     |
+| US-EX-01, US-EX-02, US-EX-03 (Soll)        | AP 6.1; Speicherstatus: AP 6.3                                             |
+| US-UI-01, US-UI-09                         | AP 2.6, AP 6.2                                                             |
+| US-UI-02 (Soll)                            | AP 6.2                                                                     |
+| US-UI-03, US-UI-04                         | AP 0.4 und jedes UI-AP; Abschlussprüfung: AP 6.5                           |
+| US-UI-05 (Soll), US-UI-06 (Soll), US-UI-08 | AP 6.5                                                                     |
+| US-UI-07 (Soll)                            | AP 6.3                                                                     |
+| US-UI-10 (Soll, Vorschlag E-28)            | noch nicht zugeordnet                                                      |
+
+Soll-Punkte innerhalb von Stories, die noch kein AP nennt: Saldoverlauf als Chart (US-BK-06) und die Aufteilung des Vermögensverlaufs in Bargeld und Wertpapiere (US-PF-04). Sie werden zugeordnet oder bewusst auf nach 1.0 verschoben, sobald M4 steht.
 
 ## 6. Spätere Ausbaustufen
 
@@ -728,3 +817,4 @@ Die Reihenfolge ab M7 ist ein Vorschlag und wird nach dem MVP gemeinsam priorisi
 | 11.11.2026 | Fix im Lab-Chart: Jeder neue Datensatz (Zeitraum, Auflösung, Serie, Simulation) lud sofort einen oder mehrere ältere Blöcke nach, weil der eingepasste Ausschnitt an der ältesten Kerze beginnt und der Wrapper zusätzlich einen veralteten Ausschnitt prüfte. `price-chart` fragt jetzt nur nach Scrollen oder Zoomen des Nutzers nach älteren Kerzen und prüft nur den gemeldeten Ausschnitt. TS angepasst: §11.7.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | 11.11.2026 | Seiten- und Komponententests eingeführt (Entscheidung des Product Owners: Integrationstests mit echten Abhängigkeiten unter jsdom, Einstieg über die echten Routen, eigene Helfer auf `data-testid`). Ersetzt werden nur Prozess- und Plattformgrenzen: Worker (`provideInProcessLabWorker()`, dafür hat `LAB_WORKER_FACTORY` jetzt einen Root-Default), IndexedDB, Canvas-Zeichnen, Layout und `ResizeObserver`; `lightweight-charts` läuft echt. `provideAppCore()` teilt die App-Provider zwischen App und Tests. Pilot: Lab-Seite und `price-chart`; der Regressionstest schlägt mit dem Stand vor dem Fix fehl (260 statt 130 Kerzen). Dabei zwei Fehler im Chart gefunden und behoben: Ein einzelner Mausrad-Schritt an der ältesten Kerze lud nichts nach, weil die Bibliothek die neue Range meldet, bevor der Host-Listener die Geste vermerkt (Gesten zählen jetzt in der Capture-Phase); nach einem kleinen Block lud der Chart nicht weiter, obwohl der Ausschnitt noch an der ältesten Kerze stand (das Range-Event kommt schon in `setData`). TS angepasst: §11.7, §14.1; Regeln in `CLAUDE.md` §10.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 11.11.2026 | Oberflächentests im Bestand nachgezogen und für neue APs festgelegt (Auftrag des Product Owners). Die Definition of Done (§2.4) verlangt Seiten- bzw. Komponententests für neue Seiten und ui-Komponenten mit eigenem Verhalten; sie werden mit der Komponente geplant (`CLAUDE.md` §10). Neu: Seitentest der Shell (Navigation, Menüs, Seitentitel, Skip-Link, Telefon- und Desktop-Layout über `installViewport`), Komponententests für `app-tabs` und den Bestätigungsdialog mit echtem CDK-Dialog (ersetzt den Test mit gemocktem `Dialog.open`), im Labor-Seitentest Serienauswahl und Welt-Tabellen. Ohne eigenen Test bleiben die Platzhalterseiten (Tests kommen mit ihren APs), die Labor-Seiten „UI-Bausteine“ und „Tokens“ sowie reine Anzeige-Komponenten. `provideEngineService()` gehört in `provideAppCore()`, damit Seitentests die Engine-Verdrahtung mitnutzen (TS §11.2, Punkt 4; Vorgabe für AP 2.2).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 11.11.2026 | Kritische Prüfung von Projektplan, PS und TS (Auftrag des Product Owners). Neue Vorschläge E-21 bis E-28 (§3, TS §16): Abbuchungskonto für Sparpläne, Langzeitverhalten des Marktmodells, Spread-Faktor aus der Volatilität, Aktivitätsgewichte der Faktoren, Versionsregeln vor und ab 1.0, öffentliche Bereitstellung, Budgets für Mobilgeräte, Umfang von Stufe 1 für Einsteiger; Ergänzungen zu E-05, E-08, E-10 und E-11. Neue Risiken R12–R15 (TS §17). Neu im Plan: AP 2.6 (Einstellungen: Grundlage; jetzt 44 APs), Steuerkern in AP 3.2, Browser-Selbsttest und Langzeit-Kennzahlen in AP 1.8, zusätzliche Abhängigkeiten (AP 4.5 von 1.8, AP 5.4 von 3.6, AP 3.6 und 6.2 von 2.6, AP 6.4 von 1.9, AP 6.6 von 3.5), Vormerkungen aus dem Protokoll und offene Regelfragen in den AP-Texten, Seitentests in den Abnahmen, Zuordnung der User Stories (§5), empfohlene Reihenfolge M1 vor M2 (§1). Korrigiert: Browserversionen in NF-08, überholte Schätzwerte (Messwerttabelle in TS §14.3), Text von E-08, AP 2.3 (Schema-Version, Begriff). Nicht umgesetzt, nur nach Rückfrage: weitere APs teilen (2.3, 2.5, 3.6, 5.1, 5.7, 6.1, 6.5); Ist-Stand und Änderungsprotokoll zusammenführen.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
