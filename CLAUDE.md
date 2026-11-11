@@ -68,6 +68,8 @@ Rules for implementing Angular code in this repository, so that generated code l
 
 Tests run with Vitest under jsdom (`@angular/build:unit-test`, setup in `src/test-setup.ts`).
 
+**Checking changes in the browser:** after implementing UI changes, check them in the real app with the Playwright MCP server (`.mcp.json`: headless Google Chrome, fresh profile per session) against the dev server on port 4711. If the server isn't running, start it with the command from `.claude/launch.json` (selects Node via nvm, no `--open`). Navigate to the affected page, go through the flows by `data-testid`, read the console and take screenshots for layout questions. Playwright writes its output to `.playwright-mcp/` (git-ignored); close the browser when done. This complements the page tests and doesn't replace them. A new machine needs Google Chrome and nvm in `~/.nvm`.
+
 ## 0. How to use this file
 
 - **When editing existing files, keep them internally consistent.** Don't mix styles within one file, and don't refactor unrelated code unless you are asked to.

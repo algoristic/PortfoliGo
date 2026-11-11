@@ -70,7 +70,6 @@ Thumbs.db
 /.gitconfig
 /.gitmodules
 /.idea
-/.mcp.json
 /.profile
 /.ripgreprc
 /.zprofile
@@ -78,7 +77,6 @@ Thumbs.db
 /.claude/agents
 /.claude/commands
 /.claude/hooks
-/.claude/launch.json
 /.claude/loop.md
 /.claude/output-styles
 /.claude/routines
