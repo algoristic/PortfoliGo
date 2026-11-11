@@ -2,6 +2,7 @@ import {
   chartTimeToTick,
   formatChartTime,
   formatTickMark,
+  isPrepended,
   readChartColors,
   tickToChartTime,
   toChartCandles,
@@ -105,6 +106,22 @@ describe('price chart utils', () => {
         up: '#26c281',
         down: '#ff6b6b',
       });
+    });
+  });
+
+  describe('isPrepended', () => {
+    const candle = (tick: number): Candle => ({ tick, open: 1, high: 1, low: 1, close: 1 });
+    const loaded = [candle(10), candle(20)];
+
+    it('detects older candles in front of the loaded ones', () => {
+      expect(isPrepended(loaded, [candle(0), candle(10), candle(20)])).toBe(true);
+      expect(isPrepended(loaded, [candle(10), candle(20)])).toBe(true);
+    });
+
+    it('treats other data as a new data set', () => {
+      expect(isPrepended([], loaded)).toBe(false);
+      expect(isPrepended(loaded, [candle(10), candle(20), candle(30)])).toBe(false);
+      expect(isPrepended(loaded, [candle(20)])).toBe(false);
     });
   });
 });

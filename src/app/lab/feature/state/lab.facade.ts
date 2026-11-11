@@ -23,6 +23,7 @@ export class LabFacade {
   allowedResolutions$ = this.#store.pipe(select(LabSelectors.selectAllowedResolutions));
   candles$ = this.#store.pipe(select(LabSelectors.selectCandles));
   loadingCandles$ = this.#store.pipe(select(LabSelectors.selectLoadingCandles));
+  loadingHistory$ = this.#store.pipe(select(LabSelectors.selectLoadingHistory));
 
   enterSimulationPage(): void {
     this.#store.dispatch(LabActions.enterSimulationPage());
@@ -46,5 +47,9 @@ export class LabFacade {
 
   changeChartOptions(options: Partial<LabChartOptions>): void {
     this.#store.dispatch(LabActions.changedChartOptions({ options }));
+  }
+
+  loadHistory(): void {
+    this.#store.dispatch(LabActions.scrolledToChartStart());
   }
 }

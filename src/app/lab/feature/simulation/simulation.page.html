@@ -11,6 +11,7 @@
 @let allowedResolutions = labFacade.allowedResolutions$ | async;
 @let candles = labFacade.candles$ | async;
 @let loadingCandles = labFacade.loadingCandles$ | async;
+@let loadingHistory = labFacade.loadingHistory$ | async;
 @let _seed = seedForm.seed();
 
 <main class="mx-auto flex min-h-dvh max-w-6xl flex-col gap-6 bg-bg p-6 text-fg">
@@ -111,9 +112,11 @@
         [allowedResolutions]="allowedResolutions ?? []"
         [candles]="candles ?? []"
         [loading]="loadingCandles ?? false"
+        [loadingHistory]="loadingHistory ?? false"
         [candlesMs]="timings.candlesMs"
         (selectedSeries)="onSelectSeries($event)"
-        (changedChartOptions)="onChangeChartOptions($event)"></app-section-series-chart>
+        (changedChartOptions)="onChangeChartOptions($event)"
+        (scrolledToChartStart)="onScrollToChartStart()"></app-section-series-chart>
     </app-panel>
 
     <app-panel heading="Welt-Übersicht" i18n-heading="@@featureLab-simulationPage-overview">

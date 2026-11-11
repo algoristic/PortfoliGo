@@ -1,8 +1,13 @@
 import { Action, createReducer, on } from '@ngrx/store';
 
 import * as LabActions from './lab.actions';
-import { LabChartOptions, LabStatus, LabTimings } from './lab.model';
-import { mergeChartOptions } from './lab.utils';
+import { CandleRequest, LabChartOptions, LabStatus, LabTimings } from './lab.model';
+import {
+  historyRequest,
+  isSameCandleRequest,
+  mergeChartOptions,
+  prependCandles,
+} from './lab.utils';
 
 import { Tick } from '../../../clock/domain/models/time.model';
 import { Candle } from '../../../market/domain/models/candle.model';
@@ -22,6 +27,9 @@ export interface LabState {
   chartOptions: LabChartOptions;
   candles: Candle[];
   loadingCandles: boolean;
+  /** Start of the period the loaded candles cover; older blocks load when the chart scrolls. */
+  historyFrom?: Tick;
+  loadingHistory: boolean;
   error?: unknown;
 }
 
@@ -32,6 +40,7 @@ export const initialLabState: LabState = {
   chartOptions: { range: '1y', resolution: '1d', chartType: 'candles' },
   candles: [],
   loadingCandles: false,
+  loadingHistory: false,
 };
 
 const MS_PER_SECOND = 1000;
@@ -71,7 +80,7 @@ const reducer = createReducer(
       marketDaysPerSecond:
         period.durationMs > 0 ? (period.marketDays * MS_PER_SECOND) / period.durationMs : undefined,
     },
-    loadingCandles: true,
+    ...reloadCandles(),
   })),
   on(LabActions.simulateFailure, (state, { error }) => ({
     ...state,
@@ -81,23 +90,48 @@ const reducer = createReducer(
   on(LabActions.selectedSeries, (state, { series }) => ({
     ...state,
     selectedSeries: series,
-    loadingCandles: state.overview !== undefined,
+    ...reloadCandles(state.overview !== undefined),
   })),
-  on(LabActions.changedChartOptions, (state, { options }) => ({
-    ...state,
-    chartOptions: mergeChartOptions(state.chartOptions, options),
-    loadingCandles: state.overview !== undefined,
-  })),
-  on(LabActions.retrievedCandles, (state, { candles }) => ({
+  on(LabActions.changedChartOptions, (state, { options }) => {
+    const chartOptions = mergeChartOptions(state.chartOptions, options);
+    return chartOptions === state.chartOptions
+      ? state
+      : { ...state, chartOptions, ...reloadCandles(state.overview !== undefined) };
+  }),
+  on(LabActions.retrievedCandles, (state, { request, candles }) => ({
     ...state,
     candles: candles.candles,
     loadingCandles: false,
+    historyFrom: request.fromTick,
     timings: state.timings && { ...state.timings, candlesMs: candles.durationMs },
   })),
   on(LabActions.loadCandlesFailure, (state, { error }) => ({
     ...state,
     candles: [],
     loadingCandles: false,
+    historyFrom: undefined,
+    error,
+  })),
+  on(LabActions.scrolledToChartStart, (state) =>
+    state.loadingHistory || nextHistoryRequest(state) === null
+      ? state
+      : { ...state, loadingHistory: true },
+  ),
+  // A block for another series, range or period (changed while it loaded) is dropped.
+  on(LabActions.retrievedHistoryCandles, (state, { request, candles }) =>
+    state.loadingHistory && isSameCandleRequest(request, nextHistoryRequest(state))
+      ? {
+          ...state,
+          candles: prependCandles(candles.candles, state.candles),
+          historyFrom: request.fromTick,
+          loadingHistory: false,
+          timings: state.timings && { ...state.timings, candlesMs: candles.durationMs },
+        }
+      : state,
+  ),
+  on(LabActions.loadHistoryFailure, (state, { error }) => ({
+    ...state,
+    loadingHistory: false,
     error,
   })),
 );
@@ -108,4 +142,17 @@ export function labReducer(state: LabState | undefined, action: Action): LabStat
 
 function readyOrIdle(state: LabState): LabStatus {
   return state.overview === undefined ? 'idle' : 'ready';
+}
+
+/** Next block of older candles, or `null` while the candles load or the history is complete. */
+export function nextHistoryRequest(state: LabState): CandleRequest | null {
+  return state.loadingCandles || state.historyFrom === undefined || state.candles.length === 0
+    ? null
+    : historyRequest(state.selectedSeries, state.chartOptions, state.historyFrom);
+}
+
+function reloadCandles(
+  loadingCandles = true,
+): Pick<LabState, 'loadingCandles' | 'historyFrom' | 'loadingHistory'> {
+  return { loadingCandles, historyFrom: undefined, loadingHistory: false };
 }

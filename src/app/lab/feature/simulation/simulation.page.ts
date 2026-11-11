@@ -80,6 +80,10 @@ export class SimulationPage {
     this.labFacade.changeChartOptions(options);
   }
 
+  onScrollToChartStart(): void {
+    this.labFacade.loadHistory();
+  }
+
   formatTime(tick: Tick): string {
     return formatGameTime(tick);
   }

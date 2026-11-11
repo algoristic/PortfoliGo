@@ -1,7 +1,18 @@
-import { candleRequest, mergeChartOptions, RANGE_RESOLUTIONS, rangeStart } from './lab.utils';
+import { CHART_RANGES, LabChartOptions } from './lab.model';
+import {
+  candleRequest,
+  DEFAULT_RESOLUTIONS,
+  historyRequest,
+  isSameCandleRequest,
+  mergeChartOptions,
+  prependCandles,
+  RANGE_RESOLUTIONS,
+  rangeStart,
+} from './lab.utils';
 
 import { dateTimeToTick, GAME_START_TICK } from '../../../clock/domain/calendar-logic';
 import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '../../../clock/domain/models/time.model';
+import { CANDLE_RESOLUTIONS } from '../../../market/domain/models/candle.model';
 
 describe('lab utils', () => {
   describe('mergeChartOptions', () => {
@@ -14,7 +25,25 @@ describe('lab utils', () => {
     it('falls back to the default resolution of the range', () => {
       expect(
         mergeChartOptions({ range: '1y', resolution: '1d', chartType: 'line' }, { range: '1d' }),
-      ).toEqual({ range: '1d', resolution: RANGE_RESOLUTIONS['1d'][0], chartType: 'line' });
+      ).toEqual({ range: '1d', resolution: DEFAULT_RESOLUTIONS['1d'], chartType: 'line' });
+    });
+
+    it('returns the same options when nothing changes', () => {
+      const options: LabChartOptions = { range: '1w', resolution: '1h', chartType: 'line' };
+      expect(mergeChartOptions(options, { range: '1w', resolution: '1h' })).toBe(options);
+    });
+  });
+
+  describe('RANGE_RESOLUTIONS', () => {
+    it('lists the resolutions fine to coarse and contains the default', () => {
+      for (const range of CHART_RANGES) {
+        const resolutions = RANGE_RESOLUTIONS[range];
+        const sorted = [...resolutions].sort(
+          (a, b) => CANDLE_RESOLUTIONS.indexOf(a) - CANDLE_RESOLUTIONS.indexOf(b),
+        );
+        expect(resolutions).toEqual(sorted);
+        expect(resolutions).toContain(DEFAULT_RESOLUTIONS[range]);
+      }
     });
   });
 
@@ -53,6 +82,53 @@ describe('lab utils', () => {
         candleRequest(4, { range: 'max', resolution: '1w', chartType: 'candles' }, GAME_START_TICK)
           .source,
       ).toBe('support');
+    });
+  });
+
+  describe('historyRequest', () => {
+    const options = { range: '1w', resolution: '15m', chartType: 'candles' } as const;
+
+    it('requests the block of the range before the loaded period', () => {
+      expect(historyRequest(3, options, GAME_START_TICK)).toEqual({
+        series: 3,
+        resolution: '15m',
+        fromTick: GAME_START_TICK - 1 - 7 * TICKS_PER_DAY,
+        toTick: GAME_START_TICK - 1,
+        source: 'minutes',
+      });
+    });
+
+    it('stops at the epoch', () => {
+      expect(historyRequest(3, options, TICKS_PER_DAY)?.fromTick).toBe(0);
+      expect(historyRequest(3, options, 0)).toBeNull();
+    });
+  });
+
+  describe('isSameCandleRequest', () => {
+    const request = candleRequest(
+      1,
+      { range: '1y', resolution: '1d', chartType: 'line' },
+      GAME_START_TICK,
+    );
+
+    it('compares all fields', () => {
+      expect(isSameCandleRequest(request, { ...request })).toBe(true);
+      expect(isSameCandleRequest(request, { ...request, series: 2 })).toBe(false);
+      expect(isSameCandleRequest(request, null)).toBe(false);
+    });
+  });
+
+  describe('prependCandles', () => {
+    const candle = (tick: number) => ({ tick, open: tick, high: tick, low: tick, close: tick });
+
+    it('puts older candles in front and drops the ones already loaded', () => {
+      expect(prependCandles([candle(1), candle(2), candle(3)], [candle(3), candle(4)])).toEqual([
+        candle(1),
+        candle(2),
+        candle(3),
+        candle(4),
+      ]);
+      expect(prependCandles([candle(1)], [])).toEqual([candle(1)]);
     });
   });
 });

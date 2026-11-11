@@ -1,4 +1,5 @@
 import { LabChartOptions } from './lab.model';
+import { initialLabState, LabState } from './lab.reducer';
 import * as LabSelectors from './lab.selectors';
 
 import { GAME_START_TICK } from '../../../clock/domain/calendar-logic';
@@ -36,8 +37,8 @@ describe('LabSelectors', () => {
   describe('selectAllowedResolutions', () => {
     it('gives the resolutions of the range', () => {
       expect(LabSelectors.selectAllowedResolutions.projector(options)).toEqual([
-        '15m',
         '5m',
+        '15m',
         '1h',
         '1d',
       ]);
@@ -55,6 +56,32 @@ describe('LabSelectors', () => {
         resolution: '1h',
         fromTick: GAME_START_TICK - 7 * TICKS_PER_DAY,
         toTick: GAME_START_TICK,
+        source: 'minutes',
+      });
+    });
+  });
+
+  describe('selectHistoryRequest', () => {
+    const state: LabState = {
+      ...initialLabState,
+      selectedSeries: 2,
+      chartOptions: { range: '3m', resolution: '1d', chartType: 'candles' },
+      candles: [{ tick: GAME_START_TICK, open: 1, high: 1, low: 1, close: 1 }],
+      historyFrom: GAME_START_TICK,
+    };
+
+    it('is null while no history block loads', () => {
+      expect(LabSelectors.selectHistoryRequest.projector(state)).toBeNull();
+    });
+
+    it('requests the block before the loaded period while it loads', () => {
+      expect(
+        LabSelectors.selectHistoryRequest.projector({ ...state, loadingHistory: true }),
+      ).toEqual({
+        series: 2,
+        resolution: '1d',
+        fromTick: GAME_START_TICK - 1 - 91 * TICKS_PER_DAY,
+        toTick: GAME_START_TICK - 1,
         source: 'minutes',
       });
     });

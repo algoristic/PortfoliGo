@@ -1,6 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 
-import { LabChartOptions } from './lab.model';
+import { CandleRequest, LabChartOptions } from './lab.model';
 
 import {
   GeneratedWorld,
@@ -23,6 +23,7 @@ export const changedChartOptions = createAction(
   '[Lab/Page] Changed chart options',
   props<{ options: Partial<LabChartOptions> }>(),
 );
+export const scrolledToChartStart = createAction('[Lab/Page] Scrolled to chart start');
 
 export const generateWorldSuccess = createAction(
   '[Lab/API] Generate world success',
@@ -42,9 +43,17 @@ export const simulateFailure = createAction(
 );
 export const retrievedCandles = createAction(
   '[Lab/API] Retrieved candles',
-  props<{ candles: LoadedCandles }>(),
+  props<{ request: CandleRequest; candles: LoadedCandles }>(),
 );
 export const loadCandlesFailure = createAction(
   '[Lab/API] Load candles failure',
+  props<{ error: unknown }>(),
+);
+export const retrievedHistoryCandles = createAction(
+  '[Lab/API] Retrieved history candles',
+  props<{ request: CandleRequest; candles: LoadedCandles }>(),
+);
+export const loadHistoryFailure = createAction(
+  '[Lab/API] Load history failure',
   props<{ error: unknown }>(),
 );

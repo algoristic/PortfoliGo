@@ -93,6 +93,9 @@
         >Aus den Tagesstützpunkten: Hoch und Tief nur aus Eröffnung und Schluss</span
       >
     }
+    @if (loadingHistory()) {
+      <span i18n="@@featureLab-sectionSeriesChart-loadingHistory">Lade ältere Kerzen …</span>
+    }
     @if (_candlesMs !== undefined) {
       <span i18n="@@featureLab-sectionSeriesChart-candlesMs"
         >Abfrage {{ _candlesMs.toFixed(1) }} ms</span
@@ -106,7 +109,8 @@
       [candles]="candles()"
       [chartType]="_chartOptions.chartType"
       [label]="chartLabel"
-      data-testid="lab.simulation.chart"></app-price-chart>
+      data-testid="lab.simulation.chart"
+      (scrolledToStart)="onScrollToChartStart()"></app-price-chart>
     @if (loading()) {
       <app-skeleton class="absolute inset-0" [block]="true"></app-skeleton>
     }

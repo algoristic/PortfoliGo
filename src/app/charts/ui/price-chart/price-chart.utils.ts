@@ -91,3 +91,14 @@ export function readChartColors(
     down: token('down'),
   };
 }
+
+/** Whether `next` is `previous` with zero or more older candles in front (history loaded). */
+export function isPrepended(previous: readonly Candle[], next: readonly Candle[]): boolean {
+  const offset = next.length - previous.length;
+  return (
+    previous.length > 0 &&
+    offset >= 0 &&
+    next[offset].tick === previous[0].tick &&
+    next[next.length - 1].tick === previous[previous.length - 1].tick
+  );
+}

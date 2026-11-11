@@ -38,6 +38,7 @@ describe('LabFacade', () => {
       facade.simulate(30);
       facade.selectSeries(4);
       facade.changeChartOptions({ chartType: 'line' });
+      facade.loadHistory();
       expect(vi.mocked(store.dispatch).mock.calls.map(([action]) => action)).toEqual([
         LabActions.enterSimulationPage(),
         LabActions.leaveSimulationPage(),
@@ -45,6 +46,7 @@ describe('LabFacade', () => {
         LabActions.clickedSimulate({ days: 30 }),
         LabActions.selectedSeries({ series: 4 }),
         LabActions.changedChartOptions({ options: { chartType: 'line' } }),
+        LabActions.scrolledToChartStart(),
       ]);
     });
   });

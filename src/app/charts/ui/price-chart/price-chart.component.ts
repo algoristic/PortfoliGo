@@ -6,6 +6,7 @@ import {
   ElementRef,
   inject,
   input,
+  output,
   signal,
   viewChild,
 } from '@angular/core';
@@ -16,6 +17,7 @@ import type {
   ISeriesApi,
   ChartOptions as LibraryChartOptions,
   LineData,
+  LogicalRange,
   SeriesType,
   UTCTimestamp,
 } from 'lightweight-charts';
@@ -24,12 +26,16 @@ import { PriceChartColors, PriceChartType } from './price-chart.model';
 import {
   formatChartTime,
   formatTickMark,
+  isPrepended,
   readChartColors,
   toChartCandles,
   toLinePoints,
 } from './price-chart.utils';
 
 import { Candle } from '../../../market/domain/models/candle.model';
+
+/** Bars before the oldest candle at which the chart asks for older candles. */
+const HISTORY_THRESHOLD_BARS = 10;
 
 type ChartLibrary = typeof import('lightweight-charts');
 
@@ -41,7 +47,8 @@ interface ChartHandle {
 /**
  * Price chart on lightweight-charts (TS §11.7, E-04), loaded lazily with a dynamic import. The
  * time axis shows game time; colours follow the `--pgo-*` tokens and change with the theme. The
- * TradingView logo stays on as the required attribution.
+ * TradingView logo stays on as the required attribution. When the user scrolls or zooms close to
+ * the oldest candle, `scrolledToStart` asks for older candles; prepended candles keep the view.
  */
 @Component({
   selector: 'app-price-chart',
@@ -57,12 +64,17 @@ export class PriceChartComponent {
   /** Accessible name of the chart. */
   label = input.required<string>();
 
+  /** Emitted once per data set when the visible range reaches the oldest candle. */
+  scrolledToStart = output<void>();
+
   container = viewChild.required<ElementRef<HTMLDivElement>>('container');
 
   #handle = signal<ChartHandle | undefined>(undefined);
   #colors = signal<PriceChartColors | undefined>(undefined);
   #series?: ISeriesApi<SeriesType>;
   #seriesType?: PriceChartType;
+  #renderedCandles: readonly Candle[] = [];
+  #historyArmed = false;
   #destroyed = false;
 
   constructor() {
@@ -105,8 +117,12 @@ export class PriceChartComponent {
     // The theme toggles the `dark` class on `<html>`; re-read the tokens when it changes.
     const observer = new MutationObserver(() => this.#colors.set(readColors()));
     observer.observe(root, { attributes: true, attributeFilter: ['class'] });
+    const onVisibleRangeChange = (range: LogicalRange | null): void =>
+      this.#checkHistoryStart(range);
+    chart.timeScale().subscribeVisibleLogicalRangeChange(onVisibleRangeChange);
     this.#destroyRef.onDestroy(() => {
       observer.disconnect();
+      chart.timeScale().unsubscribeVisibleLogicalRangeChange(onVisibleRangeChange);
       chart.remove();
     });
 
@@ -122,7 +138,11 @@ export class PriceChartComponent {
   ): void {
     const { library, chart } = handle;
     chart.applyOptions(chartOptions(colors));
-    if (this.#series === undefined || this.#seriesType !== chartType) {
+    const newSeries = this.#series === undefined || this.#seriesType !== chartType;
+    const newCandles = candles !== this.#renderedCandles;
+    // Older candles in front keep the view; any other new data set is fitted.
+    const fit = newSeries || (newCandles && !isPrepended(this.#renderedCandles, candles));
+    if (newSeries) {
       if (this.#series !== undefined) {
         chart.removeSeries(this.#series);
       }
@@ -131,6 +151,9 @@ export class PriceChartComponent {
           ? chart.addSeries(library.LineSeries, { lineWidth: 2 })
           : chart.addSeries(library.CandlestickSeries, { borderVisible: false });
       this.#seriesType = chartType;
+    }
+    if (this.#series === undefined) {
+      return;
     }
     if (chartType === 'line') {
       this.#series.applyOptions({ color: colors.line });
@@ -154,7 +177,21 @@ export class PriceChartComponent {
         })),
       );
     }
-    chart.timeScale().fitContent();
+    if (fit) {
+      chart.timeScale().fitContent();
+    }
+    if (newCandles) {
+      this.#renderedCandles = candles;
+      this.#historyArmed = true;
+      this.#checkHistoryStart(chart.timeScale().getVisibleLogicalRange());
+    }
+  }
+
+  #checkHistoryStart(range: LogicalRange | null): void {
+    if (this.#historyArmed && range !== null && range.from < HISTORY_THRESHOLD_BARS) {
+      this.#historyArmed = false;
+      this.scrolledToStart.emit();
+    }
   }
 }
 

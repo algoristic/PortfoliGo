@@ -1,6 +1,8 @@
 import * as LabActions from './lab.actions';
-import { initialLabState, labReducer, LabState } from './lab.reducer';
+import { CandleRequest } from './lab.model';
+import { initialLabState, labReducer, LabState, nextHistoryRequest } from './lab.reducer';
 
+import { TICKS_PER_DAY } from '../../../clock/domain/models/time.model';
 import { GeneratedWorld } from '../../data-access/service/lab-simulation-service.model';
 
 const world: GeneratedWorld = {
@@ -9,6 +11,14 @@ const world: GeneratedWorld = {
   now: 100,
   worldMs: 20,
   prehistoryMs: 400,
+};
+
+const request: CandleRequest = {
+  series: 0,
+  resolution: '1d',
+  fromTick: 0,
+  toTick: 100,
+  source: 'minutes',
 };
 
 function ready(): LabState {
@@ -84,6 +94,13 @@ describe('labReducer', () => {
     expect(state.loadingCandles).toBe(true);
   });
 
+  it('keeps the state when the chart options do not change', () => {
+    const state = ready();
+    expect(labReducer(state, LabActions.changedChartOptions({ options: { range: '1y' } }))).toBe(
+      state,
+    );
+  });
+
   it('loads candles only with a world when the series changes', () => {
     expect(labReducer(initialLabState, LabActions.selectedSeries({ series: 3 }))).toMatchObject({
       selectedSeries: 3,
@@ -95,17 +112,93 @@ describe('labReducer', () => {
     });
   });
 
-  it('stores retrieved candles and their query time', () => {
+  it('stores retrieved candles, the start of their period and their query time', () => {
     const candles = [{ tick: 1, open: 1, high: 2, low: 0.5, close: 1.5 }];
     const state = labReducer(
       ready(),
       LabActions.retrievedCandles({
+        request: { ...request, fromTick: 0 },
         candles: { series: 0, resolution: '1d', candles, durationMs: 4 },
       }),
     );
     expect(state.candles).toEqual(candles);
     expect(state.loadingCandles).toBe(false);
+    expect(state.historyFrom).toBe(0);
     expect(state.timings?.candlesMs).toBe(4);
+  });
+
+  describe('history', () => {
+    const candle = (tick: number) => ({ tick, open: 1, high: 1, low: 1, close: 1 });
+    const from = 100 * TICKS_PER_DAY;
+
+    function loaded(): LabState {
+      return labReducer(
+        ready(),
+        LabActions.retrievedCandles({
+          request: { ...request, fromTick: from },
+          candles: { series: 0, resolution: '1d', candles: [candle(from + 600)], durationMs: 1 },
+        }),
+      );
+    }
+
+    function loadingHistory(): LabState {
+      return labReducer(loaded(), LabActions.scrolledToChartStart());
+    }
+
+    it('starts loading a block only when one is due', () => {
+      expect(loadingHistory().loadingHistory).toBe(true);
+      const complete = { ...loaded(), historyFrom: 0 };
+      expect(labReducer(complete, LabActions.scrolledToChartStart())).toBe(complete);
+    });
+
+    it('puts the older candles in front and moves the start of the period', () => {
+      const state = loadingHistory();
+      const block = nextHistoryRequest(state);
+      expect(block).not.toBeNull();
+      if (block === null) {
+        return;
+      }
+      const next = labReducer(
+        state,
+        LabActions.retrievedHistoryCandles({
+          request: block,
+          candles: {
+            series: 0,
+            resolution: '1d',
+            candles: [candle(from - 800), candle(from + 600)],
+            durationMs: 1,
+          },
+        }),
+      );
+      expect(next.candles).toEqual([candle(from - 800), candle(from + 600)]);
+      expect(next.historyFrom).toBe(block.fromTick);
+      expect(next.loadingHistory).toBe(false);
+    });
+
+    it('drops a block that no longer fits the chart', () => {
+      const state = labReducer(
+        loadingHistory(),
+        LabActions.changedChartOptions({ options: { range: '3m' } }),
+      );
+      expect(state).toMatchObject({ historyFrom: undefined, loadingHistory: false });
+      const block = { ...request, fromTick: 0, toTick: from - 1 };
+      const next = labReducer(
+        state,
+        LabActions.retrievedHistoryCandles({
+          request: block,
+          candles: { series: 0, resolution: '1d', candles: [candle(1)], durationMs: 1 },
+        }),
+      );
+      expect(next).toBe(state);
+    });
+
+    it('stops loading when the block fails', () => {
+      const error = new Error('x');
+      expect(labReducer(loadingHistory(), LabActions.loadHistoryFailure({ error }))).toMatchObject({
+        loadingHistory: false,
+        error,
+      });
+    });
   });
 
   it('clears the candles when loading fails', () => {

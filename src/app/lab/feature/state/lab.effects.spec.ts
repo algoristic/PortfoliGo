@@ -7,6 +7,7 @@ import type { Mocked } from 'vitest';
 
 import * as LabActions from './lab.actions';
 import { LabEffects } from './lab.effects';
+import { CandleRequest } from './lab.model';
 import * as LabSelectors from './lab.selectors';
 
 import { ToastService } from '../../../shared/ui/toast/toast.service';
@@ -98,17 +99,18 @@ describe('LabEffects', () => {
     const loaded: LoadedCandles = { series: 2, resolution: '1h', candles: [], durationMs: 1 };
 
     it('loads the candles of the current request when the series changes', async () => {
-      store.overrideSelector(LabSelectors.selectCandleRequest, {
+      const request: CandleRequest = {
         series: 2,
         resolution: '1h',
         fromTick: 10,
         toTick: 20,
         source: 'minutes',
-      });
+      };
+      store.overrideSelector(LabSelectors.selectCandleRequest, request);
       service.candles.mockReturnValue(of(loaded));
       const result = firstValueFrom(effects.loadCandles$);
       actions$.next(LabActions.selectedSeries({ series: 2 }));
-      expect(await result).toEqual(LabActions.retrievedCandles({ candles: loaded }));
+      expect(await result).toEqual(LabActions.retrievedCandles({ request, candles: loaded }));
       expect(service.candles).toHaveBeenCalledWith(2, '1h', 10, 20, 'minutes');
     });
 
@@ -133,6 +135,44 @@ describe('LabEffects', () => {
       actions$.next(LabActions.changedChartOptions({ options: { range: '1d' } }));
       subscription.unsubscribe();
       expect(emitted).toEqual([]);
+      expect(service.candles).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('loadHistory$', () => {
+    const request: CandleRequest = {
+      series: 2,
+      resolution: '1d',
+      fromTick: 0,
+      toTick: 9,
+      source: 'minutes',
+    };
+    const loaded: LoadedCandles = { series: 2, resolution: '1d', candles: [], durationMs: 1 };
+
+    it('loads the block of older candles when the chart reaches its start', async () => {
+      store.overrideSelector(LabSelectors.selectHistoryRequest, request);
+      service.candles.mockReturnValue(of(loaded));
+      const result = firstValueFrom(effects.loadHistory$);
+      actions$.next(LabActions.scrolledToChartStart());
+      expect(await result).toEqual(
+        LabActions.retrievedHistoryCandles({ request, candles: loaded }),
+      );
+      expect(service.candles).toHaveBeenCalledWith(2, '1d', 0, 9, 'minutes');
+    });
+
+    it('dispatches loadHistoryFailure when the worker errors', async () => {
+      store.overrideSelector(LabSelectors.selectHistoryRequest, request);
+      service.candles.mockReturnValue(throwError(() => err));
+      const result = firstValueFrom(effects.loadHistory$);
+      actions$.next(LabActions.scrolledToChartStart());
+      expect(await result).toEqual(LabActions.loadHistoryFailure({ error: err }));
+    });
+
+    it('loads nothing when no history block is due', () => {
+      store.overrideSelector(LabSelectors.selectHistoryRequest, null);
+      const subscription = effects.loadHistory$.subscribe();
+      actions$.next(LabActions.scrolledToChartStart());
+      subscription.unsubscribe();
       expect(service.candles).not.toHaveBeenCalled();
     });
   });

@@ -29,6 +29,7 @@ export class SectionSeriesChartComponent {
   allowedResolutions = input.required<readonly CandleResolution[]>();
   candles = input.required<Candle[]>();
   loading = input(false);
+  loadingHistory = input(false);
   /** Duration of the last candle query in the worker. */
   candlesMs = input<number>();
 
@@ -37,6 +38,7 @@ export class SectionSeriesChartComponent {
 
   selectedSeries = output<number>();
   changedChartOptions = output<Partial<LabChartOptions>>();
+  scrolledToChartStart = output<void>();
 
   groups = computed<SeriesGroup[]>(() =>
     SERIES_KINDS.map((kind) => ({
@@ -79,18 +81,31 @@ export class SectionSeriesChartComponent {
   chartLabel = $localize`:@@featureLab-sectionSeriesChart-chartLabel:Kursverlauf`;
 
   onSelectSeries(value: string): void {
-    this.selectedSeries.emit(Number(value));
+    const series = Number(value);
+    if (series !== this.series()) {
+      this.selectedSeries.emit(series);
+    }
   }
 
   onSelectRange(range: ChartRange): void {
-    this.changedChartOptions.emit({ range });
+    if (range !== this.chartOptions().range) {
+      this.changedChartOptions.emit({ range });
+    }
   }
 
   onSelectResolution(resolution: CandleResolution): void {
-    this.changedChartOptions.emit({ resolution });
+    if (resolution !== this.chartOptions().resolution) {
+      this.changedChartOptions.emit({ resolution });
+    }
   }
 
   onSelectChartType(chartType: PriceChartType): void {
-    this.changedChartOptions.emit({ chartType });
+    if (chartType !== this.chartOptions().chartType) {
+      this.changedChartOptions.emit({ chartType });
+    }
+  }
+
+  onScrollToChartStart(): void {
+    this.scrolledToChartStart.emit();
   }
 }

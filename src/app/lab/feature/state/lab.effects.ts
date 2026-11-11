@@ -2,13 +2,14 @@ import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
 import { select, Store } from '@ngrx/store';
-import { catchError, exhaustMap, filter, map, of, switchMap, tap } from 'rxjs';
+import { catchError, exhaustMap, filter, map, Observable, of, switchMap, tap } from 'rxjs';
 
 import * as LabActions from './lab.actions';
 import { CandleRequest } from './lab.model';
 import * as LabSelectors from './lab.selectors';
 
 import { ToastService } from '../../../shared/ui/toast/toast.service';
+import { LoadedCandles } from '../../data-access/service/lab-simulation-service.model';
 import { LabSimulationService } from '../../data-access/service/lab-simulation.service';
 
 @Injectable()
@@ -53,10 +54,25 @@ export class LabEffects {
       concatLatestFrom(() => this.#store.pipe(select(LabSelectors.selectCandleRequest))),
       map(([, request]) => request),
       filter((request): request is CandleRequest => request !== null),
-      switchMap(({ series, resolution, fromTick, toTick, source }) =>
-        this.#service.candles(series, resolution, fromTick, toTick, source).pipe(
-          map((candles) => LabActions.retrievedCandles({ candles })),
+      switchMap((request) =>
+        this.#loadCandles(request).pipe(
+          map((candles) => LabActions.retrievedCandles({ request, candles })),
           catchError((error: unknown) => of(LabActions.loadCandlesFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
+  loadHistory$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(LabActions.scrolledToChartStart),
+      concatLatestFrom(() => this.#store.pipe(select(LabSelectors.selectHistoryRequest))),
+      map(([, request]) => request),
+      filter((request): request is CandleRequest => request !== null),
+      exhaustMap((request) =>
+        this.#loadCandles(request).pipe(
+          map((candles) => LabActions.retrievedHistoryCandles({ request, candles })),
+          catchError((error: unknown) => of(LabActions.loadHistoryFailure({ error }))),
         ),
       ),
     ),
@@ -78,6 +94,7 @@ export class LabEffects {
           LabActions.generateWorldFailure,
           LabActions.simulateFailure,
           LabActions.loadCandlesFailure,
+          LabActions.loadHistoryFailure,
         ),
         tap(({ error }) =>
           this.#toastService.error(
@@ -87,6 +104,16 @@ export class LabEffects {
       ),
     { dispatch: false },
   );
+
+  #loadCandles({
+    series,
+    resolution,
+    fromTick,
+    toTick,
+    source,
+  }: CandleRequest): Observable<LoadedCandles> {
+    return this.#service.candles(series, resolution, fromTick, toTick, source);
+  }
 }
 
 function errorMessage(error: unknown): string {

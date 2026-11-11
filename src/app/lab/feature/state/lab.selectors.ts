@@ -1,7 +1,7 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 import { CandleRequest } from './lab.model';
-import { LAB_FEATURE_KEY, LabState } from './lab.reducer';
+import { LAB_FEATURE_KEY, LabState, nextHistoryRequest } from './lab.reducer';
 import { candleRequest, RANGE_RESOLUTIONS } from './lab.utils';
 
 const selectState = createFeatureSelector<LabState>(LAB_FEATURE_KEY);
@@ -16,6 +16,7 @@ export const selectSelectedSeries = createSelector(selectState, (state) => state
 export const selectChartOptions = createSelector(selectState, (state) => state.chartOptions);
 export const selectCandles = createSelector(selectState, (state) => state.candles);
 export const selectLoadingCandles = createSelector(selectState, (state) => state.loadingCandles);
+export const selectLoadingHistory = createSelector(selectState, (state) => state.loadingHistory);
 
 export const selectBusy = createSelector(
   selectStatus,
@@ -45,4 +46,9 @@ export const selectCandleRequest = createSelector(
   selectNow,
   (series, options, now): CandleRequest | null =>
     now === undefined ? null : candleRequest(series, options, now),
+);
+
+/** Block of older candles being loaded, or `null` when no history block loads. */
+export const selectHistoryRequest = createSelector(selectState, (state): CandleRequest | null =>
+  state.loadingHistory ? nextHistoryRequest(state) : null,
 );
