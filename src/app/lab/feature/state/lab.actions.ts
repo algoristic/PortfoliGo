@@ -1,0 +1,50 @@
+import { createAction, props } from '@ngrx/store';
+
+import { LabChartOptions } from './lab.model';
+
+import {
+  GeneratedWorld,
+  LoadedCandles,
+  SimulatedPeriod,
+} from '../../data-access/service/lab-simulation-service.model';
+
+export const enterSimulationPage = createAction('[Lab/Page] Enter simulation page');
+export const leaveSimulationPage = createAction('[Lab/Page] Leave simulation page');
+export const submittedSeed = createAction('[Lab/Page] Submitted seed', props<{ seed: string }>());
+export const clickedSimulate = createAction(
+  '[Lab/Page] Clicked simulate',
+  props<{ days: number }>(),
+);
+export const selectedSeries = createAction(
+  '[Lab/Page] Selected series',
+  props<{ series: number }>(),
+);
+export const changedChartOptions = createAction(
+  '[Lab/Page] Changed chart options',
+  props<{ options: Partial<LabChartOptions> }>(),
+);
+
+export const generateWorldSuccess = createAction(
+  '[Lab/API] Generate world success',
+  props<{ world: GeneratedWorld }>(),
+);
+export const generateWorldFailure = createAction(
+  '[Lab/API] Generate world failure',
+  props<{ error: unknown }>(),
+);
+export const simulateSuccess = createAction(
+  '[Lab/API] Simulate success',
+  props<{ period: SimulatedPeriod }>(),
+);
+export const simulateFailure = createAction(
+  '[Lab/API] Simulate failure',
+  props<{ error: unknown }>(),
+);
+export const retrievedCandles = createAction(
+  '[Lab/API] Retrieved candles',
+  props<{ candles: LoadedCandles }>(),
+);
+export const loadCandlesFailure = createAction(
+  '[Lab/API] Load candles failure',
+  props<{ error: unknown }>(),
+);

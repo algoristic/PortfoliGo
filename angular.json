@@ -22,6 +22,7 @@
             "index": "src/index.html",
             "polyfills": ["@angular/localize/init"],
             "tsConfig": "tsconfig.app.json",
+            "webWorkerTsConfig": "tsconfig.worker.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {

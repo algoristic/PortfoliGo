@@ -1,0 +1,84 @@
+import { LabWorkerRequest, LabWorkerResponse } from './lab-simulation-service.model';
+
+import { LabSimulation } from '../../domain/lab-simulation';
+
+/**
+ * Message handling of the lab worker, framework-free so that tests run it without a worker.
+ * `clock` returns milliseconds (`performance.now` in the worker); it only measures durations.
+ */
+export class LabWorkerSession {
+  readonly #clock: () => number;
+  #simulation?: LabSimulation;
+
+  constructor(clock: () => number) {
+    this.#clock = clock;
+  }
+
+  handle(request: LabWorkerRequest): LabWorkerResponse {
+    try {
+      return this.#handle(request);
+    } catch (error) {
+      return {
+        id: request.id,
+        type: 'error',
+        message: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  #handle(request: LabWorkerRequest): LabWorkerResponse {
+    switch (request.type) {
+      case 'generate': {
+        const start = this.#clock();
+        const simulation = new LabSimulation(request.seed);
+        const worldDone = this.#clock();
+        simulation.runPrehistory();
+        const prehistoryDone = this.#clock();
+        this.#simulation = simulation;
+        return {
+          id: request.id,
+          type: 'generate',
+          result: {
+            seed: simulation.seed,
+            overview: simulation.overview(),
+            now: simulation.now,
+            worldMs: worldDone - start,
+            prehistoryMs: prehistoryDone - worldDone,
+          },
+        };
+      }
+      case 'simulate': {
+        const start = this.#clock();
+        const step = this.#requireSimulation().simulate(request.days);
+        return {
+          id: request.id,
+          type: 'simulate',
+          result: { ...step, durationMs: this.#clock() - start },
+        };
+      }
+      case 'candles': {
+        const start = this.#clock();
+        const { series, resolution, fromTick, toTick, source } = request;
+        const candles = this.#requireSimulation().candles(
+          series,
+          resolution,
+          fromTick,
+          toTick,
+          source,
+        );
+        return {
+          id: request.id,
+          type: 'candles',
+          result: { series, resolution, candles, durationMs: this.#clock() - start },
+        };
+      }
+    }
+  }
+
+  #requireSimulation(): LabSimulation {
+    if (this.#simulation === undefined) {
+      throw new Error('LabWorkerSession: generate a world first');
+    }
+    return this.#simulation;
+  }
+}

@@ -1,0 +1,114 @@
+@let _chartOptions = chartOptions();
+@let _selectedOption = selectedOption();
+@let _candlesMs = candlesMs();
+
+<div class="flex flex-col gap-4">
+  <div class="flex flex-wrap items-end gap-4">
+    <label class="flex flex-col gap-1 text-sm">
+      <span class="text-fg-muted" i18n="@@featureLab-sectionSeriesChart-series">Serie</span>
+      <select
+        #seriesSelect
+        class="h-9 max-w-xs rounded-md border border-border bg-bg px-2 text-fg"
+        data-testid="lab.simulation.chart.series"
+        (change)="onSelectSeries(seriesSelect.value)">
+        @for (group of groups(); track group.kind) {
+          <optgroup [label]="group.label">
+            @for (option of group.options; track option.series) {
+              <option [value]="option.series" [selected]="option.series === series()">
+                {{ option.ticker }} – {{ option.name }}
+              </option>
+            }
+          </optgroup>
+        }
+      </select>
+    </label>
+
+    <div class="flex flex-col gap-1 text-sm">
+      <span class="text-fg-muted" i18n="@@featureLab-sectionSeriesChart-range">Zeitraum</span>
+      <div class="flex flex-wrap gap-1">
+        @for (range of ranges; track range) {
+          <button
+            appButton
+            type="button"
+            size="sm"
+            [variant]="range === _chartOptions.range ? 'primary' : 'secondary'"
+            [attr.aria-pressed]="range === _chartOptions.range"
+            [attr.data-testid]="'lab.simulation.chart.range.' + range"
+            (click)="onSelectRange(range)">
+            {{ rangeLabels[range] }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1 text-sm">
+      <span class="text-fg-muted" i18n="@@featureLab-sectionSeriesChart-resolution">Auflösung</span>
+      <div class="flex flex-wrap gap-1">
+        @for (resolution of allowedResolutions(); track resolution) {
+          <button
+            appButton
+            type="button"
+            size="sm"
+            [variant]="resolution === _chartOptions.resolution ? 'primary' : 'secondary'"
+            [attr.aria-pressed]="resolution === _chartOptions.resolution"
+            [attr.data-testid]="'lab.simulation.chart.resolution.' + resolution"
+            (click)="onSelectResolution(resolution)">
+            {{ resolutionLabels[resolution] }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1 text-sm">
+      <span class="text-fg-muted" i18n="@@featureLab-sectionSeriesChart-chartType"
+        >Darstellung</span
+      >
+      <div class="flex flex-wrap gap-1">
+        @for (chartType of chartTypes; track chartType) {
+          <button
+            appButton
+            type="button"
+            size="sm"
+            [variant]="chartType === _chartOptions.chartType ? 'primary' : 'secondary'"
+            [attr.aria-pressed]="chartType === _chartOptions.chartType"
+            [attr.data-testid]="'lab.simulation.chart.type.' + chartType"
+            (click)="onSelectChartType(chartType)">
+            {{ chartTypeLabels[chartType] }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <p class="flex flex-wrap gap-x-4 text-sm text-fg-muted tabular-nums">
+    @if (_selectedOption) {
+      <span class="font-medium text-fg">
+        {{ _selectedOption.name }} · {{ kindLabels[_selectedOption.kind] }}
+      </span>
+    }
+    <span i18n="@@featureLab-sectionSeriesChart-candleCount">{{ candles().length }} Kerzen</span>
+    <span i18n="@@featureLab-sectionSeriesChart-lastClose">Letzter Schluss {{ lastClose() }}</span>
+    @if (_chartOptions.range === 'max') {
+      <span i18n="@@featureLab-sectionSeriesChart-supportHint"
+        >Aus den Tagesstützpunkten: Hoch und Tief nur aus Eröffnung und Schluss</span
+      >
+    }
+    @if (_candlesMs !== undefined) {
+      <span i18n="@@featureLab-sectionSeriesChart-candlesMs"
+        >Abfrage {{ _candlesMs.toFixed(1) }} ms</span
+      >
+    }
+  </p>
+
+  <div class="relative h-96">
+    <app-price-chart
+      class="h-full"
+      [candles]="candles()"
+      [chartType]="_chartOptions.chartType"
+      [label]="chartLabel"
+      data-testid="lab.simulation.chart"></app-price-chart>
+    @if (loading()) {
+      <app-skeleton class="absolute inset-0" [block]="true"></app-skeleton>
+    }
+  </div>
+</div>

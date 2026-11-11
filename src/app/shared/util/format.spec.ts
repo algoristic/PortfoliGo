@@ -1,6 +1,7 @@
 import {
   formatCents,
   formatCompact,
+  formatNumber,
   formatPercent,
   formatPrice,
   formatSignedCents,
@@ -60,6 +61,13 @@ describe('format', () => {
     it('omits the sign for zero', () => {
       expect(formatSignedCents(0)).toBe(`0,00${NBSP}€`);
       expect(formatSignedCents(-0)).toBe(`0,00${NBSP}€`);
+    });
+  });
+
+  describe('formatNumber', () => {
+    it('groups thousands and rounds to the given decimal places', () => {
+      expect(formatNumber(12_345.6)).toBe('12.346');
+      expect(formatNumber(1.25, 1)).toBe('1,3');
     });
   });
 

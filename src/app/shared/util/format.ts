@@ -44,6 +44,14 @@ export function formatSignedCents(cents: number): string {
   );
 }
 
+/** Formats a plain number with grouping, e.g. `12345.6` → `12.346`. */
+export function formatNumber(value: number, fractionDigits = 0): string {
+  return numberFormat({
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(value);
+}
+
 /** Formats large numbers in short form, e.g. `1234567` → `1,2 Mio.`. */
 export function formatCompact(value: number): string {
   return numberFormat({ notation: 'compact', maximumFractionDigits: 1 }).format(value);

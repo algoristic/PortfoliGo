@@ -1,0 +1,132 @@
+@let status = labFacade.status$ | async;
+@let busy = labFacade.busy$ | async;
+@let seed = labFacade.seed$ | async;
+@let overview = labFacade.overview$ | async;
+@let now = labFacade.now$ | async;
+@let simulatedDays = labFacade.simulatedDays$ | async;
+@let timings = labFacade.timings$ | async;
+@let seriesOptions = labFacade.seriesOptions$ | async;
+@let selectedSeries = labFacade.selectedSeries$ | async;
+@let chartOptions = labFacade.chartOptions$ | async;
+@let allowedResolutions = labFacade.allowedResolutions$ | async;
+@let candles = labFacade.candles$ | async;
+@let loadingCandles = labFacade.loadingCandles$ | async;
+@let _seed = seedForm.seed();
+
+<main class="mx-auto flex min-h-dvh max-w-6xl flex-col gap-6 bg-bg p-6 text-fg">
+  <h1 class="text-2xl font-semibold" i18n="@@featureLab-simulationPage-title">Simulations-Labor</h1>
+
+  <app-panel heading="Welt" i18n-heading="@@featureLab-simulationPage-world">
+    <form class="flex flex-wrap items-start gap-2" [formRoot]="seedForm">
+      <label class="flex flex-col gap-1 text-sm">
+        <span class="text-fg-muted" i18n="@@featureLab-simulationPage-seed">Seed</span>
+        <input
+          class="h-9 w-64 rounded-md border border-border bg-bg px-3 text-fg"
+          autocomplete="off"
+          data-testid="lab.simulation.seed"
+          [formField]="seedForm.seed" />
+        @if (_seed.touched() && _seed.invalid()) {
+          @for (error of _seed.errors(); track error.kind) {
+            <span class="text-down">{{ error.message }}</span>
+          }
+        }
+      </label>
+      <button
+        appButton
+        type="button"
+        variant="secondary"
+        class="mt-6"
+        data-testid="lab.simulation.random-seed"
+        i18n="@@featureLab-simulationPage-randomSeed"
+        (click)="onRandomSeed()">
+        Zufälliger Seed
+      </button>
+      <button
+        appButton
+        type="submit"
+        class="mt-6"
+        data-testid="lab.simulation.generate"
+        i18n="@@featureLab-simulationPage-generate"
+        [disabled]="busy">
+        Welt erzeugen
+      </button>
+    </form>
+    @if (seed) {
+      <p class="mt-2 text-sm text-fg-muted" i18n="@@featureLab-simulationPage-currentSeed">
+        Aktueller Seed: {{ seed }}
+      </p>
+    }
+  </app-panel>
+
+  @if (overview && timings && now !== null && now !== undefined && chartOptions) {
+    <app-panel heading="Simulation" i18n-heading="@@featureLab-simulationPage-simulation">
+      <div class="flex flex-wrap gap-2">
+        @for (step of simulationSteps; track step) {
+          <button
+            appButton
+            type="button"
+            variant="secondary"
+            [disabled]="busy"
+            [attr.data-testid]="'lab.simulation.simulate.' + step"
+            (click)="onSimulate(step)">
+            {{ stepLabels[step] }}
+          </button>
+        }
+      </div>
+      <div class="mt-4 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <app-stat-tile
+          class="sm:col-span-2"
+          label="Spielzeit"
+          i18n-label="@@featureLab-simulationPage-gameTime"
+          [value]="formatTime(now)"></app-stat-tile>
+        <app-stat-tile
+          label="Simulierte Tage"
+          i18n-label="@@featureLab-simulationPage-simulatedDays"
+          [value]="formatDays(simulatedDays)"></app-stat-tile>
+        <app-stat-tile
+          label="Welt"
+          i18n-label="@@featureLab-simulationPage-worldMs"
+          [value]="formatMs(timings.worldMs)"></app-stat-tile>
+        <app-stat-tile
+          label="Vorlauf"
+          i18n-label="@@featureLab-simulationPage-prehistoryMs"
+          [value]="formatMs(timings.prehistoryMs)"></app-stat-tile>
+        <app-stat-tile
+          label="Markttage/s"
+          i18n-label="@@featureLab-simulationPage-marketDaysPerSecond"
+          [value]="formatRate(timings.marketDaysPerSecond)"></app-stat-tile>
+      </div>
+      @if (status === 'simulating') {
+        <p class="mt-2 text-sm text-fg-muted" i18n="@@featureLab-simulationPage-simulating">
+          Simuliere …
+        </p>
+      }
+    </app-panel>
+
+    <app-panel heading="Chart" i18n-heading="@@featureLab-simulationPage-chart">
+      <app-section-series-chart
+        [seriesOptions]="seriesOptions ?? []"
+        [series]="selectedSeries ?? 0"
+        [chartOptions]="chartOptions"
+        [allowedResolutions]="allowedResolutions ?? []"
+        [candles]="candles ?? []"
+        [loading]="loadingCandles ?? false"
+        [candlesMs]="timings.candlesMs"
+        (selectedSeries)="onSelectSeries($event)"
+        (changedChartOptions)="onChangeChartOptions($event)"></app-section-series-chart>
+    </app-panel>
+
+    <app-panel heading="Welt-Übersicht" i18n-heading="@@featureLab-simulationPage-overview">
+      <app-section-world-tables [overview]="overview"></app-section-world-tables>
+    </app-panel>
+  } @else if (status === 'generating') {
+    <app-skeleton class="h-64" [block]="true"></app-skeleton>
+  } @else {
+    <app-empty-state
+      icon="globe"
+      heading="Noch keine Welt"
+      i18n-heading="@@featureLab-simulationPage-emptyHeading"
+      text="Gib einen Seed ein und erzeuge eine Welt; Vorlauf und Simulation laufen im Web Worker."
+      i18n-text="@@featureLab-simulationPage-emptyText"></app-empty-state>
+  }
+</main>
