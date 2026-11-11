@@ -1,6 +1,8 @@
+import { seriesSupportValue } from './day-curve';
+import { MarketContext } from './market-context';
 import { Candle, IntradayResolution } from './models/candle.model';
 import { MarketDay } from './models/market-day.model';
-import { priceFromLog } from './price-logic';
+import { seriesCount } from './series';
 
 import { dayIndex, dayStartTick, weekdayOfDay } from '../../clock/domain/calendar-logic';
 import { MINUTES_PER_HOUR, TICKS_PER_MINUTE } from '../../clock/domain/models/time.model';
@@ -56,18 +58,22 @@ export function dailyCandle(
 }
 
 /**
- * Daily candles of all instruments right after a day step in batch mode: open and close are the
- * support points, high and low stay `NaN` until the background job completes them (TS §6.8).
- * Contains the close, so it may only be released once the day is over.
+ * Daily candles of all series (shares, then indices, see `series.ts`) right after a day step in
+ * batch mode: open and close come from the support points, high and low stay `NaN` until the
+ * background job completes them (TS §6.8). Contains the close, so it may only be released once
+ * the day is over.
  */
-export function dailyCandlesFromSupport(day: Readonly<MarketDay>, priceFloor: number): Candle[] {
+export function dailyCandlesFromSupport(
+  context: MarketContext,
+  day: Readonly<MarketDay>,
+): Candle[] {
   const tick = dayStartTick(day.day);
-  return Array.from(day.logOpen, (logOpen, i) => ({
+  return Array.from({ length: seriesCount(context) }, (_value, series) => ({
     tick,
-    open: priceFromLog(logOpen, priceFloor),
+    open: seriesSupportValue(context, day, series, 'open'),
     high: Number.NaN,
     low: Number.NaN,
-    close: priceFromLog(day.logClose[i], priceFloor),
+    close: seriesSupportValue(context, day, series, 'close'),
   }));
 }
 

@@ -1,7 +1,9 @@
-import { FactorState } from './factor-step';
+import { stepIndices } from './index-step';
 import { stepInstrument } from './instrument-step';
+import { isMarketDay } from './market-calendar';
 import { MarketContext } from './market-context';
-import { createMarketDay, isMarketDay, stepFactorDay } from './market-step';
+import { restoreMarket } from './market-snapshot';
+import { createMarketDay, createMarketState, stepFactorDay } from './market-step';
 import { MarketDay } from './models/market-day.model';
 import { FactorHistory, FactorStateEntry } from './models/market-state.model';
 
@@ -12,6 +14,8 @@ export interface InstrumentHistory {
   idioClose: Float64Array;
   logOpen: Float64Array;
   logClose: Float64Array;
+  /** Dividend in cents with the ex-date on that day, else 0. */
+  exDividendCents: Float64Array;
 }
 
 export function createFactorHistory(): FactorHistory {
@@ -35,8 +39,8 @@ export function recomputeFactorDays(
 /**
  * Recomputes the complete support points of the market days in `[fromDay, toDay)` from the
  * closest month start state, bit for bit equal to the day steps of the original run. With
- * `instrumentIndex`, only that instrument is stepped; the fields of the others stay stale.
- * The passed day is reused and only valid during the call.
+ * `instrumentIndex`, only that instrument is stepped; the fields of the others and the index
+ * fields stay stale. The passed day is reused and only valid during the call.
  */
 export function recomputeSupportDays(
   context: MarketContext,
@@ -73,14 +77,12 @@ function recomputeDays(
   onDay: (day: MarketDay) => void,
 ): void {
   const entry = monthStartEntry(history, fromDay);
-  const state: FactorState = {
-    phase: entry.phase,
-    trend: entry.trend.slice(),
-    logVol: entry.logVol.slice(),
-    level: entry.level.slice(),
-  };
-  const idioClose = entry.idioClose.slice();
-  const out = createMarketDay(context.layout);
+  const state = restoreMarket(entry);
+  const allInstruments =
+    instruments !== null &&
+    instruments.first === 0 &&
+    instruments.last === context.layout.instrumentIds.length;
+  const out = createMarketDay(context);
   for (let day = entry.day; day < toDay; day++) {
     if (!isMarketDay(day)) {
       continue;
@@ -88,8 +90,11 @@ function recomputeDays(
     stepFactorDay(context, state, day, out);
     if (instruments !== null) {
       for (let i = instruments.first; i < instruments.last; i++) {
-        idioClose[i] = stepInstrument(context, i, day, idioClose[i], out);
+        stepInstrument(context, i, day, state, out);
       }
+    }
+    if (allInstruments) {
+      stepIndices(context, state, out);
     }
     if (day >= fromDay) {
       onDay(out);
@@ -119,17 +124,20 @@ export function recomputeInstrumentHistory(
     idioClose: new Float64Array(count),
     logOpen: new Float64Array(count),
     logClose: new Float64Array(count),
+    exDividendCents: new Float64Array(count),
   };
-  let idioClose = 0;
+  // Epoch state; only the entries of this instrument are used.
+  const state = createMarketState(context);
   let n = 0;
   recomputeFactorDays(context, history, 0, toDay, (day) => {
     // stepFactorDay has reset the jumps, so the instrument can write into the passed day.
-    idioClose = stepInstrument(context, instrumentIndex, day.day, idioClose, day);
+    stepInstrument(context, instrumentIndex, day.day, state, day);
     result.days[n] = day.day;
     result.idioOpen[n] = day.idioOpen[instrumentIndex];
-    result.idioClose[n] = idioClose;
+    result.idioClose[n] = day.idioClose[instrumentIndex];
     result.logOpen[n] = day.logOpen[instrumentIndex];
     result.logClose[n] = day.logClose[instrumentIndex];
+    result.exDividendCents[n] = day.exDividendCents[instrumentIndex];
     n++;
   });
   return result;

@@ -12,5 +12,9 @@ export function marketChecksum(state: Readonly<MarketState>): string {
     .addFloat64Array(state.logVol)
     .addFloat64Array(state.level)
     .addFloat64Array(state.idioClose)
+    .addFloat64Array(state.logClose)
+    .addFloat64Array(state.nextExDay)
+    .addFloat64Array(state.dividendCents)
+    .addFloat64Array(state.indexReinvest)
     .digest();
 }

@@ -1,8 +1,9 @@
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { createHighLowFill, DayHighLow } from './high-low-fill';
+import { isMarketDay } from './market-calendar';
 import { createMarketContext } from './market-context';
 import { createFactorHistory } from './market-history';
-import { advanceMarket, createMarketState, isMarketDay } from './market-step';
+import { advanceMarket, createMarketState } from './market-step';
 import { PriceSource } from './price-source';
 
 import { dateTimeToTick, dayIndex, dayStartTick } from '../../clock/domain/calendar-logic';

@@ -1,4 +1,5 @@
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
+import { createIndexLayout, IndexLayout } from './index-layout';
 import { createMarketLayout, MarketLayout } from './market-layout';
 import { MARKET_PHASES, MarketConfig, MarketPhase } from './models/market-config.model';
 
@@ -14,6 +15,7 @@ export const MARKET_PHASE_COUNT = MARKET_PHASES.length;
 export interface MarketContext {
   seedKey: SeedKey;
   layout: MarketLayout;
+  indices: IndexLayout;
   config: MarketConfig;
   /** Length of a trading day in years (Δ_T) and its square root. */
   dayYears: number;
@@ -71,6 +73,7 @@ export function createMarketContext(
   const context: MarketContext = {
     seedKey,
     layout,
+    indices: createIndexLayout(world, layout),
     config,
     dayYears,
     sqrtDayYears: Math.sqrt(dayYears),

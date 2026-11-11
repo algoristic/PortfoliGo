@@ -1,12 +1,14 @@
 import { dailyCandle, intradayCandles, weeklyCandles } from './candle-logic';
 import { createCurveTables, CurveTables, DayCurves } from './day-curve';
+import { isMarketDay } from './market-calendar';
 import { MarketContext } from './market-context';
 import { recomputeSupportDays } from './market-history';
-import { copyMarketDay, isMarketDay } from './market-step';
+import { copyMarketDay } from './market-step';
 import { Candle, CandleResolution } from './models/candle.model';
 import { MarketDay } from './models/market-day.model';
 import { FactorHistory, MarketState } from './models/market-state.model';
 import { priceFromLog } from './price-logic';
+import { seriesRef } from './series';
 
 import { dayIndex, minuteOfDay, weekdayOfDay } from '../../clock/domain/calendar-logic';
 import { Tick } from '../../clock/domain/models/time.model';
@@ -61,47 +63,48 @@ export class PriceSource {
   }
 
   /**
-   * Price of instrument i at `tick` (TS §6.1): the minute value during the session, otherwise the
-   * official price – the close of the last trading day, or the start price before the first one.
+   * Value of a series (share or index, see `series.ts`) at `tick` (TS §6.1): the minute value
+   * during the session, otherwise the official value – the close of the last trading day, or the
+   * start value before the first one.
    */
-  priceAt(instrumentIndex: number, tick: Tick, now: Tick): number {
+  priceAt(series: number, tick: Tick, now: Tick): number {
     assertNotAfter(tick, now);
     const day = dayIndex(tick);
     const minute = minuteOfDay(tick);
-    const { open, close } = this.#session(instrumentIndex);
+    const { open, close } = this.#session(series);
     if (!isMarketDay(day) || minute < open) {
-      return this.#lastClose(instrumentIndex, day - 1);
+      return this.#lastClose(series, day - 1);
     }
     const curves = this.#dayCurves(day);
     if (minute >= close) {
-      return priceFromLog(curves.day.logClose[instrumentIndex], this.#context.config.priceFloor);
+      return curves.seriesClose(series);
     }
-    return curves.instrumentCurve(instrumentIndex)[minute - open];
+    return curves.seriesCurve(series)[minute - open];
   }
 
   /**
-   * Minute prices of instrument i on a trading day from the open; on the day of `now` only up to
+   * Minute values of a series on a trading day from its open; on the day of `now` only up to
    * `now`, before the open empty.
    */
-  minuteCurve(instrumentIndex: number, day: number, now: Tick): Float64Array {
+  minuteCurve(series: number, day: number, now: Tick): Float64Array {
     if (!isMarketDay(day)) {
       return new Float64Array(0);
     }
-    const lastIndex = this.#lastIndex(instrumentIndex, day, now);
+    const lastIndex = this.#lastIndex(series, day, now);
     if (lastIndex < 0) {
       return new Float64Array(0);
     }
     return this.#dayCurves(day)
-      .instrumentCurve(instrumentIndex)
+      .seriesCurve(series)
       .slice(0, lastIndex + 1);
   }
 
   /**
-   * Candles of instrument i whose period starts in `[fromTick, toTick]` (intraday) or whose day
-   * lies in that range (daily, weekly), cut at `now`; a running period is a partial candle.
+   * Candles of a series whose period starts in `[fromTick, toTick]` (intraday) or whose day lies
+   * in that range (daily, weekly), cut at `now`; a running period is a partial candle.
    */
   candles(
-    instrumentIndex: number,
+    series: number,
     resolution: CandleResolution,
     fromTick: Tick,
     toTick: Tick,
@@ -111,20 +114,20 @@ export class PriceSource {
     if (to < fromTick) {
       return [];
     }
-    const { open } = this.#session(instrumentIndex);
+    const { open } = this.#session(series);
     let fromDay = dayIndex(fromTick);
     const toDay = dayIndex(to);
     if (resolution === '1w') {
       fromDay -= weekdayOfDay(fromDay);
     }
     const candles: Candle[] = [];
-    this.#forEachDay(instrumentIndex, fromDay, toDay + 1, (curves) => {
+    this.#forEachDay(series, fromDay, toDay + 1, (curves) => {
       const day = curves.day.day;
-      const lastIndex = this.#lastIndex(instrumentIndex, day, now);
+      const lastIndex = this.#lastIndex(series, day, now);
       if (lastIndex < 0) {
         return;
       }
-      const curve = curves.instrumentCurve(instrumentIndex);
+      const curve = curves.seriesCurve(series);
       if (resolution === '1d' || resolution === '1w') {
         candles.push(dailyCandle(curve, day, lastIndex));
         return;
@@ -138,17 +141,19 @@ export class PriceSource {
     return resolution === '1w' ? weeklyCandles(candles) : candles;
   }
 
-  #session(instrumentIndex: number): { open: number; close: number } {
-    const { boundaries, openBoundary, closeBoundary } = this.#context.layout;
+  #session(series: number): { open: number; close: number } {
+    const { layout, indices } = this.#context;
+    const { kind, index } = seriesRef(this.#context, series);
+    const source = kind === 'stock' ? layout : indices;
     return {
-      open: boundaries[openBoundary[instrumentIndex]],
-      close: boundaries[closeBoundary[instrumentIndex]],
+      open: layout.boundaries[source.openBoundary[index]],
+      close: layout.boundaries[source.closeBoundary[index]],
     };
   }
 
   /** Last index of the minute curve that is known at `now`; −1 before the open. */
-  #lastIndex(instrumentIndex: number, day: number, now: Tick): number {
-    const { open, close } = this.#session(instrumentIndex);
+  #lastIndex(series: number, day: number, now: Tick): number {
+    const { open, close } = this.#session(series);
     const nowDay = dayIndex(now);
     if (day > nowDay) {
       throw new RangeError(`PriceSource: day ${day} is after the current tick ${now}`);
@@ -159,14 +164,28 @@ export class PriceSource {
     return Math.min(minuteOfDay(now), close) - open;
   }
 
-  #lastClose(instrumentIndex: number, fromDay: number): number {
-    const floor = this.#context.config.priceFloor;
+  #lastClose(series: number, fromDay: number): number {
     for (let day = fromDay; day >= 0; day--) {
       if (isMarketDay(day)) {
-        return priceFromLog(this.#dayCurves(day).day.logClose[instrumentIndex], floor);
+        return this.#dayCurves(day).seriesClose(series);
       }
     }
-    return priceFromLog(this.#context.layout.logBase[instrumentIndex], floor);
+    return this.#startValue(series);
+  }
+
+  /** Value before the first trading day: start price, or the index level from the start prices. */
+  #startValue(series: number): number {
+    const { layout, indices, config } = this.#context;
+    const { kind, index } = seriesRef(this.#context, series);
+    if (kind === 'stock') {
+      return priceFromLog(layout.logBase[index], config.priceFloor);
+    }
+    let sum = 0;
+    for (let n = indices.memberStart[index]; n < indices.memberStart[index + 1]; n++) {
+      sum +=
+        indices.shares[n] * priceFromLog(layout.logBase[indices.members[n]], config.priceFloor);
+    }
+    return sum / indices.divisor[index];
   }
 
   #dayCurves(day: number): DayCurves {
@@ -190,11 +209,11 @@ export class PriceSource {
 
   /**
    * Calls `onDay` for every market day in `[fromDay, toDay)` in ascending order. Uses the cache
-   * when it holds all days, otherwise one forward pass that steps only this instrument. The
-   * passed curves are only valid during the call.
+   * when it holds all days, otherwise one forward pass that steps only this share (all shares for
+   * an index). The passed curves are only valid during the call.
    */
   #forEachDay(
-    instrumentIndex: number,
+    series: number,
     fromDay: number,
     toDay: number,
     onDay: (curves: DayCurves) => void,
@@ -222,7 +241,7 @@ export class PriceSource {
       start,
       toDay,
       (day) => onDay(this.#batch.load(day)),
-      instrumentIndex,
+      this.#context.layout.instrumentIds.length > series ? series : undefined,
     );
   }
 

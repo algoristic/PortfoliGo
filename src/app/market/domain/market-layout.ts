@@ -2,7 +2,8 @@ import { FACTOR_KINDS, FactorKind } from './models/market-config.model';
 
 import { MINUTES_PER_DAY } from '../../clock/domain/models/time.model';
 import { detLog } from '../../simulation/util/det-math';
-import { Company } from '../../world/domain/models/company.model';
+import { Company, DividendSchedule } from '../../world/domain/models/company.model';
+import { DividendFrequency } from '../../world/domain/models/taxonomy.model';
 import { World } from '../../world/domain/models/world.model';
 
 /** Number of factor loadings per instrument (TS §6.2): world, region, sector, industry, style, size. */
@@ -32,6 +33,15 @@ export interface MarketLayout {
   jumpIntensity: Float64Array;
   jumpMean: Float64Array;
   jumpSd: Float64Array;
+  /** Dividend per instrument (TS §6.5); `null` without a dividend. */
+  dividends: readonly (InstrumentDividend | null)[];
+}
+
+export interface InstrumentDividend {
+  /** Target yield (0.03 = 3 %). */
+  yield: number;
+  frequency: DividendFrequency;
+  schedule: DividendSchedule;
 }
 
 export function factorId(kind: FactorKind, member?: string): string {
@@ -75,6 +85,7 @@ export function createMarketLayout(world: World): MarketLayout {
     jumpIntensity: new Float64Array(count),
     jumpMean: new Float64Array(count),
     jumpSd: new Float64Array(count),
+    dividends: companies.map(instrumentDividend),
   };
   const factorIndex = new Map(factorIds.map((id, index) => [id, index]));
   const exchanges = new Map(world.exchanges.map((exchange) => [exchange.id, exchange]));
@@ -94,6 +105,14 @@ export function createMarketLayout(world: World): MarketLayout {
     layout.jumpSd[i] = company.model.jumpSd;
   });
   return layout;
+}
+
+function instrumentDividend(company: Company): InstrumentDividend | null {
+  const { yield: targetYield, frequency, schedule } = company.dividend;
+  if (frequency === null || schedule === null || targetYield <= 0) {
+    return null;
+  }
+  return { yield: targetYield, frequency, schedule };
 }
 
 function writeLoadings(

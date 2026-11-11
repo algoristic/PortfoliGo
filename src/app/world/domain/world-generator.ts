@@ -1,6 +1,7 @@
 import { generateBanks } from './bank-generator';
 import { generateCompanies } from './company-generator';
 import { DEFAULT_WORLD_CONFIG } from './default-world-config';
+import { assignDividendSchedules } from './dividend-schedule-generator';
 import { generateEtfIssuers, generateEtfs } from './etf-generator';
 import { createRegistries } from './generator.utils';
 import { generateIndices } from './index-generator';
@@ -17,14 +18,14 @@ import { SeedKey } from '../../simulation/util/seed';
  */
 export function generateWorld(seedKey: SeedKey, config: WorldConfig = DEFAULT_WORLD_CONFIG): World {
   const registries = createRegistries();
-  const companies = generateCompanies(
+  const drafts = generateCompanies(
     createStream(seedKey, 'world/companies'),
     config.companies,
     registries,
   );
   const indices = generateIndices(
     createStream(seedKey, 'world/indices'),
-    companies,
+    drafts,
     config.indices,
     registries,
   );
@@ -32,6 +33,7 @@ export function generateWorld(seedKey: SeedKey, config: WorldConfig = DEFAULT_WO
   const issuers = generateEtfIssuers(etfStream, config.etfs, registries);
   const etfs = generateEtfs(etfStream, issuers, indices, config.etfs, registries);
   const banks = generateBanks(createStream(seedKey, 'world/banks'), config.banks, registries);
+  const companies = assignDividendSchedules(createStream(seedKey, 'world/dividends'), drafts);
   return {
     regions: REGIONS,
     countries: COUNTRIES,

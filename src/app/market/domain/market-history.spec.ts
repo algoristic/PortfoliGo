@@ -21,23 +21,25 @@ const sampleFrom = dayIndex(dateTimeToTick({ year: 2022, month: 1, day: 20 }));
 function fullRun() {
   const history = createFactorHistory();
   const closes = new Map<number, Float64Array>();
+  const dividends = new Map<number, Float64Array>();
   const levels = new Map<number, Float64Array>();
   const days = new Map<number, MarketDay>();
   advanceMarket(context, createMarketState(context), toDay, {
     history,
     onDay: (day) => {
       closes.set(day.day, day.logClose.slice());
+      dividends.set(day.day, day.exDividendCents.slice());
       levels.set(day.day, day.factorLevels.slice());
       if (day.day >= sampleFrom) {
         days.set(day.day, copyMarketDay(day));
       }
     },
   });
-  return { history, closes, levels, days };
+  return { history, closes, dividends, levels, days };
 }
 
 describe('market history', () => {
-  const { history, closes, levels, days } = fullRun();
+  const { history, closes, dividends, levels, days } = fullRun();
 
   it('keeps the factor state of every month start', () => {
     // January 2020 to March 2022.
@@ -97,14 +99,18 @@ describe('market history', () => {
   });
 
   describe('recomputeInstrumentHistory', () => {
-    it('equals the history of the full run', () => {
-      for (const i of [0, 57, 199]) {
+    it('equals the history of the full run, including the ex-dates', () => {
+      let exDates = 0;
+      for (const i of [0, 57, 199, ...context.layout.dividends.keys()].slice(0, 13)) {
         const instrument = recomputeInstrumentHistory(context, history, i, toDay);
         expect(instrument.days).toHaveLength(closes.size);
         instrument.days.forEach((day, n) => {
           expect(instrument.logClose[n]).toBe(closes.get(day)?.[i]);
+          expect(instrument.exDividendCents[n]).toBe(dividends.get(day)?.[i]);
+          exDates += instrument.exDividendCents[n] > 0 ? 1 : 0;
         });
       }
+      expect(exDates).toBeGreaterThan(10);
     });
   });
 });

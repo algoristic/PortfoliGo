@@ -49,10 +49,23 @@ export interface CompanyModelParams {
   jumpSd: number;
 }
 
+/**
+ * Fixed yearly rhythm of the ex-dates (TS §6.5): the ex-date is the first market day on or after
+ * `day` of `firstMonth` and repeats every `12 / dividends per year` months.
+ */
+export interface DividendSchedule {
+  /** Month of the first ex-date in the year, `1 … 12 / dividends per year`. */
+  firstMonth: number;
+  /** Day of the month, `1 … 28`. */
+  day: number;
+}
+
 export interface DividendProfile {
   /** Target dividend yield (0.03 = 3 %); 0 for companies without a dividend. */
   yield: number;
   frequency: DividendFrequency | null;
+  /** `null` for companies without a dividend. */
+  schedule: DividendSchedule | null;
 }
 
 export interface Company {

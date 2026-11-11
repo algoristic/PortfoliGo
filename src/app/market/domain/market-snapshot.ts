@@ -17,5 +17,9 @@ function copyState(state: Readonly<MarketState>): MarketState {
     logVol: state.logVol.slice(),
     level: state.level.slice(),
     idioClose: state.idioClose.slice(),
+    logClose: state.logClose.slice(),
+    nextExDay: state.nextExDay.slice(),
+    dividendCents: state.dividendCents.slice(),
+    indexReinvest: state.indexReinvest.slice(),
   };
 }

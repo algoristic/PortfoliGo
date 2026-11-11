@@ -28,6 +28,12 @@ export type Cyclicality = (typeof CYCLICALITIES)[number];
 export const DIVIDEND_FREQUENCIES = ['annual', 'semi-annual', 'quarterly'] as const;
 export type DividendFrequency = (typeof DIVIDEND_FREQUENCIES)[number];
 
+export const DIVIDENDS_PER_YEAR: Readonly<Record<DividendFrequency, number>> = {
+  annual: 1,
+  'semi-annual': 2,
+  quarterly: 4,
+};
+
 /** Volatility class 1 (low) to 5 (high). */
 export type RiskClass = 1 | 2 | 3 | 4 | 5;
 

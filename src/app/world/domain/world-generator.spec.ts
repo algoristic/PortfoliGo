@@ -2,7 +2,7 @@ import { freeFloatMarketCap } from './company-generator';
 import { DEFAULT_WORLD_CONFIG } from './default-world-config';
 import { isValidIsin } from './identifier-logic';
 import { Company } from './models/company.model';
-import { REGION_IDS, SECTOR_IDS } from './models/taxonomy.model';
+import { DIVIDENDS_PER_YEAR, REGION_IDS, SECTOR_IDS } from './models/taxonomy.model';
 import { World } from './models/world.model';
 import { isBlockedName } from './name-logic';
 import { worldChecksum } from './world-checksum';
@@ -11,7 +11,7 @@ import { generateWorld } from './world-generator';
 import { deriveSeedKey } from '../../simulation/util/seed';
 
 /** Changes when the world for existing seeds changes; then `simVersion` must be raised (TS §15). */
-const GOLDEN_1_CHECKSUM = '3af5e3bdb655573d909560fa845d6d4e';
+const GOLDEN_1_CHECKSUM = 'ba41f42148b66ec9602f490e288554a1';
 
 const SEEDS = Array.from({ length: 20 }, (_value, index) => `world-test-${index}`);
 const worlds: readonly World[] = SEEDS.map((seed) => generateWorld(deriveSeedKey(seed)));
@@ -64,6 +64,23 @@ describe('generateWorld', () => {
         expect(world.companies.filter((company) => company.regionId === regionId)).toHaveLength(
           expected,
         );
+      }
+    });
+  });
+
+  describe('dividends', () => {
+    it('gives every dividend payer a yearly ex-date rhythm and nobody else', () => {
+      for (const company of allCompanies) {
+        const { frequency, schedule } = company.dividend;
+        if (frequency === null) {
+          expect(schedule).toBeNull();
+          continue;
+        }
+        expect(schedule).not.toBeNull();
+        expect(schedule?.firstMonth).toBeGreaterThanOrEqual(1);
+        expect(schedule?.firstMonth).toBeLessThanOrEqual(12 / DIVIDENDS_PER_YEAR[frequency]);
+        expect(schedule?.day).toBeGreaterThanOrEqual(1);
+        expect(schedule?.day).toBeLessThanOrEqual(28);
       }
     });
   });

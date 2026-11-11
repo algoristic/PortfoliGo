@@ -16,6 +16,8 @@ export interface MarketDay {
   /** Idiosyncratic component `U_i` at the open and at the close (including the jumps). */
   idioOpen: Float64Array;
   idioClose: Float64Array;
+  /** Log price of the previous close (`c_i` before the first trading day). */
+  prevLogClose: Float64Array;
   /** Log price `c_i + Σ β_ik · F_k + U_i` at the open and at the close (before the price floor). */
   logOpen: Float64Array;
   logClose: Float64Array;
@@ -28,4 +30,14 @@ export interface MarketDay {
   jumpSize: Float64Array;
   /** Number of used jump entries. */
   jumpTotal: number;
+  /** Dividend in cents per instrument whose ex-date is this day (markdown at the open), else 0. */
+  exDividendCents: Float64Array;
+  /** Dividend in cents announced this day and its ex-date; 0 and −1 without an announcement. */
+  announcedCents: Float64Array;
+  announcedExDay: Int32Array;
+  /**
+   * Reinvestment factor `R` of index x from boundary j on (`x · boundaryCount + j`, TS §6.6). It
+   * rises at the open of a constituent's exchange on its ex-date.
+   */
+  indexReinvest: Float64Array;
 }

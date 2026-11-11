@@ -4,8 +4,9 @@ import { monthStartEntry, recomputeSupportDays } from './market-history';
 import { copyMarketDay } from './market-step';
 import { MarketDay } from './models/market-day.model';
 import { FactorHistory } from './models/market-state.model';
+import { seriesCount } from './series';
 
-/** High and low of all instruments on one trading day, in layout order. */
+/** High and low of all series (shares, then indices, see `series.ts`) on one trading day. */
 export interface DayHighLow {
   day: number;
   high: Float64Array;
@@ -33,7 +34,7 @@ export function createHighLowFill(
   toDay: number,
   tables: CurveTables = createCurveTables(context),
 ): HighLowFill {
-  const instrumentCount = context.layout.instrumentIds.length;
+  const count = seriesCount(context);
   const curves = new DayCurves(tables);
   /** Recomputed days of the current month, processed from the end. */
   const pending: MarketDay[] = [];
@@ -60,10 +61,10 @@ export function createHighLowFill(
         }
         const day = pending.pop() as MarketDay;
         curves.load(day);
-        const high = new Float64Array(instrumentCount);
-        const low = new Float64Array(instrumentCount);
-        for (let i = 0; i < instrumentCount; i++) {
-          const curve = curves.instrumentCurve(i);
+        const high = new Float64Array(count);
+        const low = new Float64Array(count);
+        for (let i = 0; i < count; i++) {
+          const curve = curves.seriesCurve(i);
           let max = curve[0];
           let min = curve[0];
           for (let j = 1; j < curve.length; j++) {

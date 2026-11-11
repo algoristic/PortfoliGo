@@ -188,6 +188,8 @@ export function generateCompanies(
       dividend: {
         yield: dividendYield,
         frequency: paysDividend ? region.dividendFrequency : null,
+        // Drawn from the stream `world/dividends` (assignDividendSchedules).
+        schedule: null,
       },
       model: {
         loadings,

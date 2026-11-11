@@ -1,10 +1,22 @@
 import { MarketPhase } from './market-config.model';
 
+/** Per-instrument part of the state that the day step advances (TS §6.4, §6.5). */
+export interface InstrumentState {
+  /** Idiosyncratic log component `U_i` per instrument at the last close. */
+  idioClose: Float64Array;
+  /** Log price per instrument at the last close; `c_i` before the first trading day. */
+  logClose: Float64Array;
+  /** Next scheduled ex-date per instrument, −1 without a dividend. */
+  nextExDay: Int32Array;
+  /** Announced dividend for `nextExDay` in cents, `NaN` until the announcement. */
+  dividendCents: Float64Array;
+}
+
 /**
  * Core state of the market between two day steps (TS §6.1). Arrays follow the order of the
- * `MarketLayout`. Caches and derived values never belong here.
+ * `MarketLayout` and the `IndexLayout`. Caches and derived values never belong here.
  */
-export interface MarketState {
+export interface MarketState extends InstrumentState {
   /** Next day index (days since the epoch) the day step will process. */
   day: number;
   phase: MarketPhase;
@@ -14,26 +26,18 @@ export interface MarketState {
   logVol: Float64Array;
   /** Cumulative log level `F_k` per factor at 24:00 of the last trading day. */
   level: Float64Array;
-  /** Idiosyncratic log component `U_i` per instrument at the last close. */
-  idioClose: Float64Array;
+  /** Reinvestment factor `R` per index (TS §6.6) at the end of the last trading day. */
+  indexReinvest: Float64Array;
 }
 
 /** Copy of the market state that shares no arrays with the running state. */
 export type MarketSnapshot = Readonly<MarketState>;
 
 /**
- * Market state at a month start (TS §6.8): the factor part and the idiosyncratic components, so
- * that every past day can be recomputed from at most one month of day steps.
+ * Complete market state at a month start (TS §6.8), so that every past day can be recomputed from
+ * at most one month of day steps.
  */
-export interface FactorStateEntry {
-  day: number;
-  phase: MarketPhase;
-  trend: Float64Array;
-  logVol: Float64Array;
-  level: Float64Array;
-  /** `U_i` per instrument at the last close before the month start. */
-  idioClose: Float64Array;
-}
+export type FactorStateEntry = MarketSnapshot;
 
 /** Market states at the start of every month since the epoch, ordered by day. */
 export interface FactorHistory {

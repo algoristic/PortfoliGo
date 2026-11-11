@@ -1,8 +1,9 @@
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
+import { isMarketDay } from './market-calendar';
 import { marketChecksum } from './market-checksum';
 import { createMarketContext } from './market-context';
 import { restoreMarket, snapshotMarket } from './market-snapshot';
-import { advanceMarket, createMarketState, isMarketDay } from './market-step';
+import { advanceMarket, createMarketState } from './market-step';
 import { MarketDay } from './models/market-day.model';
 import { MarketState } from './models/market-state.model';
 import { priceFromLog } from './price-logic';
@@ -14,7 +15,7 @@ import { World } from '../../world/domain/models/world.model';
 import { generateWorld } from '../../world/domain/world-generator';
 
 /** Changes when the prices for existing seeds change; then `simVersion` must be raised (TS §15). */
-const GOLDEN_1_PRICES_2020 = '58cef371e9238531a9cb3ddf06800d4d';
+const GOLDEN_1_PRICES_2020 = '60106989e541c9562a2cb7ed6c463d85';
 
 const seedKey = deriveSeedKey('golden-1');
 const world = generateWorld(seedKey);

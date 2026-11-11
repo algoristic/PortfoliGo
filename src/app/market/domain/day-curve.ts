@@ -9,6 +9,7 @@ import { MarketContext } from './market-context';
 import { LOADINGS_PER_INSTRUMENT } from './market-layout';
 import { MarketDay } from './models/market-day.model';
 import { priceFromLog } from './price-logic';
+import { seriesRef } from './series';
 
 import { MINUTES_PER_DAY } from '../../clock/domain/models/time.model';
 import { utf8Encode } from '../../simulation/util/hash128';
@@ -83,6 +84,9 @@ export class DayCurves {
   readonly #factorDone: Uint8Array;
   readonly #instrumentCurves: (Float64Array | undefined)[];
   readonly #instrumentDone: Uint8Array;
+  /** Price index curves per index; total return curves are derived on each call. */
+  readonly #indexCurves: (Float64Array | undefined)[];
+  readonly #indexDone: Uint8Array;
   readonly #idio: Float64Array;
 
   constructor(tables: CurveTables) {
@@ -92,6 +96,8 @@ export class DayCurves {
     this.#factorDone = new Uint8Array(layout.factorIds.length * (layout.boundaries.length - 1));
     this.#instrumentCurves = new Array(layout.instrumentIds.length);
     this.#instrumentDone = new Uint8Array(layout.instrumentIds.length);
+    this.#indexCurves = new Array(tables.context.indices.ids.length);
+    this.#indexDone = new Uint8Array(tables.context.indices.ids.length);
     this.#idio = new Float64Array(MINUTES_PER_DAY + 1);
   }
 
@@ -108,7 +114,88 @@ export class DayCurves {
     this.#day = day;
     this.#factorDone.fill(0);
     this.#instrumentDone.fill(0);
+    this.#indexDone.fill(0);
     return this;
+  }
+
+  /**
+   * Values of a series (shares, price or total return indices) from its session open (index 0)
+   * to its session close. The session of an index runs from the earliest open to the latest close
+   * of its constituents' exchanges.
+   */
+  seriesCurve(series: number): Float64Array {
+    const { kind, index } = seriesRef(this.#tables.context, series);
+    if (kind === 'stock') {
+      return this.instrumentCurve(index);
+    }
+    const levels = this.indexCurve(index);
+    if (kind === 'index') {
+      return levels;
+    }
+    const { indices, layout } = this.#tables.context;
+    const boundaryCount = layout.boundaries.length;
+    const open = layout.boundaries[indices.openBoundary[index]];
+    const reinvest = this.day.indexReinvest;
+    const result = new Float64Array(levels.length);
+    let j = indices.openBoundary[index];
+    for (let m = 0; m < levels.length; m++) {
+      while (j + 1 < boundaryCount && layout.boundaries[j + 1] <= open + m) {
+        j++;
+      }
+      result[m] = levels[m] * reinvest[index * boundaryCount + j];
+    }
+    return result;
+  }
+
+  /**
+   * Price index x for every minute of its session (TS §6.6): `Σ n_i · P_i(m) / D`, summed in the
+   * constituent order. Constituents before their open count with the previous close, after their
+   * close with the close.
+   */
+  indexCurve(x: number): Float64Array {
+    const existing = this.#indexCurves[x];
+    if (existing !== undefined && this.#indexDone[x] === 1) {
+      return existing;
+    }
+    const day = this.day;
+    const { indices, layout, config } = this.#tables.context;
+    const open = layout.boundaries[indices.openBoundary[x]];
+    const length = layout.boundaries[indices.closeBoundary[x]] - open;
+    const curve = existing ?? new Float64Array(length + 1);
+    curve.fill(0);
+    for (let n = indices.memberStart[x]; n < indices.memberStart[x + 1]; n++) {
+      const i = indices.members[n];
+      const shares = indices.shares[n];
+      const memberCurve = this.instrumentCurve(i);
+      const memberOpen = layout.boundaries[layout.openBoundary[i]] - open;
+      const memberLength = memberCurve.length - 1;
+      const previous = priceFromLog(day.prevLogClose[i], config.priceFloor);
+      const last = memberCurve[memberLength];
+      for (let m = 0; m <= length; m++) {
+        const j = m - memberOpen;
+        curve[m] += shares * (j < 0 ? previous : j <= memberLength ? memberCurve[j] : last);
+      }
+    }
+    const divisor = indices.divisor[x];
+    for (let m = 0; m <= length; m++) {
+      curve[m] /= divisor;
+    }
+    this.#indexCurves[x] = curve;
+    this.#indexDone[x] = 1;
+    return curve;
+  }
+
+  /**
+   * Official close of a series from the support points only (TS §4.5, rule 8); bit for bit the
+   * last value of `seriesCurve`.
+   */
+  seriesClose(series: number): number {
+    return seriesSupportValue(this.#tables.context, this.day, series, 'close');
+  }
+
+  /** Open of a series from the support points only; bit for bit the first value of the curve. */
+  seriesOpen(series: number): number {
+    return seriesSupportValue(this.#tables.context, this.day, series, 'open');
   }
 
   /**
@@ -213,4 +300,40 @@ export class DayCurves {
     this.#instrumentDone[i] = 1;
     return curve;
   }
+}
+
+/**
+ * Open or close of a series from the support points of a day only (TS §4.5, rule 8). At the index
+ * open, only the constituents of the first opening exchange have opened; at the index close, all
+ * constituents have closed.
+ */
+export function seriesSupportValue(
+  context: MarketContext,
+  day: Readonly<MarketDay>,
+  series: number,
+  at: 'open' | 'close',
+): number {
+  const { indices, layout, config } = context;
+  const { kind, index } = seriesRef(context, series);
+  const floor = config.priceFloor;
+  if (kind === 'stock') {
+    return priceFromLog(at === 'open' ? day.logOpen[index] : day.logClose[index], floor);
+  }
+  const boundary = at === 'open' ? indices.openBoundary[index] : indices.closeBoundary[index];
+  let sum = 0;
+  for (let n = indices.memberStart[index]; n < indices.memberStart[index + 1]; n++) {
+    const i = indices.members[n];
+    const logPrice =
+      at === 'close'
+        ? day.logClose[i]
+        : layout.openBoundary[i] === boundary
+          ? day.logOpen[i]
+          : day.prevLogClose[i];
+    sum += indices.shares[n] * priceFromLog(logPrice, floor);
+  }
+  const level = sum / indices.divisor[index];
+  if (kind === 'index') {
+    return level;
+  }
+  return level * day.indexReinvest[index * layout.boundaries.length + boundary];
 }

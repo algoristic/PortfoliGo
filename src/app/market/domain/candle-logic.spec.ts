@@ -4,9 +4,13 @@ import {
   intradayCandles,
   weeklyCandles,
 } from './candle-logic';
-import { MarketDay } from './models/market-day.model';
+import { createMarketContext } from './market-context';
+import { createMarketDay } from './market-step';
+import { seriesCount } from './series';
 
 import { dayStartTick } from '../../clock/domain/calendar-logic';
+import { deriveSeedKey } from '../../simulation/util/seed';
+import { generateWorld } from '../../world/domain/world-generator';
 
 // 06.01.2020 is a Monday (day 5).
 const MONDAY = 5;
@@ -98,12 +102,14 @@ describe('candle logic', () => {
 
   describe('dailyCandlesFromSupport', () => {
     it('leaves high and low open', () => {
-      const day = {
-        day: MONDAY,
-        logOpen: Float64Array.from([0, Math.log(2)]),
-        logClose: Float64Array.from([-20, 0]),
-      } as MarketDay;
-      const candles = dailyCandlesFromSupport(day, 0.01);
+      const seedKey = deriveSeedKey('candles-1');
+      const context = createMarketContext(seedKey, generateWorld(seedKey));
+      const day = createMarketDay(context);
+      day.day = MONDAY;
+      day.logOpen.set([0, Math.log(2)]);
+      day.logClose.set([-20, 0]);
+      const candles = dailyCandlesFromSupport(context, day);
+      expect(candles.length).toBe(seriesCount(context));
       expect(candles[0]).toEqual({
         tick: dayStartTick(MONDAY),
         open: 1,
