@@ -21,7 +21,7 @@ Rules for implementing Angular code in this repository, so that generated code l
 
 **Current state:**
 
-- Bootstrap: `main.ts` boots `AppComponent` with `app.config.ts` (hash router, `PageTitleStrategy`, store, effects, router store, devtools, `LOCALE_ID` `de`, `ToastService`).
+- Bootstrap: `main.ts` boots `AppComponent` with `app.config.ts`: hash router, devtools and `provideAppCore()` from `app.providers.ts` (`PageTitleStrategy`, store, effects, router store, `LOCALE_ID` `de`, colour scheme, `ToastService`), which page tests use as well.
 - Routing and shell (AP 0.4): `''`/`**` → `/players`; the game area `/game/:playerId` (`shell/feature/shell.routes.ts`) lazy-loads the route files of the domains (TS §11.4). Most pages are still placeholders in their target domain folders; fill them in place. Routes set `title` via `$localize`.
 - UI building blocks (AP 0.4) live in `shared/ui`, shown at `#/lab/components`: `appButton`/`appIconButton` (attribute directives on native `<button>`/`<a>`), `app-panel`, `app-badge`, `app-tabs` (Angular Aria), `app-empty-state`, `app-skeleton`, `app-stat-tile`, `app-price-change`, `ToastService`, `app-dialog` and `openConfirmDialog`. Reuse them. Tabs and menus use `@angular/aria` (E-16); everything else from the CDK.
 - Infrastructure (AP 0.3): IndexedDB schema, migrations, `IndexedDbService` and `LocalStorageService` in `persistence/data-access`; money types, rounding and price grid in `shared/domain`; formatting functions in `shared/util` with pipes in `shared/ui/pipes`. Reuse them instead of rounding or formatting ad hoc.
@@ -33,6 +33,7 @@ Rules for implementing Angular code in this repository, so that generated code l
 - Dividends and indices (AP 1.6a) in `market/domain`: companies carry `dividend.schedule` (stream `world/dividends`); `dividend-logic.ts` (ex-dates, announcement 20 market days ahead, payment date, amount, markdown); `MarketState` and the month-start entries hold the full state (`logClose`, `nextExDay`, `dividendCents`, `indexReinvest`); `stepInstrument` writes into the state; `MarketDay` reports announcements, ex-dates and `R` per boundary. `IndexLayout` (constituents, capping fixed at the epoch, constant divisor, index session) in `MarketContext.indices`; `stepIndices` advances `R` from the previous closes. Series (`series.ts`): shares, then price indices, then total return indices share one index for `PriceSource`, `DayCurves.seriesCurve`, `dailyCandlesFromSupport` and `createHighLowFill`.
 - ETFs, indicative values and quotes (AP 1.6b) in `market/domain`: ETFs carry `startPrice` and, when distributing, a `schedule` (stream `world/etf-terms`); `EtfLayout` in `MarketContext.etfs`; `stepEtfs` advances `k` (TER, tracking noise from `market/etfs/<day>`) and the distribution pot per boundary after `stepIndices`; ETFs are series after the total return indices (`etfSeries`), their NAV comes from the indicative values of the constituents. `DayCurves.indicativeCurve`/`PriceSource.indicativeAt` give indicative values (frozen `U_i`, factor bridges); `SupportValues` gives opens and closes of all series from the support points. `quote-logic.ts` (`marketSpread`, `quote`) and `PriceSource.quoteAt(series, tick, now, venueMarkup)` give bid and ask on the price grid.
 - Simulation lab (AP 1.7) at `#/lab/simulation` (only with `devPages`): `lab/domain` (`LabSimulation`: world, prehistory, day steps, candles from minute curves or, for long periods, from the support points), `lab/data-access` (`lab-simulation.worker.ts` around the framework-free `LabWorkerSession`, `LabSimulationService` with `LAB_WORKER_FACTORY`; precursor of AP 2.2) and the `lab` slice. `charts/ui/price-chart` wraps `lightweight-charts` (E-04, loaded with a dynamic import, colours from the tokens, game time on the time axis via `tickToChartTime`); AP 4.2 extends it. Web workers use `tsconfig.worker.json` (`*.worker.ts`).
+- Page and component tests (§10): helpers in `src/testing/` (`renderRoute`/`settle`, DOM helpers, `installChartPlatform`), platform polyfills in `src/test-setup.ts`, `provideInProcessLabWorker()`; first specs `lab/feature/simulation/simulation.page.spec.ts` and `charts/ui/price-chart/price-chart.component.spec.ts`.
 - `ng build`, `ng lint` and `ng test` are green. CI runs all three before deploying.
 - Environment values (`src/environments/`): `production`, `storeDevtools` (`null` = off) and `devPages` (flag for the lab and developer pages). Only bootstrap code imports them.
 - An earlier Ionic prototype was deleted; don't build on it. View prototype code with `git show 9bab719^:<path>`.
@@ -529,7 +530,7 @@ export const ORDERS_SERVICE_CONFIG = new InjectionToken<OrdersServiceConfig>(
 ## 10. Testing
 
 - **Logic is always tested:** reducers, selectors, effects, facades, services, guards, interceptors, validators and pure functions (`*.utils.ts`, `*-logic.ts`).
-- Components, directives and pipes are not unit-tested.
+- **Pages get page tests** and **ui components with their own behaviour** (charts, forms with validation, …) get component tests, both as integration tests (see below). Purely presentational components, directives and pipes are covered by the page tests and not tested on their own.
 - Specs sit next to the file: `<name>.<kind>.spec.ts`. They run with Vitest through `ng test` (globals such as `describe`, `it`, `vi` are available).
 
 ```ts
@@ -571,10 +572,30 @@ describe('OrdersEffects', () => {
   - **HTTP services:** use `provideHttpClient()` + `provideHttpClientTesting()` with `HttpTestingController`, and `httpMock.verify()` in `afterEach`.
   - **Functional guards:** use `TestBed.runInInjectionContext(() => guard()(route, state))` + `firstValueFrom`.
   - **Reusable form schemas and rules:** create the form with `TestBed.runInInjectionContext(() => form(signal(model), schema))` and assert on `xForm.field().errors()`.
-- Mocks:
+- Mocks (logic tests only; page and component tests don't mock, see below):
   - Plain objects with `vi.fn()`, typed `Mocked<Pick<…>>` (`import type { Mocked } from 'vitest'`).
   - Packages that don't load in the test environment (e.g. heavy ESM UI libraries) are replaced via `vi.mock(...)`.
 - Await Observables with `firstValueFrom`/`lastValueFrom` instead of `done` callbacks. Don't use marble testing or `fakeAsync`.
+
+### Page and component tests
+
+They run the real code: store, effects, facades, services, worker code, child components and `lightweight-charts`. Only process and platform boundaries are replaced, so don't mock anything else in them (no `MockStore`, fake services or stub components).
+
+- **Page tests** (`<name>.page.spec.ts`) open the page through the app's real routes with `renderRoute(url, providers)` from `src/testing/page.ts`. It uses `provideAppCore()` (the app-wide providers of `app.config.ts`) and `RouterTestingHarness`, so guards and route providers run as in the app.
+- **Component tests** (`<name>.component.spec.ts`) create the component with `TestBed.createComponent`, set inputs with `fixture.componentRef.setInput(...)` and subscribe to the outputs.
+- Replaced boundaries:
+
+  | Boundary                         | Replacement                                                                                                                                                                                                                      |
+  | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | Web Worker                       | the same session code in the test process, provided at the root injector, e.g. `provideInProcessLabWorker()` (`lab/data-access/testing/`). Worker factory tokens therefore have a root default instead of being route providers. |
+  | IndexedDB                        | `fake-indexeddb`                                                                                                                                                                                                                 |
+  | Canvas, layout, `ResizeObserver` | polyfills in `src/test-setup.ts` (2D context without drawing, silent observer); `installChartPlatform()` (`src/testing/chart-platform.ts`) for container size and colour tokens                                                  |
+  | Clocks, randomness               | deterministic clocks; tests type seeds instead of generating them                                                                                                                                                                |
+
+- Act like a user through `data-testid` with the helpers in `src/testing/dom.ts` (`byTestId`, `queryByTestId`, `textOf`, `click`, `typeText`, `wheel`) and assert on what the page shows. Displayed values that a test reads get a `data-testid` too.
+- Wait with `settle(fixture)` (`src/testing/page.ts`): `whenStable()`, a few animation frames (charts report their range in a frame), `whenStable()` again. Asynchronous work outside Angular (worker answers, lazy libraries) is registered as `PendingTasks`, so `whenStable()` covers it; don't poll.
+- Compute expected values with the domain code, e.g. a `LabSimulation` with the same seed as oracle, instead of hard-coding numbers of the generated world.
+- Page tests cover user flows and the wiring; edge cases stay in the logic tests. Pixels, layout and real gestures are not covered (TS §14.1).
 
 ## 11. Verify your changes
 

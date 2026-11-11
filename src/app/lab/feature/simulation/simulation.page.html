@@ -28,7 +28,9 @@
           [formField]="seedForm.seed" />
         @if (_seed.touched() && _seed.invalid()) {
           @for (error of _seed.errors(); track error.kind) {
-            <span class="text-down">{{ error.message }}</span>
+            <span class="text-down" data-testid="lab.simulation.seed-error">{{
+              error.message
+            }}</span>
           }
         }
       </label>
@@ -77,6 +79,7 @@
       <div class="mt-4 grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <app-stat-tile
           class="sm:col-span-2"
+          data-testid="lab.simulation.game-time"
           label="Spielzeit"
           i18n-label="@@featureLab-simulationPage-gameTime"
           [value]="formatTime(now)"></app-stat-tile>

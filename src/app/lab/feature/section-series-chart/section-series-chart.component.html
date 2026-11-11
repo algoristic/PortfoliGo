@@ -86,7 +86,11 @@
         {{ _selectedOption.name }} · {{ kindLabels[_selectedOption.kind] }}
       </span>
     }
-    <span i18n="@@featureLab-sectionSeriesChart-candleCount">{{ candles().length }} Kerzen</span>
+    <span
+      data-testid="lab.simulation.chart.candle-count"
+      i18n="@@featureLab-sectionSeriesChart-candleCount"
+      >{{ candles().length }} Kerzen</span
+    >
     <span i18n="@@featureLab-sectionSeriesChart-lastClose">Letzter Schluss {{ lastClose() }}</span>
     @if (_chartOptions.range === 'max') {
       <span i18n="@@featureLab-sectionSeriesChart-supportHint"
@@ -94,7 +98,11 @@
       >
     }
     @if (loadingHistory()) {
-      <span i18n="@@featureLab-sectionSeriesChart-loadingHistory">Lade ältere Kerzen …</span>
+      <span
+        data-testid="lab.simulation.chart.loading-history"
+        i18n="@@featureLab-sectionSeriesChart-loadingHistory"
+        >Lade ältere Kerzen …</span
+      >
     }
     @if (_candlesMs !== undefined) {
       <span i18n="@@featureLab-sectionSeriesChart-candlesMs"

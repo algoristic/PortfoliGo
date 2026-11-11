@@ -7,6 +7,8 @@ import {
   inject,
   input,
   output,
+  PendingTasks,
+  Renderer2,
   signal,
   viewChild,
 } from '@angular/core';
@@ -37,6 +39,9 @@ import { Candle } from '../../../market/domain/models/candle.model';
 
 type ChartLibrary = typeof import('lightweight-charts');
 
+/** Events that start a scroll or zoom gesture of the user. */
+const USER_MOVE_EVENTS = ['wheel', 'pointerdown', 'touchstart'] as const;
+
 interface ChartHandle {
   library: ChartLibrary;
   chart: IChartApi;
@@ -54,14 +59,12 @@ interface ChartHandle {
   imports: [],
   templateUrl: './price-chart.component.html',
   styleUrl: './price-chart.component.scss',
-  host: {
-    '(wheel)': 'onUserMove()',
-    '(pointerdown)': 'onUserMove()',
-    '(touchstart)': 'onUserMove()',
-  },
 })
 export class PriceChartComponent {
+  readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly #renderer = inject(Renderer2);
   readonly #destroyRef = inject(DestroyRef);
+  readonly #pendingTasks = inject(PendingTasks);
 
   candles = input.required<Candle[]>();
   chartType = input<PriceChartType>('candles');
@@ -84,9 +87,19 @@ export class PriceChartComponent {
 
   constructor() {
     this.#destroyRef.onDestroy(() => (this.#destroyed = true));
-    afterNextRender(() => {
-      void this.#createChart();
-    });
+    // Capture phase: the library handles a gesture on an inner element and reports the new range
+    // right away, so the gesture has to count before that.
+    for (const type of USER_MOVE_EVENTS) {
+      const unlisten = this.#renderer.listen(
+        this.#host.nativeElement,
+        type,
+        () => (this.#userMoved = true),
+        { capture: true, passive: true },
+      );
+      this.#destroyRef.onDestroy(unlisten);
+    }
+    // A pending task, so that `whenStable()` (tests, tooling) also waits for the lazy library.
+    afterNextRender(() => this.#pendingTasks.run(() => this.#createChart()));
     effect(() => {
       const handle = this.#handle();
       const colors = this.#colors();
@@ -94,10 +107,6 @@ export class PriceChartComponent {
         this.#render(handle, colors, this.candles(), this.chartType());
       }
     });
-  }
-
-  onUserMove(): void {
-    this.#userMoved = true;
   }
 
   async #createChart(): Promise<void> {
@@ -151,6 +160,14 @@ export class PriceChartComponent {
     const newCandles = candles !== this.#renderedCandles;
     // Older candles in front keep the view; any other new data set is fitted.
     const fit = newSeries || (newCandles && !isPrepended(this.#renderedCandles, candles));
+    // Before `setData`: the library reports the shifted range of prepended candles right away.
+    if (fit) {
+      this.#userMoved = false;
+    }
+    if (newCandles) {
+      this.#renderedCandles = candles;
+      this.#historyArmed = true;
+    }
     if (newSeries) {
       if (this.#series !== undefined) {
         chart.removeSeries(this.#series);
@@ -189,16 +206,10 @@ export class PriceChartComponent {
     if (fit) {
       chart.timeScale().fitContent();
     }
-    if (fit) {
-      this.#userMoved = false;
-    }
-    if (newCandles) {
-      this.#renderedCandles = candles;
-      this.#historyArmed = true;
-    }
   }
 
-  // Only the range event carries the view after an update; the library applies it a frame later.
+  // Only the range event carries the current view: `fitContent` applies it a frame later, prepended
+  // candles and gestures right away.
   #checkHistoryStart(range: LogicalRange | null): void {
     if (
       shouldRequestHistory({

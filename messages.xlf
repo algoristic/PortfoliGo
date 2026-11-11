@@ -321,35 +321,35 @@
         <source><x id="INTERPOLATION" equiv-text="{{ candles().length }}"/> Kerzen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/section-series-chart/section-series-chart.component.html</context>
-          <context context-type="linenumber">89,90</context>
+          <context context-type="linenumber">92,94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-sectionSeriesChart-lastClose" datatype="html">
         <source>Letzter Schluss <x id="INTERPOLATION" equiv-text="{{ lastClose() }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/section-series-chart/section-series-chart.component.html</context>
-          <context context-type="linenumber">90,91</context>
+          <context context-type="linenumber">94,95</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-sectionSeriesChart-supportHint" datatype="html">
         <source>Aus den Tagesstützpunkten: Hoch und Tief nur aus Eröffnung und Schluss</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/section-series-chart/section-series-chart.component.html</context>
-          <context context-type="linenumber">93,97</context>
+          <context context-type="linenumber">97,101</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-sectionSeriesChart-loadingHistory" datatype="html">
         <source>Lade ältere Kerzen …</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/section-series-chart/section-series-chart.component.html</context>
-          <context context-type="linenumber">97,100</context>
+          <context context-type="linenumber">104,108</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-sectionSeriesChart-candlesMs" datatype="html">
         <source>Abfrage <x id="INTERPOLATION" equiv-text="{{ _candlesMs.toFixed(1) }}"/> ms</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/section-series-chart/section-series-chart.component.html</context>
-          <context context-type="linenumber">101,103</context>
+          <context context-type="linenumber">109,111</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-sectionSeriesChart-kindStock" datatype="html">
@@ -744,98 +744,98 @@
         <source> Zufälliger Seed </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">43,46</context>
+          <context context-type="linenumber">45,48</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-generate" datatype="html">
         <source> Welt erzeugen </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">52,55</context>
+          <context context-type="linenumber">54,57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-currentSeed" datatype="html">
         <source> Aktueller Seed: <x id="INTERPOLATION" equiv-text="{{ seed }}"/> </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">57,60</context>
+          <context context-type="linenumber">59,62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-simulation" datatype="html">
         <source>Simulation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-gameTime" datatype="html">
         <source>Spielzeit</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">80,81</context>
+          <context context-type="linenumber">83,84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-simulatedDays" datatype="html">
         <source>Simulierte Tage</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">84,85</context>
+          <context context-type="linenumber">87,88</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-worldMs" datatype="html">
         <source>Welt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">89</context>
+          <context context-type="linenumber">92</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-prehistoryMs" datatype="html">
         <source>Vorlauf</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">93</context>
+          <context context-type="linenumber">96</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-marketDaysPerSecond" datatype="html">
         <source>Markttage/s</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">96,97</context>
+          <context context-type="linenumber">99,100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-simulating" datatype="html">
         <source> Simuliere … </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">102,107</context>
+          <context context-type="linenumber">105,110</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-chart" datatype="html">
         <source>Chart</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">107</context>
+          <context context-type="linenumber">110</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-overview" datatype="html">
         <source>Welt-Übersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">122</context>
+          <context context-type="linenumber">125</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-emptyHeading" datatype="html">
         <source>Noch keine Welt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">130,131</context>
+          <context context-type="linenumber">133,134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-emptyText" datatype="html">
         <source>Gib einen Seed ein und erzeuge eine Welt; Vorlauf und Simulation laufen im Web Worker.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">132,133</context>
+          <context context-type="linenumber">135,136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-seedRequired" datatype="html">
