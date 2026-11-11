@@ -1,4 +1,4 @@
-import { createStream, RandomStream } from './random-stream';
+import { createStream, RandomStream, StreamFamily } from './random-stream';
 import { deriveSeedKey } from './seed';
 
 function take(stream: RandomStream, count: number): number[] {
@@ -111,5 +111,24 @@ describe('createStream', () => {
       firsts.add(createStream(seedKey, `market/regime/${day}`).nextUint32());
     }
     expect(firsts.size).toBeGreaterThan(9_990);
+  });
+});
+
+describe('StreamFamily', () => {
+  const seedKey = deriveSeedKey('kupfer-falke-731');
+
+  it('creates the same streams as createStream with the full key', () => {
+    const family = new StreamFamily(seedKey, 'market/instrument/cmp-0001/');
+    for (const day of [0, 7, 10, 999, 2610, 123_456_789]) {
+      expect(take(family.create(day), 8)).toEqual(
+        take(createStream(seedKey, `market/instrument/cmp-0001/${day}`), 8),
+      );
+    }
+  });
+
+  it('rejects negative and fractional suffixes', () => {
+    const family = new StreamFamily(seedKey, 'market/regime/');
+    expect(() => family.create(-1)).toThrow(RangeError);
+    expect(() => family.create(1.5)).toThrow(RangeError);
   });
 });

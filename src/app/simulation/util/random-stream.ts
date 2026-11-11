@@ -5,6 +5,7 @@ const DISCARDED_OUTPUTS = 12;
 const TWO_POW_32 = 4294967296;
 const TWO_POW_26 = 67108864;
 const TWO_POW_53 = 9007199254740992;
+const ASCII_ZERO = 48;
 
 /**
  * Deterministic random stream based on sfc32 (Chris Doty-Humphrey, PractRand) with a 128-bit
@@ -58,6 +59,43 @@ export class RandomStream {
  */
 export function createStream(seedKey: SeedKey, key: string): RandomStream {
   const state = new Hash128().update(wordsToBytes(seedKey)).update(utf8Encode(key)).digest();
+  return startStream(state);
+}
+
+/**
+ * Streams whose keys share a prefix and end in a non-negative integer, such as
+ * `market/instrument/<id>/<day>`. `create(n)` equals `createStream(seedKey, prefix + n)` bit for
+ * bit, but hashes the seed key and the prefix only once – the day step creates hundreds of
+ * thousands of streams.
+ */
+export class StreamFamily {
+  readonly #prefix: Hash128;
+  readonly #scratch = new Hash128();
+  readonly #digits = new Uint8Array(16);
+
+  constructor(seedKey: SeedKey, prefix: string) {
+    this.#prefix = new Hash128().update(wordsToBytes(seedKey)).update(utf8Encode(prefix));
+  }
+
+  create(n: number): RandomStream {
+    if (!Number.isSafeInteger(n) || n < 0) {
+      throw new RangeError(`StreamFamily: invalid key suffix ${n}`);
+    }
+    const hash = this.#scratch.copyFrom(this.#prefix);
+    // Decimal digits as ASCII, which is the UTF-8 encoding of String(n).
+    let count = 0;
+    do {
+      this.#digits[count++] = ASCII_ZERO + (n % 10);
+      n = Math.floor(n / 10);
+    } while (n > 0);
+    while (count > 0) {
+      hash.updateByte(this.#digits[--count]);
+    }
+    return startStream(hash.digest());
+  }
+}
+
+function startStream(state: ArrayLike<number>): RandomStream {
   const stream = new RandomStream(state);
   for (let i = 0; i < DISCARDED_OUTPUTS; i++) {
     stream.nextUint32();

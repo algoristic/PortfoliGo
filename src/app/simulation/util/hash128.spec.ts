@@ -43,6 +43,23 @@ describe('hash128', () => {
         expect(Array.from(hash.digest())).toEqual(expected);
       }
     });
+
+    it('yields the one-shot result when fed byte by byte', () => {
+      const bytes = utf8Encode('market/factor/industry:software/2610');
+      const hash = new Hash128(7);
+      bytes.forEach((byte) => hash.updateByte(byte));
+      expect(Array.from(hash.digest())).toEqual(Array.from(murmur3x86_128(bytes, 7)));
+    });
+
+    it('continues from a copied prefix state', () => {
+      const prefix = new Hash128().update(utf8Encode('market/instrument/cmp-0001/'));
+      for (const suffix of ['7', '1234', '12345678901234567890']) {
+        const copy = new Hash128().update(utf8Encode('unrelated')).copyFrom(prefix);
+        copy.update(utf8Encode(suffix));
+        const expected = murmur3x86_128(utf8Encode(`market/instrument/cmp-0001/${suffix}`));
+        expect(Array.from(copy.digest())).toEqual(Array.from(expected));
+      }
+    });
   });
 
   describe('bytesToHex', () => {

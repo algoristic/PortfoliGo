@@ -53,14 +53,17 @@ export function lognormal(rng: RandomStream, mu: number, sigma: number): number 
   return detExp(normal(rng, mu, sigma));
 }
 
-/** Poisson distribution by inversion (sequential search), for 0 ≤ λ ≤ `POISSON_MAX_LAMBDA`. */
-export function poisson(rng: RandomStream, lambda: number): number {
+/**
+ * Poisson distribution by inversion (sequential search), for 0 ≤ λ ≤ `POISSON_MAX_LAMBDA`.
+ * Callers that draw often with the same λ may pass `detExp(-lambda)` precomputed.
+ */
+export function poisson(rng: RandomStream, lambda: number, expMinusLambda?: number): number {
   if (!(lambda >= 0 && lambda <= POISSON_MAX_LAMBDA)) {
     throw new RangeError(`poisson: lambda ${lambda} outside [0, ${POISSON_MAX_LAMBDA}]`);
   }
   const u = rng.nextFloat53();
   let k = 0;
-  let p = detExp(-lambda);
+  let p = expMinusLambda ?? detExp(-lambda);
   let cumulative = p;
   // p reaches 0 long before k overflows; the check ends the loop if rounding keeps F below u.
   while (u >= cumulative && p > 0) {

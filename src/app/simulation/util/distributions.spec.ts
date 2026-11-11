@@ -1,3 +1,4 @@
+import { detExp } from './det-math';
 import {
   lognormal,
   normal,
@@ -139,6 +140,15 @@ describe('distributions', () => {
     it('returns 0 for lambda 0', () => {
       const rng = createStream(seedKey, 'poisson/zero');
       expect(poisson(rng, 0)).toBe(0);
+    });
+
+    it('draws the same values with a precomputed exp(-lambda)', () => {
+      const lambda = 0.0153;
+      const plain = draw('poisson/precomputed', (rng) => poisson(rng, lambda));
+      const precomputed = draw('poisson/precomputed', (rng) =>
+        poisson(rng, lambda, detExp(-lambda)),
+      );
+      expect(precomputed).toEqual(plain);
     });
 
     it('throws for lambda outside the supported range', () => {

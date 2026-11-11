@@ -51,6 +51,29 @@ export class Hash128 {
     return this;
   }
 
+  /** Feeds a single byte (0–255); same result as `update` with a one-byte array. */
+  updateByte(byte: number): this {
+    this.#block[this.#blockLength++] = byte;
+    if (this.#blockLength === 16) {
+      this.#mixBlock();
+      this.#blockLength = 0;
+    }
+    this.#length++;
+    return this;
+  }
+
+  /** Takes over the complete state of `other`, so a common prefix is hashed only once. */
+  copyFrom(other: Hash128): this {
+    this.#h1 = other.#h1;
+    this.#h2 = other.#h2;
+    this.#h3 = other.#h3;
+    this.#h4 = other.#h4;
+    this.#length = other.#length;
+    this.#block.set(other.#block);
+    this.#blockLength = other.#blockLength;
+    return this;
+  }
+
   /** Returns h1–h4 as unsigned 32-bit words. The hasher must not be used afterwards. */
   digest(): Uint32Array {
     const tail = this.#block;
