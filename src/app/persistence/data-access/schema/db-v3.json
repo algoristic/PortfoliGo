@@ -1,0 +1,99 @@
+{
+  "description": "Database of DB version 3 (AP 0.3 to AP 2.2) with one synthetic record per store. Frozen; never edit after release (TS §9.7).",
+  "version": 3,
+  "stores": [
+    {
+      "name": "players",
+      "keyPath": "id",
+      "indexes": [],
+      "records": [{ "value": { "id": "p1", "name": "Alt", "seed": "alt-1" } }]
+    },
+    {
+      "name": "runtime",
+      "keyPath": "playerId",
+      "indexes": [],
+      "records": [
+        {
+          "value": {
+            "playerId": "p1",
+            "tick": 5389920,
+            "speed": "1h",
+            "paused": true,
+            "lastSeenAt": 1794441600000
+          }
+        }
+      ]
+    },
+    {
+      "name": "snapshots",
+      "keyPath": ["playerId", "tick"],
+      "indexes": [],
+      "records": [{ "value": { "playerId": "p1", "tick": 5389920, "state": { "tick": 5389920 } } }]
+    },
+    {
+      "name": "commands",
+      "keyPath": ["playerId", "seq"],
+      "indexes": [],
+      "records": [
+        {
+          "value": {
+            "playerId": "p1",
+            "seq": 0,
+            "tick": 5389920,
+            "command": { "id": "c1", "type": "setBackgroundMode", "tick": 5389920, "mode": "pause" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "transactions",
+      "keyPath": ["playerId", "seq"],
+      "indexes": [{ "name": "byAccount", "keyPath": "accountIds", "multiEntry": true }],
+      "records": [
+        { "value": { "playerId": "p1", "seq": 0, "tick": 5389920, "accountIds": ["giro"] } }
+      ]
+    },
+    {
+      "name": "orders",
+      "keyPath": ["playerId", "orderId"],
+      "indexes": [],
+      "records": [{ "value": { "playerId": "p1", "orderId": "o1", "tick": 5389920 } }]
+    },
+    {
+      "name": "notifications",
+      "keyPath": ["playerId", "seq"],
+      "indexes": [],
+      "records": [{ "value": { "playerId": "p1", "seq": 0, "tick": 5389920 } }]
+    },
+    {
+      "name": "candles",
+      "keyPath": ["playerId", "instrumentId", "resolution", "bucket"],
+      "indexes": [],
+      "records": [
+        {
+          "value": {
+            "playerId": "p1",
+            "instrumentId": "A",
+            "resolution": "1d",
+            "bucket": 2030,
+            "values": [1, 2, 0.5, 1.5]
+          }
+        }
+      ]
+    },
+    {
+      "name": "series",
+      "keyPath": ["playerId", "name", "year"],
+      "indexes": [],
+      "records": [
+        { "value": { "playerId": "p1", "name": "wealth", "year": 2030, "tick": 5389920 } }
+      ]
+    },
+    {
+      "name": "meta",
+      "keyPath": "key",
+      "indexes": [],
+      "records": [{ "value": { "key": "appVersion", "value": "0.0.0" } }]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import { TestMarket, TestPrice } from '@app/engine/domain/testing/test-market';
 
 import { EngineHost } from './engine-host';
-import { EngineHostOptions, EngineStorage, StoredClock } from './engine-host.model';
+import { EngineHostOptions, EngineStorage } from './engine-host.model';
 import { InMemoryEngineStorage } from './in-memory-engine-storage';
 
 import {
@@ -105,15 +105,11 @@ class HostHarness {
 }
 
 /** Storage whose writes wait until the test resolves or rejects them. */
-class HeldStorage implements EngineStorage {
+class HeldStorage extends InMemoryEngineStorage {
   readonly writes: Array<{ resolve: () => void; reject: (error: Error) => void }> = [];
 
-  appendCommand(): Promise<void> {
+  override appendCommand(): Promise<void> {
     return new Promise((resolve, reject) => this.writes.push({ resolve, reject }));
-  }
-
-  async saveClock(_playerId: string, _clock: StoredClock): Promise<void> {
-    // Clock writes don't matter here.
   }
 }
 
