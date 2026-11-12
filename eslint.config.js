@@ -58,7 +58,11 @@ module.exports = tseslint.config(
   },
   {
     // Determinism rules for simulation code (TS §4.4, §4.5); the UI may use Math.* freely.
-    files: ['src/app/{simulation,world,market,clock}/{domain,util}/**/*.ts'],
+    files: [
+      'src/app/{simulation,world,market,clock}/{domain,util}/**/*.ts',
+      // Money and the price grid feed the simulation (rounding of dividends, quotes).
+      'src/app/shared/domain/**/*.ts',
+    ],
     ignores: ['**/*.spec.ts'],
     rules: {
       'no-restricted-properties': [

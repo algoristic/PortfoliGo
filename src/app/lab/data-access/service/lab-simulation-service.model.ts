@@ -71,5 +71,6 @@ export interface LabWorkerPort {
     type: 'message',
     listener: (event: MessageEvent<LabWorkerResponse>) => void,
   ): void;
+  addEventListener(type: 'error' | 'messageerror', listener: (event: Event) => void): void;
   terminate(): void;
 }

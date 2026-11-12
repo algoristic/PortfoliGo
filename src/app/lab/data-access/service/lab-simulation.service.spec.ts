@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, lastValueFrom } from 'rxjs';
 
 import { LAB_WORKER_FACTORY } from './lab-simulation-service.config';
 import {
@@ -14,16 +14,21 @@ class FakeWorker implements LabWorkerPort {
   readonly requests: LabWorkerRequest[] = [];
   terminated = false;
   #listener?: (event: MessageEvent<LabWorkerResponse>) => void;
+  #errorListeners: Array<(event: Event) => void> = [];
 
   postMessage(message: LabWorkerRequest): void {
     this.requests.push(message);
   }
 
   addEventListener(
-    _type: 'message',
+    type: 'message' | 'error' | 'messageerror',
     listener: (event: MessageEvent<LabWorkerResponse>) => void,
   ): void {
-    this.#listener = listener;
+    if (type === 'message') {
+      this.#listener = listener;
+    } else {
+      this.#errorListeners.push(listener as (event: Event) => void);
+    }
   }
 
   terminate(): void {
@@ -32,6 +37,10 @@ class FakeWorker implements LabWorkerPort {
 
   respond(response: LabWorkerResponse): void {
     this.#listener?.({ data: response } as MessageEvent<LabWorkerResponse>);
+  }
+
+  fail(message: string): void {
+    this.#errorListeners.forEach((listener) => listener(new ErrorEvent('error', { message })));
   }
 }
 
@@ -122,6 +131,32 @@ describe('LabSimulationService', () => {
       service.generate('b').subscribe();
       expect(workers).toHaveLength(2);
       expect(workers[1].requests).toEqual([{ id: 2, type: 'generate', seed: 'b' }]);
+    });
+
+    it('completes open requests without a value', async () => {
+      const result = lastValueFrom(service.simulate(7), { defaultValue: 'none' });
+      service.terminate();
+      expect(await result).toBe('none');
+    });
+  });
+
+  describe('worker errors', () => {
+    it('errors open requests and starts a new worker with the next request', async () => {
+      const result = firstValueFrom(service.simulate(7));
+      workers[0].fail('chunk not found');
+      await expect(result).rejects.toThrow('the lab worker failed: chunk not found');
+      expect(workers[0].terminated).toBe(true);
+      service.simulate(7).subscribe();
+      expect(workers).toHaveLength(2);
+    });
+
+    it('ignores errors of a worker it no longer uses', async () => {
+      service.simulate(7).subscribe();
+      service.terminate();
+      const result = firstValueFrom(service.simulate(14));
+      workers[0].fail('late');
+      workers[1].respond({ id: 2, type: 'simulate', result: period });
+      expect(await result).toEqual(period);
     });
   });
 });

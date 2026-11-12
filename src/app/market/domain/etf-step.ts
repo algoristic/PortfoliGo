@@ -5,6 +5,7 @@ import { MarketDay } from './models/market-day.model';
 import { MarketState } from './models/market-state.model';
 
 import { CENTS_PER_EURO } from '../../shared/domain/models/money.model';
+import { eurosToCentsDown } from '../../shared/domain/money-logic';
 import { normal } from '../../simulation/util/distributions';
 
 const CALENDAR_DAYS_PER_YEAR = 365;
@@ -44,7 +45,7 @@ export function stepEtfs(context: MarketContext, state: MarketState, out: Market
     let pot = state.etfPot[e];
     let payout = 0;
     if (day === state.etfNextExDay[e]) {
-      payout = wholeCents(pot);
+      payout = Math.max(0, eurosToCentsDown(pot));
       out.etfExCents[e] = payout;
       state.etfNextExDay[e] = exDayOnOrAfter(
         distribution.schedule,
@@ -75,9 +76,4 @@ export function calendarDaysSinceLastMarketDay(day: number): number {
     days++;
   }
   return days;
-}
-
-/** Pot in whole cents, rounded down; reduced to 15 digits so that 0.29 € gives 29 cents. */
-function wholeCents(euros: number): number {
-  return Math.max(0, Math.floor(Number((euros * CENTS_PER_EURO).toPrecision(15))));
 }

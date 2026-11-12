@@ -1,6 +1,6 @@
 # PortfoliGo – Produktspezifikation
 
-> **Status:** Entwurf v0.2 · **Stand:** 11.11.2026
+> **Status:** Entwurf v0.2 · **Stand:** 12.11.2026
 > **Siehe auch:** [Technische Spezifikation](./technische-spezifikation.md) · [Projektplan](../projektplan.md)
 
 Dieses Dokument beschreibt, _was_ PortfoliGo leisten soll und _warum_. Wie es umgesetzt wird, steht in der technischen Spezifikation. Punkte mit **(Vorschlag)** konkretisieren die Ideensammlung und müssen noch bestätigt werden. Sie sind zusätzlich als Entscheidung `E-xx` in der technischen Spezifikation (§16) geführt.
@@ -118,7 +118,7 @@ Diese Merkmale sind zugleich die Dimensionen, nach denen der Anwender den Markt 
 | Sparerpauschbetrag          | Steuerfreier Betrag für Kapitalerträge (1.000 € pro Jahr).                                                            |
 | Verlusttopf                 | Sammelt realisierte Verluste zur Verrechnung mit späteren Gewinnen.                                                   |
 | Sparplan                    | Regelmäßiger, automatischer Kauf eines Instruments für einen festen Betrag.                                           |
-| Gesamtvermögen              | Summe aller Kontosalden und Depotwerte (zum Geldkurs) abzüglich Schulden.                                             |
+| Gesamtvermögen              | Summe aller Kontosalden (Überziehungen mindern sie) und Depotwerte zum Geldkurs.                                      |
 | Benchmark                   | Vergleichsmaßstab: Wie stünde der Spieler da, wenn alle Zuflüsse ohne Kosten in den Weltindex geflossen wären?        |
 
 ## 6. Fachliches Domänenmodell
@@ -398,7 +398,7 @@ Als Anwender möchte ich regelmäßig automatisch investieren, damit mein Vermö
 **US-PF-01 – Gesamtvermögen** · Stufe 1 · M
 Als Anwender möchte ich mein Gesamtvermögen jederzeit sehen, damit ich weiß, wo ich stehe.
 
-- Live-Wert: Summe aller Konten und Depotwerte (zum Geldkurs) abzüglich Überziehungen.
+- Live-Wert: Summe aller Kontosalden (Überziehungen mindern sie) und Depotwerte zum Geldkurs.
 - Veränderung heute und seit Spielbeginn (absolut und in %).
 
 **US-PF-02 – Depotübersicht** · Stufe 1 · M
@@ -631,13 +631,13 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 
 ## 8. Ausbaustufen
 
-| Stufe | Name                        | Inhalt                                                                                                                                                                                                                                                    | Meilensteine |
-| ----- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| 1     | MVP „Spielbar"              | Spieler, Zeit, Einkommen und Kosten, Banken und Konten, Aktien und ETFs, Handel mit Market-, Limit- und Stop-Orders, Sparpläne, Steuern (vereinfacht), Portfolio und Performance, Charts mit Basisindikatoren, Benachrichtigungen, Export und Import, PWA | M0–M6        |
-| 2     | „Vollständiger Markt"       | Zinsen und Inflation, Anleihen, Tagesgeld und Festgeld am Leitzins, Rohstoffe und ETCs, Edelmetalle, aktive Fonds, Steuerdetails, Fundamentaldaten, Unternehmensereignisse, Kursalarme, Daueraufträge, weitere Indikatoren                                | M7–M9        |
-| 3     | „Trading & Automatisierung" | CFDs, große Welt mit deutlich mehr Instrumenten, Regelwerk, Backtesting                                                                                                                                                                                   | M10–M12      |
-| 4     | „Leben & Welt"              | Lebensereignisse, Upgrades, Versicherungen, Karriere, Newsticker, Erben und Prestige                                                                                                                                                                      | M13–M15      |
-| N     | „Native" (optional)         | App für Android und iOS mit Capacitor, vorausgeplante Benachrichtigungen                                                                                                                                                                                  | N1           |
+| Stufe | Name                        | Inhalt                                                                                                                                                                                                                                                                 | Meilensteine |
+| ----- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 1     | MVP „Spielbar"              | Spieler, Zeit, Einkommen und Kosten, Banken und Konten, Aktien und ETFs, Handel mit Market-, Limit-, Stop- und Stop-Limit-Orders, Sparpläne, Steuern (vereinfacht), Portfolio und Performance, Charts mit Basisindikatoren, Benachrichtigungen, Export und Import, PWA | M0–M6        |
+| 2     | „Vollständiger Markt"       | Zinsen und Inflation, Anleihen, Tagesgeld und Festgeld am Leitzins, Rohstoffe und ETCs, Edelmetalle, aktive Fonds, Steuerdetails, Fundamentaldaten, Unternehmensereignisse, Kursalarme, Daueraufträge, weitere Indikatoren                                             | M7–M9        |
+| 3     | „Trading & Automatisierung" | CFDs, große Welt mit deutlich mehr Instrumenten, Regelwerk, Backtesting                                                                                                                                                                                                | M10–M12      |
+| 4     | „Leben & Welt"              | Lebensereignisse, Upgrades, Versicherungen, Karriere, Newsticker, Erben und Prestige                                                                                                                                                                                   | M13–M15      |
+| N     | „Native" (optional)         | App für Android und iOS mit Capacitor, vorausgeplante Benachrichtigungen                                                                                                                                                                                               | N1           |
 
 **Bekannte Grenze von Stufe 1:** Gehalt, Lebenshaltungskosten, Gebühren und Sparerpauschbetrag bleiben nominal fest; Inflation und Gehaltsentwicklung folgen in Stufe 2 und 4. In sehr langen Spielen verlieren Einkommen und Gebühren deshalb gegenüber dem Vermögen an Gewicht. Wie sich der Markt über Jahrzehnte verhält, klärt E-22 (TS §6.4).
 
@@ -653,7 +653,7 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 | NF-04 | **Privatsphäre:** Keine Netzwerkzugriffe außer dem Laden der App; keine Cookies, kein Tracking, keine externen Schriften oder CDNs.                                                                                                                                                                                                                                                                                                                                                                                         |
 | NF-05 | **Determinismus:** Gleicher Seed und gleiche Simulationsversion ergeben dieselbe Welt – über Browser und Geräte hinweg. Geprüft wird das mit einem Selbsttest im Browser (TS §4.6).                                                                                                                                                                                                                                                                                                                                         |
 | NF-06 | **Robustheit:** Aktionen des Anwenders gehen nie verloren. Nach einem Absturz geht höchstens der Spielfortschritt der letzten Sekunden Echtzeit verloren.                                                                                                                                                                                                                                                                                                                                                                   |
-| NF-07 | **Speicher:** Ein Spieler belegt höchstens rund 15 MB plus 1,5 MB je Spieljahr; ältere Kursdaten werden verdichtet. Lange Spiele sind normal – bei 1 w/s vergehen rund 70 Spieljahre pro Spielstunde.                                                                                                                                                                                                                                                                                                                       |
+| NF-07 | **Speicher:** Ein Spieler belegt höchstens rund 15 MB plus 1,5 MB je Spieljahr; ältere Kursdaten werden verdichtet. Lange Spiele sind normal – bei 1 w/s vergehen rund 70 Spieljahre pro Stunde Echtzeit.                                                                                                                                                                                                                                                                                                                   |
 | NF-08 | **Plattformen:** Aktuelle Versionen von Chrome und Edge (ab 119), Firefox (ab 128), Safari und iOS (ab 17.0); Desktop, Tablet und Smartphone.                                                                                                                                                                                                                                                                                                                                                                               |
 | NF-09 | **Barrierefreiheit:** WCAG 2.2 AA; Bewegungen werden bei „Bewegung reduzieren" vermieden.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | NF-10 | **Sprache:** Deutsch; alle Texte sind für Übersetzungen vorbereitet (i18n).                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -673,7 +673,7 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│ PortfoliGo │ Mo, 01.04.2030 · 09:41 │ ▶ 1 h/s ‖ │ EU offen · NA ab 15:30 │ Suche │ Glocke 3 │ Spieler │
+│ PortfoliGo │ Mo., 01.04.2030, 09:41 │ ▶ 1 h/s ‖ │ EU offen · NA ab 15:30 │ Suche │ Glocke 3 │ Spieler │
 ├────────────┬─────────────────────────────────────────────────────────────────────┤
 │ Übersicht  │  Gesamtvermögen 24.512,30 €   +312,40 € (+1,29 %) heute               │
 │ Märkte     │  ┌───────────────────────────────┐  ┌──────────────────────────────┐   │
@@ -686,7 +686,7 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 ```
 
 - **Kopfzeile:** Spielzeit mit Geschwindigkeitsregler und Pause, Börsenstatus, Suche bzw. Befehlspalette, Benachrichtigungen, Spielermenü (Wechseln, Einstellungen, Export).
-- **Navigation:** Übersicht, Märkte, Depot, Konten & Banken, Orders, Steuern, Benachrichtigungen, Einstellungen. Auf dem Smartphone eine untere Leiste mit den fünf wichtigsten Bereichen.
+- **Navigation:** Übersicht, Märkte, Depot, Konten & Banken, Orders, Steuern, Benachrichtigungen, Einstellungen. Auf dem Smartphone eine untere Leiste mit den vier wichtigsten Bereichen und „Mehr“ für die übrigen.
 
 ### 10.3 Hauptansichten
 
@@ -709,7 +709,7 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 - Geldbeträge: `1.234,56 €`; in Übersichten kompakt (`1,2 Mio. €`).
 - Veränderungen immer mit Vorzeichen und Farbe: `+1,23 %`, `−45,10 €` (typografisches Minuszeichen).
 - Kurse ab 10 € mit zwei, von 1 bis 10 € mit drei, unter 1 € mit vier Nachkommastellen. So bleibt der Spread auch bei günstigen Aktien sichtbar.
-- Spielzeit: `Mo, 01.04.2030 · 09:41`.
+- Spielzeit: `Mo., 01.04.2030, 09:41`.
 - Zahlen in Tabellen rechtsbündig mit tabellarischen Ziffern.
 
 ## 11. Abgrenzung

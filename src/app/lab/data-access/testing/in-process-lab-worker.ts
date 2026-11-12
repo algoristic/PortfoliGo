@@ -41,11 +41,14 @@ export class InProcessLabWorker implements LabWorkerPort {
     });
   }
 
+  /** Only `message` listeners matter: the session answers failures with error responses. */
   addEventListener(
-    _type: 'message',
+    type: 'message' | 'error' | 'messageerror',
     listener: (event: MessageEvent<LabWorkerResponse>) => void,
   ): void {
-    this.#listeners.push(listener);
+    if (type === 'message') {
+      this.#listeners.push(listener);
+    }
   }
 
   terminate(): void {

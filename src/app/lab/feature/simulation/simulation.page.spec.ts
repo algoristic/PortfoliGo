@@ -125,6 +125,20 @@ describe('SimulationPage', () => {
         formatGameTime(dateTimeToTick({ year: 2040, month: 4, day: 1 }) - TICKS_PER_MINUTE),
       );
     });
+
+    it('simulates again after leaving the page while a simulation was running', async () => {
+      await generateWorld();
+      click(byTestId(page, 'lab.simulation.simulate.7'));
+      await harness.navigateByUrl('/lab/components');
+      await harness.navigateByUrl('/lab/simulation');
+      await settle(harness.fixture);
+      page = harness.fixture.nativeElement;
+      await generateWorld();
+      await act(() => click(byTestId(page, 'lab.simulation.simulate.7')));
+      expect(textOf(byTestId(page, 'lab.simulation.game-time'))).toContain(
+        formatGameTime(oracle.now + 7 * TICKS_PER_DAY),
+      );
+    });
   });
 
   describe('statistics', () => {

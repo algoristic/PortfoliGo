@@ -2,6 +2,7 @@ import {
   applyRate,
   centsToEuros,
   eurosToCents,
+  eurosToCentsDown,
   marketValue,
   microUnitsToUnits,
   roundHalfAwayFromZero,
@@ -26,6 +27,12 @@ describe('money-logic', () => {
     it('returns positive zero for values that round to zero', () => {
       expect(Object.is(roundHalfAwayFromZero(-0.4), 0)).toBe(true);
     });
+
+    it('keeps integers from 10¹⁵ cents on exact', () => {
+      expect(roundHalfAwayFromZero(1_234_567_890_123_456)).toBe(1_234_567_890_123_456);
+      expect(roundHalfAwayFromZero(-9_007_199_254_740_991)).toBe(-9_007_199_254_740_991);
+      expect(roundHalfAwayFromZero(999_999_999_999_999)).toBe(999_999_999_999_999);
+    });
   });
 
   describe('eurosToCents', () => {
@@ -33,6 +40,19 @@ describe('money-logic', () => {
       expect(eurosToCents(1234.56)).toBe(123456);
       expect(eurosToCents(1.005)).toBe(101);
       expect(eurosToCents(-0.015)).toBe(-2);
+    });
+  });
+
+  describe('eurosToCentsDown', () => {
+    it('rounds down to whole cents as written', () => {
+      expect(eurosToCentsDown(0.29)).toBe(29);
+      expect(eurosToCentsDown(1.239)).toBe(123);
+      expect(eurosToCentsDown(12.5)).toBe(1250);
+    });
+
+    it('returns positive zero below one cent', () => {
+      expect(Object.is(eurosToCentsDown(0.004), 0)).toBe(true);
+      expect(Object.is(eurosToCentsDown(-0), 0)).toBe(true);
     });
   });
 

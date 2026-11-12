@@ -1693,7 +1693,7 @@
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-emptyText" datatype="html">
-        <source>Diese Ansicht entsteht in AP 6.2.</source>
+        <source>Diese Ansicht entsteht in AP 2.6.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
           <context context-type="linenumber">8,9</context>
@@ -1889,7 +1889,7 @@
         </context-group>
       </trans-unit>
       <trans-unit id="featureTaxes-taxesPage-emptyText" datatype="html">
-        <source>Diese Ansicht entsteht in AP 5.3.</source>
+        <source>Diese Ansicht entsteht in AP 5.5.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/taxes/feature/taxes/taxes.page.html</context>
           <context context-type="linenumber">8,9</context>

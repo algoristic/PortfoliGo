@@ -35,8 +35,11 @@ export function bidAsk(mid: number, spread: number): BidAsk {
   return { bid: bidSteps / stepsPerEuro, ask: askSteps / stepsPerEuro };
 }
 
+// Steps per euro by decimal places of the grid, without `**` (TS §4.4).
+const STEPS_PER_EURO: Readonly<Record<number, number>> = { 2: 100, 3: 1_000, 4: 10_000 };
+
 function priceStepsPerEuro(price: number): number {
-  return 10 ** priceDecimals(price);
+  return STEPS_PER_EURO[priceDecimals(price)];
 }
 
 // Reduced to 15 significant digits so that e.g. `8.002 * 1000` does not floor to 8001.

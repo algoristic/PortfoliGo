@@ -27,6 +27,8 @@ import { StatisticsStart } from '../../domain/models/lab-statistics.model';
 export class LabSimulationService {
   readonly #createWorker = inject(LAB_WORKER_FACTORY);
   readonly #responses = new Subject<LabWorkerResponse>();
+  /** Ends the open requests: `null` when the worker was stopped, an error when it failed. */
+  readonly #stops = new Subject<Error | null>();
   #worker?: LabWorkerPort;
   #nextId = 1;
 
@@ -64,10 +66,14 @@ export class LabSimulationService {
     }));
   }
 
-  /** Stops the worker and drops its world; the next request starts a new one. */
+  /**
+   * Stops the worker and drops its world; the next request starts a new one. Open requests
+   * complete without a value, so that effects waiting for them accept new requests.
+   */
   terminate(): void {
     this.#worker?.terminate();
     this.#worker = undefined;
+    this.#stops.next(null);
   }
 
   #request<K extends LabWorkerRequestType>(
@@ -89,6 +95,11 @@ export class LabSimulationService {
           subscriber.next(response.result as LabWorkerResults[K]);
           subscriber.complete();
         });
+      subscription.add(
+        this.#stops
+          .pipe(take(1))
+          .subscribe((error) => (error === null ? subscriber.complete() : subscriber.error(error))),
+      );
       this.#ensureWorker().postMessage(request);
       return subscription;
     });
@@ -98,6 +109,17 @@ export class LabSimulationService {
     if (this.#worker === undefined) {
       const worker = this.#createWorker();
       worker.addEventListener('message', ({ data }) => this.#responses.next(data));
+      const fail = (event: Event): void => {
+        if (this.#worker !== worker) {
+          return;
+        }
+        worker.terminate();
+        this.#worker = undefined;
+        const detail = event instanceof ErrorEvent && event.message ? `: ${event.message}` : '';
+        this.#stops.next(new Error(`LabSimulationService: the lab worker failed${detail}`));
+      };
+      worker.addEventListener('error', fail);
+      worker.addEventListener('messageerror', fail);
       this.#worker = worker;
     }
     return this.#worker;
