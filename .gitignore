@@ -83,7 +83,6 @@ Thumbs.db
 /.claude/scheduled_tasks.json
 /.claude/settings.json
 /.claude/settings.local.json
-/.claude/skills
 /.claude/workflows
 
 # Playwright MCP output (screenshots, snapshots, console logs)
