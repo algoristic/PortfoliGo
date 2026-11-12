@@ -73,6 +73,8 @@ export class EngineService implements OnDestroy {
 
   clock$ = this.#payloads('clock');
   progress$ = this.#payloads('progress');
+  /** Problems the engine survives, e.g. failed periodic writes (TS §9.5). */
+  warning$ = this.#payloads('warning');
   fatal$ = this.#fatal.asObservable();
 
   loadPlayer(payload: LoadPlayerPayload): Observable<EngineReplies['loadPlayer']> {

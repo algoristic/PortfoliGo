@@ -1,8 +1,18 @@
 // The same fast-check configuration as the plain Vitest projects (`FC_SEED`, `FC_NUM_RUNS`).
 import './testing/fast-check-setup';
 
+import 'fake-indexeddb/auto';
+import { IDBFactory } from 'fake-indexeddb';
+
 // Platform features that jsdom (the default Vitest environment) lacks. They only fill gaps of the
 // platform; the code under test runs unchanged (CLAUDE.md §10).
+
+// IndexedDB (TS §14.1): `fake-indexeddb`, empty for every test. Pages read through the UI's
+// `IndexedDbService` what the in-process engine wrote. Values read back are clones made in Node's
+// realm: compare typed arrays by content, not with `instanceof` of jsdom's globals.
+beforeEach(() => {
+  globalThis.indexedDB = new IDBFactory();
+});
 
 // `window.matchMedia` is queried e.g. by the CDK `BreakpointObserver` and the colour scheme.
 if (!window.matchMedia) {

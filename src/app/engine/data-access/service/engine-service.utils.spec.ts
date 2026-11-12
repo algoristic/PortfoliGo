@@ -5,6 +5,7 @@ import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
 
 import {
   ENGINE_ERRORS,
+  ENGINE_WARNINGS,
   EngineCommandMessage,
   EngineEventMessage,
   PROGRESS_KINDS,
@@ -35,11 +36,15 @@ function envelope<T extends string, P>(type: T, payload: fc.Arbitrary<P>) {
 const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
   envelope(
     'loadPlayer',
-    fc.record({
-      playerId: arbId,
-      seed: fc.string(),
-      start: fc.record({ startCapital: arbCount, netIncome: arbCount, livingCosts: arbCount }),
-    }),
+    fc.record(
+      {
+        playerId: arbId,
+        seed: fc.string(),
+        start: fc.record({ startCapital: arbCount, netIncome: arbCount, livingCosts: arbCount }),
+        minTick: arbCount,
+      },
+      { requiredKeys: ['playerId', 'seed', 'start'] },
+    ),
   ),
   envelope('unloadPlayer', fc.constant({})),
   envelope('setSpeed', fc.record({ speed: arbSpeed })),
@@ -116,6 +121,10 @@ const arbEvent: fc.Arbitrary<EngineEventMessage> = fc.oneof(
       arbId,
     )
     .map(([message, replyTo]) => ({ ...message, replyTo })),
+  envelope(
+    'warning',
+    fc.record({ code: fc.constantFrom(...ENGINE_WARNINGS), message: fc.string() }),
+  ),
   envelope('fatal', fc.record({ message: fc.string() })),
 ) as fc.Arbitrary<EngineEventMessage>;
 
@@ -251,6 +260,8 @@ describe('engine protocol guards', () => {
       ],
       ['an empty player id', loadPlayer({ playerId: '' })],
       ['a player id that is not a string', loadPlayer({ playerId: 7 })],
+      ['a negative lower bound of the tick', loadPlayer({ minTick: -1 })],
+      ['a lower bound of the tick given as a string', loadPlayer({ minTick: '5' })],
       ['a visibility that is not a boolean', command('setVisibility', { visible: 'yes' })],
       ['unsubscribe without a series list', command('unsubscribe', { series: 3 })],
       ['series given as strings', command('subscribe', { series: ['1'] })],
@@ -265,6 +276,7 @@ describe('engine protocol guards', () => {
       ['series 0', command('subscribe', { series: [0] })],
       ['a jump to tick 0', command('jumpTo', { target: { kind: 'date', tick: 0 } })],
       ['zero start conditions', loadPlayer({})],
+      ['a lower bound of the tick', loadPlayer({ minTick: 5_389_920 })],
     ])('accepts a command with %s', (_label, message) => {
       expect(isEngineCommandMessage(message)).toBe(true);
     });
@@ -355,6 +367,7 @@ describe('engine protocol guards', () => {
       ['ok given as a string', reply({ ok: 'false', error: 'busy' })],
       ['a failure message that is not a string', reply({ ok: false, error: 'busy', message: 3 })],
       ['a fatal without a message', event('fatal', {})],
+      ['an unknown warning', event('warning', { code: 'disk-full', message: '' })],
       ['a clock with a string tick', event('clock', { ...CLOCK, tick: '1' })],
       ['a clock with paused as a string', event('clock', { ...CLOCK, paused: 'no' })],
       ['a quote with a string bid', event('quotes', { tick: 1, quotes: [{ ...QUOTE, bid: '1' }] })],
@@ -369,6 +382,11 @@ describe('engine protocol guards', () => {
     it.each([
       ['a failure reply without a message', reply({ ok: false, error: 'busy' })],
       ['a clock at tick 0', event('clock', { ...CLOCK, tick: 0 })],
+      ['a storage warning', event('warning', { code: 'storage-failed', message: 'quota' })],
+      [
+        'progress of the candle job',
+        event('progress', { kind: 'candles', state: 'done', done: 3, total: 3 }),
+      ],
       ['a quote of series 0 without bid and ask', event('quotes', { tick: 0, quotes: [QUOTE] })],
     ])('accepts an event with %s', (_label, message) => {
       expect(isEngineEventMessage(message)).toBe(true);

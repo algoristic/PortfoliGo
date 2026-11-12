@@ -1,5 +1,7 @@
 import { inject, PendingTasks, Provider } from '@angular/core';
 
+import { PlayerLocks } from '@app/persistence/data-access/locks/player-locks';
+import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
 import { deriveSeedKey } from '@app/simulation/util/seed';
 import { MINI_WORLD_CONFIG } from '@app/world/domain/testing/mini-world';
 import { generateWorld } from '@app/world/domain/world-generator';
@@ -15,12 +17,23 @@ import {
 import { EngineHost } from '../worker/engine-host';
 import { EngineHostOptions, EngineStorage, GeneratedWorld } from '../worker/engine-host.model';
 import { InMemoryEngineStorage } from '../worker/in-memory-engine-storage';
+import { IndexedDbEngineStorage } from '../worker/indexed-db-engine-storage';
 
 export interface InProcessEngineOptions extends EngineHostOptions {
   /** Wall-clock start in milliseconds since the Unix epoch. */
   startMs?: number;
-  /** Shared by all workers of the test, like IndexedDB. */
-  storage?: EngineStorage;
+  /**
+   * Storage shared by all workers of the test. `'indexed-db'`: `IndexedDbEngineStorage` on the
+   * global `indexedDB` (`fake-indexeddb`, fresh per test in `src/test-setup.ts`), so that the UI's
+   * `IndexedDbService` sees what the engine wrote (e.g. `runtime` in the player list). Default: in
+   * memory.
+   */
+  storage?: EngineStorage | 'indexed-db';
+  /**
+   * Web Locks shared by all workers of this engine. Pass one `FakePlayerLocks` to two engines to
+   * stand for two tabs of one browser (`player-locked`).
+   */
+  locks?: PlayerLocks;
 }
 
 /** Mini world of a seed (`world/domain/testing/mini-world.ts`): fast enough for page tests. */
@@ -39,16 +52,22 @@ export function generateMiniWorld(seed: string): GeneratedWorld {
 export class InProcessEngine {
   readonly timeline: ManualTimeline;
   readonly storage: EngineStorage;
+  readonly locks: PlayerLocks;
   /** Every worker the service started, the current one last. */
   readonly workers: InProcessEngineWorker[] = [];
   readonly #options: EngineHostOptions;
   #inFlight = 0;
 
   constructor(options: InProcessEngineOptions = {}) {
-    const { startMs, storage, ...hostOptions } = options;
+    const { startMs, storage, locks, ...hostOptions } = options;
     this.timeline = new ManualTimeline(startMs);
-    this.storage = storage ?? new InMemoryEngineStorage();
-    this.#options = { createWorld: generateMiniWorld, ...hostOptions };
+    this.storage =
+      storage === 'indexed-db'
+        ? new IndexedDbEngineStorage()
+        : (storage ?? new InMemoryEngineStorage());
+    this.locks = locks ?? new FakePlayerLocks();
+    // The candle job would recompute years of the mini world in one pass of the manual timeline.
+    this.#options = { createWorld: generateMiniWorld, candleBackfillFrom: null, ...hostOptions };
   }
 
   get current(): InProcessEngineWorker | undefined {
@@ -67,10 +86,14 @@ export class InProcessEngine {
     await this.idle();
   }
 
-  /** Waits until every posted message is handled and every reply and event is delivered. */
+  /**
+   * Waits until every posted message is handled, every reply and event is delivered and the writes
+   * of the host have settled.
+   */
   async idle(): Promise<void> {
     do {
       await new Promise<void>((resolve) => setTimeout(resolve));
+      await this.current?.host.settled();
     } while (this.#inFlight > 0);
   }
 
@@ -89,6 +112,7 @@ export class InProcessEngine {
             post,
             timer: this.timeline,
             storage: this.storage,
+            locks: this.locks,
           },
           this.#options,
         ),

@@ -29,6 +29,7 @@ const config = {
     'src/app/engine/domain/replay.ts',
     'src/app/engine/domain/clock-pacing-logic.ts',
     'src/app/engine/domain/jump-target-logic.ts',
+    'src/app/engine/domain/catch-up-logic.ts',
     'src/app/engine/domain/throttle-logic.ts',
     'src/app/engine/domain/series-quote.ts',
     'src/app/engine/data-access/service/engine-service.utils.ts',

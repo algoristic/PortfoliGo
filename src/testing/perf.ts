@@ -16,6 +16,9 @@ export const BUDGETS_MS = {
   gameYearLive: 0.15 * (365.25 / 7) * 1_000,
   /** Minute chart (1D) of any past day, cold caches. */
   minuteChart: 50,
+  /** Catch-up after loading (TS §3.7): 30 days and one game year. */
+  catchUp30Days: 1_000,
+  catchUpYear: 5_000,
 } as const;
 
 /** Median wall time of `runs` calls after `warmUp` calls. */

@@ -6,6 +6,7 @@ import {
   ENGINE_ERRORS,
   ENGINE_EVENT_TYPES,
   ENGINE_PROTOCOL,
+  ENGINE_WARNINGS,
   EngineCommandMessage,
   EngineEventMessage,
   PROGRESS_KINDS,
@@ -43,6 +44,10 @@ function isCount(value: unknown): value is number {
 
 function isOneOf(list: readonly string[]): Check {
   return (value) => isString(value) && list.includes(value);
+}
+
+function isOptional(check: Check): Check {
+  return (value) => value === undefined || check(value);
 }
 
 function isNullOr(check: Check): Check {
@@ -86,6 +91,7 @@ const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = 
       playerId: (id) => isString(id) && id.length > 0,
       seed: isString,
       start: isStartConditions,
+      minTick: isOptional(isCount),
     }),
   unloadPlayer: isFields,
   setSpeed: (payload) => hasFields(payload, { speed: isSpeedId }),
@@ -151,6 +157,7 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
       total: isCount,
     }),
   reply: isReply,
+  warning: (payload) => hasFields(payload, { code: isOneOf(ENGINE_WARNINGS), message: isString }),
   fatal: (payload) => hasFields(payload, { message: isString }),
 };
 

@@ -1,7 +1,10 @@
+import { Injector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, Subscription } from 'rxjs';
 
 import { TestMarket, TestPrice } from '@app/engine/domain/testing/test-market';
+import { IndexedDbService } from '@app/persistence/data-access/indexed-db/indexed-db.service';
+import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
 
 import { EngineCommandMessage, ProgressPayload } from './engine-service.model';
 import { EngineCommandError, EngineFatal, EngineService } from './engine.service';
@@ -217,6 +220,37 @@ describe('EngineService', () => {
         await engine.idle();
       }
       expect(fatal.map(({ restarting }) => restarting)).toEqual([true, true, true, true]);
+    });
+  });
+
+  describe('in-process engine on IndexedDB', () => {
+    it('shows the stored clock to the UI and refuses the player to a second tab', async () => {
+      const locks = new FakePlayerLocks();
+      setup({ storage: 'indexed-db', locks });
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      await engine.idle();
+      const database = new IndexedDbService();
+      expect(await firstValueFrom(database.get('runtime', 'p1'))).toMatchObject({
+        playerId: 'p1',
+        tick: GAME_START,
+        paused: true,
+      });
+
+      const secondTab = new InProcessEngine({ storage: 'indexed-db', locks });
+      const second = Injector.create({
+        providers: [EngineService, provideInProcessEngineWorker(secondTab)],
+        parent: TestBed.inject(Injector),
+      }).get(EngineService);
+      const error = await firstValueFrom(second.loadPlayer(PLAYER)).catch(
+        (e: EngineCommandError) => e.code,
+      );
+      expect(error).toBe('player-locked');
+      await firstValueFrom(service.unloadPlayer());
+      expect(await firstValueFrom(second.loadPlayer(PLAYER))).toEqual({
+        playerId: 'p1',
+        tick: GAME_START,
+      });
+      second.ngOnDestroy();
     });
   });
 });

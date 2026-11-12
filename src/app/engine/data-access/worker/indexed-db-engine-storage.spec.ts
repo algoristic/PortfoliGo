@@ -1,12 +1,17 @@
 import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
-import { IDBPDatabase } from 'idb';
+import { IDBPDatabase, openDB } from 'idb';
 
 import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { miniGame, MiniGame } from '@app/engine/domain/testing/mini-game';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
-import { JOURNAL_STORES, WORKER_STORES } from '@app/persistence/data-access/schema/idb-schema';
+import {
+  DB_NAME,
+  DB_VERSION,
+  JOURNAL_STORES,
+  WORKER_STORES,
+} from '@app/persistence/data-access/schema/idb-schema';
 import { openPortfoligoDb } from '@app/persistence/data-access/schema/open-database';
 
 import { EngineStorage, StoredClock } from './engine-host.model';
@@ -291,6 +296,23 @@ describe('IndexedDbEngineStorage', () => {
         ).toBe(true);
       }
       expect(await database.get('players', 'p1')).toEqual({ id: 'p1', name: 'Eins' });
+    });
+  });
+
+  describe('versionchange', () => {
+    it('closes its connection so that another tab can upgrade the database', async () => {
+      database.close();
+      await storage.saveClock('p1', clock(100));
+      let blocked = false;
+      const upgraded = await openDB(DB_NAME, DB_VERSION + 1, {
+        blocked: () => {
+          blocked = true;
+        },
+      });
+      expect(blocked).toBe(false);
+      expect(upgraded.version).toBe(DB_VERSION + 1);
+      upgraded.close();
+      database = await openDB(DB_NAME);
     });
   });
 });

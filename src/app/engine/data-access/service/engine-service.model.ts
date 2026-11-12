@@ -22,14 +22,18 @@ export interface EngineMessage<TType extends string, TPayload> {
 export type EmptyPayload = Record<string, never>;
 
 /**
- * Loads a player and starts the clock. In M2 the UI passes the player data; from AP 2.3 the worker
- * reads the stored state, and further fields (e.g. the tick of the last `clock` event as a lower
- * bound, TS §9.2) are added here.
+ * Loads a player and starts the clock (TS §9.2). The worker reads the stored state; `seed` and
+ * `start` come from the profile and are only used for a new player (no snapshot yet).
  */
 export interface LoadPlayerPayload {
   playerId: string;
   seed: string;
   start: StartConditions;
+  /**
+   * Tick of the last `clock` event the UI saw, from localStorage (E-08): the restore replays at
+   * least up to it (TS §9.2, step 3), because the clock in the database may be older.
+   */
+  minTick?: Tick;
 }
 
 /** Queries (TS §8.2); they write nothing and don't hold the clock. M2 knows only the exchanges. */
@@ -115,8 +119,15 @@ export const ENGINE_ERRORS = [
   'busy',
   'tick-mismatch',
   'invalid-jump-target',
-  /** The write-ahead of a game command failed; the command was not applied (TS §8.5). */
+  /**
+   * A write failed: the write-ahead of a game command (the command was not applied, TS §8.5), or
+   * reading or writing the state while loading or unloading a player.
+   */
   'storage-failed',
+  /** Another tab simulates the player (Web Lock, TS §9.4). */
+  'player-locked',
+  /** The stored game has another `simVersion` or `schemaVersion` (TS §15); it is not loaded. */
+  'player-outdated',
   'internal-error',
 ] as const;
 export type EngineErrorCode = (typeof ENGINE_ERRORS)[number];
@@ -143,12 +154,16 @@ export interface QuotesPayload {
   quotes: SeriesQuote[];
 }
 
-export const PROGRESS_KINDS = ['init', 'catch-up', 'jump'] as const;
+/**
+ * `init`: loading and replay; `catch-up`, `jump`: batch runs in ticks; `candles`: background job
+ * for daily candles in market days (TS §6.8).
+ */
+export const PROGRESS_KINDS = ['init', 'catch-up', 'jump', 'candles'] as const;
 export type ProgressKind = (typeof PROGRESS_KINDS)[number];
 export const PROGRESS_STATES = ['running', 'done', 'cancelled'] as const;
 export type ProgressState = (typeof PROGRESS_STATES)[number];
 
-/** Progress of initialisation, catching up and jumps (TS §3.7); `done` and `total` in steps. */
+/** Progress of initialisation, catching up, jumps and the candle job; `done` and `total` in steps. */
 export interface ProgressPayload {
   kind: ProgressKind;
   state: ProgressState;
@@ -160,12 +175,30 @@ export interface FatalPayload {
   message: string;
 }
 
+/** Problems the engine survives; the UI may show them (TS §9.5). */
+export const ENGINE_WARNINGS = [
+  /**
+   * A periodic write (clock, snapshot, month starts, daily candles) failed. The game goes on in
+   * memory and the next periodic write tries again; until one succeeds, a restore loses the game
+   * time since the last successful write, never a command (write-ahead). Sent once per series of
+   * failures.
+   */
+  'storage-failed',
+] as const;
+export type EngineWarningCode = (typeof ENGINE_WARNINGS)[number];
+
+export interface WarningPayload {
+  code: EngineWarningCode;
+  message: string;
+}
+
 /** Events worker → UI for M2 (TS §8.3). */
 export interface EngineEventPayloads {
   clock: ClockPayload;
   quotes: QuotesPayload;
   progress: ProgressPayload;
   reply: ReplyPayload;
+  warning: WarningPayload;
   fatal: FatalPayload;
 }
 
@@ -174,6 +207,7 @@ export const ENGINE_EVENT_TYPES = [
   'quotes',
   'progress',
   'reply',
+  'warning',
   'fatal',
 ] as const satisfies readonly (keyof EngineEventPayloads)[];
 export type EngineEventType = (typeof ENGINE_EVENT_TYPES)[number];

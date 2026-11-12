@@ -240,8 +240,29 @@ export class IndexedDbEngineStorage implements EngineStorage {
     await deletePlayerRecords(await this.#db(), playerId);
   }
 
+  /**
+   * The connection, opened on first use. When another tab wants to upgrade the database, the
+   * connection closes so that the upgrade is not blocked; the next call opens a new one. A failed
+   * open is not kept.
+   */
   #db(): Promise<IDBPDatabase> {
-    this.#database ??= this.#open();
+    if (this.#database === undefined) {
+      const opened = this.#open().then((database) => {
+        database.addEventListener('versionchange', () => {
+          database.close();
+          if (this.#database === opened) {
+            this.#database = undefined;
+          }
+        });
+        return database;
+      });
+      opened.catch(() => {
+        if (this.#database === opened) {
+          this.#database = undefined;
+        }
+      });
+      this.#database = opened;
+    }
     return this.#database;
   }
 

@@ -25,6 +25,7 @@ const RULE_SPECS = [
   'src/app/engine/domain/engine-properties.spec.ts',
   'src/app/engine/domain/clock-pacing-logic.spec.ts',
   'src/app/engine/domain/jump-target-logic.spec.ts',
+  'src/app/engine/domain/catch-up-logic.spec.ts',
   'src/app/engine/domain/throttle-logic.spec.ts',
   'src/app/engine/domain/series-quote.spec.ts',
   'src/app/engine/data-access/service/engine-service.utils.spec.ts',

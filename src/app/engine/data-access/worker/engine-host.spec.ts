@@ -1,108 +1,17 @@
 import { TestMarket, TestPrice } from '@app/engine/domain/testing/test-market';
 
-import { EngineHost } from './engine-host';
-import { EngineHostOptions, EngineStorage } from './engine-host.model';
 import { InMemoryEngineStorage } from './in-memory-engine-storage';
 
 import {
-  ClockPayload,
-  EngineCommandMessage,
-  EngineCommandPayloads,
-  EngineCommandType,
-  EngineEventMessage,
-  EngineEventPayloads,
-  EngineEventType,
-  ProgressPayload,
-  QuotesPayload,
-} from '../service/engine-service.model';
+  advance,
+  FINE,
+  flushMicrotasks,
+  GAME_START,
+  HostHarness,
+  MINI_PLAYER as PLAYER,
+  gameTick as tick,
+} from '../testing/host-harness';
 import { generateMiniWorld } from '../testing/in-process-engine-worker';
-import { ManualTimeline } from '../testing/manual-timeline';
-
-const EPOCH_MS = Date.UTC(2020, 0, 1);
-
-/** Tick of a game date and time, independent of the calendar functions (`Date.UTC`). */
-function tick(year: number, month: number, day: number, hour = 0, minute = 0): number {
-  return (Date.UTC(year, month - 1, day, hour, minute) - EPOCH_MS) / 60_000;
-}
-
-const GAME_START = tick(2030, 4, 1);
-const PLAYER = {
-  playerId: 'p1',
-  seed: 'mini-1',
-  start: { startCapital: 1_000_000, netIncome: 280_000, livingCosts: 170_000 },
-};
-/** A pass every 10 ms and a clock event per pass, so that passes fall on whole seconds. */
-const FINE = { loopIntervalMs: 10, clockPerSecond: 100 };
-
-interface Sent {
-  atMs: number;
-  message: EngineEventMessage;
-}
-
-class HostHarness {
-  readonly timeline = new ManualTimeline();
-  readonly sent: Sent[] = [];
-  readonly host: EngineHost;
-  #nextId = 1;
-
-  constructor(
-    options: EngineHostOptions = {},
-    storage: EngineStorage = new InMemoryEngineStorage(),
-  ) {
-    this.host = new EngineHost(
-      {
-        now: this.timeline.now,
-        post: (message) =>
-          this.sent.push({ atMs: this.timeline.now(), message: structuredClone(message) }),
-        timer: this.timeline,
-        storage,
-      },
-      { createWorld: generateMiniWorld, ...options },
-    );
-  }
-
-  /** Posts a command and resolves with its reply. */
-  async send<K extends EngineCommandType>(
-    type: K,
-    payload: EngineCommandPayloads[K],
-  ): Promise<EngineEventPayloads['reply']> {
-    const id = `t${this.#nextId++}`;
-    await this.host.receive({ protocol: 1, id, type, payload } as EngineCommandMessage);
-    return this.replyTo(id);
-  }
-
-  replyTo(id: string): EngineEventPayloads['reply'] {
-    const reply = this.sent.find(
-      ({ message }) => message.type === 'reply' && message.replyTo === id,
-    );
-    if (reply === undefined) {
-      throw new Error(`no reply to ${id}`);
-    }
-    return reply.message.payload as EngineEventPayloads['reply'];
-  }
-
-  events<K extends EngineEventType>(
-    type: K,
-  ): Array<{ atMs: number; payload: EngineEventPayloads[K] }> {
-    return this.sent
-      .filter(({ message }) => message.type === type)
-      .map(({ atMs, message }) => ({ atMs, payload: message.payload as EngineEventPayloads[K] }));
-  }
-
-  get clock(): ClockPayload {
-    const clocks = this.events('clock');
-    return clocks[clocks.length - 1].payload;
-  }
-
-  get quotes(): QuotesPayload {
-    const quotes = this.events('quotes');
-    return quotes[quotes.length - 1].payload;
-  }
-
-  get progress(): ProgressPayload[] {
-    return this.events('progress').map(({ payload }) => payload);
-  }
-}
 
 /** Storage whose writes wait until the test resolves or rejects them. */
 class HeldStorage extends InMemoryEngineStorage {
@@ -111,18 +20,6 @@ class HeldStorage extends InMemoryEngineStorage {
   override appendCommand(): Promise<void> {
     return new Promise((resolve, reject) => this.writes.push({ resolve, reject }));
   }
-}
-
-async function flushMicrotasks(): Promise<void> {
-  for (let i = 0; i < 10; i++) {
-    await Promise.resolve();
-  }
-}
-
-/** Real time of `ms` milliseconds, one pass after the other. */
-async function advance(harness: HostHarness, ms: number): Promise<void> {
-  harness.timeline.advance(ms);
-  await flushMicrotasks();
 }
 
 function maxInAnySecond(times: readonly number[]): number {
@@ -326,7 +223,7 @@ describe('EngineHost', () => {
   describe('game commands', () => {
     it('applies a command at the current tick after writing it ahead', async () => {
       const storage = new InMemoryEngineStorage();
-      const harness = new HostHarness({ config: FINE }, storage);
+      const harness = new HostHarness({ config: FINE }, { storage });
       await harness.send('loadPlayer', PLAYER);
       await harness.send('setSpeed', { speed: '1h' });
       await harness.send('resume', {});
@@ -348,7 +245,7 @@ describe('EngineHost', () => {
 
     it('holds the clock while the command is written and goes on from a new anchor', async () => {
       const storage = new HeldStorage();
-      const harness = new HostHarness({ config: FINE }, storage);
+      const harness = new HostHarness({ config: FINE }, { storage });
       await harness.send('loadPlayer', PLAYER);
       await harness.send('setSpeed', { speed: '1h' });
       await harness.send('resume', {});
@@ -370,7 +267,7 @@ describe('EngineHost', () => {
 
     it('does not apply a command whose write failed', async () => {
       const storage = new HeldStorage();
-      const harness = new HostHarness({ config: FINE }, storage);
+      const harness = new HostHarness({ config: FINE }, { storage });
       await harness.send('loadPlayer', PLAYER);
       const answered = harness.host.receive({
         protocol: 1,

@@ -1,7 +1,9 @@
 /// <reference lib="webworker" />
 
+import { WebPlayerLocks } from '@app/persistence/data-access/locks/player-locks';
+
 import { EngineHost } from './engine-host';
-import { InMemoryEngineStorage } from './in-memory-engine-storage';
+import { IndexedDbEngineStorage } from './indexed-db-engine-storage';
 
 const host = new EngineHost({
   now: () => Date.now(),
@@ -10,7 +12,8 @@ const host = new EngineHost({
     set: (callback, delayMs) => setTimeout(callback, delayMs),
     clear: (handle) => clearTimeout(handle as ReturnType<typeof setTimeout>),
   },
-  storage: new InMemoryEngineStorage(),
+  storage: new IndexedDbEngineStorage(),
+  locks: new WebPlayerLocks(navigator.locks),
 });
 
 addEventListener('message', ({ data }: MessageEvent<unknown>) => {

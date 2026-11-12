@@ -4,6 +4,7 @@ import { PricePortFactory } from '@app/engine/domain/game-engine';
 import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
+import { PlayerLocks } from '@app/persistence/data-access/locks/player-locks';
 import { SeedKey } from '@app/simulation/util/seed';
 import { World } from '@app/world/domain/models/world.model';
 
@@ -82,7 +83,7 @@ export interface EngineStorage {
    * transaction. The host applies the command only after this resolved.
    */
   appendCommand(playerId: string, command: GameCommand, clock: StoredClock): Promise<void>;
-  /** Clock state on speed and pause changes, periodically, when hidden and on unload (TS §9.2). */
+  /** Clock state on speed and pause changes and periodically (TS §9.2). */
   saveClock(playerId: string, clock: StoredClock): Promise<void>;
   /**
    * Stores a snapshot with `SIM_VERSION` and `SCHEMA_VERSION`, keeps the newest three and deletes
@@ -126,6 +127,8 @@ export interface EngineHostPorts {
   post(message: EngineEventMessage): void;
   timer: LoopTimer;
   storage: EngineStorage;
+  /** Web Lock per player (TS §9.4); without it, the host does not lock. */
+  locks?: PlayerLocks;
 }
 
 export interface GeneratedWorld {
@@ -141,8 +144,12 @@ export interface EngineHostConfig {
   /** Rate limits of the events (TS §8.4). */
   clockPerSecond: number;
   quotesPerSecond: number;
-  /** Interval of the progress events of a jump (TS §3.7). */
+  /** Interval of the progress events of batch runs and the candle job (TS §3.7). */
   progressIntervalMs: number;
+  /** Real time between two periodic writes of the clock state (TS §9.2). */
+  clockSaveIntervalMs: number;
+  /** Real time between two periodic snapshots (TS §9.2). */
+  snapshotIntervalMs: number;
 }
 
 export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
@@ -151,6 +158,8 @@ export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
   clockPerSecond: 10,
   quotesPerSecond: 4,
   progressIntervalMs: 100,
+  clockSaveIntervalMs: 5_000,
+  snapshotIntervalMs: 30_000,
 };
 
 export interface EngineHostOptions {
@@ -161,4 +170,10 @@ export interface EngineHostOptions {
   config?: Partial<EngineHostConfig>;
   /** Speed of a newly loaded player (TS §3.4); it starts paused (E-02). */
   initialSpeed?: SpeedId;
+  /**
+   * First tick whose market day the background job for daily candles covers (TS §6.8); `null` turns
+   * the job off. Defaults to 0, the epoch: the whole prehistory. Tests narrow it, because the job
+   * takes seconds even for the mini world.
+   */
+  candleBackfillFrom?: Tick | null;
 }
