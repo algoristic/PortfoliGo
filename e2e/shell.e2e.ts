@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { expectGameReady } from './game.po';
 import { createPlayer } from './players.po';
 
 // The game area of a new player with real media queries (J5–J7).
@@ -28,6 +29,8 @@ test.describe('game area on a phone', { tag: ['@mobile', '@phone'] }, () => {
 
   test('moves the focus to the content with the skip link', async ({ page }) => {
     await createPlayer(page, 'Anna');
+    // While the game loads, the overlay holds the focus and the game area is inert.
+    await expectGameReady(page);
     await page.getByTestId('shell.skip-to-content').focus();
     await page.keyboard.press('Enter');
     await expect(page.getByTestId('shell.content')).toBeFocused();
