@@ -2,7 +2,20 @@ import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
 import { select, Store } from '@ngrx/store';
-import { catchError, exhaustMap, filter, map, Observable, of, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  concatMap,
+  concatWith,
+  exhaustMap,
+  filter,
+  from,
+  map,
+  Observable,
+  of,
+  switchMap,
+  takeUntil,
+  tap,
+} from 'rxjs';
 
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
@@ -10,6 +23,7 @@ import * as LabActions from './lab.actions';
 import { CandleRequest } from './lab.model';
 import * as LabSelectors from './lab.selectors';
 
+import { LAB_SEED_COMPARISON } from '../../data-access/service/lab-simulation-service.config';
 import { LoadedCandles } from '../../data-access/service/lab-simulation-service.model';
 import { LabSimulationService } from '../../data-access/service/lab-simulation.service';
 
@@ -19,6 +33,7 @@ export class LabEffects {
   readonly #store = inject(Store);
   readonly #service = inject(LabSimulationService);
   readonly #toastService = inject(ToastService);
+  readonly #seedComparison = inject(LAB_SEED_COMPARISON);
 
   generateWorld$ = createEffect(() =>
     this.#actions$.pipe(
@@ -111,6 +126,26 @@ export class LabEffects {
     ),
   );
 
+  /**
+   * One seed after the other (the worker is single-threaded); the first failure ends the run, and
+   * so does leaving the page (the worker is stopped then).
+   */
+  compareSeeds$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(LabActions.clickedCompareSeeds),
+      exhaustMap(() => {
+        const { seeds, years } = this.#seedComparison;
+        return from(seeds).pipe(
+          concatMap((seed) => this.#service.seedRun(seed, years)),
+          map((result) => LabActions.seedRunSuccess({ result })),
+          concatWith(of(LabActions.compareSeedsSuccess())),
+          catchError((error: unknown) => of(LabActions.compareSeedsFailure({ error }))),
+          takeUntil(this.#actions$.pipe(ofType(LabActions.leaveSimulationPage))),
+        );
+      }),
+    ),
+  );
+
   terminateWorker$ = createEffect(
     () =>
       this.#actions$.pipe(
@@ -130,6 +165,7 @@ export class LabEffects {
           LabActions.loadHistoryFailure,
           LabActions.computeStatisticsFailure,
           LabActions.runSelfTestFailure,
+          LabActions.compareSeedsFailure,
         ),
         tap(({ error }) =>
           this.#toastService.error(

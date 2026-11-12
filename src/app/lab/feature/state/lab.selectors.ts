@@ -27,9 +27,22 @@ export const selectLoadingStatistics = createSelector(
 export const selectSelfTest = createSelector(selectState, (state) => state.selfTest);
 export const selectRunningSelfTest = createSelector(selectState, (state) => state.runningSelfTest);
 
+export const selectSeedRuns = createSelector(selectState, (state) =>
+  state.seedRuns.map((result) => result.run),
+);
+/** Total duration of the seed runs in the worker; `undefined` before the first run. */
+export const selectSeedRunsMs = createSelector(selectState, (state) =>
+  state.seedRuns.length === 0
+    ? undefined
+    : state.seedRuns.reduce((sum, result) => sum + result.durationMs, 0),
+);
+export const selectComparingSeeds = createSelector(selectState, (state) => state.comparingSeeds);
+
+/** The worker handles one request after the other: a running seed comparison blocks the rest. */
 export const selectBusy = createSelector(
   selectStatus,
-  (status) => status === 'generating' || status === 'simulating',
+  selectComparingSeeds,
+  (status, comparingSeeds) => status === 'generating' || status === 'simulating' || comparingSeeds,
 );
 
 export const selectSeriesOptions = createSelector(

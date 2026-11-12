@@ -5,6 +5,7 @@ import * as LabActions from './lab.actions';
 
 import * as LabSelectors from './lab.selectors';
 
+import { LAB_SEED_COMPARISON } from '../../data-access/service/lab-simulation-service.config';
 import { StatisticsStart } from '../../domain/models/lab-statistics.model';
 import { LabChartOptions } from '../../ui/series-chart/series-chart.model';
 
@@ -32,6 +33,10 @@ export class LabFacade {
   loadingStatistics$ = this.#store.pipe(select(LabSelectors.selectLoadingStatistics));
   selfTest$ = this.#store.pipe(select(LabSelectors.selectSelfTest));
   runningSelfTest$ = this.#store.pipe(select(LabSelectors.selectRunningSelfTest));
+  seedRuns$ = this.#store.pipe(select(LabSelectors.selectSeedRuns));
+  seedRunsMs$ = this.#store.pipe(select(LabSelectors.selectSeedRunsMs));
+  comparingSeeds$ = this.#store.pipe(select(LabSelectors.selectComparingSeeds));
+  seedComparison = inject(LAB_SEED_COMPARISON);
 
   enterSimulationPage(): void {
     this.#store.dispatch(LabActions.enterSimulationPage());
@@ -75,5 +80,9 @@ export class LabFacade {
 
   runSelfTest(): void {
     this.#store.dispatch(LabActions.clickedRunSelfTest());
+  }
+
+  compareSeeds(): void {
+    this.#store.dispatch(LabActions.clickedCompareSeeds());
   }
 }

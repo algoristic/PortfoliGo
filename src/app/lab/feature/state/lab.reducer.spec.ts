@@ -8,8 +8,9 @@ import {
   ComputedChecksums,
   ComputedStatistics,
   GeneratedWorld,
+  MeasuredSeedRun,
 } from '../../data-access/service/lab-simulation-service.model';
-import { LabStatistics } from '../../domain/models/lab-statistics.model';
+import { LabStatistics, SeedRun } from '../../domain/models/lab-statistics.model';
 
 const world: GeneratedWorld = {
   seed: 'lab',
@@ -312,6 +313,46 @@ describe('labReducer', () => {
           LabActions.runSelfTestFailure({ error }),
         ),
       ).toMatchObject({ runningSelfTest: false, error });
+    });
+  });
+
+  describe('seed comparison', () => {
+    const run = (seed: string): MeasuredSeedRun => ({
+      run: { seed } as SeedRun,
+      durationMs: 5000,
+    });
+
+    it('starts from scratch and collects the runs in order', () => {
+      const started = labReducer(
+        { ...initialLabState, seedRuns: [run('old')] },
+        LabActions.clickedCompareSeeds(),
+      );
+      expect(started).toMatchObject({ seedRuns: [], comparingSeeds: true });
+      const first = labReducer(started, LabActions.seedRunSuccess({ result: run('a') }));
+      const second = labReducer(first, LabActions.seedRunSuccess({ result: run('b') }));
+      expect(second.seedRuns.map((result) => result.run.seed)).toEqual(['a', 'b']);
+      expect(labReducer(second, LabActions.compareSeedsSuccess())).toMatchObject({
+        comparingSeeds: false,
+      });
+    });
+
+    it('keeps the runs of a running comparison when clicked again', () => {
+      const running = { ...initialLabState, seedRuns: [run('a')], comparingSeeds: true };
+      expect(labReducer(running, LabActions.clickedCompareSeeds())).toBe(running);
+    });
+
+    it('keeps the comparison when a world is generated and stops it on failure', () => {
+      const running = { ...initialLabState, seedRuns: [run('a')], comparingSeeds: true };
+      expect(labReducer(running, LabActions.generateWorldSuccess({ world }))).toMatchObject({
+        seedRuns: [run('a')],
+        comparingSeeds: true,
+      });
+      const error = new Error('x');
+      expect(labReducer(running, LabActions.compareSeedsFailure({ error }))).toMatchObject({
+        seedRuns: [run('a')],
+        comparingSeeds: false,
+        error,
+      });
     });
   });
 });

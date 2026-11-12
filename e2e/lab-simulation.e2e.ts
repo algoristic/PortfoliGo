@@ -57,6 +57,19 @@ test.describe('lab simulation', () => {
         // de-DE in every engine and for every locale and time zone of the browser (TS §11.9).
         expect(value.trim()).toMatch(/^(–|−?-?\d{1,3}(\.\d{3})*(,\d+)?\s?%?)$/);
       }
+
+      // Intraday part from the minute curves in the worker: 13 parts of the trading time.
+      await expect(page.getByTestId('lab.simulation.statistics.intraday')).toBeVisible();
+      await expect(page.getByTestId('lab.simulation.statistics.intraday.profile.bar')).toHaveCount(
+        13,
+      );
+      // Long-term checkpoints: the game start lies in the period, ten years later not yet.
+      await expect(page.getByTestId('lab.simulation.statistics.long-term.0.top-five')).toHaveText(
+        /^\s*\d{1,3}(,\d)?\s%\s*$/,
+      );
+      await expect(page.getByTestId('lab.simulation.statistics.long-term.10.top-five')).toHaveText(
+        '–',
+      );
     },
   );
 

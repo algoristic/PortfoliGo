@@ -17,10 +17,14 @@ import {
 import { renderRoute, settle } from '../../../../testing/page';
 import { parseGermanNumber } from '../../../../testing/parse';
 import { TEST_SEEDS } from '../../../../testing/seeds';
+import { LAB_SEED_COMPARISON } from '../../data-access/service/lab-simulation-service.config';
 import { provideInProcessLabWorker } from '../../data-access/testing/in-process-lab-worker';
 import { LabSimulation } from '../../domain/lab-simulation';
+import { LabStatistics, SeedRun } from '../../domain/models/lab-statistics.model';
 
 const SEED = TEST_SEEDS.page;
+/** A short seed comparison: two seeds over one year after the game start. */
+const COMPARISON = { seeds: ['calib-1', 'calib-2'], years: 1 };
 
 /** Lab chart ranges in calendar days back from now (TS §11.7); a history block has the same length. */
 const YEAR_DAYS = 365;
@@ -40,7 +44,10 @@ describe('SimulationPage', () => {
 
   beforeEach(async () => {
     restorePlatform = installChartPlatform();
-    harness = await renderRoute('/lab/simulation', [provideInProcessLabWorker()]);
+    harness = await renderRoute('/lab/simulation', [
+      provideInProcessLabWorker(),
+      { provide: LAB_SEED_COMPARISON, useValue: COMPARISON },
+    ]);
     page = harness.fixture.nativeElement;
   });
 
@@ -135,13 +142,75 @@ describe('SimulationPage', () => {
     });
   });
 
+  /** Checks the shown checkpoints of the given years against the oracle's statistics. */
+  function expectCheckpoints(expected: LabStatistics, years: number[]): void {
+    for (const checkpoint of expected.longTerm.checkpoints.filter((c) => years.includes(c.years))) {
+      const prefix = `lab.simulation.statistics.long-term.${checkpoint.years}`;
+      expectShown(`${prefix}.top-five`, checkpoint.topFiveShare, 1, true);
+      expectShown(`${prefix}.below-one-euro`, checkpoint.belowOneEuro.all, 1, true);
+      expectShown(`${prefix}.at-floor`, checkpoint.atFloor, 1, true);
+      expectShown(`${prefix}.index-volatility`, checkpoint.indexVolatility, 1, true);
+    }
+  }
+
   describe('statistics', () => {
+    /** Statistics of the prehistory from the epoch. */
+    let expected: LabStatistics;
+
+    beforeAll(() => {
+      expected = oracle.statistics('epoch');
+    });
+
     it('measures the period from the epoch, drops it after a simulation and measures from the game start', async () => {
       await generateWorld();
       await act(() => click(byTestId(page, 'lab.simulation.statistics.compute')));
-      const expected = oracle.statistics('epoch');
       const target = (id: string): number =>
         expected.targets.find((row) => row.id === id)?.value ?? Number.NaN;
+
+      // Intraday measures of the last market days, overnight shares and the intraday profile.
+      const { intraday } = expected;
+      expectShown(
+        'lab.simulation.statistics.intraday.minuteVolatility.stocks',
+        intraday.stocks.minuteVolatility,
+        1,
+        true,
+      );
+      expectShown(
+        'lab.simulation.statistics.intraday.dailyRange.world-index',
+        intraday.worldIndex.dailyRange,
+        2,
+        true,
+      );
+      expectShown(
+        'lab.simulation.statistics.intraday.sessionVolatility.reference',
+        intraday.reference.reference.sessionVolatility,
+        1,
+        true,
+      );
+      expectShown('lab.simulation.statistics.intraday.profile-ratio', intraday.profileRatio, 2);
+      expect(
+        page.querySelectorAll('[data-testid="lab.simulation.statistics.intraday.profile.bar"]'),
+      ).toHaveLength(13);
+      for (const id of [
+        'overnight-share-world',
+        'overnight-share-regions',
+        'overnight-share-stocks',
+      ]) {
+        expectShown(`lab.simulation.statistics.target.${id}.value`, target(id), 1, true);
+        expect(textOf(byTestId(page, `lab.simulation.statistics.target.${id}.status`))).toBe(
+          'Info',
+        );
+      }
+      // The prehistory ends at the game start: only the first checkpoint, and one ten-year window.
+      expectCheckpoints(expected, [0]);
+      expect(textOf(byTestId(page, 'lab.simulation.statistics.long-term.10.top-five'))).toBe('–');
+      expect(queryByTestId(page, 'lab.simulation.statistics.long-term.hint')).not.toBeNull();
+      expectShown(
+        'lab.simulation.statistics.window.10.total-return.median',
+        expected.longTerm.windows[0].totalReturn.median,
+        1,
+        true,
+      );
 
       expectShown(
         'lab.simulation.statistics.target.world-volatility.value',
@@ -182,6 +251,66 @@ describe('SimulationPage', () => {
       await act(() => click(byTestId(page, 'lab.simulation.statistics.start.game-start')));
       expect(textOf(byTestId(page, 'lab.simulation.statistics.period'))).toContain('01.04.2030');
       expect(queryByTestId(page, 'lab.simulation.statistics.duration')).not.toBeNull();
+    });
+  });
+
+  describe('long term', () => {
+    /** Statistics of the same world ten years after the game start. */
+    let expected: LabStatistics;
+
+    beforeAll(() => {
+      const later = new LabSimulation(SEED);
+      later.runPrehistory();
+      later.simulateYears(10);
+      expected = later.statistics('epoch');
+    });
+
+    it('shows the checkpoint ten years after the game start', async () => {
+      await generateWorld();
+      await act(() => click(byTestId(page, 'lab.simulation.simulate.10y')));
+      await act(() => click(byTestId(page, 'lab.simulation.statistics.compute')));
+
+      expectCheckpoints(expected, [0, 10]);
+      expect(textOf(byTestId(page, 'lab.simulation.statistics.long-term.25.top-five'))).toBe('–');
+    });
+  });
+
+  describe('seed comparison', () => {
+    let runs: SeedRun[];
+
+    beforeAll(() => {
+      runs = COMPARISON.seeds.map((seed) => LabSimulation.measureSeedRun(seed, COMPARISON.years));
+    });
+
+    it('runs the seeds one after the other, without a world, and shows their median', async () => {
+      await act(() => click(byTestId(page, 'lab.simulation.seeds.compare')));
+
+      for (const run of runs) {
+        const tenYears = run.longTerm.windows.find((window) => window.years === 10);
+        expectShown(
+          `lab.simulation.seeds.${run.seed}.return-10`,
+          tenYears?.totalReturn.median ?? Number.NaN,
+          1,
+          true,
+        );
+        const crisis = run.phaseShares.find((share) => share.phase === 'crisis');
+        expectShown(`lab.simulation.seeds.${run.seed}.crisis-share`, crisis?.share ?? 0, 1, true);
+      }
+      // Two seeds: the median is their mean.
+      const volatility = runs.map(
+        (run) => run.longTerm.windows.find((window) => window.years === 10)?.volatility.median ?? 0,
+      );
+      expectShown(
+        'lab.simulation.seeds.median.volatility-10',
+        (volatility[0] + volatility[1]) / 2,
+        1,
+        true,
+      );
+      // One year after the game start reaches no checkpoint after 50 years.
+      expect(textOf(byTestId(page, `lab.simulation.seeds.${runs[0].seed}.top-five-50`))).toBe('–');
+      expect(queryByTestId(page, 'lab.simulation.seeds.progress')).toBeNull();
+      expect(queryByTestId(page, 'lab.simulation.seeds.duration')).not.toBeNull();
+      expect(queryByTestId(page, 'lab.simulation.game-time')).toBeNull();
     });
   });
 

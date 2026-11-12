@@ -6,7 +6,7 @@ import { MarketContext } from './market-context';
 import { restoreMarket } from './market-snapshot';
 import { createMarketDay, createMarketState, stepFactorDay } from './market-step';
 import { MarketDay } from './models/market-day.model';
-import { FactorHistory, FactorStateEntry } from './models/market-state.model';
+import { FactorHistory, FactorStateEntry, MarketState } from './models/market-state.model';
 
 /** Daily support points of one instrument, one entry per market day. */
 export interface InstrumentHistory {
@@ -41,14 +41,15 @@ export function recomputeFactorDays(
  * Recomputes the complete support points of the market days in `[fromDay, toDay)` from the
  * closest month start state, bit for bit equal to the day steps of the original run. With
  * `instrumentIndex`, only that instrument is stepped; the fields of the others and the index and
- * ETF fields stay stale. The passed day is reused and only valid during the call.
+ * ETF fields stay stale. The passed day and state (after the day step, e.g. the factor trends) are
+ * reused and only valid during the call.
  */
 export function recomputeSupportDays(
   context: MarketContext,
   history: FactorHistory,
   fromDay: number,
   toDay: number,
-  onDay: (day: MarketDay) => void,
+  onDay: (day: MarketDay, state: Readonly<MarketState>) => void,
   instrumentIndex?: number,
 ): void {
   const count = context.layout.instrumentIds.length;
@@ -75,7 +76,7 @@ function recomputeDays(
   fromDay: number,
   toDay: number,
   instruments: { first: number; last: number } | null,
-  onDay: (day: MarketDay) => void,
+  onDay: (day: MarketDay, state: Readonly<MarketState>) => void,
 ): void {
   const entry = monthStartEntry(history, fromDay);
   const state = restoreMarket(entry);
@@ -99,7 +100,7 @@ function recomputeDays(
       stepEtfs(context, state, out);
     }
     if (day >= fromDay) {
-      onDay(out);
+      onDay(out, state);
     }
   }
 }

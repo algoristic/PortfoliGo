@@ -19,11 +19,14 @@ import { SIZE_CLASSES } from '@app/world/domain/models/taxonomy.model';
 import { World } from '@app/world/domain/models/world.model';
 
 import { CalibrationTargetId, targetRows } from './calibration-targets';
+import { rollingWindows, WINDOW_YEARS } from './long-term-statistics';
 import { MarketSample } from './market-sample';
 import {
   CorrelationMatrix,
   DrawdownRow,
+  IntradayStatistics,
   LabStatistics,
+  LongTermStatistics,
   PhaseSegment,
   PhaseShare,
   ReturnDistribution,
@@ -46,10 +49,12 @@ const DISTRIBUTION_RANGE = 5;
 /**
  * The statistics of the lab (TS §14.2) for a sample, with the measurement rules of TS §6.9:
  * daily log returns, annualized with the market days per year; correlations of shares of the same
- * region (daily closes of different regions fall on different times of day).
+ * region (daily closes of different regions fall on different times of day). The intraday
+ * statistics come from the minute curves (`computeIntradayStatistics`).
  */
 export function computeLabStatistics(
   sample: MarketSample,
+  intraday: IntradayStatistics,
   world: World,
   start: StatisticsStart,
   marketDaysPerYear: number,
@@ -61,7 +66,7 @@ export function computeLabStatistics(
   const years = marketDays / marketDaysPerYear;
   const returnYears = (marketDays - 1) / marketDaysPerYear;
   const worldReturns = logReturns(sample.worldPrice);
-  const totalReturns = logReturns(sample.worldTotalReturn);
+  const worldMeasures = worldReturnMeasures(sample, marketDaysPerYear);
   const stockVolatility = sample.stockReturns.map((returns) =>
     annualizedVolatility(returns, marketDaysPerYear),
   );
@@ -82,17 +87,13 @@ export function computeLabStatistics(
   const episodes = drawdownEpisodes(sample.worldTotalReturn, BEAR_MARKET_DEPTH);
 
   const values: Partial<Record<CalibrationTargetId, number>> = {
-    'world-return': geometricReturn(
-      sample.worldTotalReturn[0],
-      sample.worldTotalReturn[last],
-      returnYears,
-    ),
+    'world-return': worldMeasures.worldReturn,
     'world-price-return': geometricReturn(
       sample.worldPrice[0],
       sample.worldPrice[last],
       returnYears,
     ),
-    'world-volatility': annualizedVolatility(worldReturns, marketDaysPerYear),
+    'world-volatility': worldMeasures.worldVolatility,
     'large-volatility': medianOfSize(sizeVolatility, 'large'),
     'mid-volatility': medianOfSize(sizeVolatility, 'mid'),
     'small-volatility': medianOfSize(sizeVolatility, 'small'),
@@ -107,9 +108,13 @@ export function computeLabStatistics(
     'clustering-mean': mean(
       Array.from({ length: CLUSTERING_LAGS }, (_, lag) => autocorrelation(squaredReturns, lag + 1)),
     ),
-    'world-dividend-yield': (sum(totalReturns) - sum(worldReturns)) / returnYears,
+    'world-dividend-yield': worldMeasures.worldDividendYield,
     'stock-dividend-yield-median': median(stockYields),
     'stock-dividend-yield-max': Math.max(...stockYields),
+    'intraday-profile': intraday.profileRatio,
+    'overnight-share-world': sample.overnight.world,
+    'overnight-share-regions': sample.overnight.regions,
+    'overnight-share-stocks': sample.overnight.stocks,
   };
 
   return {
@@ -131,6 +136,41 @@ export function computeLabStatistics(
       recoveryTick: episode.recovery === null ? null : dayStartTick(sample.days[episode.recovery]),
       depth: episode.depth,
     })),
+    intraday,
+    longTerm: longTermStatistics(sample, marketDaysPerYear),
+  };
+}
+
+/** Return, volatility and dividend yield of the world index over the whole sample (TS §6.9). */
+export function worldReturnMeasures(
+  sample: MarketSample,
+  marketDaysPerYear: number,
+): { worldReturn: number; worldVolatility: number; worldDividendYield: number } {
+  const last = sample.days.length - 1;
+  const returnYears = last / marketDaysPerYear;
+  const worldReturns = logReturns(sample.worldPrice);
+  const totalReturns = logReturns(sample.worldTotalReturn);
+  return {
+    worldReturn: geometricReturn(
+      sample.worldTotalReturn[0],
+      sample.worldTotalReturn[last],
+      returnYears,
+    ),
+    worldVolatility: annualizedVolatility(worldReturns, marketDaysPerYear),
+    worldDividendYield: (sum(totalReturns) - sum(worldReturns)) / returnYears,
+  };
+}
+
+/** Checkpoints and rolling windows of the world index (TS §6.9, E-22). */
+export function longTermStatistics(
+  sample: MarketSample,
+  marketDaysPerYear: number,
+): LongTermStatistics {
+  return {
+    checkpoints: sample.checkpoints,
+    windows: WINDOW_YEARS.map((years) =>
+      rollingWindows(sample.worldPrice, sample.worldTotalReturn, years, marketDaysPerYear),
+    ),
   };
 }
 
@@ -152,7 +192,7 @@ export function phaseSegments(days: ArrayLike<number>, phases: ArrayLike<number>
   return segments;
 }
 
-function phaseShares(phases: ArrayLike<number>): PhaseShare[] {
+export function phaseShares(phases: ArrayLike<number>): PhaseShare[] {
   const counts = new Array<number>(MARKET_PHASES.length).fill(0);
   for (let d = 0; d < phases.length; d++) {
     counts[phases[d]]++;

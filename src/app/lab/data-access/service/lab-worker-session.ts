@@ -69,7 +69,7 @@ export class LabWorkerSession {
       }
       case 'statistics': {
         const start = this.#clock();
-        const statistics = this.#requireSimulation().statistics(request.start);
+        const statistics = this.#requireSimulation().statistics(request.start, this.#clock);
         return {
           id: request.id,
           type: 'statistics',
@@ -84,6 +84,16 @@ export class LabWorkerSession {
           id: request.id,
           type: 'golden',
           result: { checksums, durationMs: this.#clock() - start },
+        };
+      }
+      case 'seed-run': {
+        // Its own world and market: the generated world of the session stays as it is.
+        const start = this.#clock();
+        const run = LabSimulation.measureSeedRun(request.seed, request.years);
+        return {
+          id: request.id,
+          type: 'seed-run',
+          result: { run, durationMs: this.#clock() - start },
         };
       }
       case 'candles': {

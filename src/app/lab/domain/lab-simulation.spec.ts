@@ -110,6 +110,35 @@ describe('LabSimulation', () => {
     });
   });
 
+  describe('measureSeedRun', () => {
+    it('collects while simulating what the statistics recompute for the same period', () => {
+      const run = LabSimulation.measureSeedRun('  LAB-Test ', 1);
+      const recomputed = new LabSimulation(SEED);
+      recomputed.runPrehistory();
+      recomputed.simulateYears(1);
+      const statistics = recomputed.statistics('epoch');
+      const target = (id: string): number | undefined =>
+        statistics.targets.find((row) => row.id === id)?.value;
+
+      expect(run.seed).toBe(SEED);
+      expect(run.years).toBe(1);
+      expect(run.marketDays).toBe(statistics.marketDays);
+      expect(run.phaseShares).toEqual(statistics.phaseShares);
+      expect(run.worldReturn).toBe(target('world-return'));
+      expect(run.worldVolatility).toBe(target('world-volatility'));
+      expect(run.worldDividendYield).toBe(target('world-dividend-yield'));
+      expect(run.longTerm).toEqual(statistics.longTerm);
+      // 11¼ years from the epoch: the game start and two ten-year windows (from 2020 and 2021).
+      expect(run.longTerm.checkpoints[0].tick).not.toBeNull();
+      expect(run.longTerm.windows.map((window) => window.count)).toEqual([2, 0]);
+    });
+
+    it('rejects invalid numbers of years', () => {
+      expect(() => LabSimulation.measureSeedRun(SEED, 0)).toThrow(RangeError);
+      expect(() => LabSimulation.measureSeedRun(SEED, 2.5)).toThrow(RangeError);
+    });
+  });
+
   describe('stepping', () => {
     it('steps calendar days and gives the same candles in one run as in two partial runs', () => {
       const once = new LabSimulation(SEED);

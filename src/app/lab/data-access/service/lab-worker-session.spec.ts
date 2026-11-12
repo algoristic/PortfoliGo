@@ -80,10 +80,37 @@ describe('LabWorkerSession', () => {
         result: { now: dateTimeToTick({ year: 2031, month: 4, day: 8 }) - TICKS_PER_MINUTE },
       });
 
+      // The statistics read the clock twice per day of the intraday window (63 market days) for
+      // the minute curves, between the two readings of the session.
       expect(session.handle({ id: 16, type: 'statistics', start: 'game-start' })).toMatchObject({
         id: 16,
         type: 'statistics',
-        result: { durationMs: 10, statistics: { start: 'game-start', fromTick: GAME_START_TICK } },
+        result: {
+          durationMs: (2 * 63 + 1) * 10,
+          statistics: {
+            start: 'game-start',
+            fromTick: GAME_START_TICK,
+            intraday: { marketDays: 63, curvesMs: 63 * 10 },
+          },
+        },
+      });
+    });
+
+    it('runs a seed of the comparison without a world and without touching the world', () => {
+      const session = createSession();
+      const run = session.handle({ id: 21, type: 'seed-run', seed: ' Calib-1 ', years: 1 });
+      expect(run).toMatchObject({
+        id: 21,
+        type: 'seed-run',
+        result: { durationMs: 10, run: { seed: 'calib-1', years: 1 } },
+      });
+
+      session.handle({ id: 22, type: 'generate', seed: 'lab' });
+      session.handle({ id: 23, type: 'seed-run', seed: 'calib-2', years: 1 });
+      // The generated world still stands at the game start.
+      expect(session.handle({ id: 24, type: 'simulate', days: 1 })).toMatchObject({
+        id: 24,
+        result: { now: GAME_START_TICK + TICKS_PER_DAY - TICKS_PER_MINUTE },
       });
     });
   });

@@ -1,8 +1,8 @@
 import { TargetRow, TargetStatus, TargetUnit } from './models/lab-statistics.model';
 
 /**
- * Calibration targets of TS §6.9 with their measurement rule (AP 1.8a). Without `min` and `max`
- * a quantity is shown for information; `open` quantities are measured in AP 1.8b.
+ * Calibration targets of TS §6.9 with their measurement rule (AP 1.8a, AP 1.8b). Without `min`
+ * and `max` a quantity is shown for information; AP 1.9 sets the missing limits.
  */
 export interface CalibrationTarget {
   id: string;
@@ -11,7 +11,6 @@ export interface CalibrationTarget {
   max?: number;
   /** Shortest period in years for a meaningful value. */
   minYears?: number;
-  open?: boolean;
 }
 
 export const CALIBRATION_TARGETS = [
@@ -33,9 +32,10 @@ export const CALIBRATION_TARGETS = [
   { id: 'world-dividend-yield', unit: 'percent', min: 0.02, max: 0.03, minYears: 1 },
   { id: 'stock-dividend-yield-median', unit: 'percent' },
   { id: 'stock-dividend-yield-max', unit: 'percent', min: 0, max: 0.07, minYears: 1 },
-  { id: 'intraday-profile', unit: 'number', open: true },
-  { id: 'overnight-share', unit: 'percent', open: true },
-  { id: 'long-term', unit: 'number', open: true },
+  { id: 'intraday-profile', unit: 'number' },
+  { id: 'overnight-share-world', unit: 'percent' },
+  { id: 'overnight-share-regions', unit: 'percent' },
+  { id: 'overnight-share-stocks', unit: 'percent' },
 ] as const satisfies readonly CalibrationTarget[];
 
 export type CalibrationTargetId = (typeof CALIBRATION_TARGETS)[number]['id'];
@@ -46,9 +46,6 @@ export function targetStatus(
   value: number,
   years: number,
 ): TargetStatus {
-  if (target.open) {
-    return 'open';
-  }
   if (target.min === undefined && target.max === undefined) {
     return 'info';
   }

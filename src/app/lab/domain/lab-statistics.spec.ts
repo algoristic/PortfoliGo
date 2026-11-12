@@ -4,7 +4,7 @@ import { World } from '@app/world/domain/models/world.model';
 
 import { computeLabStatistics, phaseSegments } from './lab-statistics';
 import { MarketSample } from './market-sample';
-import { LabStatistics } from './models/lab-statistics.model';
+import { IntradayStatistics, LabStatistics } from './models/lab-statistics.model';
 
 const DAYS_PER_YEAR = 261;
 
@@ -62,8 +62,13 @@ function sample(count: number): MarketSample {
     stockReturns: [base, base, base.map((r) => -r), other],
     dividendSum: Float64Array.from([4, 0, 2, 1]),
     closeSum: Float64Array.from([100, 100, 50, 50]).map((close) => close * count),
+    overnight: { world: 0.1, regions: 0.6, stocks: 0.3 },
+    checkpoints: [],
   };
 }
+
+/** Intraday part: computed from minute curves elsewhere, passed through unchanged. */
+const intraday = { profileRatio: 1.4 } as IntradayStatistics;
 
 describe('lab-statistics', () => {
   describe('phaseSegments', () => {
@@ -86,7 +91,7 @@ describe('lab-statistics', () => {
 
     beforeAll(() => {
       input = sample(count);
-      statistics = computeLabStatistics(input, world, 'epoch', DAYS_PER_YEAR);
+      statistics = computeLabStatistics(input, intraday, world, 'epoch', DAYS_PER_YEAR);
     });
 
     it('measures the period in market days', () => {
@@ -142,7 +147,17 @@ describe('lab-statistics', () => {
       ]);
       expect(statistics.phaseShares[0].share + statistics.phaseShares[3].share).toBe(1);
       expect(statistics.targets.find((row) => row.id === 'world-return')?.status).toBe('short');
-      expect(statistics.targets.find((row) => row.id === 'overnight-share')?.status).toBe('open');
+      expect(statistics.targets.find((row) => row.id === 'overnight-share-world')?.status).toBe(
+        'info',
+      );
+    });
+
+    it('takes the overnight shares from the sample and the profile from the intraday part', () => {
+      expect(value('overnight-share-world')).toBe(0.1);
+      expect(value('overnight-share-regions')).toBe(0.6);
+      expect(value('overnight-share-stocks')).toBe(0.3);
+      expect(value('intraday-profile')).toBe(1.4);
+      expect(statistics.intraday).toBe(intraday);
     });
 
     it('standardizes the return distribution', () => {
@@ -156,7 +171,7 @@ describe('lab-statistics', () => {
       drawdown.worldTotalReturn = Float64Array.from({ length: count }, (_, d) =>
         d < 100 ? 100 : d < 200 ? 70 : 110,
       );
-      const result = computeLabStatistics(drawdown, world, 'epoch', DAYS_PER_YEAR);
+      const result = computeLabStatistics(drawdown, intraday, world, 'epoch', DAYS_PER_YEAR);
       expect(result.maxDrawdown).toBeCloseTo(0.3, 12);
       expect(result.drawdowns).toEqual([
         {
@@ -169,9 +184,9 @@ describe('lab-statistics', () => {
     });
 
     it('rejects periods without returns', () => {
-      expect(() => computeLabStatistics(sample(1), world, 'epoch', DAYS_PER_YEAR)).toThrow(
-        RangeError,
-      );
+      expect(() =>
+        computeLabStatistics(sample(1), intraday, world, 'epoch', DAYS_PER_YEAR),
+      ).toThrow(RangeError);
     });
   });
 });

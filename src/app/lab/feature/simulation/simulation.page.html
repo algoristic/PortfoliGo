@@ -17,6 +17,9 @@
 @let loadingStatistics = labFacade.loadingStatistics$ | async;
 @let selfTest = labFacade.selfTest$ | async;
 @let runningSelfTest = labFacade.runningSelfTest$ | async;
+@let seedRuns = labFacade.seedRuns$ | async;
+@let seedRunsMs = labFacade.seedRunsMs$ | async;
+@let comparingSeeds = labFacade.comparingSeeds$ | async;
 @let _seed = seedForm.seed();
 
 <div class="mx-auto flex max-w-6xl flex-col gap-6 p-6">
@@ -164,6 +167,17 @@
       text="Gib einen Seed ein und erzeuge eine Welt; Vorlauf und Simulation laufen im Web Worker."
       i18n-text="@@featureLab-simulationPage-emptyText"></app-empty-state>
   }
+
+  <app-panel heading="Seed-Vergleich" i18n-heading="@@featureLab-simulationPage-seedComparison">
+    <app-seed-comparison
+      [runs]="seedRuns ?? []"
+      [seeds]="labFacade.seedComparison.seeds"
+      [years]="labFacade.seedComparison.years"
+      [running]="comparingSeeds ?? false"
+      [disabled]="busy ?? false"
+      [durationMs]="seedRunsMs ?? undefined"
+      (clickedCompare)="onCompareSeeds()"></app-seed-comparison>
+  </app-panel>
 
   <app-panel heading="Selbsttest" i18n-heading="@@featureLab-simulationPage-selfTest">
     <app-self-test

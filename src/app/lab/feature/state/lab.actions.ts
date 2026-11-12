@@ -7,6 +7,7 @@ import {
   ComputedStatistics,
   GeneratedWorld,
   LoadedCandles,
+  MeasuredSeedRun,
   SimulatedPeriod,
 } from '../../data-access/service/lab-simulation-service.model';
 import { StatisticsStart } from '../../domain/models/lab-statistics.model';
@@ -38,6 +39,7 @@ export const changedChartOptions = createAction(
 );
 export const scrolledToChartStart = createAction('[Lab/Page] Scrolled to chart start');
 export const clickedRunSelfTest = createAction('[Lab/Page] Clicked run self-test');
+export const clickedCompareSeeds = createAction('[Lab/Page] Clicked compare seeds');
 
 export const generateWorldSuccess = createAction(
   '[Lab/API] Generate world success',
@@ -85,5 +87,14 @@ export const runSelfTestSuccess = createAction(
 );
 export const runSelfTestFailure = createAction(
   '[Lab/API] Run self-test failure',
+  props<{ error: unknown }>(),
+);
+export const seedRunSuccess = createAction(
+  '[Lab/API] Seed run success',
+  props<{ result: MeasuredSeedRun }>(),
+);
+export const compareSeedsSuccess = createAction('[Lab/API] Compare seeds success');
+export const compareSeedsFailure = createAction(
+  '[Lab/API] Compare seeds failure',
   props<{ error: unknown }>(),
 );

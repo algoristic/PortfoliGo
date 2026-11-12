@@ -1,16 +1,15 @@
 import {
-  dateTimeToTick,
   dayIndex,
   dayStartTick,
   GAME_START_TICK,
-  tickToDateTime,
   weekdayOfDay,
 } from '@app/clock/domain/calendar-logic';
 import { Tick, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
 import { weeklyCandles } from '@app/market/domain/candle-logic';
-import { SupportValues } from '@app/market/domain/day-curve';
+import { createCurveTables, SupportValues } from '@app/market/domain/day-curve';
+import { createMarketContext } from '@app/market/domain/market-context';
 import { recomputeSupportDays } from '@app/market/domain/market-history';
-import { advanceMarket } from '@app/market/domain/market-step';
+import { advanceMarket, createMarketState } from '@app/market/domain/market-step';
 import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
 import { Prehistory, runPrehistory } from '@app/market/domain/prehistory';
 import { PriceSource } from '@app/market/domain/price-source';
@@ -19,10 +18,17 @@ import { deriveSeedKey, normalizeSeed, SeedKey } from '@app/simulation/util/seed
 import { World } from '@app/world/domain/models/world.model';
 import { generateWorld } from '@app/world/domain/world-generator';
 
-import { computeLabStatistics } from './lab-statistics';
-import { collectMarketSample } from './market-sample';
+import { computeIntradayStatistics } from './intraday-statistics';
+import {
+  computeLabStatistics,
+  longTermStatistics,
+  phaseShares,
+  worldReturnMeasures,
+} from './lab-statistics';
+import { sameDateLater } from './long-term-statistics';
+import { collectMarketSample, MarketSampleCollector } from './market-sample';
 import { CandleSource } from './models/candle-source.model';
-import { LabStatistics, StatisticsStart } from './models/lab-statistics.model';
+import { LabStatistics, SeedRun, StatisticsStart } from './models/lab-statistics.model';
 import { WorldOverview } from './models/world-overview.model';
 import { worldOverview } from './world-overview.utils';
 
@@ -94,29 +100,38 @@ export class LabSimulation {
       throw new RangeError(`LabSimulation: invalid number of years ${years}`);
     }
     const { state } = this.#requireMarket();
-    const { year, month, day } = tickToDateTime(dayStartTick(state.day));
-    const monthStart = dayIndex(dateTimeToTick({ year: year + years, month, day: 1 }));
-    return this.simulate(monthStart + day - 1 - state.day);
+    return this.simulate(sameDateLater(state.day, years) - state.day);
   }
 
   /**
    * Statistics of the market days from the epoch or the game start up to the current day
-   * (TS §14.2, measurement rules in TS §6.9). Recomputed from the month-start states.
+   * (TS §14.2, measurement rules in TS §6.9). Recomputed from the month-start states; the
+   * intraday part covers the last market days. `clock` (milliseconds) only times the minute
+   * curves for the throughput.
    */
-  statistics(start: StatisticsStart): LabStatistics {
+  statistics(start: StatisticsStart, clock: () => number = () => 0): LabStatistics {
     const { context, history, state } = this.#requireMarket();
     const fromDay = start === 'epoch' ? 0 : dayIndex(GAME_START_TICK);
     if (state.day - fromDay < 1) {
       throw new RangeError('LabSimulation: simulate past the start of the statistics first');
     }
-    const sample = collectMarketSample(
-      this.#requirePriceSource().tables,
+    const tables = this.#requirePriceSource().tables;
+    const sample = collectMarketSample(tables, history, this.world, fromDay, state.day);
+    const intraday = computeIntradayStatistics(
+      tables,
       history,
       this.world,
       fromDay,
       state.day,
+      clock,
     );
-    return computeLabStatistics(sample, this.world, start, context.config.tradingDaysPerYear);
+    return computeLabStatistics(
+      sample,
+      intraday,
+      this.world,
+      start,
+      context.config.tradingDaysPerYear,
+    );
   }
 
   /**
@@ -178,6 +193,39 @@ export class LabSimulation {
       stock,
     );
     return resolution === '1w' ? weeklyCandles(daily) : daily;
+  }
+
+  /**
+   * Long run of a seed for the seed comparison (TS §14.2): world, day steps from the epoch to the
+   * same calendar date `years` after the game start, the sample collected while simulating (no
+   * recomputation, no history). Gives the same long-term values as `statistics('epoch')` after
+   * the same period.
+   */
+  static measureSeedRun(seed: string, years: number): SeedRun {
+    if (!Number.isInteger(years) || years < 1) {
+      throw new RangeError(`LabSimulation: invalid number of years ${years}`);
+    }
+    const normalized = normalizeSeed(seed);
+    const seedKey = deriveSeedKey(normalized);
+    const world = generateWorld(seedKey);
+    const context = createMarketContext(seedKey, world);
+    const state = createMarketState(context);
+    const toDay = sameDateLater(dayIndex(GAME_START_TICK), years);
+    const marketDaysPerYear = context.config.tradingDaysPerYear;
+    const collector = new MarketSampleCollector(createCurveTables(context), world, 0, toDay, {
+      stockReturns: false,
+      marketDaysPerYear,
+    });
+    advanceMarket(context, state, toDay, { onDay: (day) => collector.add(day) });
+    const sample = collector.finish();
+    return {
+      seed: normalized,
+      years,
+      marketDays: sample.days.length,
+      phaseShares: phaseShares(sample.phases),
+      ...worldReturnMeasures(sample, marketDaysPerYear),
+      longTerm: longTermStatistics(sample, marketDaysPerYear),
+    };
   }
 
   #requireMarket(): Prehistory {

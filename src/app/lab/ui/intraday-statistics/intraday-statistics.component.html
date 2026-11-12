@@ -1,0 +1,94 @@
+@let _statistics = statistics();
+
+<div class="flex flex-col gap-4">
+  <p
+    class="text-sm text-fg-muted tabular-nums"
+    data-testid="lab.simulation.statistics.intraday.period">
+    {{ _statistics.fromTick | formatGameDate }} – {{ _statistics.toTick | formatGameDate }} ·
+    {{ _statistics.marketDays | formatNumber }}
+    <ng-container i18n="@@uiLab-intradayStatistics-marketDays">Markttage, Medianwerte</ng-container>
+  </p>
+
+  <div class="overflow-x-auto">
+    <table
+      class="w-full text-right text-sm tabular-nums"
+      data-testid="lab.simulation.statistics.intraday">
+      <thead class="text-xs text-fg-muted">
+        <tr>
+          <th class="px-2 py-1 text-left" i18n="@@uiLab-intradayStatistics-measure">Größe</th>
+          <th class="px-2 py-1" i18n="@@uiLab-intradayStatistics-stocks">Alle Aktien</th>
+          <th class="px-2 py-1" i18n="@@uiLab-intradayStatistics-worldIndex">Weltindex</th>
+          <th class="px-2 py-1">
+            <ng-container i18n="@@uiLab-intradayStatistics-bridge">Brücke</ng-container>
+            ({{ _statistics.reference.exchangeId }}, {{ _statistics.reference.shares }})
+          </th>
+          <th class="px-2 py-1" i18n="@@uiLab-intradayStatistics-reference">Referenz</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.id) {
+          <tr class="border-t border-border">
+            <td class="px-2 py-1 text-left">{{ row.label }}</td>
+            <td
+              class="px-2 py-1"
+              [attr.data-testid]="'lab.simulation.statistics.intraday.' + row.id + '.stocks'">
+              {{ row.stocks }}
+            </td>
+            <td
+              class="px-2 py-1"
+              [attr.data-testid]="'lab.simulation.statistics.intraday.' + row.id + '.world-index'">
+              {{ row.worldIndex }}
+            </td>
+            <td
+              class="px-2 py-1"
+              [attr.data-testid]="'lab.simulation.statistics.intraday.' + row.id + '.bridge'">
+              {{ row.bridge }}
+            </td>
+            <td
+              class="px-2 py-1"
+              [attr.data-testid]="'lab.simulation.statistics.intraday.' + row.id + '.reference'">
+              {{ row.reference }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="text-xs text-fg-muted" i18n="@@uiLab-intradayStatistics-referenceLegend">
+    Brücke und Referenz: dieselben Aktien der Börse mit den meisten Werten, einmal aus den
+    Brownschen Brücken, einmal Minute für Minute simuliert. Sie sollen bis auf die
+    Stichprobenschwankung übereinstimmen.
+  </p>
+
+  <section class="flex flex-col gap-2">
+    <h4 class="text-sm font-semibold" i18n="@@uiLab-intradayStatistics-profile">
+      Tagesprofil der Volatilität (13 Abschnitte der Handelszeit)
+    </h4>
+    <div class="flex h-24 items-end gap-1 border-b border-border">
+      @for (bar of bars(); track bar.part) {
+        <div
+          class="h-full flex-1"
+          data-testid="lab.simulation.statistics.intraday.profile.bar"
+          [attr.title]="bar.title">
+          <div class="flex h-full items-end">
+            <div class="w-full bg-accent" [style.height.%]="bar.height"></div>
+          </div>
+        </div>
+      }
+    </div>
+    <p class="text-sm">
+      <span i18n="@@uiLab-intradayStatistics-profileRatio">Eröffnung und Schluss ÷ Mitte</span>
+      <span class="tabular-nums" data-testid="lab.simulation.statistics.intraday.profile-ratio">
+        {{ _statistics.profileRatio | formatNumber: 2 }}</span
+      >
+    </p>
+  </section>
+
+  <p class="text-sm">
+    <span i18n="@@uiLab-intradayStatistics-throughput">Minutenverläufe aller Serien</span>
+    <span class="tabular-nums" data-testid="lab.simulation.statistics.intraday.throughput">
+      {{ marketDaysPerSecond() | formatNumber }}</span
+    >
+    <ng-container i18n="@@uiLab-intradayStatistics-marketDaysPerSecond">Markttage/s</ng-container>
+  </p>
+</div>

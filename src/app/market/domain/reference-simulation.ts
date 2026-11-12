@@ -2,16 +2,19 @@ import { MINUTES_PER_DAY } from '@app/clock/domain/models/time.model';
 import { normal } from '@app/simulation/util/distributions';
 import { createStream } from '@app/simulation/util/random-stream';
 
-import { MarketContext } from '../market-context';
-import { LOADINGS_PER_INSTRUMENT } from '../market-layout';
-import { MarketDay } from '../models/market-day.model';
-import { priceFromLog } from '../price-logic';
+import { profileWeights } from './bridge-logic';
+import { MarketContext } from './market-context';
+import { LOADINGS_PER_INSTRUMENT } from './market-layout';
+import { MarketDay } from './models/market-day.model';
+import { priceFromLog } from './price-logic';
 
 /**
- * Test helper, not production code (TS §4.6): simulates the factors and the idiosyncratic
- * components of the given instruments minute by minute with the parameters of the day step
- * (trend and volatility of each factor per day). Jumps occur in each session minute with
- * probability `λ / (261 · L)`. The instruments must share their trading hours.
+ * Independent reference for the bridge model (TS §4.6, §6.1): simulates the factors and the
+ * idiosyncratic components of the given instruments minute by minute with the parameters of the
+ * day step (trend and volatility of each factor per day) and the intraday profile of the
+ * idiosyncratic variance. Jumps occur in each session minute with probability `λ / (261 · L)`.
+ * The instruments must share their trading hours. Used by the lab (TS §14.2) and the
+ * calibration suite; its streams (`lab/reference/…`) never feed back into the market.
  */
 export class ReferenceSimulation {
   readonly #context: MarketContext;
@@ -21,9 +24,14 @@ export class ReferenceSimulation {
   readonly #idio: Float64Array;
   readonly #open: number;
   readonly #close: number;
+  /** Share of the idiosyncratic session variance per step from minute j to j + 1. */
+  readonly #minuteShare: Float64Array;
 
   constructor(context: MarketContext, instruments: readonly number[]) {
     const { layout } = context;
+    if (instruments.length === 0) {
+      throw new RangeError('ReferenceSimulation: no instruments');
+    }
     this.#context = context;
     this.#instruments = instruments;
     const factors = new Set<number>();
@@ -45,6 +53,17 @@ export class ReferenceSimulation {
         throw new Error('ReferenceSimulation: the instruments need the same trading hours');
       }
     }
+    const weights = profileWeights(context.config.intradayVolProfile, this.#close - this.#open);
+    let total = 0;
+    for (const weight of weights) {
+      total += weight;
+    }
+    this.#minuteShare = weights.map((weight) => weight / total);
+  }
+
+  /** Minute of the day of the open and the close of the instruments. */
+  get session(): { open: number; close: number } {
+    return { open: this.#open, close: this.#close };
   }
 
   /**
@@ -56,8 +75,8 @@ export class ReferenceSimulation {
     const open = this.#open;
     const length = this.#close - open;
     const minuteYears = 1 / (config.tradingDaysPerYear * MINUTES_PER_DAY);
-    const factorRng = createStream(this.#context.seedKey, `test/reference/factor/${day.day}`);
-    const instrumentRng = createStream(this.#context.seedKey, `test/reference/idio/${day.day}`);
+    const factorRng = createStream(this.#context.seedKey, `lab/reference/factor/${day.day}`);
+    const instrumentRng = createStream(this.#context.seedKey, `lab/reference/idio/${day.day}`);
 
     const moveFactors = (minutes: number): void => {
       for (const k of this.#factors) {
@@ -77,13 +96,14 @@ export class ReferenceSimulation {
     for (let j = 0; j <= length; j++) {
       if (j > 0) {
         moveFactors(1);
+        const share = this.#minuteShare[j - 1];
         this.#instruments.forEach((i) => {
           const vol = layout.idioVol[i];
           this.#idio[i] +=
             ((layout.alpha[i] - 0.5 * vol * vol) * dayYears) / length +
             this.#context.sqrtSessionShare *
               vol *
-              Math.sqrt(dayYears / length) *
+              Math.sqrt(dayYears * share) *
               normal(instrumentRng);
           const jumpProbability = layout.jumpIntensity[i] / (config.tradingDaysPerYear * length);
           if (instrumentRng.nextFloat53() < jumpProbability) {

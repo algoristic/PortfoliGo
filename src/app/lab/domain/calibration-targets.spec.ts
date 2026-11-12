@@ -92,11 +92,11 @@ describe('calibration-targets', () => {
       expect(targetStatus(upperOnly, 1.5, 0)).toBe('off');
     });
 
-    it('marks quantities without target as info and later ones as open', () => {
+    it('marks quantities without target as info', () => {
       fc.assert(
         fc.property(fc.double(), fc.double({ min: 0, max: 200 }), (value, years) => {
           expect(targetStatus(target('world-price-return'), value, years)).toBe('info');
-          expect(targetStatus(target('overnight-share'), value, years)).toBe('open');
+          expect(targetStatus(target('overnight-share-world'), value, years)).toBe('info');
         }),
       );
     });
@@ -120,8 +120,7 @@ describe('calibration-targets', () => {
       const rows = targetRows({}, 1000);
       CALIBRATION_TARGETS.forEach((entry: CalibrationTarget, n) => {
         const { status: _status, ...row } = rows[n];
-        const { open: _open, ...defined } = entry;
-        expect(row).toStrictEqual({ ...defined, value: Number.NaN });
+        expect(row).toStrictEqual({ ...entry, value: Number.NaN });
       });
     });
 

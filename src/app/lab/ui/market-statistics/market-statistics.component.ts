@@ -23,6 +23,8 @@ import {
 } from '../../domain/models/lab-statistics.model';
 
 import { CorrelationMatrixComponent } from '../correlation-matrix/correlation-matrix.component';
+import { IntradayStatisticsComponent } from '../intraday-statistics/intraday-statistics.component';
+import { LongTermStatisticsComponent } from '../long-term-statistics/long-term-statistics.component';
 import { PhaseTimelineComponent } from '../phase-timeline/phase-timeline.component';
 import { ReturnHistogramComponent } from '../return-histogram/return-histogram.component';
 
@@ -31,7 +33,6 @@ const STATUS_TONES: Record<TargetStatus, BadgeTone> = {
   off: 'down',
   short: 'warning',
   info: 'neutral',
-  open: 'neutral',
 };
 
 /** Statistics of the lab against the calibration targets (TS §6.9, §14.2). */
@@ -44,6 +45,8 @@ const STATUS_TONES: Record<TargetStatus, BadgeTone> = {
     FormatGameDatePipe,
     FormatNumberPipe,
     FormatPercentPipe,
+    IntradayStatisticsComponent,
+    LongTermStatisticsComponent,
     PhaseTimelineComponent,
     ReturnHistogramComponent,
     SkeletonComponent,
@@ -83,7 +86,6 @@ export class MarketStatisticsComponent {
     off: $localize`:@@uiLab-marketStatistics-statusOff:abweichend`,
     short: $localize`:@@uiLab-marketStatistics-statusShort:zu kurz`,
     info: $localize`:@@uiLab-marketStatistics-statusInfo:Info`,
-    open: $localize`:@@uiLab-marketStatistics-statusOpen:AP 1.8b`,
   };
   sizeLabels: Record<SizeClass, string> = {
     large: $localize`:@@uiLab-marketStatistics-sizeLarge:Large Caps`,
@@ -109,9 +111,10 @@ export class MarketStatisticsComponent {
     'world-dividend-yield': $localize`:@@uiLab-marketStatistics-targetWorldDividendYield:Weltindex, Dividendenrendite p. a.`,
     'stock-dividend-yield-median': $localize`:@@uiLab-marketStatistics-targetStockDividendYieldMedian:Aktien, Dividendenrendite p. a. (Median)`,
     'stock-dividend-yield-max': $localize`:@@uiLab-marketStatistics-targetStockDividendYieldMax:Aktien, Dividendenrendite p. a. (Maximum)`,
-    'intraday-profile': $localize`:@@uiLab-marketStatistics-targetIntradayProfile:Tagesverlauf der Volatilität`,
-    'overnight-share': $localize`:@@uiLab-marketStatistics-targetOvernightShare:Overnight-Anteil der Varianz`,
-    'long-term': $localize`:@@uiLab-marketStatistics-targetLongTerm:Langzeitverhalten über 50 und 100 Jahre`,
+    'intraday-profile': $localize`:@@uiLab-marketStatistics-targetIntradayProfile:Tagesverlauf: Volatilität zu Eröffnung und Schluss ÷ Mitte (Median, Ziel > 1)`,
+    'overnight-share-world': $localize`:@@uiLab-marketStatistics-targetOvernightShareWorld:Overnight-Anteil der Varianz, Weltindex`,
+    'overnight-share-regions': $localize`:@@uiLab-marketStatistics-targetOvernightShareRegions:Overnight-Anteil der Varianz, breite Regionalindizes (Median)`,
+    'overnight-share-stocks': $localize`:@@uiLab-marketStatistics-targetOvernightShareStocks:Overnight-Anteil der Varianz, Aktien (Median)`,
   };
 
   onSelectStart(start: StatisticsStart): void {

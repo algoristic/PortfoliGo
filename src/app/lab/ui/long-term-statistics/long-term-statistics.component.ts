@@ -1,0 +1,108 @@
+import { Component, computed, input } from '@angular/core';
+
+import { FormatGameDatePipe } from '@app/clock/ui/pipes/format-game-date/format-game-date.pipe';
+import { formatOptional, formatPercent, formatPrice } from '@app/shared/util/format';
+
+import { CheckpointColumn, CheckpointRowView, WindowRowView } from './long-term-statistics.model';
+
+import {
+  LongTermCheckpoint,
+  LongTermStatistics,
+  RollingWindows,
+  WindowRange,
+} from '../../domain/models/lab-statistics.model';
+
+type CheckpointMeasure = (checkpoint: LongTermCheckpoint) => number;
+type WindowMeasure = 'totalReturn' | 'volatility' | 'dividendYield';
+
+/** Long-term behaviour of the market (TS §6.9, E-22): checkpoints and rolling windows. */
+@Component({
+  selector: 'app-long-term-statistics',
+  imports: [FormatGameDatePipe],
+  templateUrl: './long-term-statistics.component.html',
+  host: { class: 'block' },
+})
+export class LongTermStatisticsComponent {
+  statistics = input.required<LongTermStatistics>();
+
+  columns = computed<CheckpointColumn[]>(() =>
+    this.statistics().checkpoints.map(({ years, tick }) => ({ years, tick })),
+  );
+  missingCheckpoints = computed(() =>
+    this.statistics().checkpoints.some((checkpoint) => checkpoint.tick === null),
+  );
+  checkpointRows = computed<CheckpointRowView[]>(() => {
+    const checkpoints = this.statistics().checkpoints;
+    const percent = (value: number): string =>
+      formatOptional(value, (finite) => formatPercent(finite, 1));
+    const row = (
+      id: string,
+      label: string,
+      measure: CheckpointMeasure,
+      format: (value: number) => string = percent,
+    ): CheckpointRowView => ({
+      id,
+      label,
+      values: checkpoints.map((checkpoint) => ({
+        years: checkpoint.years,
+        text: format(measure(checkpoint)),
+      })),
+    });
+    return [
+      row('top-five', this.labels.topFive, (c) => c.topFiveShare),
+      row('below-one-euro', this.labels.belowOneEuro, (c) => c.belowOneEuro.all),
+      row('below-one-euro-large', this.labels.belowOneEuroLarge, (c) => c.belowOneEuro.large),
+      row('below-one-euro-mid', this.labels.belowOneEuroMid, (c) => c.belowOneEuro.mid),
+      row('below-one-euro-small', this.labels.belowOneEuroSmall, (c) => c.belowOneEuro.small),
+      row('at-floor', this.labels.atFloor, (c) => c.atFloor),
+      row(
+        'max-price',
+        this.labels.maxPrice,
+        (c) => c.maxPrice,
+        (value) => formatOptional(value, (finite) => formatPrice(finite)),
+      ),
+      row('index-volatility', this.labels.indexVolatility, (c) => c.indexVolatility),
+    ];
+  });
+  windowRows = computed<WindowRowView[]>(() =>
+    this.statistics().windows.flatMap((windows) => [
+      this.#windowRow(windows, 'totalReturn', 'total-return', this.labels.windowReturn),
+      this.#windowRow(windows, 'volatility', 'volatility', this.labels.windowVolatility),
+      this.#windowRow(windows, 'dividendYield', 'dividend-yield', this.labels.windowDividendYield),
+    ]),
+  );
+
+  labels = {
+    topFive: $localize`:@@uiLab-longTermStatistics-topFive:Anteil der fünf größten Werte am Weltindex`,
+    belowOneEuro: $localize`:@@uiLab-longTermStatistics-belowOneEuro:Aktien unter 1 € (alle)`,
+    belowOneEuroLarge: $localize`:@@uiLab-longTermStatistics-belowOneEuroLarge:Large Caps unter 1 €`,
+    belowOneEuroMid: $localize`:@@uiLab-longTermStatistics-belowOneEuroMid:Mid Caps unter 1 €`,
+    belowOneEuroSmall: $localize`:@@uiLab-longTermStatistics-belowOneEuroSmall:Small Caps unter 1 €`,
+    atFloor: $localize`:@@uiLab-longTermStatistics-atFloor:Aktien an der Kursuntergrenze`,
+    maxPrice: $localize`:@@uiLab-longTermStatistics-maxPrice:Höchster Aktienkurs`,
+    indexVolatility: $localize`:@@uiLab-longTermStatistics-indexVolatility:Weltindex, Volatilität der letzten 261 Tage`,
+    windowReturn: $localize`:@@uiLab-longTermStatistics-windowReturn:Weltindex (Performance), Rendite p. a.`,
+    windowVolatility: $localize`:@@uiLab-longTermStatistics-windowVolatility:Weltindex, Volatilität p. a.`,
+    windowDividendYield: $localize`:@@uiLab-longTermStatistics-windowDividendYield:Weltindex, Dividendenrendite p. a.`,
+  };
+
+  #windowRow(
+    windows: RollingWindows,
+    measure: WindowMeasure,
+    id: string,
+    label: string,
+  ): WindowRowView {
+    const range: WindowRange = windows[measure];
+    const text = (value: number): string =>
+      formatOptional(value, (finite) => formatPercent(finite, 1));
+    return {
+      id,
+      years: windows.years,
+      label,
+      count: windows.count,
+      min: text(range.min),
+      median: text(range.median),
+      max: text(range.max),
+    };
+  }
+}

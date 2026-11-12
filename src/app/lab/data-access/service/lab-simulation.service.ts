@@ -16,6 +16,7 @@ import {
   LabWorkerResponse,
   LabWorkerResults,
   LoadedCandles,
+  MeasuredSeedRun,
   SimulatedPeriod,
 } from './lab-simulation-service.model';
 
@@ -54,6 +55,11 @@ export class LabSimulationService {
   /** Golden-master checksums computed in the worker of this browser (self-test, TS §14.2). */
   goldenChecksums(): Observable<ComputedChecksums> {
     return this.#request((id) => ({ id, type: 'golden' }));
+  }
+
+  /** Long run of a seed for the seed comparison; leaves the generated world unchanged. */
+  seedRun(seed: string, years: number): Observable<MeasuredSeedRun> {
+    return this.#request((id) => ({ id, type: 'seed-run', seed, years }));
   }
 
   candles(

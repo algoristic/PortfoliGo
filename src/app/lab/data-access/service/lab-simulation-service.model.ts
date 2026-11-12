@@ -3,7 +3,7 @@ import { GoldenChecksums } from '@app/market/domain/golden-master';
 import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
 
 import { CandleSource } from '../../domain/models/candle-source.model';
-import { LabStatistics, StatisticsStart } from '../../domain/models/lab-statistics.model';
+import { LabStatistics, SeedRun, StatisticsStart } from '../../domain/models/lab-statistics.model';
 import { WorldOverview } from '../../domain/models/world-overview.model';
 
 /** Messages of the lab worker (precursor of the engine protocol, TS §8.2). */
@@ -13,6 +13,7 @@ export type LabWorkerRequest =
   | { id: number; type: 'simulate-years'; years: number }
   | { id: number; type: 'statistics'; start: StatisticsStart }
   | { id: number; type: 'golden' }
+  | { id: number; type: 'seed-run'; seed: string; years: number }
   | {
       id: number;
       type: 'candles';
@@ -59,6 +60,12 @@ export interface ComputedChecksums {
   durationMs: number;
 }
 
+/** Long run of one seed of the seed comparison (TS §14.2). */
+export interface MeasuredSeedRun {
+  run: SeedRun;
+  durationMs: number;
+}
+
 export interface LabWorkerResults {
   generate: GeneratedWorld;
   simulate: SimulatedPeriod;
@@ -66,6 +73,7 @@ export interface LabWorkerResults {
   candles: LoadedCandles;
   statistics: ComputedStatistics;
   golden: ComputedChecksums;
+  'seed-run': MeasuredSeedRun;
 }
 
 export type LabWorkerResponse =

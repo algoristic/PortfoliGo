@@ -14,7 +14,10 @@ import {
   prependCandles,
 } from './lab.utils';
 
-import { ComputedChecksums } from '../../data-access/service/lab-simulation-service.model';
+import {
+  ComputedChecksums,
+  MeasuredSeedRun,
+} from '../../data-access/service/lab-simulation-service.model';
 import { LabStatistics, StatisticsStart } from '../../domain/models/lab-statistics.model';
 import { WorldOverview } from '../../domain/models/world-overview.model';
 import { LabChartOptions } from '../../ui/series-chart/series-chart.model';
@@ -43,6 +46,9 @@ export interface LabState {
   /** Golden-master checksums of the last self-test; independent of the generated world. */
   selfTest?: ComputedChecksums;
   runningSelfTest: boolean;
+  /** Seed runs of the last seed comparison, in the order of the seeds; independent of the world. */
+  seedRuns: MeasuredSeedRun[];
+  comparingSeeds: boolean;
   error?: unknown;
 }
 
@@ -57,6 +63,8 @@ export const initialLabState: LabState = {
   statisticsStart: 'epoch',
   loadingStatistics: false,
   runningSelfTest: false,
+  seedRuns: [],
+  comparingSeeds: false,
 };
 
 const MS_PER_SECOND = 1000;
@@ -71,6 +79,8 @@ const reducer = createReducer(
     statisticsStart: state.statisticsStart,
     selfTest: state.selfTest,
     runningSelfTest: state.runningSelfTest,
+    seedRuns: state.seedRuns,
+    comparingSeeds: state.comparingSeeds,
     status: 'ready',
     seed: world.seed,
     overview: world.overview,
@@ -189,6 +199,19 @@ const reducer = createReducer(
   on(LabActions.runSelfTestFailure, (state, { error }) => ({
     ...state,
     runningSelfTest: false,
+    error,
+  })),
+  on(LabActions.clickedCompareSeeds, (state) =>
+    state.comparingSeeds ? state : { ...state, seedRuns: [], comparingSeeds: true },
+  ),
+  on(LabActions.seedRunSuccess, (state, { result }) => ({
+    ...state,
+    seedRuns: [...state.seedRuns, result],
+  })),
+  on(LabActions.compareSeedsSuccess, (state) => ({ ...state, comparingSeeds: false })),
+  on(LabActions.compareSeedsFailure, (state, { error }) => ({
+    ...state,
+    comparingSeeds: false,
     error,
   })),
 );

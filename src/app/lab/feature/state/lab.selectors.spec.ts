@@ -7,11 +7,13 @@ import * as LabSelectors from './lab.selectors';
 
 describe('LabSelectors', () => {
   describe('selectBusy', () => {
-    it('is true while generating or simulating', () => {
-      expect(LabSelectors.selectBusy.projector('generating')).toBe(true);
-      expect(LabSelectors.selectBusy.projector('simulating')).toBe(true);
-      expect(LabSelectors.selectBusy.projector('ready')).toBe(false);
-      expect(LabSelectors.selectBusy.projector('idle')).toBe(false);
+    it('is true while generating, simulating or comparing seeds', () => {
+      expect(LabSelectors.selectBusy.projector('generating', false)).toBe(true);
+      expect(LabSelectors.selectBusy.projector('simulating', false)).toBe(true);
+      expect(LabSelectors.selectBusy.projector('ready', false)).toBe(false);
+      expect(LabSelectors.selectBusy.projector('idle', false)).toBe(false);
+      expect(LabSelectors.selectBusy.projector('ready', true)).toBe(true);
+      expect(LabSelectors.selectBusy.projector('idle', true)).toBe(true);
     });
   });
 

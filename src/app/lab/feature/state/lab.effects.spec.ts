@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Action } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { firstValueFrom, of, Subject, throwError } from 'rxjs';
+import { firstValueFrom, lastValueFrom, of, Subject, take, throwError, toArray } from 'rxjs';
 import type { Mocked } from 'vitest';
 
 import { ToastService } from '@app/shared/ui/toast/toast.service';
@@ -12,13 +12,15 @@ import { LabEffects } from './lab.effects';
 import { CandleRequest } from './lab.model';
 import * as LabSelectors from './lab.selectors';
 
+import { LAB_SEED_COMPARISON } from '../../data-access/service/lab-simulation-service.config';
 import {
   ComputedStatistics,
   GeneratedWorld,
+  MeasuredSeedRun,
   SimulatedPeriod,
 } from '../../data-access/service/lab-simulation-service.model';
 import { LabSimulationService } from '../../data-access/service/lab-simulation.service';
-import { LabStatistics } from '../../domain/models/lab-statistics.model';
+import { LabStatistics, SeedRun } from '../../domain/models/lab-statistics.model';
 
 describe('LabEffects', () => {
   let effects: LabEffects;
@@ -27,7 +29,13 @@ describe('LabEffects', () => {
   let service: Mocked<
     Pick<
       LabSimulationService,
-      'generate' | 'simulate' | 'simulateYears' | 'statistics' | 'candles' | 'goldenChecksums'
+      | 'generate'
+      | 'simulate'
+      | 'simulateYears'
+      | 'statistics'
+      | 'candles'
+      | 'goldenChecksums'
+      | 'seedRun'
     >
   >;
   let toastService: Mocked<Pick<ToastService, 'error'>>;
@@ -49,6 +57,7 @@ describe('LabEffects', () => {
       statistics: vi.fn(),
       candles: vi.fn(),
       goldenChecksums: vi.fn(),
+      seedRun: vi.fn(),
     };
     toastService = { error: vi.fn() };
     TestBed.configureTestingModule({
@@ -58,6 +67,7 @@ describe('LabEffects', () => {
         provideMockStore(),
         { provide: LabSimulationService, useValue: service },
         { provide: ToastService, useValue: toastService },
+        { provide: LAB_SEED_COMPARISON, useValue: { seeds: ['a', 'b', 'c'], years: 7 } },
       ],
     });
     effects = TestBed.inject(LabEffects);
@@ -186,6 +196,57 @@ describe('LabEffects', () => {
       const result = firstValueFrom(effects.runSelfTest$);
       actions$.next(LabActions.clickedRunSelfTest());
       expect(await result).toEqual(LabActions.runSelfTestFailure({ error: err }));
+    });
+  });
+
+  describe('compareSeeds$', () => {
+    const result = (seed: string): MeasuredSeedRun => ({
+      run: { seed } as SeedRun,
+      durationMs: 1,
+    });
+
+    it('runs the seeds one after the other and ends with success', async () => {
+      service.seedRun.mockImplementation((seed) => of(result(seed)));
+      const actions = lastValueFrom(effects.compareSeeds$.pipe(take(4), toArray()));
+      actions$.next(LabActions.clickedCompareSeeds());
+      expect(await actions).toEqual([
+        LabActions.seedRunSuccess({ result: result('a') }),
+        LabActions.seedRunSuccess({ result: result('b') }),
+        LabActions.seedRunSuccess({ result: result('c') }),
+        LabActions.compareSeedsSuccess(),
+      ]);
+      expect(service.seedRun.mock.calls).toEqual([
+        ['a', 7],
+        ['b', 7],
+        ['c', 7],
+      ]);
+    });
+
+    it('stops at the first failure', async () => {
+      service.seedRun.mockImplementation((seed) =>
+        seed === 'b' ? throwError(() => err) : of(result(seed)),
+      );
+      const actions = lastValueFrom(effects.compareSeeds$.pipe(take(2), toArray()));
+      actions$.next(LabActions.clickedCompareSeeds());
+      expect(await actions).toEqual([
+        LabActions.seedRunSuccess({ result: result('a') }),
+        LabActions.compareSeedsFailure({ error: err }),
+      ]);
+      expect(service.seedRun).toHaveBeenCalledTimes(2);
+    });
+
+    it('starts no further seed after leaving the page', () => {
+      const pending = new Subject<MeasuredSeedRun>();
+      service.seedRun.mockReturnValue(pending);
+      const emitted: Action[] = [];
+      const subscription = effects.compareSeeds$.subscribe((action) => emitted.push(action));
+      actions$.next(LabActions.clickedCompareSeeds());
+      actions$.next(LabActions.leaveSimulationPage());
+      // The stopped worker completes the open request without a value.
+      pending.complete();
+      expect(emitted).toEqual([]);
+      expect(service.seedRun).toHaveBeenCalledTimes(1);
+      subscription.unsubscribe();
     });
   });
 

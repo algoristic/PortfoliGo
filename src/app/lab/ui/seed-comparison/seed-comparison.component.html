@@ -1,0 +1,68 @@
+@let _durationMs = durationMs();
+@let _rows = rows();
+
+<div class="flex flex-col gap-4">
+  <p class="text-sm text-fg-muted" i18n="@@uiLab-seedComparison-description">
+    Simuliert {{ seeds().length }} feste Seeds von der Epoche bis {{ years() }} Jahre nach dem
+    Spielstart im Web Worker, einen nach dem anderen, und zeigt Medianwerte der rollierenden Fenster
+    und den Stand an den Stichtagen.
+  </p>
+  <div class="flex flex-wrap items-center gap-4">
+    <button
+      appButton
+      type="button"
+      data-testid="lab.simulation.seeds.compare"
+      i18n="@@uiLab-seedComparison-compare"
+      [disabled]="disabled() || running()"
+      (click)="onCompare()">
+      Seeds vergleichen
+    </button>
+    @if (running()) {
+      <span
+        class="text-sm text-fg-muted tabular-nums"
+        data-testid="lab.simulation.seeds.progress"
+        >{{ progress() }}</span
+      >
+    }
+    @if (_durationMs !== undefined && !running()) {
+      <span class="text-sm text-fg-muted tabular-nums" data-testid="lab.simulation.seeds.duration"
+        >{{ _durationMs | formatNumber }} ms</span
+      >
+    }
+  </div>
+
+  @if (_rows.length > 0) {
+    <div class="overflow-x-auto">
+      <table class="w-full text-right text-sm tabular-nums" data-testid="lab.simulation.seeds">
+        <thead class="text-xs text-fg-muted">
+          <tr>
+            <th class="px-2 py-1 text-left" i18n="@@uiLab-seedComparison-seed">Seed</th>
+            @for (column of columns; track column.id) {
+              <th class="px-2 py-1">{{ column.label }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of _rows; track row.key) {
+            <tr class="border-t border-border">
+              <td class="px-2 py-1 text-left">{{ row.label }}</td>
+              @for (cell of row.cells; track cell.id) {
+                <td
+                  class="px-2 py-1"
+                  [attr.data-testid]="'lab.simulation.seeds.' + row.key + '.' + cell.id">
+                  {{ cell.text }}
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (running()) {
+    <app-skeleton class="h-24" [block]="true"></app-skeleton>
+  }
+  <p class="text-xs text-fg-muted" i18n="@@uiLab-seedComparison-legend">
+    Fenster: Median über alle 10- bzw. 30-Jahres-Fenster ab der Epoche, um je ein Jahr verschoben.
+    Stichtage: Schluss des letzten Markttags vor dem Spielstart plus n Jahre.
+  </p>
+</div>

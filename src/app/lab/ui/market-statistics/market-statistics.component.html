@@ -85,6 +85,20 @@
     </div>
 
     <section class="flex flex-col gap-2">
+      <h3 class="text-sm font-semibold" i18n="@@uiLab-marketStatistics-intraday">
+        Intraday (letzte Markttage des Zeitraums)
+      </h3>
+      <app-intraday-statistics [statistics]="_statistics.intraday"></app-intraday-statistics>
+    </section>
+
+    <section class="flex flex-col gap-2">
+      <h3 class="text-sm font-semibold" i18n="@@uiLab-marketStatistics-longTerm">
+        Langzeitverhalten
+      </h3>
+      <app-long-term-statistics [statistics]="_statistics.longTerm"></app-long-term-statistics>
+    </section>
+
+    <section class="flex flex-col gap-2">
       <h3 class="text-sm font-semibold" i18n="@@uiLab-marketStatistics-phases"> Marktphasen </h3>
       <app-phase-timeline
         [segments]="_statistics.phases"

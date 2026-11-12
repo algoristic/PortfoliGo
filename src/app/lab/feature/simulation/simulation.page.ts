@@ -21,6 +21,7 @@ import {
 
 import { StatisticsStart } from '../../domain/models/lab-statistics.model';
 import { MarketStatisticsComponent } from '../../ui/market-statistics/market-statistics.component';
+import { SeedComparisonComponent } from '../../ui/seed-comparison/seed-comparison.component';
 import { SelfTestComponent } from '../../ui/self-test/self-test.component';
 import { SeriesChartComponent } from '../../ui/series-chart/series-chart.component';
 import { LabChartOptions } from '../../ui/series-chart/series-chart.model';
@@ -41,6 +42,7 @@ import { LabFacade } from '../state/lab.facade';
     PanelComponent,
     SeriesChartComponent,
     MarketStatisticsComponent,
+    SeedComparisonComponent,
     SelfTestComponent,
     WorldTablesComponent,
     SkeletonComponent,
@@ -78,6 +80,7 @@ export class SimulationPage {
   };
   yearStepLabels: Record<SimulationYearStep, string> = {
     10: $localize`:@@featureLab-simulationPage-step10y:+10 Jahre`,
+    50: $localize`:@@featureLab-simulationPage-step50y:+50 Jahre`,
   };
 
   onRandomSeed(): void {
@@ -115,5 +118,9 @@ export class SimulationPage {
 
   onRunSelfTest(): void {
     this.labFacade.runSelfTest();
+  }
+
+  onCompareSeeds(): void {
+    this.labFacade.compareSeeds();
   }
 }
