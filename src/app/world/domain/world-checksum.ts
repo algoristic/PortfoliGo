@@ -1,11 +1,6 @@
-import { World } from './models/world.model';
+import { bytesToHex, murmur3x86_128, utf8Encode, wordsToBytes } from '@app/simulation/util/hash128';
 
-import {
-  bytesToHex,
-  murmur3x86_128,
-  utf8Encode,
-  wordsToBytes,
-} from '../../simulation/util/hash128';
+import { World } from './models/world.model';
 
 /**
  * Checksum over the complete world (32 hex characters). The JSON serialisation is deterministic

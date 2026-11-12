@@ -1,11 +1,12 @@
+import { dayIndex, dayStartTick, weekdayOfDay } from '@app/clock/domain/calendar-logic';
+
+import { MINUTES_PER_HOUR, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
+
 import { createCurveTables, CurveTables, SupportValues } from './day-curve';
 import { MarketContext } from './market-context';
 import { Candle, IntradayResolution } from './models/candle.model';
 import { MarketDay } from './models/market-day.model';
 import { seriesCount } from './series';
-
-import { dayIndex, dayStartTick, weekdayOfDay } from '../../clock/domain/calendar-logic';
-import { MINUTES_PER_HOUR, TICKS_PER_MINUTE } from '../../clock/domain/models/time.model';
 
 const INTRADAY_MINUTES: Readonly<Record<IntradayResolution, number>> = {
   '1m': 1,

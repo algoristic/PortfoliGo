@@ -1,7 +1,7 @@
-import { createMarketLayout, LOADINGS_PER_INSTRUMENT } from './market-layout';
+import { deriveSeedKey } from '@app/simulation/util/seed';
+import { generateWorld } from '@app/world/domain/world-generator';
 
-import { deriveSeedKey } from '../../simulation/util/seed';
-import { generateWorld } from '../../world/domain/world-generator';
+import { createMarketLayout, LOADINGS_PER_INSTRUMENT } from './market-layout';
 
 describe('createMarketLayout', () => {
   const world = generateWorld(deriveSeedKey('golden-1'));

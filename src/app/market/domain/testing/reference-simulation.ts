@@ -1,6 +1,7 @@
-import { MINUTES_PER_DAY } from '../../../clock/domain/models/time.model';
-import { normal } from '../../../simulation/util/distributions';
-import { createStream } from '../../../simulation/util/random-stream';
+import { MINUTES_PER_DAY } from '@app/clock/domain/models/time.model';
+import { normal } from '@app/simulation/util/distributions';
+import { createStream } from '@app/simulation/util/random-stream';
+
 import { MarketContext } from '../market-context';
 import { LOADINGS_PER_INSTRUMENT } from '../market-layout';
 import { MarketDay } from '../models/market-day.model';

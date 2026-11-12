@@ -1,10 +1,3 @@
-import { computeLabStatistics } from './lab-statistics';
-import { collectMarketSample } from './market-sample';
-import { CandleSource } from './models/candle-source.model';
-import { LabStatistics, StatisticsStart } from './models/lab-statistics.model';
-import { WorldOverview } from './models/world-overview.model';
-import { worldOverview } from './world-overview.utils';
-
 import {
   dateTimeToTick,
   dayIndex,
@@ -12,19 +5,26 @@ import {
   GAME_START_TICK,
   tickToDateTime,
   weekdayOfDay,
-} from '../../clock/domain/calendar-logic';
-import { Tick, TICKS_PER_MINUTE } from '../../clock/domain/models/time.model';
-import { weeklyCandles } from '../../market/domain/candle-logic';
-import { SupportValues } from '../../market/domain/day-curve';
-import { recomputeSupportDays } from '../../market/domain/market-history';
-import { advanceMarket } from '../../market/domain/market-step';
-import { Candle, CandleResolution } from '../../market/domain/models/candle.model';
-import { Prehistory, runPrehistory } from '../../market/domain/prehistory';
-import { PriceSource } from '../../market/domain/price-source';
-import { seriesIds, seriesRef } from '../../market/domain/series';
-import { deriveSeedKey, normalizeSeed, SeedKey } from '../../simulation/util/seed';
-import { World } from '../../world/domain/models/world.model';
-import { generateWorld } from '../../world/domain/world-generator';
+} from '@app/clock/domain/calendar-logic';
+import { Tick, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
+import { weeklyCandles } from '@app/market/domain/candle-logic';
+import { SupportValues } from '@app/market/domain/day-curve';
+import { recomputeSupportDays } from '@app/market/domain/market-history';
+import { advanceMarket } from '@app/market/domain/market-step';
+import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
+import { Prehistory, runPrehistory } from '@app/market/domain/prehistory';
+import { PriceSource } from '@app/market/domain/price-source';
+import { seriesIds, seriesRef } from '@app/market/domain/series';
+import { deriveSeedKey, normalizeSeed, SeedKey } from '@app/simulation/util/seed';
+import { World } from '@app/world/domain/models/world.model';
+import { generateWorld } from '@app/world/domain/world-generator';
+
+import { computeLabStatistics } from './lab-statistics';
+import { collectMarketSample } from './market-sample';
+import { CandleSource } from './models/candle-source.model';
+import { LabStatistics, StatisticsStart } from './models/lab-statistics.model';
+import { WorldOverview } from './models/world-overview.model';
+import { worldOverview } from './world-overview.utils';
 
 export interface SimulationStep {
   /** Calendar days advanced. */

@@ -5,6 +5,19 @@ const MINUS_SIGN = '\u2212';
 
 const formats = new Map<string, Intl.NumberFormat>();
 
+/** Shown instead of a missing or non-finite value. */
+export const MISSING_VALUE = '–';
+
+/** Formats finite numbers with `format`; `null`, `undefined`, `NaN` and ±∞ yield `MISSING_VALUE`. */
+export function formatOptional<T extends number>(
+  value: T | null | undefined,
+  format: (value: T) => string,
+): string {
+  return value === null || value === undefined || !Number.isFinite(value)
+    ? MISSING_VALUE
+    : format(value);
+}
+
 /** Formats an amount of cents as euros, e.g. `123456` → `1.234,56 €`. */
 export function formatCents(cents: number): string {
   return numberFormat({ style: 'currency', currency: 'EUR' }).format(cents / 100);

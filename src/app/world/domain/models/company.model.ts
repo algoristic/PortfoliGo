@@ -1,3 +1,5 @@
+import { Cents } from '@app/shared/domain/models/money.model';
+
 import {
   Cyclicality,
   DividendFrequency,
@@ -7,8 +9,6 @@ import {
   SizeClass,
   Style,
 } from './taxonomy.model';
-
-import { Cents } from '../../../shared/domain/models/money.model';
 
 export const PROFILE_TEMPLATES = [
   'market-leader',

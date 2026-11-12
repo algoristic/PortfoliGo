@@ -1062,7 +1062,7 @@ src/
     ├── shell/              # feature: Layout, Spielbereich-Routen, provideGameState() · ui: Kopfzeile, Navigation
     ├── players/            # feature · data-access · domain: Profil, Seed, Exportformat
     ├── engine/             # domain: GameEngine, Terminplaner, Protokoll · data-access: EngineService, Worker, Worker-Persistenz · feature: Sitzung, Guards
-    ├── clock/              # domain: Kalender, Handelszeiten, Geschwindigkeiten · feature: Uhr-State · ui: Uhr, Regler
+    ├── clock/              # domain: Kalender, Handelszeiten, Geschwindigkeiten · feature: Uhr-State · ui: Uhr, Regler, Pipes für Spieldatum und -zeit
     ├── simulation/         # util: Zufall, Hashes, deterministische Mathematik, Prüfsummen
     ├── world/              # domain: Weltmodell, Generatoren, Namen
     ├── market/             # domain: Marktmodell, Indizes, ETFs, Kerzen · feature · ui
@@ -1142,7 +1142,7 @@ Hash-Routing bleibt (statisches Hosting unter einem Unterpfad). Pfade sind engli
 ### 11.5 Design-System mit Tailwind CSS v4 (E-06)
 
 - **Setup:** `tailwindcss`, `@tailwindcss/postcss` und `postcss`; `.postcssrc.json` mit dem Plugin `@tailwindcss/postcss`; `src/styles.css` als globaler Einstieg in `angular.json` (ersetzt `global.scss` und `theme/variables.scss`). `source('.')` begrenzt die Klassensuche auf `src/`.
-- **Sass:** Tailwind v4 ist laut Hersteller nicht für die Kombination mit Sass gedacht. Globale Styles sind daher CSS. Komponenten-SCSS (`CLAUDE.md` §4) bleibt für `:host` und Sonderfälle, enthält aber keine Tailwind-Direktiven (`@apply`, `@reference`).
+- **Sass:** Tailwind v4 ist laut Hersteller nicht für die Kombination mit Sass gedacht. Globale Styles sind daher CSS. Komponenten-SCSS (`CLAUDE.md` §4) gibt es nur für Sonderfälle, die Utilities nicht ausdrücken (`env(safe-area-inset-*)`, `::ng-deep`, ein Token-Beispiel auf `#/lab/tokens`), und ohne Tailwind-Direktiven (`@apply`, `@reference`). Das `display` des Host-Elements setzt die Host-Klasse (`host: { class: 'block' }`), nicht `:host { display }`: Angulars Komponentenstyles liegen außerhalb der Kaskaden-Layer und schlagen damit jede Utility aus `@layer utilities`, sodass etwa `class="hidden md:block"` am Host wirkungslos bliebe.
 - **Tokens:** semantische CSS-Variablen `--pgo-*` in `:root, .light` (hell) und `.dark` (dunkel; `.light` erlaubt helle Flächen innerhalb von `.dark`, z. B. auf der Token-Seite), per `@theme inline` als Tailwind-Farben verfügbar. Mit `inline` erzeugt Tailwind keine eigenen `--color-*`-Variablen, sondern setzt `var(--pgo-*)` direkt in die Utilities ein. **Komponenten-SCSS nutzt deshalb `var(--pgo-*)`.** Die Standardpalette wird abgeschaltet, damit nur Tokens verwendet werden. Werte als Hex oder RGB, damit sie auch an lightweight-charts übergeben werden können.
 
 ```css
@@ -1169,10 +1169,10 @@ Hash-Routing bleibt (statisches Hosting unter einem Unterpfad). Pfade sind engli
 }
 ```
 
-- **Regeln:** Utility-Klassen im Template; keine Arbitrary Values (`p-[13px]`, `bg-[#123456]`) und keine Standardfarben; Varianten von Komponenten über Signal-Inputs und ein `computed`-Klassenmapping; optional Klassensortierung per Prettier-Plugin.
+- **Regeln:** Utility-Klassen im Template; keine Arbitrary Values (`p-[13px]`, `bg-[#123456]`) und keine Standardfarben; Varianten von Komponenten über Signal-Inputs und ein `computed`-Klassenmapping; Zustände über ARIA-Varianten statt Klassen-Ternaries (eigene Variante `current:` für `aria-current="page"`, dazu `aria-selected:` und `aria-disabled:`); Klassensortierung per Prettier-Plugin.
 - **Schrift:** Inter Variable (SIL OFL), selbst gehostet über `@fontsource-variable/inter` und mitgebündelt – keine externen CDNs (NF-04). Per `unicode-range` lädt der Browser nur die benötigten Teilmengen (für Deutsch: latin). Zahlen mit `tabular-nums`.
 - **Kontraste:** Alle Text-Tokens (`fg`, `fg-muted`, `accent`, `up`, `down`, `warning`) erreichen auf `bg`, `surface` und `surface-raised` in beiden Themes mindestens 4,5:1. Die Entwicklerseite `#/lab/tokens` misst die Werte mit `contrastRatio` (`shared/util/contrast.ts`).
-- **Icons:** `bootstrap-icons` (vorhanden).
+- **Icons:** `bootstrap-icons` (vorhanden), im Template nur über die Direktive `appIcon` (`<i appIcon="bell"></i>`, dekorativ mit `aria-hidden`).
 - **Dark Mode:** Klasse `dark` am `<html>`-Element. Bis AP 2.6 setzt sie der `ColorSchemeService` (`shared/data-access/color-scheme`, per `provideAppInitializer`) nach `prefers-color-scheme`; danach ein Effect der Einstellungen (System, Dunkel, Hell; Standard ist Dunkel nach E-06 und US-UI-01). Vor dem Bootstrap folgt die Seite über `<meta name="color-scheme">` dem System. Weicht die gewählte Einstellung davon ab, muss die Klasse früher gesetzt werden, damit nichts flackert (AP 2.6).
 
 ### 11.6 Angular CDK
@@ -1216,11 +1216,12 @@ Signal Forms nach `CLAUDE.md` §3. Eine eigene Betragseingabe (`FormValueControl
 ### 11.9 Formatierung und i18n
 
 - `registerLocaleData(localeDe)` und `LOCALE_ID` `de`.
-- Reine Formatierungsfunktionen in `shared/util` (`formatCents`, `formatSignedCents`, `formatPrice` nach Preisraster, `formatPercent`, `formatSignedPercent`, `formatCompact`, `formatNumber`; dazu `changeDirection` für Farbe und Pfeil); dünne Pipes darüber in `shared/ui`. Weil `util` nicht von `domain` abhängt, erhält `formatPrice` die Nachkommastellen als Parameter; die Pipe `formatPrice` leitet sie per `priceDecimals` aus dem Preisraster ab. `formatGameTime` braucht das Zeitmodell und liegt in `clock/domain/game-time-format.ts` (Format `Mo., 01.04.2030, 09:41`). Die Funktionen werden getestet, die Pipes nicht (`CLAUDE.md` §10).
+- Reine Formatierungsfunktionen in `shared/util` (`formatCents`, `formatSignedCents`, `formatPrice` nach Preisraster, `formatPercent`, `formatSignedPercent`, `formatCompact`, `formatNumber`; dazu `changeDirection` für Farbe und Pfeil); dünne Pipes darüber in `shared/ui/pipes` (dazu `formatGameDate` und `formatGameTime` in `clock/ui/pipes`). Templates formatieren nur über diese Pipes; fehlende und nicht endliche Werte erscheinen als `–` (`MISSING_VALUE`, `formatOptional` in `shared/util/format.ts`). Weil `util` nicht von `domain` abhängt, erhält `formatPrice` die Nachkommastellen als Parameter; die Pipe `formatPrice` leitet sie per `priceDecimals` aus dem Preisraster ab. `formatGameTime` braucht das Zeitmodell und liegt in `clock/domain/game-time-format.ts` (Format `Mo., 01.04.2030, 09:41`). Die Funktionen werden getestet, die Pipes nicht (`CLAUDE.md` §10).
 - i18n-IDs nach `CLAUDE.md` §5. Engine-Codes werden in der jeweiligen `feature`- bzw. `ui`-Schicht auf `$localize`-Texte abgebildet.
 
 ### 11.10 Barrierefreiheit
 
+- `angular-eslint` prüft die Templates mit `templateAccessibility`.
 - CDK A11y für Fokusführung in Dialogen und Overlays, semantisches HTML, Tabellenköpfe mit `scope`, Live-Regionen nur für wichtige Ereignisse (nie für Kursticks), geprüfte Kontraste der Tokens, `prefers-reduced-motion` für Kurs-Hervorhebungen.
 - **Tastenkürzel ohne Modifikator** (z. B. Leertaste, `+`, `−`) sind nach WCAG 2.1.4 nur zulässig, wenn sie abschaltbar sind. Sie lassen sich in den Einstellungen deaktivieren und greifen nicht, solange ein Eingabefeld oder Bedienelement fokussiert ist.
 

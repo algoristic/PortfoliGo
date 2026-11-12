@@ -1,12 +1,12 @@
+import { createStream } from '@app/simulation/util/random-stream';
+import { deriveSeedKey } from '@app/simulation/util/seed';
+
 import {
   createBridgeTable,
   createUniformBridgeTable,
   fillBridge,
   profileWeights,
 } from './bridge-logic';
-
-import { createStream } from '../../simulation/util/random-stream';
-import { deriveSeedKey } from '../../simulation/util/seed';
 
 const seedKey = deriveSeedKey('bridge-test');
 

@@ -1,5 +1,5 @@
-import { normal } from '../../simulation/util/distributions';
-import { RandomStream } from '../../simulation/util/random-stream';
+import { normal } from '@app/simulation/util/distributions';
+import { RandomStream } from '@app/simulation/util/random-stream';
 
 /**
  * Precomputed coefficients of a Brownian bridge over `n` minutes with relative variance weights

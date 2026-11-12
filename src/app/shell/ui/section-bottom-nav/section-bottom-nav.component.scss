@@ -1,6 +1,0 @@
-:host {
-  display: block;
-  // Keeps the bar above the home indicator on phones (`viewport-fit=cover`).
-  padding-bottom: env(safe-area-inset-bottom);
-  background-color: var(--pgo-surface);
-}

@@ -10,7 +10,7 @@ import { TabItem } from './tabs.model';
   selector: 'app-tabs',
   imports: [NgTemplateOutlet, Tabs, TabList, Tab, TabPanel, TabContent],
   templateUrl: './tabs.component.html',
-  styleUrl: './tabs.component.scss',
+  host: { class: 'block' },
 })
 export class TabsComponent {
   tabs = input.required<TabItem[]>();

@@ -1,4 +1,4 @@
-import { BankConditions, BankType } from '../../../banking/domain/models/bank-conditions.model';
+import { BankConditions, BankType } from '@app/banking/domain/models/bank-conditions.model';
 
 export interface Bank {
   id: string;

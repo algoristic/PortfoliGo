@@ -1,10 +1,9 @@
+import { detLog } from '@app/simulation/util/det-math';
+import { lognormal, uniform } from '@app/simulation/util/distributions';
+import { RandomStream } from '@app/simulation/util/random-stream';
+
 import { LognormalSpec, Range } from './models/world-config.model';
-
 import { NameRegistry } from './name-logic';
-
-import { detLog } from '../../simulation/util/det-math';
-import { lognormal, uniform } from '../../simulation/util/distributions';
-import { RandomStream } from '../../simulation/util/random-stream';
 
 const MAX_REDRAWS = 100;
 

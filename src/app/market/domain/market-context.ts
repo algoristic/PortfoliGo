@@ -1,15 +1,19 @@
+import { MINUTES_PER_DAY } from '@app/clock/domain/models/time.model';
+
+import { detExp, detLog } from '@app/simulation/util/det-math';
+
+import { StreamFamily } from '@app/simulation/util/random-stream';
+
+import { SeedKey } from '@app/simulation/util/seed';
+
+import { World } from '@app/world/domain/models/world.model';
+
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { createEtfLayout, EtfLayout } from './etf-layout';
 import { createIndexLayout, IndexLayout } from './index-layout';
 import { createMarketLayout, MarketLayout } from './market-layout';
 import { MARKET_PHASES, MarketConfig, MarketPhase } from './models/market-config.model';
 import { createSpreadLayout, SpreadLayout } from './quote-logic';
-
-import { MINUTES_PER_DAY } from '../../clock/domain/models/time.model';
-import { detExp, detLog } from '../../simulation/util/det-math';
-import { StreamFamily } from '../../simulation/util/random-stream';
-import { SeedKey } from '../../simulation/util/seed';
-import { World } from '../../world/domain/models/world.model';
 
 export const MARKET_PHASE_COUNT = MARKET_PHASES.length;
 

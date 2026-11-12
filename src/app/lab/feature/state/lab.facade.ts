@@ -2,10 +2,11 @@ import { inject, Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 
 import * as LabActions from './lab.actions';
-import { LabChartOptions } from './lab.model';
+
 import * as LabSelectors from './lab.selectors';
 
 import { StatisticsStart } from '../../domain/models/lab-statistics.model';
+import { LabChartOptions } from '../../ui/series-chart/series-chart.model';
 
 @Injectable()
 export class LabFacade {

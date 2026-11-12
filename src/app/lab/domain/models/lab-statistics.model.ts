@@ -1,6 +1,6 @@
-import { Tick } from '../../../clock/domain/models/time.model';
-import { MarketPhase } from '../../../market/domain/models/market-config.model';
-import { SizeClass } from '../../../world/domain/models/taxonomy.model';
+import { Tick } from '@app/clock/domain/models/time.model';
+import { MarketPhase } from '@app/market/domain/models/market-config.model';
+import { SizeClass } from '@app/world/domain/models/taxonomy.model';
 
 /** Start of the period of the lab statistics; the end is always the current lab day. */
 export const STATISTICS_STARTS = ['epoch', 'game-start'] as const;

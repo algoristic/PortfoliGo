@@ -15,56 +15,56 @@ export const shellRoutes: Routes = [
       {
         path: 'dashboard',
         loadChildren: async () => {
-          return (await import('../../dashboard/feature/dashboard.routes')).dashboardRoutes;
+          return (await import('@app/dashboard/feature/dashboard.routes')).dashboardRoutes;
         },
       },
       {
         path: 'markets',
         loadChildren: async () => {
-          return (await import('../../market/feature/market.routes')).marketRoutes;
+          return (await import('@app/market/feature/market.routes')).marketRoutes;
         },
       },
       {
         path: 'portfolio',
         loadChildren: async () => {
-          return (await import('../../portfolio/feature/portfolio.routes')).portfolioRoutes;
+          return (await import('@app/portfolio/feature/portfolio.routes')).portfolioRoutes;
         },
       },
       {
         path: 'accounts',
         loadChildren: async () => {
-          return (await import('../../banking/feature/banking.routes')).accountsRoutes;
+          return (await import('@app/banking/feature/banking.routes')).accountsRoutes;
         },
       },
       {
         path: 'banks',
         loadChildren: async () => {
-          return (await import('../../banking/feature/banking.routes')).banksRoutes;
+          return (await import('@app/banking/feature/banking.routes')).banksRoutes;
         },
       },
       {
         path: 'orders',
         loadChildren: async () => {
-          return (await import('../../trading/feature/trading.routes')).tradingRoutes;
+          return (await import('@app/trading/feature/trading.routes')).tradingRoutes;
         },
       },
       {
         path: 'taxes',
         loadChildren: async () => {
-          return (await import('../../taxes/feature/taxes.routes')).taxesRoutes;
+          return (await import('@app/taxes/feature/taxes.routes')).taxesRoutes;
         },
       },
       {
         path: 'notifications',
         loadChildren: async () => {
-          return (await import('../../notifications/feature/notifications.routes'))
+          return (await import('@app/notifications/feature/notifications.routes'))
             .notificationsRoutes;
         },
       },
       {
         path: 'settings',
         loadChildren: async () => {
-          return (await import('../../settings/feature/settings.routes')).settingsRoutes;
+          return (await import('@app/settings/feature/settings.routes')).settingsRoutes;
         },
       },
     ],

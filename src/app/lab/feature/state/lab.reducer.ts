@@ -1,7 +1,12 @@
 import { Action, createReducer, on } from '@ngrx/store';
 
+import { Tick } from '@app/clock/domain/models/time.model';
+
+import { Candle } from '@app/market/domain/models/candle.model';
+
 import * as LabActions from './lab.actions';
-import { CandleRequest, LabChartOptions, LabStatus, LabTimings } from './lab.model';
+import { CandleRequest, LabStatus, LabTimings } from './lab.model';
+
 import {
   historyRequest,
   isSameCandleRequest,
@@ -9,10 +14,9 @@ import {
   prependCandles,
 } from './lab.utils';
 
-import { Tick } from '../../../clock/domain/models/time.model';
-import { Candle } from '../../../market/domain/models/candle.model';
 import { LabStatistics, StatisticsStart } from '../../domain/models/lab-statistics.model';
 import { WorldOverview } from '../../domain/models/world-overview.model';
+import { LabChartOptions } from '../../ui/series-chart/series-chart.model';
 
 export const LAB_FEATURE_KEY = 'lab';
 

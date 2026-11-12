@@ -1,0 +1,177 @@
+@let _statistics = statistics();
+@let _start = start();
+@let _statisticsMs = statisticsMs();
+
+<div class="flex flex-col gap-6">
+  <div class="flex flex-wrap items-end gap-4">
+    <div class="flex flex-col gap-1 text-sm">
+      <span class="text-fg-muted" i18n="@@uiLab-marketStatistics-period">Zeitraum</span>
+      <div class="flex flex-wrap gap-1">
+        @for (option of starts; track option) {
+          <button
+            appButton
+            type="button"
+            size="sm"
+            [variant]="option === _start ? 'primary' : 'secondary'"
+            [attr.aria-pressed]="option === _start"
+            [disabled]="disabled()"
+            [attr.data-testid]="'lab.simulation.statistics.start.' + option"
+            (click)="onSelectStart(option)">
+            {{ startLabels[option] }}
+          </button>
+        }
+      </div>
+    </div>
+    <button
+      appButton
+      type="button"
+      data-testid="lab.simulation.statistics.compute"
+      i18n="@@uiLab-marketStatistics-compute"
+      [disabled]="disabled() || loading()"
+      (click)="onCompute()">
+      Statistik berechnen
+    </button>
+    @if (_statisticsMs !== undefined) {
+      <span
+        class="text-sm text-fg-muted tabular-nums"
+        data-testid="lab.simulation.statistics.duration"
+        >{{ _statisticsMs | formatNumber }} ms</span
+      >
+    }
+  </div>
+
+  @if (loading()) {
+    <app-skeleton class="h-48" [block]="true"></app-skeleton>
+  } @else if (_statistics) {
+    <p class="text-sm text-fg-muted tabular-nums" data-testid="lab.simulation.statistics.period">
+      {{ _statistics.fromTick | formatGameDate }} – {{ _statistics.toTick | formatGameDate }} ·
+      {{ _statistics.marketDays | formatNumber }}
+      <ng-container i18n="@@uiLab-marketStatistics-marketDays">Markttage</ng-container>
+      · {{ _statistics.years | formatNumber: 1 }}
+      <ng-container i18n="@@uiLab-marketStatistics-years">Jahre</ng-container>
+    </p>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm" data-testid="lab.simulation.statistics.targets">
+        <thead class="text-xs text-fg-muted">
+          <tr>
+            <th class="px-2 py-1" i18n="@@uiLab-marketStatistics-quantity">Größe</th>
+            <th class="px-2 py-1 text-right" i18n="@@uiLab-marketStatistics-value"> Messwert </th>
+            <th class="px-2 py-1 text-right" i18n="@@uiLab-marketStatistics-target">Ziel</th>
+            <th class="px-2 py-1" i18n="@@uiLab-marketStatistics-status">Status</th>
+          </tr>
+        </thead>
+        <tbody class="tabular-nums">
+          @for (row of targetRows(); track row.id) {
+            <tr class="border-t border-border">
+              <td class="px-2 py-1">{{ row.label }}</td>
+              <td
+                class="px-2 py-1 text-right"
+                [attr.data-testid]="'lab.simulation.statistics.target.' + row.id + '.value'">
+                {{ row.valueText }}
+              </td>
+              <td class="px-2 py-1 text-right text-fg-muted">{{ row.targetText }}</td>
+              <td class="px-2 py-1">
+                <app-badge
+                  [tone]="statusTones[row.status]"
+                  [attr.data-testid]="'lab.simulation.statistics.target.' + row.id + '.status'"
+                  >{{ statusLabels[row.status] }}</app-badge
+                >
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <section class="flex flex-col gap-2">
+      <h3 class="text-sm font-semibold" i18n="@@uiLab-marketStatistics-phases"> Marktphasen </h3>
+      <app-phase-timeline
+        [segments]="_statistics.phases"
+        [shares]="_statistics.phaseShares"></app-phase-timeline>
+    </section>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+      <section class="flex flex-col gap-2">
+        <h3 class="text-sm font-semibold" i18n="@@uiLab-marketStatistics-distribution">
+          Verteilung der Tagesrenditen
+        </h3>
+        <app-return-histogram [distribution]="_statistics.distribution"></app-return-histogram>
+      </section>
+
+      <section class="flex flex-col gap-2">
+        <h3 class="text-sm font-semibold" i18n="@@uiLab-marketStatistics-sizeVolatility">
+          Volatilität der Aktien p. a.
+        </h3>
+        <table class="w-full text-right text-sm tabular-nums">
+          <thead class="text-xs text-fg-muted">
+            <tr>
+              <th class="px-2 py-1 text-left" i18n="@@uiLab-marketStatistics-size">Größe</th>
+              <th class="px-2 py-1" i18n="@@uiLab-marketStatistics-count">Anzahl</th>
+              <th class="px-2 py-1" i18n="@@uiLab-marketStatistics-p10">10 %</th>
+              <th class="px-2 py-1" i18n="@@uiLab-marketStatistics-median">Median</th>
+              <th class="px-2 py-1" i18n="@@uiLab-marketStatistics-p90">90 %</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of _statistics.sizeVolatility; track entry.size) {
+              <tr class="border-t border-border">
+                <td class="px-2 py-1 text-left">{{ sizeLabels[entry.size] }}</td>
+                <td class="px-2 py-1">{{ entry.count }}</td>
+                <td class="px-2 py-1">{{ entry.p10 | formatPercent: 1 }}</td>
+                <td class="px-2 py-1">{{ entry.median | formatPercent: 1 }}</td>
+                <td class="px-2 py-1">{{ entry.p90 | formatPercent: 1 }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <section class="flex flex-col gap-2">
+      <h3 class="text-sm font-semibold" i18n="@@uiLab-marketStatistics-correlations">
+        Korrelation der Tagesrenditen nach Sektor (Aktien derselben Region)
+      </h3>
+      <app-correlation-matrix [matrix]="_statistics.correlations"></app-correlation-matrix>
+    </section>
+
+    <section class="flex flex-col gap-2">
+      <h3 class="text-sm font-semibold" i18n="@@uiLab-marketStatistics-drawdowns">
+        Drawdowns des Weltindex (Performance, ab 20 %)
+      </h3>
+      <p class="text-sm">
+        <span i18n="@@uiLab-marketStatistics-maxDrawdown">Maximaler Drawdown</span>
+        <span class="tabular-nums" data-testid="lab.simulation.statistics.max-drawdown">
+          {{ _statistics.maxDrawdown | formatPercent: 1 }}</span
+        >
+      </p>
+      @if (_statistics.drawdowns.length > 0) {
+        <table class="w-full text-right text-sm tabular-nums">
+          <thead class="text-xs text-fg-muted">
+            <tr>
+              <th class="px-2 py-1 text-left" i18n="@@uiLab-marketStatistics-peak">Hoch</th>
+              <th class="px-2 py-1" i18n="@@uiLab-marketStatistics-trough">Tief</th>
+              <th class="px-2 py-1" i18n="@@uiLab-marketStatistics-recovery">Erholt</th>
+              <th class="px-2 py-1" i18n="@@uiLab-marketStatistics-depth">Verlust</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (drawdown of _statistics.drawdowns; track drawdown.peakTick) {
+              <tr class="border-t border-border" data-testid="lab.simulation.statistics.drawdown">
+                <td class="px-2 py-1 text-left">{{ drawdown.peakTick | formatGameDate }}</td>
+                <td class="px-2 py-1">{{ drawdown.troughTick | formatGameDate }}</td>
+                <td class="px-2 py-1">{{ drawdown.recoveryTick | formatGameDate }}</td>
+                <td class="px-2 py-1">{{ drawdown.depth | formatPercent: 1 }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  } @else {
+    <p class="text-sm text-fg-muted" i18n="@@uiLab-marketStatistics-hint">
+      Berechnet die Kennzahlen des gewählten Zeitraums aus den Tagesstützpunkten. Nach jeder
+      Simulation neu berechnen.
+    </p>
+  }
+</div>

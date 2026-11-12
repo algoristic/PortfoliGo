@@ -9,7 +9,8 @@ import {
   viewChildren,
 } from '@angular/core';
 
-import { buildContrastRows } from './tokens-page.utils';
+import { COLOR_SCHEMES } from '@app/shared/data-access/color-scheme/color-scheme-service.utils';
+
 import {
   COLOR_TOKENS,
   MINIMUM_TEXT_CONTRAST,
@@ -18,14 +19,14 @@ import {
   TokenSwatch,
   TokenValues,
 } from './tokens.page.model';
-
-import { COLOR_SCHEMES } from '../../../shared/data-access/color-scheme/color-scheme-service.utils';
+import { buildContrastRows } from './tokens.page.utils';
 
 @Component({
-  selector: 'app-tokens',
+  selector: 'app-tokens-page',
   imports: [DecimalPipe],
   templateUrl: './tokens.page.html',
   styleUrl: './tokens.page.scss',
+  host: { class: 'block' },
 })
 export class TokensPage {
   readonly #document = inject(DOCUMENT);

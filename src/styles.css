@@ -6,6 +6,8 @@
 @import 'tailwindcss' source('.');
 
 @custom-variant dark (&:where(.dark, .dark *));
+/* Current page in navigation lists and menus (`aria-current="page"`, set by `routerLinkActive`). */
+@custom-variant current (&[aria-current='page']);
 
 /* Disable the default palette so that only the semantic tokens below exist as colours. */
 @theme {

@@ -1,10 +1,12 @@
 import { Component, input } from '@angular/core';
 
+import { IconDirective } from '../icon/icon.directive';
+
 @Component({
   selector: 'app-empty-state',
-  imports: [],
+  imports: [IconDirective],
   templateUrl: './empty-state.component.html',
-  styleUrl: './empty-state.component.scss',
+  host: { class: 'block' },
 })
 export class EmptyStateComponent {
   /** Bootstrap icon name without the `bi-` prefix. */

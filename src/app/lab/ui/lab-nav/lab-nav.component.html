@@ -1,0 +1,17 @@
+<nav [attr.aria-label]="navLabel">
+  <ul class="flex flex-wrap gap-1">
+    @for (item of items(); track item.path) {
+      <li>
+        <a
+          appNavLink
+          [routerLink]="item.path"
+          routerLinkActive
+          ariaCurrentWhenActive="page"
+          [attr.data-testid]="'lab.nav.' + item.path">
+          <i class="hidden text-base sm:inline" [appIcon]="item.icon"></i>
+          {{ item.label }}
+        </a>
+      </li>
+    }
+  </ul>
+</nav>

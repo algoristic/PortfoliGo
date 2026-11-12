@@ -1,13 +1,15 @@
+import { CENTS_PER_EURO } from '@app/shared/domain/models/money.model';
+
+import { roundHalfAwayFromZero } from '@app/shared/domain/money-logic';
+
+import { RandomStream } from '@app/simulation/util/random-stream';
+
 import { drawDividendSchedule } from './dividend-schedule-generator';
 import { EtfDraft } from './etf-generator';
 import { lognormalIn } from './generator.utils';
 import { Etf } from './models/etf.model';
 import { DIVIDENDS_PER_YEAR } from './models/taxonomy.model';
 import { EtfConfig } from './models/world-config.model';
-
-import { CENTS_PER_EURO } from '../../shared/domain/models/money.model';
-import { roundHalfAwayFromZero } from '../../shared/domain/money-logic';
-import { RandomStream } from '../../simulation/util/random-stream';
 
 /**
  * Draws the start price (NAV at the epoch) of every ETF and the ex-date rhythm of the distributing

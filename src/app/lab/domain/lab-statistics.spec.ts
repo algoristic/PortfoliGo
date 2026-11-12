@@ -1,10 +1,10 @@
+import { annualizedVolatility, logReturns } from '@app/analysis/domain/statistics-logic';
+import { dayStartTick } from '@app/clock/domain/calendar-logic';
+import { isMarketDay } from '@app/market/domain/market-calendar';
+import { World } from '@app/world/domain/models/world.model';
+
 import { computeLabStatistics, phaseSegments } from './lab-statistics';
 import { MarketSample } from './market-sample';
-
-import { annualizedVolatility, logReturns } from '../../analysis/domain/statistics-logic';
-import { dayStartTick } from '../../clock/domain/calendar-logic';
-import { isMarketDay } from '../../market/domain/market-calendar';
-import { World } from '../../world/domain/models/world.model';
 
 const DAYS_PER_YEAR = 261;
 

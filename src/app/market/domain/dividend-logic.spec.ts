@@ -1,18 +1,18 @@
 import {
+  dateTimeToTick,
+  dayIndex,
+  dayStartTick,
+  tickToDateTime,
+  weekdayOfDay,
+} from '@app/clock/domain/calendar-logic';
+
+import {
   announcementDay,
   dividendCents,
   exDayOnOrAfter,
   exMarkdown,
   paymentDay,
 } from './dividend-logic';
-
-import {
-  dateTimeToTick,
-  dayIndex,
-  dayStartTick,
-  tickToDateTime,
-  weekdayOfDay,
-} from '../../clock/domain/calendar-logic';
 
 const MONDAY = 0;
 const WEDNESDAY = 2;

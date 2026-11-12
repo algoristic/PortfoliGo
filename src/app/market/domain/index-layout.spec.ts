@@ -1,9 +1,10 @@
+import { deriveSeedKey } from '@app/simulation/util/seed';
+
+import { generateWorld } from '@app/world/domain/world-generator';
+
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { cappingFactors } from './index-layout';
 import { createMarketContext } from './market-context';
-
-import { deriveSeedKey } from '../../simulation/util/seed';
-import { generateWorld } from '../../world/domain/world-generator';
 
 function cappedWeights(marketCaps: number[], cap: number | null): number[] {
   const factors = cappingFactors(marketCaps, cap);

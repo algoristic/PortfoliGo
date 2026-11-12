@@ -24,6 +24,8 @@ import type {
   UTCTimestamp,
 } from 'lightweight-charts';
 
+import { Candle } from '@app/market/domain/models/candle.model';
+
 import { PriceChartColors, PriceChartType } from './price-chart.model';
 import {
   formatChartTime,
@@ -34,8 +36,6 @@ import {
   toChartCandles,
   toLinePoints,
 } from './price-chart.utils';
-
-import { Candle } from '../../../market/domain/models/candle.model';
 
 type ChartLibrary = typeof import('lightweight-charts');
 
@@ -58,7 +58,7 @@ interface ChartHandle {
   selector: 'app-price-chart',
   imports: [],
   templateUrl: './price-chart.component.html',
-  styleUrl: './price-chart.component.scss',
+  host: { class: 'block' },
 })
 export class PriceChartComponent {
   readonly #host = inject<ElementRef<HTMLElement>>(ElementRef);

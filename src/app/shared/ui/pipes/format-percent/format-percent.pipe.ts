@@ -1,10 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-import { formatPercent } from '../../../util/format';
+import { formatOptional, formatPercent } from '../../../util/format';
 
 @Pipe({ name: 'formatPercent' })
 export class FormatPercentPipe implements PipeTransform {
-  transform(ratio: number, fractionDigits?: number): string {
-    return formatPercent(ratio, fractionDigits);
+  transform(ratio: number | null | undefined, fractionDigits?: number): string {
+    return formatOptional(ratio, (value) => formatPercent(value, fractionDigits));
   }
 }

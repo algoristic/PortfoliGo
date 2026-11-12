@@ -1,3 +1,5 @@
+import { RandomStream } from '@app/simulation/util/random-stream';
+
 import { freeFloatMarketCap } from './company-generator';
 import { GenerationRegistries } from './generator.utils';
 import { formatId, nextTicker } from './identifier-logic';
@@ -7,8 +9,6 @@ import { REGION_IDS, RegionId, SECTOR_IDS, SectorId } from './models/taxonomy.mo
 import { IndexConfig } from './models/world-config.model';
 import { isBlockedName } from './name-logic';
 import { REGION_INDEX_WORDS, SECTOR_INDEX_WORDS } from './names/name-parts';
-
-import { RandomStream } from '../../simulation/util/random-stream';
 
 const MAX_FAMILY_ATTEMPTS = 100;
 

@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 
-import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
-import { PanelComponent } from '../../../shared/ui/panel/panel.component';
+import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
+import { PanelComponent } from '@app/shared/ui/panel/panel.component';
 
 @Component({
-  selector: 'app-instrument',
+  selector: 'app-instrument-page',
   imports: [PanelComponent, EmptyStateComponent],
   templateUrl: './instrument.page.html',
-  styleUrl: './instrument.page.scss',
+  host: { class: 'block' },
 })
 export class InstrumentPage {}

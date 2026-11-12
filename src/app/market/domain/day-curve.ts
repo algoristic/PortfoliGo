@@ -1,3 +1,9 @@
+import { MINUTES_PER_DAY } from '@app/clock/domain/models/time.model';
+
+import { utf8Encode } from '@app/simulation/util/hash128';
+
+import { StreamFamily } from '@app/simulation/util/random-stream';
+
 import {
   BridgeTable,
   createBridgeTable,
@@ -10,10 +16,6 @@ import { LOADINGS_PER_INSTRUMENT } from './market-layout';
 import { MarketDay } from './models/market-day.model';
 import { priceFromLog } from './price-logic';
 import { seriesRef } from './series';
-
-import { MINUTES_PER_DAY } from '../../clock/domain/models/time.model';
-import { utf8Encode } from '../../simulation/util/hash128';
-import { StreamFamily } from '../../simulation/util/random-stream';
 
 /** Everything the minute bridges need besides the support points, derived once per context. */
 export interface CurveTables {

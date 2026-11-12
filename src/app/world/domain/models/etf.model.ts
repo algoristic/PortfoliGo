@@ -1,6 +1,6 @@
-import { DividendSchedule } from './company.model';
+import { Cents } from '@app/shared/domain/models/money.model';
 
-import { Cents } from '../../../shared/domain/models/money.model';
+import { DividendSchedule } from './company.model';
 
 export interface EtfIssuer {
   id: string;

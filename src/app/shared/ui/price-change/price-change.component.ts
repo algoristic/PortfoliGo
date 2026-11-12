@@ -4,6 +4,7 @@ import { PriceChangeMode } from './price-change.model';
 
 import { ChangeDirection, changeDirection } from '../../util/change-direction';
 import { formatSignedCents, formatSignedPercent } from '../../util/format';
+import { IconDirective } from '../icon/icon.directive';
 
 const PERCENT_DIGITS = 2;
 
@@ -14,17 +15,17 @@ const DIRECTION_CLASSES: Record<ChangeDirection, string> = {
 };
 
 const DIRECTION_ICONS: Record<ChangeDirection, string> = {
-  up: 'bi-arrow-up-right',
-  down: 'bi-arrow-down-right',
-  flat: 'bi-arrow-right',
+  up: 'arrow-up-right',
+  down: 'arrow-down-right',
+  flat: 'arrow-right',
 };
 
 /** Change with sign, arrow and colour, so it is distinguishable without colour (US-UI-02). */
 @Component({
   selector: 'app-price-change',
-  imports: [],
+  imports: [IconDirective],
   templateUrl: './price-change.component.html',
-  styleUrl: './price-change.component.scss',
+  host: { class: 'inline-block' },
 })
 export class PriceChangeComponent {
   /** A ratio (`0.0129` = +1,29 %) in `percent` mode, an amount of cents in `cents` mode. */
@@ -43,5 +44,5 @@ export class PriceChangeComponent {
       : formatSignedCents(this.value()),
   );
   colorClass = computed(() => DIRECTION_CLASSES[this.direction()]);
-  iconClass = computed(() => DIRECTION_ICONS[this.direction()]);
+  icon = computed(() => DIRECTION_ICONS[this.direction()]);
 }

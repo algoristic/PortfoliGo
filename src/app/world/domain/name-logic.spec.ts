@@ -1,9 +1,10 @@
+import { createStream } from '@app/simulation/util/random-stream';
+
+import { deriveSeedKey } from '@app/simulation/util/seed';
+
 import { fillPattern, isBlockedName, NameRegistry } from './name-logic';
 
 import { COUNTRIES, INDUSTRIES } from './taxonomy';
-
-import { createStream } from '../../simulation/util/random-stream';
-import { deriveSeedKey } from '../../simulation/util/seed';
 
 describe('isBlockedName', () => {
   it('blocks real names regardless of case, legal form and spacing', () => {

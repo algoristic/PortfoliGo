@@ -1,3 +1,9 @@
+import { dayStartTick } from '@app/clock/domain/calendar-logic';
+
+import { deriveSeedKey } from '@app/simulation/util/seed';
+
+import { generateWorld } from '@app/world/domain/world-generator';
+
 import {
   dailyCandle,
   dailyCandlesFromSupport,
@@ -7,10 +13,6 @@ import {
 import { createMarketContext } from './market-context';
 import { createMarketDay } from './market-step';
 import { seriesCount } from './series';
-
-import { dayStartTick } from '../../clock/domain/calendar-logic';
-import { deriveSeedKey } from '../../simulation/util/seed';
-import { generateWorld } from '../../world/domain/world-generator';
 
 // 06.01.2020 is a Monday (day 5).
 const MONDAY = 5;

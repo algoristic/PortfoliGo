@@ -96,23 +96,25 @@
           data-testid="lab.simulation.game-time"
           label="Spielzeit"
           i18n-label="@@featureLab-simulationPage-gameTime"
-          [value]="formatTime(now)"></app-stat-tile>
+          [value]="now | formatGameTime"></app-stat-tile>
         <app-stat-tile
           label="Simulierte Tage"
           i18n-label="@@featureLab-simulationPage-simulatedDays"
-          [value]="formatDays(simulatedDays)"></app-stat-tile>
+          [value]="simulatedDays ?? 0 | formatNumber"></app-stat-tile>
         <app-stat-tile
           label="Welt"
           i18n-label="@@featureLab-simulationPage-worldMs"
-          [value]="formatMs(timings.worldMs)"></app-stat-tile>
+          [value]="timings.worldMs | formatNumber"
+          unit="ms"></app-stat-tile>
         <app-stat-tile
           label="Vorlauf"
           i18n-label="@@featureLab-simulationPage-prehistoryMs"
-          [value]="formatMs(timings.prehistoryMs)"></app-stat-tile>
+          [value]="timings.prehistoryMs | formatNumber"
+          unit="ms"></app-stat-tile>
         <app-stat-tile
           label="Markttage/s"
           i18n-label="@@featureLab-simulationPage-marketDaysPerSecond"
-          [value]="formatRate(timings.marketDaysPerSecond)"></app-stat-tile>
+          [value]="timings.marketDaysPerSecond | formatNumber"></app-stat-tile>
       </div>
       @if (status === 'simulating') {
         <p class="mt-2 text-sm text-fg-muted" i18n="@@featureLab-simulationPage-simulating">
@@ -122,7 +124,7 @@
     </app-panel>
 
     <app-panel heading="Chart" i18n-heading="@@featureLab-simulationPage-chart">
-      <app-section-series-chart
+      <app-series-chart
         [seriesOptions]="seriesOptions ?? []"
         [series]="selectedSeries ?? 0"
         [chartOptions]="chartOptions"
@@ -133,22 +135,22 @@
         [candlesMs]="timings.candlesMs"
         (selectedSeries)="onSelectSeries($event)"
         (changedChartOptions)="onChangeChartOptions($event)"
-        (scrolledToChartStart)="onScrollToChartStart()"></app-section-series-chart>
+        (scrolledToChartStart)="onScrollToChartStart()"></app-series-chart>
     </app-panel>
 
     <app-panel heading="Statistik" i18n-heading="@@featureLab-simulationPage-statistics">
-      <app-section-statistics
+      <app-market-statistics
         [statistics]="statistics ?? undefined"
         [start]="statisticsStart ?? 'epoch'"
         [loading]="loadingStatistics ?? false"
         [disabled]="busy ?? false"
         [statisticsMs]="timings.statisticsMs"
         (changedStart)="onChangeStatisticsStart($event)"
-        (clickedCompute)="onComputeStatistics()"></app-section-statistics>
+        (clickedCompute)="onComputeStatistics()"></app-market-statistics>
     </app-panel>
 
     <app-panel heading="Welt-Übersicht" i18n-heading="@@featureLab-simulationPage-overview">
-      <app-section-world-tables [overview]="overview"></app-section-world-tables>
+      <app-world-tables [overview]="overview"></app-world-tables>
     </app-panel>
   } @else if (status === 'generating') {
     <app-skeleton class="h-64" [block]="true"></app-skeleton>

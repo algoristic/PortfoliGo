@@ -9,12 +9,7 @@
       <button
         ngTab
         type="button"
-        class="-mb-px border-b-2 px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors"
-        [class]="
-          tab.id === currentTab()
-            ? 'border-accent text-fg'
-            : 'border-transparent text-fg-muted hover:text-fg'
-        "
+        class="-mb-px border-b-2 border-transparent px-3 py-2 text-sm font-medium whitespace-nowrap text-fg-muted transition-colors hover:text-fg aria-selected:border-accent aria-selected:text-fg"
         [value]="tab.id"
         [attr.data-testid]="testId() + '.' + tab.id + '.tab'">
         {{ tab.label }}

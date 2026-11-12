@@ -5,12 +5,13 @@ import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { firstValueFrom, of, Subject, throwError } from 'rxjs';
 import type { Mocked } from 'vitest';
 
+import { ToastService } from '@app/shared/ui/toast/toast.service';
+
 import * as LabActions from './lab.actions';
 import { LabEffects } from './lab.effects';
 import { CandleRequest } from './lab.model';
 import * as LabSelectors from './lab.selectors';
 
-import { ToastService } from '../../../shared/ui/toast/toast.service';
 import {
   ComputedStatistics,
   GeneratedWorld,

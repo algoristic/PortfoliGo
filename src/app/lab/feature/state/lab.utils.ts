@@ -1,10 +1,12 @@
-import { CandleRequest, ChartRange, LabChartOptions } from './lab.model';
+import { dayIndex, dayStartTick } from '@app/clock/domain/calendar-logic';
+import { Tick, TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
+import { isMarketDay } from '@app/market/domain/market-calendar';
+import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
 
-import { dayIndex, dayStartTick } from '../../../clock/domain/calendar-logic';
-import { Tick, TICKS_PER_DAY } from '../../../clock/domain/models/time.model';
-import { isMarketDay } from '../../../market/domain/market-calendar';
-import { Candle, CandleResolution } from '../../../market/domain/models/candle.model';
+import { CandleRequest } from './lab.model';
+
 import { CandleSource } from '../../domain/models/candle-source.model';
+import { ChartRange, LabChartOptions } from '../../ui/series-chart/series-chart.model';
 
 /** Resolutions per range, fine to coarse, so that a chart stays below a few thousand candles. */
 export const RANGE_RESOLUTIONS: Record<ChartRange, readonly CandleResolution[]> = {

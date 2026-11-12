@@ -1,14 +1,14 @@
+import { dayIndex, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
+import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
+import { createCurveTables } from '@app/market/domain/day-curve';
+import { recomputeSupportDays } from '@app/market/domain/market-history';
+import { runPrehistory } from '@app/market/domain/prehistory';
+import { indexSeries, totalReturnSeries } from '@app/market/domain/series';
+import { deriveSeedKey } from '@app/simulation/util/seed';
+import { generateWorld } from '@app/world/domain/world-generator';
+
 import { LabSimulation } from './lab-simulation';
 import { collectMarketSample } from './market-sample';
-
-import { dayIndex, GAME_START_TICK } from '../../clock/domain/calendar-logic';
-import { TICKS_PER_DAY } from '../../clock/domain/models/time.model';
-import { createCurveTables } from '../../market/domain/day-curve';
-import { recomputeSupportDays } from '../../market/domain/market-history';
-import { runPrehistory } from '../../market/domain/prehistory';
-import { indexSeries, totalReturnSeries } from '../../market/domain/series';
-import { deriveSeedKey } from '../../simulation/util/seed';
-import { generateWorld } from '../../world/domain/world-generator';
 
 const SEED = 'market-sample-test';
 

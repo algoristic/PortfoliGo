@@ -1,4 +1,4 @@
-import { ColorScheme } from '../../../shared/data-access/color-scheme/color-scheme-service.utils';
+import { ColorScheme } from '@app/shared/data-access/color-scheme/color-scheme-service.utils';
 
 export const COLOR_TOKENS = [
   'bg',

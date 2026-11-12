@@ -1,12 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
+
+import { Candle } from '@app/market/domain/models/candle.model';
+
 import { PriceChartComponent } from './price-chart.component';
 
 import { installChartPlatform } from '../../../../testing/chart-platform';
 import { wheel } from '../../../../testing/dom';
 import { settle } from '../../../../testing/page';
-import { TICKS_PER_DAY } from '../../../clock/domain/models/time.model';
-import { Candle } from '../../../market/domain/models/candle.model';
 
 const STEP = 15;
 

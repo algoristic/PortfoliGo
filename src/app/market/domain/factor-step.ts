@@ -1,10 +1,12 @@
+import { detExp } from '@app/simulation/util/det-math';
+
+import { normal, weightedIndex } from '@app/simulation/util/distributions';
+
+import { createStream } from '@app/simulation/util/random-stream';
+
 import { MARKET_PHASE_COUNT, MarketContext, phaseIndex } from './market-context';
 import { MARKET_PHASES, MarketPhase } from './models/market-config.model';
 import { MarketDay } from './models/market-day.model';
-
-import { detExp } from '../../simulation/util/det-math';
-import { normal, weightedIndex } from '../../simulation/util/distributions';
-import { createStream } from '../../simulation/util/random-stream';
 
 /** Factor part of the state that the day step advances. */
 export interface FactorState {

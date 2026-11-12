@@ -1,9 +1,10 @@
+import { pick } from '@app/simulation/util/distributions';
+
+import { RandomStream } from '@app/simulation/util/random-stream';
+
 import { NAME_BLOCKLIST } from './names/name-blocklist';
 
 import { CORE_ENDINGS, CORE_STARTS } from './names/name-parts';
-
-import { pick } from '../../simulation/util/distributions';
-import { RandomStream } from '../../simulation/util/random-stream';
 
 /** Entries of at least this length also match word starts and words written together. */
 const LONG_ENTRY_MIN_LENGTH = 5;

@@ -4,11 +4,12 @@ import { concatLatestFrom } from '@ngrx/operators';
 import { select, Store } from '@ngrx/store';
 import { catchError, exhaustMap, filter, map, Observable, of, switchMap, tap } from 'rxjs';
 
+import { ToastService } from '@app/shared/ui/toast/toast.service';
+
 import * as LabActions from './lab.actions';
 import { CandleRequest } from './lab.model';
 import * as LabSelectors from './lab.selectors';
 
-import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { LoadedCandles } from '../../data-access/service/lab-simulation-service.model';
 import { LabSimulationService } from '../../data-access/service/lab-simulation.service';
 

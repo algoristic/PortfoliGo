@@ -1,5 +1,6 @@
-import { Tick } from '../../../clock/domain/models/time.model';
-import { Candle, CandleResolution } from '../../../market/domain/models/candle.model';
+import { Tick } from '@app/clock/domain/models/time.model';
+import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
+
 import { CandleSource } from '../../domain/models/candle-source.model';
 import { LabStatistics, StatisticsStart } from '../../domain/models/lab-statistics.model';
 import { WorldOverview } from '../../domain/models/world-overview.model';

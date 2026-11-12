@@ -1,7 +1,7 @@
+import { Checksum } from '@app/simulation/util/checksum';
+
 import { phaseIndex } from './market-context';
 import { MarketState } from './models/market-state.model';
-
-import { Checksum } from '../../simulation/util/checksum';
 
 /** Checksum over the core market state (32 hex characters, TS §4.6). */
 export function marketChecksum(state: Readonly<MarketState>): string {

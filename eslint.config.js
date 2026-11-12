@@ -4,11 +4,28 @@ const angular = require('angular-eslint');
 const eslintPluginUnusedImports = require('eslint-plugin-unused-imports');
 const eslintPluginImport = require('eslint-plugin-import');
 
+/** `no-restricted-imports` pattern for the layers a layer must not import (CLAUDE.md §1). */
+function forbiddenLayers(layer, layers) {
+  return {
+    regex: `(^|/)(${layers.join('|')})/`,
+    message: `The ${layer} layer must not depend on ${layers.join(', ')} (CLAUDE.md §1).`,
+  };
+}
+
+const FRAMEWORK_IMPORTS = {
+  regex: '^(@angular|@ngrx|rxjs)(/|$)',
+  message: 'domain and util are framework-free, so they run in the worker (CLAUDE.md §1).',
+};
+
 module.exports = tseslint.config(
   {
     plugins: {
       'unused-imports': eslintPluginUnusedImports,
       import: eslintPluginImport,
+    },
+    settings: {
+      // `@app/*` is the path alias of `src/app` (tsconfig.json), not a package.
+      'import/internal-regex': '^@app/',
     },
   },
   {
@@ -52,6 +69,57 @@ module.exports = tseslint.config(
             caseInsensitive: true,
           },
           'newlines-between': 'always-and-inside-groups',
+        },
+      ],
+    },
+  },
+  // Layer rules (CLAUDE.md §1); they match the import path, so aliases and relative paths both count.
+  {
+    files: ['src/app/*/ui/**/*.ts'],
+    ignores: ['**/*.spec.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { patterns: [forbiddenLayers('ui', ['feature', 'data-access'])] },
+      ],
+    },
+  },
+  {
+    files: ['src/app/*/data-access/**/*.ts'],
+    ignores: ['**/*.spec.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        { patterns: [forbiddenLayers('data-access', ['feature', 'ui'])] },
+      ],
+    },
+  },
+  {
+    files: ['src/app/*/domain/**/*.ts'],
+    ignores: ['**/*.spec.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            forbiddenLayers('domain', ['feature', 'ui', 'data-access']),
+            FRAMEWORK_IMPORTS,
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/app/*/util/**/*.ts'],
+    ignores: ['**/*.spec.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            forbiddenLayers('util', ['feature', 'ui', 'data-access', 'domain']),
+            FRAMEWORK_IMPORTS,
+          ],
         },
       ],
     },
@@ -115,7 +183,7 @@ module.exports = tseslint.config(
   },
   {
     files: ['**/*.html'],
-    extends: [...angular.configs.templateRecommended],
+    extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
     rules: {},
   },
 );

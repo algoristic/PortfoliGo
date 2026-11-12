@@ -1,3 +1,9 @@
+import { eurosToCents } from '@app/shared/domain/money-logic';
+
+import { pick, shuffle, weightedIndex } from '@app/simulation/util/distributions';
+
+import { RandomStream } from '@app/simulation/util/random-stream';
+
 import { GenerationRegistries, lognormalIn, roundToGrid, uniformIn } from './generator.utils';
 import { formatId, nextIsin, nextTicker } from './identifier-logic';
 import { Etf, ETF_REPLICATIONS, EtfDistributionFrequency, EtfIssuer } from './models/etf.model';
@@ -5,10 +11,6 @@ import { MarketIndex } from './models/market-index.model';
 import { EtfConfig, EtfProductConfig } from './models/world-config.model';
 import { fillPattern } from './name-logic';
 import { ISSUER_PATTERNS } from './names/name-parts';
-
-import { eurosToCents } from '../../shared/domain/money-logic';
-import { pick, shuffle, weightedIndex } from '../../simulation/util/distributions';
-import { RandomStream } from '../../simulation/util/random-stream';
 
 /** TER in steps of 0.01 percentage points. */
 const TER_STEPS_PER_UNIT = 10_000;

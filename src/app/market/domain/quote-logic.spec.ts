@@ -1,3 +1,15 @@
+import { dateTimeToTick, dayIndex, dayStartTick } from '@app/clock/domain/calendar-logic';
+
+import { MINUTES_PER_DAY } from '@app/clock/domain/models/time.model';
+
+import { priceStep } from '@app/shared/domain/price-step-logic';
+
+import { deriveSeedKey } from '@app/simulation/util/seed';
+
+import { SIZE_CLASSES } from '@app/world/domain/models/taxonomy.model';
+
+import { generateWorld } from '@app/world/domain/world-generator';
+
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { createMarketContext } from './market-context';
 import { createFactorHistory } from './market-history';
@@ -6,13 +18,6 @@ import { MARKET_PHASES } from './models/market-config.model';
 import { PriceSource } from './price-source';
 import { marketSpread, quote } from './quote-logic';
 import { etfSeries, indexSeries } from './series';
-
-import { dateTimeToTick, dayIndex, dayStartTick } from '../../clock/domain/calendar-logic';
-import { MINUTES_PER_DAY } from '../../clock/domain/models/time.model';
-import { priceStep } from '../../shared/domain/price-step-logic';
-import { deriveSeedKey } from '../../simulation/util/seed';
-import { SIZE_CLASSES } from '../../world/domain/models/taxonomy.model';
-import { generateWorld } from '../../world/domain/world-generator';
 
 const seedKey = deriveSeedKey('golden-1');
 const world = generateWorld(seedKey);

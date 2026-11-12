@@ -5,7 +5,7 @@ import { Component, input } from '@angular/core';
   selector: 'app-panel',
   imports: [],
   templateUrl: './panel.component.html',
-  styleUrl: './panel.component.scss',
+  host: { class: 'block' },
 })
 export class PanelComponent {
   heading = input<string>();

@@ -1,7 +1,7 @@
-import { LabWorkerSession } from './lab-worker-session';
+import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
+import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
 
-import { dateTimeToTick, GAME_START_TICK } from '../../../clock/domain/calendar-logic';
-import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '../../../clock/domain/models/time.model';
+import { LabWorkerSession } from './lab-worker-session';
 
 describe('LabWorkerSession', () => {
   let session: LabWorkerSession;

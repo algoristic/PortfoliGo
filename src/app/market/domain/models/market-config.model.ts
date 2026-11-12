@@ -1,5 +1,5 @@
-import { EtfReplication } from '../../../world/domain/models/etf.model';
-import { SizeClass } from '../../../world/domain/models/taxonomy.model';
+import { EtfReplication } from '@app/world/domain/models/etf.model';
+import { SizeClass } from '@app/world/domain/models/taxonomy.model';
 
 export const MARKET_PHASES = ['boom', 'normal', 'downturn', 'crisis'] as const;
 export type MarketPhase = (typeof MARKET_PHASES)[number];

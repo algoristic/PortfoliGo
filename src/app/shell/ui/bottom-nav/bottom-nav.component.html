@@ -1,0 +1,52 @@
+<nav class="border-t border-border bg-surface" [attr.aria-label]="navLabel">
+  <ul class="grid grid-cols-5">
+    @for (item of items(); track item.path) {
+      <li>
+        <a
+          class="flex h-16 flex-col items-center justify-center gap-1 px-1 text-center text-xs leading-tight font-medium text-fg-muted hover:text-fg current:text-accent"
+          [routerLink]="item.path"
+          routerLinkActive
+          ariaCurrentWhenActive="page"
+          [attr.data-testid]="'shell.bottom-nav.' + item.path">
+          <i class="text-lg" [appIcon]="item.icon"></i>
+          {{ item.label }}
+        </a>
+      </li>
+    }
+    <li class="relative">
+      <button
+        ngMenuTrigger
+        type="button"
+        class="flex h-16 w-full flex-col items-center justify-center gap-1 px-1 text-center text-xs leading-tight font-medium"
+        [class]="isMoreActive() ? 'text-accent' : 'text-fg-muted hover:text-fg'"
+        data-testid="shell.bottom-nav.more"
+        [menu]="moreMenu">
+        <i appIcon="three-dots" class="text-lg"></i>
+        {{ moreLabel }}
+      </button>
+      <div
+        ngMenu
+        appMenu
+        #moreMenu="ngMenu"
+        class="absolute right-2 bottom-full mb-2"
+        [attr.aria-label]="moreLabel"
+        (itemSelected)="onSelectMenuItem($event)">
+        @for (item of moreItems(); track item.path) {
+          @let isActive = item.path === activePath();
+          <div
+            ngMenuItem
+            appMenuItem
+            [active]="isActive"
+            [value]="item.path"
+            [attr.data-testid]="'shell.bottom-nav.more.' + item.path">
+            <i class="text-base" [appIcon]="item.icon" [class.text-fg-muted]="!isActive"></i>
+            <span class="flex-1">{{ item.label }}</span>
+            @if (isActive) {
+              <i appIcon="check2"></i>
+            }
+          </div>
+        }
+      </div>
+    </li>
+  </ul>
+</nav>

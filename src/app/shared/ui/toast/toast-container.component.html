@@ -4,9 +4,9 @@
       class="flex items-start gap-3 rounded-lg border border-border bg-surface-raised p-3 text-sm text-fg shadow-lg"
       [attr.data-testid]="'toast.' + toast.id">
       <i
-        class="bi mt-0.5 text-base"
-        [class]="toneClasses[toast.tone] + ' ' + toneIcons[toast.tone]"
-        aria-hidden="true"></i>
+        class="mt-0.5 text-base"
+        [appIcon]="toneIcons[toast.tone]"
+        [class]="toneClasses[toast.tone]"></i>
       <p class="flex-1">{{ toast.message }}</p>
       <button
         type="button"
@@ -15,7 +15,7 @@
         [attr.title]="dismissLabel"
         [attr.data-testid]="'toast.' + toast.id + '.dismiss'"
         (click)="onDismiss(toast.id)">
-        <i class="bi bi-x-lg" aria-hidden="true"></i>
+        <i appIcon="x-lg"></i>
       </button>
     </li>
   }

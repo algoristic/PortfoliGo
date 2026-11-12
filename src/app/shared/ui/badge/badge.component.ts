@@ -14,7 +14,6 @@ const TONE_CLASSES: Record<BadgeTone, string> = {
   selector: 'app-badge',
   imports: [],
   templateUrl: './badge.component.html',
-  styleUrl: './badge.component.scss',
   host: { '[class]': 'classes()' },
 })
 export class BadgeComponent {

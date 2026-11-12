@@ -1,0 +1,143 @@
+@let _overview = overview();
+
+<app-tabs [tabs]="tabs" [label]="tabsLabel" testId="lab.simulation.world-tabs">
+  <ng-template appTabPanel="companies">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm" data-testid="lab.simulation.companies">
+        <thead class="text-xs text-fg-muted">
+          <tr>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-ticker">Ticker</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-name">Name</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-isin">ISIN</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-country">Land</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-sector">Sektor</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-size">Größe</th>
+            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-risk">Risiko</th>
+            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-startPrice"> Startkurs </th>
+            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-marketCap"> Marktkap. </th>
+            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-dividendYield">
+              Div.-Rendite
+            </th>
+          </tr>
+        </thead>
+        <tbody class="tabular-nums">
+          @for (company of _overview.companies; track company.id) {
+            <tr class="border-t border-border">
+              <td class="px-2 py-1 font-medium">{{ company.ticker }}</td>
+              <td class="px-2 py-1">{{ company.name }}</td>
+              <td class="px-2 py-1 text-fg-muted">{{ company.isin }}</td>
+              <td class="px-2 py-1">{{ company.countryId }}</td>
+              <td class="px-2 py-1">{{ company.sectorId }}</td>
+              <td class="px-2 py-1">{{ company.size }}</td>
+              <td class="px-2 py-1 text-right">{{ company.riskClass }}</td>
+              <td class="px-2 py-1 text-right">{{ company.startPrice | formatPrice }}</td>
+              <td class="px-2 py-1 text-right">{{ company.marketCap / 100 | formatCompact }} €</td>
+              <td class="px-2 py-1 text-right">{{ company.dividendYield | formatPercent }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
+
+  <ng-template appTabPanel="indices">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm" data-testid="lab.simulation.indices">
+        <thead class="text-xs text-fg-muted">
+          <tr>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-ticker">Ticker</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-name">Name</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-kind">Art</th>
+            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-constituents"> Werte </th>
+            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-capWeight"> Kappung </th>
+            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-baseValue"> Basis </th>
+          </tr>
+        </thead>
+        <tbody class="tabular-nums">
+          @for (index of _overview.indices; track index.id) {
+            <tr class="border-t border-border">
+              <td class="px-2 py-1 font-medium">{{ index.ticker }}</td>
+              <td class="px-2 py-1">{{ index.name }}</td>
+              <td class="px-2 py-1">{{ index.kind }}</td>
+              <td class="px-2 py-1 text-right">{{ index.constituentCount }}</td>
+              <td class="px-2 py-1 text-right">
+                {{ index.capWeight | formatPercent: 0 }}
+              </td>
+              <td class="px-2 py-1 text-right">{{ index.baseValue }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
+
+  <ng-template appTabPanel="etfs">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm" data-testid="lab.simulation.etfs">
+        <thead class="text-xs text-fg-muted">
+          <tr>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-ticker">Ticker</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-name">Name</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-issuer">Emittent</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-index">Index</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-distribution">Ertrag</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-replication">Replikation</th>
+            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-ter">TER</th>
+            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-startPrice"> Startkurs </th>
+          </tr>
+        </thead>
+        <tbody class="tabular-nums">
+          @for (etf of _overview.etfs; track etf.id) {
+            <tr class="border-t border-border">
+              <td class="px-2 py-1 font-medium">{{ etf.ticker }}</td>
+              <td class="px-2 py-1">{{ etf.name }}</td>
+              <td class="px-2 py-1">{{ etf.issuerName }}</td>
+              <td class="px-2 py-1">{{ etf.indexName }}</td>
+              <td class="px-2 py-1">
+                @if (etf.distributing) {
+                  <ng-container i18n="@@uiLab-worldTables-distributing">ausschüttend</ng-container>
+                } @else {
+                  <ng-container i18n="@@uiLab-worldTables-accumulating">thesaurierend</ng-container>
+                }
+              </td>
+              <td class="px-2 py-1">{{ etf.replication }}</td>
+              <td class="px-2 py-1 text-right">{{ etf.ter | formatPercent }}</td>
+              <td class="px-2 py-1 text-right">{{ etf.startPrice | formatPrice }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
+
+  <ng-template appTabPanel="banks">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm" data-testid="lab.simulation.banks">
+        <thead class="text-xs text-fg-muted">
+          <tr>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-name">Name</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-bankType">Typ</th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-venue">Handelsplatz</th>
+            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-spreadMarkup">
+              Spread-Aufschlag
+            </th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-fractionalShares"> Bruchstücke </th>
+            <th class="px-2 py-1" i18n="@@uiLab-worldTables-savingsAccount"> Tagesgeld </th>
+          </tr>
+        </thead>
+        <tbody class="tabular-nums">
+          @for (bank of _overview.banks; track bank.id) {
+            <tr class="border-t border-border">
+              <td class="px-2 py-1 font-medium">{{ bank.name }}</td>
+              <td class="px-2 py-1">{{ bank.type }}</td>
+              <td class="px-2 py-1">{{ bank.venue }}</td>
+              <td class="px-2 py-1 text-right">{{ bank.spreadMarkup | formatPercent }}</td>
+              <td class="px-2 py-1">{{ bank.fractionalShares ? '✓' : '–' }}</td>
+              <td class="px-2 py-1">{{ bank.hasSavingsAccount ? '✓' : '–' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </ng-template>
+</app-tabs>

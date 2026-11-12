@@ -1,10 +1,12 @@
-import { LabChartOptions } from './lab.model';
+import { GAME_START_TICK } from '@app/clock/domain/calendar-logic';
+
+import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
+
 import { initialLabState, LabState } from './lab.reducer';
 import * as LabSelectors from './lab.selectors';
 
-import { GAME_START_TICK } from '../../../clock/domain/calendar-logic';
-import { TICKS_PER_DAY } from '../../../clock/domain/models/time.model';
 import { SeriesOption } from '../../domain/models/world-overview.model';
+import { LabChartOptions } from '../../ui/series-chart/series-chart.model';
 
 describe('LabSelectors', () => {
   const options: LabChartOptions = { range: '1w', resolution: '1h', chartType: 'line' };

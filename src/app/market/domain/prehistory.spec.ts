@@ -1,8 +1,9 @@
+import { deriveSeedKey } from '@app/simulation/util/seed';
+
+import { generateWorld } from '@app/world/domain/world-generator';
+
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { runPrehistory } from './prehistory';
-
-import { deriveSeedKey } from '../../simulation/util/seed';
-import { generateWorld } from '../../world/domain/world-generator';
 
 describe('runPrehistory', () => {
   it('runs ten years of the standard world within the CI bound', () => {

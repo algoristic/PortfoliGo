@@ -1,10 +1,10 @@
-import { CurveTables, SupportValues } from '../../market/domain/day-curve';
-import { isMarketDay } from '../../market/domain/market-calendar';
-import { phaseIndex } from '../../market/domain/market-context';
-import { recomputeSupportDays } from '../../market/domain/market-history';
-import { FactorHistory } from '../../market/domain/models/market-state.model';
-import { indexSeries, totalReturnSeries } from '../../market/domain/series';
-import { World } from '../../world/domain/models/world.model';
+import { CurveTables, SupportValues } from '@app/market/domain/day-curve';
+import { isMarketDay } from '@app/market/domain/market-calendar';
+import { phaseIndex } from '@app/market/domain/market-context';
+import { recomputeSupportDays } from '@app/market/domain/market-history';
+import { FactorHistory } from '@app/market/domain/models/market-state.model';
+import { indexSeries, totalReturnSeries } from '@app/market/domain/series';
+import { World } from '@app/world/domain/models/world.model';
 
 const CENTS_PER_EURO = 100;
 

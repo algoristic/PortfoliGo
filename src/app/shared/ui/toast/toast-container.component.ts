@@ -2,6 +2,8 @@ import { Component, input, output } from '@angular/core';
 
 import { Toast, ToastTone } from './toast.model';
 
+import { IconDirective } from '../icon/icon.directive';
+
 const TONE_CLASSES: Record<ToastTone, string> = {
   info: 'text-accent',
   success: 'text-up',
@@ -10,17 +12,17 @@ const TONE_CLASSES: Record<ToastTone, string> = {
 };
 
 const TONE_ICONS: Record<ToastTone, string> = {
-  info: 'bi-info-circle',
-  success: 'bi-check-circle',
-  warning: 'bi-exclamation-triangle',
-  error: 'bi-x-octagon',
+  info: 'info-circle',
+  success: 'check-circle',
+  warning: 'exclamation-triangle',
+  error: 'x-octagon',
 };
 
 @Component({
   selector: 'app-toast-container',
-  imports: [],
+  imports: [IconDirective],
   templateUrl: './toast-container.component.html',
-  styleUrl: './toast-container.component.scss',
+  host: { class: 'block' },
 })
 export class ToastContainerComponent {
   toasts = input<Toast[]>([]);

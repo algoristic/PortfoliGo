@@ -1,8 +1,9 @@
+import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
+
 import * as LabActions from './lab.actions';
 import { CandleRequest } from './lab.model';
 import { initialLabState, labReducer, LabState, nextHistoryRequest } from './lab.reducer';
 
-import { TICKS_PER_DAY } from '../../../clock/domain/models/time.model';
 import {
   ComputedStatistics,
   GeneratedWorld,

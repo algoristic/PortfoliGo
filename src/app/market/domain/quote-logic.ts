@@ -1,12 +1,12 @@
+import { Quote } from '@app/shared/domain/models/quote.model';
+import { bidAsk } from '@app/shared/domain/price-step-logic';
+import { detLog } from '@app/simulation/util/det-math';
+import { SIZE_CLASSES } from '@app/world/domain/models/taxonomy.model';
+import { World } from '@app/world/domain/models/world.model';
+
 import { MarketContext } from './market-context';
 import { MarketConfig, MarketPhase, MarketRange } from './models/market-config.model';
 import { seriesRef } from './series';
-
-import { Quote } from '../../shared/domain/models/quote.model';
-import { bidAsk } from '../../shared/domain/price-step-logic';
-import { detLog } from '../../simulation/util/det-math';
-import { SIZE_CLASSES } from '../../world/domain/models/taxonomy.model';
-import { World } from '../../world/domain/models/world.model';
 
 /** Base spread per tradable instrument (TS §6.7), fixed per world. */
 export interface SpreadLayout {

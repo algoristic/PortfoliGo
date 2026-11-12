@@ -2,10 +2,12 @@ import {
   formatCents,
   formatCompact,
   formatNumber,
+  formatOptional,
   formatPercent,
   formatPrice,
   formatSignedCents,
   formatSignedPercent,
+  MISSING_VALUE,
 } from './format';
 
 // Intl separates the number and the unit with a non-breaking space.
@@ -79,6 +81,19 @@ describe('format', () => {
 
     it('keeps smaller numbers in full', () => {
       expect(formatCompact(12_345)).toBe('12.345');
+    });
+  });
+
+  describe('formatOptional', () => {
+    it('formats finite numbers with the given function', () => {
+      expect(formatOptional(0, (value) => formatNumber(value, 1))).toBe('0,0');
+      expect(formatOptional(-2.5, formatNumber)).toBe('-3');
+    });
+
+    it('returns MISSING_VALUE when the value is missing or not finite', () => {
+      for (const value of [null, undefined, NaN, Infinity, -Infinity]) {
+        expect(formatOptional(value, formatNumber)).toBe(MISSING_VALUE);
+      }
     });
   });
 });

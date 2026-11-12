@@ -5,26 +5,21 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { map } from 'rxjs';
 
+import { NavItem } from '@app/shared/ui/nav-link/nav-item.model';
+
 import { BOTTOM_NAV_SIZE, DESKTOP_QUERY } from './shell.page.model';
 
-import { NavItem } from '../../ui/models/nav-item.model';
-import { SectionBottomNavComponent } from '../../ui/section-bottom-nav/section-bottom-nav.component';
-import { SectionHeaderComponent } from '../../ui/section-header/section-header.component';
-import { PlayerMenuAction } from '../../ui/section-header/section-header.model';
-import { SectionSideNavComponent } from '../../ui/section-side-nav/section-side-nav.component';
+import { BottomNavComponent } from '../../ui/bottom-nav/bottom-nav.component';
+import { HeaderComponent } from '../../ui/header/header.component';
+import { PlayerMenuAction } from '../../ui/header/header.model';
+import { SideNavComponent } from '../../ui/side-nav/side-nav.component';
 import { ShellFacade } from '../state/shell.facade';
 
 @Component({
-  selector: 'app-shell',
-  imports: [
-    CommonModule,
-    RouterModule,
-    SectionHeaderComponent,
-    SectionSideNavComponent,
-    SectionBottomNavComponent,
-  ],
+  selector: 'app-shell-page',
+  imports: [CommonModule, RouterModule, HeaderComponent, SideNavComponent, BottomNavComponent],
   templateUrl: './shell.page.html',
-  styleUrl: './shell.page.scss',
+  host: { class: 'block' },
 })
 export class ShellPage {
   shellFacade = inject(ShellFacade);

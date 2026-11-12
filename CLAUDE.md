@@ -23,8 +23,8 @@ Rules for implementing Angular code in this repository, so that generated code l
 
 - Bootstrap: `main.ts` boots `AppComponent` with `app.config.ts`: hash router, devtools and `provideAppCore()` from `app.providers.ts` (`PageTitleStrategy`, store, effects, router store, `LOCALE_ID` `de`, colour scheme, `ToastService`), which page tests use as well.
 - Routing and shell (AP 0.4): `''`/`**` → `/players`; the game area `/game/:playerId` (`shell/feature/shell.routes.ts`) lazy-loads the route files of the domains (TS §11.4). Most pages are still placeholders in their target domain folders; fill them in place. Routes set `title` via `$localize`.
-- UI building blocks (AP 0.4) live in `shared/ui`, shown at `#/lab/components`: `appButton`/`appIconButton` (attribute directives on native `<button>`/`<a>`), `app-panel`, `app-badge`, `app-tabs` (Angular Aria), `app-empty-state`, `app-skeleton`, `app-stat-tile`, `app-price-change`, `ToastService`, `app-dialog` and `openConfirmDialog`. Reuse them. Tabs and menus use `@angular/aria` (E-16); everything else from the CDK.
-- Infrastructure (AP 0.3): IndexedDB schema, migrations, `IndexedDbService` and `LocalStorageService` in `persistence/data-access`; money types, rounding and price grid in `shared/domain`; formatting functions in `shared/util` with pipes in `shared/ui/pipes`. Reuse them instead of rounding or formatting ad hoc.
+- UI building blocks (AP 0.4) live in `shared/ui`, shown at `#/lab/components`: `appButton`/`appIconButton` (attribute directives on native `<button>`/`<a>`), `appIcon` (Bootstrap icon on `<i>`), `app-panel`, `app-badge`, `app-tabs` (Angular Aria), `appMenu`/`appMenuItem` (look of Angular Aria menus), `appNavLink` with `NavItem` (navigation lists), `app-empty-state`, `app-skeleton`, `app-stat-tile`, `app-price-change`, `ToastService`, `app-dialog` and `openConfirmDialog`. Reuse them. Tabs and menus use `@angular/aria` (E-16); everything else from the CDK.
+- Infrastructure (AP 0.3): IndexedDB schema, migrations, `IndexedDbService` and `LocalStorageService` in `persistence/data-access`; money types, rounding and price grid in `shared/domain`; formatting functions in `shared/util` (with `MISSING_VALUE` `–` and `formatOptional`) and the pipes over them in `shared/ui/pipes` and `clock/ui/pipes` (game date and time). Templates format only through these pipes. Reuse them instead of rounding or formatting ad hoc.
 - Determinism toolkit (AP 1.1) in `simulation/util`: `deriveSeedKey`/`normalizeSeed`, `createStream(seedKey, key)` (sfc32), distributions (`normal`, `poisson`, `weightedIndex`, `shuffle`, …), `detExp`/`detLog`, `Checksum` for golden masters and `generateSeed`. Simulation code uses these instead of `Math.random`/`Math.exp`/`Math.log`/`**`; an ESLint rule enforces this in `simulation`, `world`, `market` and `clock` (`domain`, `util`) and in `shared/domain` (money and price grid feed the simulation).
 - Time model (AP 1.2) in `clock/domain`: `Tick` = game minutes since 01.01.2020, `GAME_START_TICK`, calendar functions (`tickToDateTime`, `dateTimeToTick`, `weekday`, month/year boundaries, bank working days), trading hours (`isTradingTime`, `nextOpen`, `nextClose`), `SPEEDS`, `targetTick` and `formatGameTime`/`formatGameDate`. Convert time only via the `TICKS_PER_*` constants, never with literal `60`/`1440`.
 - World generation (AP 1.3) in `world/domain`: `generateWorld(seedKey, config = DEFAULT_WORLD_CONFIG)` builds the fixed taxonomy (`taxonomy.ts`) plus seed-generated companies, index and ETF master data, issuers and banks; `worldChecksum` for golden-master tests. Bank condition types live in `banking/domain/models/bank-conditions.model.ts`. Generated names go through `NameRegistry` (blocklist of real names, unique cores).
@@ -33,8 +33,8 @@ Rules for implementing Angular code in this repository, so that generated code l
 - Dividends and indices (AP 1.6a) in `market/domain`: companies carry `dividend.schedule` (stream `world/dividends`); `dividend-logic.ts` (ex-dates, announcement 20 market days ahead, payment date, amount, markdown); `MarketState` and the month-start entries hold the full state (`logClose`, `nextExDay`, `dividendCents`, `indexReinvest`); `stepInstrument` writes into the state; `MarketDay` reports announcements, ex-dates and `R` per boundary. `IndexLayout` (constituents, capping fixed at the epoch, constant divisor, index session) in `MarketContext.indices`; `stepIndices` advances `R` from the previous closes. Series (`series.ts`): shares, then price indices, then total return indices share one index for `PriceSource`, `DayCurves.seriesCurve`, `dailyCandlesFromSupport` and `createHighLowFill`.
 - ETFs, indicative values and quotes (AP 1.6b) in `market/domain`: ETFs carry `startPrice` and, when distributing, a `schedule` (stream `world/etf-terms`); `EtfLayout` in `MarketContext.etfs`; `stepEtfs` advances `k` (TER, tracking noise from `market/etfs/<day>`) and the distribution pot per boundary after `stepIndices`; ETFs are series after the total return indices (`etfSeries`), their NAV comes from the indicative values of the constituents. `DayCurves.indicativeCurve`/`PriceSource.indicativeAt` give indicative values (frozen `U_i`, factor bridges); `SupportValues` gives opens and closes of all series from the support points. `quote-logic.ts` (`marketSpread`, `quote`) and `PriceSource.quoteAt(series, tick, now, venueMarkup)` give bid and ask on the price grid.
 - Simulation lab (AP 1.7) at `#/lab/simulation` (only with `devPages`, currently on in production too): `lab/domain` (`LabSimulation`: world, prehistory, day steps, candles from minute curves or, for long periods, from the support points), `lab/data-access` (`lab-simulation.worker.ts` around the framework-free `LabWorkerSession`, `LabSimulationService` with `LAB_WORKER_FACTORY`; precursor of AP 2.2) and the `lab` slice. `charts/ui/price-chart` wraps `lightweight-charts` (E-04, loaded with a dynamic import, colours from the tokens, game time on the time axis via `tickToChartTime`); AP 4.2 extends it. Web workers use `tsconfig.worker.json` (`*.worker.ts`).
-- Lab frame: `lab/feature/lab/lab.page` is the parent route of `#/lab` (`''` → `simulation`) with a header (brand, `lab/ui/section-lab-nav` with Simulation, UI-Bausteine, Design-Tokens, and a „Zur App“ link to `/players`); lab pages render inside its `<main>` and don't set their own page background. The player selection links to the lab. New lab pages are child routes with a `title` and a nav entry in `LabPage.navItems`.
-- Lab statistics (AP 1.8a): `analysis/domain` holds framework-free statistics (`statistics-logic.ts`: volatility, correlation, kurtosis, autocorrelation, quantiles, histogram; `drawdown-logic.ts`); reuse them for later risk figures instead of writing new helpers. `lab/domain`: `collectMarketSample` (daily closes and returns from the support points), `computeLabStatistics` against `CALIBRATION_TARGETS` (measurement rules in TS §6.9), `LabSimulation.statistics(start)`/`simulateYears`; the page shows them in `section-statistics` with presentational parts in `lab/ui`.
+- Lab frame: `lab/feature/lab/lab.page` is the parent route of `#/lab` (`''` → `simulation`) with a header (brand, `lab/ui/lab-nav` with Simulation, UI-Bausteine, Design-Tokens, and a „Zur App“ link to `/players`); lab pages render inside its `<main>` and don't set their own page background. The player selection links to the lab. New lab pages are child routes with a `title` and a nav entry in `LabPage.navItems`.
+- Lab statistics (AP 1.8a): `analysis/domain` holds framework-free statistics (`statistics-logic.ts`: volatility, correlation, kurtosis, autocorrelation, quantiles, histogram; `drawdown-logic.ts`); reuse them for later risk figures instead of writing new helpers. `lab/domain`: `collectMarketSample` (daily closes and returns from the support points), `computeLabStatistics` against `CALIBRATION_TARGETS` (measurement rules in TS §6.9), `LabSimulation.statistics(start)`/`simulateYears`; the page shows them with `lab/ui/market-statistics` (parts: `phase-timeline`, `return-histogram`, `correlation-matrix`). All presentational parts of the lab pages live in `lab/ui`.
 - Page and component tests (§10): helpers in `src/testing/` (`renderRoute`/`settle`, DOM helpers, `installChartPlatform`, `installViewport`), platform polyfills in `src/test-setup.ts`, `provideInProcessLabWorker()`. Page tests: `shell/feature/shell`, `lab/feature/simulation` (including the statistics); component tests: `charts/ui/price-chart`, `shared/ui/tabs`, `shared/ui/dialog-confirm`.
 - `ng build`, `ng lint` and `ng test` are green. CI runs all three before deploying.
 - Environment values (`src/environments/`): `production`, `storeDevtools` (`null` = off) and `devPages` (flag for the lab and developer pages; for now `true` in production as well, so all visitors reach the lab). Only bootstrap code imports them.
@@ -53,6 +53,7 @@ Rules for implementing Angular code in this repository, so that generated code l
 
 - Component/directive prefix `app`; eslint enforces the class suffixes `Page`/`Component`.
 - Prettier `printWidth` is 100.
+- Path alias `@app/*` → `src/app/*` (`tsconfig.json` `paths`; eslint treats it as an internal import group).
 - Styling uses Tailwind CSS v4 with the semantic `--pgo-*` tokens in `src/styles.css` (§4). No UI framework besides the Angular CDK. Every new runtime dependency needs an entry in TS §16.
 - **Exact dependency versions:** every version in `package.json` is pinned exactly (`"4.3.5"`), never a range with `^`, `~`, `>=` or `*`. The project `.npmrc` sets `save-exact=true`, so `npm i <pkg>` saves exact versions; check `package.json` after installing anyway. Updates are deliberate version bumps.
 - `npm run build` writes to `www/`. Every push to `main` builds and deploys via SFTP (`.github/workflows/publish.yml`).
@@ -89,7 +90,9 @@ Code is grouped by domain first, then by layer: `src/app/<domain>/<layer>/…`, 
 | `domain`      | models (interfaces, `as const` lists) and pure domain logic                  | domain, util                           |
 | `util`        | generic helpers without domain knowledge                                     | util                                   |
 
-Nothing enforces these rules automatically, so check your imports. If a dependency doesn't fit, move the code to the right layer instead of importing across.
+ESLint enforces these rules (`no-restricted-imports` per layer in `eslint.config.js`, matched on the import path, including the framework-free rule below; specs are exempt). If a dependency doesn't fit, move the code to the right layer instead of importing across or silencing the rule.
+
+- **Smart and presentational:** `feature` holds pages and the components that inject a facade. Everything presentational lives in `ui`, also when only one page uses it.
 
 - **Framework-free layers:** `domain` and `util` import nothing from `@angular/*`, `@ngrx/*` or `rxjs`. That way the code runs in the Web Worker and in tests without TestBed.
 - **Worker:** the engine worker imports only `domain`, `util` and framework-free persistence modules, and never creates an Angular injector. Simulation code follows the determinism rules in TS §4.5.
@@ -102,8 +105,8 @@ Nothing enforces these rules automatically, so check your imports. If a dependen
 ```
 <domain>/feature/
 ├── <domain>.routes.ts              # export const <domain>Routes: Routes
-├── <name>/                         # routed page: <name>.page.{ts,html,scss}
-├── section-*/ dialog-*/            # smart sub-components and dialogs
+├── <name>/                         # routed page <name>.page.{ts,html} or smart component <name>.component.{ts,html}
+├── dialog-*/                       # dialog content
 └── state/
     ├── <domain>.actions.ts
     ├── <domain>.reducer.ts
@@ -116,7 +119,7 @@ Nothing enforces these rules automatically, so check your imports. If a dependen
     └── <domain>.utils.ts           # pure helpers for effects/reducer
 ```
 
-**ui:** one folder per component (`section-*`, `form-*`, `dialog-*`). Component-specific types go in a sibling `<component>.model.ts`. Pipes live under `pipes/<name>/<name>.pipe.ts`.
+**ui:** one folder per component or directive, named after what it shows (`return-histogram`, `bottom-nav`, `form-*`, `dialog-*`, see §3). Component-specific types go in a sibling `<component>.model.ts`; types that several components of the same `ui` folder share go in `models/<name>.model.ts`. Pipes live under `pipes/<name>/<name>.pipe.ts`. A `.scss` file exists only for special styles (§4).
 
 **data-access:**
 
@@ -137,11 +140,12 @@ Nothing enforces these rules automatically, so check your imports. If a dependen
 
 ### Naming and metadata
 
-- Routed pages are named `<name>.page.{ts,html,scss}` with the class `<Name>Page`. All other components are named `<name>.component.{ts,html,scss}` with the class `<Name>Component`.
-- The selector is `<prefix>-<name>`, using the project prefix from `angular.json`.
-- Name prefixes for non-page components by role: `section-` for parts of a page, `dialog-` for dialog content, `form-` for form components.
+- Routed pages are named `<name>.page.{ts,html}` with the class `<Name>Page` and the selector `app-<name>-page`. All other components are named `<name>.component.{ts,html}` with the class `<Name>Component` and the selector `app-<name>`.
+- Directives are named `<name>.directive.ts` with the class `<Name>Directive` and an attribute selector `app<Name>` (eslint enforces prefix and style), limited to native elements where that matters (`button[appButton]`, `i[appIcon]`).
+- Names describe what a component shows (`header`, `bottom-nav`, `return-histogram`, `world-tables`); whether it is smart or presentational follows from its layer (§1). Only two role prefixes remain: `dialog-` for dialog content and `form-` for form components. Don't add others such as `section-`.
 - Standalone is implicit, so don't write `standalone: true`. NgModules are not used.
-- Metadata order is `selector`, `imports`, `templateUrl`, `styleUrl` (singular). Use separate template and style files, even if the scss is empty.
+- Metadata order is `selector`, `imports`, `templateUrl`, `styleUrl` (singular), `host`. The template is always a separate file. A `.scss` file and `styleUrl` exist only when the component needs special styles (§4).
+- Set the host's display through the host class, `host: { class: 'block' }` (or `inline-block`, …), never with `:host { display }` (§4).
 - Don't set `changeDetection`. The framework default applies (OnPush since Angular 22).
 - Write code that works zoneless: everything the template shows must come from signals, the `async` pipe or template events. Never assign plain fields from subscriptions, promises or timers and expect the view to update. Don't use `NgZone`.
 - `imports`:
@@ -152,8 +156,8 @@ Nothing enforces these rules automatically, so check your imports. If a dependen
 ### Class members
 
 ```ts
-// feature component; ui components have no injections, only inputs/outputs
-export class SectionOrderItemsComponent {
+// feature component; ui components inject no app services (see "ui layer"), only inputs/outputs
+export class OrderItemsComponent {
   facade = inject(OrdersFacade); // read by the template → public, no modifier
   readonly #router = inject(Router); // only used in the class → private field
 
@@ -167,7 +171,7 @@ export class SectionOrderItemsComponent {
   itemCount = computed(() => this.items().length);
   order = toSignal(this.facade.order$); // only if the class (not the template) needs the value
 
-  title = $localize`:@@featureOrders-sectionOrderItems-title:Positionen`;
+  title = $localize`:@@featureOrders-orderItems-title:Positionen`;
 
   onSelectItem(itemId: string): void {
     this.selectedItem.emit(itemId);
@@ -209,7 +213,7 @@ export class SectionOrderItemsComponent {
 
 @if (order && isMaxOneMarked) {
   @for (item of order.items; track item.id) {
-    <app-section-item [item]="item" (selectedItem)="onSelectItem($event)"></app-section-item>
+    <app-order-item [item]="item" (selectedItem)="onSelectItem($event)"></app-order-item>
   }
 }
 ```
@@ -218,6 +222,7 @@ export class SectionOrderItemsComponent {
 - Use only built-in control flow (`@if`, `@for`, `@switch`, `@defer`), never `*ngIf`/`*ngFor`.
 - `@for` always tracks by an identity field (`track item.id`), or by `$index` for primitives.
 - To unwrap a signal under the same name, use an underscore alias: `@let _form = form();`.
+- Templates call no methods except event handlers. Format values with the pipes from `shared/ui/pipes` and `clock/ui/pipes` (`{{ ratio | formatPercent: 1 }}`; they show `–` for `null`, `undefined` and non-finite values) and derive everything else as `computed`, e.g. a row view model with label and texts.
 - **`data-testid` on interactive elements** (buttons, inputs, list entries, dialog actions). Use the dot-separated scheme `<feature>.<area>.<element>`, e.g. `data-testid="orders.create-order.submit"`. For dynamic values write `[attr.data-testid]="'orders.item-list.' + id + '.toggle-collapse'"`.
 
 ### Forms
@@ -297,9 +302,9 @@ export class FormGeneralInformationComponent {
 
 ### ui layer
 
-ui components are purely presentational, with data in through inputs and events out through outputs. No facades, `Store`, services, `Router` or dialogs.
+ui components are purely presentational, with data in through inputs and events out through outputs. No facades, `Store`, services, `Router` or dialogs. Framework and platform tokens are fine (`ElementRef`, `DestroyRef`, `Renderer2`, `PendingTasks`, `TemplateRef`, `DOCUMENT`), as are router directives such as `routerLink` in templates.
 
-**Exception (own UI library, TS §11.2 point 8):** `shared/ui` plays the role of a component library. It contains the `ToastService` (provided once at bootstrap via `provideToastService()`) and `openConfirmDialog(dialog, data)`, and the confirm dialog injects `DialogRef`/`DIALOG_DATA`. Effects use these for toasts and confirmations; components in other `ui` folders still don't.
+**Exception (own UI library, TS §11.2 point 8):** `shared/ui` plays the role of a component library. It contains the `ToastService` (provided once at bootstrap via `provideToastService()`) and `openConfirmDialog(dialog, data)`, and the confirm dialog injects `DialogRef`/`DIALOG_DATA`. Effects use these for toasts and confirmations; components in other `ui` folders still don't. Every `shared/ui` building block has an example on `#/lab/components` (`lab/feature/components`).
 
 ## 4. Styling
 
@@ -307,12 +312,13 @@ Styling uses **Tailwind CSS v4** with semantic tokens (TS §11.5). `src/styles.c
 
 - **Templates use utility classes**, colours only from the tokens: `bg-bg`, `bg-surface`, `bg-surface-raised`, `border-border`, `text-fg`, `text-fg-muted`, `text-accent`, `text-up`, `text-down`, `text-warning`. Spacing, sizes and typography come from Tailwind's scale.
 - **No arbitrary values** (`p-[13px]`, `bg-[#123456]`) and no default colours (`bg-red-500` produces no styles anyway). New colours are new tokens in `src/styles.css`, with text contrast ≥ 4.5:1 in both themes (check on `#/lab/tokens`).
-- Write class names in full. Tailwind finds classes by scanning the sources, so don't assemble them from strings (`'bg-' + x`). Component variants use signal inputs and a `computed` class mapping with complete class names.
+- Write class names in full. Tailwind finds classes by scanning the sources, so don't assemble them from strings (`'bg-' + x`). Component variants use signal inputs and a `computed` class mapping with complete class names. The only exception is `appIcon`, which builds `bi bi-<name>`: Bootstrap Icons come from the global stylesheet, not from the scan.
+- States follow the ARIA attributes instead of class ternaries: `current:` (custom variant in `src/styles.css` for `aria-current="page"`, set by `routerLinkActive` with `ariaCurrentWhenActive="page"` or `appMenuItem [active]`), `aria-selected:`, `aria-disabled:`.
 - Numbers (amounts, prices, percentages) get `tabular-nums`.
 - Dark mode is the class `dark` on `<html>`. Because the tokens switch, components rarely need the `dark:` variant.
-- **Component SCSS** (one `.component.scss` / `.page.scss` per component) is only for `:host` and special cases. There, tokens are read as `var(--pgo-*)`; never hard-coded hex/rgb values or `rem` spacing. No Tailwind directives (`@apply`, `@reference`, `@theme`) in component styles.
-- Use `:host` for host styling. Don't override `ViewEncapsulation`.
-- Icons come from `bootstrap-icons`. Don't mix in other UI frameworks (Angular Material, Bootstrap utility classes, …).
+- **Host styling** goes through the host class (`host: { class: 'block' }`, `host: { '[class]': 'classes()' }`). Don't set `display` or other properties that callers might change with utilities on `:host`: Angular's component styles are unlayered and win over Tailwind's `@layer utilities`, so `<app-panel class="hidden md:block">` would have no effect.
+- **Component SCSS** (`.component.scss` / `.page.scss`) exists only for special cases that utilities can't express (`env(safe-area-inset-*)`, `::ng-deep`); `#/lab/tokens` keeps one example of tokens in SCSS. There, tokens are read as `var(--pgo-*)`; never hard-coded hex/rgb values or `rem` spacing. No Tailwind directives (`@apply`, `@reference`, `@theme`) in component styles. Don't override `ViewEncapsulation`.
+- Icons come from `bootstrap-icons`, always through `<i appIcon="bell"></i>` (decorative, `aria-hidden`; the surrounding control carries the accessible name, e.g. `appIconButton [label]`). Don't mix in other UI frameworks (Angular Material, Bootstrap utility classes, …).
 - Custom class names in SCSS follow BEM (`block__element--modifier`).
 - Use `::ng-deep` only to reach into library internals, and scope it under `:host`.
 
@@ -323,12 +329,12 @@ The source locale is **German** (`de`).
 - Every user-facing text gets an **explicit custom ID**, without meaning or description.
 - ID scheme: `@@<layer><Domain>-<componentOrClass>-<key>`.
   - `<layer><Domain>` is the layer and domain the text lives in, in camelCase (`users/feature` → `featureUsers`, `orders/ui` → `uiOrders`).
-  - `<componentOrClass>` is the class name in camelCase without the `Component` suffix (`createUserPage`, `sectionOrderItems`, `ordersEffects`).
+  - `<componentOrClass>` is the class name in camelCase without the `Component` suffix (`createUserPage`, `orderItems`, `ordersEffects`).
   - `<key>` may have several segments (`createUserForm-name-label`).
   - Examples: `@@featureUsers-createUserPage-submit`, `@@uiOrders-formGeneralInformation-name`, `@@featureOrders-ordersEffects-loadOrdersFailure`.
   - Never reuse an ID for a different text.
 - In TypeScript, create class-field labels: ``label = $localize`:@@featureX-xPage-label:Text`;``
-- In templates: `<span i18n="@@uiX-sectionX-title">Titel</span>`, `<ng-container i18n="@@…">`, and `i18n-<attr>="@@…"` for attributes (e.g. `i18n-label`).
+- In templates: `<span i18n="@@uiOrders-orderItem-title">Titel</span>`, `<ng-container i18n="@@…">`, and `i18n-<attr>="@@…"` for attributes (e.g. `i18n-label`).
 - After adding or changing texts, run `ng extract-i18n` and keep the updated source `messages.xlf` in the change.
 
 ## 6. State management (NgRx)
@@ -505,7 +511,7 @@ export const ORDERS_SERVICE_CONFIG = new InjectionToken<OrdersServiceConfig>(
   {
     path: 'orders',
     loadChildren: async () => {
-      return (await import('./orders/feature/orders.routes')).ordersRoutes;
+      return (await import('@app/orders/feature/orders.routes')).ordersRoutes;
     },
   },
   ```
@@ -526,6 +532,7 @@ export const ORDERS_SERVICE_CONFIG = new InjectionToken<OrdersServiceConfig>(
 - Model files are named `*.model.ts`.
 - Code compiles under `strict` and `strictTemplates`. Use `unknown` instead of `any`, and don't use non-null assertions to silence real nullability.
 - Unused parameters and variables get a `_` prefix. Unused imports are a lint error.
+- Imports within a domain are relative (`./`, `../`); imports from another domain, from the app root and from `src/testing` use the alias `@app/<domain>/<layer>/…`. Cross-domain dependencies are then visible at a glance.
 - Imports are sorted by eslint (`import/order`, alphabetical, groups separated by blank lines). Run `ng lint --fix` instead of sorting by hand.
 - Formatting is done by Prettier (`.prettierrc`), not by hand. `bracketSameLine` and strict HTML whitespace are intentional, so closing tags like `"></ion-input>` or `>Text</ion-title\n>` are expected.
 - Identifiers and comments are in English; only i18n source texts are German.
@@ -638,4 +645,11 @@ They run the real code: store, effects, facades, services, worker code, child co
 | Arbitrary values (`p-[13px]`), default colours (`bg-red-500`)                         | Tailwind scale and token colours; new tokens in `styles.css`             |
 | `@apply`/`@reference` in component SCSS, global Sass                                  | utilities in templates; global styles only in `styles.css`               |
 | Class names assembled from strings (`'bg-' + x`)                                      | complete class names in a `computed` mapping                             |
+| Class ternaries for active or selected states                                         | `current:`, `aria-selected:`, `aria-disabled:` variants                  |
+| `<i class="bi bi-…">`, `'bi-' + name`                                                 | `<i appIcon="…"></i>`                                                    |
+| `:host { display: block }`, empty `.scss` files                                       | `host: { class: 'block' }`; `styleUrl` only for special cases            |
+| Role prefixes such as `section-` (`app-section-header`)                               | names that describe the content; only `dialog-` and `form-` remain       |
+| Presentational components in `feature`                                                | `<domain>/ui`                                                            |
+| Method calls in templates (`formatPercent(x)`, `rowLabel(row)`)                       | pipes; `computed` view models                                            |
+| Relative imports into other domains (`../../../shared/ui/…`)                          | `@app/shared/ui/…`                                                       |
 | Dialogs opened from ui components; dialog folders named `<name>-dialog`               | dialogs opened from effects; `dialog-<name>/`                            |

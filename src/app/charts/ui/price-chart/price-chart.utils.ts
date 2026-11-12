@@ -1,9 +1,9 @@
-import { PriceChartCandle, PriceChartColors, PriceChartLinePoint } from './price-chart.model';
+import { tickToDateTime } from '@app/clock/domain/calendar-logic';
+import { formatGameTime } from '@app/clock/domain/game-time-format';
+import { GAME_SECONDS_PER_TICK, Tick } from '@app/clock/domain/models/time.model';
+import { Candle } from '@app/market/domain/models/candle.model';
 
-import { tickToDateTime } from '../../../clock/domain/calendar-logic';
-import { formatGameTime } from '../../../clock/domain/game-time-format';
-import { GAME_SECONDS_PER_TICK, Tick } from '../../../clock/domain/models/time.model';
-import { Candle } from '../../../market/domain/models/candle.model';
+import { PriceChartCandle, PriceChartColors, PriceChartLinePoint } from './price-chart.model';
 
 const MS_PER_SECOND = 1000;
 const LOCALE = 'de-DE';

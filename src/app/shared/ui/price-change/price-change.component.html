@@ -1,6 +1,6 @@
 <span class="inline-flex items-center gap-1 tabular-nums" [class]="colorClass()">
   @if (showArrow()) {
-    <i class="bi" [class]="iconClass()" aria-hidden="true"></i>
+    <i [appIcon]="icon()"></i>
   }
   {{ text() }}
 </span>

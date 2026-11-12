@@ -1,3 +1,17 @@
+import {
+  BankConditions,
+  BankType,
+  FeeModel,
+  INTEREST_PAYOUTS,
+  SavingsAccountConditions,
+} from '@app/banking/domain/models/bank-conditions.model';
+
+import { eurosToCents } from '@app/shared/domain/money-logic';
+
+import { pick, uniformInt, weightedIndex } from '@app/simulation/util/distributions';
+
+import { RandomStream } from '@app/simulation/util/random-stream';
+
 import { GenerationRegistries, roundToGrid, uniformIn } from './generator.utils';
 import { formatId } from './identifier-logic';
 import { Bank } from './models/bank.model';
@@ -9,17 +23,6 @@ import {
   NEO_BROKER_PATTERNS,
   ONLINE_BROKER_PATTERNS,
 } from './names/name-parts';
-
-import {
-  BankConditions,
-  BankType,
-  FeeModel,
-  INTEREST_PAYOUTS,
-  SavingsAccountConditions,
-} from '../../banking/domain/models/bank-conditions.model';
-import { eurosToCents } from '../../shared/domain/money-logic';
-import { pick, uniformInt, weightedIndex } from '../../simulation/util/distributions';
-import { RandomStream } from '../../simulation/util/random-stream';
 
 /** Rates in steps of 0.05 percentage points. */
 const RATE_STEPS = 2000;

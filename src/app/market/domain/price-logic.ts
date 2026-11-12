@@ -1,4 +1,4 @@
-import { detExp } from '../../simulation/util/det-math';
+import { detExp } from '@app/simulation/util/det-math';
 
 /**
  * Price in euros from a log price, never below the floor (TS §6.4). Support points and minute

@@ -1,17 +1,4 @@
-import { CalibrationTargetId, targetRows } from './calibration-targets';
-import { MarketSample } from './market-sample';
-import {
-  CorrelationMatrix,
-  DrawdownRow,
-  LabStatistics,
-  PhaseSegment,
-  PhaseShare,
-  ReturnDistribution,
-  SizeVolatility,
-  StatisticsStart,
-} from './models/lab-statistics.model';
-
-import { drawdownEpisodes, maxDrawdown } from '../../analysis/domain/drawdown-logic';
+import { drawdownEpisodes, maxDrawdown } from '@app/analysis/domain/drawdown-logic';
 import {
   annualizedVolatility,
   autocorrelation,
@@ -24,12 +11,25 @@ import {
   quantile,
   skewness,
   standardDeviation,
-} from '../../analysis/domain/statistics-logic';
-import { dayStartTick, weekdayOfDay } from '../../clock/domain/calendar-logic';
-import { DAYS_PER_WEEK } from '../../clock/domain/models/time.model';
-import { MARKET_PHASES, MarketPhase } from '../../market/domain/models/market-config.model';
-import { SIZE_CLASSES } from '../../world/domain/models/taxonomy.model';
-import { World } from '../../world/domain/models/world.model';
+} from '@app/analysis/domain/statistics-logic';
+import { dayStartTick, weekdayOfDay } from '@app/clock/domain/calendar-logic';
+import { DAYS_PER_WEEK } from '@app/clock/domain/models/time.model';
+import { MARKET_PHASES, MarketPhase } from '@app/market/domain/models/market-config.model';
+import { SIZE_CLASSES } from '@app/world/domain/models/taxonomy.model';
+import { World } from '@app/world/domain/models/world.model';
+
+import { CalibrationTargetId, targetRows } from './calibration-targets';
+import { MarketSample } from './market-sample';
+import {
+  CorrelationMatrix,
+  DrawdownRow,
+  LabStatistics,
+  PhaseSegment,
+  PhaseShare,
+  ReturnDistribution,
+  SizeVolatility,
+  StatisticsStart,
+} from './models/lab-statistics.model';
 
 /** Typical shares of the time per phase (TS §6.3). */
 const TYPICAL_PHASE_SHARES: Record<MarketPhase, number> = {

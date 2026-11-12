@@ -1,4 +1,4 @@
-import { Tick } from '../../../clock/domain/models/time.model';
+import { Tick } from '@app/clock/domain/models/time.model';
 
 export const CANDLE_RESOLUTIONS = ['1m', '5m', '15m', '1h', '1d', '1w'] as const;
 export type CandleResolution = (typeof CANDLE_RESOLUTIONS)[number];

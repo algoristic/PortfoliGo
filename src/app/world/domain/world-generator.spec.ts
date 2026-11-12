@@ -1,3 +1,5 @@
+import { deriveSeedKey } from '@app/simulation/util/seed';
+
 import { freeFloatMarketCap } from './company-generator';
 import { DEFAULT_WORLD_CONFIG } from './default-world-config';
 import { isValidIsin } from './identifier-logic';
@@ -7,8 +9,6 @@ import { World } from './models/world.model';
 import { isBlockedName } from './name-logic';
 import { worldChecksum } from './world-checksum';
 import { generateWorld } from './world-generator';
-
-import { deriveSeedKey } from '../../simulation/util/seed';
 
 /** Changes when the world for existing seeds changes; then `simVersion` must be raised (TS §15). */
 const GOLDEN_1_CHECKSUM = 'aef20df8b8edb99b98a35e668dcbcb43';

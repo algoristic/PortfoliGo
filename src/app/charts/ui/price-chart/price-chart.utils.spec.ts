@@ -1,3 +1,6 @@
+import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
+import { Candle } from '@app/market/domain/models/candle.model';
+
 import {
   chartTimeToTick,
   formatChartTime,
@@ -10,9 +13,6 @@ import {
   toChartCandles,
   toLinePoints,
 } from './price-chart.utils';
-
-import { dateTimeToTick, GAME_START_TICK } from '../../../clock/domain/calendar-logic';
-import { Candle } from '../../../market/domain/models/candle.model';
 
 const MS_PER_SECOND = 1000;
 

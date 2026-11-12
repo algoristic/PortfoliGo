@@ -1,17 +1,17 @@
-import { isMarketDay } from './market-calendar';
-
 import {
   dateTimeToTick,
   dayIndex,
   dayStartTick,
   isBankWorkingDay,
   tickToDateTime,
-} from '../../clock/domain/calendar-logic';
-import { Cents } from '../../shared/domain/models/money.model';
-import { eurosToCents } from '../../shared/domain/money-logic';
-import { detLog } from '../../simulation/util/det-math';
-import { DividendSchedule } from '../../world/domain/models/company.model';
-import { DividendFrequency, DIVIDENDS_PER_YEAR } from '../../world/domain/models/taxonomy.model';
+} from '@app/clock/domain/calendar-logic';
+import { Cents } from '@app/shared/domain/models/money.model';
+import { eurosToCents } from '@app/shared/domain/money-logic';
+import { detLog } from '@app/simulation/util/det-math';
+import { DividendSchedule } from '@app/world/domain/models/company.model';
+import { DividendFrequency, DIVIDENDS_PER_YEAR } from '@app/world/domain/models/taxonomy.model';
+
+import { isMarketDay } from './market-calendar';
 
 /** Market days between the announcement and the ex-date (TS §6.5). */
 export const ANNOUNCEMENT_LEAD_DAYS = 20;

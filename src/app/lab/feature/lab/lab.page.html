@@ -5,14 +5,11 @@
       <span class="text-accent">PortfoliGo</span>
       <span class="text-fg-muted" i18n="@@featureLab-labPage-title">Labor</span>
     </p>
-    <app-section-lab-nav
+    <app-lab-nav
       class="order-last w-full md:order-none md:w-auto md:flex-1"
-      [items]="navItems"></app-section-lab-nav>
-    <a
-      class="ml-auto flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium whitespace-nowrap text-fg-muted transition-colors hover:bg-surface-raised hover:text-fg"
-      routerLink="/players"
-      data-testid="lab.header.app">
-      <i class="bi bi-box-arrow-left text-base" aria-hidden="true"></i>
+      [items]="navItems"></app-lab-nav>
+    <a appNavLink class="ml-auto shrink-0" routerLink="/players" data-testid="lab.header.app">
+      <i appIcon="box-arrow-left" class="text-base"></i>
       <span i18n="@@featureLab-labPage-app">Zur App</span>
     </a>
   </header>

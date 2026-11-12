@@ -1,0 +1,4 @@
+:host {
+  // Keeps the bar above the home indicator on phones (`viewport-fit=cover`).
+  padding-bottom: env(safe-area-inset-bottom);
+}

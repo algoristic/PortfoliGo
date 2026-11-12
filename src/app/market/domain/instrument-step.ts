@@ -1,12 +1,13 @@
+import { CENTS_PER_EURO } from '@app/shared/domain/models/money.model';
+
+import { normal, poisson, uniformInt } from '@app/simulation/util/distributions';
+
 import { announcementDay, dividendCents, exDayOnOrAfter, exMarkdown } from './dividend-logic';
 import { MarketContext } from './market-context';
 import { LOADINGS_PER_INSTRUMENT } from './market-layout';
 import { MarketDay } from './models/market-day.model';
 import { InstrumentState } from './models/market-state.model';
 import { priceFromLog } from './price-logic';
-
-import { CENTS_PER_EURO } from '../../shared/domain/models/money.model';
-import { normal, poisson, uniformInt } from '../../simulation/util/distributions';
 
 /** 20 market days are at most 28 calendar days; earlier days skip the exact check. */
 const MAX_ANNOUNCEMENT_CALENDAR_DAYS = 28;

@@ -1,6 +1,6 @@
-import { MarketLayout } from './market-layout';
+import { World } from '@app/world/domain/models/world.model';
 
-import { World } from '../../world/domain/models/world.model';
+import { MarketLayout } from './market-layout';
 
 /**
  * Indices of the world in a fixed order with their constituents in flat arrays (TS §5.5, §6.6).

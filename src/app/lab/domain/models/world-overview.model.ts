@@ -1,9 +1,9 @@
-import { BankType, TradingVenue } from '../../../banking/domain/models/bank-conditions.model';
-import { SeriesKind } from '../../../market/domain/series';
-import { Cents } from '../../../shared/domain/models/money.model';
-import { Company } from '../../../world/domain/models/company.model';
-import { EtfReplication } from '../../../world/domain/models/etf.model';
-import { IndexKind } from '../../../world/domain/models/market-index.model';
+import { BankType, TradingVenue } from '@app/banking/domain/models/bank-conditions.model';
+import { SeriesKind } from '@app/market/domain/series';
+import { Cents } from '@app/shared/domain/models/money.model';
+import { Company } from '@app/world/domain/models/company.model';
+import { EtfReplication } from '@app/world/domain/models/etf.model';
+import { IndexKind } from '@app/world/domain/models/market-index.model';
 
 /** Flat table rows of a generated world for the simulation lab (TS §14.2). */
 export interface CompanyRow {

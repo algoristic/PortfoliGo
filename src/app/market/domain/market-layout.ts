@@ -1,10 +1,10 @@
-import { FACTOR_KINDS, FactorKind } from './models/market-config.model';
+import { MINUTES_PER_DAY } from '@app/clock/domain/models/time.model';
+import { detLog } from '@app/simulation/util/det-math';
+import { Company, DividendSchedule } from '@app/world/domain/models/company.model';
+import { DividendFrequency } from '@app/world/domain/models/taxonomy.model';
+import { World } from '@app/world/domain/models/world.model';
 
-import { MINUTES_PER_DAY } from '../../clock/domain/models/time.model';
-import { detLog } from '../../simulation/util/det-math';
-import { Company, DividendSchedule } from '../../world/domain/models/company.model';
-import { DividendFrequency } from '../../world/domain/models/taxonomy.model';
-import { World } from '../../world/domain/models/world.model';
+import { FACTOR_KINDS, FactorKind } from './models/market-config.model';
 
 /** Number of factor loadings per instrument (TS §6.2): world, region, sector, industry, style, size. */
 export const LOADINGS_PER_INSTRUMENT = FACTOR_KINDS.length;

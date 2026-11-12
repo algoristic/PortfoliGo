@@ -6,7 +6,7 @@ const devRoutes: Routes = [
   {
     path: 'lab',
     loadChildren: async () => {
-      return (await import('./lab/feature/lab.routes')).labRoutes;
+      return (await import('@app/lab/feature/lab.routes')).labRoutes;
     },
   },
 ];
@@ -16,13 +16,13 @@ export const routes: Routes = [
   {
     path: 'players',
     loadChildren: async () => {
-      return (await import('./players/feature/players.routes')).playersRoutes;
+      return (await import('@app/players/feature/players.routes')).playersRoutes;
     },
   },
   {
     path: 'game/:playerId',
     loadChildren: async () => {
-      return (await import('./shell/feature/shell.routes')).shellRoutes;
+      return (await import('@app/shell/feature/shell.routes')).shellRoutes;
     },
   },
   ...(environment.devPages ? devRoutes : []),

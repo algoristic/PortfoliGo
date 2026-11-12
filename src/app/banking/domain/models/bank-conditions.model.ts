@@ -1,4 +1,4 @@
-import { Cents } from '../../../shared/domain/models/money.model';
+import { Cents } from '@app/shared/domain/models/money.model';
 
 export const BANK_TYPES = ['branch', 'direct', 'online-broker', 'neo-broker'] as const;
 export type BankType = (typeof BANK_TYPES)[number];

@@ -1,3 +1,5 @@
+import { World } from '@app/world/domain/models/world.model';
+
 import {
   BankRow,
   CompanyRow,
@@ -6,8 +8,6 @@ import {
   SeriesOption,
   WorldOverview,
 } from './models/world-overview.model';
-
-import { World } from '../../world/domain/models/world.model';
 
 /**
  * Table rows and the series list of a world. The series follow the numbering of `series.ts`:

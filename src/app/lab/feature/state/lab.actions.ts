@@ -1,6 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 
-import { CandleRequest, LabChartOptions } from './lab.model';
+import { CandleRequest } from './lab.model';
 
 import {
   ComputedStatistics,
@@ -9,6 +9,7 @@ import {
   SimulatedPeriod,
 } from '../../data-access/service/lab-simulation-service.model';
 import { StatisticsStart } from '../../domain/models/lab-statistics.model';
+import { LabChartOptions } from '../../ui/series-chart/series-chart.model';
 
 export const enterSimulationPage = createAction('[Lab/Page] Enter simulation page');
 export const leaveSimulationPage = createAction('[Lab/Page] Leave simulation page');

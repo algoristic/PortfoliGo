@@ -1,3 +1,15 @@
+import { eurosToCents, roundHalfAwayFromZero } from '@app/shared/domain/money-logic';
+
+import {
+  normal,
+  pick,
+  shuffle,
+  uniformInt,
+  weightedIndex,
+} from '@app/simulation/util/distributions';
+
+import { RandomStream } from '@app/simulation/util/random-stream';
+
 import {
   allocateByLargestRemainder,
   GenerationRegistries,
@@ -17,16 +29,6 @@ import {
 } from './models/taxonomy.model';
 import { CompanyConfig } from './models/world-config.model';
 import { COUNTRIES, EXCHANGES, INDUSTRIES, REGIONS } from './taxonomy';
-
-import { eurosToCents, roundHalfAwayFromZero } from '../../shared/domain/money-logic';
-import {
-  normal,
-  pick,
-  shuffle,
-  uniformInt,
-  weightedIndex,
-} from '../../simulation/util/distributions';
-import { RandomStream } from '../../simulation/util/random-stream';
 
 const STYLE_THRESHOLD = 1 / 3;
 /** Share of names with an industry word ("Velora Micro AG"); the rest is "Velora AG". */

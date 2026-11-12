@@ -1,3 +1,7 @@
+import { createStream } from '@app/simulation/util/random-stream';
+
+import { SeedKey } from '@app/simulation/util/seed';
+
 import { generateBanks } from './bank-generator';
 import { generateCompanies } from './company-generator';
 import { DEFAULT_WORLD_CONFIG } from './default-world-config';
@@ -9,9 +13,6 @@ import { generateIndices } from './index-generator';
 import { WorldConfig } from './models/world-config.model';
 import { World } from './models/world.model';
 import { COUNTRIES, EXCHANGES, INDUSTRIES, REGIONS, SECTORS } from './taxonomy';
-
-import { createStream } from '../../simulation/util/random-stream';
-import { SeedKey } from '../../simulation/util/seed';
 
 /**
  * Generates the world for a seed (TS §5.1). Every stage draws from its own stream, so changing

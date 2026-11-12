@@ -1,13 +1,13 @@
-import { LabSimulation } from './lab-simulation';
-
 import {
   dateTimeToTick,
   dayIndex,
   dayStartTick,
   GAME_START_TICK,
   weekday,
-} from '../../clock/domain/calendar-logic';
-import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '../../clock/domain/models/time.model';
+} from '@app/clock/domain/calendar-logic';
+import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
+
+import { LabSimulation } from './lab-simulation';
 
 const SEED = 'lab-test';
 

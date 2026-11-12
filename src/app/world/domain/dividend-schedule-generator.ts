@@ -1,8 +1,9 @@
+import { uniformInt } from '@app/simulation/util/distributions';
+
+import { RandomStream } from '@app/simulation/util/random-stream';
+
 import { Company, DividendSchedule } from './models/company.model';
 import { DIVIDENDS_PER_YEAR } from './models/taxonomy.model';
-
-import { uniformInt } from '../../simulation/util/distributions';
-import { RandomStream } from '../../simulation/util/random-stream';
 
 const MONTHS_PER_YEAR = 12;
 const LAST_SCHEDULE_DAY = 28;

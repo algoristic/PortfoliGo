@@ -1,6 +1,10 @@
 import { inject, Injectable } from '@angular/core';
 import { filter, Observable, Subject, take } from 'rxjs';
 
+import { Tick } from '@app/clock/domain/models/time.model';
+
+import { CandleResolution } from '@app/market/domain/models/candle.model';
+
 import { LAB_WORKER_FACTORY } from './lab-simulation-service.config';
 import {
   ComputedStatistics,
@@ -14,8 +18,6 @@ import {
   SimulatedPeriod,
 } from './lab-simulation-service.model';
 
-import { Tick } from '../../../clock/domain/models/time.model';
-import { CandleResolution } from '../../../market/domain/models/candle.model';
 import { CandleSource } from '../../domain/models/candle-source.model';
 import { StatisticsStart } from '../../domain/models/lab-statistics.model';
 

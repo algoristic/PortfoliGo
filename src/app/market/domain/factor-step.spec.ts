@@ -1,11 +1,12 @@
+import { deriveSeedKey } from '@app/simulation/util/seed';
+
+import { generateWorld } from '@app/world/domain/world-generator';
+
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { initialFactorState, stepPhase } from './factor-step';
 import { createMarketContext } from './market-context';
 import { advanceMarket, createMarketState } from './market-step';
 import { MARKET_PHASES, MarketPhase } from './models/market-config.model';
-
-import { deriveSeedKey } from '../../simulation/util/seed';
-import { generateWorld } from '../../world/domain/world-generator';
 
 const seedKey = deriveSeedKey('golden-1');
 const context = createMarketContext(seedKey, generateWorld(seedKey), DEFAULT_MARKET_CONFIG);

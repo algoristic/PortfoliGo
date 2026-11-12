@@ -1,5 +1,5 @@
-import { uniformInt } from '../../simulation/util/distributions';
-import { RandomStream } from '../../simulation/util/random-stream';
+import { uniformInt } from '@app/simulation/util/distributions';
+import { RandomStream } from '@app/simulation/util/random-stream';
 
 /**
  * Country prefix of the fictional ISIN-format identifiers. `QP` lies in the user-assigned

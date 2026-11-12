@@ -1,12 +1,14 @@
+import { CENTS_PER_EURO } from '@app/shared/domain/models/money.model';
+
+import { eurosToCentsDown } from '@app/shared/domain/money-logic';
+
+import { normal } from '@app/simulation/util/distributions';
+
 import { exDayOnOrAfter } from './dividend-logic';
 import { isMarketDay } from './market-calendar';
 import { MarketContext } from './market-context';
 import { MarketDay } from './models/market-day.model';
 import { MarketState } from './models/market-state.model';
-
-import { CENTS_PER_EURO } from '../../shared/domain/models/money.model';
-import { eurosToCentsDown } from '../../shared/domain/money-logic';
-import { normal } from '../../simulation/util/distributions';
 
 const CALENDAR_DAYS_PER_YEAR = 365;
 

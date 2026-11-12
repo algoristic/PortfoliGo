@@ -1,3 +1,6 @@
+import { createStream } from '@app/simulation/util/random-stream';
+import { deriveSeedKey } from '@app/simulation/util/seed';
+
 import {
   FICTIONAL_ISIN_PREFIX,
   formatId,
@@ -7,9 +10,6 @@ import {
   nextTicker,
   tickerCandidates,
 } from './identifier-logic';
-
-import { createStream } from '../../simulation/util/random-stream';
-import { deriveSeedKey } from '../../simulation/util/seed';
 
 describe('formatId', () => {
   it('pads the number to four digits', () => {

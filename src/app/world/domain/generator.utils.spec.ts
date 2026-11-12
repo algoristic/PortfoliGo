@@ -1,7 +1,7 @@
-import { allocateByLargestRemainder, lognormalIn, roundToGrid } from './generator.utils';
+import { createStream } from '@app/simulation/util/random-stream';
+import { deriveSeedKey } from '@app/simulation/util/seed';
 
-import { createStream } from '../../simulation/util/random-stream';
-import { deriveSeedKey } from '../../simulation/util/seed';
+import { allocateByLargestRemainder, lognormalIn, roundToGrid } from './generator.utils';
 
 describe('allocateByLargestRemainder', () => {
   it('splits the total exactly by weight', () => {

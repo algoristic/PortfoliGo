@@ -3,8 +3,9 @@ import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { provideMockStore } from '@ngrx/store/testing';
 
+import { provideToastService } from '@app/shared/ui/toast/toast-service.providers';
+
 import { routes } from './app.routes';
-import { provideToastService } from './shared/ui/toast/toast-service.providers';
 
 describe('routes', () => {
   let harness: RouterTestingHarness;

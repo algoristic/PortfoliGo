@@ -1,4 +1,7 @@
-import { CHART_RANGES, LabChartOptions } from './lab.model';
+import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
+import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
+import { CANDLE_RESOLUTIONS } from '@app/market/domain/models/candle.model';
+
 import {
   candleRequest,
   DEFAULT_RESOLUTIONS,
@@ -10,9 +13,7 @@ import {
   rangeStart,
 } from './lab.utils';
 
-import { dateTimeToTick, GAME_START_TICK } from '../../../clock/domain/calendar-logic';
-import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '../../../clock/domain/models/time.model';
-import { CANDLE_RESOLUTIONS } from '../../../market/domain/models/candle.model';
+import { CHART_RANGES, LabChartOptions } from '../../ui/series-chart/series-chart.model';
 
 describe('lab utils', () => {
   describe('mergeChartOptions', () => {

@@ -1,9 +1,9 @@
+import { CENTS_PER_EURO } from '@app/shared/domain/models/money.model';
+
 import { MarketContext } from './market-context';
 import { MarketDay } from './models/market-day.model';
 import { MarketState } from './models/market-state.model';
 import { priceFromLog } from './price-logic';
-
-import { CENTS_PER_EURO } from '../../shared/domain/models/money.model';
 
 /**
  * Day step of the indices (TS §6.6) after all instruments: advances the reinvestment factor `R`

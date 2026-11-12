@@ -9,17 +9,17 @@
 </button>
 
 <div class="flex min-h-dvh flex-col">
-  <app-section-header
+  <app-header
     class="sticky top-0 z-20"
     [compact]="!isDesktop()"
     [activePath]="activeNavPath"
-    (selectedPlayerMenuAction)="onSelectPlayerMenuAction($event)"></app-section-header>
+    (selectedPlayerMenuAction)="onSelectPlayerMenuAction($event)"></app-header>
 
   <div class="flex flex-1">
     @if (isDesktop()) {
-      <app-section-side-nav
+      <app-side-nav
         class="sticky top-14 w-56 shrink-0 self-start"
-        [items]="navItems"></app-section-side-nav>
+        [items]="navItems"></app-side-nav>
     }
 
     <main
@@ -34,11 +34,11 @@
   </div>
 
   @if (!isDesktop()) {
-    <app-section-bottom-nav
+    <app-bottom-nav
       class="fixed inset-x-0 bottom-0 z-20"
       [items]="bottomNavItems"
       [moreItems]="moreNavItems"
       [activePath]="activeNavPath"
-      (selectedMenuItem)="onSelectNavItem($event)"></app-section-bottom-nav>
+      (selectedMenuItem)="onSelectNavItem($event)"></app-bottom-nav>
   }
 </div>

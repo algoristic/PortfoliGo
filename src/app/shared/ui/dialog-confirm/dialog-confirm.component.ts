@@ -10,7 +10,7 @@ import { DialogComponent } from '../dialog/dialog.component';
   selector: 'app-dialog-confirm',
   imports: [DialogComponent, ButtonDirective],
   templateUrl: './dialog-confirm.component.html',
-  styleUrl: './dialog-confirm.component.scss',
+  host: { class: 'block' },
 })
 export class DialogConfirmComponent {
   readonly #dialogRef = inject<DialogRef<ConfirmDialogResult>>(DialogRef);

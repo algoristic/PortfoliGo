@@ -5,7 +5,7 @@ import { Component, computed, input } from '@angular/core';
   selector: 'app-skeleton',
   imports: [],
   templateUrl: './skeleton.component.html',
-  styleUrl: './skeleton.component.scss',
+  host: { class: 'block' },
 })
 export class SkeletonComponent {
   lines = input(1);

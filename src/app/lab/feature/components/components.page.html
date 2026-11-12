@@ -26,7 +26,7 @@
         label="Aktualisieren"
         i18n-label="@@featureLab-componentsPage-refresh"
         data-testid="lab.components.icon-button">
-        <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+        <i appIcon="arrow-clockwise"></i>
       </button>
     </div>
   </app-panel>
@@ -63,6 +63,71 @@
       i18n-label="@@featureLab-componentsPage-noChange"
       value="1.000,00 €"></app-stat-tile>
   </div>
+
+  <app-panel
+    heading="Icons, Navigation und Menü"
+    i18n-heading="@@featureLab-componentsPage-navigation">
+    <div class="flex flex-wrap items-start gap-8">
+      <div class="flex items-center gap-3 text-lg text-fg-muted">
+        @for (icon of icons; track icon) {
+          <i [appIcon]="icon" [attr.title]="icon"></i>
+        }
+      </div>
+      <nav class="w-56" [attr.aria-label]="navLabel">
+        <ul class="flex flex-col gap-1">
+          @for (item of navItems; track item.path) {
+            <li>
+              <a
+                appNavLink
+                [routerLink]="item.path"
+                routerLinkActive
+                ariaCurrentWhenActive="page"
+                [attr.data-testid]="'lab.components.nav-link.' + item.path">
+                <i class="text-base" [appIcon]="item.icon"></i>
+                {{ item.label }}
+              </a>
+            </li>
+          }
+        </ul>
+      </nav>
+      <div class="relative">
+        <button
+          appButton
+          ngMenuTrigger
+          type="button"
+          data-testid="lab.components.menu"
+          i18n="@@featureLab-componentsPage-openMenu"
+          [menu]="exampleMenu">
+          Menü öffnen
+        </button>
+        <div ngMenu appMenu #exampleMenu="ngMenu" class="absolute top-full left-0 mt-1">
+          <div ngMenuItem appMenuItem value="normal" data-testid="lab.components.menu.normal">
+            <i appIcon="star" class="text-fg-muted"></i>
+            <ng-container i18n="@@featureLab-componentsPage-menuNormal">Eintrag</ng-container>
+          </div>
+          <div
+            ngMenuItem
+            appMenuItem
+            value="active"
+            [active]="true"
+            data-testid="lab.components.menu.active">
+            <i appIcon="check2-circle"></i>
+            <span class="flex-1" i18n="@@featureLab-componentsPage-menuActive">Aktive Seite</span>
+            <i appIcon="check2"></i>
+          </div>
+          <div
+            ngMenuItem
+            appMenuItem
+            value="disabled"
+            [disabled]="true"
+            data-testid="lab.components.menu.disabled">
+            <i appIcon="slash-circle"></i>
+            <ng-container i18n="@@featureLab-componentsPage-menuDisabled">Deaktiviert</ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </app-panel>
 
   <app-panel heading="Tabs" i18n-heading="@@featureLab-componentsPage-tabs">
     <app-tabs

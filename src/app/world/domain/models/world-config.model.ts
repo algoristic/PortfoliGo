@@ -1,8 +1,8 @@
+import { BankType, InterestPayout } from '@app/banking/domain/models/bank-conditions.model';
+
 import { EtfReplication } from './etf.model';
 import { IndexKind } from './market-index.model';
 import { Cyclicality, RegionId, SectorId, SizeClass, Style } from './taxonomy.model';
-
-import { BankType, InterestPayout } from '../../../banking/domain/models/bank-conditions.model';
 
 /** Closed interval `[min, max]`. */
 export type Range = readonly [number, number];

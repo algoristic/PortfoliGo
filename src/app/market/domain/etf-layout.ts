@@ -1,10 +1,12 @@
+import { DividendSchedule } from '@app/world/domain/models/company.model';
+
+import { EtfDistributionFrequency } from '@app/world/domain/models/etf.model';
+
+import { World } from '@app/world/domain/models/world.model';
+
 import { IndexLayout } from './index-layout';
 import { MarketLayout } from './market-layout';
 import { MarketConfig } from './models/market-config.model';
-
-import { DividendSchedule } from '../../world/domain/models/company.model';
-import { EtfDistributionFrequency } from '../../world/domain/models/etf.model';
-import { World } from '../../world/domain/models/world.model';
 
 export interface EtfDistributionTerms {
   frequency: EtfDistributionFrequency;

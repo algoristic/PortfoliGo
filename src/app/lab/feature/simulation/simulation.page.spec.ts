@@ -1,5 +1,11 @@
 import { RouterTestingHarness } from '@angular/router/testing';
 
+import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
+import { formatGameDate, formatGameTime } from '@app/clock/domain/game-time-format';
+import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
+import { CandleResolution } from '@app/market/domain/models/candle.model';
+import { formatNumber, formatPercent } from '@app/shared/util/format';
+
 import { installChartPlatform } from '../../../../testing/chart-platform';
 import {
   byTestId,
@@ -11,14 +17,10 @@ import {
   wheel,
 } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
-import { dateTimeToTick, GAME_START_TICK } from '../../../clock/domain/calendar-logic';
-import { formatGameDate, formatGameTime } from '../../../clock/domain/game-time-format';
-import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '../../../clock/domain/models/time.model';
-import { CandleResolution } from '../../../market/domain/models/candle.model';
-import { formatNumber, formatPercent } from '../../../shared/util/format';
 import { provideInProcessLabWorker } from '../../data-access/testing/in-process-lab-worker';
 import { LabSimulation } from '../../domain/lab-simulation';
-import { CandleRequest, LabChartOptions } from '../state/lab.model';
+import { LabChartOptions } from '../../ui/series-chart/series-chart.model';
+import { CandleRequest } from '../state/lab.model';
 import { candleRequest, historyRequest, prependCandles } from '../state/lab.utils';
 
 const SEED = 'page-test';

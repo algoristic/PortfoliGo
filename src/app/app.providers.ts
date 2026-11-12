@@ -5,9 +5,9 @@ import { provideEffects } from '@ngrx/effects';
 import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { provideStore } from '@ngrx/store';
 
-import { provideColorSchemeService } from './shared/data-access/color-scheme/color-scheme-service.providers';
-import { provideToastService } from './shared/ui/toast/toast-service.providers';
-import { providePageTitleStrategy } from './shell/feature/page-title/page-title.providers';
+import { provideColorSchemeService } from '@app/shared/data-access/color-scheme/color-scheme-service.providers';
+import { provideToastService } from '@app/shared/ui/toast/toast-service.providers';
+import { providePageTitleStrategy } from '@app/shell/feature/page-title/page-title.providers';
 
 registerLocaleData(localeDe);
 

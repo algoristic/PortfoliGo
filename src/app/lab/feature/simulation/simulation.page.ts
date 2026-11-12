@@ -2,6 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { form, FormField, FormRoot, required } from '@angular/forms/signals';
 
+import { FormatGameTimePipe } from '@app/clock/ui/pipes/format-game-time/format-game-time.pipe';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
+import { PanelComponent } from '@app/shared/ui/panel/panel.component';
+import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
+import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
+import { StatTileComponent } from '@app/shared/ui/stat-tile/stat-tile.component';
+import { generateSeed } from '@app/simulation/util/seed-generator';
+
 import {
   SeedFormModel,
   SIMULATION_STEPS,
@@ -10,40 +19,33 @@ import {
   SimulationYearStep,
 } from './simulation.page.model';
 
-import { formatGameTime } from '../../../clock/domain/game-time-format';
-import { Tick } from '../../../clock/domain/models/time.model';
-import { ButtonDirective } from '../../../shared/ui/button/button.directive';
-import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
-import { PanelComponent } from '../../../shared/ui/panel/panel.component';
-import { SkeletonComponent } from '../../../shared/ui/skeleton/skeleton.component';
-import { StatTileComponent } from '../../../shared/ui/stat-tile/stat-tile.component';
-import { formatNumber } from '../../../shared/util/format';
-import { generateSeed } from '../../../simulation/util/seed-generator';
 import { StatisticsStart } from '../../domain/models/lab-statistics.model';
-import { SectionSeriesChartComponent } from '../section-series-chart/section-series-chart.component';
-import { SectionStatisticsComponent } from '../section-statistics/section-statistics.component';
-import { SectionWorldTablesComponent } from '../section-world-tables/section-world-tables.component';
+import { MarketStatisticsComponent } from '../../ui/market-statistics/market-statistics.component';
+import { SeriesChartComponent } from '../../ui/series-chart/series-chart.component';
+import { LabChartOptions } from '../../ui/series-chart/series-chart.model';
+import { WorldTablesComponent } from '../../ui/world-tables/world-tables.component';
 import { LabFacade } from '../state/lab.facade';
-import { LabChartOptions } from '../state/lab.model';
 
 /** Simulation lab (`#/lab/simulation`, TS §14.2): world, simulation in a worker and charts. */
 @Component({
-  selector: 'app-simulation',
+  selector: 'app-simulation-page',
   imports: [
     ButtonDirective,
     CommonModule,
     EmptyStateComponent,
+    FormatGameTimePipe,
+    FormatNumberPipe,
     FormField,
     FormRoot,
     PanelComponent,
-    SectionSeriesChartComponent,
-    SectionStatisticsComponent,
-    SectionWorldTablesComponent,
+    SeriesChartComponent,
+    MarketStatisticsComponent,
+    WorldTablesComponent,
     SkeletonComponent,
     StatTileComponent,
   ],
   templateUrl: './simulation.page.html',
-  styleUrl: './simulation.page.scss',
+  host: { class: 'block' },
 })
 export class SimulationPage {
   labFacade = inject(LabFacade);
@@ -107,21 +109,5 @@ export class SimulationPage {
 
   onScrollToChartStart(): void {
     this.labFacade.loadHistory();
-  }
-
-  formatTime(tick: Tick): string {
-    return formatGameTime(tick);
-  }
-
-  formatDays(days: number | null): string {
-    return formatNumber(days ?? 0);
-  }
-
-  formatMs(ms: number | undefined): string {
-    return ms === undefined ? '–' : `${formatNumber(ms)} ms`;
-  }
-
-  formatRate(rate: number | undefined): string {
-    return rate === undefined ? '–' : formatNumber(rate);
   }
 }
