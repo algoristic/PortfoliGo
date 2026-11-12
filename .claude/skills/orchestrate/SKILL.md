@@ -123,7 +123,7 @@ einzige Kontext des Agents; er enthält:
     eine Annahme zu riskant, an der Stelle anhalten und die Frage berichten.
   - Neue Texte: i18n-IDs nach CLAUDE.md §5; `npm run translate` nur, wenn der Brief es dem Agent zuweist.
 - **Prüfungen**, die der Agent selbst ausführt: gezielte Specs (`npx vitest run …`; `ng test --watch=false
-  --include …` nur, wenn er allein läuft), `ng lint` auf die geänderten Dateien, Prettier auf diese Dateien.
+--include …` nur, wenn er allein läuft), `ng lint` auf die geänderten Dateien, Prettier auf diese Dateien.
   Keine vollen Suiten.
 - **Rückmeldung** im Format: geänderte Dateien; was umgesetzt ist; ausgeführte Prüfungen mit Ergebnis;
   getroffene Annahmen und Entscheidungen; PO-Themen; offene Fragen und bekannte Lücken.
