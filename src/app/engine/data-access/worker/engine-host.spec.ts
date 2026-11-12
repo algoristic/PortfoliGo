@@ -22,6 +22,19 @@ class HeldStorage extends InMemoryEngineStorage {
   }
 }
 
+/** Storage whose clock writes wait until the test lets them through. */
+class HeldClockStorage extends InMemoryEngineStorage {
+  hold = false;
+  readonly clockWrites: Array<() => void> = [];
+
+  override async saveClock(...args: Parameters<InMemoryEngineStorage['saveClock']>): Promise<void> {
+    if (this.hold) {
+      await new Promise<void>((resolve) => this.clockWrites.push(resolve));
+    }
+    return super.saveClock(...args);
+  }
+}
+
 function maxInAnySecond(times: readonly number[]): number {
   return Math.max(
     0,
@@ -87,6 +100,32 @@ describe('EngineHost', () => {
         speed,
         effectiveSpeed: speed,
       });
+    });
+
+    it('sends a changed speed or pause only after the clock state is written', async () => {
+      const storage = new HeldClockStorage();
+      const harness = new HostHarness({ config: FINE }, { storage });
+      await harness.send('loadPlayer', PLAYER);
+      storage.hold = true;
+      const answered = harness.host.receive({
+        protocol: 1,
+        id: 'speed',
+        type: 'setSpeed',
+        payload: { speed: '1h' },
+      });
+      await flushMicrotasks();
+      // The loop runs on while the write waits (`advance` would wait for the write).
+      harness.timeline.advance(500);
+      await flushMicrotasks();
+      expect(harness.clock.speed).toBe('1min');
+      expect(storage.clocks.get('p1')?.speed).toBe('1min');
+
+      storage.clockWrites[0]();
+      await answered;
+      expect(storage.clocks.get('p1')?.speed).toBe('1h');
+      const types = harness.sent.map(({ message }) => message.type);
+      expect(harness.clock.speed).toBe('1h');
+      expect(types.slice(-2)).toEqual(['clock', 'reply']);
     });
 
     it('keeps a pause of the player, also while hidden in real-time mode', async () => {

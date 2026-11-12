@@ -52,7 +52,7 @@ export const suggestedSeed = createAction(
 );
 export const createPlayerSuccess = createAction(
   '[Players/API] Create player success',
-  props<{ profile: PlayerProfile }>(),
+  props<{ profile: PlayerProfile; firstPlayer: boolean }>(),
 );
 export const createPlayerFailure = createAction(
   '[Players/API] Create player failure',

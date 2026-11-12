@@ -87,24 +87,31 @@ class FakeChannel implements MessageChannelPort {
   }
 }
 
-/** `navigator.storage` with a fixed answer; counts the requests. */
+/**
+ * `navigator.storage` with a set answer; counts the requests. `'never'` keeps `persist()` open
+ * forever, like Firefox while its permission prompt is unanswered.
+ */
 export class FakeStoragePersistence implements StoragePersistencePort {
   requests = 0;
+  /** The answer to the next `persist()`; tests may change it after the page is open. */
+  grant: boolean | 'never';
   #persisted = false;
-  readonly #grant: boolean;
 
-  constructor(grant = true) {
-    this.#grant = grant;
+  constructor(grant: boolean | 'never' = true) {
+    this.grant = grant;
   }
 
   async persisted(): Promise<boolean> {
     return this.#persisted;
   }
 
-  async persist(): Promise<boolean> {
+  persist(): Promise<boolean> {
     this.requests++;
-    this.#persisted = this.#grant;
-    return this.#persisted;
+    if (this.grant === 'never') {
+      return new Promise<boolean>(() => undefined);
+    }
+    this.#persisted = this.grant;
+    return Promise.resolve(this.#persisted);
   }
 }
 

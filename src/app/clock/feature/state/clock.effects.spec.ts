@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
-import { Action } from '@ngrx/store';
+import { Action, createFeatureSelector } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { firstValueFrom, of, Subject, take, throwError, toArray } from 'rxjs';
+import { firstValueFrom, NEVER, of, Subject, take, throwError, toArray } from 'rxjs';
 import type { Mocked } from 'vitest';
 
 import { ClockPayload } from '@app/engine/data-access/service/engine-service.model';
@@ -13,7 +13,9 @@ import { ToastService } from '@app/shared/ui/toast/toast.service';
 
 import * as ClockActions from './clock.actions';
 import { ClockEffects } from './clock.effects';
-import { CLOCK_FEATURE_KEY, initialClockState } from './clock.reducer';
+import { CLOCK_FEATURE_KEY, clockReducer, ClockState, initialClockState } from './clock.reducer';
+
+const selectClockState = createFeatureSelector<ClockState>(CLOCK_FEATURE_KEY);
 
 function clockAt(tick: number, paused = false): ClockPayload {
   return {
@@ -114,6 +116,37 @@ describe('ClockEffects', () => {
       actions$.next(ClockActions.selectedSpeed({ speed: 'realtime' }));
       subscription.unsubscribe();
       expect(engine.setSpeed.mock.calls).toEqual([['2h'], ['realtime']]);
+    });
+
+    it('goes on from the speed last sent while the engine has not confirmed it', () => {
+      const state = (): ClockState => store.selectSignal(selectClockState)();
+      const subscription = effects.controlClock$.subscribe((action) =>
+        store.setState({ [CLOCK_FEATURE_KEY]: clockReducer(state(), action) }),
+      );
+      engine.setSpeed.mockReturnValue(NEVER);
+      setClock({ ...clockAt(1), speed: '4h' });
+      actions$.next(ClockActions.clickedSlower());
+      actions$.next(ClockActions.pressedClockShortcut({ shortcut: 'slower' }));
+      expect(engine.setSpeed.mock.calls).toEqual([['2h'], ['1h']]);
+
+      // A failed command drops the request: the next press goes on from the clock event.
+      engine.setSpeed.mockReturnValue(throwError(() => new EngineCommandError('busy')));
+      actions$.next(ClockActions.clickedFaster());
+      expect(state().requestedSpeed).toBeNull();
+      actions$.next(ClockActions.clickedFaster());
+      subscription.unsubscribe();
+      expect(engine.setSpeed.mock.calls).toEqual([['2h'], ['1h'], ['2h'], ['1d']]);
+    });
+
+    it('drops the request once the engine confirmed it', () => {
+      const state = (): ClockState => store.selectSignal(selectClockState)();
+      const subscription = effects.controlClock$.subscribe((action) =>
+        store.setState({ [CLOCK_FEATURE_KEY]: clockReducer(state(), action) }),
+      );
+      setClock(clockAt(1));
+      actions$.next(ClockActions.clickedFaster());
+      subscription.unsubscribe();
+      expect(state().requestedSpeed).toBeNull();
     });
 
     it('dispatches clockCommandFailure when the engine refuses', async () => {

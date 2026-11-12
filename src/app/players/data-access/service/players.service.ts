@@ -192,10 +192,12 @@ export class PlayersService {
 
   /**
    * Asks the browser to keep the data (TS §9.5); `true` if the storage is persistent. Browsers
-   * may decide without asking the user, and some always answer `false`.
+   * may decide without asking the user, some always answer `false`, and some never answer.
    */
   requestPersistence(): Observable<boolean> {
-    return this.#task(() =>
+    // Not a pending task: Firefox keeps `persist()` open until the user answers its prompt, and
+    // nothing the app shows depends on the answer.
+    return defer(() =>
       this.#persistence
         .persisted()
         .then((persisted) => persisted || this.#persistence.persist())

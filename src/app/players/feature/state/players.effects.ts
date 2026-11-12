@@ -6,13 +6,11 @@ import { concatLatestFrom } from '@ngrx/operators';
 import { select, Store } from '@ngrx/store';
 import {
   catchError,
-  concat,
   concatMap,
   EMPTY,
   exhaustMap,
   filter,
   forkJoin,
-  ignoreElements,
   map,
   mergeMap,
   Observable,
@@ -170,23 +168,34 @@ export class PlayersEffects {
     ),
   );
 
-  /** Persistent storage is requested once, after the first player (TS §9.5). */
   createPlayer$ = createEffect(() =>
     this.#actions$.pipe(
       ofType(PlayersActions.submittedNewPlayer),
       exhaustMap(({ newPlayer }) =>
         this.#service.createPlayer(newPlayer).pipe(
           concatMap(({ profile, firstPlayer }) =>
-            concat(
-              firstPlayer ? this.#service.requestPersistence().pipe(ignoreElements()) : EMPTY,
-              this.#rememberPlayer(profile.id).pipe(ignoreElements()),
-              of(PlayersActions.createPlayerSuccess({ profile })),
+            this.#rememberPlayer(profile.id).pipe(
+              map(() => PlayersActions.createPlayerSuccess({ profile, firstPlayer })),
             ),
           ),
           catchError((error: unknown) => of(PlayersActions.createPlayerFailure({ error }))),
         ),
       ),
     ),
+  );
+
+  /**
+   * Persistent storage is requested once, after the first player (TS §9.5). The request never
+   * holds up opening the player: Firefox answers only after its permission prompt.
+   */
+  requestPersistence$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(PlayersActions.createPlayerSuccess),
+        filter(({ firstPlayer }) => firstPlayer),
+        mergeMap(() => this.#service.requestPersistence().pipe(catchError(() => EMPTY))),
+      ),
+    { dispatch: false },
   );
 
   openCreatedPlayer$ = createEffect(

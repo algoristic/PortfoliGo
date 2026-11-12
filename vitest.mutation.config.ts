@@ -31,6 +31,7 @@ const RULE_SPECS = [
   'src/app/engine/domain/jump-target-logic.spec.ts',
   'src/app/engine/domain/catch-up-logic.spec.ts',
   'src/app/engine/domain/throttle-logic.spec.ts',
+  'src/app/engine/domain/background-share-logic.spec.ts',
   'src/app/engine/domain/series-quote.spec.ts',
   'src/app/engine/data-access/service/engine-service.utils.spec.ts',
   'src/app/shared/util/amount-input.spec.ts',

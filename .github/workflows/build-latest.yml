@@ -121,6 +121,9 @@ jobs:
     container:
       image: mcr.microsoft.com/playwright:v1.65.0-noble
       options: --user 1001
+    env:
+      # J10 measures budgets (TS §14.3); runners are slower and noisier, as in the job `perf`.
+      PERF_FACTOR: '2'
     strategy:
       fail-fast: false
       matrix:

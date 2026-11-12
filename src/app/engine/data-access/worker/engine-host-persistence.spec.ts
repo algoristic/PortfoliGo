@@ -155,7 +155,8 @@ describe('EngineHost persistence', () => {
       await first.send('resume', {});
       await advance(first, 2_000);
       await first.send('pause', {});
-      await advance(first, 10);
+      // The buffered candles go out within 5 s (`candleWriteIntervalMs`).
+      await advance(first, 5_000);
       first.host.dispose();
       const database = await openPortfoligoDb();
       await database.put('transactions', {
@@ -448,6 +449,112 @@ describe('EngineHost persistence', () => {
       });
       await second.send('unloadPlayer', {});
       expect(await candles2030(storage, ids)).toEqual(written);
+    });
+  });
+
+  describe('daily candles, buffered', () => {
+    /** Counts the candle writes and the days they carry. */
+    class CandleCountingStorage extends InMemoryEngineStorage {
+      readonly candleWrites: number[][] = [];
+
+      override async saveDailyCandles(
+        ...args: Parameters<InMemoryEngineStorage['saveDailyCandles']>
+      ): Promise<void> {
+        this.candleWrites.push([...new Set(args[1].map(({ day }) => day))]);
+        return super.saveDailyCandles(...args);
+      }
+    }
+
+    /** A host at `speed` from the game start for `ms` of real time, then paused. */
+    async function played(
+      speed: 'realtime' | '1d' | '1w',
+      ms: number,
+      storage: EngineStorage,
+      candleBackfillFrom: number | null = null,
+    ): Promise<HostHarness> {
+      const harness = new HostHarness({ config: FINE, candleBackfillFrom }, { storage });
+      await harness.send('loadPlayer', PLAYER);
+      await harness.send('setSpeed', { speed });
+      await harness.send('resume', {});
+      await advance(harness, ms);
+      await harness.send('pause', {});
+      return harness;
+    }
+
+    function candlesDone(harness: HostHarness): boolean {
+      return harness.progress.some(({ kind, state }) => kind === 'candles' && state === 'done');
+    }
+
+    it('writes the candles every 5 s and with each snapshot instead of at every close', async () => {
+      const storage = new CandleCountingStorage();
+      const harness = new HostHarness({ config: FINE }, { storage });
+      await harness.send('loadPlayer', PLAYER);
+      await harness.send('setSpeed', { speed: '1d' });
+      await harness.send('resume', {});
+      await advance(harness, 4_990);
+      expect(storage.candleWrites).toEqual([]);
+      await advance(harness, 10);
+      // Monday, 01.04.2030, to Friday: five sessions closed in one write.
+      expect(storage.candleWrites).toHaveLength(1);
+      expect(storage.candleWrites[0]).toHaveLength(5);
+      await advance(harness, 3_000);
+      await harness.send('setVisibility', { visible: false });
+      await advance(harness, 10);
+      expect(storage.candleWrites).toHaveLength(2);
+    });
+
+    it('writes open and close only at 1 w/s and complete candles up to 1 d/s', async () => {
+      const ids = seriesIds(mini.world.context);
+      const fast = new InMemoryEngineStorage();
+      await (await played('1w', 1_000, fast)).send('unloadPlayer', {});
+      const slow = new InMemoryEngineStorage();
+      await (await played('1d', 7_000, slow)).send('unloadPlayer', {});
+
+      // 1 w/s for one second: the five market days of the first week.
+      const fastValues = Object.values(await candles2030(fast, ids)).map((values) =>
+        values.filter((value) => !Number.isNaN(value)),
+      );
+      expect(fastValues.every((values) => values.length === 2 * 5)).toBe(true);
+      const slowValues = Object.values(await candles2030(slow, ids)).map((values) =>
+        values.filter((value) => !Number.isNaN(value)),
+      );
+      expect(slowValues.every((values) => values.length === 4 * 5)).toBe(true);
+    });
+
+    it('adds high and low after 1 w/s exactly as they are written live', async () => {
+      const ids = seriesIds(mini.world.context);
+      const live = new InMemoryEngineStorage();
+      await (await played('1d', 7_000, live)).send('unloadPlayer', {});
+      const fast = new InMemoryEngineStorage();
+      const harness = await played('1w', 1_000, fast, GAME_START);
+      await runUntil(harness, () => candlesDone(harness));
+      await harness.send('unloadPlayer', {});
+      expect(await candles2030(fast, ids)).toEqual(await candles2030(live, ids));
+    });
+
+    it('finds the candles a crash lost after the next load, opens and closes included', async () => {
+      const ids = seriesIds(mini.world.context);
+      const reference = new InMemoryEngineStorage();
+      await (await played('1d', 3_000, reference)).send('unloadPlayer', {});
+
+      const storage = new IndexedDbEngineStorage();
+      const crashing = new HostHarness({ config: FINE }, { storage });
+      await crashing.send('loadPlayer', PLAYER);
+      await crashing.send('setSpeed', { speed: '1d' });
+      await crashing.send('resume', {});
+      await advance(crashing, 3_000);
+      crashing.host.dispose();
+      expect(Object.values(await candles2030(storage, ids)).flat()).toEqual([]);
+
+      const restoring = new HostHarness(
+        { config: FINE, candleBackfillFrom: GAME_START },
+        { storage, startMs: crashing.timeline.now() },
+      );
+      await restoring.send('loadPlayer', PLAYER);
+      await restoring.send('pause', {});
+      await runUntil(restoring, () => candlesDone(restoring));
+      await restoring.send('unloadPlayer', {});
+      expect(await candles2030(storage, ids)).toEqual(await candles2030(reference, ids));
     });
   });
 

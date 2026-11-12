@@ -98,14 +98,19 @@ export class ClockEffects {
         ClockActions.clickedSlower,
         ClockActions.pressedClockShortcut,
       ),
-      concatLatestFrom(() => this.#store.pipe(select(ClockSelectors.selectClock))),
-      map(([action, clock]) => clockCommand(intentOf(action), clock)),
+      concatLatestFrom(() => this.#store.pipe(select(ClockSelectors.selectControlState))),
+      map(([action, control]) => clockCommand(intentOf(action), control)),
       filter((command): command is ClockCommand => command !== null),
       mergeMap((command) =>
-        this.#send(command).pipe(
-          ignoreElements(),
-          catchError((error: unknown) => of(ClockActions.clockCommandFailure({ error }))),
-        ),
+        (command.type === 'setSpeed'
+          ? concat(
+              of(ClockActions.requestedSpeed({ speed: command.speed })),
+              this.#send(command).pipe(
+                map(() => ClockActions.setSpeedSuccess({ speed: command.speed })),
+              ),
+            )
+          : this.#send(command).pipe(ignoreElements())
+        ).pipe(catchError((error: unknown) => of(ClockActions.clockCommandFailure({ error })))),
       ),
     ),
   );

@@ -30,6 +30,15 @@ export const receivedClock = createAction(
   '[Clock/API] Received clock',
   props<{ clock: ClockPayload }>(),
 );
+/** A speed was sent to the engine; the slice goes on from it until the engine confirms it. */
+export const requestedSpeed = createAction(
+  '[Clock/API] Requested speed',
+  props<{ speed: SpeedId }>(),
+);
+export const setSpeedSuccess = createAction(
+  '[Clock/API] Set speed success',
+  props<{ speed: SpeedId }>(),
+);
 export const clockCommandFailure = createAction(
   '[Clock/API] Clock command failure',
   props<{ error: unknown }>(),

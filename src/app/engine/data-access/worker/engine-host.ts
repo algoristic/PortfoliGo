@@ -1,5 +1,6 @@
 import { dayIndex } from '@app/clock/domain/calendar-logic';
 import { Tick, TICKS_PER_DAY, TradingHours } from '@app/clock/domain/models/time.model';
+import { liveHighLow, WorkShare } from '@app/engine/domain/background-share-logic';
 import { catchUpSeenAt, catchUpTarget } from '@app/engine/domain/catch-up-logic';
 import { ClockPacer } from '@app/engine/domain/clock-pacing-logic';
 import { GameEngine } from '@app/engine/domain/game-engine';
@@ -18,6 +19,7 @@ import { generateWorld } from '@app/world/domain/world-generator';
 
 import { CandleBackfill } from './candle-backfill';
 import { DailyCandleSource } from './daily-candle-source';
+import { candleYear } from './daily-candles.utils';
 import {
   DailyCandlePatch,
   DEFAULT_ENGINE_HOST_CONFIG,
@@ -78,13 +80,18 @@ interface LoadedGame {
   batch?: BatchRun;
   lock: PlayerLock | null;
   candles: DailyCandleSource;
-  /** Daily candles waiting to be written; one write at a time. */
-  pendingCandles: DailyCandlePatch[];
+  /** Daily candles waiting to be written (TS §6.8, §9.2), and the calendar years they touch. */
+  candleBuffer: DailyCandlePatch[];
+  candleYears: Set<number>;
+  candlesWrittenMs: number;
+  /** One candle write at a time; a write asked for meanwhile follows right after. */
   candleWrite?: Promise<void>;
+  candleWriteAgain: boolean;
   backfill?: CandleBackfill;
   backfillPlanned: boolean;
   backfillRunning: boolean;
   backfillProgressMs: number;
+  backfillShare: WorkShare;
   /** Day of the newest month start entry in the database. */
   savedMonthDay: number;
   /** Last (attempted) writes of the clock state and of a snapshot. */
@@ -164,11 +171,18 @@ export class EngineHost {
   #queue: Promise<void> = Promise.resolve();
   /** Writes that run beside the loop (clock, snapshots, candles); they never reject. */
   readonly #writes = new Set<Promise<void>>();
+  /** Plannings of the candle job; they wait for the writes, so they are not writes themselves. */
+  readonly #plans = new Set<Promise<void>>();
   #storageFailing = false;
   #game?: LoadedGame;
   #visible = true;
   /** Game commands in progress; the clock holds while it is > 0. */
   #held = 0;
+  /**
+   * Clock commands being written; their `clock` event waits for the write, so a reload right after
+   * it never shows a change the database lacks.
+   */
+  #clockEventsHeld = 0;
   #timerHandle: unknown;
   #timerActive = false;
   #failed = false;
@@ -191,9 +205,14 @@ export class EngineHost {
     return this.#queue;
   }
 
-  /** Resolves when the writes started so far (clock, snapshots, candles) have settled. */
-  settled(): Promise<void> {
-    return this.#settleWrites();
+  /**
+   * Resolves when the writes started so far (clock, snapshots, candles) and the planning of the
+   * candle job have settled.
+   */
+  async settled(): Promise<void> {
+    while (this.#writes.size > 0 || this.#plans.size > 0) {
+      await Promise.allSettled([...this.#writes, ...this.#plans]);
+    }
   }
 
   /**
@@ -305,11 +324,15 @@ export class EngineHost {
       overloaded: false,
       lock,
       candles,
-      pendingCandles: [],
+      candleBuffer: [],
+      candleYears: new Set(),
+      candlesWrittenMs: now,
+      candleWriteAgain: false,
       backfill: this.#createBackfill(payload.playerId, candles),
       backfillPlanned: false,
       backfillRunning: false,
       backfillProgressMs: now,
+      backfillShare: new WorkShare(this.#config.backfillShare, this.#config.passBudgetMs, now),
       savedMonthDay: stored.monthStarts.at(-1)?.day ?? -1,
       clockSavedMs: now,
       clockSavedTick: engine.tick,
@@ -318,7 +341,7 @@ export class EngineHost {
       changedSinceSnapshot: false,
     };
     this.#game = game;
-    this.#drainEngineEvents(game, false);
+    this.#drainEngineEvents(game, true);
     this.#replay(game, stored, payload.minTick);
     game.pacer.update(
       { backgroundMode: engine.player.backgroundMode },
@@ -362,12 +385,12 @@ export class EngineHost {
       lastCommand?.tick ?? -Infinity,
       minTick ?? -Infinity,
     );
-    game.candles.batch = true;
+    game.candles.keepSupport = true;
     try {
       replayCommands(game.engine, stored.commands, target);
-      this.#drainEngineEvents(game, true);
+      this.#drainEngineEvents(game, false);
     } finally {
-      game.candles.batch = false;
+      game.candles.keepSupport = false;
     }
   }
 
@@ -399,8 +422,13 @@ export class EngineHost {
 
   async #changeClock(change: Partial<ClockSettings>): Promise<null> {
     const game = this.#requireIdle();
-    game.pacer.update(change, game.engine.tick, this.#ports.now());
-    await this.#saveClock(game);
+    this.#clockEventsHeld++;
+    try {
+      game.pacer.update(change, game.engine.tick, this.#ports.now());
+      await this.#saveClock(game);
+    } finally {
+      this.#clockEventsHeld--;
+    }
     return null;
   }
 
@@ -435,7 +463,7 @@ export class EngineHost {
       game.changedSinceSnapshot = true;
       game.clockSavedMs = this.#ports.now();
       game.clockSavedTick = command.tick;
-      this.#drainEngineEvents(game, false);
+      this.#drainEngineEvents(game, this.#liveHighLow(game));
       if (!result.ok) {
         throw new CommandFailure(result.error);
       }
@@ -505,16 +533,25 @@ export class EngineHost {
         if (game.batch !== undefined) {
           this.#batchPass(game, game.batch, shouldYield);
         } else {
-          const result = game.pacer.pass(game.engine, start, shouldYield);
+          const highLow = this.#liveHighLow(game);
+          game.candles.keepSupport = !highLow;
+          let result: ReturnType<ClockPacer['pass']>;
+          try {
+            result = game.pacer.pass(game.engine, start, shouldYield);
+            this.#drainEngineEvents(game, highLow);
+          } finally {
+            game.candles.keepSupport = false;
+          }
           game.overloaded = result.overloaded;
-          this.#drainEngineEvents(game, false);
           this.#periodicWrites(game);
           if (result.reached && !shouldYield()) {
-            this.#backfillPass(game, shouldYield);
+            this.#backfillPass(game, start);
           }
         }
       }
-      this.#writeCandles(game);
+      if (this.#ports.now() - game.candlesWrittenMs >= this.#config.candleWriteIntervalMs) {
+        this.#writeCandles(game);
+      }
       this.#flush();
       this.#schedule(game.batch !== undefined ? 0 : this.#config.loopIntervalMs);
     });
@@ -543,13 +580,13 @@ export class EngineHost {
 
   /** Batch mode (TS §3.7): runs to the target; progress about every 100 ms. */
   #batchPass(game: LoadedGame, batch: BatchRun, shouldYield: () => boolean): void {
-    game.candles.batch = true;
+    game.candles.keepSupport = true;
     let reached: boolean;
     try {
       reached = game.engine.runUntil(batch.to, shouldYield);
-      this.#drainEngineEvents(game, true);
+      this.#drainEngineEvents(game, false);
     } finally {
-      game.candles.batch = false;
+      game.candles.keepSupport = false;
     }
     if (reached) {
       this.#endBatch(game, 'done');
@@ -589,19 +626,27 @@ export class EngineHost {
 
   /**
    * Engine events of the last steps. M2 forwards none of them to the UI; notifications and the
-   * absence report follow in M3. `session-closed` writes the daily candles (TS §6.8): live with
-   * high and low, in batch mode open and close only, and the background job adds the rest.
+   * absence report follow in M3. `session-closed` buffers the daily candles (TS §6.8): with high
+   * and low when `highLow` (live up to `liveHighLowMaxSpeed`), else open and close only, and the
+   * background job adds the rest.
    */
-  #drainEngineEvents(game: LoadedGame, batch: boolean): void {
+  #drainEngineEvents(game: LoadedGame, highLow: boolean): void {
     for (const event of game.engine.drainEvents()) {
       if (event.type === 'session-closed') {
-        const closed = game.candles.closed(event.series, event.day, game.engine.tick, !batch);
-        game.pendingCandles.push(...closed.patches);
+        const closed = game.candles.closed(event.series, event.day, game.engine.tick, highLow);
+        this.#bufferCandles(game, closed.patches);
         if (!closed.complete) {
           game.backfill?.addHighLowDays([event.day]);
         }
       }
     }
+  }
+
+  /** Live, not jumping and not faster than `liveHighLowMaxSpeed` (TS §6.8, §14.3). */
+  #liveHighLow(game: LoadedGame): boolean {
+    return (
+      game.batch === undefined && liveHighLow(game.pacer.speed, this.#config.liveHighLowMaxSpeed)
+    );
   }
 
   /**
@@ -636,6 +681,7 @@ export class EngineHost {
   /** Snapshot with the new month starts and the clock in one transaction (TS §9.2). */
   #snapshot(game: LoadedGame): Promise<void> {
     const written = this.#snapshotData(game);
+    this.#writeCandles(game);
     return this.#write(
       () => this.#ports.storage.saveSnapshot(game.playerId, written.state, written.options),
       () => this.#snapshotWritten(game, written.monthDay),
@@ -651,7 +697,7 @@ export class EngineHost {
     options: { monthStarts: ReturnType<GameEngine['monthStartsAfter']>; clock: StoredClock };
     monthDay: number;
   } {
-    this.#drainEngineEvents(game, game.batch !== undefined);
+    this.#drainEngineEvents(game, this.#liveHighLow(game));
     const state = game.engine.snapshot();
     const monthStarts = game.engine.monthStartsAfter(game.savedMonthDay);
     const clock = this.#storedClock(game);
@@ -673,20 +719,47 @@ export class EngineHost {
   }
 
   /**
-   * Writes the waiting daily candles in one transaction, one write at a time; what came in meanwhile
-   * follows right after.
+   * Buffers daily candles (TS §6.8, §9.2): each write reads and writes a bucket per series and
+   * calendar year, so they go out together, every `candleWriteIntervalMs`, with each snapshot, on
+   * unloading and before a third calendar year enters the buffer. Buffered candles lost in a crash
+   * are reproducible; the job finds them missing after the next load.
+   */
+  #bufferCandles(game: LoadedGame, patches: readonly DailyCandlePatch[]): void {
+    for (const patch of patches) {
+      const year = candleYear(patch.day);
+      if (!game.candleYears.has(year)) {
+        if (game.candleYears.size >= 2) {
+          this.#writeCandles(game);
+        }
+        game.candleYears.add(year);
+      }
+      game.candleBuffer.push(patch);
+    }
+  }
+
+  /**
+   * Writes the buffered daily candles in one transaction, one write at a time; asked for during a
+   * write, the next one follows right after it.
    */
   #writeCandles(game: LoadedGame): void {
-    if (game.pendingCandles.length === 0 || game.candleWrite !== undefined) {
+    if (game.candleBuffer.length === 0) {
       return;
     }
-    const patches = game.pendingCandles.splice(0);
+    if (game.candleWrite !== undefined) {
+      game.candleWriteAgain = true;
+      return;
+    }
+    const patches = game.candleBuffer;
+    game.candleBuffer = [];
+    game.candleYears.clear();
+    game.candlesWrittenMs = this.#ports.now();
     game.candleWrite = this.#write(
       () => this.#ports.storage.saveDailyCandles(game.playerId, patches),
       undefined,
       () => {
         game.candleWrite = undefined;
-        if (this.#game === game) {
+        if (game.candleWriteAgain) {
+          game.candleWriteAgain = false;
           this.#writeCandles(game);
         }
       },
@@ -698,7 +771,13 @@ export class EngineHost {
       this.#options.candleBackfillFrom === undefined ? 0 : this.#options.candleBackfillFrom;
     return from === null
       ? undefined
-      : new CandleBackfill(candles, this.#ports.storage, playerId, dayIndex(from));
+      : new CandleBackfill(
+          candles,
+          this.#ports.storage,
+          playerId,
+          dayIndex(from),
+          this.#config.passBudgetMs,
+        );
   }
 
   /**
@@ -716,14 +795,15 @@ export class EngineHost {
     const planned = this.#settleWrites()
       .then(() => backfill.plan(toDay))
       .catch((error: unknown) => this.#storageFailed(error));
-    this.#track(planned);
+    this.#plans.add(planned);
+    void planned.finally(() => this.#plans.delete(planned));
   }
 
   /**
-   * The candle job in the rest of the pass budget, only when the clock reached its target: it never
-   * holds back game time, at most it delays the next pass by one unit of work (TS §6.8).
+   * The candle job in the rest of the pass budget, only when the clock reached its target, and
+   * within its share of the wall clock (`backfillShare`, TS §6.8): it never holds back game time.
    */
-  #backfillPass(game: LoadedGame, shouldYield: () => boolean): void {
+  #backfillPass(game: LoadedGame, passStart: number): void {
     const backfill = game.backfill;
     if (backfill === undefined) {
       return;
@@ -744,7 +824,18 @@ export class EngineHost {
       game.backfillRunning = true;
       report('running');
     }
-    backfill.run(beforeDay, shouldYield, (patches) => game.pendingCandles.push(...patches));
+    const now = this.#ports.now();
+    const budgetMs = Math.min(
+      game.backfillShare.available(now),
+      this.#config.passBudgetMs - (now - passStart),
+    );
+    if (budgetMs > 0) {
+      game.backfillShare.spend(
+        backfill.runSlice(beforeDay, this.#ports.now, budgetMs, (patches) =>
+          this.#bufferCandles(game, patches),
+        ),
+      );
+    }
     if (!backfill.hasWork(beforeDay)) {
       game.backfillRunning = false;
       report('done');
@@ -761,7 +852,11 @@ export class EngineHost {
     }
     const now = this.#ports.now();
     const clock = this.#clockPayload(game);
-    if (!sameClock(clock, this.#lastClock) && this.#clockThrottle.isDue(now)) {
+    if (
+      this.#clockEventsHeld === 0 &&
+      !sameClock(clock, this.#lastClock) &&
+      this.#clockThrottle.isDue(now)
+    ) {
       this.#post('clock', clock);
       this.#clockThrottle.sent(now);
       this.#lastClock = clock;

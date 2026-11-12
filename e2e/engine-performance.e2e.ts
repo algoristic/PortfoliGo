@@ -14,7 +14,9 @@ import {
 // J10 (E-27, TS §14.3): budgets for phones as four times CPU throttling in Chromium. Chromium
 // throttles only pages, not dedicated workers („Operation is only supported for pages, not
 // workers“), so the page runs throttled and the engine worker's busy time comes from the sampling
-// profiler (CDP); the throttled worker time is estimated as four times the measured one.
+// profiler (CDP); the throttled worker time is estimated as four times the measured one. The candle
+// job (TS §6.8) is told apart by its entry `CandleBackfill.runSlice` in the call stacks; its share
+// of the wall clock is capped, so it does not grow with the throttling.
 
 const PERF_FACTOR = Number(process.env['PERF_FACTOR'] ?? '1');
 const CPU_THROTTLING = 4;
@@ -24,16 +26,22 @@ const RUNS = 3;
 const GAME_START_BUDGET_MS = 6_000;
 const ENGINE_LOAD_BUDGET = 0.5;
 
-/** Busy fraction of a paused engine once the high/low job of the prehistory is done. */
-const IDLE_LOAD = 0.05;
 const MEASURE_WINDOW_MS = 3_000;
+/** Public method names survive the minification of the production build. */
+const CANDLE_JOB_ENTRY = 'runSlice';
 
 interface CpuProfile {
   startTime: number;
   endTime: number;
-  nodes: { id: number; callFrame: { functionName: string } }[];
+  nodes: { id: number; callFrame: { functionName: string }; children?: number[] }[];
   samples: number[];
   timeDeltas: number[];
+}
+
+/** Busy fractions of the wall clock: all samples but `(idle)`, and those inside the candle job. */
+interface WorkerLoad {
+  busy: number;
+  job: number;
 }
 
 /**
@@ -97,29 +105,46 @@ class EngineWorkerProbe {
     await this.#send('Profiler.start');
   }
 
-  /** Stops the profile; returns the busy time (all samples but `(idle)`) and the wall time. */
-  async stopProfile(): Promise<{ busyMs: number; wallMs: number }> {
+  /**
+   * Stops the profile; returns the busy time (all samples but `(idle)`), the part of it inside the
+   * candle job and the wall time.
+   */
+  async stopProfile(): Promise<{ busyMs: number; jobMs: number; wallMs: number }> {
     await this.#attached;
     const { profile } = (await this.#send('Profiler.stop')) as { profile: CpuProfile };
-    const idleNodes = new Set(
-      profile.nodes.filter((node) => node.callFrame.functionName === '(idle)').map(({ id }) => id),
-    );
+    const parents = new Map<number, number>();
+    profile.nodes.forEach(({ id, children = [] }) => children.forEach((c) => parents.set(c, id)));
+    const names = new Map(profile.nodes.map(({ id, callFrame }) => [id, callFrame.functionName]));
+    const inJob = (node: number): boolean => {
+      for (let at: number | undefined = node; at !== undefined; at = parents.get(at)) {
+        if (names.get(at) === CANDLE_JOB_ENTRY) {
+          return true;
+        }
+      }
+      return false;
+    };
     let busyUs = 0;
+    let jobUs = 0;
     profile.samples.forEach((node, index) => {
-      if (!idleNodes.has(node)) {
+      if (names.get(node) !== '(idle)') {
         busyUs += profile.timeDeltas[index];
+        jobUs += inJob(node) ? profile.timeDeltas[index] : 0;
       }
     });
-    return { busyMs: busyUs / 1000, wallMs: (profile.endTime - profile.startTime) / 1000 };
+    return {
+      busyMs: busyUs / 1000,
+      jobMs: jobUs / 1000,
+      wallMs: (profile.endTime - profile.startTime) / 1000,
+    };
   }
 
-  /** Busy fraction of the worker over `ms` of wall time. */
-  async load(ms: number): Promise<number> {
+  /** Busy fractions of the worker over `ms` of wall time. */
+  async load(ms: number): Promise<WorkerLoad> {
     await this.startProfile();
     // A measurement window of real time, not a wait for a state.
     await new Promise((resolve) => setTimeout(resolve, ms));
-    const { busyMs, wallMs } = await this.stopProfile();
-    return busyMs / wallMs;
+    const { busyMs, jobMs, wallMs } = await this.stopProfile();
+    return { busy: busyMs / wallMs, job: jobMs / wallMs };
   }
 
   async #send(method: string, params: object = {}): Promise<unknown> {
@@ -228,38 +253,35 @@ test.describe('performance with four times CPU throttling (J10)', () => {
     expect(estimateMs).toBeLessThanOrEqual(GAME_START_BUDGET_MS * PERF_FACTOR);
   });
 
-  // Over budget on 13.11.2026: about 17 % of a core unthrottled, estimated 68 % throttled (TS §14.3,
-  // „Stand der Messungen“); open for the product owner. Run it with `--grep "1 w/s"` after removing
-  // `fixme`.
-  test.fixme('runs the engine at 1 w/s within the budget', async ({ page }) => {
-    test.setTimeout(300_000);
+  test('runs the engine at 1 w/s within the budget', async ({ page }) => {
+    test.setTimeout(120_000);
     await page.goto('#/players/new');
     const probe = await EngineWorkerProbe.attach(page);
     await page.getByTestId('players.new.name').fill('Anna');
     await page.getByTestId('players.new.submit').click();
     await expectGameReady(page);
 
-    // The high/low job of the prehistory runs in the rest of every pass (TS §6.8); it is not part
-    // of the engine budget, so the measurement waits until the paused engine rests.
-    const backgroundLoad = await probe.load(MEASURE_WINDOW_MS);
-    await expect
-      .poll(() => probe.load(1_000), { timeout: 240_000, intervals: [0] })
-      .toBeLessThan(IDLE_LOAD);
+    // The candle job of the prehistory runs while paused, within its share of the wall clock.
+    const paused = await probe.load(MEASURE_WINDOW_MS);
 
     await selectSpeed(page, '1w', '1 w/s');
     await resume(page);
-    const loads: number[] = [];
+    const loads: WorkerLoad[] = [];
     for (let run = 0; run < RUNS; run++) {
       loads.push(await probe.load(MEASURE_WINDOW_MS));
     }
     await expect(getPausedBadge(page)).toBeHidden();
     await expect(page.getByTestId('shell.header.overloaded')).toBeHidden();
 
-    const load = median(loads);
-    const throttled = CPU_THROTTLING * load;
+    // The budget is the engine's (TS §14.3): the steady state without the candle job, which
+    // adds high and low within its own share (TS §6.8).
+    const engine = median(loads.map(({ busy, job }) => busy - job));
+    const withJob = median(loads.map(({ busy, job }) => CPU_THROTTLING * (busy - job) + job));
+    const throttled = CPU_THROTTLING * engine;
+    const percent = (value: number): string => `${(value * 100).toFixed(1)} %`;
     report(
       'engine at 1 w/s',
-      `worker ${loads.map((value) => `${(value * 100).toFixed(1)} %`).join(', ')}; median ${(load * 100).toFixed(1)} % → ×${CPU_THROTTLING} ${(throttled * 100).toFixed(0)} % of a core (budget ${ENGINE_LOAD_BUDGET * 100} % × ${PERF_FACTOR}); high/low job while paused ${(backgroundLoad * 100).toFixed(0)} %`,
+      `worker ${loads.map(({ busy, job }) => `${percent(busy)} (job ${percent(job)})`).join(', ')}; engine median ${percent(engine)} → ×${CPU_THROTTLING} ${percent(throttled)} of a core (budget ${ENGINE_LOAD_BUDGET * 100} % × ${PERF_FACTOR}); with the job ${percent(withJob)}; job while paused ${percent(paused.job)} (worker ${percent(paused.busy)})`,
     );
     expect(throttled).toBeLessThanOrEqual(ENGINE_LOAD_BUDGET * PERF_FACTOR);
   });

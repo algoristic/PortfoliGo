@@ -170,6 +170,16 @@ describe('NewPlayerPage', () => {
     expect(textOf(byTestId(page, 'shell.header.clock'))).toBe('Mo., 01.04.2030, 00:00');
   });
 
+  it('opens the game area while the browser does not answer the persistence request', async () => {
+    persistence.grant = 'never';
+    await enter('name', 'Anna');
+    await act(() => click(byTestId(page, 'players.new.submit')));
+
+    const [profile] = await profiles();
+    expect(persistence.requests).toBe(1);
+    expect(url()).toBe(`/game/${profile.id}/dashboard`);
+  });
+
   it('goes back to the player selection on cancel', async () => {
     await act(() => click(byTestId(page, 'players.new.cancel')));
     expect(url()).toBe('/players');

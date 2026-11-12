@@ -35,6 +35,7 @@ const config = {
     'src/app/engine/domain/jump-target-logic.ts',
     'src/app/engine/domain/catch-up-logic.ts',
     'src/app/engine/domain/throttle-logic.ts',
+    'src/app/engine/domain/background-share-logic.ts',
     'src/app/engine/domain/series-quote.ts',
     'src/app/engine/data-access/service/engine-service.utils.ts',
     'src/app/shared/util/amount-input.ts',

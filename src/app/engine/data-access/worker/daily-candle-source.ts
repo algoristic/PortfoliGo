@@ -22,17 +22,17 @@ export interface ClosedCandles {
 
 /**
  * Daily candles at the session close (TS §6.8) for the worker host. It wraps the price port of the
- * engine: live, high and low come from the minute curves of the `PriceSource`; in batch mode
- * (`batch`), the port keeps the support points of every stepped day, and open and close come from
- * them (`SupportValues`, bit for bit the ends of the minute curves). It also hands the factor
- * history to the background job.
+ * engine: live at moderate speeds, high and low come from the minute curves of the `PriceSource`;
+ * in batch mode and at fast live speeds, open and close come from the support points
+ * (`SupportValues`, bit for bit the ends of the minute curves), which the port keeps for every
+ * stepped day while `keepSupport` is set. It also hands the factor history to the background job.
  */
 export class DailyCandleSource {
   readonly context: MarketContext;
   /** Stable series IDs (`seriesIds`) by series index. */
   readonly ids: readonly string[];
-  /** Set by the host while it runs a batch (jump, catch-up, replay). */
-  batch = false;
+  /** Set by the host while days close without high and low (batch runs, fast live speeds). */
+  keepSupport = false;
   readonly #inner: PricePortFactory;
   readonly #support = new Map<number, SupportValues>();
   #port?: PricePort;
@@ -55,7 +55,7 @@ export class DailyCandleSource {
       quoteAt: (series, tick, now, venueMarkup) => port.quoteAt(series, tick, now, venueMarkup),
       rememberDay: (day) => {
         port.rememberDay(day);
-        if (this.batch) {
+        if (this.keepSupport) {
           this.#support.set(day.day, new SupportValues(this.tables, copyMarketDay(day)));
         }
       },
@@ -80,9 +80,9 @@ export class DailyCandleSource {
 
   /**
    * Candles of `series` whose trading day `day` ended, at the current tick `now`: complete when
-   * `live` and the port has minute curves, else open and close only.
+   * `highLow` is asked for and the port has minute curves, else open and close only.
    */
-  closed(series: readonly number[], day: number, now: Tick, live: boolean): ClosedCandles {
+  closed(series: readonly number[], day: number, now: Tick, highLow: boolean): ClosedCandles {
     const port = this.#port;
     // Days before this one are closed for every series; their support points are no longer needed.
     for (const kept of this.#support.keys()) {
@@ -90,7 +90,7 @@ export class DailyCandleSource {
         this.#support.delete(kept);
       }
     }
-    if (live && port instanceof PriceSource) {
+    if (highLow && port instanceof PriceSource) {
       const start = dayStartTick(day);
       const patches = series.map((s) => {
         const [candle] = port.candles(s, '1d', start, start, now);
@@ -110,7 +110,7 @@ export class DailyCandleSource {
     return { patches, complete: false };
   }
 
-  /** Support points of a day: kept from the batch run, else recomputed from its month start. */
+  /** Support points of a day: kept while stepping, else recomputed from its month start. */
   #supportOf(day: number): SupportValues {
     let support = this.#support.get(day);
     if (support === undefined) {

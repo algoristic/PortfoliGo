@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Action } from '@ngrx/store';
 import { provideMockStore } from '@ngrx/store/testing';
-import { firstValueFrom, of, Subject, throwError, toArray } from 'rxjs';
+import { firstValueFrom, NEVER, of, Subject, throwError, toArray } from 'rxjs';
 import type { Mocked } from 'vitest';
 
 import { NewPlayer, PlayerProfile } from '@app/players/domain/models/player.model';
@@ -59,24 +59,44 @@ describe('PlayersEffects', () => {
       return result;
     }
 
-    it('asks for persistent storage only after the first player', async () => {
+    it('remembers the created player', async () => {
       service.createPlayer.mockReturnValue(of({ profile: PROFILE, firstPlayer: false }));
-      expect(await create()).toEqual([PlayersActions.createPlayerSuccess({ profile: PROFILE })]);
-      expect(service.requestPersistence).not.toHaveBeenCalled();
+      expect(await create()).toEqual([
+        PlayersActions.createPlayerSuccess({ profile: PROFILE, firstPlayer: false }),
+      ]);
       expect(service.setLastPlayerId).toHaveBeenCalledWith('p-a');
     });
 
     it('opens the created player even when it cannot be remembered', async () => {
       service.createPlayer.mockReturnValue(of({ profile: PROFILE, firstPlayer: true }));
       service.setLastPlayerId.mockReturnValue(throwError(() => new Error('quota')));
-      expect(await create()).toEqual([PlayersActions.createPlayerSuccess({ profile: PROFILE })]);
-      expect(service.requestPersistence).toHaveBeenCalledTimes(1);
+      expect(await create()).toEqual([
+        PlayersActions.createPlayerSuccess({ profile: PROFILE, firstPlayer: true }),
+      ]);
+    });
+
+    it('does not wait for the persistence request', async () => {
+      service.createPlayer.mockReturnValue(of({ profile: PROFILE, firstPlayer: true }));
+      service.requestPersistence.mockReturnValue(NEVER);
+      expect(await create()).toEqual([
+        PlayersActions.createPlayerSuccess({ profile: PROFILE, firstPlayer: true }),
+      ]);
     });
 
     it('dispatches createPlayerFailure when the service errors', async () => {
       const error = new Error('write failed');
       service.createPlayer.mockReturnValue(throwError(() => error));
       expect(await create()).toEqual([PlayersActions.createPlayerFailure({ error })]);
+    });
+  });
+
+  describe('requestPersistence$', () => {
+    it('asks for persistent storage only after the first player', () => {
+      effects.requestPersistence$.subscribe();
+      actions$.next(PlayersActions.createPlayerSuccess({ profile: PROFILE, firstPlayer: false }));
+      expect(service.requestPersistence).not.toHaveBeenCalled();
+      actions$.next(PlayersActions.createPlayerSuccess({ profile: PROFILE, firstPlayer: true }));
+      expect(service.requestPersistence).toHaveBeenCalledTimes(1);
     });
   });
 

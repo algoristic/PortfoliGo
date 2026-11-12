@@ -150,6 +150,23 @@ export interface EngineHostConfig {
   clockSaveIntervalMs: number;
   /** Real time between two periodic snapshots (TS §9.2). */
   snapshotIntervalMs: number;
+  /**
+   * Real time between two writes of the buffered daily candles (TS §6.8, §9.2); snapshots, a third
+   * calendar year in the buffer and unloading write them earlier.
+   */
+  candleWriteIntervalMs: number;
+  /**
+   * Upper limit of the candle job's computing time as a share of the wall clock (TS §6.8). 10 %: at
+   * 1 w/s, the engine without minute curves plus the job stay below the 15 % of a core of TS §14.3,
+   * and the job still adds high and low faster than 1 w/s closes days (5 market days per second at
+   * about 13 ms each, 6.5 %).
+   */
+  backfillShare: number;
+  /**
+   * Fastest speed at which the live session close computes high and low from the minute curves;
+   * above it, the close writes open and close and the candle job adds high and low (TS §6.8, §14.3).
+   */
+  liveHighLowMaxSpeed: SpeedId;
 }
 
 export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
@@ -160,6 +177,9 @@ export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
   progressIntervalMs: 100,
   clockSaveIntervalMs: 5_000,
   snapshotIntervalMs: 30_000,
+  candleWriteIntervalMs: 5_000,
+  backfillShare: 0.1,
+  liveHighLowMaxSpeed: '1d',
 };
 
 export interface EngineHostOptions {

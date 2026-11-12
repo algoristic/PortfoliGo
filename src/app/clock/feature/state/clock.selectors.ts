@@ -2,6 +2,7 @@ import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 import { fasterSpeed, slowerSpeed } from '@app/clock/domain/clock-logic';
 import { exchangeStatus, regionStatus } from '@app/clock/domain/exchange-status-logic';
+import { ClockControlState } from '@app/clock/domain/models/clock-control.model';
 import { TradingHours } from '@app/clock/domain/models/time.model';
 import {
   ExchangeStatusEntry,
@@ -24,6 +25,14 @@ export const selectEffectiveSpeed = createSelector(
 export const selectOverloaded = createSelector(selectClock, (clock) => clock?.overloaded ?? false);
 export const selectJumping = createSelector(selectClock, (clock) => clock?.jumping ?? false);
 export const selectJumpTargetTick = createSelector(selectState, (state) => state.jumpTargetTick);
+
+/** What the clock controls go on from: the clock event with the speed last sent (`requestedSpeed`). */
+export const selectControlState = createSelector(
+  selectClock,
+  selectState,
+  (clock, state): ClockControlState | null =>
+    clock === null ? null : { speed: state.requestedSpeed ?? clock.speed, paused: clock.paused },
+);
 
 /** `false` at the end of `SPEEDS` and before the first clock event. */
 export const selectCanFaster = createSelector(
