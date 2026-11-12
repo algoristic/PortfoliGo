@@ -73,7 +73,7 @@ export interface DividendLifecycleParams {
   initialYield: number;
 }
 
-/** Parameters of the market model; start values for the calibration in AP 1.9c. */
+/** Parameters of the market model; `DEFAULT_MARKET_CONFIG` is calibrated in AP 1.9c (TS §6.9). */
 export interface MarketConfig {
   tradingDaysPerYear: number;
   /** Phase at the epoch; its targets are the reference for the phase coupling. */

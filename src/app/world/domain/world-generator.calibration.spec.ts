@@ -11,7 +11,7 @@ import { binomialSe, expectWithinSigma } from '../../../testing/statistics';
 
 // Statistical mix of the standard world over 20 seeds (TS §5.4, §5.6). Shares that follow
 // directly from the configuration are compared with their expectation; the rest are plausibility
-// bands until the calibration in AP 1.9.
+// bands. The risk class bounds are the quintiles of 20 other worlds (AP 1.9c).
 
 const SEEDS = Array.from({ length: 20 }, (_value, index) => `world-calibration-${index}`);
 const config = DEFAULT_WORLD_CONFIG;
@@ -86,15 +86,22 @@ describe('generateWorld (calibration)', () => {
     );
   });
 
-  it('mixes styles, cyclicalities and risk classes', () => {
+  it('mixes styles and cyclicalities', () => {
     for (const style of ['value', 'blend', 'growth']) {
       expect(share(companies, (company) => company.style === style)).toBeGreaterThan(0.15);
     }
     for (const cyclicality of ['defensive', 'neutral', 'cyclical']) {
       expect(share(companies, (c) => c.cyclicality === cyclicality)).toBeGreaterThan(0.15);
     }
+  });
+
+  it('fills each risk class with about a fifth of the companies', () => {
+    // TS §5.4: the bounds are quintiles of the full volatility, rounded to whole percent and taken
+    // from other worlds (`TEST_SEEDS.crossSection`).
     for (const riskClass of [1, 2, 3, 4, 5]) {
-      expect(share(companies, (c) => c.riskClass === riskClass)).toBeGreaterThan(0.02);
+      const observed = share(companies, (c) => c.riskClass === riskClass);
+      expect(observed, `risk class ${riskClass}`).toBeGreaterThan(0.15);
+      expect(observed, `risk class ${riskClass}`).toBeLessThan(0.25);
     }
   });
 

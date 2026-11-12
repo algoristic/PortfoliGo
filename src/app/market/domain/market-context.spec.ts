@@ -32,10 +32,19 @@ function openWeight(j: number): number {
 }
 
 describe('activityIntervalYears', () => {
-  it('splits one trading day into positive interval shares', () => {
+  it('splits one trading day into interval shares, positive while an exchange trades', () => {
     const years = activityIntervalYears(world, layout, DEFAULT_MARKET_CONFIG, DAY_YEARS);
     expect(years.length).toBe(layout.boundaries.length - 1);
-    expect(years.every((value) => value > 0)).toBe(true);
+    years.forEach((value, j) => {
+      const trading = world.exchanges.some(
+        (exchange) =>
+          exchange.open <= layout.boundaries[j] && layout.boundaries[j + 1] <= exchange.close,
+      );
+      expect(value).toBeGreaterThanOrEqual(0);
+      if (trading) {
+        expect(value).toBeGreaterThan(0);
+      }
+    });
     expect(years.reduce((sum, value) => sum + value, 0)).toBeCloseTo(DAY_YEARS, 15);
   });
 

@@ -113,7 +113,7 @@ export class MarketStatisticsComponent {
     'world-dividend-yield': $localize`:@@uiLab-marketStatistics-targetWorldDividendYield:Weltindex, Dividendenrendite p. a.`,
     'stock-dividend-yield-median': $localize`:@@uiLab-marketStatistics-targetStockDividendYieldMedian:Aktien, Dividendenrendite p. a. (Median)`,
     'stock-dividend-yield-max': $localize`:@@uiLab-marketStatistics-targetStockDividendYieldMax:Aktien, Dividendenrendite p. a. (Maximum)`,
-    'intraday-profile': $localize`:@@uiLab-marketStatistics-targetIntradayProfile:Tagesverlauf: Volatilität zu Eröffnung und Schluss ÷ Mitte (Median, Ziel > 1)`,
+    'intraday-profile': $localize`:@@uiLab-marketStatistics-targetIntradayProfileMedian:Tagesverlauf: Volatilität zu Eröffnung und Schluss ÷ Mitte (Median)`,
     'overnight-share-world': $localize`:@@uiLab-marketStatistics-targetOvernightShareWorld:Overnight-Anteil der Varianz, Weltindex`,
     'overnight-share-north-america': $localize`:@@uiLab-marketStatistics-targetOvernightShareNorthAmerica:Overnight-Anteil der Varianz, Nordamerika (breiter Index)`,
     'overnight-share-europe': $localize`:@@uiLab-marketStatistics-targetOvernightShareEurope:Overnight-Anteil der Varianz, Europa (breiter Index)`,

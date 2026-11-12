@@ -1,6 +1,6 @@
 import { WorldConfig } from './models/world-config.model';
 
-/** Standard world (TS §5.2). Model parameters are start values for the calibration in AP 1.9. */
+/** Standard world (TS §5.2). Model parameters calibrated in AP 1.9c (TS §5.4, §6.9). */
 export const DEFAULT_WORLD_CONFIG: WorldConfig = {
   companies: {
     count: 200,
@@ -24,7 +24,7 @@ export const DEFAULT_WORLD_CONFIG: WorldConfig = {
       IN: 0.5,
       BR: 0.5,
     },
-    marketCap: { median: 4e9, sigma: 1.4, min: 1e8, max: 1.5e12 },
+    marketCap: { median: 4e9, sigma: 1, min: 1e8, max: 1.5e12 },
     sizeThresholds: { large: 1e10, mid: 2e9 },
     startPrice: { median: 50, sigma: 0.9, min: 5, max: 500 },
     freeFloat: [0.5, 1],
@@ -33,24 +33,25 @@ export const DEFAULT_WORLD_CONFIG: WorldConfig = {
     styleNoise: 0.5,
     cyclicalityDeviation: 0.15,
     dividendStyleFactor: { value: 1.25, blend: 1, growth: 0.6 },
-    maxDividendYield: 0.07,
-    dividendInitiationYears: 30,
+    maxDividendYield: 0.065,
+    dividendInitiationYears: 25,
     worldBeta: { defensive: [0.6, 0.9], neutral: [0.9, 1.1], cyclical: [1.1, 1.4] },
     regionLoading: [0.8, 1.2],
     sectorLoading: [0.8, 1.2],
     industryLoading: [0.8, 1.2],
     styleLoading: { value: [-1, -0.4], blend: [-0.3, 0.3], growth: [0.4, 1] },
     sizeLoading: { large: [-0.4, 0], mid: [0.1, 0.5], small: [0.6, 1.2] },
-    idioVol: { large: [0.15, 0.25], mid: [0.2, 0.32], small: [0.3, 0.5] },
-    alphaSd: 0.02,
-    jumpIntensity: { large: [1, 3], mid: [2, 4], small: [3, 6] },
+    idioVol: { large: [0.145, 0.19], mid: [0.2, 0.32], small: [0.3, 0.5] },
+    alphaSd: 0.014,
+    jumpIntensity: { large: [0.5, 1], mid: [2, 4], small: [3, 6] },
     jumpMean: -0.01,
-    jumpSd: { large: [0.04, 0.08], mid: [0.06, 0.1], small: [0.08, 0.14] },
-    riskClassBounds: [0.25, 0.32, 0.4, 0.5],
+    jumpSd: { large: [0.03, 0.055], mid: [0.06, 0.1], small: [0.08, 0.14] },
+    // Quintiles of the full volatility over 20 worlds (AP 1.9c).
+    riskClassBounds: [0.29, 0.34, 0.39, 0.46],
     riskClassFactorVols: {
-      world: 0.15,
-      region: 0.06,
-      sector: 0.06,
+      world: 0.093,
+      region: 0.09,
+      sector: 0.1,
       industry: 0.06,
       style: 0.04,
       size: 0.04,

@@ -50,12 +50,12 @@ export type GoldenChecksums = Readonly<Record<GoldenChecksumId, string>>;
  * - `gameStart`: the market state at the game start, after the whole prehistory.
  */
 export const GOLDEN_CHECKSUMS: GoldenChecksums = {
-  world: '40905c2a5a8b2b8806b90010ba5d9fb7',
-  prices: '6466c8f106e7c4c9bfe51a50da92e257',
-  minutes: '4ddc5dfe785513b8660952f08e71166a',
-  indices: '585539a9e50449d191fc2613e9a420c9',
-  etfs: '3471436c93ae56d929ed681f1363ab48',
-  gameStart: '49c6335308d7628142f3ed2f32875c67',
+  world: '0c8e345376a3fcac577a790a6f18192b',
+  prices: 'dd5c812a05a64daf4b0cf1708290007e',
+  minutes: '7b11a6b1957db2339ef29aa87dc7d4ed',
+  indices: 'c7916ed1209dc9ed4f3c2ae71a710575',
+  etfs: 'f7e944354b2985630448abdeff35382b',
+  gameStart: '67859dc74b41896065cffc5a93a0c8e6',
 };
 
 /** First day after the golden year 2020. */

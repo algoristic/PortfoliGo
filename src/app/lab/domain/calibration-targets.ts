@@ -1,8 +1,9 @@
 import { TargetRow, TargetStatus, TargetUnit } from './models/lab-statistics.model';
 
 /**
- * Calibration targets of TS §6.9 with their measurement rule (AP 1.8a, AP 1.8b, AP 1.9a, AP 1.9b).
- * Without `min` and `max` a quantity is shown for information.
+ * Calibration targets of TS §6.9 with their measurement rule (AP 1.8a, AP 1.8b, AP 1.9a, AP 1.9b,
+ * AP 1.9c). Without `min` and `max` a quantity is shown for information. The calibration suite
+ * checks every target with a band in the median of the calibration seeds (AP 1.9c).
  */
 export interface CalibrationTarget {
   id: string;
@@ -20,9 +21,10 @@ export const CALIBRATION_TARGETS = [
   { id: 'large-volatility', unit: 'percent', min: 0.2, max: 0.3, minYears: 1 },
   { id: 'mid-volatility', unit: 'percent' },
   { id: 'small-volatility', unit: 'percent', min: 0.35, max: 0.6, minYears: 1 },
-  // Large caps of the same region (E-31); all pairs of the same region for information.
+  // Large caps of the same region (E-31); all pairs of the same region for information. Between
+  // sectors up to 0.4 (E-34).
   { id: 'correlation-within', unit: 'number', min: 0.5, max: 0.6, minYears: 1 },
-  { id: 'correlation-between', unit: 'number', min: 0.2, max: 0.35, minYears: 1 },
+  { id: 'correlation-between', unit: 'number', min: 0.2, max: 0.4, minYears: 1 },
   { id: 'correlation-within-all', unit: 'number' },
   { id: 'correlation-between-all', unit: 'number' },
   { id: 'weekly-correlation-within', unit: 'number' },
@@ -35,7 +37,7 @@ export const CALIBRATION_TARGETS = [
   { id: 'world-dividend-yield', unit: 'percent', min: 0.02, max: 0.03, minYears: 1 },
   { id: 'stock-dividend-yield-median', unit: 'percent' },
   { id: 'stock-dividend-yield-max', unit: 'percent', min: 0, max: 0.07, minYears: 1 },
-  { id: 'intraday-profile', unit: 'number' },
+  { id: 'intraday-profile', unit: 'number', min: 1.3, max: 2 },
   { id: 'overnight-share-world', unit: 'percent' },
   { id: 'overnight-share-north-america', unit: 'percent', min: 0.15, max: 0.35, minYears: 5 },
   { id: 'overnight-share-europe', unit: 'percent', min: 0.15, max: 0.35, minYears: 5 },

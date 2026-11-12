@@ -171,7 +171,7 @@ export const INDUSTRIES: readonly Industry[] = [
     weight: 3,
     styleTilt: -0.8,
     cyclicality: 'cyclical',
-    dividendYield: [0.035, 0.07],
+    dividendYield: [0.035, 0.065],
     noDividendShare: 0.1,
     volatilityFactor: 1.15,
     nameStems: ['Petroleum', 'Oil', 'Gas', 'Energy'],

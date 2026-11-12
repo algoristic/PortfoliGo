@@ -1,4 +1,4 @@
-import { variance } from '@app/analysis/domain/statistics-logic';
+import { mean, variance } from '@app/analysis/domain/statistics-logic';
 import { deriveSeedKey } from '@app/simulation/util/seed';
 import { RegionId } from '@app/world/domain/models/taxonomy.model';
 import { generateWorld } from '@app/world/domain/world-generator';
@@ -14,7 +14,8 @@ import { TEST_SEEDS } from '../../../testing/seeds';
 import { expectWithinSigma } from '../../../testing/statistics';
 
 // Return of the factor levels to their expected path (TS §6.2, E-22): the levels of the industry
-// factors drift apart much less than without the return, while the world factor stays free.
+// factors drift apart much less than without the return, while the world factor stays free; the
+// size factor follows its path with the small-cap premium (AP 1.9c).
 // Activity of the region factors (TS §6.2, E-30): they move mostly in the sessions of their region.
 
 const YEARS = 60;
@@ -64,6 +65,22 @@ describe('factor levels', () => {
     expect(variance(reverting.get('industry') ?? [])).toBeLessThan(
       0.3 * variance(drifting.get('industry') ?? []),
     );
+  });
+
+  it('lets the size factor grow with its premium along the expected path', () => {
+    // TS §6.2: p(t) = m̄·t − ½·s̄²·g(t) with g(t) = (1 − e^{−2θt}) / (2θ). Around it the level
+    // varies with the stationary variance of the returns, s̄² / (2θ), plus that of the integrated
+    // trend, (η / κ_m)² / (2θ).
+    const { trendTarget, volTarget, levelReversion, trendVol, trendReversion } =
+      DEFAULT_MARKET_CONFIG.factors.size;
+    const g = (1 - Math.exp(-2 * levelReversion * YEARS)) / (2 * levelReversion);
+    const expected = trendTarget * YEARS - 0.5 * volTarget * volTarget * g;
+    const sd = Math.sqrt(
+      (volTarget * volTarget + (trendVol / trendReversion) ** 2) / (2 * levelReversion),
+    );
+    const levels = reverting.get('size') ?? [];
+    expect(trendTarget).toBeGreaterThan(0);
+    expectWithinSigma(mean(levels), expected, sd / Math.sqrt(levels.length), 4, 'size');
   });
 
   it('leaves the world factor unchanged', () => {

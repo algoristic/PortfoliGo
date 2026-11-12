@@ -59,6 +59,20 @@ function medians(measures: IntradayMeasures[]): IntradayMeasures {
   };
 }
 
+/** Intraday statistics of the mini world over the first half of 2020 with `intradayVolProfile`. */
+function profileStatistics(profile: readonly number[]): IntradayStatistics {
+  const { seedKey, world } = miniWorld();
+  const context = createMarketContext(seedKey, world, {
+    ...DEFAULT_MARKET_CONFIG,
+    intradayVolProfile: profile,
+  });
+  const state = createMarketState(context);
+  const history = createFactorHistory();
+  const toDay = day(2020, 7, 1);
+  advanceMarket(context, state, toDay, { history });
+  return computeIntradayStatistics(createCurveTables(context), history, world, 0, toDay);
+}
+
 describe('intradayWindowStart', () => {
   it('takes the last 63 market days of the period', () => {
     // 63 market days up to Thursday, 31.12.2020 start on Tuesday, 06.10.2020.
@@ -144,27 +158,19 @@ describe('computeIntradayStatistics', () => {
     expect(reference.reference.minuteVolatility / expected.minuteVolatility).toBeLessThan(1.3);
   });
 
-  it('finds no intraday profile with the uniform default', () => {
-    expect(DEFAULT_MARKET_CONFIG.intradayVolProfile).toEqual([1]);
-    expect(statistics.profile).toHaveLength(INTRADAY_PARTS);
-    expect(statistics.profileRatio).toBeCloseTo(1, 1);
+  it('finds no intraday profile with a uniform profile', () => {
+    const result = profileStatistics([1]);
+    expect(result.profile).toHaveLength(INTRADAY_PARTS);
+    expect(result.profileRatio).toBeCloseTo(1, 1);
   });
 
   it('finds the intraday profile of the configuration', () => {
     // Four times the idiosyncratic variance in the first and the last part.
-    const profile = Array.from({ length: INTRADAY_PARTS }, (_, p) =>
-      p === 0 || p === INTRADAY_PARTS - 1 ? 4 : 1,
+    const result = profileStatistics(
+      Array.from({ length: INTRADAY_PARTS }, (_, p) =>
+        p === 0 || p === INTRADAY_PARTS - 1 ? 4 : 1,
+      ),
     );
-    const { seedKey, world } = miniWorld();
-    const context = createMarketContext(seedKey, world, {
-      ...DEFAULT_MARKET_CONFIG,
-      intradayVolProfile: profile,
-    });
-    const state = createMarketState(context);
-    const history = createFactorHistory();
-    const toDay = day(2020, 7, 1);
-    advanceMarket(context, state, toDay, { history });
-    const result = computeIntradayStatistics(createCurveTables(context), history, world, 0, toDay);
     expect(result.profileRatio).toBeGreaterThan(1.3);
     const center = result.profile[6];
     expect(result.profile[0]).toBeGreaterThan(1.3 * center);

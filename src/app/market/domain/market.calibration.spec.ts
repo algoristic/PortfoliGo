@@ -18,9 +18,9 @@ import { etfSeries } from './series';
 import { TEST_SEEDS } from '../../../testing/seeds';
 import { expectWithinSigma } from '../../../testing/statistics';
 
-// Statistical plausibility of the market model on fixed seeds (TS §6.9, §14.1). Until the
-// calibration in AP 1.9 these tests only gate on principled bands; the calibration targets are
-// reported by the lab, not asserted here.
+// Statistical plausibility of the market model on fixed seeds (TS §6.9, §14.1): principled bands
+// of single building blocks. The calibration targets themselves are asserted in
+// `lab/domain/calibration-targets.calibration.spec.ts` (AP 1.9c).
 
 const { phases, tradingDaysPerYear, priceFloor } = DEFAULT_MARKET_CONFIG;
 
@@ -122,6 +122,20 @@ function runSeed(seed: string): SeedRun {
 
 describe('market calibration', () => {
   describe('phases', () => {
+    it('spend about 40 / 35 / 17 / 8 % of the time in boom, normal, downturn and crisis', () => {
+      // Target shares of TS §6.3.
+      const target: Record<MarketPhase, number> = {
+        boom: 0.4,
+        normal: 0.35,
+        downturn: 0.17,
+        crisis: 0.08,
+      };
+      const shares = stationaryPhaseShares();
+      for (const phase of MARKET_PHASES) {
+        expect(Math.abs(shares[phase] - target[phase]), phase).toBeLessThan(0.01);
+      }
+    });
+
     it('spend the time in the phases of the stationary distribution of the configured chain', () => {
       const { context } = runSeedContext();
       const expected = stationaryPhaseShares();
