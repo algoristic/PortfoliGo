@@ -3,8 +3,13 @@ import { CENTS_PER_EURO } from '@app/shared/domain/models/money.model';
 import { normal, poisson, uniformInt } from '@app/simulation/util/distributions';
 
 import { announcementDay, dividendCents, exDayOnOrAfter, exMarkdown } from './dividend-logic';
-import { expectedLogPath } from './idio-path-logic';
-import { idioPathAt, MarketContext } from './market-context';
+import {
+  dividendYieldAt,
+  idioPathAt,
+  IdioPathDay,
+  idioTargetAt,
+  MarketContext,
+} from './market-context';
 import { LOADINGS_PER_INSTRUMENT } from './market-layout';
 import { MarketDay } from './models/market-day.model';
 import { InstrumentState } from './models/market-state.model';
@@ -77,7 +82,8 @@ export function stepInstrument(
   const prevLogClose = state.logClose[i];
   out.prevLogClose[i] = prevLogClose;
   out.prevIdioClose[i] = state.idioClose[i];
-  announceDividend(context, i, day, state, out);
+  const path = idioPathAt(context, day);
+  announceDividend(context, i, day, path, state, out);
 
   let idioOpen =
     state.idioClose[i] + context.sqrtOvernightShare * vol * sqrtDayYears * overnightShock;
@@ -94,17 +100,16 @@ export function stepInstrument(
     state.nextExDay[i] = exDayOnOrAfter(dividend.schedule, dividend.frequency, day + 1);
     state.dividendCents[i] = Number.NaN;
   }
-  // Expected path m(t) = α·h(t) − ½·v·g(t) (decaying alpha, compensator of diffusion and jumps)
-  // and the return of the deviation from μ(t) = m(t) − ỹ·t, so paid dividends are not recovered
-  // (TS §6.4, E-22).
-  const path = idioPathAt(context, day);
+  // Expected path m(t) = α·h(t) + (1 − β)·r_z·t − ½·v·g(t) (decaying alpha, zero-beta drift,
+  // compensator of diffusion and jumps) and the return of the deviation from μ(t) = m(t) − D(t),
+  // so paid dividends are not recovered (TS §6.4, §6.5, E-22, E-32, E-33).
   const alpha = layout.alpha[i];
   const variance = context.idioVariance[i];
-  const expectedBefore = expectedLogPath(alpha, path.alphaBefore, variance, path.varianceBefore);
-  const target = expectedBefore - context.dividendDrag[i] * path.years;
+  const target = idioTargetAt(context, i, path);
   const idioClose =
     idioOpen +
-    alpha * (path.alphaAfter - path.alphaBefore) -
+    alpha * (path.alphaAfter - path.alphaBefore) +
+    context.zeroBetaDrift[i] * context.dayYears -
     0.5 * variance * (path.varianceAfter - path.varianceBefore) -
     context.reversionDecay * (state.idioClose[i] - target) +
     context.sqrtSessionShare * vol * sqrtDayYears * sessionShock +
@@ -121,14 +126,15 @@ export function stepInstrument(
 }
 
 /**
- * Announces the dividend of the next ex-date on its announcement day (TS §6.5): target yield ×
- * close of the previous trading day ÷ frequency. Ex-dates whose announcement lies before the
- * epoch are announced on the first trading day with the start price.
+ * Announces the dividend of the next ex-date on its announcement day (TS §6.5): target yield of the
+ * day (lifecycle, E-33) × close of the previous trading day ÷ frequency. Ex-dates whose
+ * announcement lies before the epoch are announced on the first trading day with the start price.
  */
 function announceDividend(
   context: MarketContext,
   i: number,
   day: number,
+  path: IdioPathDay,
   state: InstrumentState,
   out: MarketDay,
 ): void {
@@ -145,7 +151,7 @@ function announceDividend(
     return;
   }
   const cents = dividendCents(
-    dividend.yield,
+    dividendYieldAt(context, i, path.years),
     dividend.frequency,
     priceFromLog(state.logClose[i], context.config.priceFloor),
   );

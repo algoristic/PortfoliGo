@@ -242,7 +242,13 @@ describe('statistics-logic', () => {
           const middle = Math.floor(sorted.length / 2);
           const expected =
             sorted.length % 2 === 1 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
-          expectClose(median(xs), expected, Math.abs(expected), 1e-12);
+          // The rounding error scales with the middle values, not with their mean (which may be
+          // close to 0 for values of opposite sign).
+          const scale = Math.max(
+            Math.abs(sorted[Math.max(0, middle - 1)]),
+            Math.abs(sorted[middle]),
+          );
+          expectClose(median(xs), expected, scale, 1e-12);
         }),
       );
     });

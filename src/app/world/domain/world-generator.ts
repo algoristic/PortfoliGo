@@ -35,7 +35,11 @@ export function generateWorld(seedKey: SeedKey, config: WorldConfig = DEFAULT_WO
   const issuers = generateEtfIssuers(etfStream, config.etfs, registries);
   const etfDrafts = generateEtfs(etfStream, issuers, indices, config.etfs, registries);
   const banks = generateBanks(createStream(seedKey, 'world/banks'), config.banks, registries);
-  const companies = assignDividendSchedules(createStream(seedKey, 'world/dividends'), drafts);
+  const companies = assignDividendSchedules(
+    createStream(seedKey, 'world/dividends'),
+    drafts,
+    config.companies.dividendInitiationYears,
+  );
   const etfs = assignEtfTerms(createStream(seedKey, 'world/etf-terms'), etfDrafts, config.etfs);
   return {
     regions: REGIONS,

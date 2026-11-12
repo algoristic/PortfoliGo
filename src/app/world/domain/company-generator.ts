@@ -217,9 +217,10 @@ export function generateCompanies(
       profile: { template, focus },
       dividend: {
         yield: dividendYield,
-        frequency: paysDividend ? region.dividendFrequency : null,
+        frequency: region.dividendFrequency,
         // Drawn from the stream `world/dividends` (assignDividendSchedules).
         schedule: null,
+        startDay: 0,
       },
       model,
     };

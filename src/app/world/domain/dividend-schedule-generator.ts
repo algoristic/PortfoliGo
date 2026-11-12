@@ -1,3 +1,10 @@
+import {
+  dateTimeToTick,
+  dayIndex,
+  dayStartTick,
+  tickToDateTime,
+} from '@app/clock/domain/calendar-logic';
+import { detLog } from '@app/simulation/util/det-math';
 import { uniformInt } from '@app/simulation/util/distributions';
 
 import { RandomStream } from '@app/simulation/util/random-stream';
@@ -9,20 +16,20 @@ const MONTHS_PER_YEAR = 12;
 const LAST_SCHEDULE_DAY = 28;
 
 /**
- * Draws the yearly ex-date rhythm of every dividend payer in company order (TS §6.5). Uses its own
- * stream, so the other company attributes do not move.
+ * Draws the yearly ex-date rhythm of every company in company order (TS §6.5) and, for companies
+ * without a dividend at the epoch, the month in which they start to pay (E-33). Uses its own
+ * stream, so the other company attributes do not move. Draw order per company: rhythm, then the
+ * start month of a later payer.
  */
 export function assignDividendSchedules(
   rng: RandomStream,
   companies: readonly Company[],
+  initiationYears: number,
 ): Company[] {
   return companies.map((company) => {
-    const { frequency } = company.dividend;
-    if (frequency === null) {
-      return company;
-    }
-    const schedule = drawDividendSchedule(rng, DIVIDENDS_PER_YEAR[frequency]);
-    return { ...company, dividend: { ...company.dividend, schedule } };
+    const schedule = drawDividendSchedule(rng, DIVIDENDS_PER_YEAR[company.dividend.frequency]);
+    const startDay = company.dividend.yield > 0 ? 0 : drawStartDay(rng, initiationYears);
+    return { ...company, dividend: { ...company.dividend, schedule, startDay } };
   });
 }
 
@@ -31,4 +38,21 @@ export function drawDividendSchedule(rng: RandomStream, perYear: number): Divide
   const firstMonth = uniformInt(rng, 1, MONTHS_PER_YEAR / perYear);
   const day = uniformInt(rng, 1, LAST_SCHEDULE_DAY);
   return { firstMonth, day };
+}
+
+/**
+ * First day of the month in which a company starts to pay: exponentially distributed with mean
+ * `meanYears` after the epoch, rounded down to whole months.
+ */
+export function drawStartDay(rng: RandomStream, meanYears: number): number {
+  const epoch = tickToDateTime(dayStartTick(0));
+  const months =
+    epoch.month - 1 + Math.floor(-meanYears * detLog(1 - rng.nextFloat53()) * MONTHS_PER_YEAR);
+  return dayIndex(
+    dateTimeToTick({
+      year: epoch.year + Math.floor(months / MONTHS_PER_YEAR),
+      month: (months % MONTHS_PER_YEAR) + 1,
+      day: 1,
+    }),
+  );
 }

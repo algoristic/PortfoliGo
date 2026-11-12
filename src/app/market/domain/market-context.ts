@@ -4,15 +4,29 @@ import { StreamFamily } from '@app/simulation/util/random-stream';
 
 import { SeedKey } from '@app/simulation/util/seed';
 
-import { DIVIDENDS_PER_YEAR } from '@app/world/domain/models/taxonomy.model';
+import { DIVIDENDS_PER_YEAR, RegionId } from '@app/world/domain/models/taxonomy.model';
 import { World } from '@app/world/domain/models/world.model';
 
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { createEtfLayout, EtfLayout } from './etf-layout';
-import { decayWeight, dividendDrag, expectedLogPath, idioVariance } from './idio-path-logic';
+import {
+  cumulativeDividendDrag,
+  decayWeight,
+  dividendDrag,
+  dividendDragAt,
+  expectedLogPath,
+  idioVariance,
+  yieldFromDrag,
+} from './idio-path-logic';
 import { createIndexLayout, IndexLayout } from './index-layout';
 import { marketDaysBefore } from './market-calendar';
-import { createMarketLayout, MarketLayout, WORLD_FACTOR } from './market-layout';
+import {
+  createMarketLayout,
+  factorId,
+  LOADINGS_PER_INSTRUMENT,
+  MarketLayout,
+  WORLD_FACTOR,
+} from './market-layout';
 import { MARKET_PHASES, MarketConfig, MarketPhase } from './models/market-config.model';
 import { createSpreadLayout, SpreadLayout } from './quote-logic';
 
@@ -30,8 +44,10 @@ export interface MarketContext {
   dayYears: number;
   sqrtDayYears: number;
   /**
-   * Share of the trading day's factor variance per interval between two boundaries in years (Δ_j,
-   * weighted by activity, E-24; Σ Δ_j = Δ_T) and their square roots.
+   * Share of the trading day's factor variance per factor and interval between two boundaries in
+   * years (`Δ_kj` at `k · intervals + j`, weighted by activity, E-24, E-30; `Σ_j Δ_kj = Δ_T`) and
+   * their square roots. Region factors follow the sessions of their region, all others the
+   * activity of all exchanges.
    */
   intervalYears: Float64Array;
   sqrtIntervalYears: Float64Array;
@@ -71,10 +87,21 @@ export interface MarketContext {
   /** √(overnight share) and √(1 − overnight share) of the idiosyncratic variance. */
   sqrtOvernightShare: number;
   sqrtSessionShare: number;
-  /** Per instrument: idiosyncratic variance `v_i`, dividend drag `ỹ_i` and `λ_i · Δ_T · μ_J`. */
+  /**
+   * Per instrument: idiosyncratic variance `v_i`, zero-beta drift `(1 − β_i) · r_z` (E-32) and
+   * `λ_i · Δ_T · μ_J`.
+   */
   idioVariance: Float64Array;
-  dividendDrag: Float64Array;
+  zeroBetaDrift: Float64Array;
   jumpDrift: Float64Array;
+  /**
+   * Dividend lifecycle per instrument (TS §6.5, E-33): years `t_0` of market days before the start
+   * of the payments (`Infinity` without a dividend), expected log markdown p. a. at the start and in
+   * the long run.
+   */
+  dividendStartYears: Float64Array;
+  startDrag: Float64Array;
+  longRunDrag: Float64Array;
   /** Share `1 − e^{−θ·Δ_T}` of the deviation from the expected path that `U_i` loses per day. */
   reversionDecay: number;
   /** Volatility target of the world factor in the reference phase (`s̄_world`, E-23). */
@@ -117,8 +144,9 @@ export function createMarketContext(
   const factorCount = layout.factorIds.length;
   const reference = config.phases[config.referencePhase];
   const dayYears = 1 / config.tradingDaysPerYear;
-  const intervalYears = activityIntervalYears(world, layout, config, dayYears);
+  const intervalYears = factorIntervalYears(world, layout, config, dayYears);
   const sqrtIntervalYears = intervalYears.map((years) => Math.sqrt(years));
+  const lifecycle = config.dividendLifecycle;
   const theta = config.idioReversion;
   const indices = createIndexLayout(world, layout);
   const context: MarketContext = {
@@ -170,10 +198,28 @@ export function createMarketContext(
     idioVariance: layout.idioVol.map((vol, i) =>
       idioVariance(vol, layout.jumpIntensity[i], layout.jumpMean[i], layout.jumpSd[i]),
     ),
-    dividendDrag: Float64Array.from(layout.dividends, (dividend) =>
-      dividend === null ? 0 : dividendDrag(dividend.yield, DIVIDENDS_PER_YEAR[dividend.frequency]),
+    zeroBetaDrift: Float64Array.from(
+      layout.instrumentIds,
+      (_, i) =>
+        (1 - layout.loadings[i * LOADINGS_PER_INSTRUMENT + WORLD_FACTOR]) * config.zeroBetaReturn,
     ),
     jumpDrift: layout.jumpIntensity.map((lambda, i) => lambda * dayYears * layout.jumpMean[i]),
+    dividendStartYears: Float64Array.from(layout.dividends, (dividend) =>
+      dividend === null ? Infinity : marketDaysBefore(dividend.startDay) * dayYears,
+    ),
+    startDrag: Float64Array.from(layout.dividends, (dividend) =>
+      dividend === null
+        ? 0
+        : dividendDrag(
+            dividend.yield > 0 ? dividend.yield : lifecycle.initialYield,
+            DIVIDENDS_PER_YEAR[dividend.frequency],
+          ),
+    ),
+    longRunDrag: Float64Array.from(layout.dividends, (dividend) =>
+      dividend === null
+        ? 0
+        : dividendDrag(lifecycle.longRunYield, DIVIDENDS_PER_YEAR[dividend.frequency]),
+    ),
     reversionDecay: 1 - detExp(-theta * dayYears),
     referenceWorldVol: 0,
     idioPath: {
@@ -236,6 +282,8 @@ export function factorPathAt(context: MarketContext, day: number): FactorPathDay
       const before = decayWeight(2 * theta, years);
       const after = decayWeight(2 * theta, years + context.dayYears);
       path.target[k] = expectedLogPath(
+        0,
+        0,
         context.referenceTrend[k],
         years,
         context.referenceVariance[k],
@@ -269,21 +317,72 @@ export function idioPathAt(context: MarketContext, day: number): IdioPathDay {
 }
 
 /**
+ * Target `μ_i(t) = m_i(t) − D_i(t − t_0)` of the return of `U_i` at the start of the day of `path`
+ * (TS §6.4, §6.5): expected path with decaying alpha, zero-beta drift and compensator, minus the
+ * expected log markdown of the dividends paid so far (E-22, E-32, E-33).
+ */
+export function idioTargetAt(context: MarketContext, i: number, path: IdioPathDay): number {
+  const expected = expectedLogPath(
+    context.layout.alpha[i],
+    path.alphaBefore,
+    context.zeroBetaDrift[i],
+    path.years,
+    context.idioVariance[i],
+    path.varianceBefore,
+  );
+  return (
+    expected -
+    cumulativeDividendDrag(
+      context.startDrag[i],
+      context.longRunDrag[i],
+      context.config.dividendLifecycle.yieldReversion,
+      path.years - context.dividendStartYears[i],
+    )
+  );
+}
+
+/**
+ * Target dividend yield of instrument i after `years` of market days (TS §6.5, E-33); the start
+ * yield until the payments start, 0 without a dividend.
+ */
+export function dividendYieldAt(context: MarketContext, i: number, years: number): number {
+  const dividend = context.layout.dividends[i];
+  if (dividend === null) {
+    return 0;
+  }
+  const drag = dividendDragAt(
+    context.startDrag[i],
+    context.longRunDrag[i],
+    context.config.dividendLifecycle.yieldReversion,
+    Math.max(0, years - context.dividendStartYears[i]),
+  );
+  return yieldFromDrag(drag, DIVIDENDS_PER_YEAR[dividend.frequency]);
+}
+
+/**
  * Factor variance per interval in years (TS §6.2, E-24): activity `a = c + (1 − c) · s` per minute,
  * where `s` is the activity weight of the open exchanges relative to all exchanges, normalised so
  * that the intervals add up to one trading day. `c = 1` gives the plain interval lengths.
+ *
+ * With `regionId` (E-30) only the exchanges of that region count and `c` is
+ * `regionClosedActivity`: the profile of the region factor.
  */
 export function activityIntervalYears(
   world: World,
   layout: MarketLayout,
-  config: Pick<MarketConfig, 'closedActivity' | 'exchangeActivity'>,
+  config: Pick<MarketConfig, 'closedActivity' | 'regionClosedActivity' | 'exchangeActivity'>,
   dayYears: number,
+  regionId?: RegionId,
 ): Float64Array {
   const { boundaries } = layout;
   const intervalCount = boundaries.length - 1;
   const openWeight = new Float64Array(intervalCount);
+  const regionOf = new Map(world.countries.map((country) => [country.id, country.regionId]));
   let totalWeight = 0;
   for (const exchange of world.exchanges) {
+    if (regionId !== undefined && regionOf.get(exchange.countryId) !== regionId) {
+      continue;
+    }
     const weight = config.exchangeActivity[exchange.id] ?? 0;
     totalWeight += weight;
     for (let j = 0; j < intervalCount; j++) {
@@ -292,7 +391,7 @@ export function activityIntervalYears(
       }
     }
   }
-  const closed = config.closedActivity;
+  const closed = regionId === undefined ? config.closedActivity : config.regionClosedActivity;
   const weights = new Float64Array(intervalCount);
   let total = 0;
   for (let j = 0; j < intervalCount; j++) {
@@ -301,4 +400,29 @@ export function activityIntervalYears(
     total += weights[j];
   }
   return weights.map((weight) => (dayYears * weight) / total);
+}
+
+/**
+ * Interval years of every factor at `k · intervals + j` (TS §6.2, E-30): region factors get the
+ * profile of their region, all other factors the profile of all exchanges.
+ */
+function factorIntervalYears(
+  world: World,
+  layout: MarketLayout,
+  config: MarketConfig,
+  dayYears: number,
+): Float64Array {
+  const intervalCount = layout.boundaries.length - 1;
+  const common = activityIntervalYears(world, layout, config, dayYears);
+  const regional = new Map(
+    world.regions.map((region) => [
+      factorId('region', region.id),
+      activityIntervalYears(world, layout, config, dayYears, region.id),
+    ]),
+  );
+  const result = new Float64Array(layout.factorIds.length * intervalCount);
+  layout.factorIds.forEach((id, k) => {
+    result.set(regional.get(id) ?? common, k * intervalCount);
+  });
+  return result;
 }

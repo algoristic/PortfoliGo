@@ -114,8 +114,8 @@ describe('lab-statistics', () => {
     });
 
     it('correlates only shares of the same region on daily returns', () => {
-      expect(value('correlation-within')).toBeCloseTo(1, 6);
-      expect(value('correlation-between')).toBeCloseTo(-1, 6);
+      expect(value('correlation-within-all')).toBeCloseTo(1, 6);
+      expect(value('correlation-between-all')).toBeCloseTo(-1, 6);
       expect(statistics.correlations.sectorIds).toEqual(['tech', 'energy']);
       expect(statistics.correlations.values[0][0]).toBeCloseTo(1, 6);
       expect(statistics.correlations.values[0][1]).toBeCloseTo(-1, 6);
@@ -151,9 +151,9 @@ describe('lab-statistics', () => {
       ]);
       expect(statistics.phaseShares[0].share + statistics.phaseShares[3].share).toBe(1);
       expect(statistics.targets.find((row) => row.id === 'world-return')?.status).toBe('short');
-      expect(statistics.targets.find((row) => row.id === 'overnight-share-world')?.status).toBe(
-        'info',
-      );
+      for (const id of ['overnight-share-world', 'overnight-share-emerging-markets']) {
+        expect(statistics.targets.find((row) => row.id === id)?.status).toBe('info');
+      }
     });
 
     it('takes the overnight shares from the sample and the profile from the intraday part', () => {
@@ -194,6 +194,51 @@ describe('lab-statistics', () => {
       expect(() =>
         computeLabStatistics(sample(1), intraday, world, 'epoch', DAYS_PER_YEAR),
       ).toThrow(RangeError);
+    });
+  });
+
+  describe('correlation targets over large caps (E-31)', () => {
+    // a, b: large tech Europe; c: large energy Europe (opposite returns); e: small tech Europe and
+    // g: large energy North America, both with unrelated returns.
+    const largeWorld = {
+      sectors: [{ id: 'tech' }, { id: 'energy' }],
+      companies: [
+        { size: 'large', sectorId: 'tech', regionId: 'europe' },
+        { size: 'large', sectorId: 'tech', regionId: 'europe' },
+        { size: 'large', sectorId: 'energy', regionId: 'europe' },
+        { size: 'small', sectorId: 'tech', regionId: 'europe' },
+        { size: 'large', sectorId: 'energy', regionId: 'north-america' },
+      ],
+    } as unknown as World;
+    let statistics: LabStatistics;
+    const value = (id: string): number | undefined =>
+      statistics.targets.find((row) => row.id === id)?.value;
+
+    beforeAll(() => {
+      const count = 2 * DAYS_PER_YEAR + 1;
+      const base = sample(count);
+      const [a, , c, other] = base.stockReturns;
+      const unrelated = Float32Array.from(other, (_, d) => 0.015 * Math.sin(d * 1.7));
+      const input: MarketSample = {
+        ...base,
+        stockReturns: [a, a, c, other, unrelated],
+        dividendSum: new Float64Array(5),
+        closeSum: new Float64Array(5).fill(100 * count),
+      };
+      statistics = computeLabStatistics(input, intraday, largeWorld, 'epoch', DAYS_PER_YEAR);
+    });
+
+    it('takes the targets only from large caps of the same region', () => {
+      expect(value('correlation-within')).toBeCloseTo(1, 6);
+      expect(value('correlation-between')).toBeCloseTo(-1, 6);
+    });
+
+    it('keeps all pairs of the same region for information', () => {
+      expect(value('correlation-within-all')).toBeLessThan(0.9);
+      expect(value('correlation-between-all')).toBeGreaterThan(-0.9);
+      expect(statistics.targets.find((row) => row.id === 'correlation-within-all')?.status).toBe(
+        'info',
+      );
     });
   });
 });

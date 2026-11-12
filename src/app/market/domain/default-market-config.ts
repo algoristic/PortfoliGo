@@ -10,7 +10,7 @@ const SUB_FACTOR: Omit<FactorParams, 'volTarget' | 'trendVol'> = {
   phaseCoupling: 0,
 };
 
-/** Standard market (TS §6.2, §6.3). Start values for the calibration in AP 1.9. */
+/** Standard market (TS §6.2, §6.3). Start values for the calibration in AP 1.9c. */
 export const DEFAULT_MARKET_CONFIG: MarketConfig = {
   tradingDaysPerYear: 261,
   referencePhase: 'normal',
@@ -61,7 +61,9 @@ export const DEFAULT_MARKET_CONFIG: MarketConfig = {
   overnightShare: 0.25,
   idioReversion: Math.LN2 / 15,
   alphaDecay: Math.LN2 / 10,
+  zeroBetaReturn: 0.05,
   closedActivity: 0.3,
+  regionClosedActivity: 0.1,
   // Region × country weights of the standard world (TS §5.2), roughly the market capitalisation.
   exchangeActivity: {
     'exc-us': 0.34,
@@ -76,6 +78,11 @@ export const DEFAULT_MARKET_CONFIG: MarketConfig = {
     'exc-hk': 0.045,
     'exc-in': 0.06,
     'exc-br': 0.06,
+  },
+  dividendLifecycle: {
+    longRunYield: 0.025,
+    yieldReversion: Math.LN2 / 25,
+    initialYield: 0.01,
   },
   priceFloor: 0.01,
   intradayVolProfile: [1],

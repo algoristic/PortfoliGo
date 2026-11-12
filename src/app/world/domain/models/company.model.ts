@@ -60,12 +60,20 @@ export interface DividendSchedule {
   day: number;
 }
 
+/**
+ * Dividend policy (TS §5.4, §6.5). Every company has a frequency and a rhythm; companies without a
+ * dividend at the epoch start to pay at `startDay` (E-33). The market moves the target yield over
+ * the decades (dividend lifecycle).
+ */
 export interface DividendProfile {
-  /** Target dividend yield (0.03 = 3 %); 0 for companies without a dividend. */
+  /** Target dividend yield at the epoch (0.03 = 3 %); 0 for companies that start to pay later. */
   yield: number;
-  frequency: DividendFrequency | null;
-  /** `null` for companies without a dividend. */
+  /** Frequency of the region (TS §6.5). */
+  frequency: DividendFrequency;
+  /** Drawn after the companies (stream `world/dividends`); `null` only in drafts before that. */
   schedule: DividendSchedule | null;
+  /** Day from which the company pays: 0 for payers at the epoch, later for the others. */
+  startDay: number;
 }
 
 export interface Company {

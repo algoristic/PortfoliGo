@@ -31,9 +31,10 @@ export function stepPhase(context: MarketContext, phase: MarketPhase, day: numbe
 
 /**
  * Day step of all factors (TS §6.2) after the phase transition: trend, support points at the
- * boundaries with the return of the level to its expected path (E-22), volatility of the next day. Writes the support points and today's volatility into
- * `out`. Each factor draws from its own stream `market/factor/<id>/<day>` in the order: trend,
- * one normal per interval, volatility.
+ * boundaries with the return of the level to its expected path (E-22), volatility of the next day.
+ * The variance per interval follows the factor's activity profile (E-24, E-30). Writes the support
+ * points and today's volatility into `out`. Each factor draws from its own stream
+ * `market/factor/<id>/<day>` in the order: trend, one normal per interval, volatility.
  */
 export function stepFactors(
   context: MarketContext,
@@ -66,12 +67,13 @@ export function stepFactors(
       0.5 * vol * vol * path.convexity[k] -
       (context.levelDecay[k] * (level - path.target[k])) / dayYears;
     const base = k * boundaryCount;
+    const intervals = k * intervalCount;
     let shock = 0;
     out.factorLevels[base] = level;
     for (let j = 0; j < intervalCount; j++) {
       const z = normal(rng);
-      level += drift * intervalYears[j] + vol * sqrtIntervalYears[j] * z;
-      shock += sqrtIntervalYears[j] * z;
+      level += drift * intervalYears[intervals + j] + vol * sqrtIntervalYears[intervals + j] * z;
+      shock += sqrtIntervalYears[intervals + j] * z;
       out.factorLevels[base + j + 1] = level;
     }
     state.level[k] = level;

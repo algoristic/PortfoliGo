@@ -6,6 +6,7 @@ import { ANNOUNCEMENT_LEAD_DAYS, dividendCents } from './dividend-logic';
 import { stepInstrument } from './instrument-step';
 import { isMarketDay } from './market-calendar';
 import { MarketContext } from './market-context';
+import { InstrumentDividend } from './market-layout';
 import { restoreMarket, snapshotMarket } from './market-snapshot';
 import { advanceMarket, createMarketDay, createMarketState } from './market-step';
 import { MarketState } from './models/market-state.model';
@@ -14,6 +15,28 @@ import { END_OF_2020_DAY, goldenYear } from './testing/golden-year';
 
 const FLOOR = DEFAULT_MARKET_CONFIG.priceFloor;
 const START_2022 = dayIndex(dateTimeToTick({ year: 2022, month: 1, day: 1 }));
+/** At most this many calendar days lie between an announcement and its ex-date. */
+const ANNOUNCEMENT_CALENDAR_DAYS = 28;
+
+/**
+ * Target yield of the dividend lifecycle on `day` (TS §6.5, E-33), written out: the log markdown
+ * ỹ = −f·ln(1 − y/f) moves from the start yield to the long-run yield at the rate κ_y over the
+ * market days since the start of the payments, y = f·(1 − e^{−ỹ/f}).
+ */
+function lifecycleYield(dividend: InstrumentDividend, day: number): number {
+  const { longRunYield, yieldReversion, initialYield } = DEFAULT_MARKET_CONFIG.dividendLifecycle;
+  const perYear = DIVIDENDS_PER_YEAR[dividend.frequency];
+  const drag = (value: number): number => -perYear * Math.log(1 - value / perYear);
+  const start = drag(dividend.yield > 0 ? dividend.yield : initialYield);
+  const longRun = drag(longRunYield);
+  let marketDays = 0;
+  for (let d = dividend.startDay; d < day; d++) {
+    marketDays += isMarketDay(d) ? 1 : 0;
+  }
+  const years = marketDays / DEFAULT_MARKET_CONFIG.tradingDaysPerYear;
+  const current = longRun + (start - longRun) * Math.exp(-yieldReversion * years);
+  return perYear * (1 - Math.exp(-current / perYear));
+}
 
 interface Announcement {
   day: number;
@@ -25,7 +48,7 @@ interface Announcement {
 let context: MarketContext;
 /** Market state at the start of 2021 (golden year); copies are taken from it. */
 let start2021: MarketState;
-/** A quarterly dividend payer, so 2021 has several announcements. */
+/** A quarterly dividend payer since the epoch, so 2021 has several announcements. */
 let payer: number;
 let announcements: Announcement[];
 /** Changes of `nextExDay` per instrument in 2021. */
@@ -50,7 +73,9 @@ beforeAll(() => {
   const golden = goldenYear();
   context = golden.context;
   start2021 = golden.state;
-  payer = context.layout.dividends.findIndex((dividend) => dividend?.frequency === 'quarterly');
+  payer = context.layout.dividends.findIndex(
+    (dividend) => dividend !== null && dividend.yield > 0 && dividend.frequency === 'quarterly',
+  );
   announcements = [];
   const state = restoreMarket(snapshotMarket(start2021));
   const previous = state.nextExDay.slice();
@@ -125,7 +150,7 @@ describe('stepInstrument', () => {
       expect(withDividend.state.dividendCents[payer]).toBeNaN();
     });
 
-    it('announces 20 market days ahead the amount from the previous close (TS §6.5)', () => {
+    it('announces 20 market days ahead the amount from the target yield of the day and the previous close (TS §6.5)', () => {
       const dividend = context.layout.dividends[payer];
       if (dividend === null) {
         throw new Error('test setup: no dividend payer');
@@ -139,7 +164,7 @@ describe('stepInstrument', () => {
         expect(marketDays).toBe(ANNOUNCEMENT_LEAD_DAYS);
         expect(announcement.cents).toBe(
           dividendCents(
-            dividend.yield,
+            lifecycleYield(dividend, announcement.day),
             dividend.frequency,
             priceFromLog(announcement.prevLog, FLOOR),
           ),
@@ -159,12 +184,67 @@ describe('stepInstrument', () => {
       expect(out.announcedCents[payer]).toBe(plain.out.announcedCents[payer]);
     });
 
-    it('has the ex-dates of its frequency in every year', () => {
+    it('has the ex-dates of its frequency in every year once the payments started', () => {
       context.layout.dividends.forEach((dividend, i) => {
-        expect(exDateCounts[i]).toBe(
-          dividend === null ? 0 : DIVIDENDS_PER_YEAR[dividend.frequency],
-        );
+        if (dividend === null || dividend.startDay >= START_2022) {
+          expect(exDateCounts[i]).toBe(0);
+        } else if (dividend.startDay <= END_OF_2020_DAY) {
+          expect(exDateCounts[i]).toBe(DIVIDENDS_PER_YEAR[dividend.frequency]);
+        } else {
+          expect(exDateCounts[i]).toBeLessThanOrEqual(DIVIDENDS_PER_YEAR[dividend.frequency]);
+        }
       });
+    });
+
+    it('lets a company without a dividend at the epoch start to pay at its start day (E-33)', () => {
+      let later = -1;
+      context.layout.dividends.forEach((dividend, i) => {
+        const current = later < 0 ? null : context.layout.dividends[later];
+        if (
+          dividend !== null &&
+          dividend.yield === 0 &&
+          dividend.startDay > END_OF_2020_DAY &&
+          (current === null || dividend.startDay < current.startDay)
+        ) {
+          later = i;
+        }
+      });
+      const dividend = context.layout.dividends[later];
+      if (dividend === null) {
+        throw new Error('test setup: no later payer');
+      }
+      const announced: Announcement[] = [];
+      const exDays: number[] = [];
+      const state = restoreMarket(snapshotMarket(start2021));
+      advanceMarket(context, state, dividend.startDay + 400, {
+        onDay: (day) => {
+          if (day.announcedExDay[later] >= 0) {
+            announced.push({
+              day: day.day,
+              exDay: day.announcedExDay[later],
+              cents: day.announcedCents[later],
+              prevLog: day.prevLogClose[later],
+            });
+          }
+          if (day.exDividendCents[later] > 0) {
+            exDays.push(day.day);
+          }
+        },
+      });
+      expect(announced.length).toBeGreaterThan(0);
+      expect(announced[0].day).toBeGreaterThanOrEqual(
+        dividend.startDay - ANNOUNCEMENT_CALENDAR_DAYS,
+      );
+      expect(exDays.length).toBeGreaterThan(0);
+      expect(exDays[0]).toBeGreaterThanOrEqual(dividend.startDay);
+      expect(exDays[0]).toBe(announced[0].exDay);
+      expect(announced[0].cents).toBe(
+        dividendCents(
+          lifecycleYield(dividend, announced[0].day),
+          dividend.frequency,
+          priceFromLog(announced[0].prevLog, FLOOR),
+        ),
+      );
     });
   });
 });

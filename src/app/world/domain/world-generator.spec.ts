@@ -1,5 +1,6 @@
 import fc from 'fast-check';
 
+import { dayStartTick, tickToDateTime } from '@app/clock/domain/calendar-logic';
 import { eurosToCents } from '@app/shared/domain/money-logic';
 
 import { deriveSeedKey, normalizeSeed } from '@app/simulation/util/seed';
@@ -222,18 +223,22 @@ describe('generateWorld', () => {
       });
     });
 
-    it('gives every dividend payer a yield and a yearly ex-date rhythm and nobody else', () => {
+    it('gives every company the frequency of its region and a yearly ex-date rhythm', () => {
       forAnyWorld((world) => {
         for (const company of world.companies) {
-          const { frequency, schedule, yield: dividendYield } = company.dividend;
+          const { frequency, schedule, startDay, yield: dividendYield } = company.dividend;
+          const region = world.regions.find((candidate) => candidate.id === company.regionId);
           expectIn(dividendYield, [0, config.companies.maxDividendYield], 'dividend yield');
-          expect(frequency === null).toBe(dividendYield === 0);
-          if (frequency === null) {
-            expect(schedule).toBeNull();
-            continue;
-          }
+          expect(frequency).toBe(region?.dividendFrequency);
           expectIn(schedule?.firstMonth, [1, 12 / DIVIDENDS_PER_YEAR[frequency]], 'first month');
           expectIn(schedule?.day, [1, LAST_SCHEDULE_DAY], 'day');
+          // Payers pay from the epoch, the others from the first day of a later month (E-33).
+          if (dividendYield > 0) {
+            expect(startDay).toBe(0);
+          } else {
+            expect(startDay).toBeGreaterThanOrEqual(0);
+            expect(tickToDateTime(dayStartTick(startDay)).day).toBe(1);
+          }
         }
       });
     });

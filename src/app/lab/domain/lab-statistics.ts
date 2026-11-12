@@ -49,8 +49,8 @@ const DISTRIBUTION_RANGE = 5;
 /**
  * The statistics of the lab (TS §14.2) for a sample, with the measurement rules of TS §6.9:
  * daily log returns, annualized with the market days per year; correlations of shares of the same
- * region (daily closes of different regions fall on different times of day). The intraday
- * statistics come from the minute curves (`computeIntradayStatistics`).
+ * region (daily closes of different regions fall on different times of day), the targets over large
+ * caps (E-31). The intraday statistics come from the minute curves (`computeIntradayStatistics`).
  */
 export function computeLabStatistics(
   sample: MarketSample,
@@ -78,6 +78,7 @@ export function computeLabStatistics(
   );
   const last = marketDays - 1;
   const daily = dailyCorrelations(sample.stockReturns, world);
+  const large = largeCapCorrelations(sample.stockReturns, world);
   const weekly = weeklyCorrelations(sample, world);
   const squaredReturns = worldReturns.map((r) => r * r);
   const stockYields = Array.from(sample.dividendSum, (dividends, i) => {
@@ -97,8 +98,10 @@ export function computeLabStatistics(
     'large-volatility': medianOfSize(sizeVolatility, 'large'),
     'mid-volatility': medianOfSize(sizeVolatility, 'mid'),
     'small-volatility': medianOfSize(sizeVolatility, 'small'),
-    'correlation-within': daily.within,
-    'correlation-between': daily.between,
+    'correlation-within': large.within,
+    'correlation-between': large.between,
+    'correlation-within-all': daily.within,
+    'correlation-between-all': daily.between,
     'weekly-correlation-within': weekly.within,
     'weekly-correlation-between': weekly.between,
     'bear-markets': episodes.length / returnYears,
@@ -260,6 +263,22 @@ function dailyCorrelations(returns: Float32Array[], world: World): DailyCorrelat
     }),
   );
   return { matrix: { sectorIds, values }, ...pooled };
+}
+
+/** Mean daily correlation within and between sectors over pairs of large caps of the same region. */
+function largeCapCorrelations(
+  returns: Float32Array[],
+  world: World,
+): { within: number; between: number } {
+  const { companies } = world;
+  return pairCorrelations(
+    returns,
+    (i, j) =>
+      companies[i].size === 'large' &&
+      companies[j].size === 'large' &&
+      companies[i].regionId === companies[j].regionId,
+    (i, j) => companies[i].sectorId === companies[j].sectorId,
+  );
 }
 
 /** Weekly log returns from the last close of each calendar week, all pairs of shares. */

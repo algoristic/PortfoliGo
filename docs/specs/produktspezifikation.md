@@ -151,18 +151,18 @@ erDiagram
 
 **Klassifikation** – Grundlage für Marktmodell, Filter und Auswertungen:
 
-| Merkmal                | Ausprägungen (Beispiele)                                                 |
-| ---------------------- | ------------------------------------------------------------------------ |
-| Assetklasse            | Aktie, ETF, Index; später Anleihe, Rohstoff, ETC, Fonds, Edelmetall, CFD |
-| Region                 | Nordamerika, Europa, Asien-Pazifik, Schwellenländer                      |
-| Land und Börse         | z. B. USA, Deutschland, Japan, Brasilien – jeweils mit Handelszeiten     |
-| Sektor                 | 11 Sektoren, z. B. Technologie, Gesundheit, Finanzen, Energie, Versorger |
-| Branche                | rund 30, z. B. Halbleiter, Software, Öl & Gas, Erneuerbare Energien      |
-| Größe                  | Large, Mid, Small Cap (nach Marktkapitalisierung)                        |
-| Stil                   | Value, Growth, Blend                                                     |
-| Dividendenprofil       | keine bis hohe Rendite; jährlich, halbjährlich oder quartalsweise        |
-| Konjunkturabhängigkeit | defensiv, neutral, zyklisch                                              |
-| Risiko                 | Volatilitätsklasse 1–5                                                   |
+| Merkmal                | Ausprägungen (Beispiele)                                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Assetklasse            | Aktie, ETF, Index; später Anleihe, Rohstoff, ETC, Fonds, Edelmetall, CFD                                                                                                       |
+| Region                 | Nordamerika, Europa, Asien-Pazifik, Schwellenländer                                                                                                                            |
+| Land und Börse         | z. B. USA, Deutschland, Japan, Brasilien – jeweils mit Handelszeiten                                                                                                           |
+| Sektor                 | 11 Sektoren, z. B. Technologie, Gesundheit, Finanzen, Energie, Versorger                                                                                                       |
+| Branche                | rund 30, z. B. Halbleiter, Software, Öl & Gas, Erneuerbare Energien                                                                                                            |
+| Größe                  | Large, Mid, Small Cap (nach Marktkapitalisierung)                                                                                                                              |
+| Stil                   | Value, Growth, Blend                                                                                                                                                           |
+| Dividendenprofil       | keine bis hohe Rendite; jährlich, halbjährlich oder quartalsweise; ändert sich über Jahrzehnte: hohe Renditen sinken, Unternehmen ohne Dividende beginnen irgendwann zu zahlen |
+| Konjunkturabhängigkeit | defensiv, neutral, zyklisch                                                                                                                                                    |
+| Risiko                 | Volatilitätsklasse 1–5                                                                                                                                                         |
 
 ## 7. User Stories
 

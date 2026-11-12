@@ -45,7 +45,7 @@ export interface MiniWorld {
 export function miniWorld(seed = 'mini-1'): MiniWorld {
   const seedKey = deriveSeedKey(seed);
   const world = generateWorld(seedKey, MINI_WORLD_CONFIG);
-  if (!world.companies.some((company) => company.dividend.schedule !== null)) {
+  if (!world.companies.some((company) => company.dividend.yield > 0)) {
     throw new Error(`mini world ${seed} has no dividend payer`);
   }
   const hasPair = world.etfs.some(

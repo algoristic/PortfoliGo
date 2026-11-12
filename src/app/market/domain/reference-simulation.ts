@@ -3,8 +3,7 @@ import { normal } from '@app/simulation/util/distributions';
 import { createStream } from '@app/simulation/util/random-stream';
 
 import { profileWeights } from './bridge-logic';
-import { expectedLogPath } from './idio-path-logic';
-import { factorPathAt, idioPathAt, MarketContext } from './market-context';
+import { factorPathAt, idioPathAt, idioTargetAt, MarketContext } from './market-context';
 import { LOADINGS_PER_INSTRUMENT } from './market-layout';
 import { MarketDay } from './models/market-day.model';
 import { priceFromLog } from './price-logic';
@@ -13,7 +12,7 @@ import { priceFromLog } from './price-logic';
  * Independent reference for the bridge model (TS §4.6, §6.1): simulates the factors and the
  * idiosyncratic components of the given instruments minute by minute with the parameters of the
  * day step (trend and volatility of each factor per day, return of the level to its path,
- * activity weights of the intervals) and
+ * activity profile of each factor) and
  * the intraday profile of the idiosyncratic variance. `U_i` follows the drift of the day step
  * (expected path and return to it, spread evenly over the session). Jumps occur in each session
  * minute with probability `λ / (261 · L)`.
@@ -30,7 +29,10 @@ export class ReferenceSimulation {
   readonly #close: number;
   /** Share of the idiosyncratic session variance per step from minute j to j + 1. */
   readonly #minuteShare: Float64Array;
-  /** Factor variance in years per minute of the day, from the activity weights (E-24). */
+  /**
+   * Factor variance in years per factor and minute of the day (`k · 1440 + m`), from the activity
+   * profiles (E-24, E-30).
+   */
   readonly #minuteYears: Float64Array;
 
   constructor(context: MarketContext, instruments: readonly number[]) {
@@ -65,11 +67,18 @@ export class ReferenceSimulation {
       total += weight;
     }
     this.#minuteShare = weights.map((weight) => weight / total);
-    this.#minuteYears = new Float64Array(MINUTES_PER_DAY);
-    for (let j = 0; j + 1 < layout.boundaries.length; j++) {
-      const from = layout.boundaries[j];
-      const to = layout.boundaries[j + 1];
-      this.#minuteYears.fill(context.intervalYears[j] / (to - from), from, to);
+    const intervalCount = layout.boundaries.length - 1;
+    this.#minuteYears = new Float64Array(layout.factorIds.length * MINUTES_PER_DAY);
+    for (const k of this.#factors) {
+      for (let j = 0; j < intervalCount; j++) {
+        const from = layout.boundaries[j];
+        const to = layout.boundaries[j + 1];
+        this.#minuteYears.fill(
+          context.intervalYears[k * intervalCount + j] / (to - from),
+          k * MINUTES_PER_DAY + from,
+          k * MINUTES_PER_DAY + to,
+        );
+      }
     }
   }
 
@@ -99,11 +108,11 @@ export class ReferenceSimulation {
         (this.#context.levelDecay[k] * (this.#level[k] - factorPath.target[k])) / dayYears;
     }
     const moveFactors = (from: number, to: number): void => {
-      let years = 0;
-      for (let m = from; m < to; m++) {
-        years += this.#minuteYears[m];
-      }
       for (const k of this.#factors) {
+        let years = 0;
+        for (let m = k * MINUTES_PER_DAY + from; m < k * MINUTES_PER_DAY + to; m++) {
+          years += this.#minuteYears[m];
+        }
         const vol = day.factorVols[k];
         this.#level[k] += factorDrift[k] * years + vol * Math.sqrt(years) * normal(factorRng);
       }
@@ -111,15 +120,12 @@ export class ReferenceSimulation {
 
     const path = idioPathAt(this.#context, day.day);
     const drift = this.#instruments.map((i) => {
-      const alpha = layout.alpha[i];
       const variance = this.#context.idioVariance[i];
-      const target =
-        expectedLogPath(alpha, path.alphaBefore, variance, path.varianceBefore) -
-        this.#context.dividendDrag[i] * path.years;
       return (
-        alpha * (path.alphaAfter - path.alphaBefore) -
+        layout.alpha[i] * (path.alphaAfter - path.alphaBefore) +
+        this.#context.zeroBetaDrift[i] * dayYears -
         0.5 * variance * (path.varianceAfter - path.varianceBefore) -
-        this.#context.reversionDecay * (this.#idio[i] - target) -
+        this.#context.reversionDecay * (this.#idio[i] - idioTargetAt(this.#context, i, path)) -
         this.#context.jumpDrift[i]
       );
     });

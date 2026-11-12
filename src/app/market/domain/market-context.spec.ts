@@ -1,5 +1,6 @@
 import { MINUTES_PER_DAY } from '@app/clock/domain/models/time.model';
 import { deriveSeedKey } from '@app/simulation/util/seed';
+import { RegionId } from '@app/world/domain/models/taxonomy.model';
 import { World } from '@app/world/domain/models/world.model';
 import { generateWorld } from '@app/world/domain/world-generator';
 
@@ -7,7 +8,8 @@ import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { GOLDEN_SEED } from './golden-master';
 import { isMarketDay } from './market-calendar';
 import { activityIntervalYears, createMarketContext, factorPathAt } from './market-context';
-import { createMarketLayout, MarketLayout, WORLD_FACTOR } from './market-layout';
+import { createMarketLayout, factorId, MarketLayout, WORLD_FACTOR } from './market-layout';
+import { MarketConfig } from './models/market-config.model';
 
 const DAY_YEARS = 1 / DEFAULT_MARKET_CONFIG.tradingDaysPerYear;
 
@@ -89,6 +91,81 @@ describe('activityIntervalYears', () => {
     const fewer = { ...world, companies: world.companies.slice(0, 10) };
     expect(activityIntervalYears(fewer, layout, DEFAULT_MARKET_CONFIG, DAY_YEARS)).toEqual(
       activityIntervalYears(world, layout, DEFAULT_MARKET_CONFIG, DAY_YEARS),
+    );
+  });
+});
+
+// TS §6.2 (E-30): share of a region factor's daily variance inside a session of its region for
+// `c_R = 0.1` and equal exchange weights. Within a region all exchanges share their hours, except
+// India and Brazil, whose sessions each carry half the region's weight: a = 0.1 + 0.9 · 0.5.
+const REGION_SESSIONS: readonly { regionId: RegionId; session: [number, number]; share: number }[] =
+  [
+    { regionId: 'north-america', session: [930, 1320], share: 390 / 495 },
+    { regionId: 'europe', session: [540, 1050], share: 510 / 603 },
+    { regionId: 'asia-pacific', session: [60, 420], share: 360 / 468 },
+    { regionId: 'emerging-markets', session: [285, 660], share: 206.25 / 501.75 },
+    { regionId: 'emerging-markets', session: [840, 1260], share: 231 / 501.75 },
+  ];
+
+function regionTableConfig(): MarketConfig {
+  return {
+    ...DEFAULT_MARKET_CONFIG,
+    regionClosedActivity: 0.1,
+    exchangeActivity: Object.fromEntries(world.exchanges.map((exchange) => [exchange.id, 1])),
+  };
+}
+
+/** Share of the interval years `years` that falls into `[from, to)`. */
+function sessionShare(years: ArrayLike<number>, [from, to]: [number, number]): number {
+  let inside = 0;
+  let total = 0;
+  for (let j = 0; j < years.length; j++) {
+    total += years[j];
+    if (layout.boundaries[j] >= from && layout.boundaries[j + 1] <= to) {
+      inside += years[j];
+    }
+  }
+  return inside / total;
+}
+
+describe('activityIntervalYears of a region (E-30)', () => {
+  it.each(REGION_SESSIONS)(
+    'moves $share of the variance of the $regionId factor inside $session',
+    ({ regionId, session, share }) => {
+      const years = activityIntervalYears(world, layout, regionTableConfig(), DAY_YEARS, regionId);
+      expect(years.reduce((sum, value) => sum + value, 0)).toBeCloseTo(DAY_YEARS, 15);
+      expect(sessionShare(years, session)).toBeCloseTo(share, 12);
+    },
+  );
+
+  it('spreads the variance evenly when the region factors are as active outside the sessions', () => {
+    const config = { ...DEFAULT_MARKET_CONFIG, regionClosedActivity: 1 };
+    const years = activityIntervalYears(world, layout, config, DAY_YEARS, 'europe');
+    years.forEach((value, j) => {
+      const minutes = layout.boundaries[j + 1] - layout.boundaries[j];
+      expect(value).toBeCloseTo((DAY_YEARS * minutes) / MINUTES_PER_DAY, 15);
+    });
+  });
+
+  it('gives each region factor the profile of its region and all other factors the common one', () => {
+    const config = regionTableConfig();
+    const context = createMarketContext(deriveSeedKey(GOLDEN_SEED), world, config);
+    const intervals = layout.boundaries.length - 1;
+    const profile = (k: number): Float64Array =>
+      context.intervalYears.subarray(k * intervals, (k + 1) * intervals);
+    for (const { regionId, session, share } of REGION_SESSIONS) {
+      const k = layout.factorIds.indexOf(factorId('region', regionId));
+      expect(sessionShare(profile(k), session)).toBeCloseTo(share, 12);
+    }
+    const common = activityIntervalYears(world, layout, config, DAY_YEARS);
+    layout.factorKinds.forEach((kind, k) => {
+      if (kind !== 'region') {
+        expect(profile(k)).toEqual(common);
+      }
+    });
+    expect(context.sqrtIntervalYears[intervals + 3]).toBeCloseTo(
+      Math.sqrt(context.intervalYears[intervals + 3]),
+      15,
     );
   });
 });

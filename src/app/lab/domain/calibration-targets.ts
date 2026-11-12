@@ -1,8 +1,8 @@
 import { TargetRow, TargetStatus, TargetUnit } from './models/lab-statistics.model';
 
 /**
- * Calibration targets of TS §6.9 with their measurement rule (AP 1.8a, AP 1.8b, AP 1.9a). Without
- * `min` and `max` a quantity is shown for information.
+ * Calibration targets of TS §6.9 with their measurement rule (AP 1.8a, AP 1.8b, AP 1.9a, AP 1.9b).
+ * Without `min` and `max` a quantity is shown for information.
  */
 export interface CalibrationTarget {
   id: string;
@@ -20,8 +20,11 @@ export const CALIBRATION_TARGETS = [
   { id: 'large-volatility', unit: 'percent', min: 0.2, max: 0.3, minYears: 1 },
   { id: 'mid-volatility', unit: 'percent' },
   { id: 'small-volatility', unit: 'percent', min: 0.35, max: 0.6, minYears: 1 },
+  // Large caps of the same region (E-31); all pairs of the same region for information.
   { id: 'correlation-within', unit: 'number', min: 0.5, max: 0.6, minYears: 1 },
   { id: 'correlation-between', unit: 'number', min: 0.2, max: 0.35, minYears: 1 },
+  { id: 'correlation-within-all', unit: 'number' },
+  { id: 'correlation-between-all', unit: 'number' },
   { id: 'weekly-correlation-within', unit: 'number' },
   { id: 'weekly-correlation-between', unit: 'number' },
   { id: 'bear-markets', unit: 'per-year', min: 1 / 8, max: 1 / 5, minYears: 50 },
@@ -37,7 +40,9 @@ export const CALIBRATION_TARGETS = [
   { id: 'overnight-share-north-america', unit: 'percent', min: 0.15, max: 0.35, minYears: 5 },
   { id: 'overnight-share-europe', unit: 'percent', min: 0.15, max: 0.35, minYears: 5 },
   { id: 'overnight-share-asia-pacific', unit: 'percent', min: 0.3, max: 0.6, minYears: 5 },
-  { id: 'overnight-share-emerging-markets', unit: 'percent', min: 0.3, max: 0.6, minYears: 5 },
+  // The session of the index spans India and Brazil (04:45–21:00), so its gap is not an overnight
+  // gap of one market (E-30).
+  { id: 'overnight-share-emerging-markets', unit: 'percent' },
   { id: 'overnight-share-stocks', unit: 'percent', min: 0.15, max: 0.35, minYears: 5 },
 ] as const satisfies readonly CalibrationTarget[];
 

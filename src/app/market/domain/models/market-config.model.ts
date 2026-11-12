@@ -63,7 +63,17 @@ export interface SpreadParams {
   closedUnderlyingFactor: number;
 }
 
-/** Parameters of the market model; start values for the calibration in AP 1.9. */
+/** Dividend lifecycle (TS §6.5, E-33); rates p. a. */
+export interface DividendLifecycleParams {
+  /** Yield that the target yields of all companies approach over decades. */
+  longRunYield: number;
+  /** Speed `κ_y` at which the expected log markdown approaches that of `longRunYield`. */
+  yieldReversion: number;
+  /** Target yield of a company that starts to pay after the epoch, at its first payment. */
+  initialYield: number;
+}
+
+/** Parameters of the market model; start values for the calibration in AP 1.9c. */
 export interface MarketConfig {
   tradingDaysPerYear: number;
   /** Phase at the epoch; its targets are the reference for the phase coupling. */
@@ -77,15 +87,27 @@ export interface MarketConfig {
   /** Rate `κ_α` p. a. at which the alpha of a share decays (TS §6.4, E-22); 0 = permanent. */
   alphaDecay: number;
   /**
+   * Zero-beta return `r_z` p. a. (TS §6.4, E-32): the expected log path of a share grows by
+   * `(1 − β) · r_z` on top of `β` times the world factor, so beta moves the long-run growth only by
+   * `β · (world drift − r_z)`.
+   */
+  zeroBetaReturn: number;
+  /**
    * Activity of the factors while no exchange trades, relative to all exchanges trading (TS §6.2,
    * E-24); 1 spreads the factor variance evenly over the day.
    */
   closedActivity: number;
   /**
+   * Activity of a region factor while none of the exchanges of its region trades, relative to all
+   * of them trading (TS §6.2, E-30); 1 spreads its variance evenly over the day.
+   */
+  regionClosedActivity: number;
+  /**
    * Relative weight of each exchange in the factor activity (E-24), by exchange id; missing
    * exchanges count 0. Fixed per configuration, so new companies do not move the factors.
    */
   exchangeActivity: Readonly<Record<string, number>>;
+  dividendLifecycle: DividendLifecycleParams;
   /** Lowest price in euros (TS §6.4). */
   priceFloor: number;
   /**

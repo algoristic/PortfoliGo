@@ -94,7 +94,9 @@ export function createMarketState(context: MarketContext): MarketState {
     idioClose: new Float64Array(count),
     logClose: layout.logBase.slice(),
     nextExDay: Int32Array.from(layout.dividends, (dividend) =>
-      dividend === null ? -1 : exDayOnOrAfter(dividend.schedule, dividend.frequency, 0),
+      dividend === null
+        ? -1
+        : exDayOnOrAfter(dividend.schedule, dividend.frequency, dividend.startDay),
     ),
     dividendCents: new Float64Array(count).fill(Number.NaN),
     indexReinvest: new Float64Array(context.indices.ids.length).fill(1),

@@ -272,7 +272,7 @@ export class DayCurves {
         day.factorLevels[k * boundaryCount + j],
         day.factorLevels[k * boundaryCount + j + 1],
         intervalTables[j],
-        day.factorVols[k] * context.sqrtIntervalYears[j],
+        day.factorVols[k] * context.sqrtIntervalYears[k * intervalCount + j],
         rng,
       );
       this.#factorDone[k * intervalCount + j] = 1;

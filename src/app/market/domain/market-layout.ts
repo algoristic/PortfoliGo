@@ -36,15 +36,17 @@ export interface MarketLayout {
   jumpIntensity: Float64Array;
   jumpMean: Float64Array;
   jumpSd: Float64Array;
-  /** Dividend per instrument (TS §6.5); `null` without a dividend. */
+  /** Dividend per instrument (TS §6.5); `null` without a rhythm. */
   dividends: readonly (InstrumentDividend | null)[];
 }
 
 export interface InstrumentDividend {
-  /** Target yield (0.03 = 3 %). */
+  /** Target yield at the epoch (0.03 = 3 %); 0 for companies that start to pay later (E-33). */
   yield: number;
   frequency: DividendFrequency;
   schedule: DividendSchedule;
+  /** Day from which the company pays (0 for payers at the epoch). */
+  startDay: number;
 }
 
 export function factorId(kind: FactorKind, member?: string): string {
@@ -111,11 +113,11 @@ export function createMarketLayout(world: World): MarketLayout {
 }
 
 function instrumentDividend(company: Company): InstrumentDividend | null {
-  const { yield: targetYield, frequency, schedule } = company.dividend;
-  if (frequency === null || schedule === null || targetYield <= 0) {
+  const { yield: targetYield, frequency, schedule, startDay } = company.dividend;
+  if (schedule === null) {
     return null;
   }
-  return { yield: targetYield, frequency, schedule };
+  return { yield: targetYield, frequency, schedule, startDay };
 }
 
 function writeLoadings(

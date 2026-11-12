@@ -211,8 +211,8 @@ describe('SimulationPage', () => {
       expect(
         page.querySelectorAll('[data-testid="lab.simulation.statistics.intraday.profile.bar"]'),
       ).toHaveLength(13);
-      // The world index is shown for information; the regions and the stocks have targets
-      // (TS §6.9, E-24).
+      // The world index and the emerging markets (one session over India and Brazil) are shown for
+      // information; the other regions and the stocks have targets (TS §6.9, E-24, E-30).
       const statusTexts = { ok: 'im Ziel', off: 'abweichend', short: 'zu kurz', info: 'Info' };
       for (const id of [
         'overnight-share-world',
@@ -228,9 +228,11 @@ describe('SimulationPage', () => {
           statusTexts[status],
         );
       }
-      expect(
-        textOf(byTestId(page, 'lab.simulation.statistics.target.overnight-share-world.status')),
-      ).toBe('Info');
+      for (const id of ['overnight-share-world', 'overnight-share-emerging-markets']) {
+        expect(textOf(byTestId(page, `lab.simulation.statistics.target.${id}.status`))).toBe(
+          'Info',
+        );
+      }
       // The prehistory ends at the game start: only the first checkpoint, and one ten-year window.
       expectCheckpoints(expected, [0]);
       expect(textOf(byTestId(page, 'lab.simulation.statistics.long-term.10.top-five'))).toBe('–');
@@ -261,11 +263,10 @@ describe('SimulationPage', () => {
         1,
         true,
       );
-      expectShown(
-        'lab.simulation.statistics.target.correlation-within.value',
-        target('correlation-within'),
-        2,
-      );
+      // Targets over large caps, all pairs for information (E-31).
+      for (const id of ['correlation-within', 'correlation-within-all']) {
+        expectShown(`lab.simulation.statistics.target.${id}.value`, target(id), 2);
+      }
       // About ten years of prehistory are too short for the long-run return.
       expect(textOf(byTestId(page, 'lab.simulation.statistics.target.world-return.status'))).toBe(
         'zu kurz',

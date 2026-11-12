@@ -1,3 +1,4 @@
+import { dayStartTick, tickToDateTime } from '@app/clock/domain/calendar-logic';
 import { deriveSeedKey } from '@app/simulation/util/seed';
 
 import { freeFloatMarketCap } from './company-generator';
@@ -109,5 +110,29 @@ describe('generateWorld (calibration)', () => {
       expect(weighted / total).toBeLessThan(0.035);
     }
     expect(share(companies, (company) => company.dividend.yield === 0)).toBeGreaterThan(0.1);
+  });
+
+  it('starts the payments of the other companies after exponentially distributed years (E-33)', () => {
+    // Start months after the epoch, X ~ Exp(mean); flooring to whole months takes off about half a
+    // month on average. P(X < 10 years) = 1 − e^{−10 / mean}.
+    const mean = config.companies.dividendInitiationYears;
+    const epoch = tickToDateTime(dayStartTick(0));
+    const years = companies
+      .filter((company) => company.dividend.yield === 0)
+      .map((company) => {
+        const start = tickToDateTime(dayStartTick(company.dividend.startDay));
+        return start.year - epoch.year + (start.month - epoch.month) / 12;
+      });
+    expect(years.length).toBeGreaterThan(200);
+    const observed = years.reduce((sum, value) => sum + value, 0) / years.length;
+    expectWithinSigma(observed, mean - 1 / 24, mean / Math.sqrt(years.length), 4, 'mean start');
+    const early = 1 - Math.exp(-10 / mean);
+    expectWithinSigma(
+      share(years, (value) => value < 10),
+      early,
+      binomialSe(early, years.length),
+      4,
+      'starts within ten years',
+    );
   });
 });

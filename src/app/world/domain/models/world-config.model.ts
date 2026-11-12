@@ -38,6 +38,11 @@ export interface CompanyConfig {
   cyclicalityDeviation: number;
   dividendStyleFactor: Readonly<Record<Style, number>>;
   maxDividendYield: number;
+  /**
+   * Mean years from the epoch until a company without a dividend starts to pay (exponential, TS
+   * §5.4, E-33).
+   */
+  dividendInitiationYears: number;
   worldBeta: Readonly<Record<Cyclicality, Range>>;
   regionLoading: Range;
   sectorLoading: Range;

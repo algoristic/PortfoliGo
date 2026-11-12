@@ -34,6 +34,7 @@ export const DEFAULT_WORLD_CONFIG: WorldConfig = {
     cyclicalityDeviation: 0.15,
     dividendStyleFactor: { value: 1.25, blend: 1, growth: 0.6 },
     maxDividendYield: 0.07,
+    dividendInitiationYears: 30,
     worldBeta: { defensive: [0.6, 0.9], neutral: [0.9, 1.1], cyclical: [1.1, 1.4] },
     regionLoading: [0.8, 1.2],
     sectorLoading: [0.8, 1.2],

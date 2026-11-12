@@ -116,10 +116,12 @@ describe('ETFs', () => {
       const remainder = previousPot - cents / 100;
       expect(remainder).toBeGreaterThanOrEqual(-1e-12);
       expect(remainder).toBeLessThan(0.01);
-      expect(etfExDay.etfPot[distributing * boundaryCount + open - 1]).toBe(previousPot);
+      // Constituents of earlier sessions may already have gone ex on the same day.
+      const beforeOpen = etfExDay.etfPot[distributing * boundaryCount + open - 1];
+      expect(beforeOpen).toBeGreaterThanOrEqual(previousPot);
       const added = etfExDay.indexDividendPoints[etfs.indexOf[distributing] * boundaryCount + open];
       expect(etfExDay.etfPot[distributing * boundaryCount + open]).toBeCloseTo(
-        remainder + etfExDay.etfScale[distributing] * added,
+        beforeOpen - cents / 100 + etfExDay.etfScale[distributing] * added,
         12,
       );
       for (const day of days) {
