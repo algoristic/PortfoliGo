@@ -1526,16 +1526,16 @@ Tests sichern fachliche Erwartungen ab und müssen an plausiblen Fehlern scheite
 
 **Suiten und Befehle**
 
-| Suite         | Dateien                            | Läuft mit                                                | Befehl                     |
-| ------------- | ---------------------------------- | -------------------------------------------------------- | -------------------------- |
-| `logic`       | `*.spec.ts` in `domain` und `util` | Vitest unter Node (`vitest.config.ts`), Zeitzone UTC+14  | `npm run test:logic`       |
-| `angular`     | übrige `*.spec.ts`                 | `ng test` unter jsdom, Zeitzone UTC+14                   | `npm run test:angular`     |
-| `calibration` | `*.calibration.spec.ts`            | Vitest unter Node                                        | `npm run test:calibration` |
-| `perf`        | `*.perf.spec.ts`                   | Vitest unter Node, Dateien nacheinander                  | `npm run test:perf`        |
-| `mutation`    | Regelcode (`stryker.config.mjs`)   | Stryker mit `vitest.mutation.config.ts`, inkrementell    | `npm run test:mutation`    |
-| `e2e`         | `e2e/*.e2e.ts`                     | Playwright gegen den Produktions-Build (`e2e/serve.mjs`) | `npm run e2e`              |
+| Suite         | Dateien                            | Läuft mit                                                        | Befehl                     |
+| ------------- | ---------------------------------- | ---------------------------------------------------------------- | -------------------------- |
+| `logic`       | `*.spec.ts` in `domain` und `util` | Vitest unter Node (`vitest.config.ts`), Zeitzone UTC+14          | `npm run test:logic`       |
+| `angular`     | übrige `*.spec.ts`                 | `ng test` unter jsdom (`vitest-base.config.ts`), Zeitzone UTC+14 | `npm run test:angular`     |
+| `calibration` | `*.calibration.spec.ts`            | Vitest unter Node                                                | `npm run test:calibration` |
+| `perf`        | `*.perf.spec.ts`                   | Vitest unter Node, Dateien nacheinander                          | `npm run test:perf`        |
+| `mutation`    | Regelcode (`stryker.config.mjs`)   | Stryker mit `vitest.mutation.config.ts`, inkrementell            | `npm run test:mutation`    |
+| `e2e`         | `e2e/*.e2e.ts`                     | Playwright gegen den Produktions-Build (`e2e/serve.mjs`)         | `npm run e2e`              |
 
-`npm test` startet `logic` und `angular`, `npm run typecheck` prüft die Typen aller Specs und Systemtests, `npm run verify` führt alles aus, was die CI prüft – Systemtests lokal nur in den Chromium-Projekten (`npm run test:e2e`); Firefox, WebKit und `mobile-webkit` laufen in der CI. Die ungewöhnliche Zeitzone deckt versehentlich lokale Zeitrechnung auf.
+`npm test` startet `logic` und `angular`, `npm run typecheck` prüft die Typen aller Specs und Systemtests, `npm run verify` führt alles aus, was die CI prüft – Systemtests lokal nur in den Chromium-Projekten (`npm run test:e2e`); Firefox, WebKit und `mobile-webkit` laufen in der CI. Die ungewöhnliche Zeitzone deckt versehentlich lokale Zeitrechnung auf. Weil Seitentests den echten Worker-Code im Testprozess rechnen (etwa zehn Spieljahre im Labor), hat die Suite `angular` ein Zeitbudget von 30 s je Test und 60 s je Hook statt der Vitest-Vorgaben von 5 s bzw. 10 s.
 
 **Systemtests**
 

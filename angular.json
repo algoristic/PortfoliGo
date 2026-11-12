@@ -95,6 +95,7 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "buildTarget": "::development",
+            "runnerConfig": true,
             "setupFiles": ["src/test-setup.ts"],
             "exclude": [
               "app/*/domain/**",
