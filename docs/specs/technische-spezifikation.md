@@ -239,6 +239,7 @@ targetTick(now) = anchorTick + floor(max(0, now − anchorRealTime) × gameSecon
 - Wächst der Rückstand über zwei Sekunden Echtzeit, meldet die Engine „ausgelastet". Ticks werden nie übersprungen; die effektive Geschwindigkeit sinkt.
 - Die Uhr in der UI zeigt die Spielzeit aus dem letzten `clock`-Ereignis und interpoliert bei Echtzeit die Sekunden rein optisch.
 - Browser drosseln Timer in Hintergrund-Tabs. Weil sich `targetTick` aus der Wanduhr ergibt, holt die Engine Rückstände bei der nächsten Gelegenheit auf.
+- **Umsetzung (AP 2.2):** `ClockPacer` (`engine/domain/clock-pacing-logic.ts`) hält Einstellungen und Anker; ein Durchlauf (`pass`) ruft `runUntil(max(targetTick, tick), shouldYield)` mit dem Zeitbudget des Hosts (`shouldYield` = Wanduhr seit Beginn des Durchlaufs ≥ 8 ms). Der neue Anker liegt immer beim Tick der Engine, nicht beim Ziel: Ein Rückstand zum Zeitpunkt eines Wechsels verfällt, statt mit der neuen Geschwindigkeit nachgeholt zu werden; Ticks werden dabei weder übersprungen noch wiederholt. Rückstand in Echtzeit = (Ziel − Tick) × 60 s ÷ Spielsekunden je Sekunde; „ausgelastet“ heißt Rückstand > 2.000 ms (genau 2.000 ms noch nicht). Beispiele: 1 w/s und 20.160 Ticks Rückstand → 2.000 ms, nicht ausgelastet; Echtzeit und 2 Ticks → 120.000 ms. Schleife, Budget und Drosselung sind Konfiguration des Hosts (`EngineHostConfig`: 16 ms, 8 ms, `clock` 10/s, `quotes` 4/s, Fortschritt 100 ms).
 
 ### 3.6 Hintergrund, Schließen und Pause
 
@@ -248,6 +249,17 @@ targetTick(now) = anchorTick + floor(max(0, now − anchorRealTime) × gameSecon
 - `visibilitychange` → `hidden`: Die UI meldet dem Worker „verborgen", die Engine wechselt in den Hintergrundmodus. Bei `visible` gilt wieder die gewählte Geschwindigkeit.
 - Bei `hidden` und `pagehide` wird der Uhrzustand gespeichert (§9.2) und ein Snapshot angestoßen.
 - **Eine vom Anwender gesetzte Pause bleibt Pause** – auch über Schließen und erneutes Öffnen hinweg (E-02).
+- **Wirksame Geschwindigkeit** (`effectiveSpeed`, AP 2.2) aus Pause des Anwenders, Sichtbarkeit und `backgroundMode`; die gewählte Geschwindigkeit bleibt dabei gewählt:
+
+  | Pause des Anwenders | sichtbar | `backgroundMode` | Spiel läuft mit           |
+  | ------------------- | -------- | ---------------- | ------------------------- |
+  | nein                | ja       | beliebig         | gewählter Geschwindigkeit |
+  | nein                | nein     | `realtime`       | Echtzeit (1 s/s)          |
+  | nein                | nein     | `pause`          | – (ruht)                  |
+  | ja                  | beliebig | beliebig         | – (Pause)                 |
+
+  Die Sichtbarkeit merkt sich der Host auch ohne geladenen Spieler; ein danach geladener Spieler übernimmt sie.
+
 - **Auto-Pause** (§12) greift nur im Live-Betrieb bei sichtbarer App und beim Vorspulen. Während der Nachberechnung und bei verborgener App greift sie nicht, sonst ginge die Echtzeit aus der Ideensammlung verloren; die Ereignisse erscheinen im Abwesenheitsbericht.
 
 ### 3.7 Nachberechnung und Vorspulen
@@ -256,6 +268,17 @@ targetTick(now) = anchorTick + floor(max(0, now − anchorRealTime) × gameSecon
 - **Vorspulen:** derselbe Stapelbetrieb bis zum Ziel; abbrechbar nach dem laufenden Tick; bricht ab, wenn ein Ereignis mit Auto-Pause eintritt.
 - **Stapelbetrieb:** Tagesschritte für den ganzen Markt (§6.1); Minutenkurse nur dort, wo offene Orders sie brauchen – für Instrumente mit offenen Orders und für Indizes hinter ETFs mit offenen Orders. Sparpläne nutzen den Eröffnungskurs, Dividenden und Bank-Lauf sind Tagesgrößen. Hoch- und Tiefkurse der übersprungenen Tage ergänzt danach ein Hintergrundauftrag (§6.8).
 - **Determinismus:** Stapelbetrieb und Live-Betrieb liefern identische Ergebnisse (Test, §4.6).
+- **Ziele des Vorspulens** (AP 2.2, `jumpTargetTick` in `engine/domain/jump-target-logic.ts`; der Host rechnet sie aus dem Kommando `jumpTo`): `next-open` = erste Eröffnung irgendeiner Börse echt nach jetzt (Wochenenden geschlossen); `next-month` = 00:00 des nächsten Monatsersten; `date` = eine Minute echt nach jetzt und höchstens ein Kalenderjahr voraus (dieselbe Minute im Folgejahr, vom 29.02. aus der 28.02.; `maxJumpTick`). Beispiele mit Europa 09:00–17:30 und Asien-Pazifik 01:00–07:00:
+
+  | jetzt                | `next-open`      | `next-month`     | spätestes `date`  |
+  | -------------------- | ---------------- | ---------------- | ----------------- |
+  | Mo 01.04.2030, 00:00 | Mo 01.04., 01:00 | 01.05.2030 00:00 | 01.04.2031, 00:00 |
+  | Mo 01.04.2030, 01:00 | Mo 01.04., 09:00 | 01.05.2030 00:00 | 01.04.2031, 01:00 |
+  | Fr 05.04.2030, 22:00 | Mo 08.04., 01:00 | 01.05.2030 00:00 | 05.04.2031, 22:00 |
+  | Sa 06.04.2030, 10:00 | Mo 08.04., 01:00 | 01.05.2030 00:00 | 06.04.2031, 10:00 |
+  | So 29.02.2032, 12:30 | Mo 01.03., 01:00 | 01.03.2032 00:00 | 28.02.2033, 12:30 |
+
+- **Umsetzung des Vorspulens (AP 2.2):** Der Stapelbetrieb läuft in Durchläufen mit 0 ms Abstand und dem normalen Zeitbudget; `progress` (`kind: 'jump'`, erledigte und gesamte Ticks) kommt beim Start, höchstens alle 100 ms und am Ende (`done` oder `cancelled`). `cancelJump` endet nach dem laufenden Tick. Währenddessen antworten alle Kommandos außer `cancelJump`, `unloadPlayer`, `setVisibility`, `query`, `subscribe` und `unsubscribe` mit `busy`. Danach läuft die Uhr mit neuem Anker so weiter wie vorher; eine Pause bleibt Pause. Die Nachberechnung beim Laden folgt mit der Persistenz (AP 2.3, `progress` mit `kind: 'catch-up'`).
 
 ### 3.8 Ablauf eines Ticks
 
@@ -1028,7 +1051,7 @@ year end: net_y < 0 → lossCarryForward_y = net_y; der Sparerpauschbetrag verf�
 - **Systeme:** Funktionen über dem Zustand, aufgerufen in der Reihenfolge aus §3.8.
 - **Kursquelle:** `PriceSource` (`market/domain`) mit `priceAt(serie, tick, now)`, `quoteAt` und Kerzen über Tagesstützpunkten und Brücken (§6.1), mit einem Cache der Tagesverläufe; frisch gerechnete Tage übergibt die Engine per `rememberDay`. Der Cache gehört nicht zum Zustand. Die Engine sieht sie nur über den Kurs-Port `PricePort` (`priceAt`, `quoteAt`, `rememberDay`, §14.1); die Fabrik dafür übergibt der Host, damit er dieselbe `PriceSource` für Kerzen und Abos nutzt. Engine-Szenarien nutzen den Testmarkt `TestMarket` (`engine/domain/testing`) mit vorgegebenen Kursen.
 - **Terminplaner:** Prioritätswarteschlange (Binärheap) nach Tick und fester Rangfolge für Tageswechsel, Bank-Lauf, Dividenden, Sparpläne, Orderablauf sowie Monats- und Jahresabschluss.
-- **Worker-Host** (`engine/data-access/worker/engine.worker.ts`): Takt (§3.5), Sichtbarkeit (§3.6), Persistenz (§9), Abos und Drosselung (§8.4), Hintergrundauftrag für Tageskerzen (§6.8), Web Lock, Fehlerbehandlung.
+- **Worker-Host** (`engine/data-access/worker/engine.worker.ts`): Takt (§3.5), Sichtbarkeit (§3.6), Persistenz (§9), Abos und Drosselung (§8.4), Hintergrundauftrag für Tageskerzen (§6.8), Web Lock, Fehlerbehandlung. Umsetzung (AP 2.2): `EngineHost` (`engine-host.ts`) ist framework-frei; der Worker ist eine dünne Hülle darum. Prozessgrenzen sind Ports (`EngineHostPorts`): Wanduhr `now()`, `post(message)`, Schleifen-Timer (`set`/`clear`) und Speicher `EngineStorage`. Optionen: Welt je Seed (`createWorld`, Standard `generateWorld`), Kurs-Port-Fabrik `prices`, `EngineHostConfig`, Startgeschwindigkeit. Nachrichten werden nacheinander abgearbeitet; Engine-Ereignisse holt der Host nach jedem Durchlauf mit `drainEvents()` ab. In M2 leitet er keines an die UI weiter (Benachrichtigungen und Abwesenheitsbericht ab M3); für `session-closed` gibt es den Haken `#onSessionClosed`, an dem AP 2.3 die Tageskerzen schreibt. Ausnahmen in der Schleife sind nicht behebbar: Der Host stoppt und sendet `fatal`.
 - **Ereignisvorschau:** Der Host kann eine Kopie des Zustands ohne Anwender-Eingriffe einige Tage vorausrechnen. An die UI (Widget „Demnächst") gehen nur **planbare, marktunabhängige Termine**: Gehalt, Lastschriften, Gebühren, Sparpläne, angekündigte Dividenden, Orderablauf. Marktabhängige Ereignisse (ausgelöste Stops, Ausführungen) würden künftige Kurse verraten; sie dienen nur der nativen Vorausplanung von Benachrichtigungen (§13) und werden nie vorab angezeigt. **(Vorschlag, E-05)** Im MVP liest „Demnächst“ die planbaren Termine direkt aus Terminplaner und Kalender, mit Basisbeträgen statt der genauen Beträge: Die Schwankung der Lebenshaltungskosten soll nicht vorab sichtbar sein (US-EK-02). Die Vorausrechnung auf einer Zustandskopie entsteht erst mit N1.
 
 ### 8.2 Kommandos (UI → Worker)
@@ -1057,6 +1080,25 @@ year end: net_y < 0 → lossCarryForward_y = net_y; der Sparerpauschbetrag verf�
 
 **Abfragegrenze:** Die Abfrage-API der Engine beschneidet jede Antwort zentral auf Werte bis zum aktuellen Tick (§4.5, Regel 7) – auch Kerzen aus dem Store `candles`, der nach einer Wiederherstellung Tage nach dem aktuellen Tick enthalten kann (§9.2).
 
+**Umfang in M2 (AP 2.2)**, Typen in `engine/data-access/service/engine-service.model.ts`:
+
+| Kommando                   | Payload                                                    | Antwortdaten                               |
+| -------------------------- | ---------------------------------------------------------- | ------------------------------------------ |
+| `loadPlayer`               | `playerId`, `seed`, `start` (Startbedingungen in Cent)     | `playerId`, `tick`                         |
+| `unloadPlayer`             | –                                                          | `null`                                     |
+| `setSpeed`                 | `speed` (ID aus `SPEEDS`)                                  | `null`                                     |
+| `pause`, `resume`          | –                                                          | `null`                                     |
+| `setVisibility`            | `visible`                                                  | `null`                                     |
+| `jumpTo`                   | `target`: `next-open`, `next-month` oder `date` mit `tick` | `targetTick` (Fortschritt über `progress`) |
+| `cancelJump`               | –                                                          | `null`                                     |
+| `subscribe`, `unsubscribe` | `series` (Serienindizes)                                   | `null`                                     |
+| `query`                    | `query`: in M2 nur `{ kind: 'exchanges' }`                 | Börsen mit ID, Name, Region, Handelszeit   |
+| `setBackgroundMode`        | `mode` (Spielkommando)                                     | `tick`, nach dem es wirkt                  |
+
+- `loadPlayer` trägt in M2 die Spielerdaten selbst; ab AP 2.3 liest der Worker den gespeicherten Stand, das Payload wird erweitert (z. B. Tick des letzten `clock`-Ereignisses als Untergrenze, §9.2). Ein neuer Spieler startet pausiert am Spielstart (E-02) mit der gewählten Geschwindigkeit 1 min/s. Ein zweites `loadPlayer` entlädt den vorigen Spieler.
+- Die Kommando-ID ist die Nachrichten-ID; der Host stempelt Spielkommandos mit `engine.tick` (§8.5).
+- `query` mit den Börsen dient der Kopfzeile (Börsenstatus, US-ZT-01), weil die UI die Welt nicht kennt.
+
 ### 8.3 Ereignisse (Worker → UI)
 
 | Ereignis       | Inhalt                                                                                                    |
@@ -1083,11 +1125,35 @@ interface EngineMessage<TType extends string, TPayload> {
 
 Typ-Guards für eingehende Nachrichten liegen in `engine-service.utils.ts` (`CLAUDE.md` §2). Fehler sind strukturierte Codes, z. B. `insufficient-funds`, `market-closed`, `account-not-empty`, `player-locked`.
 
+**Umfang in M2 (AP 2.2):** `clock`, `quotes`, `progress`, `reply` und `fatal`; `candle`, `projection`, `notification` und `report` folgen mit ihren APs.
+
+| Ereignis   | Payload                                                                                                                           |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `clock`    | `tick`, `speed` (gewählt), `paused`, `visible`, `backgroundMode`, `effectiveSpeed` (§3.6, `null` = ruht), `overloaded`, `jumping` |
+| `quotes`   | `tick` und je abonnierter Serie `series`, `last`, `bid`, `ask`, `previousClose`, `change`, `changeRatio` (§8.4)                   |
+| `progress` | `kind` (`init`, `catch-up`, `jump`), `state` (`running`, `done`, `cancelled`), `done`, `total`                                    |
+| `reply`    | mit `replyTo`: `{ ok: true, data }` oder `{ ok: false, error, message? }`                                                         |
+| `fatal`    | `message`                                                                                                                         |
+
+Fehlercodes in M2 (`ENGINE_ERRORS`): `invalid-message` (Umschlag oder Typ unbekannt), `invalid-command` (Payload ungültig oder von der Engine abgelehnt), `player-not-loaded`, `busy` (Vorspulen läuft), `tick-mismatch`, `invalid-jump-target`, `storage-failed` (Write-ahead fehlgeschlagen, Kommando nicht angewendet), `internal-error`. Der `EngineService` ergänzt `worker-failed` für Kommandos, die ein ausgefallener Worker nicht mehr beantwortet. Die Guards weisen beliebige Werte mit `false` ab und werfen nie (Eigenschaftstest); Nachrichten mit lesbarer ID beantwortet der Host mit `invalid-message` bzw. `invalid-command`, andere verwirft er. Die Daten einer erfolgreichen Antwort prüft der Guard nicht im Einzelnen, weil die Antwort den Kommandotyp nicht trägt.
+
 ### 8.4 Abos und Drosselung
 
 - Kurse gehen nur an abonnierte Instrumente; der Worker-Host berechnet sie beim gedrosselten Versand per `priceAt` (§6.1). Abos setzen Route-Guards (beim Betreten und Verlassen einer Seite) und Effects (z. B. wenn sich die Filter im Screener oder die Watchlist ändern), siehe §11.3. Der `EngineService` zählt Abos pro Instrument, weil mehrere Ansichten dasselbe Instrument brauchen können.
 - Takt der UI-Ereignisse: `clock` höchstens 10 pro Sekunde, `quotes` und `projection` höchstens 4 pro Sekunde (konfigurierbar).
 - Projektionen sind Deltas je Teilbereich (nur geänderte Entitäten); der Store übernimmt sie über Entity-Adapter.
+- **Umsetzung (AP 2.2):** Der Host hält die abonnierten Serien als Menge; `subscribe` und `unsubscribe` sind Mengenoperationen, Serien außerhalb der Welt werden beim Versand übergangen. Quotes gehen raus, wenn sich der Tick oder die Menge geändert hat und die Drosselung es zulässt; `clock` geht raus, wenn sich ein Feld geändert hat und die Drosselung es zulässt (auch nach Kommandos, die Uhr gilt dabei vor der Antwort). Drosselung (`Throttle`, `engine/domain/throttle-logic.ts`): höchstens n Sendungen in jeder Sekunde, also mindestens 1.000/n ms Abstand; eine zurückgestellte Wanduhr erlaubt die nächste Sendung sofort. Der `EngineService` zählt Abonnenten je Serie: Er schickt `subscribe` nur für Serien, die neu gebraucht werden, und `unsubscribe` erst, wenn der letzte Abonnent einer Serie geht.
+- **Inhalt eines Quotes** (`seriesQuote` in `engine/domain/series-quote.ts`): `last` = `priceAt(serie, jetzt, jetzt)`; `bid` und `ask` = `quoteAt(serie, jetzt, jetzt, 0)` an der Börse ohne Aufschlag einer Bank, bei Indizes `null` (nicht handelbar); `change` = `last − previousClose`, `changeRatio` = `change ÷ previousClose`. `previousClose` ist der Schluss des Handelstags vor der letzten bereits eröffneten Sitzung der Serie: in der Sitzung und nach ihrem Schluss der Vortag, vor der Eröffnung und am Wochenende der Tag davor. Alle Abfragen enden beim aktuellen Tick (Abfragegrenze). Beispiele für eine Sitzung 09:00–17:30:
+
+  | jetzt                    | `previousClose` von |
+  | ------------------------ | ------------------- |
+  | Mi 03.04.2030, 12:00     | Di 02.04., 17:30    |
+  | Mi 03.04.2030, 09:00     | Di 02.04., 17:30    |
+  | Mi 03.04.2030, 08:59     | Mo 01.04., 17:30    |
+  | Mi 03.04.2030, 20:00     | Di 02.04., 17:30    |
+  | Mo 08.04.2030, 10:00     | Fr 05.04., 17:30    |
+  | Mo 08.04.2030, 08:00     | Do 04.04., 17:30    |
+  | Sa 06.04. bzw. So 07.04. | Do 04.04., 17:30    |
 
 ### 8.5 Kommando-Annahme, Fehler und Robustheit
 
@@ -1101,6 +1167,8 @@ Typ-Guards für eingehende Nachrichten liegen in `engine-service.utils.ts` (`CLA
 - Ein Worker-Fehler (`error`, `messageerror`) führt zu `fatal`. Der `EngineService` startet den Worker neu und lädt den letzten Snapshot inklusive Kommando-Replay (§9.2).
 - Schlägt die Wiederherstellung wiederholt an derselben Stelle fehl (z. B. dreimal), startet der `EngineService` den Worker nicht erneut, sondern zeigt den Fehler und bietet den Export an. Ein deterministischer Fehler endete sonst in einer Schleife (AP 6.4).
 - Das Protokoll gilt nur für Spielkommandos (§8.2, E-08). Einträge im Kommando-Log, die älter sind als der älteste aufbewahrte Snapshot, werden gelöscht.
+- **Umsetzung (AP 2.2):** Der Speicher ist ein Port `EngineStorage` mit `appendCommand(spieler, kommando, uhr)` (Write-ahead in einer Transaktion) und `saveClock(spieler, uhr)` (bei Geschwindigkeits- und Pausenwechsel, bei `hidden` und beim Entladen); in AP 2.2 hält `InMemoryEngineStorage` beides nur im Speicher, AP 2.3 setzt den Port auf IndexedDB um und ergänzt Snapshots, Monatsbeginn-Einträge und Kerzen. Ablauf eines Spielkommandos im Host: Takt anhalten (Durchläufe rechnen nicht, solange ein Spielkommando offen ist) → mit `engine.tick` stempeln → `appendCommand` abwarten → `applyCommand` → Uhr senden, antworten → neuer Anker beim Tick der Engine. Scheitert das Schreiben, antwortet der Host mit `storage-failed` und wendet nichts an. Uhr-Kommandos, Abfragen und Abos halten den Takt nicht an.
+- **Neustart im `EngineService` (AP 2.2):** `error`, `messageerror` oder ein `fatal`-Ereignis beenden den Worker; offene Kommandos enden mit `worker-failed`, `fatal$` meldet den Fehler. Der Service startet einen neuen Worker und schickt Sichtbarkeit, das letzte `loadPlayer` und die offenen Abos erneut (ab AP 2.3 lädt das den letzten Snapshot mit Replay). „An derselben Stelle“ heißt: Seit dem letzten Fehlschlag hat kein `clock`-Ereignis einen Tick nach dem Tick des Fehlschlags gemeldet. Erst eine solche Spielzeit setzt den Zähler zurück; beim dritten Fehlschlag in Folge startet der Service nicht mehr neu (`restarting: false`), weitere Kommandos enden sofort mit `worker-failed`. Nach `unloadPlayer` wird kein Spieler neu geladen.
 
 ### 8.6 Texte
 
@@ -1266,7 +1334,7 @@ src/
 ├── styles.css              # Tailwind-Einstieg und Design-Tokens
 └── app/
     ├── app.config.ts       # Router (Hash), provideAppCore(), Devtools
-    ├── app.providers.ts    # provideAppCore(): Store, Effects, Router Store, Locale, Seitentitel, Farbschema, Toasts; künftig EngineService und App-weite Slices (auch für Seitentests)
+    ├── app.providers.ts    # provideAppCore(): Store, Effects, Router Store, Locale, Seitentitel, Farbschema, Toasts, EngineService; künftig App-weite Slices (auch für Seitentests)
     ├── app.routes.ts
     ├── shell/              # feature: Layout, Spielbereich-Routen, provideGameState() · ui: Kopfzeile, Navigation
     ├── players/            # feature · data-access · domain: Profil, Seed, Exportformat
@@ -1540,6 +1608,7 @@ Tests sichern fachliche Erwartungen ab und müssen an plausiblen Fehlern scheite
 - **Mini-Welt** (`world/domain/testing/mini-world.ts`, `market/domain/testing/mini-market.ts`): 24 Unternehmen, kleinere Indizes, vier ETF-Produkte mit garantiert einem thesaurierenden und einem ausschüttenden ETF auf demselben Index; dieselbe Taxonomie und damit dieselben Faktoren wie die Standardwelt. Der Vorlauf ist rund doppelt so schnell.
 - **Golden-Jahr** (`market/domain/testing/golden-year.ts`): die Standardwelt von `golden-1`, einmal je Testdatei durch 2020 gerechnet.
 - **Helfer** in `src/testing`: `statistics.ts` (Toleranzen als Vielfache eines Standardfehlers), `perf.ts` (Budgets, Median-Messung), `parse.ts` (deutsche Zahlen unabhängig von `shared/util/format` lesen), `arbitraries.ts` (fast-check-Generatoren), DOM- und Seitenhelfer für jsdom.
+- **Engine im Testprozess** (AP 2.2, `engine/data-access/testing`): `provideInProcessEngineWorker(engine)` ersetzt an der Wurzel den Worker durch `InProcessEngine` mit demselben `EngineHost`, einer gestellten Wanduhr und einem von Hand weitergeschalteten Schleifen-Timer (`ManualTimeline`), Standardwelt der Tests ist die Mini-Welt (`generateMiniWorld`). Nachrichten werden per `structuredClone` kopiert und in einer späteren Task zugestellt. Kommandos und Zustellungen sind `PendingTasks`, die laufende Schleife nicht: `whenStable()`/`settle()` terminieren, die Spielzeit bewegt der Test mit `await engine.advance(ms)` (`timeline.step()` für genau einen Durchlauf, `engine.crash()` für einen Worker-Fehler).
 - **fast-check:** lokal ein neuer Seed je Lauf; die CI leitet `FC_SEED` aus dem Commit ab, sodass ein erneuter Lauf dieselben Eingaben zieht. Ein gefundenes Gegenbeispiel wird als eigener Regressionsfall eingetragen. Wo die Eingabemenge endlich ist, bleibt der erschöpfende Durchlauf (z. B. jeder Kalendertag 2020–2100 gegen `Date`).
 - **Fixtures für gespeicherte Daten:** je Datenbankversion eine eingefrorene Fixture `db-vN.json`, die nach einem Release nicht mehr geändert wird. Vor 1.0 sind Snapshots mit anderer `schemaVersion` gesperrt statt migriert (E-25); ein synthetischer Datensatz genügt.
 
