@@ -1,0 +1,116 @@
+@let _status = status();
+
+<div class="fixed inset-0 z-30 flex items-center justify-center bg-bg p-4" cdkTrapFocus>
+  <section
+    #dialog
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="session-overlay-heading"
+    aria-describedby="session-overlay-text"
+    tabindex="-1"
+    class="flex w-full max-w-sm flex-col items-center gap-4 rounded-lg border border-border bg-surface p-6 text-center focus:outline-none"
+    data-testid="shell.session-overlay">
+    @switch (_status) {
+      @case ('locked') {
+        <i appIcon="window-stack" class="text-3xl text-warning"></i>
+        <h1
+          id="session-overlay-heading"
+          class="text-lg font-semibold"
+          data-testid="shell.session-overlay.heading"
+          i18n="@@uiShell-sessionOverlay-lockedHeading">
+          Spieler bereits geöffnet
+        </h1>
+        <p
+          id="session-overlay-text"
+          class="text-sm text-fg-muted"
+          i18n="@@uiShell-sessionOverlay-lockedText">
+          Dieser Spieler ist bereits in einem anderen Tab geöffnet. Schließe ihn dort, um hier
+          weiterzuspielen.
+        </p>
+      }
+      @case ('failed') {
+        <i appIcon="exclamation-octagon" class="text-3xl text-down"></i>
+        <h1
+          id="session-overlay-heading"
+          class="text-lg font-semibold"
+          data-testid="shell.session-overlay.heading"
+          i18n="@@uiShell-sessionOverlay-failedHeading">
+          Das Spiel konnte nicht laufen
+        </h1>
+        <p
+          id="session-overlay-text"
+          class="text-sm text-fg-muted"
+          i18n="@@uiShell-sessionOverlay-failedText">
+          Beim Laden oder Berechnen ist ein Fehler aufgetreten. Lade die Seite neu oder wähle einen
+          anderen Spieler.
+        </p>
+      }
+      @case ('catching-up') {
+        <h1
+          id="session-overlay-heading"
+          class="text-lg font-semibold"
+          data-testid="shell.session-overlay.heading"
+          i18n="@@uiShell-sessionOverlay-catchUpHeading">
+          Nachberechnung
+        </h1>
+        <p
+          id="session-overlay-text"
+          class="text-sm text-fg-muted"
+          i18n="@@uiShell-sessionOverlay-catchUpText">
+          Die Spielzeit seit deinem letzten Besuch wird nachberechnet.
+        </p>
+        <div
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuenow]="percent()"
+          [attr.aria-label]="progressLabel"
+          class="h-2 w-full overflow-hidden rounded-full bg-surface-raised">
+          <div class="h-full bg-accent" [style.width.%]="percent() ?? 0"></div>
+        </div>
+        <p class="text-sm tabular-nums" data-testid="shell.session-overlay.progress">
+          {{ progress() | formatPercent: 0 }}
+        </p>
+      }
+      @default {
+        <h1
+          id="session-overlay-heading"
+          class="text-lg font-semibold"
+          data-testid="shell.session-overlay.heading">
+          @if (_status === 'restarting') {
+            <ng-container i18n="@@uiShell-sessionOverlay-restartingHeading"
+              >Spiel wird neu gestartet</ng-container
+            >
+          } @else {
+            <ng-container i18n="@@uiShell-sessionOverlay-loadingHeading"
+              >Spiel wird geladen</ng-container
+            >
+          }
+        </h1>
+        <p
+          id="session-overlay-text"
+          class="text-sm text-fg-muted"
+          i18n="@@uiShell-sessionOverlay-loadingText">
+          Welt und Märkte werden vorbereitet.
+        </p>
+        <div
+          role="progressbar"
+          [attr.aria-label]="progressLabel"
+          class="h-2 w-full overflow-hidden rounded-full bg-surface-raised">
+          <div class="h-full w-1/3 rounded-full bg-accent motion-safe:animate-pulse"></div>
+        </div>
+      }
+    }
+
+    @if (isEnded()) {
+      <a
+        appButton
+        variant="primary"
+        routerLink="/players"
+        data-testid="shell.session-overlay.players">
+        <i appIcon="people"></i>
+        <ng-container i18n="@@uiShell-sessionOverlay-toPlayers">Zur Spielerauswahl</ng-container>
+      </a>
+    }
+  </section>
+</div>

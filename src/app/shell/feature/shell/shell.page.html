@@ -1,44 +1,65 @@
 @let activeNavPath = shellFacade.activeNavPath$ | async;
+@let sessionStatus = sessionFacade.status$ | async;
+@let catchUpRatio = sessionFacade.catchUpRatio$ | async;
+@let tick = clockFacade.tick$ | async;
+@let isBlocked = sessionStatus !== 'ready';
 
-<button
-  type="button"
-  class="sr-only rounded-md bg-accent px-4 py-2 text-sm font-medium text-bg focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50"
-  data-testid="shell.skip-to-content"
-  (click)="onSkipToContent()">
-  {{ skipLinkLabel }}
-</button>
+<!-- While the overlay covers the game, the game area is inert (TS §11.10). -->
+<div [attr.inert]="isBlocked ? '' : null">
+  <button
+    type="button"
+    class="sr-only rounded-md bg-accent px-4 py-2 text-sm font-medium text-bg focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50"
+    data-testid="shell.skip-to-content"
+    (click)="onSkipToContent()">
+    {{ skipLinkLabel }}
+  </button>
 
-<div class="flex min-h-dvh flex-col">
-  <app-header
-    class="sticky top-0 z-20"
-    [compact]="!isDesktop()"
-    [activePath]="activeNavPath"
-    (selectedPlayerMenuAction)="onSelectPlayerMenuAction($event)"></app-header>
-
-  <div class="flex flex-1">
-    @if (isDesktop()) {
-      <app-side-nav
-        class="sticky top-14 w-56 shrink-0 self-start"
-        [items]="navItems"></app-side-nav>
-    }
-
-    <main
-      #content
-      id="content"
-      tabindex="-1"
-      data-testid="shell.content"
-      class="min-w-0 flex-1 p-4 focus:outline-none md:border-l md:border-border md:p-6"
-      [class.pb-24]="!isDesktop()">
-      <router-outlet />
-    </main>
-  </div>
-
-  @if (!isDesktop()) {
-    <app-bottom-nav
-      class="fixed inset-x-0 bottom-0 z-20"
-      [items]="bottomNavItems"
-      [moreItems]="moreNavItems"
+  <div class="flex min-h-dvh flex-col">
+    <app-header
+      class="sticky top-0 z-20"
+      [compact]="!isDesktop()"
       [activePath]="activeNavPath"
-      (selectedMenuItem)="onSelectNavItem($event)"></app-bottom-nav>
+      [tick]="tick"
+      (selectedPlayerMenuAction)="onSelectPlayerMenuAction($event)"></app-header>
+
+    <div class="flex flex-1">
+      @if (isDesktop()) {
+        <app-side-nav
+          class="sticky top-14 w-56 shrink-0 self-start"
+          [items]="navItems"></app-side-nav>
+      }
+
+      <main
+        #content
+        id="content"
+        tabindex="-1"
+        data-testid="shell.content"
+        class="min-w-0 flex-1 p-4 focus:outline-none md:border-l md:border-border md:p-6"
+        [class.pb-24]="!isDesktop()">
+        <router-outlet />
+      </main>
+    </div>
+
+    @if (!isDesktop()) {
+      <app-bottom-nav
+        class="fixed inset-x-0 bottom-0 z-20"
+        [items]="bottomNavItems"
+        [moreItems]="moreNavItems"
+        [activePath]="activeNavPath"
+        (selectedMenuItem)="onSelectNavItem($event)"></app-bottom-nav>
+    }
+  </div>
+</div>
+
+@if (isBlocked) {
+  <app-session-overlay
+    [status]="sessionStatus ?? 'loading'"
+    [progress]="catchUpRatio"></app-session-overlay>
+}
+
+<!-- Announces only the end of loading and catching up, never the progress steps (TS §11.10). -->
+<div role="status" class="sr-only" data-testid="shell.session-status">
+  @if (sessionStatus === 'ready') {
+    {{ readyLabel }}
   }
 </div>

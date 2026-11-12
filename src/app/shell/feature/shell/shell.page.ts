@@ -5,6 +5,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { map } from 'rxjs';
 
+import { ClockFacade } from '@app/clock/feature/state/clock.facade';
+import { SessionFacade } from '@app/engine/feature/state/session.facade';
 import { NavItem } from '@app/shared/ui/nav-link/nav-item.model';
 
 import { BOTTOM_NAV_SIZE, DESKTOP_QUERY } from './shell.page.model';
@@ -12,17 +14,27 @@ import { BOTTOM_NAV_SIZE, DESKTOP_QUERY } from './shell.page.model';
 import { BottomNavComponent } from '../../ui/bottom-nav/bottom-nav.component';
 import { HeaderComponent } from '../../ui/header/header.component';
 import { PlayerMenuAction } from '../../ui/header/header.model';
+import { SessionOverlayComponent } from '../../ui/session-overlay/session-overlay.component';
 import { SideNavComponent } from '../../ui/side-nav/side-nav.component';
 import { ShellFacade } from '../state/shell.facade';
 
 @Component({
   selector: 'app-shell-page',
-  imports: [CommonModule, RouterModule, HeaderComponent, SideNavComponent, BottomNavComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    HeaderComponent,
+    SideNavComponent,
+    BottomNavComponent,
+    SessionOverlayComponent,
+  ],
   templateUrl: './shell.page.html',
   host: { class: 'block' },
 })
 export class ShellPage {
   shellFacade = inject(ShellFacade);
+  sessionFacade = inject(SessionFacade);
+  clockFacade = inject(ClockFacade);
   readonly #breakpointObserver = inject(BreakpointObserver);
   readonly #router = inject(Router);
   // Only used as the base for relative navigation from menus, not for reading parameters.
@@ -81,6 +93,7 @@ export class ShellPage {
   );
 
   skipLinkLabel = $localize`:@@featureShell-shellPage-skipToContent:Zum Inhalt springen`;
+  readyLabel = $localize`:@@featureShell-shellPage-gameReady:Das Spiel ist bereit.`;
 
   // A `href="#content"` link would change the hash route, so the skip link moves focus itself.
   onSkipToContent(): void {

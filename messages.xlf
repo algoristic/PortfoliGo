@@ -86,6 +86,27 @@
           <context context-type="linenumber">8,9</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureClock-clockEffects-busy" datatype="html">
+        <source>Das geht gerade nicht, weil die Spielzeit noch berechnet wird.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
+          <context context-type="linenumber">212</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-clockEffects-invalidJumpTarget" datatype="html">
+        <source>Zu diesem Zeitpunkt kann nicht vorgespult werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
+          <context context-type="linenumber">215</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-clockEffects-commandFailure" datatype="html">
+        <source>Die Spielzeit konnte nicht gesteuert werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
+          <context context-type="linenumber">217</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureDashboard-dashboardRoutes-dashboardTitle" datatype="html">
         <source>Übersicht</source>
         <context-group purpose="location">
@@ -112,6 +133,41 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/feature/dashboard/dashboard.page.html</context>
           <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureEngine-sessionEffects-storageWarning" datatype="html">
+        <source>Der Spielstand konnte gerade nicht gespeichert werden. PortfoliGo versucht es weiter.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
+          <context context-type="linenumber">167</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureEngine-sessionEffects-unloadFailure" datatype="html">
+        <source>Der Spielstand konnte beim Verlassen nicht gespeichert werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
+          <context context-type="linenumber">180</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureEngine-sessionEffects-playerNotFound" datatype="html">
+        <source>Diesen Spieler gibt es nicht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
+          <context context-type="linenumber">223</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureEngine-sessionEffects-playerOutdated" datatype="html">
+        <source>Dieser Spieler stammt aus einer älteren Version von PortfoliGo und kann nur noch gelöscht werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
+          <context context-type="linenumber">225</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureEngine-sessionEffects-playerUnavailable" datatype="html">
+        <source>Der Spieler konnte nicht geöffnet werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
+          <context context-type="linenumber">227</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-title" datatype="html">
@@ -2685,63 +2741,70 @@
         <source>Übersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">35</context>
+          <context context-type="linenumber">47</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navMarkets" datatype="html">
         <source>Märkte</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">40</context>
+          <context context-type="linenumber">52</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navPortfolio" datatype="html">
         <source>Depot</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">45</context>
+          <context context-type="linenumber">57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navAccounts" datatype="html">
         <source>Konten &amp; Banken</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navOrders" datatype="html">
         <source>Orders</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">55</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navTaxes" datatype="html">
         <source>Steuern</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">60</context>
+          <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navNotifications" datatype="html">
         <source>Benachrichtigungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navSettings" datatype="html">
         <source>Einstellungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">70</context>
+          <context context-type="linenumber">82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-skipToContent" datatype="html">
         <source>Zum Inhalt springen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">83</context>
+          <context context-type="linenumber">95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-shellPage-gameReady" datatype="html">
+        <source>Das Spiel ist bereit.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
+          <context context-type="linenumber">96</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-bottomNav-navLabel" datatype="html">
@@ -2783,35 +2846,112 @@
         <source>Spielzeit</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">36</context>
+          <context context-type="linenumber">41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-netWorthLabel" datatype="html">
         <source>Gesamtvermögen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">37</context>
+          <context context-type="linenumber">42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-searchLabel" datatype="html">
         <source>Suchen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">38</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-notificationsLabel" datatype="html">
         <source>Benachrichtigungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">39</context>
+          <context context-type="linenumber">44</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-playerMenuLabel" datatype="html">
         <source>Spielermenü</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">40</context>
+          <context context-type="linenumber">45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-lockedHeading" datatype="html">
+        <source> Spieler bereits geöffnet </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
+          <context context-type="linenumber">21,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-lockedText" datatype="html">
+        <source> Dieser Spieler ist bereits in einem anderen Tab geöffnet. Schließe ihn dort, um hier weiterzuspielen. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
+          <context context-type="linenumber">27,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-failedHeading" datatype="html">
+        <source> Das Spiel konnte nicht laufen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
+          <context context-type="linenumber">38,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-failedText" datatype="html">
+        <source> Beim Laden oder Berechnen ist ein Fehler aufgetreten. Lade die Seite neu oder wähle einen anderen Spieler. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
+          <context context-type="linenumber">44,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-catchUpHeading" datatype="html">
+        <source> Nachberechnung </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
+          <context context-type="linenumber">54,57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-catchUpText" datatype="html">
+        <source> Die Spielzeit seit deinem letzten Besuch wird nachberechnet. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
+          <context context-type="linenumber">60,63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-restartingHeading" datatype="html">
+        <source>Spiel wird neu gestartet</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
+          <context context-type="linenumber">82,85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-loadingHeading" datatype="html">
+        <source>Spiel wird geladen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
+          <context context-type="linenumber">86,89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-loadingText" datatype="html">
+        <source> Welt und Märkte werden vorbereitet. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
+          <context context-type="linenumber">94,97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-toPlayers" datatype="html">
+        <source>Zur Spielerauswahl</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
+          <context context-type="linenumber">112,116</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-progressLabel" datatype="html">
+        <source>Fortschritt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.ts</context>
+          <context context-type="linenumber">33</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-sideNav-navLabel" datatype="html">

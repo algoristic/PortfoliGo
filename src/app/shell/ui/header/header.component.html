@@ -10,7 +10,7 @@
   <div class="flex items-center gap-2 text-sm text-fg-muted" [attr.title]="clockLabel">
     <i appIcon="clock"></i>
     <span class="sr-only">{{ clockLabel }}</span>
-    <span class="tabular-nums" data-testid="shell.header.clock">–</span>
+    <span class="tabular-nums" data-testid="shell.header.clock">{{ tick() | formatGameTime }}</span>
   </div>
 
   @if (!compact()) {

@@ -14,6 +14,7 @@ const config = {
     'src/app/clock/domain/calendar-logic.ts',
     'src/app/clock/domain/clock-logic.ts',
     'src/app/clock/domain/trading-hours-logic.ts',
+    'src/app/clock/domain/clock-control-logic.ts',
     'src/app/analysis/domain/statistics-logic.ts',
     'src/app/analysis/domain/drawdown-logic.ts',
     'src/app/market/domain/dividend-logic.ts',

@@ -11,6 +11,7 @@ const RULE_SPECS = [
   'src/app/clock/domain/calendar-logic.spec.ts',
   'src/app/clock/domain/clock-logic.spec.ts',
   'src/app/clock/domain/trading-hours-logic.spec.ts',
+  'src/app/clock/domain/clock-control-logic.spec.ts',
   'src/app/analysis/domain/statistics-logic.spec.ts',
   'src/app/analysis/domain/drawdown-logic.spec.ts',
   'src/app/market/domain/dividend-logic.spec.ts',

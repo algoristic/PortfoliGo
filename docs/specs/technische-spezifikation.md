@@ -1244,11 +1244,12 @@ Das gilt auch beim normalen Schließen eines Tabs (E-08): Der Worker endet mit d
 | ------------------ | ------------------------------------------------------------------------------------------------------------ |
 | `pgo.settings`     | Erscheinungsbild, Farben, Bewegung, Tastenkürzel an/aus, Toast und Browser-Benachrichtigung je Ereignis-Code |
 | `pgo.lastPlayerId` | zuletzt genutzter Spieler                                                                                    |
+| `pgo.lastTick`     | Tick des letzten `clock`-Ereignisses je Spieler (`{ spielerId: tick }`), bei `pagehide` gesichert (E-08)     |
 | `pgo.ui.chart`     | Charttyp, Zeitraum, Indikatoren                                                                              |
 | `pgo.ui.tables`    | Sortierung und Spalten je Tabelle                                                                            |
 | `pgo.backup`       | letzter Export je Spieler, Erinnerungsintervall                                                              |
 
-Alle Werte sind versioniertes JSON (`{ "v": 1, "data": … }`; Einträge mit anderer Version gelten als nicht vorhanden) und betreffen nur die Darstellung auf diesem Gerät. Alles, was das Spiel beeinflusst – Watchlist, Auto-Pause, Verhalten im Hintergrund –, gehört zum Spielerzustand in der Engine und wird mit exportiert.
+Alle Werte sind versioniertes JSON (`{ "v": 1, "data": … }`; Einträge mit anderer Version gelten als nicht vorhanden) und betreffen nur die Darstellung auf diesem Gerät. Ausnahme ist `pgo.lastTick` (AP 2.5): eine Untergrenze für das Laden (`minTick`, §9.2), die nie den Spielstand selbst trägt; ungültige Einträge werden beim Lesen verworfen. Alles, was das Spiel beeinflusst – Watchlist, Auto-Pause, Verhalten im Hintergrund –, gehört zum Spielerzustand in der Engine und wird mit exportiert.
 
 ### 9.4 Mehrere Tabs
 
@@ -1405,6 +1406,7 @@ Am 10.11.2026 freigegeben und in AP 0.2 in `CLAUDE.md` übernommen (§1, §3, §
 | `notifications` | `notifications/feature` | Benachrichtigungen (Entities), ungelesene                                                     | Engine                |
 
 - **Registrierung:** `settings` und `players` gehören in die Bootstrap-Provider (App-weit), alle übrigen Slices einmal an die Shell-Route `/game/:playerId` (§11.2, Punkt 4).
+- **Session und Uhr (AP 2.5):** `provideGameState()` (`shell/feature/state`) registriert `session` (`engine/feature/state`) und `clock` (`clock/feature/state`) an der Shell-Route. Der Guard `enterGame` liest das Profil (`PlayersService.getProfile`); fehlt es oder hat es eine andere `simVersion`, leitet er mit Hinweis nach `/players` um (`rejectedGame`), sonst löst `enterGame` `loadPlayer` mit Seed, Startbedingungen und `minTick` aus `pgo.lastTick` aus. Ein `player-outdated` der Engine (anderes `schemaVersion` des Snapshots) leitet ebenfalls um. `leaveGame` entlädt den Spieler; beim Wechsel des Spielers in der URL laufen beide Guards erneut, weil der Parameter zur Elternroute gehört. Status (`SessionStatus` in `engine/domain`): `loading` bis zur Antwort auf `loadPlayer`, `catching-up` solange `progress` `catch-up` läuft, `ready`, `restarting` nach einem Worker-Neustart bis zum nächsten `init`-Ende, sowie `locked`, `outdated`, `failed`. Laufende Fortschritte je Art liegen in `session.progress`; ein `init` mit `running` verwirft ältere. Die Clock-Slice übernimmt das letzte `clock`-Ereignis vor der Antwort auf `loadPlayer` (die Engine schickt die Uhr vor jeder Antwort) und alle danach; frühere gehören zum vorherigen Spieler. Sichtbarkeit: beim Betreten die aktuelle, danach jede Änderung von `visibilitychange`/`pageshow`, `pagehide` gilt als verborgen; bei `pagehide` schreibt die UI zusätzlich synchron `pgo.lastTick`.
 - **Players (AP 2.4):** `providePlayersState()` steht in `provideAppCore()`. `enterPlayersPage` lädt die Liste samt `pgo.lastPlayerId` und hört bis `leavePlayersPage` auf `PlayersService.changes$` (Änderungen anderer Tabs laden die Liste neu); `enterNewPlayerPage` holt einen Seed-Vorschlag.
 - **Laden und Abonnieren:** Ein Guard beim Betreten einer Seite löst Abos und Abfragen aus (`enterXPage`), der Guard beim Verlassen beendet sie (`leaveXPage`). Ändert sich auf der Seite die benötigte Menge (Filter im Screener, Watchlist, nächste Seite des Kontoauszugs, Chart-Zeitraum), reagieren Effects auf die Aktion des Anwenders. Der Store hält nur das aktuelle Fenster – eine Kontoauszugsseite, die Kerzen des angezeigten Charts –, nie das komplette Journal oder alle Kerzen.
 
@@ -1520,6 +1522,20 @@ Signal Forms nach `CLAUDE.md` §3. Eine eigene Betragseingabe (`FormValueControl
 - `angular-eslint` prüft die Templates mit `templateAccessibility`.
 - CDK A11y für Fokusführung in Dialogen und Overlays, semantisches HTML, Tabellenköpfe mit `scope`, Live-Regionen nur für wichtige Ereignisse (nie für Kursticks), geprüfte Kontraste der Tokens, `prefers-reduced-motion` für Kurs-Hervorhebungen.
 - **Tastenkürzel ohne Modifikator** (z. B. Leertaste, `+`, `−`) sind nach WCAG 2.1.4 nur zulässig, wenn sie abschaltbar sind. Sie lassen sich in den Einstellungen deaktivieren und greifen nicht, solange ein Eingabefeld oder Bedienelement fokussiert ist.
+- **Umsetzung der Tastenkürzel (AP 2.5):** `clockShortcut` und `isShortcutBlocked` in `clock/domain/clock-control-logic.ts`; die Effects hören `keydown` am Dokument, solange der Spieler geladen, der Status `ready` und kein Sprung aktiv ist, und unterdrücken die Standardaktion (Leertaste scrollt sonst). Der Schalter ist das Token `CLOCK_SHORTCUTS_ENABLED` (`clock/feature/state/clock.config.ts`, Standard „an“); AP 2.6 stellt es auf die Einstellung um. `clockCommand` macht aus Klick oder Kürzel das Kommando (nichts, wenn es nichts zu tun gibt: vor dem ersten `clock`-Ereignis, Pause während Pause, schneller bei 1 w/s, langsamer bei Echtzeit). Beispiele:
+
+  | Taste                                   | Fokus auf                                                                                      | Wirkung                     |
+  | --------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------- |
+  | Leertaste (`' '`, `Spacebar`)           | `body`, `main`, Container ohne Rolle, kein Fokus                                               | Pause/Weiter                |
+  | `+`, `=`, `Add` (Ziffernblock)          | wie oben                                                                                       | nächste Geschwindigkeit     |
+  | `-`, `−`, `Subtract` (Ziffernblock)     | wie oben                                                                                       | vorige Geschwindigkeit      |
+  | jede der obigen                         | `input`, `textarea`, `select`, `button`, `a`, `summary`, `iframe`, `audio`, `video`, …         | keine                       |
+  | jede der obigen                         | `contenteditable` (`''`, `true`, `plaintext-only`) oder darin                                  | keine                       |
+  | jede der obigen                         | Rolle eines Widgets oder Dialogs (`button`, `menuitem`, `tab`, `option`, `slider`, `dialog` …) | keine                       |
+  | jede der obigen mit Strg, Alt oder Meta | beliebig                                                                                       | keine (Browser, z. B. Zoom) |
+  | gehaltene Leertaste (`repeat`)          | beliebig                                                                                       | keine; `+`/`−` wiederholen  |
+
+- **Overlay der Sitzung (AP 2.5):** Solange der Status nicht `ready` ist, deckt ein Overlay (`shell/ui/session-overlay`, `role="dialog"`, `aria-modal`) den Spielbereich ab, der Spielbereich ist `inert`, der Fokus wechselt in das Overlay. Es zeigt Laden bzw. Neustart (unbestimmter Fortschritt), die Nachberechnung mit Prozent (`progressbar` mit `aria-valuenow`, ohne Live-Region), den Hinweis auf einen anderen Tab (`player-locked`) und Fehler, die beiden letzten mit Link zur Spielerauswahl. Eine `role="status"`-Region meldet nur den Abschluss („Das Spiel ist bereit.“). Der Fortschritt des Vorspulens erscheint in der Kopfzeile, nicht im Overlay.
 
 ## 12. Benachrichtigungen
 

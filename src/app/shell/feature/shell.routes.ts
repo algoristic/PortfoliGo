@@ -1,15 +1,23 @@
 import { Routes } from '@angular/router';
 
+import { enterGame, leaveGame } from '@app/engine/feature/state/session.guards';
+
+import { provideGameState } from './state/game-state.providers';
 import { provideShellState } from './state/shell.providers';
 
-/** Game area at `/game/:playerId` (TS §11.4); `enterGame`/`leaveGame` and `provideGameState()` follow in AP 2.5. */
+/**
+ * Game area at `/game/:playerId` (TS §11.4). The guards run again when the player in the URL
+ * changes, because the parameter belongs to this route's parent: `leaveGame`, then `enterGame`.
+ */
 export const shellRoutes: Routes = [
   {
     path: '',
     loadComponent: async () => {
       return (await import('./shell/shell.page')).ShellPage;
     },
-    providers: [provideShellState()],
+    providers: [provideShellState(), provideGameState()],
+    canActivate: [enterGame()],
+    canDeactivate: [leaveGame()],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
