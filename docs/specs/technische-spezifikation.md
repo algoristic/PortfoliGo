@@ -1535,7 +1535,7 @@ Tests sichern fachliche Erwartungen ab und müssen an plausiblen Fehlern scheite
 | `mutation`    | Regelcode (`stryker.config.mjs`)   | Stryker mit `vitest.mutation.config.ts`, inkrementell            | `npm run test:mutation`    |
 | `e2e`         | `e2e/*.e2e.ts`                     | Playwright gegen den Produktions-Build (`e2e/serve.mjs`)         | `npm run e2e`              |
 
-`npm test` startet `logic` und `angular`, `npm run typecheck` prüft die Typen aller Specs und Systemtests, `npm run verify` führt alles aus, was die CI prüft – Systemtests lokal nur in den Chromium-Projekten (`npm run test:e2e`); Firefox, WebKit und `mobile-webkit` laufen in der CI. Die ungewöhnliche Zeitzone deckt versehentlich lokale Zeitrechnung auf. Weil Seitentests den echten Worker-Code im Testprozess rechnen (etwa zehn Spieljahre im Labor), hat die Suite `angular` ein Zeitbudget von 30 s je Test und 60 s je Hook statt der Vitest-Vorgaben von 5 s bzw. 10 s.
+`npm test` startet `logic` und `angular`, `npm run typecheck` prüft die Typen aller Specs und Systemtests, `npm run verify` führt alles aus, was die CI prüft – Systemtests lokal nur in den Chromium-Projekten (`npm run test:e2e`); Firefox, WebKit und `mobile-webkit` laufen in der CI. Die ungewöhnliche Zeitzone deckt versehentlich lokale Zeitrechnung auf. Weil Logiktests und Seitentests Jahre der Simulation im Testprozess rechnen (`LabSimulation`, der echte Worker-Code im Labor), haben die Suiten `logic` und `angular` ein Zeitbudget von 30 s je Test und 60 s je Hook statt der Vitest-Vorgaben von 5 s bzw. 10 s.
 
 **Systemtests**
 

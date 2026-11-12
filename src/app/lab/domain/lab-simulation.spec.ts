@@ -131,8 +131,7 @@ describe('LabSimulation', () => {
       // 11¼ years from the epoch: the game start and two ten-year windows (from 2020 and 2021).
       expect(run.longTerm.checkpoints[0].tick).not.toBeNull();
       expect(run.longTerm.windows.map((window) => window.count)).toEqual([2, 0]);
-      // Two full prehistories; under the load of the whole suite they take longer than 5 s.
-    }, 20_000);
+    });
 
     it('rejects invalid numbers of years', () => {
       expect(() => LabSimulation.measureSeedRun(SEED, 0)).toThrow(RangeError);
