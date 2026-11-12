@@ -19,6 +19,11 @@ if (!window.matchMedia) {
     }) as MediaQueryList;
 }
 
+// jsdom has no layout and doesn't scroll; pages call `scrollIntoView` (e.g. to show the lab chart).
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = (): void => undefined;
+}
+
 // jsdom has no layout, so sizes never change: a silent `ResizeObserver` is enough. Tests that need a
 // size stub `getBoundingClientRect` (see `src/testing/chart-platform.ts`).
 if (!window.ResizeObserver) {

@@ -73,6 +73,25 @@ test.describe('lab simulation', () => {
     },
   );
 
+  test('opens a share of the world overview in the chart and scrolls up to it', async ({
+    page,
+  }) => {
+    await generateWorld(page);
+    const chartHeading = page.getByRole('heading', { name: 'Chart', exact: true });
+    // The second share is series 1 (shares come first, TS §6.6).
+    const row = page.getByTestId('lab.simulation.companies').locator('tbody tr').nth(1);
+    const share = row.locator('[data-testid$=".open"]');
+    await share.scrollIntoViewIfNeeded();
+    await expect(chartHeading).not.toBeInViewport();
+
+    await share.click();
+    await expect(chartHeading).toBeInViewport();
+    await expect(page.getByTestId('lab.simulation.chart.series')).toHaveValue('1');
+    await expect(page.getByTestId('lab.simulation.chart.series-name')).toContainText(
+      (await row.locator('td').nth(1).textContent()) ?? '',
+    );
+  });
+
   test('switches ranges and resolutions and loads older candles when zooming out', async ({
     page,
   }) => {

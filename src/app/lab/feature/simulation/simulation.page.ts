@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { form, FormField, FormRoot, required } from '@angular/forms/signals';
 
 import { FormatGameTimePipe } from '@app/clock/ui/pipes/format-game-time/format-game-time.pipe';
@@ -57,6 +57,8 @@ export class SimulationPage {
   simulationSteps = SIMULATION_STEPS;
   simulationYearSteps = SIMULATION_YEAR_STEPS;
 
+  chartPanel = viewChild('chartPanel', { read: ElementRef<HTMLElement> });
+
   seedModel = signal<SeedFormModel>({ seed: '' });
   seedForm = form(
     this.seedModel,
@@ -110,6 +112,16 @@ export class SimulationPage {
 
   onChangeChartOptions(options: Partial<LabChartOptions>): void {
     this.labFacade.changeChartOptions(options);
+  }
+
+  /** Opens a series from the world overview and scrolls up to the chart. */
+  onOpenSeries(series: number): void {
+    this.labFacade.selectSeries(series);
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.chartPanel()?.nativeElement.scrollIntoView({
+      behavior: reduceMotion ? 'auto' : 'smooth',
+      block: 'start',
+    });
   }
 
   onScrollToChartStart(): void {

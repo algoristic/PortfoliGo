@@ -496,98 +496,98 @@
         <source>Chart</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">131</context>
+          <context context-type="linenumber">135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-statistics" datatype="html">
         <source>Statistik</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">146</context>
+          <context context-type="linenumber">150</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-overview" datatype="html">
         <source>Welt-Übersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">157</context>
+          <context context-type="linenumber">161</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-emptyHeading" datatype="html">
         <source>Noch keine Welt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">165,166</context>
+          <context context-type="linenumber">171,172</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-emptyText" datatype="html">
         <source>Gib einen Seed ein und erzeuge eine Welt; Vorlauf und Simulation laufen im Web Worker.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">167,168</context>
+          <context context-type="linenumber">173,174</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-seedComparison" datatype="html">
         <source>Seed-Vergleich</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">171</context>
+          <context context-type="linenumber">177</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-selfTest" datatype="html">
         <source>Selbsttest</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.html</context>
-          <context context-type="linenumber">182</context>
+          <context context-type="linenumber">188</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-seedRequired" datatype="html">
         <source>Bitte gib einen Seed ein.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-step1" datatype="html">
         <source>+1 Tag</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.ts</context>
-          <context context-type="linenumber">76</context>
+          <context context-type="linenumber">78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-step7" datatype="html">
         <source>+1 Woche</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.ts</context>
-          <context context-type="linenumber">77</context>
+          <context context-type="linenumber">79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-step30" datatype="html">
         <source>+30 Tage</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.ts</context>
-          <context context-type="linenumber">78</context>
+          <context context-type="linenumber">80</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-step365" datatype="html">
         <source>+365 Tage</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.ts</context>
-          <context context-type="linenumber">79</context>
+          <context context-type="linenumber">81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-step10y" datatype="html">
         <source>+10 Jahre</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.ts</context>
-          <context context-type="linenumber">82</context>
+          <context context-type="linenumber">84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-simulationPage-step50y" datatype="html">
         <source>+50 Jahre</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/simulation/simulation.page.ts</context>
-          <context context-type="linenumber">83</context>
+          <context context-type="linenumber">85</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-labEffects-failure" datatype="html">
@@ -1795,11 +1795,11 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">48,49</context>
+          <context context-type="linenumber">58,59</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">79,80</context>
+          <context context-type="linenumber">99,100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-name" datatype="html">
@@ -1810,15 +1810,15 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">49,50</context>
+          <context context-type="linenumber">59,60</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">80,81</context>
+          <context context-type="linenumber">100,101</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">118,119</context>
+          <context context-type="linenumber">148,149</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-isin" datatype="html">
@@ -1864,7 +1864,7 @@
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">86,89</context>
+          <context context-type="linenumber">106,109</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-marketCap" datatype="html">
@@ -1885,147 +1885,154 @@
         <source>Art</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">51</context>
+          <context context-type="linenumber">61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-constituents" datatype="html">
         <source> Werte </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">51,52</context>
+          <context context-type="linenumber">61,62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-capWeight" datatype="html">
         <source> Kappung </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">52,53</context>
+          <context context-type="linenumber">62,63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-baseValue" datatype="html">
         <source> Basis </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">53,56</context>
+          <context context-type="linenumber">63,66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-issuer" datatype="html">
         <source>Emittent</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">81,82</context>
+          <context context-type="linenumber">101,102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-index" datatype="html">
         <source>Index</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">82,83</context>
+          <context context-type="linenumber">102,103</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-distribution" datatype="html">
         <source>Ertrag</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">83,84</context>
+          <context context-type="linenumber">103,104</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-replication" datatype="html">
         <source>Replikation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">84,85</context>
+          <context context-type="linenumber">104,105</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-ter" datatype="html">
         <source>TER</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">86</context>
+          <context context-type="linenumber">106</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-distributing" datatype="html">
         <source>ausschüttend</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">98,100</context>
+          <context context-type="linenumber">128,130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-accumulating" datatype="html">
         <source>thesaurierend</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">100,102</context>
+          <context context-type="linenumber">130,132</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-bankType" datatype="html">
         <source>Typ</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">120</context>
+          <context context-type="linenumber">150</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-venue" datatype="html">
         <source>Handelsplatz</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">120,121</context>
+          <context context-type="linenumber">150,151</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-spreadMarkup" datatype="html">
         <source> Spread-Aufschlag </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">122,124</context>
+          <context context-type="linenumber">152,154</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-fractionalShares" datatype="html">
         <source> Bruchstücke </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">124,125</context>
+          <context context-type="linenumber">154,155</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-savingsAccount" datatype="html">
         <source> Tagesgeld </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.html</context>
-          <context context-type="linenumber">125,128</context>
+          <context context-type="linenumber">155,158</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-tabCompanies" datatype="html">
         <source>Unternehmen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.ts</context>
-          <context context-type="linenumber">31</context>
+          <context context-type="linenumber">45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-tabIndices" datatype="html">
         <source>Indizes</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.ts</context>
-          <context context-type="linenumber">33</context>
+          <context context-type="linenumber">47</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-tabEtfs" datatype="html">
         <source>ETFs</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.ts</context>
-          <context context-type="linenumber">34</context>
+          <context context-type="linenumber">48</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-tabBanks" datatype="html">
         <source>Banken</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.ts</context>
-          <context context-type="linenumber">35</context>
+          <context context-type="linenumber">49</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-tabsLabel" datatype="html">
         <source>Welt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.ts</context>
-          <context context-type="linenumber">37</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiLab-worldTables-openInChart" datatype="html">
+        <source>Im Chart öffnen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.ts</context>
+          <context context-type="linenumber">52</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentPage-title" datatype="html">

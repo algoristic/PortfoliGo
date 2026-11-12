@@ -22,8 +22,18 @@
         </thead>
         <tbody class="tabular-nums">
           @for (company of _overview.companies; track company.id) {
-            <tr class="border-t border-border">
-              <td class="px-2 py-1 font-medium">{{ company.ticker }}</td>
+            <tr
+              class="cursor-pointer border-t border-border hover:bg-surface-raised"
+              (click)="onSelectRow(company.id)">
+              <td class="px-2 py-1 font-medium">
+                <button
+                  type="button"
+                  class="text-accent hover:underline"
+                  [title]="openLabel"
+                  [attr.data-testid]="'lab.simulation.companies.' + company.id + '.open'">
+                  {{ company.ticker }}
+                </button>
+              </td>
               <td class="px-2 py-1">{{ company.name }}</td>
               <td class="px-2 py-1 text-fg-muted">{{ company.isin }}</td>
               <td class="px-2 py-1">{{ company.countryId }}</td>
@@ -55,8 +65,18 @@
         </thead>
         <tbody class="tabular-nums">
           @for (index of _overview.indices; track index.id) {
-            <tr class="border-t border-border">
-              <td class="px-2 py-1 font-medium">{{ index.ticker }}</td>
+            <tr
+              class="cursor-pointer border-t border-border hover:bg-surface-raised"
+              (click)="onSelectRow(index.id)">
+              <td class="px-2 py-1 font-medium">
+                <button
+                  type="button"
+                  class="text-accent hover:underline"
+                  [title]="openLabel"
+                  [attr.data-testid]="'lab.simulation.indices.' + index.id + '.open'">
+                  {{ index.ticker }}
+                </button>
+              </td>
               <td class="px-2 py-1">{{ index.name }}</td>
               <td class="px-2 py-1">{{ index.kind }}</td>
               <td class="px-2 py-1 text-right">{{ index.constituentCount }}</td>
@@ -88,8 +108,18 @@
         </thead>
         <tbody class="tabular-nums">
           @for (etf of _overview.etfs; track etf.id) {
-            <tr class="border-t border-border">
-              <td class="px-2 py-1 font-medium">{{ etf.ticker }}</td>
+            <tr
+              class="cursor-pointer border-t border-border hover:bg-surface-raised"
+              (click)="onSelectRow(etf.id)">
+              <td class="px-2 py-1 font-medium">
+                <button
+                  type="button"
+                  class="text-accent hover:underline"
+                  [title]="openLabel"
+                  [attr.data-testid]="'lab.simulation.etfs.' + etf.id + '.open'">
+                  {{ etf.ticker }}
+                </button>
+              </td>
               <td class="px-2 py-1">{{ etf.name }}</td>
               <td class="px-2 py-1">{{ etf.issuerName }}</td>
               <td class="px-2 py-1">{{ etf.indexName }}</td>

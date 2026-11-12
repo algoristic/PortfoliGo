@@ -125,6 +125,26 @@ describe('SimulationPage', () => {
       expect(shownCandles()).toBe(oracleCandles(share.series, '1d', YEAR_DAYS, oracle.now).length);
     });
 
+    it('opens a row of the world overview in the chart and scrolls up to it', async () => {
+      await generateWorld();
+      const scroll = vi.spyOn(Element.prototype, 'scrollIntoView');
+      const overview = oracle.overview();
+
+      const share = overview.series.filter((option) => option.kind === 'stock')[2];
+      await act(() => click(byTestId(page, `lab.simulation.companies.${share.id}.open`)));
+      expect(textOf(byTestId(page, 'lab.simulation.chart.series-name'))).toContain(share.name);
+      expect(shownCandles()).toBe(oracleCandles(share.series, '1d', YEAR_DAYS, oracle.now).length);
+      expect(scroll).toHaveBeenCalledTimes(1);
+
+      // An ETF row opens the ETF, not the series at its position in the table.
+      const etf = overview.series.filter((option) => option.kind === 'etf')[1];
+      await act(() => click(byTestId(page, 'lab.simulation.world-tabs.etfs.tab')));
+      await act(() => click(byTestId(page, `lab.simulation.etfs.${etf.id}.open`)));
+      expect(textOf(byTestId(page, 'lab.simulation.chart.series-name'))).toContain(etf.name);
+      expect(scroll).toHaveBeenCalledTimes(2);
+      scroll.mockRestore();
+    });
+
     it('simulates days and years, also after leaving the page during a simulation', async () => {
       await generateWorld();
       click(byTestId(page, 'lab.simulation.simulate.7'));

@@ -128,7 +128,11 @@
       }
     </app-panel>
 
-    <app-panel heading="Chart" i18n-heading="@@featureLab-simulationPage-chart">
+    <app-panel
+      #chartPanel
+      class="scroll-mt-24"
+      heading="Chart"
+      i18n-heading="@@featureLab-simulationPage-chart">
       <app-series-chart
         [seriesOptions]="seriesOptions ?? []"
         [series]="selectedSeries ?? 0"
@@ -155,7 +159,9 @@
     </app-panel>
 
     <app-panel heading="Welt-Übersicht" i18n-heading="@@featureLab-simulationPage-overview">
-      <app-world-tables [overview]="overview"></app-world-tables>
+      <app-world-tables
+        [overview]="overview"
+        (selectedSeries)="onOpenSeries($event)"></app-world-tables>
     </app-panel>
   } @else if (status === 'generating') {
     <app-skeleton class="h-64" [block]="true"></app-skeleton>
