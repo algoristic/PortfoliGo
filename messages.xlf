@@ -86,25 +86,396 @@
           <context context-type="linenumber">8,9</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureClock-dialogJump-legend" datatype="html">
+        <source> Die Spielzeit läuft im Schnelldurchlauf bis zum Ziel. Alle Vorgänge werden dabei wie im normalen Spielverlauf verarbeitet. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.html</context>
+          <context context-type="linenumber">9,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-nextOpen" datatype="html">
+        <source>Nächste Börsenöffnung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.html</context>
+          <context context-type="linenumber">24,27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-nextMonth" datatype="html">
+        <source>Nächster Monatsanfang</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.html</context>
+          <context context-type="linenumber">45,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-date" datatype="html">
+        <source>Datum</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.html</context>
+          <context context-type="linenumber">65,66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-dateHint" datatype="html">
+        <source>höchstens ein Jahr voraus</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.html</context>
+          <context context-type="linenumber">67,70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-dateLabel" datatype="html">
+        <source>Datum</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.html</context>
+          <context context-type="linenumber">73,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-timeLabel" datatype="html">
+        <source>Uhrzeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.html</context>
+          <context context-type="linenumber">85,87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-decline" datatype="html">
+        <source> Abbrechen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.html</context>
+          <context context-type="linenumber">110,113</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-submit" datatype="html">
+        <source> Vorspulen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.html</context>
+          <context context-type="linenumber">118,121</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-dateRequired" datatype="html">
+        <source>Bitte gib ein Datum ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.ts</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-dateInvalid" datatype="html">
+        <source>Bitte gib ein gültiges Datum und eine Uhrzeit ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.ts</context>
+          <context context-type="linenumber">58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-dateNotInFuture" datatype="html">
+        <source>Der Zeitpunkt muss nach der aktuellen Spielzeit liegen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.ts</context>
+          <context context-type="linenumber">64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-dateTooFar" datatype="html">
+        <source>Du kannst höchstens ein Jahr vorspulen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-dialogJump-heading" datatype="html">
+        <source>Vorspulen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/dialog-jump/dialog-jump.component.ts</context>
+          <context context-type="linenumber">83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureClock-clockEffects-jumpDialogLabel" datatype="html">
+        <source>Vorspulen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
+          <context context-type="linenumber">153</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureClock-clockEffects-busy" datatype="html">
         <source>Das geht gerade nicht, weil die Spielzeit noch berechnet wird.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
-          <context context-type="linenumber">212</context>
+          <context context-type="linenumber">261</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureClock-clockEffects-invalidJumpTarget" datatype="html">
         <source>Zu diesem Zeitpunkt kann nicht vorgespult werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
-          <context context-type="linenumber">215</context>
+          <context context-type="linenumber">264</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureClock-clockEffects-commandFailure" datatype="html">
         <source>Die Spielzeit konnte nicht gesteuert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
-          <context context-type="linenumber">217</context>
+          <context context-type="linenumber">266</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-jumpingTo" datatype="html">
+        <source>Vorspulen bis <x id="INTERPOLATION" equiv-text="{{ jumpTargetTick() | formatGameTime }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.html</context>
+          <context context-type="linenumber">18,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-cancelJump" datatype="html">
+        <source> Abbrechen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.html</context>
+          <context context-type="linenumber">40,44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-paused" datatype="html">
+        <source>Pausiert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.html</context>
+          <context context-type="linenumber">48,51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-overloaded" datatype="html">
+        <source>ausgelastet</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.html</context>
+          <context context-type="linenumber">58,63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-jumpMenuItem" datatype="html">
+        <source>Vorspulen …</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.html</context>
+          <context context-type="linenumber">131,134</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-clockLabel" datatype="html">
+        <source>Spielzeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-pause" datatype="html">
+        <source>Pause (Leertaste)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-resume" datatype="html">
+        <source>Weiter (Leertaste)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-faster" datatype="html">
+        <source>Schneller (+)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-slower" datatype="html">
+        <source>Langsamer (−)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speedMenu" datatype="html">
+        <source>Geschwindigkeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-jump" datatype="html">
+        <source>Vorspulen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">79</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-jumpProgress" datatype="html">
+        <source>Fortschritt des Vorspulens</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-overloadedHint" datatype="html">
+        <source>Das Gerät kann die gewählte Geschwindigkeit gerade nicht halten. Es wird keine Spielzeit übersprungen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speedRealtime" datatype="html">
+        <source>Echtzeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">115</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed1min" datatype="html">
+        <source>1 min/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">117</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed10min" datatype="html">
+        <source>10 min/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">119</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed1h" datatype="html">
+        <source>1 h/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">121</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed2h" datatype="html">
+        <source>2 h/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">123</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed4h" datatype="html">
+        <source>4 h/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed1d" datatype="html">
+        <source>1 d/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">127</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed1w" datatype="html">
+        <source>1 w/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
+          <context context-type="linenumber">129</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-heading" datatype="html">
+        <source>Börsen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-close" datatype="html">
+        <source>Schließen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-open" datatype="html">
+        <source>offen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-closed" datatype="html">
+        <source>geschlossen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-openUntil" datatype="html">
+        <source>offen bis <x id="time" equiv-text="time"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">94</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-opensAt" datatype="html">
+        <source>öffnet <x id="time" equiv-text="time"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-closesAt" datatype="html">
+        <source>schließt <x id="time" equiv-text="time"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">101</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-opensAtExchange" datatype="html">
+        <source>öffnet <x id="time" equiv-text="time"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">102</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-asiaPacific" datatype="html">
+        <source>Asien-Pazifik</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">109</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-asiaPacificShort" datatype="html">
+        <source>AP</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-europe" datatype="html">
+        <source>Europa</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-europeShort" datatype="html">
+        <source>EU</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">115</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-northAmerica" datatype="html">
+        <source>Nordamerika</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">119</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-northAmericaShort" datatype="html">
+        <source>NA</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">120</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-emergingMarkets" datatype="html">
+        <source>Schwellenländer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">124</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-emergingMarketsShort" datatype="html">
+        <source>SL</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
+          <context context-type="linenumber">125</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureDashboard-dashboardRoutes-dashboardTitle" datatype="html">
@@ -139,35 +510,35 @@
         <source>Der Spielstand konnte gerade nicht gespeichert werden. PortfoliGo versucht es weiter.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">167</context>
+          <context context-type="linenumber">169</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-unloadFailure" datatype="html">
         <source>Der Spielstand konnte beim Verlassen nicht gespeichert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">180</context>
+          <context context-type="linenumber">182</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-playerNotFound" datatype="html">
         <source>Diesen Spieler gibt es nicht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">223</context>
+          <context context-type="linenumber">225</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-playerOutdated" datatype="html">
         <source>Dieser Spieler stammt aus einer älteren Version von PortfoliGo und kann nur noch gelöscht werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">225</context>
+          <context context-type="linenumber">227</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-playerUnavailable" datatype="html">
         <source>Der Spieler konnte nicht geöffnet werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">227</context>
+          <context context-type="linenumber">229</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-title" datatype="html">
@@ -2741,70 +3112,70 @@
         <source>Übersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">47</context>
+          <context context-type="linenumber">51</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navMarkets" datatype="html">
         <source>Märkte</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">52</context>
+          <context context-type="linenumber">56</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navPortfolio" datatype="html">
         <source>Depot</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">57</context>
+          <context context-type="linenumber">61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navAccounts" datatype="html">
         <source>Konten &amp; Banken</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">62</context>
+          <context context-type="linenumber">66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navOrders" datatype="html">
         <source>Orders</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navTaxes" datatype="html">
         <source>Steuern</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">72</context>
+          <context context-type="linenumber">76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navNotifications" datatype="html">
         <source>Benachrichtigungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">77</context>
+          <context context-type="linenumber">81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navSettings" datatype="html">
         <source>Einstellungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">82</context>
+          <context context-type="linenumber">86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-skipToContent" datatype="html">
         <source>Zum Inhalt springen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">95</context>
+          <context context-type="linenumber">99</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-gameReady" datatype="html">
         <source>Das Spiel ist bereit.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">96</context>
+          <context context-type="linenumber">100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-bottomNav-navLabel" datatype="html">
@@ -2825,56 +3196,49 @@
         <source>Spieler wechseln</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.html</context>
-          <context context-type="linenumber">70,72</context>
+          <context context-type="linenumber">66,68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-settings" datatype="html">
         <source>Einstellungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.html</context>
-          <context context-type="linenumber">79,80</context>
+          <context context-type="linenumber">75,76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-export" datatype="html">
         <source>Exportieren</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.html</context>
-          <context context-type="linenumber">91,93</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiShell-header-clockLabel" datatype="html">
-        <source>Spielzeit</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">41</context>
+          <context context-type="linenumber">87,89</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-netWorthLabel" datatype="html">
         <source>Gesamtvermögen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">42</context>
+          <context context-type="linenumber">40</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-searchLabel" datatype="html">
         <source>Suchen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">43</context>
+          <context context-type="linenumber">41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-notificationsLabel" datatype="html">
         <source>Benachrichtigungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">44</context>
+          <context context-type="linenumber">42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-playerMenuLabel" datatype="html">
         <source>Spielermenü</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">45</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-sessionOverlay-lockedHeading" datatype="html">

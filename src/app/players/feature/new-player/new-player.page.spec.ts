@@ -3,8 +3,13 @@ import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { IDBPDatabase } from 'idb';
 
+import {
+  InProcessEngine,
+  provideInProcessEngineWorker,
+} from '@app/engine/data-access/testing/in-process-engine-worker';
 import { SIM_VERSION } from '@app/engine/domain/version';
 import { openPortfoligoDb } from '@app/persistence/data-access/schema/open-database';
+import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
 import { PlayerProfile } from '@app/players/domain/models/player.model';
 
 import { blur, byTestId, click, queryByTestId, textOf, typeText } from '../../../../testing/dom';
@@ -19,6 +24,7 @@ const AMOUNT_FIELDS = ['start-capital', 'net-income', 'living-costs'] as const;
 describe('NewPlayerPage', () => {
   let database: IDBPDatabase;
   let persistence: FakeStoragePersistence;
+  let engine: InProcessEngine;
   let harness: RouterTestingHarness;
   let page: HTMLElement;
 
@@ -26,7 +32,11 @@ describe('NewPlayerPage', () => {
     localStorage.clear();
     persistence = new FakeStoragePersistence();
     database = await openPortfoligoDb();
-    harness = await renderRoute('/players/new', [providePlayersTestPorts({ persistence })]);
+    engine = new InProcessEngine({ storage: 'indexed-db', locks: new FakePlayerLocks() });
+    harness = await renderRoute('/players/new', [
+      provideInProcessEngineWorker(engine),
+      providePlayersTestPorts({ persistence, locks: engine.locks }),
+    ]);
     page = harness.fixture.nativeElement;
   });
 
@@ -148,6 +158,16 @@ describe('NewPlayerPage', () => {
       data: profile.id,
     });
     expect(persistence.requests).toBe(1);
+
+    // PS US-SP-01: the game opens paused at the game start, Monday 01.04.2030, 00:00.
+    await engine.advance(200);
+    await settle(harness.fixture);
+    expect(queryByTestId(page, 'shell.session-overlay.heading')).toBeNull();
+    expect(textOf(byTestId(page, 'shell.header.clock'))).toBe('Mo., 01.04.2030, 00:00');
+    expect(textOf(byTestId(page, 'shell.header.paused'))).toBe('Pausiert');
+    await engine.advance(5_000);
+    await settle(harness.fixture);
+    expect(textOf(byTestId(page, 'shell.header.clock'))).toBe('Mo., 01.04.2030, 00:00');
   });
 
   it('goes back to the player selection on cancel', async () => {

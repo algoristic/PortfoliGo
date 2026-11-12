@@ -14,8 +14,9 @@ import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-playe
 import { PlayersService } from '@app/players/data-access/service/players.service';
 import { providePlayersTestPorts } from '@app/players/data-access/testing/fake-players-ports';
 import { NewPlayer } from '@app/players/domain/models/player.model';
+import { EXCHANGES } from '@app/world/domain/taxonomy';
 
-import { byTestId, click, press, queryByTestId, textOf } from '../../../../testing/dom';
+import { byTestId, click, press, queryByTestId, textOf, typeText } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
 import { installViewport } from '../../../../testing/viewport';
 
@@ -399,6 +400,246 @@ describe('ShellPage', () => {
       await navigate(`/game/${anna}`);
       await run(200);
       expect(clock()).toBe('Mo., 01.04.2030, 00:01');
+    });
+  });
+  describe('clock controls', () => {
+    let restoreViewport: () => void;
+
+    beforeEach(() => {
+      restoreViewport = installViewport(1024);
+    });
+
+    afterEach(() => restoreViewport());
+
+    function body<T extends HTMLElement = HTMLElement>(testId: string): T {
+      return byTestId<T>(document.body, testId);
+    }
+
+    async function chooseSpeed(speed: string): Promise<void> {
+      await act(() => click(byTestId(page, 'shell.header.speed')));
+      await act(() => click(byTestId(page, `shell.header.speed.${speed}`)));
+    }
+
+    async function togglePause(): Promise<void> {
+      await act(() => click(byTestId(page, 'shell.header.toggle-pause')));
+    }
+
+    function region(regionId: string): string {
+      return textOf(byTestId(page, `shell.header.markets.${regionId}`));
+    }
+
+    async function openJumpDialog(): Promise<void> {
+      await act(() => click(byTestId(page, 'shell.header.jump-button')));
+    }
+
+    async function enterJumpDate(date: string, time: string): Promise<void> {
+      await act(() => click(body('clock.jump-dialog.date-kind')));
+      await act(() => typeText(body<HTMLInputElement>('clock.jump-dialog.date'), date));
+      await act(() => typeText(body<HTMLInputElement>('clock.jump-dialog.time'), time));
+      await act(() => click(body('clock.jump-dialog.submit')));
+    }
+
+    it('shows the game time, the speed and the pause at the game start', async () => {
+      await openGame();
+      expect(clock()).toBe(GAME_START_TEXT);
+      expect(textOf(byTestId(page, 'shell.header.paused'))).toBe('Pausiert');
+      // The start speed of a new player is 1 min/s (TS §3.4).
+      expect(textOf(byTestId(page, 'shell.header.speed'))).toBe('1 min/s');
+      expect(byTestId(page, 'shell.header.toggle-pause').getAttribute('aria-label')).toBe(
+        'Weiter (Leertaste)',
+      );
+      expect(byTestId(page, 'shell.header.toggle-pause').getAttribute('aria-keyshortcuts')).toBe(
+        'Space',
+      );
+    });
+
+    it('resumes, changes the speed at once and pauses with the controls', async () => {
+      await openGame();
+
+      await togglePause();
+      expect(queryByTestId(page, 'shell.header.paused')).toBeNull();
+      await run(1_500);
+      expect(clock()).toBe('Mo., 01.04.2030, 00:01');
+
+      // TS §3.4: 10 min/s runs ten game minutes per second from the change on (passes every
+      // 16 ms, so 1.05 s cover exactly ten minutes).
+      await chooseSpeed('10min');
+      expect(textOf(byTestId(page, 'shell.header.speed'))).toBe('10 min/s');
+      await run(1_050);
+      await togglePause();
+      await run(200);
+      expect(clock()).toBe('Mo., 01.04.2030, 00:11');
+      expect(textOf(byTestId(page, 'shell.header.paused'))).toBe('Pausiert');
+
+      await act(() => click(byTestId(page, 'shell.header.faster')));
+      await run(200);
+      expect(textOf(byTestId(page, 'shell.header.speed'))).toBe('1 h/s');
+      await act(() => click(byTestId(page, 'shell.header.speed')));
+      expect(byTestId(page, 'shell.header.speed.1h').getAttribute('aria-checked')).toBe('true');
+      expect(byTestId(page, 'shell.header.speed.10min').getAttribute('aria-checked')).toBe('false');
+
+      await run(5_000);
+      expect(clock()).toBe('Mo., 01.04.2030, 00:11');
+    });
+
+    it('offers all speeds and stops at the slowest and the fastest', async () => {
+      await openGame();
+      await act(() => click(byTestId(page, 'shell.header.speed')));
+      const labels = [...page.querySelectorAll('[data-testid^="shell.header.speed."]')]
+        .filter((item) => item.getAttribute('role') === 'menuitemradio')
+        .map(textOf);
+      // TS §3.4, PS US-ZT-02
+      expect(labels).toEqual([
+        'Echtzeit',
+        '1 min/s',
+        '10 min/s',
+        '1 h/s',
+        '2 h/s',
+        '4 h/s',
+        '1 d/s',
+        '1 w/s',
+      ]);
+      await act(() => click(byTestId(page, 'shell.header.speed.realtime')));
+      await run(200);
+      expect(byTestId<HTMLButtonElement>(page, 'shell.header.slower').disabled).toBe(true);
+      await chooseSpeed('1w');
+      await run(200);
+      expect(byTestId<HTMLButtonElement>(page, 'shell.header.faster').disabled).toBe(true);
+      expect(byTestId<HTMLButtonElement>(page, 'shell.header.slower').disabled).toBe(false);
+    });
+
+    it('shows the market status per region at the game start and later in the day', async () => {
+      await openGame();
+      // TS §3.3: Monday 00:00, everything is closed; Asia-Pacific opens first.
+      expect(region('asia-pacific')).toContain('Asien-Pazifik: öffnet Mo., 01:00');
+      expect(region('europe')).toContain('Europa: öffnet Mo., 09:00');
+      expect(region('north-america')).toContain('Nordamerika: öffnet Mo., 15:30');
+      expect(region('emerging-markets')).toContain('Schwellenländer: öffnet Mo., 04:45');
+
+      await chooseSpeed('1h');
+      await togglePause();
+      await run(9_000);
+      await togglePause();
+      await run(200);
+      expect(clock()).toBe('Mo., 01.04.2030, 09:00');
+      // 09:00: Europe and India are open, Asia-Pacific has closed until Tuesday.
+      expect(region('asia-pacific')).toContain('Asien-Pazifik: öffnet Di., 01:00');
+      expect(region('europe')).toContain('Europa: offen bis Mo., 17:30');
+      expect(region('north-america')).toContain('Nordamerika: öffnet Mo., 15:30');
+      expect(region('emerging-markets')).toContain('Schwellenländer: offen bis Mo., 11:00');
+    });
+
+    it('lists all exchanges with status and next opening or closing', async () => {
+      await openGame();
+      await act(() => click(byTestId(page, 'shell.header.markets')));
+      expect(byTestId(page, 'shell.header.markets').getAttribute('aria-expanded')).toBe('true');
+      const rows = document.body.querySelectorAll(
+        '[data-testid="shell.header.exchanges"] li[data-testid^="shell.header.exchanges."]',
+      );
+      expect(rows).toHaveLength(EXCHANGES.length);
+      const mainhafen = EXCHANGES.find((exchange) => exchange.id === 'exc-de');
+      const row = textOf(body('shell.header.exchanges.exc-de'));
+      expect(row).toContain(mainhafen?.name);
+      expect(row).toContain('Europa');
+      expect(row).toContain('geschlossen');
+      expect(row).toContain('öffnet Mo., 09:00');
+      // TS §3.3: India 04:45–11:00.
+      expect(textOf(body('shell.header.exchanges.exc-in'))).toContain('öffnet Mo., 04:45');
+
+      await act(() => click(body('shell.header.exchanges.close')));
+      expect(queryByTestId(document.body, 'shell.header.exchanges')).toBeNull();
+      expect(byTestId(page, 'shell.header.markets').getAttribute('aria-expanded')).toBe('false');
+    });
+
+    it('jumps to the start of the next month and stays paused', async () => {
+      await openGame();
+      await openJumpDialog();
+      // TS §3.7: from Monday 01.04.2030, 00:00.
+      expect(textOf(body('clock.jump-dialog.next-open-time'))).toBe('Mo., 01.04.2030, 01:00');
+      expect(textOf(body('clock.jump-dialog.next-month-time'))).toBe('Mi., 01.05.2030, 00:00');
+      await act(() => click(body('clock.jump-dialog.next-month')));
+      await act(() => click(body('clock.jump-dialog.submit')));
+      expect(queryByTestId(document.body, 'clock.jump-dialog')).toBeNull();
+
+      await run(200);
+      expect(clock()).toBe('Mi., 01.05.2030, 00:00');
+      expect(queryByTestId(page, 'shell.header.jump')).toBeNull();
+      expect(textOf(byTestId(page, 'shell.header.paused'))).toBe('Pausiert');
+      await run(5_000);
+      expect(clock()).toBe('Mi., 01.05.2030, 00:00');
+    });
+
+    it('jumps to a date at most one year ahead', async () => {
+      await openGame();
+      await openJumpDialog();
+      // PS US-ZT-05: at most one year ahead, so 01.04.2031, 00:00 at the latest (TS §3.7).
+      await enterJumpDate('2031-04-01', '00:01');
+      expect(textOf(body('clock.jump-dialog.date-error'))).toBe(
+        'Du kannst höchstens ein Jahr vorspulen.',
+      );
+      await enterJumpDate('2030-04-01', '00:00');
+      expect(textOf(body('clock.jump-dialog.date-error'))).toBe(
+        'Der Zeitpunkt muss nach der aktuellen Spielzeit liegen.',
+      );
+
+      await enterJumpDate('2030-04-03', '12:30');
+      expect(queryByTestId(document.body, 'clock.jump-dialog')).toBeNull();
+      await run(200);
+      expect(clock()).toBe('Mi., 03.04.2030, 12:30');
+    });
+
+    it('closes the jump dialog without jumping', async () => {
+      await openGame();
+      await openJumpDialog();
+      await act(() => click(body('clock.jump-dialog.decline')));
+      expect(queryByTestId(document.body, 'clock.jump-dialog')).toBeNull();
+      await run(200);
+      expect(clock()).toBe(GAME_START_TEXT);
+    });
+
+    it('shows the progress of a jump, locks the controls and cancels it', async () => {
+      // One task tick per pass, so the jump takes several passes (TS §3.7).
+      engine = new InProcessEngine({ storage: 'indexed-db', locks, config: { passBudgetMs: 0 } });
+      await openGame();
+      await openJumpDialog();
+      await act(() => click(body('clock.jump-dialog.next-month')));
+      await act(() => click(body('clock.jump-dialog.submit')));
+      engine.timeline.step();
+      engine.timeline.step();
+      await engine.idle();
+      await settle(harness.fixture);
+
+      expect(textOf(byTestId(page, 'shell.header.jump'))).toContain(
+        'Vorspulen bis Mi., 01.05.2030, 00:00',
+      );
+      expect(textOf(byTestId(page, 'shell.header.jump-progress'))).toMatch(/^\d+ %$/);
+      expect(queryByTestId(page, 'shell.header.toggle-pause')).toBeNull();
+
+      await act(() => click(byTestId(page, 'shell.header.cancel-jump')));
+      await run(200);
+      expect(queryByTestId(page, 'shell.header.jump')).toBeNull();
+      expect(clock()).toMatch(/^[A-Z][a-z]\., 0\d\.04\.2030, \d\d:\d\d$/);
+      expect(textOf(byTestId(page, 'shell.header.paused'))).toBe('Pausiert');
+      expect(byTestId<HTMLButtonElement>(page, 'shell.header.toggle-pause').disabled).toBe(false);
+    });
+  });
+
+  describe('clock controls on phones', () => {
+    it('keeps pause, speed and jump in the compact header', async () => {
+      await openGame();
+      expect(queryByTestId(page, 'shell.header.faster')).toBeNull();
+      expect(queryByTestId(page, 'shell.header.jump-button')).toBeNull();
+      expect(textOf(byTestId(page, 'shell.header.markets.europe'))).toContain(
+        'Europa: öffnet Mo., 09:00',
+      );
+
+      await act(() => click(byTestId(page, 'shell.header.speed')));
+      await act(() => click(byTestId(page, 'shell.header.speed.jump')));
+      await act(() => click(byTestId(document.body, 'clock.jump-dialog.next-open')));
+      await act(() => click(byTestId(document.body, 'clock.jump-dialog.submit')));
+      await run(200);
+      // TS §3.7: the next opening after Monday 00:00 is Asia-Pacific at 01:00.
+      expect(clock()).toBe('Mo., 01.04.2030, 01:00');
     });
   });
 });

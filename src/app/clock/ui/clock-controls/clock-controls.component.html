@@ -1,0 +1,161 @@
+@let _paused = paused();
+@let _compact = compact();
+@let _disabled = isDisabled();
+@let _speed = speed();
+
+<div class="flex shrink-0 items-center gap-2 text-sm" [attr.title]="clockLabel">
+  <i appIcon="clock" class="text-fg-muted max-sm:hidden"></i>
+  <span class="sr-only">{{ clockLabel }}</span>
+  <span class="font-medium whitespace-nowrap tabular-nums" data-testid="shell.header.clock">{{
+    tick() | formatGameTime
+  }}</span>
+</div>
+
+@if (jumping()) {
+  <div class="ml-2 flex min-w-0 flex-1 items-center gap-2 md:ml-4" data-testid="shell.header.jump">
+    <span class="truncate text-sm text-fg-muted max-md:sr-only">
+      <ng-container i18n="@@uiClock-clockControls-jumpingTo"
+        >Vorspulen bis {{ jumpTargetTick() | formatGameTime }}</ng-container
+      >
+    </span>
+    <div
+      role="progressbar"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      [attr.aria-valuenow]="jumpPercent()"
+      [attr.aria-label]="jumpProgressLabel"
+      class="h-2 w-12 shrink-0 overflow-hidden rounded-full bg-surface-raised md:w-32">
+      <div class="h-full bg-accent" [style.width.%]="jumpPercent() ?? 0"></div>
+    </div>
+    <span class="text-sm tabular-nums" data-testid="shell.header.jump-progress">{{
+      jumpRatio() | formatPercent: 0
+    }}</span>
+    <button
+      appButton
+      type="button"
+      size="sm"
+      data-testid="shell.header.cancel-jump"
+      i18n="@@uiClock-clockControls-cancelJump"
+      (click)="onCancelJump()">
+      Abbrechen
+    </button>
+  </div>
+} @else {
+  <div class="ml-1 flex min-w-0 items-center gap-1 md:ml-3">
+    @if (_paused) {
+      <app-badge tone="warning" data-testid="shell.header.paused">
+        <i appIcon="pause-fill"></i>
+        <span [class.sr-only]="_compact" i18n="@@uiClock-clockControls-paused">Pausiert</span>
+      </app-badge>
+    }
+    @if (overloaded() && !_paused) {
+      <app-badge
+        tone="warning"
+        data-testid="shell.header.overloaded"
+        [attr.title]="overloadedLabel">
+        <i appIcon="speedometer"></i>
+        <span [class.sr-only]="_compact" i18n="@@uiClock-clockControls-overloaded"
+          >ausgelastet</span
+        >
+      </app-badge>
+    }
+
+    <button
+      appIconButton
+      type="button"
+      size="sm"
+      aria-keyshortcuts="Space"
+      data-testid="shell.header.toggle-pause"
+      [label]="_paused ? resumeLabel : pauseLabel"
+      [disabled]="_disabled"
+      (click)="onTogglePause()">
+      <i [appIcon]="_paused ? 'play-fill' : 'pause-fill'"></i>
+    </button>
+
+    @if (!_compact) {
+      <button
+        appIconButton
+        type="button"
+        size="sm"
+        aria-keyshortcuts="-"
+        data-testid="shell.header.slower"
+        [label]="slowerLabel"
+        [disabled]="_disabled || !canSlower()"
+        (click)="onSlower()">
+        <i appIcon="dash-lg"></i>
+      </button>
+    }
+
+    <div class="relative">
+      <button
+        appButton
+        ngMenuTrigger
+        type="button"
+        variant="ghost"
+        size="sm"
+        class="tabular-nums"
+        data-testid="shell.header.speed"
+        [attr.aria-label]="speedMenuLabel + ': ' + speedLabel()"
+        [attr.title]="speedMenuLabel"
+        [disabled]="_disabled"
+        [menu]="speedMenu">
+        {{ speedLabel() }}
+        <i appIcon="chevron-down" class="text-xs text-fg-muted"></i>
+      </button>
+      <div
+        ngMenu
+        appMenu
+        #speedMenu="ngMenu"
+        class="absolute top-full mt-1 max-md:right-0 md:left-0"
+        [attr.aria-label]="speedMenuLabel"
+        (itemSelected)="onSelectMenuItem($event)">
+        @for (option of speedOptions; track option.id) {
+          @let isChecked = option.id === _speed;
+          <div
+            ngMenuItem
+            appMenuItem
+            role="menuitemradio"
+            class="aria-checked:font-medium"
+            [value]="option.id"
+            [attr.aria-checked]="isChecked"
+            [attr.data-testid]="'shell.header.speed.' + option.id">
+            <span class="flex-1 tabular-nums">{{ option.label }}</span>
+            @if (isChecked) {
+              <i appIcon="check2"></i>
+            }
+          </div>
+        }
+        <div role="separator" class="my-1 border-t border-border"></div>
+        <div ngMenuItem appMenuItem value="jump" data-testid="shell.header.speed.jump">
+          <i appIcon="fast-forward" class="text-fg-muted"></i>
+          <ng-container i18n="@@uiClock-clockControls-jumpMenuItem">Vorspulen …</ng-container>
+        </div>
+      </div>
+    </div>
+
+    @if (!_compact) {
+      <button
+        appIconButton
+        type="button"
+        size="sm"
+        aria-keyshortcuts="+"
+        data-testid="shell.header.faster"
+        [label]="fasterLabel"
+        [disabled]="_disabled || !canFaster()"
+        (click)="onFaster()">
+        <i appIcon="plus-lg"></i>
+      </button>
+      <button
+        appButton
+        type="button"
+        variant="ghost"
+        size="sm"
+        data-testid="shell.header.jump-button"
+        [disabled]="_disabled"
+        (click)="onJump()">
+        <i appIcon="fast-forward"></i>
+        {{ jumpLabel }}
+      </button>
+    }
+  </div>
+}

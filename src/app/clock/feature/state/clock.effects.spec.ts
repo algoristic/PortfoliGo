@@ -33,7 +33,7 @@ describe('ClockEffects', () => {
   let actions$: Subject<Action>;
   let clock$: Subject<ClockPayload>;
   let store: MockStore;
-  let engine: Mocked<Pick<EngineService, 'pause' | 'resume' | 'setSpeed' | 'clock$'>>;
+  let engine: Mocked<Pick<EngineService, 'pause' | 'resume' | 'setSpeed' | 'query' | 'clock$'>>;
   let toasts: Mocked<Pick<ToastService, 'error'>>;
 
   beforeEach(() => {
@@ -43,6 +43,7 @@ describe('ClockEffects', () => {
       pause: vi.fn(() => of(null)),
       resume: vi.fn(() => of(null)),
       setSpeed: vi.fn(() => of(null)),
+      query: vi.fn(),
       clock$: clock$.asObservable(),
     };
     toasts = { error: vi.fn() };
@@ -122,6 +123,29 @@ describe('ClockEffects', () => {
       const result = firstValueFrom(effects.controlClock$);
       actions$.next(ClockActions.clickedPause());
       expect(await result).toEqual(ClockActions.clockCommandFailure({ error }));
+    });
+  });
+
+  describe('loadExchanges$', () => {
+    const loaded = SessionActions.loadPlayerSuccess({ loaded: { playerId: 'p-a', tick: 1 } });
+
+    it('loads the exchanges once the player is loaded', async () => {
+      const exchanges = [
+        { id: 'exc-de', name: 'DE', regionId: 'europe' as const, open: 540, close: 1_050 },
+      ];
+      engine.query.mockReturnValue(of({ kind: 'exchanges' as const, exchanges }));
+      const result = firstValueFrom(effects.loadExchanges$);
+      actions$.next(loaded);
+      expect(await result).toEqual(ClockActions.retrievedExchanges({ exchanges }));
+      expect(engine.query).toHaveBeenCalledWith({ kind: 'exchanges' });
+    });
+
+    it('dispatches loadExchangesFailure when the query fails', async () => {
+      const error = new EngineCommandError('player-not-loaded');
+      engine.query.mockReturnValue(throwError(() => error));
+      const result = firstValueFrom(effects.loadExchanges$);
+      actions$.next(loaded);
+      expect(await result).toEqual(ClockActions.loadExchangesFailure({ error }));
     });
   });
 

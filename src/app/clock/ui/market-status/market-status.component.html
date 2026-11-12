@@ -1,0 +1,83 @@
+@let _compact = compact();
+
+<button
+  #origin
+  cdkOverlayOrigin
+  #overlayOrigin="cdkOverlayOrigin"
+  type="button"
+  class="flex min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-xs text-fg hover:bg-surface-raised lg:gap-3"
+  aria-haspopup="dialog"
+  data-testid="shell.header.markets"
+  [attr.aria-expanded]="expanded()"
+  (click)="onToggle()">
+  <span class="sr-only">{{ heading }}</span>
+  @for (region of regionViews(); track region.regionId) {
+    <span
+      class="flex items-center gap-1"
+      [attr.title]="region.statusText"
+      [attr.data-testid]="'shell.header.markets.' + region.regionId">
+      @if (region.status.open) {
+        <i appIcon="circle-fill" class="text-up"></i>
+      } @else {
+        <i appIcon="circle" class="text-fg-muted"></i>
+      }
+      @if (!_compact) {
+        <span aria-hidden="true" class="font-medium lg:hidden">{{ region.short }}</span>
+        <span aria-hidden="true" class="font-medium max-lg:hidden">{{ region.label }}</span>
+      }
+      <span class="sr-only">{{ region.statusText }}</span>
+    </span>
+  }
+</button>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="overlayOrigin"
+  [cdkConnectedOverlayOpen]="expanded()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayViewportMargin]="8"
+  [cdkConnectedOverlayPush]="true"
+  (overlayOutsideClick)="onOutsideClick($event)"
+  (detach)="onClose()">
+  <div
+    role="dialog"
+    cdkTrapFocus
+    class="flex w-80 max-w-full flex-col rounded-md border border-border bg-surface-raised text-sm text-fg shadow-lg"
+    data-testid="shell.header.exchanges"
+    [cdkTrapFocusAutoCapture]="true"
+    [attr.aria-label]="heading">
+    <div class="flex items-center justify-between border-b border-border py-1 pr-1 pl-3">
+      <h2 class="font-semibold">{{ heading }}</h2>
+      <button
+        appIconButton
+        type="button"
+        size="sm"
+        data-testid="shell.header.exchanges.close"
+        [label]="closeLabel"
+        (click)="onClose()">
+        <i appIcon="x-lg"></i>
+      </button>
+    </div>
+    <ul class="flex flex-col py-1">
+      @for (exchange of exchangeViews(); track exchange.id) {
+        <li
+          class="flex items-center gap-2 px-3 py-1.5"
+          [attr.data-testid]="'shell.header.exchanges.' + exchange.id">
+          @if (exchange.status.open) {
+            <i appIcon="circle-fill" class="text-xs text-up"></i>
+          } @else {
+            <i appIcon="circle" class="text-xs text-fg-muted"></i>
+          }
+          <span class="flex min-w-0 flex-1 flex-col">
+            <span class="truncate font-medium">{{ exchange.name }}</span>
+            <span class="text-xs text-fg-muted">{{ exchange.regionLabel }}</span>
+          </span>
+          <span class="flex flex-col items-end text-xs">
+            <span data-testid="shell.header.exchanges.state">{{ exchange.stateText }}</span>
+            <span class="text-fg-muted tabular-nums">{{ exchange.changeText }}</span>
+          </span>
+        </li>
+      }
+    </ul>
+  </div>
+</ng-template>

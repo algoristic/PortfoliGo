@@ -2,6 +2,16 @@
 @let sessionStatus = sessionFacade.status$ | async;
 @let catchUpRatio = sessionFacade.catchUpRatio$ | async;
 @let tick = clockFacade.tick$ | async;
+@let speed = clockFacade.speed$ | async;
+@let paused = clockFacade.paused$ | async;
+@let overloaded = clockFacade.overloaded$ | async;
+@let jumping = clockFacade.jumping$ | async;
+@let jumpTargetTick = clockFacade.jumpTargetTick$ | async;
+@let canFaster = clockFacade.canFaster$ | async;
+@let canSlower = clockFacade.canSlower$ | async;
+@let regionStatuses = clockFacade.regionStatuses$ | async;
+@let exchangeStatuses = clockFacade.exchangeStatuses$ | async;
+@let jumpRatio = sessionFacade.jumpRatio$ | async;
 @let isBlocked = sessionStatus !== 'ready';
 
 <!-- While the overlay covers the game, the game area is inert (TS §11.10). -->
@@ -19,13 +29,45 @@
       class="sticky top-0 z-20"
       [compact]="!isDesktop()"
       [activePath]="activeNavPath"
-      [tick]="tick"
-      (selectedPlayerMenuAction)="onSelectPlayerMenuAction($event)"></app-header>
+      (selectedPlayerMenuAction)="onSelectPlayerMenuAction($event)">
+      @if (!isDesktop()) {
+        <app-market-status
+          headerStatus
+          [compact]="true"
+          [regions]="regionStatuses ?? []"
+          [exchanges]="exchangeStatuses ?? []"></app-market-status>
+      }
+      <app-clock-controls
+        headerBar
+        [compact]="!isDesktop()"
+        [tick]="tick"
+        [speed]="speed"
+        [paused]="paused"
+        [overloaded]="overloaded ?? false"
+        [jumping]="jumping ?? false"
+        [jumpTargetTick]="jumpTargetTick"
+        [jumpRatio]="jumpRatio"
+        [canFaster]="canFaster ?? false"
+        [canSlower]="canSlower ?? false"
+        (clickedTogglePause)="clockFacade.togglePause()"
+        (selectedSpeed)="clockFacade.setSpeed($event)"
+        (clickedFaster)="clockFacade.faster()"
+        (clickedSlower)="clockFacade.slower()"
+        (clickedJump)="clockFacade.openJump()"
+        (clickedCancelJump)="clockFacade.cancelJump()"></app-clock-controls>
+      @if (isDesktop()) {
+        <app-market-status
+          headerBar
+          class="ml-auto"
+          [regions]="regionStatuses ?? []"
+          [exchanges]="exchangeStatuses ?? []"></app-market-status>
+      }
+    </app-header>
 
     <div class="flex flex-1">
       @if (isDesktop()) {
         <app-side-nav
-          class="sticky top-14 w-56 shrink-0 self-start"
+          class="sticky top-26 w-56 shrink-0 self-start"
           [items]="navItems"></app-side-nav>
       }
 

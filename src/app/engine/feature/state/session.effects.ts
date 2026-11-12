@@ -27,11 +27,13 @@ import { LocalStorageService } from '@app/persistence/data-access/local-storage/
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
 import * as SessionActions from './session.actions';
-import { GameRejection, LAST_TICK_VERSION } from './session.model';
+import { GameRejection } from './session.model';
 import * as SessionSelectors from './session.selectors';
-import { isEngineCommandError, lastTickOf, withLastTick } from './session.utils';
+import { isEngineCommandError } from './session.utils';
 
 import { EngineService } from '../../data-access/service/engine.service';
+import { lastTickOf, withLastTick } from '../../domain/last-tick-logic';
+import { LAST_TICK_VERSION } from '../../domain/models/last-tick.model';
 
 @Injectable()
 export class SessionEffects {

@@ -3,7 +3,7 @@ import { createAction, props } from '@ngrx/store';
 import { ClockShortcut } from '@app/clock/domain/models/clock-control.model';
 import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
-import { ClockPayload } from '@app/engine/data-access/service/engine-service.model';
+import { ClockPayload, ExchangeInfo } from '@app/engine/data-access/service/engine-service.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 
 export const clickedTogglePause = createAction('[Clock/Page] Clicked toggle pause');
@@ -19,6 +19,7 @@ export const pressedClockShortcut = createAction(
   '[Clock/Page] Pressed clock shortcut',
   props<{ shortcut: ClockShortcut }>(),
 );
+export const clickedJump = createAction('[Clock/Page] Clicked jump');
 export const submittedJump = createAction(
   '[Clock/Page] Submitted jump',
   props<{ target: JumpTarget }>(),
@@ -39,5 +40,13 @@ export const jumpToSuccess = createAction(
 );
 export const jumpToFailure = createAction(
   '[Clock/API] Jump to failure',
+  props<{ error: unknown }>(),
+);
+export const retrievedExchanges = createAction(
+  '[Clock/API] Retrieved exchanges',
+  props<{ exchanges: ExchangeInfo[] }>(),
+);
+export const loadExchangesFailure = createAction(
+  '[Clock/API] Load exchanges failure',
   props<{ error: unknown }>(),
 );

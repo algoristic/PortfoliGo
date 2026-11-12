@@ -1,96 +1,97 @@
-<header
-  class="flex h-14 items-center gap-3 border-b border-border bg-surface px-3 md:gap-4 md:px-4">
-  <a
-    routerLink="dashboard"
-    class="rounded text-base font-semibold text-accent"
-    data-testid="shell.header.home"
-    >PortfoliGo</a
-  >
+<header class="flex flex-col border-b border-border bg-surface">
+  <div class="flex h-14 items-center gap-3 px-3 md:gap-4 md:px-4">
+    <a
+      routerLink="dashboard"
+      class="shrink-0 rounded text-base font-semibold text-accent"
+      data-testid="shell.header.home"
+      >PortfoliGo</a
+    >
 
-  <div class="flex items-center gap-2 text-sm text-fg-muted" [attr.title]="clockLabel">
-    <i appIcon="clock"></i>
-    <span class="sr-only">{{ clockLabel }}</span>
-    <span class="tabular-nums" data-testid="shell.header.clock">{{ tick() | formatGameTime }}</span>
-  </div>
+    <ng-content select="[headerStatus]" />
 
-  @if (!compact()) {
-    <div class="flex items-center gap-2 text-sm">
-      <span class="text-fg-muted">{{ netWorthLabel }}</span>
-      <span class="font-semibold tabular-nums" data-testid="shell.header.net-worth">–</span>
-    </div>
-  }
-
-  <div class="ml-auto flex items-center gap-1">
     @if (!compact()) {
-      <label class="relative mr-2 block">
-        <span class="sr-only">{{ searchLabel }}</span>
-        <i
-          appIcon="search"
-          class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-muted"></i>
-        <input
-          type="search"
-          [disabled]="true"
-          class="h-9 w-56 rounded-md border border-border bg-bg pr-3 pl-9 text-sm text-fg placeholder:text-fg-muted disabled:cursor-not-allowed"
-          data-testid="shell.header.search"
-          [attr.placeholder]="searchLabel + ' …'" />
-      </label>
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-fg-muted">{{ netWorthLabel }}</span>
+        <span class="font-semibold tabular-nums" data-testid="shell.header.net-worth">–</span>
+      </div>
     }
 
-    <a
-      appIconButton
-      routerLink="notifications"
-      data-testid="shell.header.notifications"
-      [label]="notificationsLabel">
-      <i appIcon="bell"></i>
-    </a>
+    <div class="ml-auto flex items-center gap-1">
+      @if (!compact()) {
+        <label class="relative mr-2 block">
+          <span class="sr-only">{{ searchLabel }}</span>
+          <i
+            appIcon="search"
+            class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-muted"></i>
+          <input
+            type="search"
+            [disabled]="true"
+            class="h-9 w-56 rounded-md border border-border bg-bg pr-3 pl-9 text-sm text-fg placeholder:text-fg-muted disabled:cursor-not-allowed"
+            data-testid="shell.header.search"
+            [attr.placeholder]="searchLabel + ' …'" />
+        </label>
+      }
 
-    <div class="relative">
-      <button
+      <a
         appIconButton
-        ngMenuTrigger
-        type="button"
-        data-testid="shell.header.player-menu"
-        [label]="playerMenuLabel"
-        [menu]="playerMenu">
-        <i appIcon="person-circle"></i>
-      </button>
-      <div
-        ngMenu
-        appMenu
-        #playerMenu="ngMenu"
-        class="absolute top-full right-0 mt-1"
-        [attr.aria-label]="playerMenuLabel"
-        (itemSelected)="onSelectPlayerMenuAction($event)">
+        routerLink="notifications"
+        data-testid="shell.header.notifications"
+        [label]="notificationsLabel">
+        <i appIcon="bell"></i>
+      </a>
+
+      <div class="relative">
+        <button
+          appIconButton
+          ngMenuTrigger
+          type="button"
+          data-testid="shell.header.player-menu"
+          [label]="playerMenuLabel"
+          [menu]="playerMenu">
+          <i appIcon="person-circle"></i>
+        </button>
         <div
-          ngMenuItem
-          appMenuItem
-          value="switch-player"
-          data-testid="shell.header.player-menu.switch-player">
-          <i appIcon="people" class="text-fg-muted"></i>
-          <ng-container i18n="@@uiShell-header-switchPlayer">Spieler wechseln</ng-container>
-        </div>
-        <div
-          ngMenuItem
-          appMenuItem
-          value="settings"
-          [active]="isSettingsActive()"
-          data-testid="shell.header.player-menu.settings">
-          <i appIcon="gear" [class.text-fg-muted]="!isSettingsActive()"></i>
-          <span class="flex-1" i18n="@@uiShell-header-settings">Einstellungen</span>
-          @if (isSettingsActive()) {
-            <i appIcon="check2"></i>
-          }
-        </div>
-        <div
-          ngMenuItem
-          appMenuItem
-          value="export"
-          [disabled]="true"
-          data-testid="shell.header.player-menu.export">
-          <i appIcon="box-arrow-up"></i>
-          <ng-container i18n="@@uiShell-header-export">Exportieren</ng-container>
+          ngMenu
+          appMenu
+          #playerMenu="ngMenu"
+          class="absolute top-full right-0 mt-1"
+          [attr.aria-label]="playerMenuLabel"
+          (itemSelected)="onSelectPlayerMenuAction($event)">
+          <div
+            ngMenuItem
+            appMenuItem
+            value="switch-player"
+            data-testid="shell.header.player-menu.switch-player">
+            <i appIcon="people" class="text-fg-muted"></i>
+            <ng-container i18n="@@uiShell-header-switchPlayer">Spieler wechseln</ng-container>
+          </div>
+          <div
+            ngMenuItem
+            appMenuItem
+            value="settings"
+            [active]="isSettingsActive()"
+            data-testid="shell.header.player-menu.settings">
+            <i appIcon="gear" [class.text-fg-muted]="!isSettingsActive()"></i>
+            <span class="flex-1" i18n="@@uiShell-header-settings">Einstellungen</span>
+            @if (isSettingsActive()) {
+              <i appIcon="check2"></i>
+            }
+          </div>
+          <div
+            ngMenuItem
+            appMenuItem
+            value="export"
+            [disabled]="true"
+            data-testid="shell.header.player-menu.export">
+            <i appIcon="box-arrow-up"></i>
+            <ng-container i18n="@@uiShell-header-export">Exportieren</ng-container>
+          </div>
         </div>
       </div>
     </div>
+  </div>
+  <!-- Clock, speed, jump and the market status (AP 2.5). -->
+  <div class="flex h-12 min-w-0 items-center gap-2 border-t border-border px-3 md:gap-4 md:px-4">
+    <ng-content select="[headerBar]" />
   </div>
 </header>

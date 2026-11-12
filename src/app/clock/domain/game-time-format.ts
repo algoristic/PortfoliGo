@@ -13,6 +13,12 @@ const dateTimeFormat = new Intl.DateTimeFormat(LOCALE, {
   hour: '2-digit',
   minute: '2-digit',
 });
+const weekdayTimeFormat = new Intl.DateTimeFormat(LOCALE, {
+  timeZone: 'UTC',
+  weekday: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+});
 const dateFormat = new Intl.DateTimeFormat(LOCALE, {
   timeZone: 'UTC',
   day: '2-digit',
@@ -23,6 +29,11 @@ const dateFormat = new Intl.DateTimeFormat(LOCALE, {
 /** Weekday, date and time of a tick, e.g. `Mo., 01.04.2030, 09:30`. */
 export function formatGameTime(tick: Tick): string {
   return dateTimeFormat.format(utcMs(tick));
+}
+
+/** Weekday and time of a tick, e.g. `Mo., 09:30`; for times within the next days. */
+export function formatGameWeekdayTime(tick: Tick): string {
+  return weekdayTimeFormat.format(utcMs(tick));
 }
 
 /** Date of a tick, e.g. `01.04.2030`. */

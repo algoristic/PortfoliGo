@@ -1,5 +1,5 @@
 import { dateTimeToTick, GAME_START_TICK } from './calendar-logic';
-import { formatGameDate, formatGameTime } from './game-time-format';
+import { formatGameDate, formatGameTime, formatGameWeekdayTime } from './game-time-format';
 
 describe('game-time-format', () => {
   describe('formatGameTime', () => {
@@ -8,6 +8,17 @@ describe('game-time-format', () => {
       expect(
         formatGameTime(dateTimeToTick({ year: 2032, month: 2, day: 29, hour: 17, minute: 5 })),
       ).toBe('So., 29.02.2032, 17:05');
+    });
+  });
+
+  describe('formatGameWeekdayTime', () => {
+    it('formats weekday and time', () => {
+      expect(formatGameWeekdayTime(GAME_START_TICK)).toBe('Mo., 00:00');
+      expect(
+        formatGameWeekdayTime(
+          dateTimeToTick({ year: 2030, month: 4, day: 6, hour: 17, minute: 30 }),
+        ),
+      ).toBe('Sa., 17:30');
     });
   });
 

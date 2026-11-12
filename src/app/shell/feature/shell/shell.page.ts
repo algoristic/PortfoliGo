@@ -6,6 +6,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { map } from 'rxjs';
 
 import { ClockFacade } from '@app/clock/feature/state/clock.facade';
+import { ClockControlsComponent } from '@app/clock/ui/clock-controls/clock-controls.component';
+import { MarketStatusComponent } from '@app/clock/ui/market-status/market-status.component';
 import { SessionFacade } from '@app/engine/feature/state/session.facade';
 import { NavItem } from '@app/shared/ui/nav-link/nav-item.model';
 
@@ -27,6 +29,8 @@ import { ShellFacade } from '../state/shell.facade';
     SideNavComponent,
     BottomNavComponent,
     SessionOverlayComponent,
+    ClockControlsComponent,
+    MarketStatusComponent,
   ],
   templateUrl: './shell.page.html',
   host: { class: 'block' },

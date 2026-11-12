@@ -239,6 +239,21 @@ describe('PlayersService', () => {
       await firstValueFrom(service.deletePlayer(ben.id));
       expect(await firstValueFrom(service.getLastPlayerId())).toBeUndefined();
     });
+
+    it('forgets the saved tick of the deleted player, but not of another', async () => {
+      const anna = await create();
+      const ben = await create({ ...ANNA, name: 'Ben' });
+      localStorage.setItem(
+        'pgo.lastTick',
+        JSON.stringify({ v: 1, data: { [anna.id]: 5_389_921, [ben.id]: 5_389_950 } }),
+      );
+
+      await firstValueFrom(service.deletePlayer(anna.id));
+      expect(JSON.parse(localStorage.getItem('pgo.lastTick') ?? 'null')).toEqual({
+        v: 1,
+        data: { [ben.id]: 5_389_950 },
+      });
+    });
   });
 
   describe('loadPlayers', () => {

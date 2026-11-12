@@ -1,3 +1,4 @@
+import { Dialog } from '@angular/cdk/dialog';
 import { DOCUMENT, inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
@@ -26,17 +27,23 @@ import {
   ClockIntent,
   ClockShortcut,
 } from '@app/clock/domain/models/clock-control.model';
+import { TradingHours } from '@app/clock/domain/models/time.model';
 import { ClockPayload } from '@app/engine/data-access/service/engine-service.model';
 import { EngineService } from '@app/engine/data-access/service/engine.service';
+import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import * as SessionSelectors from '@app/engine/feature/state/session.selectors';
 import { isEngineCommandError } from '@app/engine/feature/state/session.utils';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
 import * as ClockActions from './clock.actions';
+
 import { CLOCK_SHORTCUTS_ENABLED } from './clock.config';
 import * as ClockSelectors from './clock.selectors';
 import { focusedElement } from './clock.utils';
+
+import { DialogJumpComponent } from '../dialog-jump/dialog-jump.component';
+import { JumpDialogData, JumpDialogResult } from '../dialog-jump/dialog-jump.model';
 
 @Injectable()
 export class ClockEffects {
@@ -46,6 +53,7 @@ export class ClockEffects {
   readonly #document = inject(DOCUMENT);
   readonly #shortcutsEnabled$ = inject(CLOCK_SHORTCUTS_ENABLED);
   readonly #toastService = inject(ToastService);
+  readonly #dialog = inject(Dialog);
 
   /** Ends what a loaded player started: leaving the game or entering another one. */
   readonly #ended$ = this.#actions$.pipe(
@@ -110,6 +118,47 @@ export class ClockEffects {
           map(({ targetTick }) => ClockActions.jumpToSuccess({ targetTick })),
           catchError((error: unknown) => of(ClockActions.jumpToFailure({ error }))),
         ),
+      ),
+    ),
+  );
+
+  /** The exchanges of the world for the market status (TS §3.3); queries pass while catching up. */
+  loadExchanges$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(SessionActions.loadPlayerSuccess),
+      switchMap(() =>
+        this.#engine.query({ kind: 'exchanges' }).pipe(
+          map(({ exchanges }) => ClockActions.retrievedExchanges({ exchanges })),
+          catchError((error: unknown) => of(ClockActions.loadExchangesFailure({ error }))),
+          takeUntil(this.#ended$),
+        ),
+      ),
+    ),
+  );
+
+  /** The jump dialog computes its targets from the game time when it opens (TS §3.7). */
+  openJumpDialog$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(ClockActions.clickedJump),
+      concatLatestFrom(() => [
+        this.#store.pipe(select(ClockSelectors.selectClock)),
+        this.#store.pipe(select(ClockSelectors.selectJumpSessions)),
+      ]),
+      map(([, clock, sessions]) => (clock === null || clock.jumping ? null : { clock, sessions })),
+      filter((open): open is { clock: ClockPayload; sessions: TradingHours[] } => open !== null),
+      exhaustMap(({ clock, sessions }) =>
+        this.#dialog
+          .open<JumpDialogResult, JumpDialogData>(DialogJumpComponent, {
+            data: { now: clock.tick, sessions },
+            ariaLabel: $localize`:@@featureClock-clockEffects-jumpDialogLabel:Vorspulen`,
+            width: '28rem',
+            maxWidth: 'calc(100vw - 2rem)',
+            maxHeight: 'calc(100dvh - 2rem)',
+          })
+          .closed.pipe(
+            filter((target): target is JumpTarget => target !== undefined),
+            map((target) => ClockActions.submittedJump({ target })),
+          ),
       ),
     ),
   );

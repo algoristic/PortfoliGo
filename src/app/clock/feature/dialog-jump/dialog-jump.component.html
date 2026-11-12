@@ -1,0 +1,122 @@
+@let _kind = jumpForm.kind();
+@let _date = jumpForm.date();
+@let isDate = _kind.value() === 'date';
+
+<form [formRoot]="jumpForm">
+  <app-dialog [heading]="heading" testId="clock.jump-dialog" (clickedClose)="decline()">
+    <fieldset class="flex flex-col gap-3">
+      <legend class="mb-3 text-fg-muted" i18n="@@featureClock-dialogJump-legend">
+        Die Spielzeit läuft im Schnelldurchlauf bis zum Ziel. Alle Vorgänge werden dabei wie im
+        normalen Spielverlauf verarbeitet.
+      </legend>
+
+      @if (nextOpenTick !== null) {
+        <label
+          class="flex cursor-pointer items-start gap-3 rounded-md border border-border p-3 has-checked:border-accent">
+          <input
+            type="radio"
+            value="next-open"
+            class="mt-1"
+            data-testid="clock.jump-dialog.next-open"
+            [formField]="jumpForm.kind" />
+          <span class="flex flex-col">
+            <span class="font-medium" i18n="@@featureClock-dialogJump-nextOpen"
+              >Nächste Börsenöffnung</span
+            >
+            <span
+              class="text-fg-muted tabular-nums"
+              data-testid="clock.jump-dialog.next-open-time"
+              >{{ nextOpenTick | formatGameTime }}</span
+            >
+          </span>
+        </label>
+      }
+
+      <label
+        class="flex cursor-pointer items-start gap-3 rounded-md border border-border p-3 has-checked:border-accent">
+        <input
+          type="radio"
+          value="next-month"
+          class="mt-1"
+          data-testid="clock.jump-dialog.next-month"
+          [formField]="jumpForm.kind" />
+        <span class="flex flex-col">
+          <span class="font-medium" i18n="@@featureClock-dialogJump-nextMonth"
+            >Nächster Monatsanfang</span
+          >
+          <span
+            class="text-fg-muted tabular-nums"
+            data-testid="clock.jump-dialog.next-month-time"
+            >{{ nextMonthTick | formatGameTime }}</span
+          >
+        </span>
+      </label>
+
+      <div
+        class="flex flex-col gap-3 rounded-md border border-border p-3 has-checked:border-accent">
+        <label class="flex cursor-pointer items-start gap-3">
+          <input
+            type="radio"
+            value="date"
+            class="mt-1"
+            data-testid="clock.jump-dialog.date-kind"
+            [formField]="jumpForm.kind" />
+          <span class="flex flex-col">
+            <span class="font-medium" i18n="@@featureClock-dialogJump-date">Datum</span>
+            <span class="text-fg-muted" i18n="@@featureClock-dialogJump-dateHint"
+              >höchstens ein Jahr voraus</span
+            >
+          </span>
+        </label>
+        <div class="flex flex-wrap gap-2 pl-7">
+          <label class="flex flex-col gap-1">
+            <span class="sr-only" i18n="@@featureClock-dialogJump-dateLabel">Datum</span>
+            <input
+              type="date"
+              class="h-10 rounded-md border border-border bg-surface px-3 text-fg tabular-nums disabled:opacity-50 aria-invalid:border-down"
+              aria-describedby="clock-jump-dialog-date-errors"
+              data-testid="clock.jump-dialog.date"
+              [attr.min]="minDate"
+              [attr.max]="maxDate"
+              [attr.aria-invalid]="isDate && _date.touched() && _date.invalid()"
+              [formField]="jumpForm.date" />
+          </label>
+          <label class="flex flex-col gap-1">
+            <span class="sr-only" i18n="@@featureClock-dialogJump-timeLabel">Uhrzeit</span>
+            <input
+              type="time"
+              class="h-10 rounded-md border border-border bg-surface px-3 text-fg tabular-nums disabled:opacity-50"
+              data-testid="clock.jump-dialog.time"
+              [formField]="jumpForm.time" />
+          </label>
+        </div>
+        <p id="clock-jump-dialog-date-errors" class="pl-7 text-down">
+          @if (isDate && _date.touched() && _date.invalid()) {
+            @for (error of _date.errors(); track error.kind) {
+              <span data-testid="clock.jump-dialog.date-error">{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+    </fieldset>
+
+    <ng-container dialogActions>
+      <button
+        appButton
+        type="button"
+        data-testid="clock.jump-dialog.decline"
+        i18n="@@featureClock-dialogJump-decline"
+        (click)="decline()">
+        Abbrechen
+      </button>
+      <button
+        appButton
+        type="submit"
+        variant="primary"
+        data-testid="clock.jump-dialog.submit"
+        i18n="@@featureClock-dialogJump-submit">
+        Vorspulen
+      </button>
+    </ng-container>
+  </app-dialog>
+</form>

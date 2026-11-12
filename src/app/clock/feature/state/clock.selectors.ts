@@ -1,6 +1,13 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 import { fasterSpeed, slowerSpeed } from '@app/clock/domain/clock-logic';
+import { exchangeStatus, regionStatus } from '@app/clock/domain/exchange-status-logic';
+import { TradingHours } from '@app/clock/domain/models/time.model';
+import {
+  ExchangeStatusEntry,
+  MARKET_STATUS_REGIONS,
+  RegionStatusEntry,
+} from '@app/clock/ui/market-status/market-status.model';
 
 import { CLOCK_FEATURE_KEY, ClockState } from './clock.reducer';
 
@@ -26,4 +33,48 @@ export const selectCanFaster = createSelector(
 export const selectCanSlower = createSelector(
   selectSpeed,
   (speed) => speed !== null && slowerSpeed(speed) !== speed,
+);
+
+export const selectExchanges = createSelector(selectState, (state) => state.exchanges);
+
+/** Trading hours of all exchanges, for the jump target `next-open` (TS §3.7). */
+export const selectJumpSessions = createSelector(selectExchanges, (exchanges) =>
+  (exchanges ?? []).map(({ open, close }): TradingHours => ({ open, close })),
+);
+
+/** Every exchange with its status at the current tick, grouped by region in display order. */
+export const selectExchangeStatuses = createSelector(
+  selectExchanges,
+  selectTick,
+  (exchanges, tick): ExchangeStatusEntry[] => {
+    if (exchanges === null || tick === null) {
+      return [];
+    }
+    return MARKET_STATUS_REGIONS.flatMap((regionId) =>
+      exchanges
+        .filter((exchange) => exchange.regionId === regionId)
+        .map(({ id, name, open, close }) => ({
+          id,
+          name,
+          regionId,
+          status: exchangeStatus({ open, close }, tick),
+        })),
+    );
+  },
+);
+
+/** The four region displays of the header (TS §3.3); regions without exchanges are left out. */
+export const selectRegionStatuses = createSelector(
+  selectExchanges,
+  selectTick,
+  (exchanges, tick): RegionStatusEntry[] => {
+    if (exchanges === null || tick === null) {
+      return [];
+    }
+    return MARKET_STATUS_REGIONS.flatMap((regionId) => {
+      const sessions = exchanges.filter((exchange) => exchange.regionId === regionId);
+      const status = regionStatus(sessions, tick);
+      return status === null ? [] : [{ regionId, status }];
+    });
+  },
 );

@@ -6,6 +6,8 @@ import type {
   RuntimeRecord,
   SnapshotRecord,
 } from '@app/engine/data-access/worker/indexed-db-engine-storage.model';
+import { withoutLastTick } from '@app/engine/domain/last-tick-logic';
+import { LAST_TICK_VERSION } from '@app/engine/domain/models/last-tick.model';
 import { LocalStorageService } from '@app/persistence/data-access/local-storage/local-storage.service';
 import { WORKER_STORES } from '@app/persistence/data-access/schema/idb-schema';
 import { openPortfoligoDb } from '@app/persistence/data-access/schema/open-database';
@@ -154,7 +156,7 @@ export class PlayersService {
   /**
    * Deletes the player with all its records in one transaction. It takes the player's Web Lock
    * first: while another tab runs the player, it fails with `player-locked` (TS §9.4). It also
-   * forgets the player as the last used one.
+   * forgets the player as the last used one and its entry in `pgo.lastTick` (TS §9.3).
    */
   deletePlayer(playerId: string): Observable<void> {
     return this.#task(async () => {
@@ -171,6 +173,7 @@ export class PlayersService {
       if ((await firstValueFrom(this.getLastPlayerId())) === playerId) {
         await firstValueFrom(this.#localStorage.remove('pgo.lastPlayerId'));
       }
+      await this.#forgetLastTick(playerId);
       this.#broadcast('deleted', playerId);
     });
   }
@@ -203,6 +206,26 @@ export class PlayersService {
   /** A shareable seed such as `kupfer-falke-731` (TS §4.1). */
   suggestSeed(): string {
     return generateSeed(this.#random);
+  }
+
+  /** A broken entry is dropped as well; failing localStorage does not fail the deletion. */
+  async #forgetLastTick(playerId: string): Promise<void> {
+    try {
+      const data = await firstValueFrom(
+        this.#localStorage.get<unknown>('pgo.lastTick', LAST_TICK_VERSION),
+      );
+      if (data !== undefined) {
+        await firstValueFrom(
+          this.#localStorage.set(
+            'pgo.lastTick',
+            LAST_TICK_VERSION,
+            withoutLastTick(data, playerId),
+          ),
+        );
+      }
+    } catch {
+      // The entry only gives a lower bound for loading (E-08); a deleted player is never loaded.
+    }
   }
 
   /** Storage work keeps the app unstable until it is done, so `whenStable()` covers it. */

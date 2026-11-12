@@ -1,7 +1,7 @@
 import { Action, createReducer, on } from '@ngrx/store';
 
 import { Tick } from '@app/clock/domain/models/time.model';
-import { ClockPayload } from '@app/engine/data-access/service/engine-service.model';
+import { ClockPayload, ExchangeInfo } from '@app/engine/data-access/service/engine-service.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 
 import * as ClockActions from './clock.actions';
@@ -13,10 +13,16 @@ export interface ClockState {
   clock: ClockPayload | null;
   /** Target of the running jump, from the reply to `jumpTo`. */
   jumpTargetTick: Tick | null;
+  /** Exchanges of the loaded player's world with their trading hours (TS §3.3); `null` until loaded. */
+  exchanges: ExchangeInfo[] | null;
   error?: unknown;
 }
 
-export const initialClockState: ClockState = { clock: null, jumpTargetTick: null };
+export const initialClockState: ClockState = {
+  clock: null,
+  jumpTargetTick: null,
+  exchanges: null,
+};
 
 const reducer = createReducer(
   initialClockState,
@@ -31,10 +37,16 @@ const reducer = createReducer(
       ? { ...state, jumpTargetTick: null }
       : state,
   ),
-  on(ClockActions.clockCommandFailure, ClockActions.jumpToFailure, (state, { error }) => ({
-    ...state,
-    error,
-  })),
+  on(ClockActions.retrievedExchanges, (state, { exchanges }) => ({ ...state, exchanges })),
+  on(
+    ClockActions.clockCommandFailure,
+    ClockActions.jumpToFailure,
+    ClockActions.loadExchangesFailure,
+    (state, { error }) => ({
+      ...state,
+      error,
+    }),
+  ),
 );
 
 export function clockReducer(state: ClockState | undefined, action: Action): ClockState {

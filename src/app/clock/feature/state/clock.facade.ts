@@ -21,6 +21,8 @@ export class ClockFacade {
   jumpTargetTick$ = this.#store.pipe(select(ClockSelectors.selectJumpTargetTick));
   canFaster$ = this.#store.pipe(select(ClockSelectors.selectCanFaster));
   canSlower$ = this.#store.pipe(select(ClockSelectors.selectCanSlower));
+  regionStatuses$ = this.#store.pipe(select(ClockSelectors.selectRegionStatuses));
+  exchangeStatuses$ = this.#store.pipe(select(ClockSelectors.selectExchangeStatuses));
 
   togglePause(): void {
     this.#store.dispatch(ClockActions.clickedTogglePause());
@@ -44,6 +46,10 @@ export class ClockFacade {
 
   slower(): void {
     this.#store.dispatch(ClockActions.clickedSlower());
+  }
+
+  openJump(): void {
+    this.#store.dispatch(ClockActions.clickedJump());
   }
 
   jumpTo(target: JumpTarget): void {
