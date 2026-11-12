@@ -128,6 +128,8 @@ module.exports = tseslint.config(
     // Determinism rules for simulation code (TS §4.4, §4.5); the UI may use Math.* freely.
     files: [
       'src/app/{simulation,world,market,clock}/{domain,util}/**/*.ts',
+      // The player state must be computed the same everywhere, or a replay diverges (TS §4.4).
+      'src/app/engine/domain/**/*.ts',
       // Money and the price grid feed the simulation (rounding of dividends, quotes).
       'src/app/shared/domain/**/*.ts',
     ],

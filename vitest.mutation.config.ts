@@ -20,6 +20,9 @@ const RULE_SPECS = [
   'src/app/market/domain/idio-path-logic.spec.ts',
   'src/app/market/domain/market-calendar.spec.ts',
   'src/app/lab/domain/calibration-targets.spec.ts',
+  'src/app/engine/domain/scheduler.spec.ts',
+  'src/app/engine/domain/game-engine.spec.ts',
+  'src/app/engine/domain/engine-properties.spec.ts',
 ];
 
 export default mergeConfig(
