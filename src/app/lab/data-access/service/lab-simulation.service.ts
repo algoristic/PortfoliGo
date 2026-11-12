@@ -7,6 +7,7 @@ import { CandleResolution } from '@app/market/domain/models/candle.model';
 
 import { LAB_WORKER_FACTORY } from './lab-simulation-service.config';
 import {
+  ComputedChecksums,
   ComputedStatistics,
   GeneratedWorld,
   LabWorkerPort,
@@ -48,6 +49,11 @@ export class LabSimulationService {
 
   statistics(start: StatisticsStart): Observable<ComputedStatistics> {
     return this.#request((id) => ({ id, type: 'statistics', start }));
+  }
+
+  /** Golden-master checksums computed in the worker of this browser (self-test, TS §14.2). */
+  goldenChecksums(): Observable<ComputedChecksums> {
+    return this.#request((id) => ({ id, type: 'golden' }));
   }
 
   candles(

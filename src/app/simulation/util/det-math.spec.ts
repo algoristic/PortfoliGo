@@ -1,5 +1,6 @@
+import fc from 'fast-check';
+
 import { detExp, detLog } from './det-math';
-import { uniform } from './distributions';
 import { createStream } from './random-stream';
 import { deriveSeedKey } from './seed';
 
@@ -15,6 +16,15 @@ function ordinal(x: number): bigint {
 function ulpDistance(a: number, b: number): bigint {
   const distance = ordinal(a) - ordinal(b);
   return distance < 0n ? -distance : distance;
+}
+
+/** `actual` equals `expected` up to 1 ulp; NaN only where the oracle gives NaN. */
+function expectWithinOneUlp(actual: number, expected: number): void {
+  if (Number.isNaN(expected)) {
+    expect(actual).toBeNaN();
+  } else {
+    expect(ulpDistance(actual, expected)).toBeLessThanOrEqual(1n);
+  }
 }
 
 function maxUlpDistance(
@@ -66,6 +76,14 @@ describe('det-math', () => {
         expect(maxUlpDistance(set, detExp, Math.exp)).toBeLessThanOrEqual(1n);
       }
     });
+
+    it('stays within 1 ulp of Math.exp for any double', () => {
+      // V8's Math.exp is a port of the same fdlibm routine, so it serves as an independent oracle.
+      fc.assert(
+        fc.property(fc.double(), (x) => expectWithinOneUlp(detExp(x), Math.exp(x))),
+        { numRuns: 2_000 },
+      );
+    });
   });
 
   describe('detLog', () => {
@@ -93,12 +111,21 @@ describe('det-math', () => {
       }
     });
 
+    it('stays within 1 ulp of Math.log for any double', () => {
+      fc.assert(
+        fc.property(fc.double(), (x) => expectWithinOneUlp(detLog(x), Math.log(x))),
+        { numRuns: 2_000 },
+      );
+    });
+
     it('inverts detExp up to rounding', () => {
-      const rng = createStream(seedKey, 'log/roundtrip');
-      for (let i = 0; i < 1000; i++) {
-        const x = uniform(rng, -50, 50);
-        expect(detLog(detExp(x))).toBeCloseTo(x, 12);
-      }
+      fc.assert(
+        fc.property(fc.double({ min: -700, max: 700, noNaN: true }), (x) => {
+          expect(Math.abs(detLog(detExp(x)) - x)).toBeLessThanOrEqual(
+            1e-13 * Math.max(1, Math.abs(x)),
+          );
+        }),
+      );
     });
   });
 });

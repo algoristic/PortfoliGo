@@ -1,10 +1,15 @@
+import fc from 'fast-check';
+
+import { PRICE_CHART_TYPES } from '@app/charts/ui/price-chart/price-chart.model';
 import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
 import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
 import { CANDLE_RESOLUTIONS } from '@app/market/domain/models/candle.model';
 
+import { CandleRequest } from './lab.model';
 import {
   candleRequest,
   DEFAULT_RESOLUTIONS,
+  HISTORY_CHUNK_DAYS,
   historyRequest,
   isSameCandleRequest,
   mergeChartOptions,
@@ -15,8 +20,47 @@ import {
 
 import { CHART_RANGES, LabChartOptions } from '../../ui/series-chart/series-chart.model';
 
+/** Valid chart options: the resolution is one that the range allows. */
+const arbOptions: fc.Arbitrary<LabChartOptions> = fc.constantFrom(...CHART_RANGES).chain((range) =>
+  fc.record({
+    range: fc.constant(range),
+    resolution: fc.constantFrom(...RANGE_RESOLUTIONS[range]),
+    chartType: fc.constantFrom(...PRICE_CHART_TYPES),
+  }),
+);
+
+/** Any change, also to resolutions that the (new) range does not allow. */
+const arbChange: fc.Arbitrary<Partial<LabChartOptions>> = fc.record(
+  {
+    range: fc.constantFrom(...CHART_RANGES),
+    resolution: fc.constantFrom(...CANDLE_RESOLUTIONS),
+    chartType: fc.constantFrom(...PRICE_CHART_TYPES),
+  },
+  { requiredKeys: [] },
+);
+
 describe('lab utils', () => {
   describe('mergeChartOptions', () => {
+    it('always yields a resolution that the range allows', () => {
+      fc.assert(
+        fc.property(arbOptions, arbChange, (options, change) => {
+          const merged = mergeChartOptions(options, change);
+          expect(RANGE_RESOLUTIONS[merged.range]).toContain(merged.resolution);
+          expect(merged.range).toBe(change.range ?? options.range);
+          expect(merged.chartType).toBe(change.chartType ?? options.chartType);
+        }),
+      );
+    });
+
+    it('returns the merged options themselves when the same change comes again', () => {
+      fc.assert(
+        fc.property(arbOptions, arbChange, (options, change) => {
+          const merged = mergeChartOptions(options, change);
+          expect(mergeChartOptions(merged, change)).toBe(merged);
+        }),
+      );
+    });
+
     it('keeps a resolution that the range allows', () => {
       expect(
         mergeChartOptions({ range: '1y', resolution: '1d', chartType: 'line' }, { range: '3m' }),
@@ -102,6 +146,34 @@ describe('lab utils', () => {
     it('stops at the epoch', () => {
       expect(historyRequest(3, options, TICKS_PER_DAY)?.fromTick).toBe(0);
       expect(historyRequest(3, options, 0)).toBeNull();
+    });
+
+    it('loads contiguous blocks of at most one chunk back to the epoch', () => {
+      const ranges = CHART_RANGES.filter((range) => range !== 'max');
+      fc.assert(
+        fc.property(
+          fc.constantFrom(...ranges),
+          fc.integer({ min: 0, max: GAME_START_TICK + 20 * 365 * TICKS_PER_DAY }),
+          (range, start) => {
+            const chunk = {
+              range,
+              resolution: DEFAULT_RESOLUTIONS[range],
+              chartType: 'line' as const,
+            };
+            const maxLength = HISTORY_CHUNK_DAYS[range] * TICKS_PER_DAY;
+            let historyFrom = start;
+            let block: CandleRequest | null;
+            while ((block = historyRequest(1, chunk, historyFrom)) !== null) {
+              expect(block.toTick).toBe(historyFrom - 1);
+              expect(block.fromTick).toBeGreaterThanOrEqual(0);
+              expect(block.toTick - block.fromTick).toBeLessThanOrEqual(maxLength);
+              historyFrom = block.fromTick;
+            }
+            expect(historyFrom).toBe(0);
+          },
+        ),
+        { numRuns: 30 },
+      );
     });
   });
 

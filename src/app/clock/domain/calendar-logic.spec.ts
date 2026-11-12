@@ -1,3 +1,5 @@
+import fc from 'fast-check';
+
 import {
   dateTimeToTick,
   dayIndex,
@@ -17,7 +19,16 @@ import {
   tickToDateTime,
   weekday,
 } from './calendar-logic';
-import { TICKS_PER_DAY, TICKS_PER_HOUR } from './models/time.model';
+import { TICKS_PER_DAY, TICKS_PER_HOUR, TICKS_PER_MINUTE } from './models/time.model';
+
+import { arbTick } from '../../../testing/arbitraries';
+
+const EPOCH_MS = Date.UTC(2020, 0, 1);
+
+/** Independent oracle: the UTC calendar of `Date` (TS §3.1). */
+function utcDate(tick: number): Date {
+  return new Date(EPOCH_MS + (tick / TICKS_PER_MINUTE) * 60_000);
+}
 
 describe('calendar-logic', () => {
   describe('GAME_START_TICK', () => {
@@ -68,10 +79,9 @@ describe('calendar-logic', () => {
     });
 
     it('matches the UTC calendar of Date for every day from 2020 to 2100', () => {
-      const epochMs = Date.UTC(2020, 0, 1);
       const end = dateTimeToTick({ year: 2101, month: 1, day: 1 });
       for (let tick = 0; tick < end; tick += TICKS_PER_DAY) {
-        const date = new Date(epochMs + (tick / TICKS_PER_DAY) * 86_400_000);
+        const date = utcDate(tick);
         expect(tickToDateTime(tick)).toEqual({
           year: date.getUTCFullYear(),
           month: date.getUTCMonth() + 1,
@@ -81,6 +91,24 @@ describe('calendar-logic', () => {
         });
         expect(weekday(tick)).toBe((date.getUTCDay() + 6) % 7);
       }
+    });
+
+    it('matches the UTC calendar of Date and round-trips at any minute', () => {
+      fc.assert(
+        fc.property(arbTick(), (tick) => {
+          const date = utcDate(tick);
+          const dateTime = tickToDateTime(tick);
+          expect(dateTime).toEqual({
+            year: date.getUTCFullYear(),
+            month: date.getUTCMonth() + 1,
+            day: date.getUTCDate(),
+            hour: date.getUTCHours(),
+            minute: date.getUTCMinutes(),
+          });
+          expect(dateTimeToTick(dateTime)).toBe(tick);
+          expect(isWeekend(tick)).toBe(date.getUTCDay() === 0 || date.getUTCDay() === 6);
+        }),
+      );
     });
   });
 
@@ -97,6 +125,30 @@ describe('calendar-logic', () => {
         dateTimeToTick({ year: 2100, month: 3, day: 1 }) -
           dateTimeToTick({ year: 2100, month: 2, day: 28 }),
       ).toBe(TICKS_PER_DAY);
+    });
+
+    // Valid input: integer year, month 1–12, day 1–length of the month, hour 0–23, minute 0–59.
+    it.each([
+      ['a fractional year', { year: 2030.5, month: 1, day: 1 }],
+      ['a fractional month', { year: 2030, month: 1.5, day: 1 }],
+      ['month 0', { year: 2030, month: 0, day: 1 }],
+      ['day 0', { year: 2030, month: 1, day: 0 }],
+      ['a fractional day', { year: 2030, month: 1, day: 1.5 }],
+      ['hour −1', { year: 2030, month: 1, day: 1, hour: -1 }],
+      ['a fractional hour', { year: 2030, month: 1, day: 1, hour: 1.5 }],
+      ['minute −1', { year: 2030, month: 1, day: 1, minute: -1 }],
+      ['a fractional minute', { year: 2030, month: 1, day: 1, minute: 0.5 }],
+    ])('throws for %s', (_case, dateTime) => {
+      expect(() => dateTimeToTick(dateTime)).toThrow(RangeError);
+    });
+
+    it('accepts the first and last minute of a month', () => {
+      expect(() =>
+        dateTimeToTick({ year: 2030, month: 1, day: 1, hour: 0, minute: 0 }),
+      ).not.toThrow();
+      expect(() =>
+        dateTimeToTick({ year: 2030, month: 12, day: 31, hour: 23, minute: 59 }),
+      ).not.toThrow();
     });
 
     it('throws for dates that do not exist', () => {
@@ -116,6 +168,17 @@ describe('calendar-logic', () => {
       expect(dayIndex(tick)).toBe(3743);
       expect(startOfDay(tick)).toBe(GAME_START_TICK);
       expect(minuteOfDay(tick)).toBe(17 * 60 + 29);
+    });
+
+    it('recombine to the tick at any minute', () => {
+      fc.assert(
+        fc.property(arbTick(), (tick) => {
+          expect(startOfDay(tick) + minuteOfDay(tick)).toBe(tick);
+          expect(startOfDay(tick)).toBe(dayIndex(tick) * TICKS_PER_DAY);
+          expect(minuteOfDay(tick)).toBeGreaterThanOrEqual(0);
+          expect(minuteOfDay(tick)).toBeLessThan(TICKS_PER_DAY);
+        }),
+      );
     });
   });
 
@@ -189,36 +252,65 @@ describe('calendar-logic', () => {
     it('keeps a month start unchanged', () => {
       expect(startOfMonth(GAME_START_TICK)).toBe(GAME_START_TICK);
     });
+
+    it('enclose any minute in its month and year', () => {
+      fc.assert(
+        fc.property(arbTick(), (tick) => {
+          const { year, month } = tickToDateTime(tick);
+          const monthStart = dateTimeToTick({ year, month, day: 1 });
+          expect(startOfMonth(tick)).toBe(monthStart);
+          expect(startOfNextMonth(tick)).toBe(
+            monthStart + daysInMonth(year, month) * TICKS_PER_DAY,
+          );
+          expect(startOfYear(tick)).toBe(dateTimeToTick({ year, month: 1, day: 1 }));
+          expect(startOfNextYear(tick)).toBe(dateTimeToTick({ year: year + 1, month: 1, day: 1 }));
+          expect(startOfMonth(tick) <= tick && tick < startOfNextMonth(tick)).toBe(true);
+        }),
+      );
+    });
   });
 
   describe('bank working days', () => {
+    // Bank working days are Monday to Friday; public holidays follow in stage 2 (TS §3.1).
     it('treats Monday to Friday as bank working days', () => {
       expect(isBankWorkingDay(GAME_START_TICK)).toBe(true);
       expect(isBankWorkingDay(dateTimeToTick({ year: 2030, month: 4, day: 6 }))).toBe(false);
     });
 
-    it('returns the first day of a month starting on a weekday', () => {
-      expect(firstBankWorkingDay(2030, 4)).toBe(GAME_START_TICK);
+    it.each([
+      // 01.04.2030 is a Monday, 01.06.2030 a Saturday.
+      [2030, 4, 1],
+      [2030, 6, 3],
+    ])('starts %i-%i on day %i', (year, month, day) => {
+      expect(firstBankWorkingDay(year, month)).toBe(dateTimeToTick({ year, month, day }));
     });
 
-    it('skips a weekend at the start of the month', () => {
-      // 01.06.2030 is a Saturday.
-      expect(firstBankWorkingDay(2030, 6)).toBe(dateTimeToTick({ year: 2030, month: 6, day: 3 }));
+    it.each([
+      // 30.04.2030 is a Tuesday, 31.08.2030 a Saturday, 29.02.2032 a Sunday.
+      [2030, 4, 30],
+      [2030, 8, 30],
+      [2032, 2, 27],
+    ])('ends %i-%i on day %i', (year, month, day) => {
+      expect(lastBankWorkingDay(year, month)).toBe(dateTimeToTick({ year, month, day }));
     });
 
-    it('returns the last day of a month ending on a weekday', () => {
-      // 30.04.2030 is a Tuesday.
-      expect(lastBankWorkingDay(2030, 4)).toBe(dateTimeToTick({ year: 2030, month: 4, day: 30 }));
-    });
-
-    it('skips a weekend at the end of the month', () => {
-      // 31.08.2030 is a Saturday.
-      expect(lastBankWorkingDay(2030, 8)).toBe(dateTimeToTick({ year: 2030, month: 8, day: 30 }));
-    });
-
-    it('handles February in a leap year', () => {
-      // 29.02.2032 is a Sunday.
-      expect(lastBankWorkingDay(2032, 2)).toBe(dateTimeToTick({ year: 2032, month: 2, day: 27 }));
+    it('finds the first and last weekday of any month', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 2020, max: 2100 }),
+          fc.integer({ min: 1, max: 12 }),
+          (year, month) => {
+            const weekdays = Array.from({ length: daysInMonth(year, month) }, (_, i) =>
+              dateTimeToTick({ year, month, day: i + 1 }),
+            ).filter((tick) => {
+              const utcDay = utcDate(tick).getUTCDay();
+              return utcDay !== 0 && utcDay !== 6;
+            });
+            expect(firstBankWorkingDay(year, month)).toBe(weekdays[0]);
+            expect(lastBankWorkingDay(year, month)).toBe(weekdays[weekdays.length - 1]);
+          },
+        ),
+      );
     });
   });
 });

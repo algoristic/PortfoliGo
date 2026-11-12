@@ -63,6 +63,8 @@ nvm use   # Node 22.22.3 laut .nvmrc – Angular CLI 22 verlangt ≥ 22.22.3
 npm ci    # nur nötig, wenn sich Abhängigkeiten geändert haben
 ```
 
+Für die Systemtests einmal je Rechner: `npx playwright install chromium`. Lokal laufen nur die Chromium-Projekte; Firefox und WebKit prüft die CI. Wer sie lokal braucht: `npx playwright install firefox webkit` und unter Linux und WSL `sudo npx playwright install-deps` (TS §14.1).
+
 Für Tests auf dem Smartphone im lokalen Netz: `ng serve --ssl --host 0.0.0.0` – mehrere Browser-APIs funktionieren nur über HTTPS (TS §1.3).
 
 ### 2.2 Session starten
@@ -78,18 +80,20 @@ Claude liest dann `CLAUDE.md`, das AP samt Abhängigkeiten und Änderungsprotoko
 1. Prüfen, ob alle Abhängigkeiten des AP den Status „fertig" haben.
 2. Betroffene Entscheidungen klären: Steht eine, die das AP braucht, noch auf „Vorschlag", fragt Claude nach, bevor darauf aufgebaut wird (§3 nennt für jede Entscheidung das AP, vor dem sie fallen muss).
 3. In kleinen, testbaren Schritten umsetzen.
-4. Prüfen: `ng lint --fix`, `ng test --watch=false`, `ng build`; bei geänderten Texten `ng extract-i18n`; Formatierung mit Prettier.
+4. Prüfen: während der Arbeit `npm test` und die betroffenen Suiten, zum Abschluss `npm run verify` (Format, Lint, Typen, alle Testsuiten, Mutationstests, Build mit Bundle-Budget, Systemtests; TS §14.4); bei geänderten Texten `ng extract-i18n`.
 5. Status (§4, Tabelle und Abhängigkeitsgraph) und Änderungsprotokoll (§7) aktualisieren. Weicht die Umsetzung von der Spezifikation ab, wird die Spezifikation angepasst.
 6. Commits nur auf ausdrückliche Anweisung.
 
 ### 2.4 Definition of Done (für jedes AP)
 
 - Die Abnahmekriterien des AP sind erfüllt.
-- `ng build`, `ng lint` und `ng test --watch=false` laufen fehlerfrei.
-- Neue Logik ist getestet; neue Seiten und ui-Komponenten mit eigenem Verhalten haben Seiten- bzw. Komponententests, die schon beim Planen des AP feststehen (`CLAUDE.md` §10). Simulationscode hält die Determinismus-Regeln ein (TS §4.5).
+- `npm run verify` läuft fehlerfrei.
+- Jedes Abnahmekriterium ist durch einen benannten automatisierten Test abgedeckt oder als manuelle Prüfung im AP dokumentiert. Die Tests stehen schon beim Planen fest: Beispieltabellen (in der Spezifikation), Invarianten, Engine-Szenarien je Abnahmekriterium, Seiten- und Komponententests, Systemtest-Journeys (`CLAUDE.md` §10, TS §14.1). Erwartungswerte stammen aus unabhängigen Orakeln. Simulationscode hält die Determinismus-Regeln ein (TS §4.5).
+- Neuer Regelcode ist in den Mutationstests erfasst; überlebende Mutanten sind durch Tests getötet oder im AP als äquivalent begründet.
+- Berührt das AP ein Budget aus TS §14.3, ist es lokal mit der Perf-Suite gemessen und in TS §14.3 eingetragen.
 - Neue oder geänderte Texte haben i18n-IDs, `messages.xlf` ist aktualisiert.
 - Statusübersicht und Änderungsprotokoll sind gepflegt.
-- **(Vorschlag, E-25, ab AP 2.3)** Hat sich ein Golden Master geändert, ist `SIM_VERSION` erhöht; hat sich die Struktur des gespeicherten Zustands ohne Migration geändert, `schemaVersion` (TS §15).
+- Hat sich eine Golden-Master-Prüfsumme (`market/domain/golden-master.ts`) geändert, steht das im Änderungsprotokoll. **(Vorschlag, E-25, ab AP 2.3)** Dann ist auch `SIM_VERSION` erhöht; hat sich die Struktur des gespeicherten Zustands ohne Migration geändert, `schemaVersion` (TS §15).
 
 ### 2.5 Schnitt der Arbeitspakete
 
@@ -131,6 +135,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 0.2  | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig | 0.1            |
 | 0.3  | App-Bootstrap und Infrastruktur                  | fertig | 0.1            |
 | 0.4  | App-Shell und UI-Grundkomponenten                | fertig | 0.2, 0.3       |
+| 0.5  | Testkonzept und Testinfrastruktur                | fertig | 0.4, 1.8a      |
 | 1.1  | Deterministischer Zufall und Mathematik          | fertig | 0.1            |
 | 1.2  | Spielkalender und Zeitmodell                     | fertig | 0.1            |
 | 1.3  | Weltgenerierung: Taxonomie, Unternehmen, Banken  | fertig | 1.1            |
@@ -185,6 +190,7 @@ flowchart TD
     AP0_2["0.2 Design-System-Grundlage (Tailwind v4, Tokens)"]
     AP0_3["0.3 App-Bootstrap und Infrastruktur"]
     AP0_4["0.4 App-Shell und UI-Grundkomponenten"]
+    AP0_5["0.5 Testkonzept und Testinfrastruktur"]
   end
   subgraph M1["M1 – Simulationskern"]
     direction TB
@@ -259,6 +265,8 @@ flowchart TD
   AP1_6a --> AP1_6b
   AP1_6b --> AP1_7
   AP0_4 --> AP1_7
+  AP0_4 --> AP0_5
+  AP1_8a --> AP0_5
   AP1_7 --> AP1_8a
   AP1_8a --> AP1_8b
   AP1_8b --> AP1_9
@@ -310,7 +318,7 @@ flowchart TD
   AP3_5 --> AP6_6
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP0_1,AP0_2,AP0_3,AP0_4,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a done
+  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a done
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6
@@ -372,6 +380,22 @@ flowchart TD
 - **Abnahme:** leere App im Trading-Look auf Desktop und Smartphone navigierbar, auch per Tastatur; i18n-IDs vergeben, `ng extract-i18n` ausgeführt.
 - **Referenzen:** PS §10; US-UI-03, US-UI-04; TS §11.4, §11.6; E-15, E-16
 - **Abhängig von:** AP 0.2, AP 0.3
+
+#### AP 0.5 – Testkonzept und Testinfrastruktur
+
+Querschnitts-AP auf Auftrag des Product Owners (12.11.2026): neues Testkonzept statt der bisherigen Regeln, sofort auf den Bestand angewendet.
+
+- **Umfang:**
+  - Konzept in TS §4.6 (Determinismus-Vertrag) und §14 (Teststrategie, Budgets, CI), Schreibregeln in `CLAUDE.md` §10; Entscheidung E-29.
+  - Runner aufgeteilt: `logic` (Vitest unter Node für `domain` und `util`), `angular` (`ng test` unter jsdom), `calibration`, `perf`; `npm run typecheck` und `npm run verify`.
+  - Werkzeuge: fast-check, Stryker (`stryker.config.mjs`, `vitest.mutation.config.ts`), Playwright mit axe (`playwright.config.ts`, `e2e/`), Bundle-Budget (`tools/check-bundle-budget.mjs`); Lint-Regeln für Specs (kein `.only`, keine Wanduhr außerhalb der Perf-Suite, keine Format- und State-Helfer als Orakel in Seitentests).
+  - Golden Master als Modul `market/domain/golden-master.ts` mit sechs Prüfsummen (neu: Marktzustand zum Spielstart); Selbsttest im Labor vorgezogen aus AP 1.8b.
+  - Fixtures `goldenYear()`, Mini-Welt, Helfer in `src/testing`.
+  - Alle 74 Spec-Dateien umgestellt: Erwartungen aus unabhängigen Orakeln, Eigenschaften neben den Beispielen, Toleranzen in Standardfehlern, statistische Tests in die Kalibrierungs-Suite, Zeitmessungen in die Perf-Suite; Tests ohne Mehrwert gelöscht.
+  - CI mit allen Prüfungen als Gate vor dem Deployment (TS §14.4).
+- **Abnahme:** `npm run verify` lokal grün (Systemtests in den Chromium-Projekten), Firefox und WebKit in der CI; die Golden-Master-Konstanten sind unverändert reproduziert; der Selbsttest ergibt in Chromium und Firefox dieselben Prüfsummen wie Node.
+- **Referenzen:** TS §4.6, §14; `CLAUDE.md` §10; E-29
+- **Abhängig von:** AP 0.4, AP 1.8a
 
 ### M1 – Simulationskern
 
@@ -462,16 +486,16 @@ AP 1.8 wurde nach §2.5 geteilt (11.11.2026).
 
 #### AP 1.8b – Labor: Intraday, Langzeit, Selbsttest
 
-- **Umfang:** Intraday-Statistik (Minutenvolatilität, Tagesspanne, Tagesprofil) im Vergleich zur Referenz-Minutensimulation aus AP 1.5 und Durchsatz der Minutenverläufe; Langzeit-Kennzahlen über 50 und 100 Spieljahre (Konzentration des Weltindex, Anteil der Kurse unter 1 € und an der Kursuntergrenze, Höchstkurse, Indexvolatilität in rollierenden Fenstern; E-22), der Overnight-Anteil der Varianz von Indizes und Einzelaktien (E-24) und ein Selbsttest, der die Golden-Master-Prüfsummen im Browser und im echten Worker rechnet (TS §4.6).
-- **Abnahme:** Die Statistikansicht zeigt auch die übrigen Größen aus TS §6.9 (Status „AP 1.8b“ entfällt). Der Selbsttest zeigt in Chrome und Firefox die eingecheckten Prüfsummen (Safari unter iOS spätestens in AP 6.6).
-- **Vormerkungen** (aus AP 1.8a): Messvorschrift für Tagesprofil, Overnight-Anteil und Langzeit-Kennzahlen steht in TS §6.9. Die Golden-Master-Konstanten liegen bisher nur in den Specs (`world-generator.spec.ts`, `market-step.spec.ts`, `price-source.spec.ts`, `index-curve.spec.ts`, `etf-curve.spec.ts`) und müssen für den Selbsttest in Module außerhalb der Specs. `ReferenceSimulation` nutzt nichts Node-spezifisches und läuft im Worker. Die Statistik rechnet die Tagesschritte aus den Monatsbeginn-Zuständen nach (rund 45 ms je Spieljahr); für den Langzeitlauf die Stichprobe besser schon beim Simulieren sammeln. Aus der Prüfung vom 12.11.2026: Rendite, Volatilität und Dividendenrendite des Weltindex zusätzlich in rollierenden Fenstern (10 und 30 Jahre) und über mehrere Seeds zeigen, weil die Messung über 110 Jahre von der festen Indexzusammensetzung verzerrt ist (TS §6.9, „Einordnung der Startwerte“).
+- **Umfang:** Intraday-Statistik (Minutenvolatilität, Tagesspanne, Tagesprofil) im Vergleich zur Referenz-Minutensimulation aus AP 1.5 und Durchsatz der Minutenverläufe; Langzeit-Kennzahlen über 50 und 100 Spieljahre (Konzentration des Weltindex, Anteil der Kurse unter 1 € und an der Kursuntergrenze, Höchstkurse, Indexvolatilität in rollierenden Fenstern; E-22), der Overnight-Anteil der Varianz von Indizes und Einzelaktien (E-24); die Referenz-Simulation läuft im Worker. Der Selbsttest der Golden-Master-Prüfsummen besteht seit AP 0.5 (TS §14.2).
+- **Abnahme:** Die Statistikansicht zeigt auch die übrigen Größen aus TS §6.9 (Status „AP 1.8b“ entfällt). Der Systemtest des Selbsttests (J11) bleibt in Chromium, Firefox und WebKit grün; neue Intraday- und Langzeitwerte prüft der Seitentest des Labors mit `LabSimulation` als Orakel.
+- **Vormerkungen** (aus AP 1.8a): Messvorschrift für Tagesprofil, Overnight-Anteil und Langzeit-Kennzahlen steht in TS §6.9. Die Golden-Master-Konstanten liegen seit AP 0.5 in `market/domain/golden-master.ts`. `ReferenceSimulation` nutzt nichts Node-spezifisches und läuft im Worker. Die Statistik rechnet die Tagesschritte aus den Monatsbeginn-Zuständen nach (rund 45 ms je Spieljahr); für den Langzeitlauf die Stichprobe besser schon beim Simulieren sammeln. Aus der Prüfung vom 12.11.2026: Rendite, Volatilität und Dividendenrendite des Weltindex zusätzlich in rollierenden Fenstern (10 und 30 Jahre) und über mehrere Seeds zeigen, weil die Messung über 110 Jahre von der festen Indexzusammensetzung verzerrt ist (TS §6.9, „Einordnung der Startwerte“).
 - **Referenzen:** TS §4.6, §6.9, §14.2; E-22, E-24
 - **Abhängig von:** AP 1.8a
 
 #### AP 1.9 – Kalibrierung des Marktmodells
 
 - **Umfang:** Parameter mit mehreren Seeds gegen die Ziele aus TS §6.9 abstimmen, einschließlich Tagesprofil der Volatilität (TS §6.1); statistische Tests mit Toleranzen; finale Parameter in TS §6 nachtragen.
-- **Abnahme:** Kalibrierungsziele auf mindestens fünf Seeds erreicht oder Abweichungen begründet; statistische Testsuite grün. Die Langzeit-Kennzahlen über 50 und 100 Spieljahre liegen in den festgelegten Grenzen (E-22).
+- **Abnahme:** Kalibrierungsziele auf mindestens fünf Seeds erreicht oder Abweichungen begründet; die Kalibrierungs-Suite (`npm run test:calibration`) prüft ab jetzt auch `CALIBRATION_TARGETS` auf `calib-1` bis `calib-5` und ist grün. Ändern sich dadurch die Golden-Master-Prüfsummen, steht das im Änderungsprotokoll. Die Langzeit-Kennzahlen über 50 und 100 Spieljahre liegen in den festgelegten Grenzen (E-22).
 - **Vormerkungen** (aus AP 1.4 und AP 1.6b): Mit den Startwerten liegt die Volatilität der Einzelaktien im Median bei rund 40 % (die Sprünge tragen allein rund 18 Prozentpunkte bei), und Krisen machen nur 2–4 % statt 8 % der Zeit aus. Zu kalibrieren sind auch Spreads, Tracking-Fehler und Startkurse der ETFs; das Budget des Vorlaufs ist nachzumessen.
 - **Vormerkungen** (aus der Prüfung vom 12.11.2026; Rechnung in TS §6.3 und §6.9, „Einordnung der Startwerte“):
   - Die Übergangsgewichte der Phasen ergeben stationär 47 / 37 / 13 / 3 % statt 40 / 35 / 17 / 8 %. Für 8 % Krisenanteil müssen rund 30 % aller Phasenwechsel in eine Krise führen.
@@ -495,7 +519,7 @@ AP 1.8 wurde nach §2.5 geteilt (11.11.2026).
 #### AP 2.1 – GameEngine und Terminplaner
 
 - **Umfang:** `engine/domain`: `GameEngine` mit der API aus TS §8.1, `World` und `GameState`, Systemreihenfolge nach TS §3.8 (vorerst Kalender und Markt), Terminplaner als Binärheap, Ereignispuffer, Kommandos mit Tick-Stempel, Snapshot und Restore inklusive (vorerst minimalem) Spielerzustand.
-- **Abnahme:** Tests: Stapel- und Live-Betrieb identisch; Snapshot, Restore und Replay identisch; Reihenfolge des Terminplaners.
+- **Abnahme:** Eigenschaften auf der Mini-Welt (fast-check): beliebige Stückelung der Ticks ≡ ein Lauf (Stapel gegen Live); Snapshot, Restore und Replay an beliebiger Stelle ≡ ununterbrochener Lauf. Reihenfolge des Terminplaners als Beispieltabelle nach TS §3.8. Die Engine bezieht Kurse über einen Port; ein Testmarkt mit vorgegebenen Kursen dient den Engine-Szenarien, ein Vertragstest läuft gegen den echten Adapter und den Testmarkt (TS §14.1).
 - **Vormerkungen** (aus AP 1.6b): Ereignisse der ETF-Ausschüttung (`MarketDay.etfExCents`, Zahltag über `paymentDay`); Quotes der Abos über `PriceSource.quoteAt`. Die ESLint-Regel für Simulationscode gilt ab hier auch für `engine/domain` (TS §4.4).
 - **Referenzen:** TS §2.2, §3.8, §8.1; E-01
 - **Abhängig von:** AP 1.6b
@@ -506,7 +530,7 @@ AP 1.8 wurde nach §2.5 geteilt (11.11.2026).
   - `engine/data-access`: `engine.worker.ts`, Nachrichtenprotokoll (TS §8.2, §8.3), Typ-Guards in `engine-service.utils.ts`.
   - `EngineService` (Observable-API, Korrelation, Fehler, Abo-Zählung) mit `provideEngineService()` – einmal in den Bootstrap-Providern (TS §11.2, Punkt 4); Token für eine Worker-Factory (Tests mit Fake-Worker).
   - Takt (TS §3.5), Sichtbarkeit und `backgroundMode` (TS §3.6), Drosselung (TS §8.4), Auslastungsmeldung.
-- **Abnahme:** Tests: Service mit Fake-Worker (Kommandos, Antworten, Fehler); Taktlogik als reine Funktion. Ein manueller Smoke-Test im Labor zeigt eintreffende `clock`-Ereignisse.
+- **Abnahme:** Service-Tests mit dem Worker-Code im Testprozess (Kommandos, Antworten, Fehler, Abbruch); Eigenschaften über die Protokoll-Guards (beliebige Nachrichten werden abgewiesen, nie geworfen) und die Taktlogik; Systemtest mit echtem Worker (`clock`-Ereignisse kommen an, Pause und Weiter) in Chromium, Firefox und WebKit; erste Messung mit vierfacher CPU-Drosselung als Systemtest in Chromium (J10, E-27).
 - **Vormerkungen:** Für Seitentests braucht es den Worker-Code im Testprozess (wie `provideInProcessLabWorker()`) und die Uhr des Hosts als Testnaht (`CLAUDE.md` §10). Kommando-Klassen nach TS §8.2 (E-08): Abfragen und Abos halten den Takt nicht an. Erste Messung der Engine mit vierfacher CPU-Drosselung (E-27).
 - **Referenzen:** TS §3.5, §3.6, §8.2–§8.5, §11.2, §14.3; E-27
 - **Abhängig von:** AP 2.1, AP 0.3
@@ -518,6 +542,9 @@ AP 1.8 wurde nach §2.5 geteilt (11.11.2026).
   - Speichern und Laden; Replay; Verwerfen der Spielerdaten nach dem Snapshot-Tick, Tageskerzen bleiben erhalten.
   - Nach Verwerfen des Stores `candles` baut der Hintergrundauftrag identische Tageskerzen auf.
   - Absturz kurz nach einem Kommando, das nach der letzten periodischen Uhr-Speicherung kam: Das Kommando wirkt nach der Wiederherstellung an seinem ursprünglichen Tick.
+  - Als Eigenschaft: Absturz an beliebiger Stelle (fehlerinjizierender Speicher-Port) und Wiederherstellung ≡ ununterbrochener Lauf.
+  - Upgrade von Version 3 auf 4 mit eingefrorener Fixture `db-v3.json`.
+  - Systemtests in Chromium, Firefox und WebKit: Neuladen mitten im Lauf stellt den Stand wieder her; ein zweiter Tab desselben Spielers erhält den Hinweis des Web Locks.
 - **Vormerkungen** (aus AP 1.5): Marktzustände zu Monatsbeginn speichern oder beim Laden durch volle Tagesschritte aufbauen (rund 45 ms je Spieljahr); E-08 schlägt Speichern vor. `SIM_VERSION` und `schemaVersion` als Konstanten einführen (E-25).
 - **Vor der Umsetzung klären:** die Ergänzungen zu E-08 – Write-ahead nur für Spielkommandos, Kürzen des Kommando-Logs, Uhr spätestens nach einem Spieltag sichern, Tageskerzen je Seed statt je Spieler (TS §8.2, §8.5, §9.1, §9.2).
 - **Referenzen:** TS §3.7, §8.5, §9, §15; US-ZT-04, US-SP-02; E-08, E-25
@@ -534,7 +561,7 @@ AP 1.8 wurde nach §2.5 geteilt (11.11.2026).
 #### AP 2.5 – Spielsitzung und Uhr
 
 - **Umfang:** Session- und Clock-Slice, registriert über `provideGameState()` an der Shell-Route; Guards `enterGame` und `leaveGame`; Kopfzeile mit Datum, Uhrzeit, Wochentag, Börsenstatus je Region, Geschwindigkeitsregler, Pause/Weiter, abschaltbaren Tastenkürzeln und Auslastungsanzeige; Overlay für Initialisierung und Nachberechnung; Vorspulen (S).
-- **Abnahme:** Tests für Slices, Effects und Guards. Soweit möglich als Seitentest mit dem Worker-Code im Testprozess und gestellter Uhr, sonst manuell:
+- **Abnahme:** Tests für Slices, Effects und Guards. Seitentests mit dem Worker-Code im Testprozess und gestellter Uhr; was nur ein echter Browser zeigt (Hintergrund-Tab, Tastenkürzel mit Fokus, Neuladen), als Systemtest:
   - Ein neuer Spieler startet pausiert am 01.04.2030, 00:00; Geschwindigkeitswechsel wirken sofort.
   - Im Hintergrund läuft Echtzeit; Tab schließen und später öffnen ergibt eine Nachberechnung.
   - Eine Pause bleibt nach dem Neuladen erhalten; ein zweiter Tab mit demselben Spieler erhält einen Hinweis.
@@ -714,7 +741,9 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
   - Nach Export und Import ist der Spielerzustand zum Export-Tick identisch (abgesehen von ID und Name); die Markt-Prüfsumme der nachgerechneten Historie stimmt.
   - Die Exportdatei enthält keine Stützpunkte des laufenden Tags.
   - Ein Spieler mit 50 Spieljahren ist nach unter 3 s spielbar; Datei und Zwischenablage funktionieren.
+  - Rundreise Export → Import als Eigenschaft (Spielerzustand gleich bis auf ID und Name); eingefrorene Fixture je `formatVersion`.
   - Seitentest: exportieren, importieren, beschädigte Datei ablehnen.
+  - Systemtest mit echtem Download und Upload in Chromium, Firefox und WebKit.
 - **Vor der Umsetzung klären:** die Ergänzungen zu E-10 – gzip schon in Formatversion 1, Export ohne `commands`, Import startet pausiert (TS §10.1, §10.3). Beim Import legt die UI das Profil an (TS §9.1).
 - **Referenzen:** US-EX-01–US-EX-03; TS §10; E-10
 - **Abhängig von:** AP 5.6, AP 5.7
@@ -729,14 +758,14 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 #### AP 6.3 – PWA und Browser-Benachrichtigungen
 
 - **Umfang:** `@angular/service-worker` (Manifest, Icons, Offline-Betrieb, Hinweis auf neue Versionen mit Angebot zum Neuladen, Hinweis vor 1.0 zu ungültig werdenden Spielständen), Installationshinweis, `NOTIFICATION_PORT` mit Web-Implementierung über `ServiceWorkerRegistration.showNotification()`, Anzeige des Speicherstatus in den Einstellungen.
-- **Abnahme:** App ist installierbar und offline nutzbar (auch unter Chrome für Android geprüft); nach Erlaubnis erscheinen Benachrichtigungen bei verborgenem Tab (am Desktop; Smartphones halten die App im Hintergrund an, PS US-BN-04).
+- **Abnahme:** App ist installierbar und offline nutzbar: Systemtest (Service Worker aktiv, Neuladen ohne Netz) in Chromium, Firefox und WebKit, manuell unter Chrome für Android; nach Erlaubnis erscheinen Benachrichtigungen bei verborgenem Tab (am Desktop; Smartphones halten die App im Hintergrund an, PS US-BN-04).
 - **Referenzen:** US-UI-07, US-BN-04, US-EX-03; TS §12, §13, §15; E-05
 - **Abhängig von:** AP 6.2
 
 #### AP 6.4 – Performance und Robustheit
 
 - **Umfang:** Messung gegen die Performance-Budgets (TS §14.3) und Optimierungen; Verdichtung alter Tageskerzen (TS §6.8); Fehlerbehandlung (Worker-Neustart mit Wiederherstellung und Abbruch nach wiederholtem Fehlschlag, TS §8.5; `QuotaExceededError`); Budgets für das Referenz-Mobilgerät (E-27).
-- **Abnahme:** Alle Budgets aus TS §14.3 gemessen und eingehalten oder Abweichungen dokumentiert; ein künstlich ausgelöster Worker-Absturz wird ohne Verlust von Anwender-Aktionen überstanden.
+- **Abnahme:** Alle Budgets aus TS §14.3 mit Perf-Suite und Systemtests (CPU-Drosselung) gemessen und eingehalten oder Abweichungen dokumentiert; ein künstlich ausgelöster Worker-Absturz wird ohne Verlust von Anwender-Aktionen überstanden.
 - **Vor der Umsetzung klären:** Die Verdichtung alter Tageskerzen lässt sich auf nach 1.0 verschieben, weil der Store `candles` ohnehin verworfen werden darf (E-08). Die Schätzung in TS §9.6 ergibt rund 1,7 MB je Spieljahr (1,1 MB Kerzen, 0,5 MB Journal, 0,08 MB Marktzustände) und liegt damit über dem Budget von 1,5 MB (NF-07): messen, dann Budget anpassen oder Kerzen sparsamer speichern (z. B. je Seed, E-08).
 - **Referenzen:** NF-01, NF-02, NF-06, NF-07; TS §8.5, §9.5, §14.3; E-27
 - **Abhängig von:** AP 6.1, AP 1.9
@@ -744,14 +773,14 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 #### AP 6.5 – Barrierefreiheit, Hilfen und Hinweise
 
 - **Umfang:** Barrierefreiheit (Tastatur, Kontraste, Screenreader-Stichproben); Erklärungen und Glossar (S); Befehlspalette (S); rechtliche Hinweise und Lizenzen (TradingView-Attribution); Impressum und Datenschutzhinweis, soweit nicht nach E-26 vorgezogen (§3).
-- **Abnahme:** axe-Prüfung aller Hauptansichten ohne schwere oder kritische Verstöße; alle Aktionen per Tastatur erreichbar; Hinweise vorhanden.
+- **Abnahme:** Systemtest mit axe über alle Hauptansichten in hell und dunkel ohne ernste oder kritische Befunde; alle Aktionen per Tastatur erreichbar; Hinweise vorhanden.
 - **Referenzen:** NF-09; US-UI-04–US-UI-06, US-UI-08
 - **Abhängig von:** AP 6.3
 
 #### AP 6.6 – Release 1.0
 
 - **Umfang:** die dann gültige `simVersion` einfrieren und die Kompatibilitätszusage im beschlossenen Umfang aktivieren (TS §15, E-25); Versionsanzeige; README (Spielidee, Entwicklung, Deployment); CI/CD prüfen; Abschlusstest nach Checkliste aller Muss-Stories der Stufe 1.
-- **Abnahme:** Alle APs sind fertig und alle Muss-Stories der Stufe 1 erfüllt (Zuordnung am Ende von §5); der Selbsttest zeigt in Chrome, Firefox und Safari unter iOS dieselben Golden-Master-Prüfsummen (TS §4.6); Release deployt (Tag und Commit auf Anweisung).
+- **Abnahme:** Alle APs sind fertig und alle Muss-Stories der Stufe 1 erfüllt (Zuordnung am Ende von §5); der Selbsttest zeigt auch auf einem iOS-Gerät (Safari) die Golden-Master-Prüfsummen, in Chromium, Firefox und WebKit prüft das J11 bei jedem Push (TS §4.6); Release deployt (Tag und Commit auf Anweisung).
 - **Referenzen:** TS §4.6, §14.4, §15; E-25
 - **Abhängig von:** AP 6.4, AP 6.5, AP 3.5
 
@@ -845,3 +874,4 @@ Die Reihenfolge ab M7 ist ein Vorschlag und wird nach dem MVP gemeinsam priorisi
 | 11.11.2026 | Navigation für das Labor und vorläufige Freigabe (Auftrag des Product Owners): `LabPage` (`lab/feature/lab`) ist Elternroute von `#/lab` mit Kopfzeile (Tab-Leiste `lab/ui/section-lab-nav` mit Simulation, UI-Bausteine, Design-Tokens sowie Link „Zur App“ zur Spielerauswahl); `#/lab` führt jetzt zur Simulation, UI-Bausteine und Design-Tokens haben Seitentitel. Die Spielerauswahl verlinkt das Labor. `devPages` ist vorerst auch in `environment.prod.ts` an, das Labor ist damit für alle Besucher erreichbar (Rücknahme: Flag zurück auf `false`, Link auf der Spielerauswahl entfernen). Seitentest `lab.page.spec.ts`. TS §11.1, §11.4 und §14.2 angepasst.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | 12.11.2026 | Prüfung von Projektplan, PS, TS und Code auf inhaltliche Fehler (Auftrag des Product Owners), einschließlich Plausibilität des Marktmodells. **Code:** Labor-Requests hängen nach dem Verlassen der Seite nicht mehr – `LabSimulationService.terminate()` schließt offene Requests ab, Worker-Fehler (`error`, `messageerror`) beenden sie mit einem Fehler und verwerfen den Worker; vorher nahmen `simulate$` und `loadHistory$` (`exhaustMap`) nach der Rückkehr nichts mehr an (Seitentest und Service-Tests). `roundHalfAwayFromZero` kappte ganze Zahlen ab 10¹⁵ Cent; die Artefaktkorrektur greift jetzt nur darunter. Die ETF-Ausschüttung rundet über die neue zentrale Funktion `eurosToCentsDown` (TS §4.5, Regel 4). Das Preisraster rechnet ohne `**`, die Determinismus-Regel in ESLint gilt jetzt auch für `shared/domain`. Platzhalter der Steuer- und Einstellungsseite nennen AP 5.5 und AP 2.6. Golden Master unverändert. **Doku:** Spielzeitformat in PS §10 wie `formatGameTime`; Gesamtvermögen ohne Doppelzählung der Überziehungen; untere Leiste mit vier Bereichen und „Mehr“; Stop-Limit in Stufe 1; „70 Spieljahre pro Stunde Echtzeit“; TS §11.1 mit `app.providers.ts`, CDK-Tabelle ohne Menüs (E-16), Formatierungsfunktionen, `PriceSource` statt `priceAt(instrumentId, tick)`, Messwerte vereinheitlicht (§14.3), Speicherschätzung mit Marktzuständen (rund 1,7 MB je Spieljahr, über NF-07; Vormerkung AP 6.4), Bankentabelle um Börsenentgelt und Sollzins ergänzt, ETFs je Index präzisiert, Standard-Erscheinungsbild Dunkel in AP 2.6 und TS §11.5. **Plausibilität (TS §6.3, §6.9):** Die Startwerte ergeben stationär 47 / 37 / 13 / 3 % Phasenanteile statt 40 / 35 / 17 / 8 %, das Varianzbudget passt nicht zu den Korrelationszielen, die Volaziele der Phasen sind auf den Index statt den Weltfaktor ausgelegt, Messungen über 110 Jahre sind von E-22 verzerrt, Sprünge haben keinen Kompensator, der Größenfaktor keine Prämie, die Risikoklasse ignoriert Sprünge. Vormerkungen und offene Fragen in AP 1.8b, 1.9, 2.4, 3.2, 4.4, 4.5 und 6.4; US-MK-05 auch AP 4.4 und 4.5 zugeordnet. Nur notiert: Die Abschnitte `lab/feature/section-*` sind reine Anzeige-Komponenten und gehörten nach `lab/ui`; der Link „Labor“ auf der Spielerauswahl hängt nicht an `devPages`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | 12.11.2026 | Struktur der Oberflächenkomponenten geprüft und vereinfacht (Auftrag des Product Owners, kein AP; Regeln in `CLAUDE.md` §1–§4, §9, §12, TS §11.5, §11.9, §11.10). **Benennung:** Rollen-Präfixe entfallen bis auf `dialog-` und `form-`, Namen beschreiben den Inhalt (`shell/ui/header`, `side-nav`, `bottom-nav`, `lab/ui/lab-nav`, `correlation-matrix`, `phase-timeline`, `return-histogram`); Seiten-Selektoren enden auf `-page`. **Schichten:** Präsentationale Teile der Laborseite liegen in `lab/ui` (`series-chart` mit `LabChartOptions`, `market-statistics`, `world-tables`); `feature` enthält nur Seiten, State und Komponenten mit Facade. ESLint erzwingt die Schichtregeln (`no-restricted-imports` je Layer, framework-freie `domain`/`util`) und prüft Templates mit `templateAccessibility`. **Importe:** Alias `@app/*` für Importe über Domänengrenzen, innerhalb einer Domäne relativ. **Styles:** Das `display` des Hosts setzt die Host-Klasse statt `:host { display }` (Komponentenstyles liegen außerhalb der Tailwind-Layer und schlugen Utilities am Host); 38 leere oder triviale SCSS-Dateien entfallen, SCSS nur noch für Sonderfälle (Safe-Area der unteren Leiste, Token-Beispiel). **Bausteine:** `appIcon` (Bootstrap-Icons, einzige Stelle mit zusammengesetzter Klasse), `appMenu`/`appMenuItem` für die Aria-Menüs, `appNavLink` mit gemeinsamem `NavItem`; aktive Zustände über die Variante `current:` (`aria-current="page"`) und `aria-selected:`; alle auf `#/lab/components`. **Formatierung:** Templates rufen keine Format-Methoden mehr auf, sondern nutzen die Pipes (neu `formatNumber`, `clock/ui/pipes` mit `formatGameDate`/`formatGameTime`); fehlende Werte zeigen zentral `–` (`MISSING_VALUE`, `formatOptional`); `app-stat-tile` hat einen `unit`-Input. Sichtbare Folgen: Startpreise im Labor und der letzte Schluss folgen dem Preisraster, die Abfragedauer des Charts hat ein deutsches Dezimalkomma. **Bewusst beibehalten** (Abweichung vom Angular-Styleguide 2025): Typ-Suffixe `.component`/`.page`, kein `protected`/`readonly` an Template-Membern und Signal-APIs, Handler `onX`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 12.11.2026 | AP 0.5 (neu, Auftrag des Product Owners): Testkonzept neu erarbeitet und sofort umgesetzt; jetzt 46 APs. E-29 entschieden (Werkzeuge fast-check, Stryker, Playwright mit axe; CI mit allen Prüfungen vor dem Deployment). **Konzept** (TS §4.6, §14, `CLAUDE.md` §10): Orakel-Regel, Testarten nach der Frage, die sie beantworten; Suiten `logic` (Vitest unter Node, UTC+14), `angular` (`ng test`), `calibration`, `perf`, `mutation`, `e2e`; `npm run verify` als Prüfbefehl der Definition of Done (§2.4 neu). **Umstellung:** 74 Spec-Dateien mit 567 Tests → `logic` 45 Dateien/456 Tests (5,5 s), `angular` 24/172 (10,6 s), `calibration` 3/35, `perf` 2/4, `e2e` 5 Dateien mit 16 Abläufen in Chromium, Firefox, WebKit und auf Smartphones. Gelöscht ohne Ersatz: Facade-, Guard- und Selektor-Tests ohne Logik, Wall-Clock-Asserts (jetzt Perf-Suite), Dubletten der neuen Markt-Eigenschaften. Golden Master als Modul `market/domain/golden-master.ts` (fünf Konstanten bitgleich reproduziert, neu: Marktzustand zum Spielstart); Selbsttest im Labor vorgezogen aus AP 1.8b, Firefox liefert bitgleich dieselben Prüfsummen wie Node. Mutation Score des Regelcodes 89,4 % → 94,6 % (Schwelle 91 %). **Befunde:** axe fand einen echten Verstoß – das Chart hatte `role="img"` und enthielt den Attributionslink von lightweight-charts, der damit für Screenreader verschwand; jetzt `role="figure"`. Zwei Abweichungen zwischen Code und Doku, aufgelöst durch Präzisieren der Doku (der Code bleibt, der Golden Master ist unberührt): `eurosToCents(centsToEuros(c))` ist nur unter 10¹⁵ Cent exakt – TS §7.1 nennt jetzt neben ±9·10¹⁵ für `Cents` auch diese Grenze für den Weg über Euro; `uniform(rng, min, max)` kann durch Rundung `max` liefern – der Kommentar sagt jetzt [min, max], der einzige Aufrufer zieht aus Konfigurationsbereichen mit gültigem Maximum. Messung: Ein Spieljahr mit allen Minutenverläufen aller Reihen braucht 6,4–7,4 s und liegt damit knapp unter dem Budget (15 % eines Kerns ≈ 7,8 s); dieselbe Messung am Stand von AP 1.5 ergibt heute ebenfalls 5,7 s statt der früher notierten 2,1 s, der Rechner misst also langsamer, der Code ist nicht langsamer geworden (TS §14.3). Phasenanteile auf `calib-1` liegen rund 2 Standardfehler neben der stationären Verteilung (Vormerkung AP 1.9). Lokal laufen die Systemtests nur in den Chromium-Projekten (`npm run test:e2e`); Firefox und WebKit prüft die CI im Playwright-Container, WebKit dort zum ersten Mal. TS angepasst: §1.1, §1.2, §2.2, §4.6, §11.2, §14, §16, §17; PS NF-05, NF-11; Plan §2.1, §2.3, §2.4, AP 1.8b, 1.9, 2.1, 2.2, 2.3, 2.5, 6.1, 6.3–6.6.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |

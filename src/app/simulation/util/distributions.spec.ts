@@ -1,84 +1,115 @@
+import fc from 'fast-check';
+
+import { kurtosis, mean, skewness, variance } from '@app/analysis/domain/statistics-logic';
+
 import { detExp } from './det-math';
 import {
   lognormal,
   normal,
   pick,
   poisson,
+  POISSON_MAX_LAMBDA,
   shuffle,
   uniform,
   uniformInt,
   weightedIndex,
 } from './distributions';
-import { createStream } from './random-stream';
+import { createStream, RandomStream } from './random-stream';
 import { deriveSeedKey } from './seed';
 
-interface Moments {
-  mean: number;
-  variance: number;
-  skewness: number;
-  excessKurtosis: number;
-}
+import {
+  binomialSe,
+  expectWithinSigma,
+  meanSe,
+  poissonSe,
+  varianceSe,
+} from '../../../testing/statistics';
 
-function moments(values: number[]): Moments {
-  const n = values.length;
-  const mean = values.reduce((sum, x) => sum + x, 0) / n;
-  let m2 = 0;
-  let m3 = 0;
-  let m4 = 0;
-  for (const x of values) {
-    const d = x - mean;
-    m2 += d * d;
-    m3 += d * d * d;
-    m4 += d * d * d * d;
-  }
-  m2 /= n;
-  m3 /= n;
-  m4 /= n;
-  return {
-    mean,
-    variance: m2,
-    skewness: m3 / m2 ** 1.5,
-    excessKurtosis: m4 / (m2 * m2) - 3,
-  };
+const seedKey = deriveSeedKey('distributions');
+
+/** A fresh stream for every generated key, so properties see many different random sequences. */
+const arbStream = fc.string({ maxLength: 12 }).map((key) => createStream(seedKey, `prop/${key}`));
+
+/** A stream stub that returns a fixed `nextFloat53`, to reach the edges of [0, 1). */
+function fixedFloat(u: number): RandomStream {
+  return { nextFloat53: () => u } as unknown as RandomStream;
 }
 
 describe('distributions', () => {
-  const seedKey = deriveSeedKey('distributions');
   const n = 100_000;
 
-  function draw(key: string, sample: (rng: ReturnType<typeof createStream>) => number): number[] {
+  function draw(key: string, sample: (rng: RandomStream) => number): number[] {
     const rng = createStream(seedKey, key);
     return Array.from({ length: n }, () => sample(rng));
   }
 
   describe('uniform', () => {
-    it('draws from [min, max) with the expected moments', () => {
+    it('has the mean and variance of a uniform distribution', () => {
       const values = draw('uniform', (rng) => uniform(rng, -2, 6));
-      expect(Math.min(...values)).toBeGreaterThanOrEqual(-2);
-      expect(Math.max(...values)).toBeLessThan(6);
-      const { mean, variance } = moments(values);
-      expect(mean).toBeCloseTo(2, 1);
-      expect(Math.abs(variance - 64 / 12)).toBeLessThan(0.05);
+      const width = 8;
+      // Var(s²) of a uniform distribution: (μ4 − σ⁴) / n with μ4 = w⁴/80 and σ² = w²/12.
+      const varianceOfVariance = (width ** 4 / 80 - (width ** 2 / 12) ** 2) / n;
+      expectWithinSigma(mean(values), 2, meanSe(width / Math.sqrt(12), n), 5, 'mean');
+      expectWithinSigma(
+        variance(values),
+        width ** 2 / 12,
+        Math.sqrt(varianceOfVariance),
+        5,
+        'variance',
+      );
+    });
+
+    it('stays within [min, max] for every draw', () => {
+      // `min + (max − min) · u` with u < 1 can still round to `max` when the range is tiny
+      // compared to `min` (e.g. min = 1e6, max = 1e6 + 0.001, u = 1 − 2⁻⁵³), so the property
+      // checks the closed interval.
+      fc.assert(
+        fc.property(
+          fc.double({ min: -1e9, max: 1e9, noNaN: true }),
+          fc.double({ min: 1e-6, max: 1e9, noNaN: true }),
+          fc.double({ min: 0, max: 1 - 2 ** -53, noNaN: true }),
+          (min, width, u) => {
+            const max = min + width;
+            const value = uniform(fixedFloat(u), min, max);
+            expect(value).toBeGreaterThanOrEqual(min);
+            expect(value).toBeLessThanOrEqual(max);
+          },
+        ),
+      );
     });
   });
 
   describe('uniformInt', () => {
     it('covers both bounds with equal frequencies', () => {
+      const trials = 60_000;
       const counts = new Array<number>(6).fill(0);
       const rng = createStream(seedKey, 'uniform-int');
-      for (let i = 0; i < 60_000; i++) {
+      for (let i = 0; i < trials; i++) {
         counts[uniformInt(rng, 1, 6) - 1]++;
       }
-      for (const count of counts) {
-        expect(Math.abs(count - 10_000)).toBeLessThan(400);
-      }
+      counts.forEach((count, face) =>
+        expectWithinSigma(count / trials, 1 / 6, binomialSe(1 / 6, trials), 5, `face ${face + 1}`),
+      );
     });
 
-    it('returns min for a single-value range and supports 2^32 values', () => {
-      const rng = createStream(seedKey, 'uniform-int/edges');
-      expect(uniformInt(rng, 5, 5)).toBe(5);
-      const value = uniformInt(rng, 0, 4294967295);
-      expect(value >= 0 && value <= 4294967295).toBe(true);
+    it('returns an integer in [min, max] for every range of up to 2^32 values', () => {
+      fc.assert(
+        fc.property(
+          arbStream,
+          fc.integer({ min: -(2 ** 40), max: 2 ** 40 }),
+          fc.integer({ min: 0, max: 2 ** 32 - 1 }),
+          (rng, min, span) => {
+            const value = uniformInt(rng, min, min + span);
+            expect(Number.isInteger(value)).toBe(true);
+            expect(value).toBeGreaterThanOrEqual(min);
+            expect(value).toBeLessThanOrEqual(min + span);
+          },
+        ),
+      );
+    });
+
+    it('returns min for a single-value range', () => {
+      expect(uniformInt(createStream(seedKey, 'uniform-int/single'), 5, 5)).toBe(5);
     });
 
     it('throws for invalid ranges', () => {
@@ -91,17 +122,18 @@ describe('distributions', () => {
 
   describe('normal', () => {
     it('has the moments of a standard normal distribution', () => {
-      const { mean, variance, skewness, excessKurtosis } = moments(draw('normal', normal));
-      expect(Math.abs(mean)).toBeLessThan(0.015);
-      expect(Math.abs(variance - 1)).toBeLessThan(0.02);
-      expect(Math.abs(skewness)).toBeLessThan(0.04);
-      expect(Math.abs(excessKurtosis)).toBeLessThan(0.08);
+      const values = draw('normal', normal);
+      // Large-sample standard errors of skewness √(6/n) and kurtosis √(24/n) for a normal sample.
+      expectWithinSigma(mean(values), 0, meanSe(1, n), 5, 'mean');
+      expectWithinSigma(variance(values), 1, varianceSe(1, n), 5, 'variance');
+      expectWithinSigma(skewness(values), 0, Math.sqrt(6 / n), 5, 'skewness');
+      expectWithinSigma(kurtosis(values), 3, Math.sqrt(24 / n), 5, 'kurtosis');
     });
 
     it('applies mean and standard deviation', () => {
-      const { mean, variance } = moments(draw('normal/scaled', (rng) => normal(rng, 10, 3)));
-      expect(Math.abs(mean - 10)).toBeLessThan(0.05);
-      expect(Math.abs(variance - 9)).toBeLessThan(0.2);
+      const values = draw('normal/scaled', (rng) => normal(rng, 10, 3));
+      expectWithinSigma(mean(values), 10, meanSe(3, n), 5, 'mean');
+      expectWithinSigma(variance(values), 9, varianceSe(9, n), 5, 'variance');
     });
 
     it('uses the spare value of the polar method on every second call', () => {
@@ -116,39 +148,56 @@ describe('distributions', () => {
 
   describe('lognormal', () => {
     it('has mean exp(mu + sigma²/2)', () => {
-      const { mean } = moments(draw('lognormal', (rng) => lognormal(rng, 0.1, 0.25)));
-      expect(Math.abs(mean - Math.exp(0.1 + 0.25 ** 2 / 2))).toBeLessThan(0.005);
+      const mu = 0.1;
+      const sigma = 0.25;
+      const values = draw('lognormal', (rng) => lognormal(rng, mu, sigma));
+      const expected = Math.exp(mu + sigma ** 2 / 2);
+      const sd = Math.sqrt((Math.exp(sigma ** 2) - 1) * Math.exp(2 * mu + sigma ** 2));
+      expectWithinSigma(mean(values), expected, meanSe(sd, n), 5, 'mean');
     });
 
     it('returns positive values only', () => {
-      const values = draw('lognormal/positive', (rng) => lognormal(rng, 0, 2));
-      expect(values.every((value) => value > 0)).toBe(true);
+      fc.assert(
+        fc.property(arbStream, fc.double({ min: -5, max: 5, noNaN: true }), (rng, mu) => {
+          expect(lognormal(rng, mu, 2)).toBeGreaterThan(0);
+        }),
+      );
     });
   });
 
   describe('poisson', () => {
-    it('has mean and variance lambda', () => {
-      for (const lambda of [0.2, 3, 30]) {
-        const values = draw(`poisson/${lambda}`, (rng) => poisson(rng, lambda));
-        expect(values.every((value) => Number.isInteger(value) && value >= 0)).toBe(true);
-        const { mean, variance } = moments(values);
-        expect(Math.abs(mean - lambda) / lambda).toBeLessThan(0.02);
-        expect(Math.abs(variance - lambda) / lambda).toBeLessThan(0.04);
-      }
+    it.each([0.2, 3, 30])('has mean and variance lambda = %s', (lambda) => {
+      const values = draw(`poisson/${lambda}`, (rng) => poisson(rng, lambda));
+      expect(values.every((value) => Number.isInteger(value) && value >= 0)).toBe(true);
+      // Var(s²) of a Poisson sample: (μ4 − σ⁴) / n with μ4 = λ(1 + 3λ).
+      expectWithinSigma(mean(values), lambda, poissonSe(lambda, n), 5, 'mean');
+      expectWithinSigma(
+        variance(values),
+        lambda,
+        Math.sqrt((lambda + 2 * lambda * lambda) / n),
+        5,
+        'variance',
+      );
     });
 
     it('returns 0 for lambda 0', () => {
-      const rng = createStream(seedKey, 'poisson/zero');
-      expect(poisson(rng, 0)).toBe(0);
+      expect(poisson(createStream(seedKey, 'poisson/zero'), 0)).toBe(0);
     });
 
     it('draws the same values with a precomputed exp(-lambda)', () => {
-      const lambda = 0.0153;
-      const plain = draw('poisson/precomputed', (rng) => poisson(rng, lambda));
-      const precomputed = draw('poisson/precomputed', (rng) =>
-        poisson(rng, lambda, detExp(-lambda)),
+      fc.assert(
+        fc.property(
+          fc.string({ maxLength: 12 }),
+          fc.double({ min: 0, max: POISSON_MAX_LAMBDA, noNaN: true }),
+          (key, lambda) => {
+            const plain = createStream(seedKey, key);
+            const precomputed = createStream(seedKey, key);
+            for (let i = 0; i < 20; i++) {
+              expect(poisson(precomputed, lambda, detExp(-lambda))).toBe(poisson(plain, lambda));
+            }
+          },
+        ),
       );
-      expect(precomputed).toEqual(plain);
     });
 
     it('throws for lambda outside the supported range', () => {
@@ -168,16 +217,29 @@ describe('distributions', () => {
         counts[weightedIndex(rng, weights)]++;
       }
       expect(counts[1]).toBe(0);
-      expect(Math.abs(counts[0] / n - 0.1)).toBeLessThan(0.005);
-      expect(Math.abs(counts[2] / n - 0.3)).toBeLessThan(0.005);
-      expect(Math.abs(counts[3] / n - 0.6)).toBeLessThan(0.005);
+      for (const [index, p] of [
+        [0, 0.1],
+        [2, 0.3],
+        [3, 0.6],
+      ]) {
+        expectWithinSigma(counts[index] / n, p, binomialSe(p, n), 5, `index ${index}`);
+      }
     });
 
-    it('never returns a trailing zero weight', () => {
-      const rng = createStream(seedKey, 'weighted/trailing');
-      for (let i = 0; i < 1000; i++) {
-        expect(weightedIndex(rng, [2, 1, 0])).toBeLessThan(2);
-      }
+    it('never returns an index with weight 0', () => {
+      const weights = fc
+        .array(fc.oneof(fc.constant(0), fc.double({ min: 1e-9, max: 1e9, noNaN: true })), {
+          minLength: 1,
+          maxLength: 12,
+        })
+        .filter((list) => list.some((weight) => weight > 0));
+      fc.assert(
+        fc.property(arbStream, weights, (rng, list) => {
+          for (let i = 0; i < 10; i++) {
+            expect(list[weightedIndex(rng, list)]).toBeGreaterThan(0);
+          }
+        }),
+      );
     });
 
     it('throws for invalid weights', () => {
@@ -191,38 +253,54 @@ describe('distributions', () => {
   });
 
   describe('shuffle', () => {
-    it('returns a reproducible permutation in place', () => {
-      const items = Array.from({ length: 50 }, (_, i) => i);
-      const shuffled = shuffle(createStream(seedKey, 'shuffle'), items);
-      expect(shuffled).toBe(items);
-      expect([...shuffled].sort((a, b) => a - b)).toEqual(Array.from({ length: 50 }, (_, i) => i));
-      expect(shuffled).not.toEqual(Array.from({ length: 50 }, (_, i) => i));
-      const again = shuffle(
-        createStream(seedKey, 'shuffle'),
-        Array.from({ length: 50 }, (_, i) => i),
+    it('returns a permutation of the items in place', () => {
+      fc.assert(
+        fc.property(arbStream, fc.array(fc.integer(), { maxLength: 40 }), (rng, items) => {
+          const original = [...items];
+          const shuffled = shuffle(rng, items);
+          expect(shuffled).toBe(items);
+          expect([...shuffled].sort((a, b) => a - b)).toEqual(original.sort((a, b) => a - b));
+        }),
       );
-      expect(again).toEqual(shuffled);
+    });
+
+    it('is reproducible for the same stream', () => {
+      const ordered = (): number[] => Array.from({ length: 50 }, (_, i) => i);
+      const shuffled = shuffle(createStream(seedKey, 'shuffle'), ordered());
+      expect(shuffled).not.toEqual(ordered());
+      expect(shuffle(createStream(seedKey, 'shuffle'), ordered())).toEqual(shuffled);
     });
 
     it('places every item at every position with equal frequency', () => {
+      const trials = 40_000;
       const rng = createStream(seedKey, 'shuffle/uniform');
       const counts = [0, 0, 0, 0];
-      for (let i = 0; i < 40_000; i++) {
+      for (let i = 0; i < trials; i++) {
         counts[shuffle(rng, [0, 1, 2, 3]).indexOf(0)]++;
       }
-      for (const count of counts) {
-        expect(Math.abs(count - 10_000)).toBeLessThan(400);
-      }
+      counts.forEach((count, position) =>
+        expectWithinSigma(
+          count / trials,
+          0.25,
+          binomialSe(0.25, trials),
+          5,
+          `position ${position}`,
+        ),
+      );
     });
   });
 
   describe('pick', () => {
     it('returns an element of the array', () => {
-      const rng = createStream(seedKey, 'pick');
-      const items = ['a', 'b', 'c'] as const;
-      for (let i = 0; i < 100; i++) {
-        expect(items).toContain(pick(rng, items));
-      }
+      fc.assert(
+        fc.property(
+          arbStream,
+          fc.array(fc.string(), { minLength: 1, maxLength: 20 }),
+          (rng, items) => {
+            expect(items).toContain(pick(rng, items));
+          },
+        ),
+      );
     });
 
     it('throws for an empty array', () => {

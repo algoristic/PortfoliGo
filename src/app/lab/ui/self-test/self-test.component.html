@@ -1,0 +1,69 @@
+@let _durationMs = durationMs();
+@let _rows = rows();
+
+<div class="flex flex-col gap-4">
+  <p class="text-sm text-fg-muted" i18n="@@uiLab-selfTest-description">
+    Berechnet die Golden-Master-Prüfsummen des Seeds {{ goldenSeed }} im Web Worker dieses Browsers
+    und vergleicht sie mit den eingecheckten Werten.
+  </p>
+  <div class="flex flex-wrap items-center gap-4">
+    <button
+      appButton
+      type="button"
+      data-testid="lab.simulation.self-test.run"
+      i18n="@@uiLab-selfTest-run"
+      [disabled]="running()"
+      (click)="onRun()">
+      Selbsttest starten
+    </button>
+    @if (_rows.length > 0) {
+      <app-badge
+        [tone]="mismatches() === 0 ? 'up' : 'down'"
+        data-testid="lab.simulation.self-test.result"
+        >{{ resultText() }}</app-badge
+      >
+    }
+    @if (_durationMs !== undefined && !running()) {
+      <span
+        class="text-sm text-fg-muted tabular-nums"
+        data-testid="lab.simulation.self-test.duration"
+        >{{ _durationMs | formatNumber }} ms</span
+      >
+    }
+  </div>
+
+  @if (running()) {
+    <app-skeleton class="h-32" [block]="true"></app-skeleton>
+  } @else if (_rows.length > 0) {
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="text-xs text-fg-muted">
+          <tr>
+            <th class="px-2 py-1" i18n="@@uiLab-selfTest-checksum">Prüfsumme</th>
+            <th class="px-2 py-1" i18n="@@uiLab-selfTest-value">Wert</th>
+            <th class="px-2 py-1" i18n="@@uiLab-selfTest-status">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of _rows; track row.id) {
+            <tr class="border-t border-border">
+              <td class="px-2 py-1">{{ row.label }}</td>
+              <td
+                class="px-2 py-1 font-mono text-xs break-all"
+                [attr.data-testid]="'lab.simulation.self-test.' + row.id + '.value'">
+                {{ row.value }}
+              </td>
+              <td class="px-2 py-1">
+                <app-badge
+                  [tone]="row.matches ? 'up' : 'down'"
+                  [attr.data-testid]="'lab.simulation.self-test.' + row.id + '.status'"
+                  >{{ row.matches ? matchLabel : mismatchLabel }}</app-badge
+                >
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

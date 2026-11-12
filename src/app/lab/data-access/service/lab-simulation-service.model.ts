@@ -1,4 +1,5 @@
 import { Tick } from '@app/clock/domain/models/time.model';
+import { GoldenChecksums } from '@app/market/domain/golden-master';
 import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
 
 import { CandleSource } from '../../domain/models/candle-source.model';
@@ -11,6 +12,7 @@ export type LabWorkerRequest =
   | { id: number; type: 'simulate'; days: number }
   | { id: number; type: 'simulate-years'; years: number }
   | { id: number; type: 'statistics'; start: StatisticsStart }
+  | { id: number; type: 'golden' }
   | {
       id: number;
       type: 'candles';
@@ -51,12 +53,19 @@ export interface ComputedStatistics {
   durationMs: number;
 }
 
+/** Golden-master checksums computed in this engine for the self-test (TS §4.6, §14.2). */
+export interface ComputedChecksums {
+  checksums: GoldenChecksums;
+  durationMs: number;
+}
+
 export interface LabWorkerResults {
   generate: GeneratedWorld;
   simulate: SimulatedPeriod;
   'simulate-years': SimulatedPeriod;
   candles: LoadedCandles;
   statistics: ComputedStatistics;
+  golden: ComputedChecksums;
 }
 
 export type LabWorkerResponse =

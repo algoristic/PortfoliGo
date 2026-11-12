@@ -5,6 +5,7 @@ import { CandleRequest } from './lab.model';
 import { initialLabState, labReducer, LabState, nextHistoryRequest } from './lab.reducer';
 
 import {
+  ComputedChecksums,
   ComputedStatistics,
   GeneratedWorld,
 } from '../../data-access/service/lab-simulation-service.model';
@@ -268,5 +269,49 @@ describe('labReducer', () => {
       LabActions.loadCandlesFailure({ error }),
     );
     expect(state).toMatchObject({ candles: [], loadingCandles: false, error });
+  });
+
+  describe('self-test', () => {
+    const result: ComputedChecksums = {
+      checksums: {
+        world: 'a',
+        prices: 'b',
+        minutes: 'c',
+        indices: 'd',
+        etfs: 'e',
+        gameStart: 'f',
+      },
+      durationMs: 1500,
+    };
+
+    it('drops the last result while a new self-test runs and stores the new one', () => {
+      const running = labReducer(
+        { ...initialLabState, selfTest: result },
+        LabActions.clickedRunSelfTest(),
+      );
+      expect(running).toMatchObject({ selfTest: undefined, runningSelfTest: true });
+      expect(labReducer(running, LabActions.runSelfTestSuccess({ result }))).toMatchObject({
+        selfTest: result,
+        runningSelfTest: false,
+      });
+    });
+
+    it('keeps the result and the running self-test when a world is generated', () => {
+      const before = { ...initialLabState, selfTest: result, runningSelfTest: true };
+      expect(labReducer(before, LabActions.generateWorldSuccess({ world }))).toMatchObject({
+        selfTest: result,
+        runningSelfTest: true,
+      });
+    });
+
+    it('stops running on failure', () => {
+      const error = new Error('x');
+      expect(
+        labReducer(
+          { ...initialLabState, runningSelfTest: true },
+          LabActions.runSelfTestFailure({ error }),
+        ),
+      ).toMatchObject({ runningSelfTest: false, error });
+    });
   });
 });

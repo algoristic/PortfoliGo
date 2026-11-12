@@ -3,6 +3,7 @@ import { createAction, props } from '@ngrx/store';
 import { CandleRequest } from './lab.model';
 
 import {
+  ComputedChecksums,
   ComputedStatistics,
   GeneratedWorld,
   LoadedCandles,
@@ -36,6 +37,7 @@ export const changedChartOptions = createAction(
   props<{ options: Partial<LabChartOptions> }>(),
 );
 export const scrolledToChartStart = createAction('[Lab/Page] Scrolled to chart start');
+export const clickedRunSelfTest = createAction('[Lab/Page] Clicked run self-test');
 
 export const generateWorldSuccess = createAction(
   '[Lab/API] Generate world success',
@@ -75,5 +77,13 @@ export const retrievedHistoryCandles = createAction(
 );
 export const loadHistoryFailure = createAction(
   '[Lab/API] Load history failure',
+  props<{ error: unknown }>(),
+);
+export const runSelfTestSuccess = createAction(
+  '[Lab/API] Run self-test success',
+  props<{ result: ComputedChecksums }>(),
+);
+export const runSelfTestFailure = createAction(
+  '[Lab/API] Run self-test failure',
   props<{ error: unknown }>(),
 );

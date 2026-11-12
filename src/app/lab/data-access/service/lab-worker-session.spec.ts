@@ -3,42 +3,49 @@ import { TICKS_PER_DAY, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.m
 
 import { LabWorkerSession } from './lab-worker-session';
 
+/** A new session whose clock advances by 10 ms per reading, so durations are deterministic. */
+function createSession(): LabWorkerSession {
+  let time = 0;
+  return new LabWorkerSession(() => (time += 10));
+}
+
 describe('LabWorkerSession', () => {
-  let session: LabWorkerSession;
-  let time: number;
-
-  beforeAll(() => {
-    time = 0;
-    // Every clock reading advances by 10 ms, so durations are deterministic.
-    session = new LabWorkerSession(() => (time += 10));
-  });
-
   describe('handle', () => {
     it('answers with an error before a world was generated', () => {
-      expect(session.handle({ id: 1, type: 'simulate', days: 1 })).toEqual({
+      expect(createSession().handle({ id: 1, type: 'simulate', days: 1 })).toEqual({
         id: 1,
         type: 'error',
         message: 'LabWorkerSession: generate a world first',
       });
     });
 
-    it('generates the world with the normalized seed and timings', () => {
-      const response = session.handle({ id: 2, type: 'generate', seed: ' Lab ' });
-      expect(response.type).toBe('generate');
-      if (response.type !== 'generate') {
-        return;
-      }
-      expect(response.id).toBe(2);
-      expect(response.result.seed).toBe('lab');
-      expect(response.result.now).toBe(GAME_START_TICK - TICKS_PER_MINUTE);
-      expect(response.result.overview.companies.length).toBeGreaterThan(0);
-      expect(response.result.worldMs).toBe(10);
-      expect(response.result.prehistoryMs).toBe(10);
-    });
+    it('answers every request of a session with the matching id and type', () => {
+      const session = createSession();
 
-    it('simulates days and loads candles of the simulated period', () => {
-      expect(session.handle({ id: 3, type: 'simulate', days: 7 })).toEqual({
-        id: 3,
+      const generated = session.handle({ id: 11, type: 'generate', seed: ' Lab ' });
+      expect(generated).toMatchObject({
+        id: 11,
+        type: 'generate',
+        result: {
+          seed: 'lab',
+          now: GAME_START_TICK - TICKS_PER_MINUTE,
+          worldMs: 10,
+          prehistoryMs: 10,
+        },
+      });
+      if (generated.type === 'generate') {
+        expect(generated.result.overview.companies.length).toBeGreaterThan(0);
+      }
+
+      // Invalid input fails the request but keeps the session.
+      expect(session.handle({ id: 12, type: 'simulate', days: 0 })).toMatchObject({
+        id: 12,
+        type: 'error',
+      });
+
+      // The game starts on a Monday, so seven calendar days have five market days.
+      expect(session.handle({ id: 13, type: 'simulate', days: 7 })).toEqual({
+        id: 13,
         type: 'simulate',
         result: {
           days: 7,
@@ -48,8 +55,8 @@ describe('LabWorkerSession', () => {
         },
       });
 
-      const response = session.handle({
-        id: 4,
+      const candles = session.handle({
+        id: 14,
         type: 'candles',
         series: 0,
         resolution: '1d',
@@ -57,34 +64,26 @@ describe('LabWorkerSession', () => {
         toTick: GAME_START_TICK + 7 * TICKS_PER_DAY,
         source: 'minutes',
       });
-      expect(response.type).toBe('candles');
-      if (response.type === 'candles') {
-        expect(response.result.candles).toHaveLength(5);
-        expect(response.result).toMatchObject({ series: 0, resolution: '1d', durationMs: 10 });
+      expect(candles).toMatchObject({
+        id: 14,
+        type: 'candles',
+        result: { series: 0, resolution: '1d', durationMs: 10 },
+      });
+      if (candles.type === 'candles') {
+        expect(candles.result.candles).toHaveLength(5);
       }
-    });
 
-    it('simulates years and computes statistics of the period after the game start', () => {
-      expect(session.handle({ id: 6, type: 'simulate-years', years: 1 })).toMatchObject({
-        id: 6,
+      // One year later on the same calendar date: Monday, 08.04.2030 → Tuesday, 08.04.2031.
+      expect(session.handle({ id: 15, type: 'simulate-years', years: 1 })).toMatchObject({
+        id: 15,
         type: 'simulate-years',
         result: { now: dateTimeToTick({ year: 2031, month: 4, day: 8 }) - TICKS_PER_MINUTE },
       });
-      const response = session.handle({ id: 7, type: 'statistics', start: 'game-start' });
-      expect(response.type).toBe('statistics');
-      if (response.type === 'statistics') {
-        expect(response.result.durationMs).toBe(10);
-        expect(response.result.statistics).toMatchObject({
-          start: 'game-start',
-          fromTick: GAME_START_TICK,
-        });
-      }
-    });
 
-    it('answers with an error for invalid requests', () => {
-      expect(session.handle({ id: 5, type: 'simulate', days: 0 })).toMatchObject({
-        id: 5,
-        type: 'error',
+      expect(session.handle({ id: 16, type: 'statistics', start: 'game-start' })).toMatchObject({
+        id: 16,
+        type: 'statistics',
+        result: { durationMs: 10, statistics: { start: 'game-start', fromTick: GAME_START_TICK } },
       });
     });
   });

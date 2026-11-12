@@ -1,0 +1,16 @@
+{
+  "description": "Database of the Ionic prototype (DB version 2): stores with out-of-line keys. Frozen; never edit after release (TS §9.7).",
+  "version": 2,
+  "stores": [
+    {
+      "name": "players",
+      "indexes": ["name"],
+      "records": [{ "key": "p1", "value": { "name": "Alt", "cash": 10000 } }]
+    },
+    {
+      "name": "profiles",
+      "indexes": [],
+      "records": [{ "key": "p1", "value": { "name": "alt" } }]
+    }
+  ]
+}

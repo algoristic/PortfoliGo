@@ -1,93 +1,117 @@
-import { deriveSeedKey } from '@app/simulation/util/seed';
+import fc from 'fast-check';
+
+import { eurosToCents } from '@app/shared/domain/money-logic';
+
+import { deriveSeedKey, normalizeSeed } from '@app/simulation/util/seed';
 
 import { freeFloatMarketCap } from './company-generator';
 import { DEFAULT_WORLD_CONFIG } from './default-world-config';
-import { isValidIsin } from './identifier-logic';
-import { Company } from './models/company.model';
+import { FICTIONAL_ISIN_PREFIX, isValidIsin } from './identifier-logic';
 import { DIVIDENDS_PER_YEAR, REGION_IDS, SECTOR_IDS } from './models/taxonomy.model';
+import { Range } from './models/world-config.model';
 import { World } from './models/world.model';
 import { isBlockedName } from './name-logic';
+import { INDUSTRIES } from './taxonomy';
 import { worldChecksum } from './world-checksum';
 import { generateWorld } from './world-generator';
 
-/** Changes when the world for existing seeds changes; then `simVersion` must be raised (TS §15). */
-const GOLDEN_1_CHECKSUM = 'aef20df8b8edb99b98a35e668dcbcb43';
+import { arbSeedText } from '../../../testing/arbitraries';
 
-const SEEDS = Array.from({ length: 20 }, (_value, index) => `world-test-${index}`);
-const worlds: readonly World[] = SEEDS.map((seed) => generateWorld(deriveSeedKey(seed)));
-const allCompanies: readonly Company[] = worlds.flatMap((world) => world.companies);
+// Structural rules of the world (TS §5.2–§5.7) as properties over arbitrary seeds. Quantities and
+// ranges come from `DEFAULT_WORLD_CONFIG`; the golden checksum lives in `golden-master.spec.ts`,
+// the statistical mix of the standard world in `world-generator.calibration.spec.ts`.
 
-function share<T>(items: readonly T[], predicate: (item: T) => boolean): number {
-  return items.filter(predicate).length / items.length;
+const config = DEFAULT_WORLD_CONFIG;
+/** Each run generates a standard world (about 10–15 ms). */
+const NUM_RUNS = 8;
+/** Last day of the month of an ex-date rhythm (TS §5.4). */
+const LAST_SCHEDULE_DAY = 28;
+
+function forAnyWorld(check: (world: World) => void): void {
+  fc.assert(
+    fc.property(arbSeedText(), (seed) => check(generateWorld(deriveSeedKey(seed)))),
+    { numRuns: NUM_RUNS },
+  );
 }
 
 function expectUnique(values: readonly string[]): void {
   expect(new Set(values.map((value) => value.toLowerCase())).size).toBe(values.length);
 }
 
+function expectIn(value: number | undefined, [min, max]: Range, label: string): void {
+  expect(value, label).toBeGreaterThanOrEqual(min);
+  expect(value, label).toBeLessThanOrEqual(max);
+}
+
+function centsRange([min, max]: Range): Range {
+  return [eurosToCents(min), eurosToCents(max)];
+}
+
+function sum(values: readonly number[]): number {
+  return values.reduce((total, value) => total + value, 0);
+}
+
 describe('generateWorld', () => {
   describe('determinism', () => {
-    it('creates an identical world for the same seed', () => {
-      const first = generateWorld(deriveSeedKey('golden-1'));
-      const second = generateWorld(deriveSeedKey('  Golden-1 '));
-      expect(second).toEqual(first);
-      expect(worldChecksum(first)).toBe(worldChecksum(second));
-    });
-
-    it('matches the golden checksum', () => {
-      expect(worldChecksum(generateWorld(deriveSeedKey('golden-1')))).toBe(GOLDEN_1_CHECKSUM);
+    it('creates the same world for every spelling of a seed', () => {
+      fc.assert(
+        fc.property(arbSeedText(), fc.boolean(), (seed, upper) => {
+          const spelled = ` ${upper ? seed.toUpperCase() : seed} `;
+          fc.pre(normalizeSeed(spelled) === normalizeSeed(seed));
+          const world = generateWorld(deriveSeedKey(seed));
+          expect(generateWorld(deriveSeedKey(spelled))).toEqual(world);
+        }),
+        { numRuns: 5 },
+      );
     });
 
     it('creates different worlds for different seeds', () => {
-      expect(new Set(worlds.map(worldChecksum)).size).toBe(worlds.length);
+      fc.assert(
+        fc.property(arbSeedText(), arbSeedText(), (first, second) => {
+          fc.pre(normalizeSeed(first) !== normalizeSeed(second));
+          expect(worldChecksum(generateWorld(deriveSeedKey(first)))).not.toBe(
+            worldChecksum(generateWorld(deriveSeedKey(second))),
+          );
+        }),
+        { numRuns: 5 },
+      );
     });
   });
 
   describe('quantities', () => {
     it('follows the configuration of the standard world', () => {
-      for (const world of worlds) {
-        expect(world.companies).toHaveLength(DEFAULT_WORLD_CONFIG.companies.count);
-        expect(world.indices).toHaveLength(22);
-        expect(world.etfIssuers).toHaveLength(DEFAULT_WORLD_CONFIG.etfs.issuerCount);
-        expect(world.etfs).toHaveLength(30);
-        expect(world.banks.length).toBeGreaterThanOrEqual(6);
-        expect(world.banks.length).toBeLessThanOrEqual(8);
-      }
-    });
-
-    it('allocates companies to regions by weight', () => {
-      const world = worlds[0];
-      for (const regionId of REGION_IDS) {
-        const expected =
-          DEFAULT_WORLD_CONFIG.companies.count *
-          DEFAULT_WORLD_CONFIG.companies.regionWeights[regionId];
-        expect(world.companies.filter((company) => company.regionId === regionId)).toHaveLength(
-          expected,
-        );
-      }
-    });
-  });
-
-  describe('dividends', () => {
-    it('gives every dividend payer a yearly ex-date rhythm and nobody else', () => {
-      for (const company of allCompanies) {
-        const { frequency, schedule } = company.dividend;
-        if (frequency === null) {
-          expect(schedule).toBeNull();
-          continue;
+      // Composition per bank type (TS §5.7).
+      const minBanks = sum(config.banks.composition.map(({ count }) => count[0]));
+      const maxBanks = sum(config.banks.composition.map(({ count }) => count[1]));
+      forAnyWorld((world) => {
+        expect(world.companies).toHaveLength(config.companies.count);
+        expect(world.etfIssuers).toHaveLength(config.etfs.issuerCount);
+        expect(world.etfs).toHaveLength(sum(config.etfs.products.map((product) => product.count)));
+        expectIn(world.banks.length, [minBanks, maxBanks], 'banks');
+        for (const { type, count } of config.banks.composition) {
+          const ofType = world.banks.filter((bank) => bank.type === type).length;
+          expectIn(ofType, count, type);
         }
-        expect(schedule).not.toBeNull();
-        expect(schedule?.firstMonth).toBeGreaterThanOrEqual(1);
-        expect(schedule?.firstMonth).toBeLessThanOrEqual(12 / DIVIDENDS_PER_YEAR[frequency]);
-        expect(schedule?.day).toBeGreaterThanOrEqual(1);
-        expect(schedule?.day).toBeLessThanOrEqual(28);
-      }
+      });
+    });
+
+    it('allocates the companies to regions by weight', () => {
+      forAnyWorld((world) => {
+        for (const regionId of REGION_IDS) {
+          const expected = Math.round(
+            config.companies.count * config.companies.regionWeights[regionId],
+          );
+          expect(world.companies.filter((company) => company.regionId === regionId)).toHaveLength(
+            expected,
+          );
+        }
+      });
     });
   });
 
-  describe('uniqueness and references', () => {
+  describe('names and identifiers', () => {
     it('has no duplicate ids, names, tickers or identifiers', () => {
-      for (const world of worlds) {
+      forAnyWorld((world) => {
         const instruments = [...world.companies, ...world.indices, ...world.etfs];
         expectUnique(instruments.map((instrument) => instrument.id));
         expectUnique(instruments.map((instrument) => instrument.ticker));
@@ -97,11 +121,11 @@ describe('generateWorld', () => {
         );
         expectUnique(world.banks.map((bank) => bank.id));
         expectUnique(world.etfIssuers.map((issuer) => issuer.id));
-      }
+      });
     });
 
     it('uses fictional names and identifiers only', () => {
-      for (const world of worlds) {
+      forAnyWorld((world) => {
         const entities = [
           ...world.companies,
           ...world.indices,
@@ -113,72 +137,140 @@ describe('generateWorld', () => {
           expect(isBlockedName(entity.name), entity.name).toBe(false);
         }
         for (const instrument of [...world.companies, ...world.etfs]) {
-          expect(isValidIsin(instrument.isin)).toBe(true);
-          expect(instrument.isin.startsWith('QP')).toBe(true);
+          expect(isValidIsin(instrument.isin), instrument.isin).toBe(true);
+          expect(instrument.isin.startsWith(FICTIONAL_ISIN_PREFIX)).toBe(true);
         }
         for (const instrument of [...world.companies, ...world.indices, ...world.etfs]) {
           expect(instrument.ticker).toMatch(/^[A-Z]{2,5}$/);
         }
-      }
+      });
     });
+  });
 
-    it('references existing entries', () => {
-      for (const world of worlds) {
+  describe('companies', () => {
+    it('references the taxonomy consistently', () => {
+      forAnyWorld((world) => {
         const exchanges = new Map(world.exchanges.map((exchange) => [exchange.id, exchange]));
         const countries = new Map(world.countries.map((country) => [country.id, country]));
         const industries = new Map(world.industries.map((industry) => [industry.id, industry]));
-        const companyIds = new Set(world.companies.map((company) => company.id));
-        const indexIds = new Set(world.indices.map((index) => index.id));
-        const issuerIds = new Set(world.etfIssuers.map((issuer) => issuer.id));
         for (const company of world.companies) {
           expect(exchanges.get(company.exchangeId)?.countryId).toBe(company.countryId);
           expect(countries.get(company.countryId)?.regionId).toBe(company.regionId);
           expect(industries.get(company.industryId)?.sectorId).toBe(company.sectorId);
         }
-        for (const index of world.indices) {
-          expect(index.constituents.length).toBeGreaterThan(0);
-          expect([...index.constituents].sort()).toEqual(index.constituents);
-          for (const id of index.constituents) {
-            expect(companyIds.has(id)).toBe(true);
+      });
+    });
+
+    it('keeps prices, shares and market capitalisation consistent', () => {
+      const { startPrice, freeFloat, sizeThresholds, savingsPlanSizes } = config.companies;
+      forAnyWorld((world) => {
+        for (const company of world.companies) {
+          expectIn(company.startPrice, [startPrice.min, startPrice.max], 'start price');
+          expect(Number.isInteger(company.sharesOutstanding)).toBe(true);
+          expect(company.freeFloatShares).toBeLessThanOrEqual(company.sharesOutstanding);
+          expect(company.freeFloatShares).toBeGreaterThanOrEqual(
+            company.sharesOutstanding * freeFloat[0] - 1,
+          );
+          expect(Number.isInteger(company.marketCap)).toBe(true);
+          expect(company.savingsPlanEligible).toBe(savingsPlanSizes.includes(company.size));
+          // The size class follows from the market capitalisation (TS §5.4).
+          const capEuros = company.sharesOutstanding * company.startPrice;
+          // Rounding the start price to cents moves the capitalisation by far less than 1 %.
+          const bounds: Record<typeof company.size, Range> = {
+            large: [sizeThresholds.large, Number.POSITIVE_INFINITY],
+            mid: [sizeThresholds.mid, sizeThresholds.large],
+            small: [0, sizeThresholds.mid],
+          };
+          const [low, high] = bounds[company.size];
+          expectIn(capEuros, [low * 0.99, high * 1.01], 'market capitalisation');
+        }
+      });
+    });
+
+    it('draws the model parameters from the ranges of the configuration', () => {
+      const { idioVol, jumpIntensity, worldBeta, sizeLoading } = config.companies;
+      const industries = new Map(INDUSTRIES.map((industry) => [industry.id, industry]));
+      forAnyWorld((world) => {
+        for (const company of world.companies) {
+          const { model, size, cyclicality } = company;
+          const factor = industries.get(company.industryId)?.volatilityFactor ?? Number.NaN;
+          expectIn(model.idioVol / factor, idioVol[size], 'idiosyncratic volatility');
+          expectIn(model.jumpIntensity, jumpIntensity, 'jump intensity');
+          expectIn(model.loadings.world, worldBeta[cyclicality], 'world beta');
+          expectIn(model.loadings.size, sizeLoading[size], 'size loading');
+        }
+      });
+    });
+
+    it('gives every dividend payer a yield and a yearly ex-date rhythm and nobody else', () => {
+      forAnyWorld((world) => {
+        for (const company of world.companies) {
+          const { frequency, schedule, yield: dividendYield } = company.dividend;
+          expectIn(dividendYield, [0, config.companies.maxDividendYield], 'dividend yield');
+          expect(frequency === null).toBe(dividendYield === 0);
+          if (frequency === null) {
+            expect(schedule).toBeNull();
+            continue;
           }
+          expectIn(schedule?.firstMonth, [1, 12 / DIVIDENDS_PER_YEAR[frequency]], 'first month');
+          expectIn(schedule?.day, [1, LAST_SCHEDULE_DAY], 'day');
         }
-        for (const etf of world.etfs) {
-          expect(indexIds.has(etf.indexId)).toBe(true);
-          expect(issuerIds.has(etf.issuerId)).toBe(true);
-          expect(exchanges.has(etf.exchangeId)).toBe(true);
-        }
-      }
+      });
     });
   });
 
   describe('indices', () => {
-    it('builds the world, regional, sector, small-cap and dividend indices', () => {
-      for (const world of worlds) {
-        const byKind = (kind: string): number =>
+    it('builds the world, regional, sector, small-cap and dividend indices of TS §5.5', () => {
+      forAnyWorld((world) => {
+        const ofKind = (kind: string): number =>
           world.indices.filter((index) => index.kind === kind).length;
-        expect(byKind('world')).toBe(1);
-        expect(byKind('region-broad')).toBe(4);
-        expect(byKind('region-leading')).toBe(4);
-        expect(byKind('sector')).toBe(SECTOR_IDS.length);
-        expect(byKind('small-cap')).toBe(1);
-        expect(byKind('dividend')).toBe(1);
+        expect(ofKind('world')).toBe(1);
+        expect(ofKind('region-broad')).toBe(REGION_IDS.length);
+        expect(ofKind('region-leading')).toBe(REGION_IDS.length);
+        expect(ofKind('sector')).toBe(SECTOR_IDS.length);
+        expect(ofKind('small-cap')).toBe(1);
+        expect(ofKind('dividend')).toBe(1);
+      });
+    });
 
-        const worldIndex = world.indices.find((index) => index.kind === 'world');
-        expect(worldIndex?.constituents).toHaveLength(world.companies.length);
-      }
+    it('selects the constituents by the rule of each index', () => {
+      forAnyWorld((world) => {
+        const companyIds = new Set(world.companies.map((company) => company.id));
+        for (const index of world.indices) {
+          expect(index.constituents.length).toBeGreaterThan(0);
+          expect([...index.constituents].sort()).toEqual(index.constituents);
+          expect(index.constituents.every((id) => companyIds.has(id))).toBe(true);
+          const members = (predicate: (company: World['companies'][number]) => boolean): string[] =>
+            world.companies
+              .filter(predicate)
+              .map((company) => company.id)
+              .sort();
+          switch (index.kind) {
+            case 'world':
+              expect(index.constituents).toEqual(members(() => true));
+              break;
+            case 'region-broad':
+              expect(index.constituents).toEqual(members((c) => c.regionId === index.regionId));
+              break;
+            case 'sector':
+              expect(index.constituents).toEqual(members((c) => c.sectorId === index.sectorId));
+              break;
+            case 'small-cap':
+              expect(index.constituents).toEqual(members((c) => c.size === 'small'));
+              break;
+          }
+        }
+      });
     });
 
     it('puts the largest companies of the region into the leading index', () => {
-      for (const world of worlds) {
+      forAnyWorld((world) => {
         for (const index of world.indices.filter((entry) => entry.kind === 'region-leading')) {
           const regionId = index.regionId;
           expect(regionId).not.toBeNull();
           const regional = world.companies.filter((company) => company.regionId === regionId);
           const members = new Set(index.constituents);
-          const size = Math.min(
-            regional.length,
-            DEFAULT_WORLD_CONFIG.indices.leadingSize[regionId ?? 'europe'],
-          );
+          const size = Math.min(regional.length, config.indices.leadingSize[regionId ?? 'europe']);
           expect(members.size).toBe(size);
           const smallestMember = Math.min(
             ...regional.filter((c) => members.has(c.id)).map(freeFloatMarketCap),
@@ -187,193 +279,162 @@ describe('generateWorld', () => {
             expect(freeFloatMarketCap(company)).toBeLessThanOrEqual(smallestMember);
           }
         }
-      }
+      });
+    });
+
+    it('puts the highest dividend yields into the dividend index', () => {
+      forAnyWorld((world) => {
+        const index = world.indices.find((entry) => entry.kind === 'dividend');
+        const members = new Set(index?.constituents);
+        expect(members.size).toBe(config.indices.dividendSize);
+        const lowestMember = Math.min(
+          ...world.companies.filter((c) => members.has(c.id)).map((c) => c.dividend.yield),
+        );
+        expect(lowestMember).toBeGreaterThan(0);
+        for (const company of world.companies.filter((c) => !members.has(c.id))) {
+          expect(company.dividend.yield).toBeLessThanOrEqual(lowestMember);
+        }
+      });
     });
   });
 
-  describe('distributions', () => {
-    it('mixes large, mid and small caps', () => {
-      expect(share(allCompanies, (company) => company.size === 'large')).toBeGreaterThan(0.15);
-      expect(share(allCompanies, (company) => company.size === 'large')).toBeLessThan(0.4);
-      expect(share(allCompanies, (company) => company.size === 'mid')).toBeGreaterThan(0.25);
-      expect(share(allCompanies, (company) => company.size === 'small')).toBeGreaterThan(0.2);
-    });
-
-    it('mixes styles, cyclicalities and risk classes', () => {
-      for (const style of ['value', 'blend', 'growth']) {
-        expect(share(allCompanies, (company) => company.style === style)).toBeGreaterThan(0.15);
-      }
-      for (const cyclicality of ['defensive', 'neutral', 'cyclical']) {
-        expect(share(allCompanies, (c) => c.cyclicality === cyclicality)).toBeGreaterThan(0.15);
-      }
-      for (const riskClass of [1, 2, 3, 4, 5]) {
-        expect(share(allCompanies, (c) => c.riskClass === riskClass)).toBeGreaterThan(0.02);
-      }
-    });
-
-    it('keeps prices, shares and market capitalisation consistent', () => {
-      for (const company of allCompanies) {
-        expect(company.startPrice).toBeGreaterThanOrEqual(5);
-        expect(company.startPrice).toBeLessThanOrEqual(500);
-        expect(Number.isInteger(company.sharesOutstanding)).toBe(true);
-        expect(company.freeFloatShares).toBeLessThanOrEqual(company.sharesOutstanding);
-        expect(company.freeFloatShares).toBeGreaterThanOrEqual(company.sharesOutstanding * 0.5 - 1);
-        expect(Number.isInteger(company.marketCap)).toBe(true);
-        expect(company.savingsPlanEligible).toBe(company.size === 'large');
-      }
-    });
-
-    it('draws model parameters inside the start ranges', () => {
-      for (const { model, size } of allCompanies) {
-        expect(model.idioVol).toBeGreaterThanOrEqual(0.1);
-        expect(model.idioVol).toBeLessThanOrEqual(0.75);
-        expect(model.jumpIntensity).toBeGreaterThanOrEqual(2);
-        expect(model.jumpIntensity).toBeLessThanOrEqual(6);
-        expect(model.loadings.world).toBeGreaterThanOrEqual(0.6);
-        expect(model.loadings.world).toBeLessThanOrEqual(1.4);
-        expect(model.loadings.size > 0).toBe(size !== 'large');
-      }
-    });
-
-    it('produces dividend yields of 0–7 % and 2–3 % in the world index', () => {
-      for (const company of allCompanies) {
-        expect(company.dividend.yield).toBeGreaterThanOrEqual(0);
-        expect(company.dividend.yield).toBeLessThanOrEqual(0.07);
-        expect(company.dividend.frequency === null).toBe(company.dividend.yield === 0);
-      }
-      for (const world of worlds) {
-        let weighted = 0;
-        let total = 0;
-        for (const company of world.companies) {
-          weighted += freeFloatMarketCap(company) * company.dividend.yield;
-          total += freeFloatMarketCap(company);
-        }
-        expect(weighted / total).toBeGreaterThan(0.015);
-        expect(weighted / total).toBeLessThan(0.035);
-      }
-      expect(share(allCompanies, (company) => company.dividend.yield === 0)).toBeGreaterThan(0.1);
-    });
-
-    it('offers several ETFs per broad index with TERs of 0.05–0.65 %', () => {
-      for (const world of worlds) {
+  describe('ETFs', () => {
+    it('track existing indices with TERs from the ranges of their products', () => {
+      const terRange: Range = [
+        Math.min(...config.etfs.products.map((product) => product.ter[0])),
+        Math.max(...config.etfs.products.map((product) => product.ter[1])),
+      ];
+      forAnyWorld((world) => {
+        const indexIds = new Set(world.indices.map((index) => index.id));
+        const issuerIds = new Set(world.etfIssuers.map((issuer) => issuer.id));
+        const exchangeIds = new Set(world.exchanges.map((exchange) => exchange.id));
         for (const etf of world.etfs) {
-          expect(etf.ter).toBeGreaterThanOrEqual(0.0005);
-          expect(etf.ter).toBeLessThanOrEqual(0.0065);
+          expect(indexIds.has(etf.indexId)).toBe(true);
+          expect(issuerIds.has(etf.issuerId)).toBe(true);
+          expect(exchangeIds.has(etf.exchangeId)).toBe(true);
+          expectIn(etf.ter, terRange, 'TER');
           expect(etf.savingsPlanEligible).toBe(true);
         }
-        const worldIndex = world.indices.find((index) => index.kind === 'world');
-        const worldEtfs = world.etfs.filter((etf) => etf.indexId === worldIndex?.id);
-        expect(new Set(worldEtfs.map((etf) => etf.issuerId)).size).toBe(worldEtfs.length);
-        const dividendIndex = world.indices.find((index) => index.kind === 'dividend');
-        for (const etf of world.etfs.filter((entry) => entry.indexId === dividendIndex?.id)) {
-          expect(etf.distribution.kind).toBe('distributing');
-        }
-      }
-      const etfs = worlds.flatMap((world) => world.etfs);
-      expect(share(etfs, (etf) => etf.distribution.kind === 'distributing')).toBeGreaterThan(0.2);
-      expect(share(etfs, (etf) => etf.distribution.kind === 'accumulating')).toBeGreaterThan(0.4);
+      });
     });
 
-    it('gives every ETF a start price and the distributing ones an ex-date rhythm', () => {
-      const { startPrice } = DEFAULT_WORLD_CONFIG.etfs;
-      for (const etf of worlds.flatMap((world) => world.etfs)) {
-        expect(etf.startPrice).toBeGreaterThanOrEqual(startPrice.min);
-        expect(etf.startPrice).toBeLessThanOrEqual(startPrice.max);
-        expect(Math.round(etf.startPrice * 100) / 100).toBe(etf.startPrice);
-        if (etf.distribution.kind === 'distributing') {
-          const { frequency, schedule } = etf.distribution;
-          expect(schedule.firstMonth).toBeGreaterThanOrEqual(1);
-          expect(schedule.firstMonth).toBeLessThanOrEqual(12 / DIVIDENDS_PER_YEAR[frequency]);
-          expect(schedule.day).toBeGreaterThanOrEqual(1);
-          expect(schedule.day).toBeLessThanOrEqual(28);
+    it('come from different issuers per index (TS §5.6)', () => {
+      forAnyWorld((world) => {
+        for (const index of world.indices) {
+          const issuers = world.etfs
+            .filter((etf) => etf.indexId === index.id)
+            .map((etf) => etf.issuerId);
+          expect(new Set(issuers).size).toBe(issuers.length);
         }
-      }
+      });
+    });
+
+    it('distribute when their product always distributes', () => {
+      const alwaysDistributing = config.etfs.products
+        .filter((product) => product.distributingShare === 1)
+        .map((product) => product.kind);
+      forAnyWorld((world) => {
+        for (const etf of world.etfs) {
+          const kind = world.indices.find((index) => index.id === etf.indexId)?.kind;
+          if (kind !== undefined && alwaysDistributing.includes(kind)) {
+            expect(etf.distribution.kind).toBe('distributing');
+          }
+        }
+      });
+    });
+
+    it('get a start price in cents and the distributing ones an ex-date rhythm', () => {
+      const { startPrice } = config.etfs;
+      forAnyWorld((world) => {
+        for (const etf of world.etfs) {
+          expectIn(etf.startPrice, [startPrice.min, startPrice.max], 'start price');
+          expect(eurosToCents(etf.startPrice) / 100).toBe(etf.startPrice);
+          if (etf.distribution.kind === 'distributing') {
+            const { frequency, schedule } = etf.distribution;
+            expectIn(schedule.firstMonth, [1, 12 / DIVIDENDS_PER_YEAR[frequency]], 'first month');
+            expectIn(schedule.day, [1, LAST_SCHEDULE_DAY], 'day');
+          }
+        }
+      });
     });
   });
 
   describe('banks', () => {
-    const banks = worlds.flatMap((world) => world.banks);
-
-    it('always includes branch banks for the house bank and every bank type', () => {
-      for (const world of worlds) {
-        for (const type of ['branch', 'direct', 'online-broker', 'neo-broker']) {
-          expect(world.banks.some((bank) => bank.type === type)).toBe(true);
+    it('draws branch bank conditions from the ranges of the configuration', () => {
+      const ranges = config.banks.branch;
+      forAnyWorld((world) => {
+        for (const { conditions } of world.banks.filter((bank) => bank.type === 'branch')) {
+          const { currentAccount, savingsAccount, depot } = conditions;
+          expectIn(currentAccount?.monthlyFee, centsRange(ranges.monthlyFee), 'monthly fee');
+          expectIn(currentAccount?.overdraft.rate, ranges.overdraftRate, 'overdraft rate');
+          expectIn(
+            currentAccount?.overdraft.toleratedSurcharge,
+            ranges.toleratedSurcharge,
+            'tolerated surcharge',
+          );
+          expectIn(savingsAccount?.rate, ranges.savingsRate, 'savings rate');
+          expect(depot.custodyFee.kind).toBe('percent-pa');
+          if (depot.custodyFee.kind === 'percent-pa') {
+            expectIn(depot.custodyFee.rate, ranges.custodyRate, 'custody rate');
+            expectIn(depot.custodyFee.min, centsRange(ranges.custodyMin), 'custody minimum');
+          }
+          expect(depot.orderFee).toEqual({
+            kind: 'percent',
+            rate: ranges.orderRate,
+            min: eurosToCents(ranges.orderMin),
+            max: eurosToCents(ranges.orderMax),
+          });
+          expect(depot.savingsPlanFee.kind).toBe('percent');
+          expect(depot.venue).toBe('exchange');
+          expectIn(depot.clearingAccountDebitRate, ranges.clearingDebitRate, 'debit rate');
         }
-      }
+      });
     });
 
-    it('draws branch bank conditions inside the ranges of TS §5.7', () => {
-      for (const { conditions } of banks.filter((bank) => bank.type === 'branch')) {
-        const { currentAccount, savingsAccount, depot } = conditions;
-        expect(currentAccount?.monthlyFee).toBeGreaterThanOrEqual(600);
-        expect(currentAccount?.monthlyFee).toBeLessThanOrEqual(1200);
-        expect(currentAccount?.overdraft.rate).toBeGreaterThanOrEqual(0.1);
-        expect(currentAccount?.overdraft.rate).toBeLessThanOrEqual(0.14);
-        expect(currentAccount?.overdraft.toleratedSurcharge).toBeGreaterThanOrEqual(0.03);
-        expect(currentAccount?.overdraft.toleratedSurcharge).toBeLessThanOrEqual(0.05);
-        expect(savingsAccount?.rate).toBeLessThanOrEqual(0.005);
-        expect(depot.custodyFee.kind).toBe('percent-pa');
-        if (depot.custodyFee.kind === 'percent-pa') {
-          expect(depot.custodyFee.rate).toBeGreaterThanOrEqual(0.001);
-          expect(depot.custodyFee.rate).toBeLessThanOrEqual(0.0025);
-          expect(depot.custodyFee.min).toBeGreaterThanOrEqual(2500);
-          expect(depot.custodyFee.min).toBeLessThanOrEqual(4500);
+    it('draws direct bank conditions from the ranges of the configuration', () => {
+      const ranges = config.banks.direct;
+      forAnyWorld((world) => {
+        for (const { conditions } of world.banks.filter((bank) => bank.type === 'direct')) {
+          const { currentAccount, savingsAccount, depot } = conditions;
+          expectIn(currentAccount?.monthlyFee, centsRange(ranges.monthlyFee), 'monthly fee');
+          expect(currentAccount?.feeWaiver).toEqual({
+            minMonthlyDeposits: eurosToCents(ranges.feeWaiverMinDeposits),
+          });
+          expectIn(currentAccount?.overdraft.rate, ranges.overdraftRate, 'overdraft rate');
+          expectIn(savingsAccount?.rate, ranges.savingsRate, 'savings rate');
+          expect(depot.custodyFee).toEqual({ kind: 'none' });
+          expect(depot.orderFee.kind).toBe('flat-plus-percent');
+          expectIn(depot.clearingAccountDebitRate, ranges.clearingDebitRate, 'debit rate');
         }
-        expect(depot.orderFee).toEqual({ kind: 'percent', rate: 0.0025, min: 1000, max: 6000 });
-        expect(depot.savingsPlanFee.kind).toBe('percent');
-        expect(depot.venue).toBe('exchange');
-      }
-    });
-
-    it('draws direct bank conditions inside the ranges of TS §5.7', () => {
-      for (const { conditions } of banks.filter((bank) => bank.type === 'direct')) {
-        const { currentAccount, savingsAccount, depot } = conditions;
-        expect(currentAccount?.monthlyFee).toBeGreaterThanOrEqual(400);
-        expect(currentAccount?.monthlyFee).toBeLessThanOrEqual(600);
-        expect(currentAccount?.feeWaiver).toEqual({ minMonthlyDeposits: 70000 });
-        expect(currentAccount?.overdraft.rate).toBeGreaterThanOrEqual(0.07);
-        expect(currentAccount?.overdraft.rate).toBeLessThanOrEqual(0.1);
-        expect(savingsAccount?.rate).toBeGreaterThanOrEqual(0.015);
-        expect(savingsAccount?.rate).toBeLessThanOrEqual(0.03);
-        expect(depot.custodyFee).toEqual({ kind: 'none' });
-        expect(depot.orderFee.kind).toBe('flat-plus-percent');
-      }
+      });
     });
 
     it('gives brokers depots only, with the venue of their type', () => {
-      for (const bank of banks.filter((entry) => entry.type.endsWith('broker'))) {
-        const { currentAccount, savingsAccount, depot } = bank.conditions;
-        expect(currentAccount).toBeNull();
-        expect(savingsAccount).toBeNull();
-        expect(depot.custodyFee).toEqual({ kind: 'none' });
-        if (bank.type === 'neo-broker') {
-          expect(depot.venue).toBe('market-maker');
-          expect(depot.fractionalShares).toBe(true);
-          expect(depot.spreadMarkup).toBeGreaterThanOrEqual(0.0005);
-          expect(depot.spreadMarkup).toBeLessThanOrEqual(0.002);
-          expect(depot.clearingAccountRate).toBeGreaterThanOrEqual(0.01);
-          expect(depot.clearingAccountRate).toBeLessThanOrEqual(0.025);
-          expect(depot.savingsPlanFee).toEqual({ kind: 'free' });
-        } else {
-          expect(depot.venue).toBe('exchange');
-          expect(depot.orderFee.kind).toBe('flat');
+      forAnyWorld((world) => {
+        for (const bank of world.banks.filter((entry) => entry.type.endsWith('broker'))) {
+          const { currentAccount, savingsAccount, depot } = bank.conditions;
+          expect(currentAccount).toBeNull();
+          expect(savingsAccount).toBeNull();
+          expect(depot.custodyFee).toEqual({ kind: 'none' });
+          if (bank.type === 'neo-broker') {
+            const ranges = config.banks.neoBroker;
+            expect(depot.venue).toBe('market-maker');
+            expect(depot.fractionalShares).toBe(true);
+            expectIn(depot.spreadMarkup, ranges.spreadMarkup, 'spread mark-up');
+            expectIn(depot.clearingAccountRate, ranges.clearingRate, 'clearing rate');
+            expectIn(depot.clearingAccountDebitRate, ranges.clearingDebitRate, 'debit rate');
+            expect(depot.savingsPlanFee).toEqual({ kind: 'free' });
+          } else {
+            expect(depot.venue).toBe('exchange');
+            expect(depot.orderFee.kind).toBe('flat');
+            expectIn(
+              depot.clearingAccountDebitRate,
+              config.banks.onlineBroker.clearingDebitRate,
+              'debit rate',
+            );
+          }
         }
-      }
-    });
-
-    it('charges a debit rate on negative clearing accounts at every bank', () => {
-      for (const bank of banks) {
-        expect(bank.conditions.depot.clearingAccountDebitRate).toBeGreaterThan(0.05);
-      }
-    });
-  });
-
-  describe('performance', () => {
-    it('generates the standard world in under 200 ms', () => {
-      generateWorld(deriveSeedKey('warm-up'));
-      const start = performance.now();
-      generateWorld(deriveSeedKey('performance'));
-      expect(performance.now() - start).toBeLessThan(200);
+      });
     });
   });
 });

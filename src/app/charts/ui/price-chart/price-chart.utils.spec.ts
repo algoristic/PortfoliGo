@@ -1,4 +1,7 @@
+import fc from 'fast-check';
+
 import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
+import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
 import { Candle } from '@app/market/domain/models/candle.model';
 
 import {
@@ -14,7 +17,10 @@ import {
   toLinePoints,
 } from './price-chart.utils';
 
+import { arbTick } from '../../../../testing/arbitraries';
+
 const MS_PER_SECOND = 1000;
+const MS_PER_MINUTE = 60 * MS_PER_SECOND;
 
 describe('price chart utils', () => {
   describe('tickToChartTime', () => {
@@ -35,10 +41,23 @@ describe('price chart utils', () => {
       }
     });
 
+    it('maps every tick to one minute after 01.01.2020 00:00 UTC per tick', () => {
+      // Oracle: a tick is a game minute since the epoch (TS §3.2), and the chart time is UTC.
+      fc.assert(
+        fc.property(arbTick(), (tick) => {
+          expect(tickToChartTime(tick) * MS_PER_SECOND).toBe(
+            Date.UTC(2020, 0, 1) + tick * MS_PER_MINUTE,
+          );
+        }),
+      );
+    });
+
     it('round-trips with chartTimeToTick', () => {
-      for (const tick of [0, 1, GAME_START_TICK, GAME_START_TICK + 12345]) {
-        expect(chartTimeToTick(tickToChartTime(tick))).toBe(tick);
-      }
+      fc.assert(
+        fc.property(arbTick(), (tick) => {
+          expect(chartTimeToTick(tickToChartTime(tick))).toBe(tick);
+        }),
+      );
     });
   });
 
@@ -118,6 +137,20 @@ describe('price chart utils', () => {
     it('detects older candles in front of the loaded ones', () => {
       expect(isPrepended(loaded, [candle(0), candle(10), candle(20)])).toBe(true);
       expect(isPrepended(loaded, [candle(10), candle(20)])).toBe(true);
+    });
+
+    it('detects any block of older candles in front of the loaded ones', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 0, max: 40 }),
+          fc.integer({ min: 1, max: 40 }),
+          (older, count) => {
+            const current = Array.from({ length: count }, (_, i) => candle(TICKS_PER_DAY + i));
+            const prepended = Array.from({ length: older }, (_, i) => candle(i));
+            expect(isPrepended(current, [...prepended, ...current])).toBe(true);
+          },
+        ),
+      );
     });
 
     it('treats other data as a new data set', () => {

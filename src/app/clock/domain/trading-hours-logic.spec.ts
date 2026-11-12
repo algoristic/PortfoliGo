@@ -1,8 +1,40 @@
+import fc from 'fast-check';
+
 import { dateTimeToTick } from './calendar-logic';
-import { TradingHours } from './models/time.model';
+import { TICKS_PER_DAY, TradingHours } from './models/time.model';
 import { isTradingTime, nextClose, nextOpen } from './trading-hours-logic';
 
+import { arbTick } from '../../../testing/arbitraries';
+
+const EPOCH_MS = Date.UTC(2020, 0, 1);
+
+/** Independent oracle: the weekday from the UTC calendar of `Date`. */
+function isWeekday(tick: number): boolean {
+  const utcDay = new Date(EPOCH_MS + Math.floor(tick / TICKS_PER_DAY) * 86_400_000).getUTCDay();
+  return utcDay !== 0 && utcDay !== 6;
+}
+
+/** Brute force: the first weekday minute at or after `tick` whose minute of the day is `minute`. */
+function scanForMinute(tick: number, minute: number): number {
+  for (let t = tick; t < tick + 5 * TICKS_PER_DAY; t++) {
+    if (t % TICKS_PER_DAY === minute && isWeekday(t)) {
+      return t;
+    }
+  }
+  throw new Error('no session within five days');
+}
+
+/** Any session within a day: opening minute included, closing minute excluded. */
+const arbHours = fc
+  .integer({ min: 0, max: TICKS_PER_DAY - 2 })
+  .chain((open) =>
+    fc
+      .integer({ min: open + 1, max: TICKS_PER_DAY - 1 })
+      .map((close): TradingHours => ({ open, close })),
+  );
+
 describe('trading-hours-logic', () => {
+  // Trading hours of TS §3.3: sessions per exchange, closed on weekends.
   const europe: TradingHours = { open: 540, close: 1050 }; // 09:00–17:30
   const asiaPacific: TradingHours = { open: 60, close: 420 }; // 01:00–07:00
   // 01.04.2030 is a Monday, 05.04.2030 a Friday.
@@ -27,6 +59,21 @@ describe('trading-hours-logic', () => {
       expect(isTradingTime(asiaPacific, at(1, 1))).toBe(true);
       expect(isTradingTime(asiaPacific, at(1, 6, 59))).toBe(true);
       expect(isTradingTime(asiaPacific, at(1, 7))).toBe(false);
+    });
+  });
+
+  describe('isTradingTime, nextOpen and nextClose', () => {
+    it('agree with a minute-by-minute scan for any session and tick', () => {
+      fc.assert(
+        fc.property(arbHours, arbTick(), (hours, tick) => {
+          const minute = tick % TICKS_PER_DAY;
+          expect(isTradingTime(hours, tick)).toBe(
+            isWeekday(tick) && minute >= hours.open && minute < hours.close,
+          );
+          expect(nextOpen(hours, tick)).toBe(scanForMinute(tick, hours.open));
+          expect(nextClose(hours, tick)).toBe(scanForMinute(tick, hours.close));
+        }),
+      );
     });
   });
 

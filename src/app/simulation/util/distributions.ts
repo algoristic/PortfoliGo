@@ -6,7 +6,7 @@ const TWO_POW_32 = 4294967296;
 /** Largest λ for which `poisson` uses plain inversion (e^-λ stays far from underflow). */
 export const POISSON_MAX_LAMBDA = 30;
 
-/** Uniform in [min, max). */
+/** Uniform in [min, max]; `max` only through rounding when the range is tiny compared to `min`. */
 export function uniform(rng: RandomStream, min: number, max: number): number {
   return min + (max - min) * rng.nextFloat53();
 }

@@ -1,41 +1,154 @@
 name: Build PortfoliGo (latest)
 
+# All checks of TS §14.4. Every job gates the deployment: `publish.yml` deploys only after this
+# workflow succeeded as a whole.
+
 on:
   workflow_call:
 
 jobs:
-  build:
+  static:
+    name: Format, lint and types
     runs-on: ubuntu-latest
-    outputs:
-      artifact-path: app-build-static
-
+    timeout-minutes: 15
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
+      - run: npm ci
+      - name: Format
+        run: npx prettier --check .
       - name: Lint
         run: npx ng lint
+      - name: Types
+        run: npm run typecheck
 
-      - name: Test
-        run: npx ng test --watch=false
+  unit:
+    name: Tests (${{ matrix.suite }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [logic, angular, calibration]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      # Property tests draw new inputs per commit; a rerun of the same commit reproduces them.
+      - name: Seed of the property tests
+        run: |
+          echo "FC_SEED=$((16#${GITHUB_SHA:0:7}))" >> "$GITHUB_ENV"
+          echo "fast-check seed: $((16#${GITHUB_SHA:0:7}))" >> "$GITHUB_STEP_SUMMARY"
+      - run: npm run test:${{ matrix.suite }}
 
-      - name: Build App
-        run: npm run build
+  perf:
+    name: Performance budgets
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Runners are slower and noisier than the development machine (TS §14.3).
+      PERF_FACTOR: '2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test:perf
 
-      - name: Upload App Build
-        uses: actions/upload-artifact@v4
+  mutation:
+    name: Mutation tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      # Incremental mode: only mutants in changed code or with changed tests run again.
+      - uses: actions/cache@v4
+        with:
+          path: reports/mutation/incremental.json
+          key: stryker-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            stryker-${{ github.ref_name }}-
+            stryker-main-
+      - run: npm run test:mutation
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-report
+          path: reports/mutation/index.html
+          retention-days: 14
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      artifact-path: app-build-static
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - name: Bundle budget
+        run: npm run budget
+      - uses: actions/upload-artifact@v4
         with:
           name: app-build-static
           path: www
           retention-days: 1
+
+  e2e:
+    name: System tests (${{ matrix.name }})
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The image brings the browsers and their system libraries; its version matches @playwright/test.
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
+      options: --user 1001
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: chromium
+            projects: --project=chromium --project=chromium-intl
+          - name: firefox
+            projects: --project=firefox
+          - name: webkit
+            projects: --project=webkit
+          - name: mobile
+            projects: --project=mobile-chromium --project=mobile-webkit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      # The system tests check exactly the build that is deployed.
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-build-static
+          path: www
+      - run: npx playwright test ${{ matrix.projects }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-${{ matrix.name }}
+          path: playwright-report
+          retention-days: 14

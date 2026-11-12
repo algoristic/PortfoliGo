@@ -1,3 +1,5 @@
+import fc from 'fast-check';
+
 import { normalizeSeed } from './seed';
 import { generateSeed } from './seed-generator';
 import { SEED_FIRST_WORDS, SEED_SECOND_WORDS } from './seed-words';
@@ -17,14 +19,19 @@ describe('generateSeed', () => {
     );
   });
 
-  it('produces normalised seeds of the expected shape', () => {
-    let state = 1;
-    const random = (): number => (state = (Math.imul(state, 1664525) + 1013904223) >>> 0);
-    for (let i = 0; i < 1000; i++) {
-      const seed = generateSeed(random);
-      expect(seed).toMatch(/^[a-z]+-[a-z]+-[1-9][0-9]{2}$/);
-      expect(normalizeSeed(seed)).toBe(seed);
-    }
+  it('produces normalised seeds from the word lists for any random source', () => {
+    fc.assert(
+      fc.property(fc.infiniteStream(fc.nat({ max: 0xffffffff })), (values) => {
+        const random = values[Symbol.iterator]();
+        const seed = generateSeed(() => random.next().value as number);
+        const [first, second, number] = seed.split('-');
+        expect(SEED_FIRST_WORDS).toContain(first);
+        expect(SEED_SECOND_WORDS).toContain(second);
+        expect(Number(number)).toBeGreaterThanOrEqual(100);
+        expect(Number(number)).toBeLessThanOrEqual(999);
+        expect(normalizeSeed(seed)).toBe(seed);
+      }),
+    );
   });
 
   it('rejects values that would bias the result', () => {

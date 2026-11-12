@@ -1,0 +1,32 @@
+// Checks the initial bundle against the budget of TS §14.3 (< 300 kB gzip). Angular's own budgets
+// measure uncompressed sizes, so this script gzips the scripts and styles that `index.html` loads
+// up front, including the chunks it preloads.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { gzipSync } from 'node:zlib';
+
+const BUDGET_BYTES = 300 * 1024;
+const root = process.argv[2] ?? 'www';
+const html = readFileSync(join(root, 'index.html'), 'utf8');
+
+const files = new Set();
+for (const match of html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)="([^"]+\.(?:js|css))"/g)) {
+  files.add(match[1]);
+}
+
+let total = 0;
+for (const file of [...files].sort()) {
+  const size = gzipSync(readFileSync(join(root, file)), { level: 9 }).length;
+  total += size;
+  console.log(`${(size / 1024).toFixed(1).padStart(8)} kB  ${file}`);
+}
+const line = `Initial bundle: ${(total / 1024).toFixed(1)} kB gzip (budget ${BUDGET_BYTES / 1024} kB)`;
+console.log(line);
+if (process.env.GITHUB_STEP_SUMMARY) {
+  const { appendFileSync } = await import('node:fs');
+  appendFileSync(process.env.GITHUB_STEP_SUMMARY, `- ${line}\n`);
+}
+if (total > BUDGET_BYTES) {
+  console.error('The initial bundle exceeds its budget (TS §14.3).');
+  process.exit(1);
+}

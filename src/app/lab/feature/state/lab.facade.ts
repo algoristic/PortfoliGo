@@ -30,6 +30,8 @@ export class LabFacade {
   statisticsStart$ = this.#store.pipe(select(LabSelectors.selectStatisticsStart));
   statistics$ = this.#store.pipe(select(LabSelectors.selectStatistics));
   loadingStatistics$ = this.#store.pipe(select(LabSelectors.selectLoadingStatistics));
+  selfTest$ = this.#store.pipe(select(LabSelectors.selectSelfTest));
+  runningSelfTest$ = this.#store.pipe(select(LabSelectors.selectRunningSelfTest));
 
   enterSimulationPage(): void {
     this.#store.dispatch(LabActions.enterSimulationPage());
@@ -69,5 +71,9 @@ export class LabFacade {
 
   loadHistory(): void {
     this.#store.dispatch(LabActions.scrolledToChartStart());
+  }
+
+  runSelfTest(): void {
+    this.#store.dispatch(LabActions.clickedRunSelfTest());
   }
 }

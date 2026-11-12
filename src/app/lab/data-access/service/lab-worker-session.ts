@@ -1,3 +1,5 @@
+import { computeGoldenChecksums, GOLDEN_SEED } from '@app/market/domain/golden-master';
+
 import { LabWorkerRequest, LabWorkerResponse } from './lab-simulation-service.model';
 
 import { LabSimulation } from '../../domain/lab-simulation';
@@ -72,6 +74,16 @@ export class LabWorkerSession {
           id: request.id,
           type: 'statistics',
           result: { statistics, durationMs: this.#clock() - start },
+        };
+      }
+      case 'golden': {
+        // Needs no world: the self-test generates the golden world itself.
+        const start = this.#clock();
+        const checksums = computeGoldenChecksums(GOLDEN_SEED);
+        return {
+          id: request.id,
+          type: 'golden',
+          result: { checksums, durationMs: this.#clock() - start },
         };
       }
       case 'candles': {

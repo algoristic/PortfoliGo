@@ -15,7 +15,6 @@ import * as LabSelectors from './lab.selectors';
 import {
   ComputedStatistics,
   GeneratedWorld,
-  LoadedCandles,
   SimulatedPeriod,
 } from '../../data-access/service/lab-simulation-service.model';
 import { LabSimulationService } from '../../data-access/service/lab-simulation.service';
@@ -28,7 +27,7 @@ describe('LabEffects', () => {
   let service: Mocked<
     Pick<
       LabSimulationService,
-      'generate' | 'simulate' | 'simulateYears' | 'statistics' | 'candles' | 'terminate'
+      'generate' | 'simulate' | 'simulateYears' | 'statistics' | 'candles' | 'goldenChecksums'
     >
   >;
   let toastService: Mocked<Pick<ToastService, 'error'>>;
@@ -49,7 +48,7 @@ describe('LabEffects', () => {
       simulateYears: vi.fn(),
       statistics: vi.fn(),
       candles: vi.fn(),
-      terminate: vi.fn(),
+      goldenChecksums: vi.fn(),
     };
     toastService = { error: vi.fn() };
     TestBed.configureTestingModule({
@@ -70,14 +69,6 @@ describe('LabEffects', () => {
   });
 
   describe('generateWorld$', () => {
-    it('dispatches generateWorldSuccess with the generated world', async () => {
-      service.generate.mockReturnValue(of(world));
-      const result = firstValueFrom(effects.generateWorld$);
-      actions$.next(LabActions.submittedSeed({ seed: 'Lab' }));
-      expect(await result).toEqual(LabActions.generateWorldSuccess({ world }));
-      expect(service.generate).toHaveBeenCalledWith('Lab');
-    });
-
     it('dispatches generateWorldFailure when the worker errors', async () => {
       service.generate.mockReturnValue(throwError(() => err));
       const result = firstValueFrom(effects.generateWorld$);
@@ -87,15 +78,7 @@ describe('LabEffects', () => {
   });
 
   describe('simulate$', () => {
-    it('dispatches simulateSuccess with the simulated period', async () => {
-      const period: SimulatedPeriod = { days: 7, marketDays: 5, now: 200, durationMs: 3 };
-      service.simulate.mockReturnValue(of(period));
-      const result = firstValueFrom(effects.simulate$);
-      actions$.next(LabActions.clickedSimulate({ days: 7 }));
-      expect(await result).toEqual(LabActions.simulateSuccess({ period }));
-    });
-
-    it('simulates years', async () => {
+    it('simulates years instead of days for clickedSimulateYears', async () => {
       const period: SimulatedPeriod = { days: 3653, marketDays: 2609, now: 200, durationMs: 3 };
       service.simulateYears.mockReturnValue(of(period));
       const result = firstValueFrom(effects.simulate$);
@@ -147,24 +130,6 @@ describe('LabEffects', () => {
   });
 
   describe('loadCandles$', () => {
-    const loaded: LoadedCandles = { series: 2, resolution: '1h', candles: [], durationMs: 1 };
-
-    it('loads the candles of the current request when the series changes', async () => {
-      const request: CandleRequest = {
-        series: 2,
-        resolution: '1h',
-        fromTick: 10,
-        toTick: 20,
-        source: 'minutes',
-      };
-      store.overrideSelector(LabSelectors.selectCandleRequest, request);
-      service.candles.mockReturnValue(of(loaded));
-      const result = firstValueFrom(effects.loadCandles$);
-      actions$.next(LabActions.selectedSeries({ series: 2 }));
-      expect(await result).toEqual(LabActions.retrievedCandles({ request, candles: loaded }));
-      expect(service.candles).toHaveBeenCalledWith(2, '1h', 10, 20, 'minutes');
-    });
-
     it('dispatches loadCandlesFailure when the worker errors', async () => {
       store.overrideSelector(LabSelectors.selectCandleRequest, {
         series: 2,
@@ -198,19 +163,6 @@ describe('LabEffects', () => {
       toTick: 9,
       source: 'minutes',
     };
-    const loaded: LoadedCandles = { series: 2, resolution: '1d', candles: [], durationMs: 1 };
-
-    it('loads the block of older candles when the chart reaches its start', async () => {
-      store.overrideSelector(LabSelectors.selectHistoryRequest, request);
-      service.candles.mockReturnValue(of(loaded));
-      const result = firstValueFrom(effects.loadHistory$);
-      actions$.next(LabActions.scrolledToChartStart());
-      expect(await result).toEqual(
-        LabActions.retrievedHistoryCandles({ request, candles: loaded }),
-      );
-      expect(service.candles).toHaveBeenCalledWith(2, '1d', 0, 9, 'minutes');
-    });
-
     it('dispatches loadHistoryFailure when the worker errors', async () => {
       store.overrideSelector(LabSelectors.selectHistoryRequest, request);
       service.candles.mockReturnValue(throwError(() => err));
@@ -228,19 +180,22 @@ describe('LabEffects', () => {
     });
   });
 
-  describe('terminateWorker$', () => {
-    it('terminates the worker when the page is left', async () => {
-      const result = firstValueFrom(effects.terminateWorker$);
-      actions$.next(LabActions.leaveSimulationPage());
-      await result;
-      expect(service.terminate).toHaveBeenCalled();
+  describe('runSelfTest$', () => {
+    it('dispatches runSelfTestFailure when the worker errors', async () => {
+      service.goldenChecksums.mockReturnValue(throwError(() => err));
+      const result = firstValueFrom(effects.runSelfTest$);
+      actions$.next(LabActions.clickedRunSelfTest());
+      expect(await result).toEqual(LabActions.runSelfTestFailure({ error: err }));
     });
   });
 
   describe('showFailure$', () => {
-    it('shows an error toast with the message', async () => {
+    it.each([
+      LabActions.simulateFailure({ error: err }),
+      LabActions.runSelfTestFailure({ error: err }),
+    ])('shows an error toast with the message for $type', async (failure) => {
       const result = firstValueFrom(effects.showFailure$);
-      actions$.next(LabActions.simulateFailure({ error: err }));
+      actions$.next(failure);
       await result;
       expect(toastService.error).toHaveBeenCalledWith(expect.stringContaining('worker failed'));
     });

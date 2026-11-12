@@ -1,28 +1,38 @@
-import { deriveSeedKey } from '@app/simulation/util/seed';
+import fc from 'fast-check';
 
-import { generateWorld } from '@app/world/domain/world-generator';
-
-import { createCurveTables, DayCurves } from './day-curve';
+import { createCurveTables, CurveTables, DayCurves } from './day-curve';
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
-import { createMarketContext } from './market-context';
+import { createMarketContext, MarketContext } from './market-context';
 import { advanceMarket, copyMarketDay, createMarketState } from './market-step';
 import { MarketDay } from './models/market-day.model';
 import { priceFromLog } from './price-logic';
+import { goldenYear } from './testing/golden-year';
+import { miniMarket } from './testing/mini-market';
 
-const seedKey = deriveSeedKey('golden-1');
-const world = generateWorld(seedKey);
-const context = createMarketContext(seedKey, world, DEFAULT_MARKET_CONFIG);
-const tables = createCurveTables(context);
-const { layout } = context;
 const floor = DEFAULT_MARKET_CONFIG.priceFloor;
+/** Market days of the mini world that the properties draw from (about 3.5 months). */
+const MINI_DAYS = 105;
 
-const days: MarketDay[] = [];
-advanceMarket(context, createMarketState(context), 260, {
-  onDay: (day) => days.push(copyMarketDay(day)),
+let context: MarketContext;
+let tables: CurveTables;
+let days: readonly MarketDay[];
+let miniContext: MarketContext;
+let miniTables: CurveTables;
+let miniDays: MarketDay[];
+
+beforeAll(() => {
+  ({ context, tables, days } = goldenYear());
+  miniContext = miniMarket().context;
+  miniTables = createCurveTables(miniContext);
+  miniDays = [];
+  advanceMarket(miniContext, createMarketState(miniContext), MINI_DAYS, {
+    onDay: (day) => miniDays.push(copyMarketDay(day)),
+  });
 });
 
 describe('DayCurves', () => {
   it('hits open and close of every instrument bit for bit', () => {
+    const { layout } = context;
     for (const day of [days[0], days[90], days[days.length - 1]]) {
       const curves = new DayCurves(tables).load(day);
       for (let i = 0; i < layout.instrumentIds.length; i++) {
@@ -37,30 +47,49 @@ describe('DayCurves', () => {
     }
   });
 
-  it('hits every factor support point bit for bit', () => {
-    const day = days[17];
-    const curves = new DayCurves(tables).load(day);
+  it('hits every factor support point bit for bit, on any day', () => {
+    const { layout } = miniContext;
     const boundaryCount = layout.boundaries.length;
-    for (let k = 0; k < layout.factorIds.length; k++) {
-      const curve = curves.factorCurve(k, 0, boundaryCount - 1);
-      for (let j = 0; j < boundaryCount; j++) {
-        expect(curve[layout.boundaries[j]]).toBe(day.factorLevels[k * boundaryCount + j]);
-      }
-    }
+    fc.assert(
+      fc.property(fc.integer({ min: 0, max: miniDays.length - 1 }), (n) => {
+        const day = miniDays[n];
+        const curves = new DayCurves(miniTables).load(day);
+        for (let k = 0; k < layout.factorIds.length; k++) {
+          const curve = curves.factorCurve(k, 0, boundaryCount - 1);
+          for (let j = 0; j < boundaryCount; j++) {
+            expect(curve[layout.boundaries[j]]).toBe(day.factorLevels[k * boundaryCount + j]);
+          }
+        }
+      }),
+      { numRuns: 20 },
+    );
   });
 
   it('computes the same minutes regardless of the order of the requests', () => {
-    const day = days[42];
-    const forward = new DayCurves(tables).load(day);
-    const backward = new DayCurves(tables).load(day);
+    const { layout } = miniContext;
     const count = layout.instrumentIds.length;
-    const first = Array.from({ length: count }, (_value, i) => forward.instrumentCurve(i).slice());
-    for (let i = count - 1; i >= 0; i--) {
-      expect(backward.instrumentCurve(i)).toEqual(first[i]);
-    }
+    const arbOrder = fc.shuffledSubarray(
+      Array.from({ length: count }, (_value, i) => i),
+      { minLength: count, maxLength: count },
+    );
+    fc.assert(
+      fc.property(fc.integer({ min: 0, max: miniDays.length - 1 }), arbOrder, (n, order) => {
+        const day = miniDays[n];
+        const forward = new DayCurves(miniTables).load(day);
+        const expected = Array.from({ length: count }, (_value, i) =>
+          forward.instrumentCurve(i).slice(),
+        );
+        const shuffled = new DayCurves(miniTables).load(day);
+        for (const i of order) {
+          expect(shuffled.instrumentCurve(i)).toEqual(expected[i]);
+        }
+      }),
+      { numRuns: 20 },
+    );
   });
 
   it('adds each jump from its minute on', () => {
+    const { layout } = context;
     const withJump = days.find((day) => day.jumpTotal > 0) as MarketDay;
     const i = withJump.jumpCount.findIndex((count) => count > 0);
     const start = withJump.jumpStart[i];
@@ -87,6 +116,7 @@ describe('DayCurves', () => {
   });
 
   it('keeps the support points with an intraday volatility profile', () => {
+    const { seedKey, world } = goldenYear();
     const profiled = createCurveTables(
       createMarketContext(seedKey, world, {
         ...DEFAULT_MARKET_CONFIG,
@@ -100,27 +130,4 @@ describe('DayCurves', () => {
     expect(shaped[shaped.length - 1]).toBe(uniform[uniform.length - 1]);
     expect(shaped).not.toEqual(uniform);
   });
-
-  it('computes one game year with all minute curves within the CI bound', () => {
-    const curves = new DayCurves(tables);
-    const intervals = layout.boundaries.length - 1;
-    let tradingDays = 0;
-    const start = performance.now();
-    advanceMarket(context, createMarketState(context), 366, {
-      onDay: (day) => {
-        curves.load(day);
-        for (let k = 0; k < layout.factorIds.length; k++) {
-          curves.factorCurve(k, 0, intervals);
-        }
-        for (let i = 0; i < layout.instrumentIds.length; i++) {
-          curves.instrumentCurve(i);
-        }
-        tradingDays++;
-      },
-    });
-    const duration = performance.now() - start;
-    console.info(`one game year with all minute curves: ${duration.toFixed(0)} ms`);
-    expect(tradingDays).toBe(262);
-    expect(duration).toBeLessThan(15000);
-  }, 30000);
 });

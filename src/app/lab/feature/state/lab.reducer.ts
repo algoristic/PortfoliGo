@@ -14,6 +14,7 @@ import {
   prependCandles,
 } from './lab.utils';
 
+import { ComputedChecksums } from '../../data-access/service/lab-simulation-service.model';
 import { LabStatistics, StatisticsStart } from '../../domain/models/lab-statistics.model';
 import { WorldOverview } from '../../domain/models/world-overview.model';
 import { LabChartOptions } from '../../ui/series-chart/series-chart.model';
@@ -39,6 +40,9 @@ export interface LabState {
   /** Statistics of the current period; dropped when the period changes. */
   statistics?: LabStatistics;
   loadingStatistics: boolean;
+  /** Golden-master checksums of the last self-test; independent of the generated world. */
+  selfTest?: ComputedChecksums;
+  runningSelfTest: boolean;
   error?: unknown;
 }
 
@@ -52,6 +56,7 @@ export const initialLabState: LabState = {
   loadingHistory: false,
   statisticsStart: 'epoch',
   loadingStatistics: false,
+  runningSelfTest: false,
 };
 
 const MS_PER_SECOND = 1000;
@@ -64,6 +69,8 @@ const reducer = createReducer(
     ...initialLabState,
     chartOptions: state.chartOptions,
     statisticsStart: state.statisticsStart,
+    selfTest: state.selfTest,
+    runningSelfTest: state.runningSelfTest,
     status: 'ready',
     seed: world.seed,
     overview: world.overview,
@@ -167,6 +174,21 @@ const reducer = createReducer(
   on(LabActions.loadHistoryFailure, (state, { error }) => ({
     ...state,
     loadingHistory: false,
+    error,
+  })),
+  on(LabActions.clickedRunSelfTest, (state) => ({
+    ...state,
+    selfTest: undefined,
+    runningSelfTest: true,
+  })),
+  on(LabActions.runSelfTestSuccess, (state, { result }) => ({
+    ...state,
+    selfTest: result,
+    runningSelfTest: false,
+  })),
+  on(LabActions.runSelfTestFailure, (state, { error }) => ({
+    ...state,
+    runningSelfTest: false,
     error,
   })),
 );

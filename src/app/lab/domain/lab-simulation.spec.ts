@@ -1,6 +1,5 @@
 import {
   dateTimeToTick,
-  dayIndex,
   dayStartTick,
   GAME_START_TICK,
   weekday,
@@ -11,7 +10,13 @@ import { LabSimulation } from './lab-simulation';
 
 const SEED = 'lab-test';
 
+/** Last minute of a calendar date, as `now` after stepping whole days. */
+function endOf(year: number, month: number, day: number): number {
+  return dateTimeToTick({ year, month, day }) + TICKS_PER_DAY - TICKS_PER_MINUTE;
+}
+
 describe('LabSimulation', () => {
+  /** After the prehistory and never stepped; the read-only tests share it. */
   let simulation: LabSimulation;
 
   beforeAll(() => {
@@ -48,56 +53,24 @@ describe('LabSimulation', () => {
     });
 
     it('is the minute before the game start after the prehistory', () => {
-      expect(simulation.now).toBe(GAME_START_TICK - TICKS_PER_MINUTE);
+      // The game starts on Monday, 01.04.2030 (TS §3.1).
+      expect(simulation.now).toBe(endOf(2030, 3, 31));
     });
   });
 
-  describe('simulate', () => {
-    it('advances by calendar days and counts the market days', () => {
-      const local = new LabSimulation(SEED);
-      local.runPrehistory();
-      // The game starts on a Monday, so one week has five market days.
-      expect(local.simulate(7)).toEqual({
-        days: 7,
-        marketDays: 5,
-        now: GAME_START_TICK + 7 * TICKS_PER_DAY - TICKS_PER_MINUTE,
-      });
-    });
-
-    it('rejects invalid numbers of days', () => {
+  describe('input checks', () => {
+    it('rejects invalid numbers of days and years', () => {
       expect(() => simulation.simulate(0)).toThrow(RangeError);
       expect(() => simulation.simulate(1.5)).toThrow(RangeError);
-    });
-
-    it('gives the same candles in one run as in two partial runs', () => {
-      const once = new LabSimulation(SEED);
-      once.runPrehistory();
-      once.simulate(40);
-      const twice = new LabSimulation(SEED);
-      twice.runPrehistory();
-      twice.simulate(15);
-      twice.simulate(25);
-
-      expect(twice.now).toBe(once.now);
-      expect(twice.candles(3, '1d', GAME_START_TICK, twice.now)).toEqual(
-        once.candles(3, '1d', GAME_START_TICK, once.now),
-      );
-    });
-  });
-
-  describe('simulateYears', () => {
-    it('advances to the same calendar date years later', () => {
-      const local = new LabSimulation(SEED);
-      local.runPrehistory();
-      const step = local.simulateYears(2);
-      expect(step.days).toBe(
-        dayIndex(dateTimeToTick({ year: 2032, month: 4, day: 1 })) - dayIndex(GAME_START_TICK),
-      );
-      expect(local.now).toBe(dateTimeToTick({ year: 2032, month: 4, day: 1 }) - TICKS_PER_MINUTE);
-    });
-
-    it('rejects invalid numbers of years', () => {
       expect(() => simulation.simulateYears(0)).toThrow(RangeError);
+    });
+
+    it('needs a simulated period after the game start for its statistics', () => {
+      expect(() => simulation.statistics('game-start')).toThrow(RangeError);
+    });
+
+    it('rejects intraday resolutions from the support points', () => {
+      expect(() => simulation.candles(0, '1h', 0, simulation.now, 'support')).toThrow(RangeError);
     });
   });
 
@@ -113,20 +86,13 @@ describe('LabSimulation', () => {
       );
       expect(result.targets.length).toBeGreaterThan(0);
     });
-
-    it('needs a simulated period after the game start', () => {
-      expect(() => simulation.statistics('game-start')).toThrow(RangeError);
-      const local = new LabSimulation(SEED);
-      local.runPrehistory();
-      local.simulate(30);
-      expect(local.statistics('game-start').fromTick).toBe(GAME_START_TICK);
-    });
   });
 
   describe('supportCandles', () => {
     it('gives the opens and closes of the minute curves for shares, indices and etfs', () => {
       const { companies, indices, series } = simulation.overview();
-      const from = GAME_START_TICK - 30 * TICKS_PER_DAY;
+      // Two trading weeks: an index needs the minute curves of all its constituents.
+      const from = GAME_START_TICK - 14 * TICKS_PER_DAY;
       for (const s of [0, companies.length, companies.length + indices.length, series.length - 1]) {
         const minutes = simulation.candles(s, '1d', from, simulation.now);
         const support = simulation.candles(s, '1d', from, simulation.now, 'support');
@@ -136,23 +102,43 @@ describe('LabSimulation', () => {
       }
     });
 
-    it('aggregates weeks and rejects intraday resolutions', () => {
+    it('aggregates weeks starting on Monday', () => {
       const weeks = simulation.candles(0, '1w', 0, simulation.now, 'support');
-      expect(weeks.length).toBeGreaterThan(500);
+      // About ten years and three months of prehistory.
+      expect(weeks.length).toBeGreaterThan(530);
       expect(weeks.every((week) => weekday(week.tick) === 0)).toBe(true);
-      expect(() => simulation.candles(0, '1h', 0, simulation.now, 'support')).toThrow(RangeError);
     });
   });
 
-  describe('candles', () => {
-    it('never returns candles after now', () => {
-      const local = new LabSimulation(SEED);
-      local.runPrehistory();
-      local.simulate(3);
-      const candles = local.candles(0, '1h', GAME_START_TICK, local.now + 10 * TICKS_PER_DAY);
+  describe('stepping', () => {
+    it('steps calendar days and gives the same candles in one run as in two partial runs', () => {
+      const once = new LabSimulation(SEED);
+      once.runPrehistory();
+      const twice = new LabSimulation(SEED);
+      twice.runPrehistory();
+
+      // From Monday, 01.04.2030: 40 calendar days end on Friday, 10.05.2030 with 30 weekdays.
+      expect(once.simulate(40)).toEqual({ days: 40, marketDays: 30, now: endOf(2030, 5, 10) });
+      twice.simulate(15);
+      twice.simulate(25);
+
+      expect(twice.now).toBe(once.now);
+      expect(twice.candles(3, '1d', GAME_START_TICK, twice.now)).toEqual(
+        once.candles(3, '1d', GAME_START_TICK, once.now),
+      );
+      expect(twice.statistics('game-start')).toEqual(once.statistics('game-start'));
+      expect(once.statistics('game-start').fromTick).toBe(GAME_START_TICK);
+
+      // Never candles after now, even when asked for later ones.
+      const candles = once.candles(0, '1h', GAME_START_TICK, once.now + 10 * TICKS_PER_DAY);
       expect(candles.length).toBeGreaterThan(0);
-      expect(candles.every((candle) => candle.tick <= local.now)).toBe(true);
-      expect(candles.at(-1)?.tick).toBeLessThan(local.now);
+      expect(candles.every((candle) => candle.tick <= once.now)).toBe(true);
+      expect(candles.at(-1)?.tick).toBeLessThan(once.now);
+
+      // Years step to the same calendar date: 11.05.2032 starts after the last stepped day.
+      const step = twice.simulateYears(2);
+      expect(twice.now).toBe(endOf(2032, 5, 10));
+      expect(step.days).toBe(365 + 366);
     });
   });
 });

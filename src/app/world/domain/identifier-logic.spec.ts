@@ -1,3 +1,5 @@
+import fc from 'fast-check';
+
 import { createStream } from '@app/simulation/util/random-stream';
 import { deriveSeedKey } from '@app/simulation/util/seed';
 
@@ -11,6 +13,18 @@ import {
   tickerCandidates,
 } from './identifier-logic';
 
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const DIGITS = '0123456789';
+
+/** An ISIN body: two letters (country) and nine alphanumeric characters. */
+const arbIsinBody = (): fc.Arbitrary<string> =>
+  fc
+    .tuple(
+      fc.string({ unit: fc.constantFrom(...LETTERS), minLength: 2, maxLength: 2 }),
+      fc.string({ unit: fc.constantFrom(...LETTERS, ...DIGITS), minLength: 9, maxLength: 9 }),
+    )
+    .map(([country, rest]) => country + rest);
+
 describe('formatId', () => {
   it('pads the number to four digits', () => {
     expect(formatId('stk', 42)).toBe('stk-0042');
@@ -19,7 +33,7 @@ describe('formatId', () => {
 });
 
 describe('isinCheckDigit', () => {
-  it('computes the check digit of known ISINs', () => {
+  it('computes the check digit of published ISINs', () => {
     expect(isinCheckDigit('US037833100')).toBe(5);
     expect(isinCheckDigit('DE000716460')).toBe(0);
     expect(isinCheckDigit('GB000263494')).toBe(6);
@@ -36,6 +50,27 @@ describe('isValidIsin', () => {
     expect(isValidIsin('US0378331005')).toBe(true);
     expect(isValidIsin('US0378331006')).toBe(false);
     expect(isValidIsin('US037833100')).toBe(false);
+  });
+
+  it('accepts every body with its check digit', () => {
+    fc.assert(
+      fc.property(arbIsinBody(), (body) => {
+        expect(isValidIsin(body + isinCheckDigit(body))).toBe(true);
+      }),
+    );
+  });
+
+  it('detects every change of a single digit (Luhn)', () => {
+    fc.assert(
+      fc.property(arbIsinBody(), fc.nat(), fc.integer({ min: 1, max: 9 }), (body, at, shift) => {
+        const isin = body + isinCheckDigit(body);
+        const digitPositions = [...isin].flatMap((char, i) => (DIGITS.includes(char) ? [i] : []));
+        const position = digitPositions[at % digitPositions.length];
+        const changed = String((Number(isin[position]) + shift) % 10);
+        const altered = isin.slice(0, position) + changed + isin.slice(position + 1);
+        expect(isValidIsin(altered)).toBe(false);
+      }),
+    );
   });
 });
 

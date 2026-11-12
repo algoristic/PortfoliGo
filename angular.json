@@ -95,7 +95,13 @@
           "options": {
             "tsConfig": "tsconfig.spec.json",
             "buildTarget": "::development",
-            "setupFiles": ["src/test-setup.ts"]
+            "setupFiles": ["src/test-setup.ts"],
+            "exclude": [
+              "app/*/domain/**",
+              "app/*/util/**",
+              "**/*.calibration.spec.ts",
+              "**/*.perf.spec.ts"
+            ]
           },
           "configurations": {
             "ci": {
@@ -106,7 +112,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html", "e2e/**/*.ts"]
           }
         }
       }

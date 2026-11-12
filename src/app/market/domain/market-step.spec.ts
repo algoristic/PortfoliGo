@@ -1,94 +1,58 @@
-import { dateTimeToTick, dayIndex } from '@app/clock/domain/calendar-logic';
-
-import { Checksum } from '@app/simulation/util/checksum';
-
 import { deriveSeedKey } from '@app/simulation/util/seed';
-
-import { World } from '@app/world/domain/models/world.model';
 
 import { generateWorld } from '@app/world/domain/world-generator';
 
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { isMarketDay } from './market-calendar';
 import { marketChecksum } from './market-checksum';
-import { createMarketContext } from './market-context';
+import { createMarketContext, MarketContext } from './market-context';
 import { restoreMarket, snapshotMarket } from './market-snapshot';
 import { advanceMarket, createMarketState } from './market-step';
 import { MarketDay } from './models/market-day.model';
 import { MarketState } from './models/market-state.model';
-import { priceFromLog } from './price-logic';
+import { END_OF_2020_DAY, GoldenYear, goldenYear } from './testing/golden-year';
 
-/** Changes when the prices for existing seeds change; then `simVersion` must be raised (TS §15). */
-const GOLDEN_1_PRICES_2020 = '60106989e541c9562a2cb7ed6c463d85';
+import { expectWithinSigma, poissonSe } from '../../../testing/statistics';
 
-const seedKey = deriveSeedKey('golden-1');
-const world = generateWorld(seedKey);
-const context = createMarketContext(seedKey, world, DEFAULT_MARKET_CONFIG);
-const endOf2020 = dayIndex(dateTimeToTick({ year: 2021, month: 1, day: 1 }));
-
-function run(toDay: number, onDay?: (day: Readonly<MarketDay>) => void): MarketState {
-  const state = createMarketState(context);
-  advanceMarket(context, state, toDay, { onDay });
-  return state;
-}
-
-function priceChecksum(toDay: number): string {
-  const checksum = new Checksum();
-  run(toDay, (day) => {
-    for (let i = 0; i < day.logOpen.length; i++) {
-      checksum.addFloat64(priceFromLog(day.logOpen[i], DEFAULT_MARKET_CONFIG.priceFloor));
-      checksum.addFloat64(priceFromLog(day.logClose[i], DEFAULT_MARKET_CONFIG.priceFloor));
-    }
-  });
-  return checksum.digest();
-}
+// Arbitrary splits, snapshots and added instruments are properties in `market-properties.spec.ts`;
+// the golden checksums live in `golden-master.spec.ts`. Here: one golden example each, and the
+// rules of the day step.
 
 describe('advanceMarket', () => {
-  describe('determinism', () => {
-    it('matches the golden checksum over the opens and closes of the first year', () => {
-      expect(priceChecksum(endOf2020)).toBe(GOLDEN_1_PRICES_2020);
-    });
+  let golden: GoldenYear;
+  let context: MarketContext;
 
-    it('does not depend on how the days are split into calls', () => {
-      const whole = run(endOf2020);
+  function run(toDay: number, onDay?: (day: Readonly<MarketDay>) => void): MarketState {
+    const state = createMarketState(context);
+    advanceMarket(context, state, toDay, { onDay });
+    return state;
+  }
+
+  beforeAll(() => {
+    golden = goldenYear();
+    context = golden.context;
+  });
+
+  describe('determinism', () => {
+    it('reaches the golden state of 2020 day by day and in uneven calls', () => {
       const dayByDay = createMarketState(context);
-      for (let day = 1; day <= endOf2020; day++) {
+      for (let day = 1; day <= END_OF_2020_DAY; day++) {
         advanceMarket(context, dayByDay, day);
       }
       const uneven = createMarketState(context);
-      for (let day = 0, step = 1; day < endOf2020; step = (step % 7) + 1) {
-        day = Math.min(endOf2020, day + step);
+      for (let day = 0, step = 1; day < END_OF_2020_DAY; step = (step % 7) + 1) {
+        day = Math.min(END_OF_2020_DAY, day + step);
         advanceMarket(context, uneven, day);
       }
-      expect(marketChecksum(dayByDay)).toBe(marketChecksum(whole));
-      expect(marketChecksum(uneven)).toBe(marketChecksum(whole));
+      expect(marketChecksum(dayByDay)).toBe(marketChecksum(golden.state));
+      expect(marketChecksum(uneven)).toBe(marketChecksum(golden.state));
     });
 
-    it('continues identically after snapshot and restore', () => {
-      const original = run(150);
-      const snapshot = snapshotMarket(original);
-      const snapshotChecksum = marketChecksum(snapshot);
-      advanceMarket(context, original, endOf2020);
+    it('reaches the golden state of 2020 after a snapshot and restore', () => {
+      const snapshot = snapshotMarket(run(150));
       const restored = restoreMarket(snapshot);
-      advanceMarket(context, restored, endOf2020);
-      expect(marketChecksum(restored)).toBe(marketChecksum(original));
-      expect(marketChecksum(snapshot)).toBe(snapshotChecksum);
-    });
-
-    it('keeps the prices of the other instruments when an instrument is added', () => {
-      const extended: World = {
-        ...world,
-        companies: [...world.companies, { ...world.companies[0], id: 'cmp-extra' }],
-      };
-      const extendedContext = createMarketContext(seedKey, extended, DEFAULT_MARKET_CONFIG);
-      const closes: number[] = [];
-      run(60, (day) => closes.push(...day.logClose));
-      const extendedState = createMarketState(extendedContext);
-      const extendedCloses: number[] = [];
-      advanceMarket(extendedContext, extendedState, 60, {
-        onDay: (day) => extendedCloses.push(...day.logClose.subarray(0, world.companies.length)),
-      });
-      expect(extendedCloses).toEqual(closes);
+      advanceMarket(context, restored, END_OF_2020_DAY);
+      expect(marketChecksum(restored)).toBe(marketChecksum(golden.state));
     });
 
     it('creates different prices for different seeds', () => {
@@ -123,11 +87,11 @@ describe('advanceMarket', () => {
   });
 
   describe('instruments', () => {
-    it('places the jumps inside the session in ascending order', () => {
+    it('places the jumps inside the session in ascending order at the configured rate', () => {
       const { layout } = context;
       let jumps = 0;
       let marketDays = 0;
-      run(endOf2020 * 3, (day) => {
+      run(END_OF_2020_DAY * 3, (day) => {
         marketDays++;
         for (let i = 0; i < layout.instrumentIds.length; i++) {
           const open = layout.boundaries[layout.openBoundary[i]];
@@ -143,17 +107,24 @@ describe('advanceMarket', () => {
           jumps += day.jumpCount[i];
         }
       });
-      const expected = layout.jumpIntensity.reduce(
-        (sum, lambda) => sum + (lambda * marketDays) / DEFAULT_MARKET_CONFIG.tradingDaysPerYear,
+      // Jumps are Poisson with rate λ_i per year of trading days (TS §6.4).
+      const perDay = layout.jumpIntensity.reduce(
+        (sum, lambda) => sum + lambda / DEFAULT_MARKET_CONFIG.tradingDaysPerYear,
         0,
       );
-      expect(Math.abs(jumps - expected) / expected).toBeLessThan(0.1);
+      expectWithinSigma(
+        jumps / marketDays,
+        perDay,
+        poissonSe(perDay, marketDays),
+        5,
+        'jumps per day',
+      );
     });
 
     it('starts at the start price and moves with the factors and the idiosyncratic part', () => {
       const firstDay: number[] = [];
       run(1, (day) => firstDay.push(...day.logOpen));
-      world.companies.forEach((company, i) => {
+      golden.world.companies.forEach((company, i) => {
         // On the first open, only the overnight shock and factor moves since 00:00 apply.
         expect(Math.abs(firstDay[i] - Math.log(company.startPrice))).toBeLessThan(0.1);
       });

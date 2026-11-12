@@ -88,3 +88,10 @@ Thumbs.db
 
 # Playwright MCP output (screenshots, snapshots, console logs)
 /.playwright-mcp
+
+# Test reports (Playwright, Stryker)
+/playwright-report
+/test-results
+/blob-report
+/reports
+/.stryker-tmp

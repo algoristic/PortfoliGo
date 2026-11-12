@@ -1,10 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
-import { provideMockStore } from '@ngrx/store/testing';
 
-import { provideToastService } from '@app/shared/ui/toast/toast-service.providers';
-
+import { provideAppCore } from './app.providers';
 import { routes } from './app.routes';
 
 describe('routes', () => {
@@ -13,7 +11,8 @@ describe('routes', () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      providers: [provideRouter(routes), provideMockStore(), provideToastService()],
+      // The app-wide wiring, so route guards and route providers run against the real store.
+      providers: [provideAppCore(), provideRouter(routes)],
     });
     harness = await RouterTestingHarness.create();
     router = TestBed.inject(Router);

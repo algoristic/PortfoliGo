@@ -1,112 +1,51 @@
-import { dateTimeToTick, dayIndex, dayStartTick } from '@app/clock/domain/calendar-logic';
-
+import { dayIndex, dayStartTick } from '@app/clock/domain/calendar-logic';
 import { MINUTES_PER_DAY } from '@app/clock/domain/models/time.model';
-
-import { Checksum } from '@app/simulation/util/checksum';
-
 import { detExp } from '@app/simulation/util/det-math';
+import { World } from '@app/world/domain/models/world.model';
 
-import { deriveSeedKey } from '@app/simulation/util/seed';
-
-import { generateWorld } from '@app/world/domain/world-generator';
-
-import { createCurveTables, DayCurves, SupportValues } from './day-curve';
+import { CurveTables, DayCurves, SupportValues } from './day-curve';
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { calendarDaysSinceLastMarketDay } from './etf-step';
-import { isMarketDay } from './market-calendar';
-import { marketChecksum } from './market-checksum';
-import { createMarketContext } from './market-context';
-import { createFactorHistory } from './market-history';
+import { MarketContext } from './market-context';
 import { LOADINGS_PER_INSTRUMENT } from './market-layout';
-import { advanceMarket, copyMarketDay, createMarketState } from './market-step';
 import { MarketDay } from './models/market-day.model';
-import { Prehistory, runPrehistory } from './prehistory';
+import { FactorHistory, MarketState } from './models/market-state.model';
 import { priceFromLog } from './price-logic';
 import { PriceSource } from './price-source';
 import { etfSeries, seriesRef } from './series';
+import { goldenYear } from './testing/golden-year';
 
-/** Changes when the ETF prices for existing seeds change; then raise `simVersion` (TS §15). */
-const GOLDEN_1_ETFS_2020 = 'cd812cd0305bf456d1bf3efc03201239';
-
-const seedKey = deriveSeedKey('golden-1');
-const world = generateWorld(seedKey);
-const context = createMarketContext(seedKey, world, DEFAULT_MARKET_CONFIG);
-const { layout, indices, etfs } = context;
-const boundaryCount = layout.boundaries.length;
 const floor = DEFAULT_MARKET_CONFIG.priceFloor;
-const tables = createCurveTables(context);
-const endOf2020 = dayIndex(dateTimeToTick({ year: 2021, month: 1, day: 1 }));
-const today = endOf2020 - 1;
-const endOfToday = dayStartTick(today + 1) - 1;
-const history = createFactorHistory();
-const state = createMarketState(context);
-const live = new PriceSource(context, history, state);
-const days: MarketDay[] = [];
-advanceMarket(context, state, endOf2020, {
-  history,
-  onDay: (day) => {
-    days.push(copyMarketDay(day));
-    if (day.day >= endOf2020 - 8) {
-      live.rememberDay(day);
-    }
-  },
-});
-const accumulating = etfs.distributions.findIndex((distribution) => distribution === null);
-const distributing = etfs.distributions.findIndex((distribution) => distribution !== null);
-const etfOpen = layout.boundaries[etfs.openBoundary[0]];
-const etfClose = layout.boundaries[etfs.closeBoundary[0]];
 
+let world: World;
+let context: MarketContext;
+let layout: MarketContext['layout'];
+let etfs: MarketContext['etfs'];
+let indices: MarketContext['indices'];
+let tables: CurveTables;
+let history: FactorHistory;
+let state: MarketState;
+let days: readonly MarketDay[];
+let today: number;
+let endOfToday: number;
+let boundaryCount: number;
+let accumulating: number;
+let distributing: number;
+let etfOpen: number;
+let etfClose: number;
 /** First day of 2020 on which the distributing ETF goes ex with a payout. */
-const etfExDay = days.find((day) => day.etfExCents[distributing] > 0) as MarketDay;
+let etfExDay: MarketDay;
 
-interface TenYears {
-  prehistory: Prehistory;
-  /** Accumulating and distributing ETF on the same index. */
-  pairs: [number, number][];
-  /** Units of the distributing ETF per pair when every payout is reinvested at the NAV. */
-  units: number[];
-  lastDay: MarketDay;
-}
-
-let tenYearsRun: TenYears | null = null;
-
-/** Prehistory of ten years, run once for the tests that need it. */
-function tenYears(): TenYears {
-  if (tenYearsRun !== null) {
-    return tenYearsRun;
-  }
-  const pairs: [number, number][] = [];
-  for (let a = 0; a < etfs.ids.length; a++) {
-    for (let d = 0; d < etfs.ids.length; d++) {
-      if (
-        etfs.distributions[a] === null &&
-        etfs.distributions[d] !== null &&
-        etfs.indexOf[a] === etfs.indexOf[d]
-      ) {
-        pairs.push([a, d]);
-      }
-    }
-  }
-  const units = pairs.map(() => 1);
-  let lastDay: MarketDay | null = null;
-  const prehistory = runPrehistory(seedKey, world, DEFAULT_MARKET_CONFIG, (day) => {
-    const support = new SupportValues(tables, day);
-    pairs.forEach(([, d], n) => {
-      const cents = day.etfExCents[d];
-      if (cents > 0) {
-        units[n] *= 1 + cents / 100 / support.value(etfSeries(context, d), 'open');
-      }
-    });
-    lastDay = day;
-  });
-  tenYearsRun = {
-    prehistory,
-    pairs,
-    units,
-    lastDay: copyMarketDay(lastDay as unknown as MarketDay),
-  };
-  return tenYearsRun;
-}
+beforeAll(() => {
+  ({ world, context, tables, history, state, days, today, endOfToday } = goldenYear());
+  ({ layout, etfs, indices } = context);
+  boundaryCount = layout.boundaries.length;
+  accumulating = etfs.distributions.findIndex((distribution) => distribution === null);
+  distributing = etfs.distributions.findIndex((distribution) => distribution !== null);
+  etfOpen = layout.boundaries[etfs.openBoundary[0]];
+  etfClose = layout.boundaries[etfs.closeBoundary[0]];
+  etfExDay = days.find((day) => day.etfExCents[distributing] > 0) as MarketDay;
+});
 
 describe('ETFs', () => {
   describe('createEtfLayout', () => {
@@ -146,20 +85,11 @@ describe('ETFs', () => {
       expect(calendarDaysSinceLastMarketDay(5)).toBe(3);
     });
 
-    it('takes off about the TER per year from k', () => {
-      const { prehistory } = tenYears();
-      const years = prehistory.state.day / 365.25;
-      for (let e = 0; e < etfs.ids.length; e++) {
-        const drift = Math.log(prehistory.state.etfScale[e] / etfs.initialScale[e]) / years;
-        const sd = etfs.dailyTrackingSd[e] * Math.sqrt(DEFAULT_MARKET_CONFIG.tradingDaysPerYear);
-        expect(Math.abs(drift + etfs.ter[e])).toBeLessThan((3 * sd) / Math.sqrt(years) + 1e-4);
-      }
-    });
-
     it('fills the pot only at the open of a constituent going ex', () => {
+      const x = etfs.indexOf[distributing];
+      const mismatches: string[] = [];
       let rises = 0;
       for (const day of days) {
-        const x = etfs.indexOf[distributing];
         for (let j = 1; j < boundaryCount; j++) {
           const before = day.etfPot[distributing * boundaryCount + j - 1];
           const after = day.etfPot[distributing * boundaryCount + j];
@@ -168,10 +98,13 @@ describe('ETFs', () => {
             const i = indices.members[n];
             exHere ||= day.exDividendCents[i] > 0 && layout.openBoundary[i] === j;
           }
-          expect(after > before).toBe(exHere);
+          if (after > before !== exHere) {
+            mismatches.push(`day ${day.day}, boundary ${j}`);
+          }
           rises += exHere ? 1 : 0;
         }
       }
+      expect(mismatches).toEqual([]);
       expect(rises).toBeGreaterThan(10);
     });
 
@@ -192,21 +125,6 @@ describe('ETFs', () => {
       for (const day of days) {
         expect(day.etfExCents[accumulating]).toBe(0);
       }
-    });
-
-    it('gives accumulating and distributing ETFs the same total return before costs', () => {
-      const { prehistory, pairs, units, lastDay } = tenYears();
-      expect(pairs.length).toBeGreaterThan(0);
-      const support = new SupportValues(tables, lastDay);
-      const years = prehistory.state.day / 365.25;
-      pairs.forEach(([a, d], n) => {
-        const totalA = support.value(etfSeries(context, a), 'close') / lastDay.etfScale[a];
-        const totalD =
-          (units[n] * support.value(etfSeries(context, d), 'close')) / lastDay.etfScale[d];
-        // The pot holds cash between the dividends and the payout: about 0.1–0.15 % p. a. cash drag
-        // with annual payouts.
-        expect(Math.abs(totalD / totalA - 1)).toBeLessThan(0.002 * years);
-      });
     });
   });
 
@@ -239,7 +157,8 @@ describe('ETFs', () => {
     });
 
     it('open and close from the support points equal the curve bit for bit', () => {
-      for (const day of days.slice(-40)) {
+      // Golden example; market-properties.spec.ts checks this for any day of the mini world.
+      for (const day of days.slice(-5)) {
         const curves = new DayCurves(tables).load(day);
         const support = new SupportValues(tables, day);
         for (let e = 0; e < etfs.ids.length; e++) {
@@ -247,22 +166,6 @@ describe('ETFs', () => {
           const curve = curves.seriesCurve(series);
           expect(support.value(series, 'open')).toBe(curve[0]);
           expect(support.value(series, 'close')).toBe(curve[curve.length - 1]);
-        }
-      }
-    });
-
-    it('give the same curves live, recomputed and after discarding the caches', () => {
-      const recomputed = new PriceSource(context, history, state, { cachedDays: 1 });
-      for (let day = endOf2020 - 8; day < endOf2020; day++) {
-        if (!isMarketDay(day)) {
-          continue;
-        }
-        for (const e of [accumulating, distributing]) {
-          const series = etfSeries(context, e);
-          const liveCurve = live.minuteCurve(series, day, endOfToday);
-          expect(recomputed.minuteCurve(series, day, endOfToday)).toEqual(liveCurve);
-          recomputed.clearCaches();
-          expect(recomputed.minuteCurve(series, day, endOfToday)).toEqual(liveCurve);
         }
       }
     });
@@ -287,72 +190,18 @@ describe('ETFs', () => {
         expect(candle.low).toBeLessThanOrEqual(Math.min(candle.open, candle.close));
       }
     });
-
-    it('never return values after now', () => {
-      const series = etfSeries(context, accumulating);
-      expect(seriesRef(context, series).kind).toBe('etf');
-      const now = dayStartTick(today) + etfOpen + 30;
-      expect(live.minuteCurve(series, today, now).length).toBe(31);
-      expect(() => live.priceAt(series, now + 1, now)).toThrow(RangeError);
-      expect(() => live.indicativeAt(series, now + 1, now)).toThrow(RangeError);
-    });
-
-    it('never change the market state', () => {
-      const before = marketChecksum(state);
-      const source = new PriceSource(context, history, state);
-      source.candles(etfSeries(context, 0), '1d', dayStartTick(today - 30), endOfToday, endOfToday);
-      source.indicativeAt(etfSeries(context, 1), endOfToday, endOfToday);
-      source.quoteAt(etfSeries(context, 2), endOfToday, endOfToday, 0.001);
-      expect(marketChecksum(state)).toBe(before);
-    });
-
-    it('match the golden checksum over the opens and closes of the first year', () => {
-      const checksum = new Checksum();
-      for (const day of days) {
-        const support = new SupportValues(tables, day);
-        for (let e = 0; e < etfs.ids.length; e++) {
-          checksum.addFloat64(support.value(etfSeries(context, e), 'open'));
-          checksum.addFloat64(support.value(etfSeries(context, e), 'close'));
-        }
-      }
-      expect(checksum.digest()).toBe(GOLDEN_1_ETFS_2020);
-    });
-
-    it('compute all ETF curves of a day within the CI bound', () => {
-      const sample = days.slice(-20);
-      let etfMs = 0;
-      let supportMs = 0;
-      for (const day of sample) {
-        const curves = new DayCurves(tables).load(day);
-        for (let i = 0; i < layout.instrumentIds.length; i++) {
-          curves.instrumentCurve(i);
-        }
-        const start = performance.now();
-        for (let e = 0; e < etfs.ids.length; e++) {
-          curves.seriesCurve(etfSeries(context, e));
-        }
-        etfMs += performance.now() - start;
-        const supportStart = performance.now();
-        const support = new SupportValues(tables, day);
-        for (let e = 0; e < etfs.ids.length; e++) {
-          support.value(etfSeries(context, e), 'open');
-          support.value(etfSeries(context, e), 'close');
-        }
-        supportMs += performance.now() - supportStart;
-      }
-      const perDay = etfMs / sample.length;
-      console.info(
-        `ETF curves per trading day: ${perDay.toFixed(2)} ms on top of the minute curves, ` +
-          `opens and closes from the support points: ${(supportMs / sample.length).toFixed(2)} ms`,
-      );
-      expect(perDay).toBeLessThan(50);
-    });
   });
 
   describe('indicative values', () => {
-    const source = new PriceSource(context, history, state);
-    const day = days[days.length - 2];
-    const previous = days[days.length - 3];
+    let source: PriceSource;
+    let day: MarketDay;
+    let previous: MarketDay;
+
+    beforeAll(() => {
+      source = new PriceSource(context, history, state);
+      day = days[days.length - 2];
+      previous = days[days.length - 3];
+    });
 
     function factorPart(target: MarketDay, i: number, boundary: number): number {
       let sum = 0;

@@ -1,3 +1,4 @@
+import { standardDeviation } from '@app/analysis/domain/statistics-logic';
 import { deriveSeedKey } from '@app/simulation/util/seed';
 
 import { World } from '@app/world/domain/models/world.model';
@@ -11,15 +12,14 @@ import { advanceMarket, createMarketState } from './market-step';
 import { ReferenceSimulation } from './testing/reference-simulation';
 
 const TRADING_DAYS = 3000;
+const TRADING_DAYS_PER_YEAR = DEFAULT_MARKET_CONFIG.tradingDaysPerYear;
 
 /** Running statistics of the session curves of two instruments. */
 class SessionStats {
   #minuteSquares = [0, 0];
   #minuteProduct = 0;
-  #minuteCount = 0;
   #rangeSum = [0, 0];
-  #sessionSquares = [0, 0];
-  #sessionSum = [0, 0];
+  readonly #sessionReturns: [number[], number[]] = [[], []];
   #days = 0;
 
   add(curves: readonly ArrayLike<number>[]): void {
@@ -30,21 +30,18 @@ class SessionStats {
       this.#minuteSquares[0] += ra * ra;
       this.#minuteSquares[1] += rb * rb;
       this.#minuteProduct += ra * rb;
-      this.#minuteCount++;
     }
     curves.forEach((curve, n) => {
       const prices = Array.from(curve);
       this.#rangeSum[n] += (Math.max(...prices) - Math.min(...prices)) / prices[0];
-      const session = Math.log(prices[prices.length - 1] / prices[0]);
-      this.#sessionSum[n] += session;
-      this.#sessionSquares[n] += session * session;
+      this.#sessionReturns[n].push(Math.log(prices[prices.length - 1] / prices[0]));
     });
     this.#days++;
   }
 
-  /** Volatility of the minute returns p. a. per instrument. */
+  /** Volatility of the minute returns p. a. per instrument (mean taken as 0 within a day). */
   minuteVol(n: number): number {
-    return Math.sqrt((this.#minuteSquares[n] / this.#days) * 261);
+    return Math.sqrt((this.#minuteSquares[n] / this.#days) * TRADING_DAYS_PER_YEAR);
   }
 
   correlation(): number {
@@ -57,8 +54,7 @@ class SessionStats {
 
   /** Volatility open → close p. a. */
   sessionVol(n: number): number {
-    const mean = this.#sessionSum[n] / this.#days;
-    return Math.sqrt((this.#sessionSquares[n] / this.#days - mean * mean) * 261);
+    return standardDeviation(this.#sessionReturns[n]) * Math.sqrt(TRADING_DAYS_PER_YEAR);
   }
 
   get days(): number {
@@ -67,36 +63,40 @@ class SessionStats {
 }
 
 describe('bridge equivalence with the reference simulation', () => {
-  const seedKey = deriveSeedKey('bridge-equivalence-1');
-  const generated = generateWorld(seedKey);
-  const world: World = {
-    ...generated,
-    companies: generated.companies.map((company) => ({
-      ...company,
-      model: { ...company.model, jumpIntensity: 0 },
-    })),
-  };
-  const context = createMarketContext(seedKey, world, DEFAULT_MARKET_CONFIG);
-  const first = world.companies[0];
-  const second = world.companies.findIndex(
-    (company, i) => i > 0 && company.exchangeId === first.exchangeId,
-  );
-  const instruments = [0, second];
+  let second: number;
   const bridge = new SessionStats();
   const reference = new SessionStats();
 
-  const curves = new DayCurves(createCurveTables(context));
-  const simulation = new ReferenceSimulation(context, instruments);
-  const state = createMarketState(context);
-  while (bridge.days < TRADING_DAYS) {
-    advanceMarket(context, state, state.day + 1, {
-      onDay: (day) => {
-        curves.load(day);
-        bridge.add(instruments.map((i) => curves.instrumentCurve(i)));
-        reference.add(simulation.simulateDay(day, state.trend));
-      },
-    });
-  }
+  beforeAll(() => {
+    const seedKey = deriveSeedKey('bridge-equivalence-1');
+    const generated = generateWorld(seedKey);
+    // The reference compares the diffusion; jumps are left out (TS §4.6).
+    const world: World = {
+      ...generated,
+      companies: generated.companies.map((company) => ({
+        ...company,
+        model: { ...company.model, jumpIntensity: 0 },
+      })),
+    };
+    const context = createMarketContext(seedKey, world, DEFAULT_MARKET_CONFIG);
+    const first = world.companies[0];
+    second = world.companies.findIndex(
+      (company, i) => i > 0 && company.exchangeId === first.exchangeId,
+    );
+    const instruments = [0, second];
+    const curves = new DayCurves(createCurveTables(context));
+    const simulation = new ReferenceSimulation(context, instruments);
+    const state = createMarketState(context);
+    while (bridge.days < TRADING_DAYS) {
+      advanceMarket(context, state, state.day + 1, {
+        onDay: (day) => {
+          curves.load(day);
+          bridge.add(instruments.map((i) => curves.instrumentCurve(i)));
+          reference.add(simulation.simulateDay(day, state.trend));
+        },
+      });
+    }
+  });
 
   it('compares at least 3,000 trading days of two stocks of the same exchange', () => {
     expect(second).toBeGreaterThan(0);
@@ -114,6 +114,8 @@ describe('bridge equivalence with the reference simulation', () => {
     );
   });
 
+  // Tolerances of TS §4.6 and §6.1: volatility ±3 %, daily range ±4 %, open → close ±6 %
+  // (relative), correlation ±0.03.
   it('has the volatility of the minute returns', () => {
     for (const n of [0, 1]) {
       expect(Math.abs(bridge.minuteVol(n) / reference.minuteVol(n) - 1)).toBeLessThan(0.03);

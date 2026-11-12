@@ -1,26 +1,26 @@
+import fc from 'fast-check';
+
 import { dateTimeToTick, dayIndex, dayStartTick } from '@app/clock/domain/calendar-logic';
 
-import { deriveSeedKey } from '@app/simulation/util/seed';
-
-import { generateWorld } from '@app/world/domain/world-generator';
-
-import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { createHighLowFill, DayHighLow } from './high-low-fill';
 import { isMarketDay } from './market-calendar';
-import { createMarketContext } from './market-context';
+import { MarketContext } from './market-context';
 import { createFactorHistory } from './market-history';
 import { advanceMarket, createMarketState } from './market-step';
+import { FactorHistory } from './models/market-state.model';
 import { PriceSource } from './price-source';
+import { goldenYear } from './testing/golden-year';
+import { miniMarket } from './testing/mini-market';
 
-const seedKey = deriveSeedKey('golden-1');
-const context = createMarketContext(seedKey, generateWorld(seedKey), DEFAULT_MARKET_CONFIG);
-const history = createFactorHistory();
-const state = createMarketState(context);
-const toDay = dayIndex(dateTimeToTick({ year: 2020, month: 5, day: 20 }));
-advanceMarket(context, state, toDay, { history });
-const fromDay = dayIndex(dateTimeToTick({ year: 2020, month: 2, day: 18 }));
+/** Range of the mini world: 18.02. up to (excluding) 20.03.2020. */
+const FROM_DAY = dayIndex(dateTimeToTick({ year: 2020, month: 2, day: 18 }));
+const TO_DAY = dayIndex(dateTimeToTick({ year: 2020, month: 3, day: 20 }));
 
-function runAll(maxDays: number): DayHighLow[] {
+let context: MarketContext;
+let history: FactorHistory;
+let all: DayHighLow[];
+
+function runAll(fromDay: number, toDay: number, maxDays: number): DayHighLow[] {
   const fill = createHighLowFill(context, history, fromDay, toDay);
   const results: DayHighLow[] = [];
   let slices = 0;
@@ -31,12 +31,17 @@ function runAll(maxDays: number): DayHighLow[] {
   return results;
 }
 
-describe('createHighLowFill', () => {
-  const all = runAll(Number.MAX_SAFE_INTEGER);
+beforeAll(() => {
+  context = miniMarket().context;
+  history = createFactorHistory();
+  advanceMarket(context, createMarketState(context), TO_DAY, { history });
+  all = runAll(FROM_DAY, TO_DAY, Number.MAX_SAFE_INTEGER);
+});
 
+describe('createHighLowFill', () => {
   it('processes every trading day once, newest first', () => {
     const expected: number[] = [];
-    for (let day = toDay - 1; day >= fromDay; day--) {
+    for (let day = TO_DAY - 1; day >= FROM_DAY; day--) {
       if (isMarketDay(day)) {
         expected.push(day);
       }
@@ -45,16 +50,25 @@ describe('createHighLowFill', () => {
   });
 
   it('does not depend on the size of the time slices', () => {
-    expect(runAll(1)).toEqual(all);
-    expect(runAll(7)).toEqual(all);
-  }, 30000);
+    fc.assert(
+      fc.property(fc.integer({ min: 1, max: 12 }), (maxDays) => {
+        expect(runAll(FROM_DAY, TO_DAY, maxDays)).toEqual(all);
+      }),
+      { numRuns: 5 },
+    );
+  });
 
-  it('matches the daily candles of the price source', () => {
-    const source = new PriceSource(context, history, state);
-    const now = dayStartTick(toDay) - 1;
+  it('matches the daily candles of the price source of the golden world', () => {
+    const golden = goldenYear();
+    const now = golden.endOfToday;
+    const fromDay = golden.today - 13;
+    const fill = createHighLowFill(golden.context, golden.history, fromDay, golden.today + 1);
+    const byDay: DayHighLow[] = [];
+    fill.run(Number.MAX_SAFE_INTEGER, (result) => byDay.unshift(result));
+    const source = new PriceSource(golden.context, golden.history, golden.state);
     for (const i of [0, 88, 199]) {
       const daily = source.candles(i, '1d', dayStartTick(fromDay), now, now);
-      const byDay = [...all].reverse();
+      expect(daily).toHaveLength(byDay.length);
       daily.forEach((candle, n) => {
         expect(candle.high).toBe(byDay[n].high[i]);
         expect(candle.low).toBe(byDay[n].low[i]);
@@ -63,7 +77,7 @@ describe('createHighLowFill', () => {
   });
 
   it('is done immediately for an empty range', () => {
-    const fill = createHighLowFill(context, history, toDay, toDay);
+    const fill = createHighLowFill(context, history, TO_DAY, TO_DAY);
     const onDay = vi.fn();
     expect(fill.run(1, onDay)).toBe(true);
     expect(onDay).not.toHaveBeenCalled();

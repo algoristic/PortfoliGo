@@ -2,8 +2,41 @@ import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import { openDB } from 'idb';
 
-import { DB_NAME, DB_VERSION, STORE_NAMES, TRANSACTIONS_BY_ACCOUNT_INDEX } from './idb-schema';
+import dbV2 from './db-v2.json';
+import {
+  DB_NAME,
+  DB_VERSION,
+  STORE_NAMES,
+  STORES,
+  TRANSACTIONS_BY_ACCOUNT_INDEX,
+} from './idb-schema';
 import { openPortfoligoDb } from './open-database';
+
+/** Frozen database of an older DB version, as `db-v<version>.json` next to this spec (TS §9.7). */
+interface DatabaseFixture {
+  version: number;
+  stores: { name: string; indexes: string[]; records: { key: string; value: unknown }[] }[];
+}
+
+/** Creates the database of a fixture the way the app of that version did. */
+async function installFixture(fixture: DatabaseFixture): Promise<void> {
+  const database = await openDB(DB_NAME, fixture.version, {
+    upgrade(upgrade) {
+      for (const store of fixture.stores) {
+        const objectStore = upgrade.createObjectStore(store.name);
+        for (const index of store.indexes) {
+          objectStore.createIndex(index, index);
+        }
+      }
+    },
+  });
+  for (const store of fixture.stores) {
+    for (const record of store.records) {
+      await database.put(store.name, record.value, record.key);
+    }
+  }
+  database.close();
+}
 
 describe('openPortfoligoDb', () => {
   beforeEach(() => {
@@ -29,20 +62,28 @@ describe('openPortfoligoDb', () => {
     database.close();
   });
 
-  it('drops the stores of the prototype when upgrading from version 2', async () => {
-    const prototype = await openDB(DB_NAME, 2, {
-      upgrade(database) {
-        database.createObjectStore('players');
-        database.createObjectStore('profiles');
-      },
+  describe('upgrade from version 2 (db-v2.json)', () => {
+    beforeEach(() => installFixture(dbV2));
+
+    it('drops the stores and records of the prototype', async () => {
+      const database = await openPortfoligoDb();
+
+      expect(database.version).toBe(DB_VERSION);
+      expect(database.objectStoreNames.contains('profiles')).toBe(false);
+      expect(await database.count('players')).toBe(0);
+      database.close();
     });
-    await prototype.put('profiles', { name: 'alt' }, 'p1');
-    prototype.close();
 
-    const database = await openPortfoligoDb();
+    it('creates the schema with its in-line keys', async () => {
+      const database = await openPortfoligoDb();
 
-    expect(database.objectStoreNames.contains('profiles')).toBe(false);
-    expect(database.transaction('players').objectStore('players').keyPath).toBe('id');
-    database.close();
+      expect(Array.from(database.objectStoreNames).sort()).toEqual([...STORE_NAMES].sort());
+      const transaction = database.transaction([...STORE_NAMES], 'readonly');
+      for (const name of STORE_NAMES) {
+        expect(transaction.objectStore(name).keyPath, name).toEqual(STORES[name].keyPath);
+      }
+      expect(transaction.objectStore('players').indexNames.contains('name')).toBe(false);
+      database.close();
+    });
   });
 });

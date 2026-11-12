@@ -35,8 +35,8 @@ Rules for implementing Angular code in this repository, so that generated code l
 - Simulation lab (AP 1.7) at `#/lab/simulation` (only with `devPages`, currently on in production too): `lab/domain` (`LabSimulation`: world, prehistory, day steps, candles from minute curves or, for long periods, from the support points), `lab/data-access` (`lab-simulation.worker.ts` around the framework-free `LabWorkerSession`, `LabSimulationService` with `LAB_WORKER_FACTORY`; precursor of AP 2.2) and the `lab` slice. `charts/ui/price-chart` wraps `lightweight-charts` (E-04, loaded with a dynamic import, colours from the tokens, game time on the time axis via `tickToChartTime`); AP 4.2 extends it. Web workers use `tsconfig.worker.json` (`*.worker.ts`).
 - Lab frame: `lab/feature/lab/lab.page` is the parent route of `#/lab` (`''` → `simulation`) with a header (brand, `lab/ui/lab-nav` with Simulation, UI-Bausteine, Design-Tokens, and a „Zur App“ link to `/players`); lab pages render inside its `<main>` and don't set their own page background. The player selection links to the lab. New lab pages are child routes with a `title` and a nav entry in `LabPage.navItems`.
 - Lab statistics (AP 1.8a): `analysis/domain` holds framework-free statistics (`statistics-logic.ts`: volatility, correlation, kurtosis, autocorrelation, quantiles, histogram; `drawdown-logic.ts`); reuse them for later risk figures instead of writing new helpers. `lab/domain`: `collectMarketSample` (daily closes and returns from the support points), `computeLabStatistics` against `CALIBRATION_TARGETS` (measurement rules in TS §6.9), `LabSimulation.statistics(start)`/`simulateYears`; the page shows them with `lab/ui/market-statistics` (parts: `phase-timeline`, `return-histogram`, `correlation-matrix`). All presentational parts of the lab pages live in `lab/ui`.
-- Page and component tests (§10): helpers in `src/testing/` (`renderRoute`/`settle`, DOM helpers, `installChartPlatform`, `installViewport`), platform polyfills in `src/test-setup.ts`, `provideInProcessLabWorker()`. Page tests: `shell/feature/shell`, `lab/feature/simulation` (including the statistics); component tests: `charts/ui/price-chart`, `shared/ui/tabs`, `shared/ui/dialog-confirm`.
-- `ng build`, `ng lint` and `ng test` are green. CI runs all three before deploying.
+- Tests (AP 0.5, TS §14.1, §10): suites `logic` (Vitest under Node), `angular` (`ng test` under jsdom), `calibration`, `perf`, `mutation` (Stryker) and `e2e` (Playwright in Chromium, Firefox, WebKit and on phones, with axe). Helpers in `src/testing/` (`renderRoute`/`settle`, DOM helpers, `installChartPlatform`, `installViewport`, `statistics`, `perf`, `parse`, `arbitraries`, `seeds`), platform polyfills in `src/test-setup.ts`, `provideInProcessLabWorker()`; fixtures `goldenYear()`, `miniWorld()`/`miniMarket()`. The golden master lives in `market/domain/golden-master.ts` (six checksums of `golden-1`); the self-test on `#/lab/simulation` computes them in the worker, and the system tests compare them in every engine. Page tests: `shell/feature/shell`, `lab/feature/simulation`; component tests: `charts/ui/price-chart`, `shared/ui/tabs`, `shared/ui/dialog-confirm`.
+- `npm run verify` is green. CI runs the same checks on every push and deploys only when all of them pass (TS §14.4).
 - Environment values (`src/environments/`): `production`, `storeDevtools` (`null` = off) and `devPages` (flag for the lab and developer pages; for now `true` in production as well, so all visitors reach the lab). Only bootstrap code imports them.
 - An earlier Ionic prototype was deleted; don't build on it. View prototype code with `git show 9bab719^:<path>`.
 
@@ -60,17 +60,17 @@ Rules for implementing Angular code in this repository, so that generated code l
 
 **Commands** (in addition to §11):
 
-| Task              | Command                                                                                       |
-| ----------------- | --------------------------------------------------------------------------------------------- |
-| Select Node first | `nvm use` (`.nvmrc` = 22.22.3; the shell default 22.12 is too old for Angular CLI 22)         |
-| Dev server        | `npm start` (port 4711); `ng serve --ssl --host 0.0.0.0` for phones (HTTPS-only browser APIs) |
-| Single spec file  | `ng test --watch=false --include src/app/<path>/<name>.spec.ts`                               |
-| Tests by name     | `ng test --watch=false --filter '<regex>'`                                                    |
-| Extract i18n      | `npm run translate` → root `messages.xlf`                                                     |
+| Task              | Command                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Select Node first | `nvm use` (`.nvmrc` = 22.22.3; the shell default 22.12 is too old for Angular CLI 22)                                           |
+| Dev server        | `npm start` (port 4711); `ng serve --ssl --host 0.0.0.0` for phones (HTTPS-only browser APIs)                                   |
+| Single spec file  | logic: `npx vitest run src/app/<path>/<name>.spec.ts`; Angular: `ng test --watch=false --include src/app/<path>/<name>.spec.ts` |
+| Tests by name     | `npx vitest run --project logic -t '<regex>'`; `ng test --watch=false --filter '<regex>'`                                       |
+| Extract i18n      | `npm run translate` → root `messages.xlf`                                                                                       |
 
-Tests run with Vitest under jsdom (`@angular/build:unit-test`, setup in `src/test-setup.ts`).
+Specs of `domain` and `util` run with plain Vitest under Node (`vitest.config.ts`), all others with Vitest under jsdom through `ng test` (`@angular/build:unit-test`, setup in `src/test-setup.ts`); system tests run with Playwright (§10, TS §14.1).
 
-**Checking changes in the browser:** after implementing UI changes, check them in the real app with the Playwright MCP server (`.mcp.json`: headless Google Chrome, fresh profile per session) against the dev server on port 4711. If the server isn't running, start it with the command from `.claude/launch.json` (selects Node via nvm, no `--open`). Navigate to the affected page, go through the flows by `data-testid`, read the console and take screenshots for layout questions. Playwright writes its output to `.playwright-mcp/` (git-ignored); close the browser when done. This complements the page tests and doesn't replace them. A new machine needs Google Chrome and nvm in `~/.nvm`.
+**Checking changes in the browser:** after implementing UI changes, check them in the real app with the Playwright MCP server (`.mcp.json`: headless Google Chrome, fresh profile per session) against the dev server on port 4711. If the server isn't running, start it with the command from `.claude/launch.json` (selects Node via nvm, no `--open`). Navigate to the affected page, go through the flows by `data-testid`, read the console and take screenshots for layout questions. Playwright writes its output to `.playwright-mcp/` (git-ignored); close the browser when done. This complements the page and system tests and doesn't replace them. A new machine needs Google Chrome and nvm in `~/.nvm`.
 
 ## 0. How to use this file
 
@@ -94,7 +94,7 @@ ESLint enforces these rules (`no-restricted-imports` per layer in `eslint.config
 
 - **Smart and presentational:** `feature` holds pages and the components that inject a facade. Everything presentational lives in `ui`, also when only one page uses it.
 
-- **Framework-free layers:** `domain` and `util` import nothing from `@angular/*`, `@ngrx/*` or `rxjs`. That way the code runs in the Web Worker and in tests without TestBed.
+- **Framework-free layers:** `domain` and `util` import nothing from `@angular/*`, `@ngrx/*` or `rxjs`. That way the code runs in the Web Worker and in the logic tests under Node.
 - **Worker:** the engine worker imports only `domain`, `util` and framework-free persistence modules, and never creates an Angular injector. Simulation code follows the determinism rules in TS §4.5.
 - **Texts and access:** user-facing texts exist only in Angular (i18n, §5); the engine returns codes, which the `feature` or `ui` layer maps to `$localize` texts. Components never access IndexedDB, localStorage or the worker directly, only through facades.
 
@@ -540,9 +540,95 @@ export const ORDERS_SERVICE_CONFIG = new InjectionToken<OrdersServiceConfig>(
 
 ## 10. Testing
 
-- **Logic is always tested:** reducers, selectors, effects, facades, services, guards, interceptors, validators and pure functions (`*.utils.ts`, `*-logic.ts`).
-- **Pages get page tests** and **ui components with their own behaviour** (charts, forms with validation, …) get component tests, both as integration tests (see below). Purely presentational components, directives and pipes are covered by the page tests and not tested on their own.
-- Specs sit next to the file: `<name>.<kind>.spec.ts`. They run with Vitest through `ng test` (globals such as `describe`, `it`, `vi` are available).
+The test concept is TS §14.1 (principles, test kinds, suites, decision E-29). This section holds the rules for writing tests.
+
+### Principles
+
+- **Oracle rule:** an expected value never comes from the code under test. Allowed oracles:
+  - worked examples from the spec: tables in TS or PS that the test implements exactly. If a new rule has none, add the table to the spec first;
+  - published reference vectors (MurmurHash3, sfc32, ISIN check digits);
+  - independent references: platform functions (`Date.UTC`, `Math.exp` within 1 ulp), a brute-force implementation inside the spec, `ReferenceSimulation`;
+  - invariants and metamorphic relations;
+  - frozen checksums (`market/domain/golden-master.ts`).
+
+  Never compute expectations with the function under test or with helpers the code under test uses (formatters, state utils), and never copy configuration values into a spec; import them.
+
+- **Behaviour at the boundary of a unit:** public functions, engine commands, slices (actions → state), pages (user actions → what the page shows). No tests of private helpers.
+- **Every test must be able to fail for a plausible bug.** If you can't name the bug a test would catch, don't write it. Stryker measures this for rule code.
+- **Deterministic and independent:** fixed seeds; no wall clock (`performance.now` and `Date.now` are lint errors outside `*.perf.spec.ts`) and no `Math.random`; no order dependence between tests (a flow over several steps is one test); never `.only`. Heavy setup goes in `beforeAll`, never in a `describe` body. Shared fixtures are read-only.
+- **Not tested on their own:** facades and guards without logic, reducer branches that only set a value, pure projection selectors, presentational components, directives and pipes (their functions are tested), third-party libraries. There is no coverage target.
+
+### Which test goes where
+
+| Code                                                                                                                       | Test                                                                                            | File                                                       | Suite         |
+| -------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------- | ------------- |
+| Rules in `domain`/`util` (money, calendar, fees, interest, taxes, orders, indicators)                                      | example table from the spec (`it.each`, comment with the section) plus properties               | `<name>.spec.ts` next to the file                          | `logic`       |
+| Invariants (rounding, price grid, ledger balance, round trips, type guards)                                                | fast-check properties                                                                           | same                                                       | `logic`       |
+| Simulation code (world, market, later engine)                                                                              | determinism contract (TS §4.6): golden master plus properties on the mini world                 | same; `golden-master.spec.ts`, `market-properties.spec.ts` | `logic`       |
+| Statistical plausibility, calibration targets                                                                              | tolerances in standard errors on fixed seeds                                                    | `<name>.calibration.spec.ts`                               | `calibration` |
+| Budgets of TS §14.3                                                                                                        | median timings                                                                                  | `<name>.perf.spec.ts`                                      | `perf`        |
+| Engine behaviour (from AP 2.1)                                                                                             | one scenario per acceptance criterion against the scripted market, `US-xx-nn` in the `describe` | `<name>.spec.ts`                                           | `logic`       |
+| Reducers, selectors and effects with logic; services; guards with logic                                                    | slice and service tests                                                                         | `<name>.<kind>.spec.ts`                                    | `angular`     |
+| Pages; ui components with their own behaviour (charts, forms with validation, keyboard handling)                           | page and component tests (below)                                                                | `<name>.page.spec.ts`, `<name>.component.spec.ts`          | `angular`     |
+| What only a real browser shows (worker, media queries, IndexedDB, tabs, offline, `Intl`, a11y, determinism across engines) | system tests (below)                                                                            | `e2e/<area>.e2e.ts`                                        | `e2e`         |
+| Rule code                                                                                                                  | mutation tests                                                                                  | `stryker.config.mjs`, `vitest.mutation.config.ts`          | `mutation`    |
+
+- Specs in `domain` and `util` run in plain Vitest under Node (`vitest.config.ts`), so they must not import Angular, NgRx, RxJS or the DOM helpers (lint rule). All other specs run through `ng test` under jsdom. The globals `describe`, `it`, `expect` and `vi` exist in both.
+- New rule code goes into `mutate` in `stryker.config.mjs`, and its spec into `RULE_SPECS` in `vitest.mutation.config.ts`.
+
+### Writing tests
+
+- Structure: `describe('<ClassOrFunction>')`, nested `describe` per method or effect, and `it('<verb>s … when …')` in English without "should".
+- **Example tables** cite the section they come from:
+
+  ```ts
+  // TS §7.1: commercial rounding, halves away from zero
+  it.each([
+    [2.5, 3],
+    [-2.5, -3],
+    [2.4999, 2],
+  ])('rounds %d to %d', (value, expected) => {
+    expect(roundHalfAwayFromZero(value)).toBe(expected);
+  });
+  ```
+
+- **Properties** with fast-check:
+
+  ```ts
+  import fc from 'fast-check';
+
+  it('keeps every rounded price on its grid', () => {
+    fc.assert(
+      fc.property(fc.double({ min: 1e-4, max: 1e4, noNaN: true }), (price) => {
+        const step = priceStep(price);
+        const down = roundDownToStep(price, step);
+        expect(down).toBeLessThanOrEqual(price);
+        expect(roundDownToStep(down, step)).toBe(down);
+      }),
+    );
+  });
+  ```
+
+  - Locally every run draws a new seed; CI uses `FC_SEED` derived from the commit. A failure prints seed and path; reproduce with `FC_SEED=<seed> npx vitest run <file>`. A counterexample that revealed a bug becomes an explicit example test.
+  - Keep exhaustive loops where the input set is finite and small enough (every calendar day 2020–2100 against `Date`).
+  - Shared generators live in `src/testing/arbitraries.ts`. Expensive properties set `numRuns` (10–25 on the mini world).
+
+- **Statistical tolerances** are multiples of a standard error: `expectWithinSigma(observed, expected, se, k)` with `meanSe`, `binomialSe`, `poissonSe` or `varianceSe` from `src/testing/statistics.ts`. Use `analysis/domain/statistics-logic` instead of writing statistics helpers.
+- **Fixtures:**
+  - `goldenYear()` (`market/domain/testing/golden-year.ts`): the standard world of `golden-1` through 2020, once per file.
+  - `miniWorld()` / `miniMarket()` (`world/domain/testing/mini-world.ts`, `market/domain/testing/mini-market.ts`): a small world for properties with many runs.
+  - Seeds from `src/testing/seeds.ts`. Fixtures live in a `testing/` folder of their domain (excluded from the app build) or in `src/testing`.
+  - Stored data: one frozen fixture per database version (`db-vN.json`), never changed after a release.
+- **Golden master:** the six checksums live in `market/domain/golden-master.ts`. If one changes, the world or the prices of existing seeds changed. Update a constant only on purpose, note it in the change log and, from AP 2.3, raise `SIM_VERSION` (TS §15).
+- **Mutation and `beforeAll`:** Stryker runs only the code inside `it` under the active mutant. In rule specs the mutated code must therefore run inside the test; only fixtures that are not mutated belong in `beforeAll`.
+- **Mocks** (slice and service tests only): plain objects with `vi.fn()`, typed `Mocked<Pick<…>>` (`import type { Mocked } from 'vitest'`). Await Observables with `firstValueFrom`/`lastValueFrom`; no `done` callbacks, marble tests or `fakeAsync`.
+- **Angular suite, what and how:**
+  - **Reducers:** call directly with an action; only branches with logic.
+  - **Selectors with logic:** `selectX.projector(state)`.
+  - **Effects with logic** (filters, branches, error mapping, cancellation): `provideMockActions` and mocked services, see the example.
+  - **HTTP services:** `provideHttpClient()` + `provideHttpClientTesting()` with `HttpTestingController`, and `httpMock.verify()` in `afterEach`.
+  - **Guards with logic:** `TestBed.runInInjectionContext(() => guard()(route, state))` + `firstValueFrom`.
+  - **Reusable form schemas and rules:** create the form with `TestBed.runInInjectionContext(() => form(signal(model), schema))` and assert on `xForm.field().errors()`.
 
 ```ts
 describe('OrdersEffects', () => {
@@ -575,24 +661,10 @@ describe('OrdersEffects', () => {
 });
 ```
 
-- Structure: `describe('<ClassOrFunction>')`, nested `describe` per method or effect, and `it('<verb>s … when …')` in English without "should".
-- What to test, and how:
-  - **Reducers:** call directly with an action.
-  - **Selectors:** test via `selectX.projector(state)`.
-  - **Facades:** use `provideMockStore` + `vi.spyOn(store, 'dispatch')`.
-  - **HTTP services:** use `provideHttpClient()` + `provideHttpClientTesting()` with `HttpTestingController`, and `httpMock.verify()` in `afterEach`.
-  - **Functional guards:** use `TestBed.runInInjectionContext(() => guard()(route, state))` + `firstValueFrom`.
-  - **Reusable form schemas and rules:** create the form with `TestBed.runInInjectionContext(() => form(signal(model), schema))` and assert on `xForm.field().errors()`.
-- Mocks (logic tests only; page and component tests don't mock, see below):
-  - Plain objects with `vi.fn()`, typed `Mocked<Pick<…>>` (`import type { Mocked } from 'vitest'`).
-  - Packages that don't load in the test environment (e.g. heavy ESM UI libraries) are replaced via `vi.mock(...)`.
-- Await Observables with `firstValueFrom`/`lastValueFrom` instead of `done` callbacks. Don't use marble testing or `fakeAsync`.
-
 ### Page and component tests
 
 They run the real code: store, effects, facades, services, worker code, child components and `lightweight-charts`. Only process and platform boundaries are replaced, so don't mock anything else in them (no `MockStore`, fake services or stub components).
 
-- **Plan them with the component.** Whoever plans a new page or ui component (an AP plan included) names its page or component test right away: the user flows it checks, the displayed values that need a `data-testid`, and the seams the code needs to be testable (worker factory tokens with a root default, `PendingTasks` for asynchronous work outside Angular, deterministic seeds and clocks).
 - **Page tests** (`<name>.page.spec.ts`) open the page through the app's real routes with `renderRoute(url, providers)` from `src/testing/page.ts`. It uses `provideAppCore()` (the app-wide providers of `app.config.ts`) and `RouterTestingHarness`, so guards and route providers run as in the app.
 - **Component tests** (`<name>.component.spec.ts`) create the component with `TestBed.createComponent`, set inputs with `fixture.componentRef.setInput(...)` and subscribe to the outputs. Components that take content (e.g. `app-tabs` with `appTabPanel` templates) get a small host component in the spec; overlays (dialogs, toasts) are found in `document.body`.
 - Replaced boundaries:
@@ -607,49 +679,84 @@ They run the real code: store, effects, facades, services, worker code, child co
 
 - Act like a user through `data-testid` with the helpers in `src/testing/dom.ts` (`byTestId`, `queryByTestId`, `textOf`, `click`, `typeText`, `select`, `press`, `wheel`) and assert on what the page shows. Displayed values that a test reads get a `data-testid` too.
 - Wait with `settle(fixture)` (`src/testing/page.ts`): `whenStable()`, a few animation frames (charts report their range in a frame), `whenStable()` again. Asynchronous work outside Angular (worker answers, lazy libraries) is registered as `PendingTasks`, so `whenStable()` covers it; don't poll.
-- Compute expected values with the domain code, e.g. a `LabSimulation` with the same seed as oracle, instead of hard-coding numbers of the generated world.
-- Page tests cover user flows and the wiring; edge cases stay in the logic tests. Pixels, layout and real gestures are not covered (TS §14.1).
+- **Expected values** are literal texts, dates and counts (derived from the calendar or the spec), or come from the public domain or engine API, e.g. a `LabSimulation` with the same seed for model numbers. Never import the page's formatting functions or state utils (`shared/util/format`, `clock/domain/game-time-format`, `*/state/*.utils`; enforced by lint). Read displayed numbers with `parseGermanNumber` (`src/testing/parse.ts`) and compare at the displayed precision.
+- Page tests cover user flows and the wiring; edge cases stay in the logic tests. Layout, real media queries, real gestures and focus handling belong to the system tests.
+
+### System tests (Playwright)
+
+- Files are `e2e/<area>.e2e.ts`. Import `test` and `expect` from `e2e/fixtures.ts`: its automatic fixture fails a test on console errors, uncaught exceptions and failed requests, and `expectAccessible(page)` runs axe (WCAG 2.2 AA, serious and critical findings).
+- They run against the production build (`e2e/serve.mjs` serves `www/`). Projects and tags:
+  - `chromium`, `firefox`, `webkit` run every test without `@phone`;
+  - `@mobile` adds `mobile-chromium` and `mobile-webkit`, `@phone` restricts a test to them;
+  - `@intl` adds `chromium-intl` (en-US, Los Angeles), because output must be de-DE and UTC regardless of the browser.
+- Select with `page.getByTestId(...)`. Assert texts and values derived from the calendar or the page structure, never model numbers: they change with every calibration. For determinism across engines, compare with the frozen constants (`GOLDEN_CHECKSUMS`).
+- Control time only through product features (pause, simulate, jump) and assert in the resting state. No `waitForTimeout`. Let a page finish loading before a reload or navigation that could cancel a lazy chunk.
+- Add or extend a journey whenever an AP adds behaviour that only a real browser shows: the worker, persistence across reloads, several tabs, offline use, file download and upload, layout breakpoints, focus handling, output in other engines. Run a new journey locally with `--repeat-each=5` before keeping it.
+- Locally, `npm run e2e` and `npm run verify` run only the Chromium projects (`npm run test:e2e`). Firefox, WebKit and `mobile-webkit` run in CI (Playwright container); to run them locally, install their system libraries once (`sudo npx playwright install-deps`) and call `npx playwright test`.
+
+### Mutation tests
+
+- `npm run test:mutation` runs Stryker incrementally; the report is `reports/mutation/index.html`. CI fails below `thresholds.break` in `stryker.config.mjs`.
+- Kill surviving mutants in changed rule code with a new test, or explain in the AP why a mutant is equivalent.
+
+### Planning tests in an AP
+
+Whoever plans an AP (or a new page or ui component) names its tests right away:
+
+- the example tables (added to the spec if missing), the invariants, one engine scenario per acceptance criterion, the page and component tests and the system test journeys;
+- the displayed values that need a `data-testid`;
+- the seams the code needs: ports for clock, prices, worker and storage, worker factory tokens with a root default, `PendingTasks` for asynchronous work outside Angular, deterministic seeds and clocks.
 
 ## 11. Verify your changes
 
-| Task           | Command                        |
-| -------------- | ------------------------------ |
-| Type-check     | `ng build`                     |
-| Lint (and fix) | `ng lint --fix`                |
-| Unit tests     | `ng test --watch=false`        |
-| Format         | `npx prettier --write <files>` |
-| Extract i18n   | `ng extract-i18n`              |
+| Task                           | Command                                                                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| Everything CI checks           | `npm run verify` (Definition of Done)                                                                                           |
+| Fast loop                      | `npm test` (`logic` and `angular`)                                                                                              |
+| Logic specs in watch mode      | `npx vitest --project logic`                                                                                                    |
+| One spec                       | logic: `npx vitest run src/app/<path>/<name>.spec.ts`; Angular: `ng test --watch=false --include src/app/<path>/<name>.spec.ts` |
+| Calibration, budgets, mutation | `npm run test:calibration`, `npm run test:perf`, `npm run test:mutation`                                                        |
+| System tests                   | `npm run e2e` (build + Chromium projects); after a build `npm run test:e2e`; all engines `npx playwright test` (CI)             |
+| Types of specs and e2e         | `npm run typecheck`; `ng build` type-checks the app                                                                             |
+| Lint (and fix)                 | `ng lint --fix`                                                                                                                 |
+| Format                         | `npx prettier --write <files>`                                                                                                  |
+| Extract i18n                   | `ng extract-i18n`                                                                                                               |
 
 ## 12. Patterns to avoid
 
-| Don't                                                                                 | Use instead                                                              |
-| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `@Input()` / `@Output()` / `EventEmitter`, `@ViewChild`                               | `input()`, `output()`, `viewChild()`                                     |
-| Constructor injection                                                                 | `inject()` field initializers                                            |
-| `private` keyword, `_` prefix for private members                                     | `#` private fields                                                       |
-| `standalone: true`, NgModules, explicit `changeDetection`                             | framework defaults                                                       |
-| `unsubscribe$ = new Subject()` + `takeUntil` + `ngOnDestroy`; subscribing into fields | `@let … \| async`, `toSignal()`, `takeUntilDestroyed()`                  |
-| `*ngIf`, `*ngFor`                                                                     | `@if`, `@for` with `track`                                               |
-| Reactive Forms (`FormGroup`, `FormControl`), `ngModel`, forms built in `computed()`   | Signal Forms: `form()` on a `signal`/`linkedSignal` model, `[formField]` |
-| `ControlValueAccessor` for new custom form controls                                   | `FormValueControl` / `FormCheckboxControl`                               |
-| Class interceptors registered via `HTTP_INTERCEPTORS`                                 | functional `HttpInterceptorFn` + `withInterceptors`                      |
-| Class guards, resolvers, `APP_INITIALIZER`                                            | functional guard factories, `provideAppInitializer`                      |
-| `provideState`/`provideEffects` inline in route definitions                           | `provideXState()` in `<name>.providers.ts`                               |
-| Loading data in `ngOnInit` / `ActivatedRoute` in components                           | enter/leave guard factories + router-store selectors                     |
-| `withLatestFrom` in effects                                                           | `concatLatestFrom`                                                       |
-| `createActionGroup`, `createFeature`, functional effects, ComponentStore, SignalStore | classic actions, reducer, effects class and facade                       |
-| `error: any`, `errorMessage: string` in state                                         | `error: unknown`; user feedback via toast effects                        |
-| TS `enum`                                                                             | `as const` list + derived type                                           |
-| i18n texts without ID or with IDs that don't follow the scheme                        | `@@<layer><Domain>-<componentOrClass>-<key>`                             |
-| Hard-coded hex colours / `rem` spacing                                                | `--pgo-*` tokens: utilities, `var(--pgo-*)` in SCSS                      |
-| Arbitrary values (`p-[13px]`), default colours (`bg-red-500`)                         | Tailwind scale and token colours; new tokens in `styles.css`             |
-| `@apply`/`@reference` in component SCSS, global Sass                                  | utilities in templates; global styles only in `styles.css`               |
-| Class names assembled from strings (`'bg-' + x`)                                      | complete class names in a `computed` mapping                             |
-| Class ternaries for active or selected states                                         | `current:`, `aria-selected:`, `aria-disabled:` variants                  |
-| `<i class="bi bi-…">`, `'bi-' + name`                                                 | `<i appIcon="…"></i>`                                                    |
-| `:host { display: block }`, empty `.scss` files                                       | `host: { class: 'block' }`; `styleUrl` only for special cases            |
-| Role prefixes such as `section-` (`app-section-header`)                               | names that describe the content; only `dialog-` and `form-` remain       |
-| Presentational components in `feature`                                                | `<domain>/ui`                                                            |
-| Method calls in templates (`formatPercent(x)`, `rowLabel(row)`)                       | pipes; `computed` view models                                            |
-| Relative imports into other domains (`../../../shared/ui/…`)                          | `@app/shared/ui/…`                                                       |
-| Dialogs opened from ui components; dialog folders named `<name>-dialog`               | dialogs opened from effects; `dialog-<name>/`                            |
+| Don't                                                                                  | Use instead                                                                   |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `@Input()` / `@Output()` / `EventEmitter`, `@ViewChild`                                | `input()`, `output()`, `viewChild()`                                          |
+| Constructor injection                                                                  | `inject()` field initializers                                                 |
+| `private` keyword, `_` prefix for private members                                      | `#` private fields                                                            |
+| `standalone: true`, NgModules, explicit `changeDetection`                              | framework defaults                                                            |
+| `unsubscribe$ = new Subject()` + `takeUntil` + `ngOnDestroy`; subscribing into fields  | `@let … \| async`, `toSignal()`, `takeUntilDestroyed()`                       |
+| `*ngIf`, `*ngFor`                                                                      | `@if`, `@for` with `track`                                                    |
+| Reactive Forms (`FormGroup`, `FormControl`), `ngModel`, forms built in `computed()`    | Signal Forms: `form()` on a `signal`/`linkedSignal` model, `[formField]`      |
+| `ControlValueAccessor` for new custom form controls                                    | `FormValueControl` / `FormCheckboxControl`                                    |
+| Class interceptors registered via `HTTP_INTERCEPTORS`                                  | functional `HttpInterceptorFn` + `withInterceptors`                           |
+| Class guards, resolvers, `APP_INITIALIZER`                                             | functional guard factories, `provideAppInitializer`                           |
+| `provideState`/`provideEffects` inline in route definitions                            | `provideXState()` in `<name>.providers.ts`                                    |
+| Loading data in `ngOnInit` / `ActivatedRoute` in components                            | enter/leave guard factories + router-store selectors                          |
+| `withLatestFrom` in effects                                                            | `concatLatestFrom`                                                            |
+| `createActionGroup`, `createFeature`, functional effects, ComponentStore, SignalStore  | classic actions, reducer, effects class and facade                            |
+| `error: any`, `errorMessage: string` in state                                          | `error: unknown`; user feedback via toast effects                             |
+| TS `enum`                                                                              | `as const` list + derived type                                                |
+| i18n texts without ID or with IDs that don't follow the scheme                         | `@@<layer><Domain>-<componentOrClass>-<key>`                                  |
+| Hard-coded hex colours / `rem` spacing                                                 | `--pgo-*` tokens: utilities, `var(--pgo-*)` in SCSS                           |
+| Arbitrary values (`p-[13px]`), default colours (`bg-red-500`)                          | Tailwind scale and token colours; new tokens in `styles.css`                  |
+| `@apply`/`@reference` in component SCSS, global Sass                                   | utilities in templates; global styles only in `styles.css`                    |
+| Class names assembled from strings (`'bg-' + x`)                                       | complete class names in a `computed` mapping                                  |
+| Class ternaries for active or selected states                                          | `current:`, `aria-selected:`, `aria-disabled:` variants                       |
+| `<i class="bi bi-…">`, `'bi-' + name`                                                  | `<i appIcon="…"></i>`                                                         |
+| `:host { display: block }`, empty `.scss` files                                        | `host: { class: 'block' }`; `styleUrl` only for special cases                 |
+| Role prefixes such as `section-` (`app-section-header`)                                | names that describe the content; only `dialog-` and `form-` remain            |
+| Presentational components in `feature`                                                 | `<domain>/ui`                                                                 |
+| Method calls in templates (`formatPercent(x)`, `rowLabel(row)`)                        | pipes; `computed` view models                                                 |
+| Relative imports into other domains (`../../../shared/ui/…`)                           | `@app/shared/ui/…`                                                            |
+| Dialogs opened from ui components; dialog folders named `<name>-dialog`                | dialogs opened from effects; `dialog-<name>/`                                 |
+| Expected values computed with the code under test or its helpers; copied config values | independent oracles: spec tables, references, properties, golden master (§10) |
+| Wall-clock asserts in normal specs                                                     | budgets in `*.perf.spec.ts` (TS §14.3)                                        |
+| `.only`, order-dependent tests, heavy work in `describe` bodies                        | independent tests, setup in `beforeAll`                                       |
+| Tests of facades, guards or reducer branches without logic                             | page tests cover the wiring                                                   |
+| Model numbers in system tests, `waitForTimeout`                                        | calendar or structural values; wait for the resting state                     |

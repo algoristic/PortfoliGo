@@ -1,3 +1,7 @@
 # Add files here to ignore them from prettier formatting
 /www
-.angular
+.angular/playwright-report
+/test-results
+/blob-report
+/reports
+/.stryker-tmp

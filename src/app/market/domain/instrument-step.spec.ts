@@ -1,30 +1,39 @@
 import { dateTimeToTick, dayIndex } from '@app/clock/domain/calendar-logic';
-
-import { deriveSeedKey } from '@app/simulation/util/seed';
-
 import { DIVIDENDS_PER_YEAR } from '@app/world/domain/models/taxonomy.model';
-
-import { generateWorld } from '@app/world/domain/world-generator';
 
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { ANNOUNCEMENT_LEAD_DAYS, dividendCents } from './dividend-logic';
 import { stepInstrument } from './instrument-step';
 import { isMarketDay } from './market-calendar';
-import { createMarketContext } from './market-context';
+import { MarketContext } from './market-context';
 import { restoreMarket, snapshotMarket } from './market-snapshot';
 import { advanceMarket, createMarketDay, createMarketState } from './market-step';
 import { MarketState } from './models/market-state.model';
 import { priceFromLog } from './price-logic';
+import { END_OF_2020_DAY, goldenYear } from './testing/golden-year';
 
-const seedKey = deriveSeedKey('golden-1');
-const context = createMarketContext(seedKey, generateWorld(seedKey), DEFAULT_MARKET_CONFIG);
 const FLOOR = DEFAULT_MARKET_CONFIG.priceFloor;
-const START_2021 = dayIndex(dateTimeToTick({ year: 2021, month: 1, day: 1 }));
 const START_2022 = dayIndex(dateTimeToTick({ year: 2022, month: 1, day: 1 }));
-const payer = context.layout.dividends.findIndex((dividend) => dividend !== null);
 
+interface Announcement {
+  day: number;
+  exDay: number;
+  cents: number;
+  prevLog: number;
+}
+
+let context: MarketContext;
+/** Market state at the start of 2021 (golden year); copies are taken from it. */
+let start2021: MarketState;
+/** A quarterly dividend payer, so 2021 has several announcements. */
+let payer: number;
+let announcements: Announcement[];
+/** Changes of `nextExDay` per instrument in 2021. */
+let exDateCounts: Int32Array;
+
+/** Market state before `day` (≥ 2021), advanced on a copy of the golden state. */
 function stateAt(day: number): MarketState {
-  const state = createMarketState(context);
+  const state = restoreMarket(snapshotMarket(start2021));
   advanceMarket(context, state, day);
   return state;
 }
@@ -36,6 +45,35 @@ function stepCopy(state: MarketState, i: number, day: number) {
   stepInstrument(context, i, day, copy, out);
   return { state: copy, out };
 }
+
+beforeAll(() => {
+  const golden = goldenYear();
+  context = golden.context;
+  start2021 = golden.state;
+  payer = context.layout.dividends.findIndex((dividend) => dividend?.frequency === 'quarterly');
+  announcements = [];
+  const state = restoreMarket(snapshotMarket(start2021));
+  const previous = state.nextExDay.slice();
+  exDateCounts = new Int32Array(previous.length);
+  advanceMarket(context, state, START_2022, {
+    onDay: (day) => {
+      if (day.announcedExDay[payer] >= 0) {
+        announcements.push({
+          day: day.day,
+          exDay: day.announcedExDay[payer],
+          cents: day.announcedCents[payer],
+          prevLog: day.prevLogClose[payer],
+        });
+      }
+      state.nextExDay.forEach((next, i) => {
+        if (next !== previous[i]) {
+          exDateCounts[i]++;
+          previous[i] = next;
+        }
+      });
+    },
+  });
+});
 
 describe('stepInstrument', () => {
   it('depends only on the day, the previous state and the factor levels', () => {
@@ -66,30 +104,10 @@ describe('stepInstrument', () => {
     expect(found).toBe(true);
   });
 
-  it('gives the stocks plausible volatilities over five years', () => {
-    const closes: number[][] = context.layout.instrumentIds.map(() => []);
-    advanceMarket(context, createMarketState(context), 1827, {
-      onDay: (day) => day.logClose.forEach((close, i) => closes[i].push(close)),
-    });
-    const volatilities = closes
-      .map((series) => {
-        const returns = series.slice(1).map((close, n) => close - series[n]);
-        const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
-        const variance =
-          returns.reduce((sum, value) => sum + (value - mean) ** 2, 0) / (returns.length - 1);
-        return Math.sqrt(variance * DEFAULT_MARKET_CONFIG.tradingDaysPerYear);
-      })
-      .sort((a, b) => a - b);
-    const median = volatilities[Math.floor(volatilities.length / 2)];
-    expect(median).toBeGreaterThan(0.2);
-    expect(median).toBeLessThan(0.6);
-    expect(volatilities[0]).toBeGreaterThan(0.1);
-  });
-
   describe('dividends', () => {
     it('takes the dividend off the open on the ex-date', () => {
-      const state = stateAt(START_2021);
-      const exDay = state.nextExDay[payer];
+      const exDay = start2021.nextExDay[payer];
+      expect(exDay).toBeGreaterThanOrEqual(END_OF_2020_DAY);
       const before = stateAt(exDay);
       expect(before.dividendCents[payer]).toBeGreaterThan(0);
       const withDividend = stepCopy(before, payer, exDay);
@@ -107,26 +125,13 @@ describe('stepInstrument', () => {
       expect(withDividend.state.dividendCents[payer]).toBeNaN();
     });
 
-    it('announces the amount from the previous close, independent of the announcement day', () => {
-      const announcements: { day: number; exDay: number; cents: number; prevLog: number }[] = [];
-      advanceMarket(context, createMarketState(context), START_2022, {
-        onDay: (day) => {
-          if (day.announcedExDay[payer] >= 0) {
-            announcements.push({
-              day: day.day,
-              exDay: day.announcedExDay[payer],
-              cents: day.announcedCents[payer],
-              prevLog: day.prevLogClose[payer],
-            });
-          }
-        },
-      });
+    it('announces 20 market days ahead the amount from the previous close (TS §6.5)', () => {
       const dividend = context.layout.dividends[payer];
       if (dividend === null) {
         throw new Error('test setup: no dividend payer');
       }
-      expect(announcements.length).toBeGreaterThan(1);
-      for (const announcement of announcements.slice(1)) {
+      expect(announcements.length).toBeGreaterThanOrEqual(DIVIDENDS_PER_YEAR.quarterly);
+      for (const announcement of announcements) {
         let marketDays = 0;
         for (let d = announcement.day; d < announcement.exDay; d++) {
           marketDays += isMarketDay(d) ? 1 : 0;
@@ -140,7 +145,9 @@ describe('stepInstrument', () => {
           ),
         );
       }
+    });
 
+    it('announces an amount that does not depend on the announcement day', () => {
       // Changing everything that is drawn or computed for the announcement day leaves the amount.
       const announcementDay = announcements[announcements.length - 1].day;
       const before = stateAt(announcementDay);
@@ -153,22 +160,10 @@ describe('stepInstrument', () => {
     });
 
     it('has the ex-dates of its frequency in every year', () => {
-      const state = createMarketState(context);
-      advanceMarket(context, state, START_2021);
-      const previous = state.nextExDay.slice();
-      const counts = new Int32Array(previous.length);
-      advanceMarket(context, state, START_2022, {
-        onDay: () => {
-          state.nextExDay.forEach((next, i) => {
-            if (next !== previous[i]) {
-              counts[i]++;
-              previous[i] = next;
-            }
-          });
-        },
-      });
       context.layout.dividends.forEach((dividend, i) => {
-        expect(counts[i]).toBe(dividend === null ? 0 : DIVIDENDS_PER_YEAR[dividend.frequency]);
+        expect(exDateCounts[i]).toBe(
+          dividend === null ? 0 : DIVIDENDS_PER_YEAR[dividend.frequency],
+        );
       });
     });
   });

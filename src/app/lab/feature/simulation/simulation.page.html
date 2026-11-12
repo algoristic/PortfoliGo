@@ -15,6 +15,8 @@
 @let statisticsStart = labFacade.statisticsStart$ | async;
 @let statistics = labFacade.statistics$ | async;
 @let loadingStatistics = labFacade.loadingStatistics$ | async;
+@let selfTest = labFacade.selfTest$ | async;
+@let runningSelfTest = labFacade.runningSelfTest$ | async;
 @let _seed = seedForm.seed();
 
 <div class="mx-auto flex max-w-6xl flex-col gap-6 p-6">
@@ -162,4 +164,12 @@
       text="Gib einen Seed ein und erzeuge eine Welt; Vorlauf und Simulation laufen im Web Worker."
       i18n-text="@@featureLab-simulationPage-emptyText"></app-empty-state>
   }
+
+  <app-panel heading="Selbsttest" i18n-heading="@@featureLab-simulationPage-selfTest">
+    <app-self-test
+      [checksums]="selfTest?.checksums ?? null"
+      [durationMs]="selfTest?.durationMs"
+      [running]="runningSelfTest ?? false"
+      (clickedRun)="onRunSelfTest()"></app-self-test>
+  </app-panel>
 </div>

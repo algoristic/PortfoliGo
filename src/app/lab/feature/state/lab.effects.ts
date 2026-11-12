@@ -99,6 +99,18 @@ export class LabEffects {
     ),
   );
 
+  runSelfTest$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(LabActions.clickedRunSelfTest),
+      exhaustMap(() =>
+        this.#service.goldenChecksums().pipe(
+          map((result) => LabActions.runSelfTestSuccess({ result })),
+          catchError((error: unknown) => of(LabActions.runSelfTestFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
   terminateWorker$ = createEffect(
     () =>
       this.#actions$.pipe(
@@ -117,6 +129,7 @@ export class LabEffects {
           LabActions.loadCandlesFailure,
           LabActions.loadHistoryFailure,
           LabActions.computeStatisticsFailure,
+          LabActions.runSelfTestFailure,
         ),
         tap(({ error }) =>
           this.#toastService.error(

@@ -24,6 +24,9 @@ export const selectLoadingStatistics = createSelector(
   (state) => state.loadingStatistics,
 );
 
+export const selectSelfTest = createSelector(selectState, (state) => state.selfTest);
+export const selectRunningSelfTest = createSelector(selectState, (state) => state.runningSelfTest);
+
 export const selectBusy = createSelector(
   selectStatus,
   (status) => status === 'generating' || status === 'simulating',

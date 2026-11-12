@@ -1,27 +1,38 @@
 import { dayIndex, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
 import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
 import { createCurveTables } from '@app/market/domain/day-curve';
+import { MarketContext } from '@app/market/domain/market-context';
 import { recomputeSupportDays } from '@app/market/domain/market-history';
+import { FactorHistory } from '@app/market/domain/models/market-state.model';
 import { runPrehistory } from '@app/market/domain/prehistory';
 import { indexSeries, totalReturnSeries } from '@app/market/domain/series';
 import { deriveSeedKey } from '@app/simulation/util/seed';
+import { World } from '@app/world/domain/models/world.model';
 import { generateWorld } from '@app/world/domain/world-generator';
 
 import { LabSimulation } from './lab-simulation';
-import { collectMarketSample } from './market-sample';
+import { collectMarketSample, MarketSample } from './market-sample';
 
 const SEED = 'market-sample-test';
 
 describe('collectMarketSample', () => {
-  const seedKey = deriveSeedKey(SEED);
-  const world = generateWorld(seedKey);
-  const { context, history } = runPrehistory(seedKey, world);
-  const tables = createCurveTables(context);
   const fromDay = dayIndex(GAME_START_TICK) - 60;
   const toDay = dayIndex(GAME_START_TICK);
-  const sample = collectMarketSample(tables, history, world, fromDay, toDay);
-  const oracle = new LabSimulation(SEED);
-  oracle.runPrehistory();
+  let world: World;
+  let context: MarketContext;
+  let history: FactorHistory;
+  let sample: MarketSample;
+  /** Independent path to the same daily candles: the support candles of the lab simulation. */
+  let oracle: LabSimulation;
+
+  beforeAll(() => {
+    const seedKey = deriveSeedKey(SEED);
+    world = generateWorld(seedKey);
+    ({ context, history } = runPrehistory(seedKey, world));
+    sample = collectMarketSample(createCurveTables(context), history, world, fromDay, toDay);
+    oracle = new LabSimulation(SEED);
+    oracle.runPrehistory();
+  });
 
   it('collects every market day of the period with its phase', () => {
     const days: number[] = [];

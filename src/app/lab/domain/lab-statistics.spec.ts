@@ -1,10 +1,10 @@
-import { annualizedVolatility, logReturns } from '@app/analysis/domain/statistics-logic';
 import { dayStartTick } from '@app/clock/domain/calendar-logic';
 import { isMarketDay } from '@app/market/domain/market-calendar';
 import { World } from '@app/world/domain/models/world.model';
 
 import { computeLabStatistics, phaseSegments } from './lab-statistics';
 import { MarketSample } from './market-sample';
+import { LabStatistics } from './models/lab-statistics.model';
 
 const DAYS_PER_YEAR = 261;
 
@@ -29,15 +29,30 @@ function marketDays(count: number): Int32Array {
   return Int32Array.from(days);
 }
 
+/** Daily log return of the world price index; it alternates between +A and −A. */
+const A = 0.01;
+/** Daily log return of the shares a and b (c has the opposite sign); it alternates as well. */
+const B = 0.012;
+/** Yearly dividend yield of the world index: the total return index grows by it on top. */
+const YIELD = 0.02;
+
+/**
+ * Sample standard deviation of `n` returns alternating between +r and −r (`n` even, so the mean
+ * is 0), scaled to a year: r · √(n / (n − 1)) · √days per year. Independent of `statistics-logic`.
+ */
+function alternatingVolatility(r: number, n: number): number {
+  return r * Math.sqrt(n / (n - 1)) * Math.sqrt(DAYS_PER_YEAR);
+}
+
 function sample(count: number): MarketSample {
   const days = marketDays(count);
-  const base = Float32Array.from({ length: count - 1 }, (_, d) => 0.01 * Math.sin(d * 1.7));
+  const base = Float32Array.from({ length: count - 1 }, (_, d) => (d % 2 === 0 ? B : -B));
   const other = Float32Array.from({ length: count - 1 }, (_, d) => 0.02 * Math.cos(d * 0.9));
   const worldPrice = new Float64Array(count);
   const worldTotalReturn = new Float64Array(count);
   for (let d = 0; d < count; d++) {
-    worldPrice[d] = 100 * Math.exp(0.05 * (d / DAYS_PER_YEAR) + 0.01 * Math.sin(d));
-    worldTotalReturn[d] = worldPrice[d] * Math.exp(0.02 * (d / DAYS_PER_YEAR));
+    worldPrice[d] = 100 * Math.exp(A * (d % 2));
+    worldTotalReturn[d] = worldPrice[d] * Math.exp(YIELD * (d / DAYS_PER_YEAR));
   }
   return {
     days,
@@ -62,11 +77,17 @@ describe('lab-statistics', () => {
   });
 
   describe('computeLabStatistics', () => {
+    // Two years of returns: an even number, so alternating returns have the mean 0.
     const count = 2 * DAYS_PER_YEAR + 1;
-    const input = sample(count);
-    const statistics = computeLabStatistics(input, world, 'epoch', DAYS_PER_YEAR);
+    let input: MarketSample;
+    let statistics: LabStatistics;
     const value = (id: string): number | undefined =>
       statistics.targets.find((row) => row.id === id)?.value;
+
+    beforeAll(() => {
+      input = sample(count);
+      statistics = computeLabStatistics(input, world, 'epoch', DAYS_PER_YEAR);
+    });
 
     it('measures the period in market days', () => {
       expect(statistics.marketDays).toBe(count);
@@ -76,16 +97,11 @@ describe('lab-statistics', () => {
     });
 
     it('measures returns, volatility and dividend yield of the world index', () => {
-      expect(value('world-volatility')).toBeCloseTo(
-        annualizedVolatility(logReturns(input.worldPrice), DAYS_PER_YEAR),
-        12,
-      );
-      expect(value('world-price-return')).toBeCloseTo(
-        Math.pow(input.worldPrice[count - 1] / input.worldPrice[0], DAYS_PER_YEAR / (count - 1)) -
-          1,
-        12,
-      );
-      expect(value('world-dividend-yield')).toBeCloseTo(0.02, 10);
+      // The price index ends where it started; the total return index adds the yield.
+      expect(value('world-volatility')).toBeCloseTo(alternatingVolatility(A, count - 1), 12);
+      expect(value('world-price-return')).toBeCloseTo(0, 12);
+      expect(value('world-return')).toBeCloseTo(Math.exp(YIELD) - 1, 12);
+      expect(value('world-dividend-yield')).toBeCloseTo(YIELD, 12);
     });
 
     it('correlates only shares of the same region on daily returns', () => {
@@ -105,12 +121,12 @@ describe('lab-statistics', () => {
 
     it('takes medians of the share volatility per size class', () => {
       const large = statistics.sizeVolatility.find((entry) => entry.size === 'large');
+      // The returns are stored as float32, so the oracle uses the float32 value of B.
+      const expected = alternatingVolatility(Math.fround(B), count - 1);
       expect(large?.count).toBe(2);
-      expect(large?.median).toBeCloseTo(
-        annualizedVolatility(input.stockReturns[0], DAYS_PER_YEAR),
-        6,
-      );
-      expect(value('small-volatility')).toBeCloseTo(large?.median ?? 0, 6);
+      expect(large?.median).toBeCloseTo(expected, 12);
+      expect(value('large-volatility')).toBeCloseTo(expected, 12);
+      expect(value('small-volatility')).toBeCloseTo(expected, 12);
     });
 
     it('relates realized dividends to the mean close per year', () => {

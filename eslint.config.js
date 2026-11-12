@@ -182,6 +182,87 @@ module.exports = tseslint.config(
     },
   },
   {
+    // Tests are deterministic and never focused (TS §14.1). Time is measured only in the perf
+    // suite, which has its own block below.
+    files: ['**/*.spec.ts'],
+    ignores: ['**/*.perf.spec.ts'],
+    rules: {
+      'no-restricted-properties': [
+        'error',
+        { object: 'Math', property: 'random', message: 'Tests use fixed seeds (TS §14.1).' },
+        {
+          object: 'Date',
+          property: 'now',
+          message: 'No wall clock in tests; budgets belong in *.perf.spec.ts (TS §14.3).',
+        },
+        {
+          object: 'performance',
+          property: 'now',
+          message: 'No wall clock in tests; budgets belong in *.perf.spec.ts (TS §14.3).',
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'MemberExpression[property.name="only"]',
+          message: 'Focused tests must not be committed (TS §14.1).',
+        },
+      ],
+    },
+  },
+  {
+    files: ['**/*.perf.spec.ts', 'e2e/**/*.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'MemberExpression[property.name="only"]',
+          message: 'Focused tests must not be committed (TS §14.1).',
+        },
+      ],
+    },
+  },
+  {
+    // Specs of framework-free code run in plain Vitest under Node (TS §14.1).
+    files: ['src/app/*/domain/**/*.spec.ts', 'src/app/*/util/**/*.spec.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            FRAMEWORK_IMPORTS,
+            {
+              regex: '(^|/)testing/(page|dom|chart-platform|viewport)$',
+              message: 'DOM helpers need jsdom; domain and util specs run under Node (TS §14.1).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // Oracle rule: a page test must not compute its expectations with the formatting or state
+    // helpers of the page under test (TS §14.1).
+    files: ['src/app/**/*.page.spec.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              regex: '(^|/)(shared/util/format|clock/domain/game-time-format)$',
+              message: 'Assert literal texts; formatting is tested in its own spec (TS §14.1).',
+            },
+            {
+              regex: '/state/[^/]+\\.utils$',
+              message: 'Derive expectations independently of the state helpers (TS §14.1).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.html'],
     extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
     rules: {},

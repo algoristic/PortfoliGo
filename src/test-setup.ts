@@ -1,3 +1,6 @@
+// The same fast-check configuration as the plain Vitest projects (`FC_SEED`, `FC_NUM_RUNS`).
+import './testing/fast-check-setup';
+
 // Platform features that jsdom (the default Vitest environment) lacks. They only fill gaps of the
 // platform; the code under test runs unchanged (CLAUDE.md §10).
 

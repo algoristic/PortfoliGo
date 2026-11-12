@@ -21,6 +21,7 @@ import {
 
 import { StatisticsStart } from '../../domain/models/lab-statistics.model';
 import { MarketStatisticsComponent } from '../../ui/market-statistics/market-statistics.component';
+import { SelfTestComponent } from '../../ui/self-test/self-test.component';
 import { SeriesChartComponent } from '../../ui/series-chart/series-chart.component';
 import { LabChartOptions } from '../../ui/series-chart/series-chart.model';
 import { WorldTablesComponent } from '../../ui/world-tables/world-tables.component';
@@ -40,6 +41,7 @@ import { LabFacade } from '../state/lab.facade';
     PanelComponent,
     SeriesChartComponent,
     MarketStatisticsComponent,
+    SelfTestComponent,
     WorldTablesComponent,
     SkeletonComponent,
     StatTileComponent,
@@ -109,5 +111,9 @@ export class SimulationPage {
 
   onScrollToChartStart(): void {
     this.labFacade.loadHistory();
+  }
+
+  onRunSelfTest(): void {
+    this.labFacade.runSelfTest();
   }
 }

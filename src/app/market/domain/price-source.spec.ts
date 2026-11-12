@@ -1,101 +1,48 @@
 import { dateTimeToTick, dayIndex, dayStartTick } from '@app/clock/domain/calendar-logic';
 
-import { Checksum } from '@app/simulation/util/checksum';
-
-import { deriveSeedKey } from '@app/simulation/util/seed';
-
-import { generateWorld } from '@app/world/domain/world-generator';
-
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { isMarketDay } from './market-calendar';
-import { marketChecksum } from './market-checksum';
-import { createMarketContext } from './market-context';
-import { createFactorHistory } from './market-history';
-import { advanceMarket, createMarketState } from './market-step';
 import { priceFromLog } from './price-logic';
 import { PriceSource } from './price-source';
+import { END_OF_2020_DAY, GoldenYear, goldenYear } from './testing/golden-year';
 
-/** Changes when the minute prices for existing seeds change; then raise `simVersion` (TS §15). */
-const GOLDEN_1_MINUTES_2020 = 'c00e3f1b7849032b665890e4e3e1028c';
-
-const seedKey = deriveSeedKey('golden-1');
-const context = createMarketContext(seedKey, generateWorld(seedKey), DEFAULT_MARKET_CONFIG);
-const { layout } = context;
-const floor = DEFAULT_MARKET_CONFIG.priceFloor;
-const endOf2020 = dayIndex(dateTimeToTick({ year: 2021, month: 1, day: 1 }));
-/** Thursday, 31.12.2020: the last stepped day. */
-const today = endOf2020 - 1;
-const history = createFactorHistory();
-const state = createMarketState(context);
-const live = new PriceSource(context, history, state);
-const liveDays: number[] = [];
-advanceMarket(context, state, endOf2020, {
-  history,
-  onDay: (day) => {
-    if (day.day >= endOf2020 - 8) {
-      live.rememberDay(day);
-      liveDays.push(day.day);
-    }
-  },
-});
-const endOfToday = dayStartTick(today + 1) - 1;
-
-function session(i: number): { open: number; close: number } {
-  return {
-    open: layout.boundaries[layout.openBoundary[i]],
-    close: layout.boundaries[layout.closeBoundary[i]],
-  };
-}
-
-function tickAt(day: number, minute: number): number {
-  return dayStartTick(day) + minute;
-}
+// Query independence, cold versus live curves and the "nothing after now" rule are properties in
+// `market-properties.spec.ts`; the golden minute checksum lives in `golden-master.spec.ts`. Here:
+// the boundary cases of a query on the golden year.
 
 describe('PriceSource', () => {
-  describe('determinism', () => {
-    it('matches the golden checksum over a fixed sample of minute curves', () => {
-      const source = new PriceSource(context, history, state);
-      const checksum = new Checksum();
-      for (const day of [0, 47, 160, 287, today]) {
-        expect(isMarketDay(day)).toBe(true);
-        for (const i of [0, 57, 123, 199]) {
-          checksum.addFloat64Array(source.minuteCurve(i, day, endOfToday));
-        }
-      }
-      expect(checksum.digest()).toBe(GOLDEN_1_MINUTES_2020);
-    });
+  let golden: GoldenYear;
+  let live: PriceSource;
+  let today: number;
+  let endOfToday: number;
 
-    it('never changes the market state', () => {
-      const before = marketChecksum(state);
-      const source = new PriceSource(context, history, state);
-      source.candles(5, '1d', 0, endOfToday, endOfToday);
-      source.priceAt(9, endOfToday, endOfToday);
-      expect(marketChecksum(state)).toBe(before);
-    });
+  function session(i: number): { open: number; close: number } {
+    const { layout } = golden.context;
+    return {
+      open: layout.boundaries[layout.openBoundary[i]],
+      close: layout.boundaries[layout.closeBoundary[i]],
+    };
+  }
 
-    it('gives the same minutes live, recomputed and after discarding the caches', () => {
-      const recomputed = new PriceSource(context, history, state, { cachedDays: 2 });
-      for (const day of liveDays) {
-        for (const i of [0, 31, 99, 150, 199]) {
-          const liveCurve = live.minuteCurve(i, day, endOfToday);
-          expect(recomputed.minuteCurve(i, day, endOfToday)).toEqual(liveCurve);
-          recomputed.clearCaches();
-          expect(recomputed.minuteCurve(i, day, endOfToday)).toEqual(liveCurve);
-        }
-      }
-      const from = dayStartTick(liveDays[0]);
-      for (const resolution of ['5m', '1d'] as const) {
-        expect(recomputed.candles(77, resolution, from, endOfToday, endOfToday)).toEqual(
-          live.candles(77, resolution, from, endOfToday, endOfToday),
-        );
-      }
-    });
+  function tickAt(day: number, minute: number): number {
+    return dayStartTick(day) + minute;
+  }
+
+  beforeAll(() => {
+    golden = goldenYear();
+    ({ live, today, endOfToday } = golden);
   });
 
   describe('priceAt', () => {
     const i = 12;
-    const { open, close } = session(i);
-    const curve = live.minuteCurve(i, today, endOfToday);
+    let open: number;
+    let close: number;
+    let curve: Float64Array;
+
+    beforeAll(() => {
+      ({ open, close } = session(i));
+      curve = live.minuteCurve(i, today, endOfToday);
+    });
 
     it('returns the minute value during the session', () => {
       expect(live.priceAt(i, tickAt(today, open), endOfToday)).toBe(curve[0]);
@@ -124,26 +71,33 @@ describe('PriceSource', () => {
 
     it('returns the start price before the first open', () => {
       expect(live.priceAt(i, tickAt(0, open - 1), endOfToday)).toBe(
-        priceFromLog(layout.logBase[i], floor),
+        priceFromLog(golden.context.layout.logBase[i], DEFAULT_MARKET_CONFIG.priceFloor),
       );
     });
   });
 
   describe('query limit', () => {
     const i = 3;
-    const { open, close } = session(i);
-    const now = tickAt(today, open + 95);
+    let open: number;
+    let close: number;
+    let now: number;
+
+    beforeAll(() => {
+      ({ open, close } = session(i));
+      now = tickAt(today, open + 95);
+    });
 
     it('rejects ticks after now and days that have not been stepped', () => {
       expect(() => live.priceAt(i, now + 1, now)).toThrow(RangeError);
       expect(() => live.minuteCurve(i, today + 1, now)).toThrow(RangeError);
-      const later = tickAt(endOf2020, open + 5);
+      const later = tickAt(END_OF_2020_DAY, open + 5);
       expect(() => live.priceAt(i, later, later)).toThrow(RangeError);
     });
 
     it('cuts curves and candles at now', () => {
       const price = live.priceAt(i, now, now);
       const curve = live.minuteCurve(i, today, now);
+      // From the open up to and including minute 95 of the session.
       expect(curve).toHaveLength(96);
       expect(curve[95]).toBe(price);
 
@@ -206,25 +160,6 @@ describe('PriceSource', () => {
       const candles = live.candles(i, '15m', from, to, endOfToday);
       expect(candles.length).toBeGreaterThan(0);
       expect(candles.every((candle) => candle.tick >= from && candle.tick <= to)).toBe(true);
-    });
-  });
-
-  describe('performance', () => {
-    it('computes the minute chart of a past day with cold caches within the CI bound', () => {
-      const source = new PriceSource(context, history, state);
-      const day = dayIndex(dateTimeToTick({ year: 2020, month: 6, day: 30 }));
-      const start = performance.now();
-      const candles = source.candles(
-        42,
-        '1m',
-        dayStartTick(day),
-        dayStartTick(day + 1),
-        endOfToday,
-      );
-      const duration = performance.now() - start;
-      console.info(`minute chart of a past day: ${duration.toFixed(1)} ms`);
-      expect(candles.length).toBeGreaterThan(300);
-      expect(duration).toBeLessThan(200);
     });
   });
 });

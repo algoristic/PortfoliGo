@@ -1,8 +1,11 @@
+import fc from 'fast-check';
+
 import { bytesToHex, Hash128, murmur3x86_128, utf8Encode, wordsToBytes } from './hash128';
 
 describe('hash128', () => {
   describe('murmur3x86_128', () => {
     it('matches the reference implementation on fixed vectors', () => {
+      // Vectors of the C++ reference implementation (SMHasher, MurmurHash3_x86_128), TS §4.1.
       const cases: [string, number, number[]][] = [
         ['', 0, [0x00000000, 0x00000000, 0x00000000, 0x00000000]],
         ['', 1, [0x88c4adec, 0x54d201b9, 0x54d201b9, 0x54d201b9]],
@@ -32,33 +35,47 @@ describe('hash128', () => {
   });
 
   describe('Hash128', () => {
+    const bytes = fc.uint8Array({ maxLength: 80 });
+    const seed = fc.nat({ max: 0xffffffff });
+    const splitPoints = fc.array(fc.nat({ max: 80 }), { maxLength: 6 });
+
     it('yields the one-shot result for any chunking', () => {
-      const bytes = utf8Encode('market/instrument/42/3650/bridge – some longer key text');
-      const expected = Array.from(murmur3x86_128(bytes, 7));
-      for (const chunkSize of [1, 3, 5, 16, 17, 100]) {
-        const hash = new Hash128(7);
-        for (let i = 0; i < bytes.length; i += chunkSize) {
-          hash.update(bytes.subarray(i, i + chunkSize));
-        }
-        expect(Array.from(hash.digest())).toEqual(expected);
-      }
+      fc.assert(
+        fc.property(bytes, seed, splitPoints, (data, hashSeed, points) => {
+          const cuts = [
+            ...new Set([0, ...points.map((p) => p % (data.length + 1)), data.length]),
+          ].sort((a, b) => a - b);
+          const hash = new Hash128(hashSeed);
+          for (let i = 1; i < cuts.length; i++) {
+            hash.update(data.subarray(cuts[i - 1], cuts[i]));
+          }
+          expect(Array.from(hash.digest())).toEqual(Array.from(murmur3x86_128(data, hashSeed)));
+        }),
+      );
     });
 
     it('yields the one-shot result when fed byte by byte', () => {
-      const bytes = utf8Encode('market/factor/industry:software/2610');
-      const hash = new Hash128(7);
-      bytes.forEach((byte) => hash.updateByte(byte));
-      expect(Array.from(hash.digest())).toEqual(Array.from(murmur3x86_128(bytes, 7)));
+      fc.assert(
+        fc.property(bytes, seed, (data, hashSeed) => {
+          const hash = new Hash128(hashSeed);
+          data.forEach((byte) => hash.updateByte(byte));
+          expect(Array.from(hash.digest())).toEqual(Array.from(murmur3x86_128(data, hashSeed)));
+        }),
+      );
     });
 
     it('continues from a copied prefix state', () => {
-      const prefix = new Hash128().update(utf8Encode('market/instrument/cmp-0001/'));
-      for (const suffix of ['7', '1234', '12345678901234567890']) {
-        const copy = new Hash128().update(utf8Encode('unrelated')).copyFrom(prefix);
-        copy.update(utf8Encode(suffix));
-        const expected = murmur3x86_128(utf8Encode(`market/instrument/cmp-0001/${suffix}`));
-        expect(Array.from(copy.digest())).toEqual(Array.from(expected));
-      }
+      fc.assert(
+        fc.property(bytes, bytes, bytes, (prefix, suffix, unrelated) => {
+          const prefixHash = new Hash128().update(prefix);
+          const copy = new Hash128().update(unrelated).copyFrom(prefixHash);
+          copy.update(suffix);
+          const whole = new Uint8Array(prefix.length + suffix.length);
+          whole.set(prefix);
+          whole.set(suffix, prefix.length);
+          expect(Array.from(copy.digest())).toEqual(Array.from(murmur3x86_128(whole)));
+        }),
+      );
     });
   });
 
