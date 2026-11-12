@@ -1,3 +1,4 @@
+import { findHomeBank } from '@app/banking/domain/home-bank-logic';
 import {
   dayIndex,
   dayStartTick,
@@ -95,6 +96,10 @@ export class GameEngine {
     options: GameEngineOptions = {},
   ): GameEngine {
     const { context } = world;
+    const homeBank = findHomeBank(world.world.banks);
+    if (homeBank === undefined) {
+      throw new Error('GameEngine.start: the world has no branch bank');
+    }
     const market = createMarketState(context);
     const history = createFactorHistory();
     advanceMarket(context, market, dayIndex(GAME_START_TICK), { history });
@@ -105,7 +110,7 @@ export class GameEngine {
     const state: GameState = {
       tick: GAME_START_TICK - TICKS_PER_MINUTE,
       market,
-      player: { start: { ...start }, backgroundMode: 'realtime' },
+      player: { start: { ...start }, homeBankId: homeBank.id, backgroundMode: 'realtime' },
       scheduler,
       commandIds: [],
     };
@@ -333,7 +338,11 @@ function copyState(state: Readonly<GameState>): GameState {
   return {
     tick: state.tick,
     market: snapshotMarket(state.market),
-    player: { start: { ...state.player.start }, backgroundMode: state.player.backgroundMode },
+    player: {
+      start: { ...state.player.start },
+      homeBankId: state.player.homeBankId,
+      backgroundMode: state.player.backgroundMode,
+    },
     scheduler: copyScheduler(state.scheduler),
     commandIds: state.commandIds.slice(),
   };

@@ -1,4 +1,6 @@
 @let _confirmResult = confirmResult();
+@let _amount = amountForm.amount();
+@let _amountCents = amountModel().amount;
 
 <div class="mx-auto flex max-w-5xl flex-col gap-6 p-6">
   <h1 class="text-2xl font-semibold" i18n="@@featureLab-componentsPage-title">UI-Bausteine</h1>
@@ -154,6 +156,38 @@
       i18n-heading="@@featureLab-componentsPage-emptyHeading"
       text="Füge Instrumente hinzu, um sie hier zu verfolgen."
       i18n-text="@@featureLab-componentsPage-emptyText"></app-empty-state>
+  </app-panel>
+
+  <app-panel heading="Betragseingabe" i18n-heading="@@featureLab-componentsPage-amountInput">
+    <div class="flex max-w-xs flex-col gap-1">
+      <label
+        class="text-sm font-medium"
+        for="lab-components-amount"
+        i18n="@@featureLab-componentsPage-amountLabel"
+        >Startkapital</label
+      >
+      <app-amount-input
+        inputId="lab-components-amount"
+        describedBy="lab-components-amount-state"
+        testId="lab.components.amount"
+        [formField]="amountForm.amount"></app-amount-input>
+      <p id="lab-components-amount-state" class="text-sm text-fg-muted">
+        @if (_amount.touched() && _amount.invalid()) {
+          @for (error of _amount.errors(); track error.kind) {
+            <span class="text-down" data-testid="lab.components.amount-error">{{
+              error.message
+            }}</span>
+          }
+        } @else {
+          <ng-container i18n="@@featureLab-componentsPage-amountValue"
+            >Wert in Cent:
+            <span class="tabular-nums" data-testid="lab.components.amount-value">{{
+              _amountCents | formatNumber
+            }}</span></ng-container
+          >
+        }
+      </p>
+    </div>
   </app-panel>
 
   <app-panel heading="Toasts und Dialoge" i18n-heading="@@featureLab-componentsPage-overlays">

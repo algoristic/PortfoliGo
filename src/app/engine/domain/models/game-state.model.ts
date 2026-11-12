@@ -18,6 +18,8 @@ export interface StartConditions {
 /** Player state; minimal until banking and trading arrive (M3). */
 export interface PlayerState {
   start: StartConditions;
+  /** Bank of the salary account, fixed when the game starts (TS §5.7). */
+  homeBankId: string;
   backgroundMode: BackgroundMode;
 }
 

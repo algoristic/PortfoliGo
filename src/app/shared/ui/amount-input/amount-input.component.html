@@ -1,0 +1,21 @@
+<div
+  class="flex h-10 items-center gap-2 rounded-md border border-border bg-surface px-3 text-sm text-fg focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent has-disabled:opacity-50 has-aria-invalid:border-down">
+  <input
+    #input
+    class="min-w-0 flex-1 bg-transparent text-right tabular-nums outline-none disabled:cursor-not-allowed"
+    type="text"
+    inputmode="decimal"
+    autocomplete="off"
+    [attr.id]="inputId() || null"
+    [attr.name]="name() || null"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-describedby]="describedBy() || null"
+    [attr.aria-invalid]="invalid() && touched()"
+    [attr.aria-required]="required()"
+    [attr.data-testid]="testId()"
+    [disabled]="disabled()"
+    [value]="rawValue()"
+    (input)="onInput($event)"
+    (blur)="onBlur()" />
+  <span class="text-fg-muted">€</span>
+</div>

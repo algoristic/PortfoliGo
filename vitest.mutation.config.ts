@@ -29,6 +29,9 @@ const RULE_SPECS = [
   'src/app/engine/domain/throttle-logic.spec.ts',
   'src/app/engine/domain/series-quote.spec.ts',
   'src/app/engine/data-access/service/engine-service.utils.spec.ts',
+  'src/app/shared/util/amount-input.spec.ts',
+  'src/app/banking/domain/home-bank-logic.spec.ts',
+  'src/app/players/domain/player-logic.spec.ts',
 ];
 
 export default mergeConfig(

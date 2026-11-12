@@ -72,6 +72,21 @@ describe('GameEngine', () => {
       });
     });
 
+    // TS §5.7: the first branch bank in world order becomes the home bank
+    it('makes the first branch bank in world order the home bank', () => {
+      const started = GameEngine.restore(mini.world, mini.start, { monthStarts: [] });
+      const banks = mini.world.world.banks;
+      const position = banks.findIndex((bank) => bank.id === started.player.homeBankId);
+      expect(banks[position]?.type).toBe('branch');
+      expect(banks.slice(0, position).map((bank) => bank.type)).not.toContain('branch');
+    });
+
+    it('rejects a world without a branch bank', () => {
+      const banks = mini.world.world.banks.filter((bank) => bank.type !== 'branch');
+      const world = { ...mini.world, world: { ...mini.world.world, banks } };
+      expect(() => GameEngine.start(world, mini.start.player.start)).toThrow(/no branch bank/);
+    });
+
     it('opens Asia-Pacific first, at 01:00 on the first game day', () => {
       engine.runUntil(at({ year: 2030, month: 4, day: 1 }, 1));
       const opened = engine.drainEvents().filter((event) => event.type === 'session-opened');

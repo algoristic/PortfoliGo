@@ -2,8 +2,12 @@ import { Menu, MenuItem, MenuTrigger } from '@angular/aria/menu';
 import { Dialog } from '@angular/cdk/dialog';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { apply, form, FormField } from '@angular/forms/signals';
 import { RouterModule } from '@angular/router';
 
+import { START_CAPITAL_RANGE } from '@app/players/domain/player-limits';
+import { amountRangeSchema } from '@app/players/ui/schemas/amount-range-schema';
+import { AmountInputComponent } from '@app/shared/ui/amount-input/amount-input.component';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { BADGE_TONES } from '@app/shared/ui/badge/badge.model';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
@@ -17,6 +21,7 @@ import { MenuDirective } from '@app/shared/ui/menu/menu.directive';
 import { NavItem } from '@app/shared/ui/nav-link/nav-item.model';
 import { NavLinkDirective } from '@app/shared/ui/nav-link/nav-link.directive';
 import { PanelComponent } from '@app/shared/ui/panel/panel.component';
+import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
 import { PriceChangeComponent } from '@app/shared/ui/price-change/price-change.component';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
 import { StatTileComponent } from '@app/shared/ui/stat-tile/stat-tile.component';
@@ -31,9 +36,12 @@ import { formatCents } from '@app/shared/util/format';
 @Component({
   selector: 'app-components-page',
   imports: [
+    AmountInputComponent,
     BadgeComponent,
     ButtonDirective,
     EmptyStateComponent,
+    FormatNumberPipe,
+    FormField,
     IconButtonDirective,
     IconDirective,
     Menu,
@@ -90,6 +98,10 @@ export class ComponentsPage {
   ];
 
   confirmResult = signal<boolean | null>(null);
+  amountModel = signal<{ amount: number | null }>({ amount: 1_000_000 });
+  amountForm = form(this.amountModel, (path) => {
+    apply(path.amount, amountRangeSchema(START_CAPITAL_RANGE));
+  });
 
   toastMessage = $localize`:@@featureLab-componentsPage-toastMessage:Beispielhinweis`;
   confirmHeading = $localize`:@@featureLab-componentsPage-confirmHeading:Spieler löschen?`;
