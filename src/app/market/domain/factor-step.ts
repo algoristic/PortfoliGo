@@ -4,7 +4,7 @@ import { normal, weightedIndex } from '@app/simulation/util/distributions';
 
 import { createStream } from '@app/simulation/util/random-stream';
 
-import { MARKET_PHASE_COUNT, MarketContext, phaseIndex } from './market-context';
+import { factorPathAt, MARKET_PHASE_COUNT, MarketContext, phaseIndex } from './market-context';
 import { MARKET_PHASES, MarketPhase } from './models/market-config.model';
 import { MarketDay } from './models/market-day.model';
 
@@ -31,7 +31,7 @@ export function stepPhase(context: MarketContext, phase: MarketPhase, day: numbe
 
 /**
  * Day step of all factors (TS §6.2) after the phase transition: trend, support points at the
- * boundaries, volatility of the next day. Writes the support points and today's volatility into
+ * boundaries with the return of the level to its expected path (E-22), volatility of the next day. Writes the support points and today's volatility into
  * `out`. Each factor draws from its own stream `market/factor/<id>/<day>` in the order: trend,
  * one normal per interval, volatility.
  */
@@ -45,6 +45,7 @@ export function stepFactors(
   const boundaryCount = layout.boundaries.length;
   const intervalCount = boundaryCount - 1;
   const p = phaseIndex(state.phase);
+  const path = factorPathAt(context, day);
   for (let k = 0; k < layout.factorIds.length; k++) {
     const rng = context.factorStreams[k].create(day);
 
@@ -57,9 +58,14 @@ export function stepFactors(
 
     const logVol = state.logVol[k];
     const vol = detExp(logVol);
-    const drift = trend - 0.5 * vol * vol;
-    const base = k * boundaryCount;
     let level = state.level[k];
+    // Convexity drift with the reversion share of the day and the return of the level to its
+    // expected path, spread over the intervals like the variance (TS §6.2, E-22).
+    const drift =
+      trend -
+      0.5 * vol * vol * path.convexity[k] -
+      (context.levelDecay[k] * (level - path.target[k])) / dayYears;
+    const base = k * boundaryCount;
     let shock = 0;
     out.factorLevels[base] = level;
     for (let j = 0; j < intervalCount; j++) {

@@ -62,7 +62,11 @@ function sample(count: number): MarketSample {
     stockReturns: [base, base, base.map((r) => -r), other],
     dividendSum: Float64Array.from([4, 0, 2, 1]),
     closeSum: Float64Array.from([100, 100, 50, 50]).map((close) => close * count),
-    overnight: { world: 0.1, regions: 0.6, stocks: 0.3 },
+    overnight: {
+      world: 0.1,
+      regions: { 'north-america': 0.2, europe: 0.3, 'asia-pacific': 0.5, 'emerging-markets': 0.6 },
+      stocks: 0.3,
+    },
     checkpoints: [],
   };
 }
@@ -154,7 +158,10 @@ describe('lab-statistics', () => {
 
     it('takes the overnight shares from the sample and the profile from the intraday part', () => {
       expect(value('overnight-share-world')).toBe(0.1);
-      expect(value('overnight-share-regions')).toBe(0.6);
+      expect(value('overnight-share-north-america')).toBe(0.2);
+      expect(value('overnight-share-europe')).toBe(0.3);
+      expect(value('overnight-share-asia-pacific')).toBe(0.5);
+      expect(value('overnight-share-emerging-markets')).toBe(0.6);
       expect(value('overnight-share-stocks')).toBe(0.3);
       expect(value('intraday-profile')).toBe(1.4);
       expect(statistics.intraday).toBe(intraday);

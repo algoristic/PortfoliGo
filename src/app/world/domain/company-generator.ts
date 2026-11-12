@@ -18,7 +18,12 @@ import {
   uniformIn,
 } from './generator.utils';
 import { formatId, nextIsin, nextTicker } from './identifier-logic';
-import { Company, PROFILE_TEMPLATES } from './models/company.model';
+import {
+  Company,
+  CompanyModelParams,
+  FactorLoadings,
+  PROFILE_TEMPLATES,
+} from './models/company.model';
 import {
   Country,
   CYCLICALITIES,
@@ -82,7 +87,24 @@ function drawCyclicality(rng: RandomStream, base: Cyclicality, config: CompanyCo
   return CYCLICALITIES[Math.min(CYCLICALITIES.length - 1, Math.max(0, shifted))];
 }
 
-function riskClass(totalVol: number, bounds: CompanyConfig['riskClassBounds']): RiskClass {
+/**
+ * Total volatility p. a. of a share in the market model (TS §5.4): factors (independent, at the
+ * volatilities of the configuration), idiosyncratic part and jumps `λ · (μ_J² + σ_J²)`.
+ */
+export function modelVolatility(model: CompanyModelParams, config: CompanyConfig): number {
+  let variance = model.idioVol * model.idioVol;
+  for (const [kind, loading] of Object.entries(model.loadings) as [
+    keyof FactorLoadings,
+    number,
+  ][]) {
+    const vol = loading * config.riskClassFactorVols[kind];
+    variance += vol * vol;
+  }
+  variance += model.jumpIntensity * (model.jumpMean * model.jumpMean + model.jumpSd * model.jumpSd);
+  return Math.sqrt(variance);
+}
+
+export function riskClass(totalVol: number, bounds: CompanyConfig['riskClassBounds']): RiskClass {
   let level = 1;
   for (const bound of bounds) {
     if (totalVol >= bound) {
@@ -152,10 +174,16 @@ export function generateCompanies(
     };
     const idioVol = uniformIn(rng, config.idioVol[size]) * industry.volatilityFactor;
     const alpha = normal(rng, 0, config.alphaSd);
-    const jumpIntensity = uniformIn(rng, config.jumpIntensity);
-    const jumpSd = uniformIn(rng, config.jumpSd);
-    const marketVol = worldBeta * config.riskClassMarketVol;
-    const totalVol = Math.sqrt(idioVol * idioVol + marketVol * marketVol);
+    const jumpIntensity = uniformIn(rng, config.jumpIntensity[size]);
+    const jumpSd = uniformIn(rng, config.jumpSd[size]);
+    const model: CompanyModelParams = {
+      loadings,
+      idioVol,
+      alpha,
+      jumpIntensity,
+      jumpMean: config.jumpMean,
+      jumpSd,
+    };
 
     const foundedYear = uniformInt(rng, config.foundedYear[size][0], config.foundedYear[size][1]);
     const employees = Math.max(
@@ -180,7 +208,7 @@ export function generateCompanies(
       size,
       style,
       cyclicality,
-      riskClass: riskClass(totalVol, config.riskClassBounds),
+      riskClass: riskClass(modelVolatility(model, config), config.riskClassBounds),
       startPrice,
       sharesOutstanding,
       freeFloatShares,
@@ -193,14 +221,7 @@ export function generateCompanies(
         // Drawn from the stream `world/dividends` (assignDividendSchedules).
         schedule: null,
       },
-      model: {
-        loadings,
-        idioVol,
-        alpha,
-        jumpIntensity,
-        jumpMean: config.jumpMean,
-        jumpSd,
-      },
+      model,
     };
   });
 }

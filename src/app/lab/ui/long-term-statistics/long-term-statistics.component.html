@@ -14,6 +14,7 @@
               <span class="block font-normal">{{ column.tick | formatGameDate }}</span>
             </th>
           }
+          <th class="px-2 py-1" i18n="@@uiLab-longTermStatistics-limit">Grenze ab +50 Jahre</th>
         </tr>
       </thead>
       <tbody>
@@ -29,6 +30,11 @@
                 {{ value.text }}
               </td>
             }
+            <td
+              class="px-2 py-1 text-fg-muted"
+              [attr.data-testid]="'lab.simulation.statistics.long-term.limit.' + row.id">
+              {{ row.limit }}
+            </td>
           </tr>
         }
       </tbody>
@@ -61,6 +67,9 @@
           <th class="px-2 py-1" i18n="@@uiLab-longTermStatistics-min">Minimum</th>
           <th class="px-2 py-1" i18n="@@uiLab-longTermStatistics-median">Median</th>
           <th class="px-2 py-1" i18n="@@uiLab-longTermStatistics-max">Maximum</th>
+          <th class="px-2 py-1" i18n="@@uiLab-longTermStatistics-medianLimit">
+            Grenze des Medians
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -82,6 +91,13 @@
               {{ row.median }}
             </td>
             <td class="px-2 py-1">{{ row.max }}</td>
+            <td
+              class="px-2 py-1 text-fg-muted"
+              [attr.data-testid]="
+                'lab.simulation.statistics.window.' + row.years + '.' + row.id + '.limit'
+              ">
+              {{ row.limit }}
+            </td>
           </tr>
         }
       </tbody>

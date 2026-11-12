@@ -17,6 +17,8 @@ const RULE_SPECS = [
   'src/app/market/domain/candle-logic.spec.ts',
   'src/app/market/domain/price-logic.spec.ts',
   'src/app/market/domain/index-layout.spec.ts',
+  'src/app/market/domain/idio-path-logic.spec.ts',
+  'src/app/market/domain/market-calendar.spec.ts',
   'src/app/lab/domain/calibration-targets.spec.ts',
 ];
 

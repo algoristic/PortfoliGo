@@ -36,6 +36,11 @@ export interface FactorParams {
   /** Correlation `ρ < 0` between daily return and volatility change (leverage effect). */
   leverage: number;
   /**
+   * Speed `θ` p. a. at which the level returns to its expected path `m̄·t − ½·s̄²·g(t)` (TS §6.2,
+   * E-22); 0 = none (world factor).
+   */
+  levelReversion: number;
+  /**
    * How strongly the phase moves the targets: `m̄ = trendTarget + c · (m̄_phase − m̄_ref)` and
    * `s̄ = volTarget · (1 + c · (s̄_phase / s̄_ref − 1))`.
    */
@@ -49,8 +54,11 @@ export type MarketRange = readonly [number, number];
 export interface SpreadParams {
   /** Base spread per size class and for ETFs; larger instruments get the lower end. */
   base: Readonly<Record<SizeClass | 'etf', MarketRange>>;
-  /** Multiplier per market phase. */
-  phaseFactor: Readonly<Record<MarketPhase, number>>;
+  /**
+   * Upper bound of the volatility factor `s_world / s̄_world` (TS §6.7, E-23); the lower bound
+   * is 1.
+   */
+  maxVolFactor: number;
   /** Multiplier when the whole underlying is closed; partly closed scales linearly. */
   closedUnderlyingFactor: number;
 }
@@ -64,6 +72,20 @@ export interface MarketConfig {
   factors: Readonly<Record<FactorKind, FactorParams>>;
   /** Share of the idiosyncratic daily variance in the overnight shock (TS §6.4). */
   overnightShare: number;
+  /** Speed `θ` p. a. at which `U_i` returns to its expected path (TS §6.4, E-22); 0 = none. */
+  idioReversion: number;
+  /** Rate `κ_α` p. a. at which the alpha of a share decays (TS §6.4, E-22); 0 = permanent. */
+  alphaDecay: number;
+  /**
+   * Activity of the factors while no exchange trades, relative to all exchanges trading (TS §6.2,
+   * E-24); 1 spreads the factor variance evenly over the day.
+   */
+  closedActivity: number;
+  /**
+   * Relative weight of each exchange in the factor activity (E-24), by exchange id; missing
+   * exchanges count 0. Fixed per configuration, so new companies do not move the factors.
+   */
+  exchangeActivity: Readonly<Record<string, number>>;
   /** Lowest price in euros (TS §6.4). */
   priceFloor: number;
   /**

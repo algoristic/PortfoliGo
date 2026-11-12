@@ -9,3 +9,15 @@ export function isMarketDay(day: number): boolean {
 export function isMonthStartDay(day: number): boolean {
   return tickToDateTime(dayStartTick(day)).day === 1;
 }
+
+/** Number of market days before `day` since the epoch (day 0), i.e. day steps already taken. */
+export function marketDaysBefore(day: number): number {
+  const weeks = Math.floor(day / 7);
+  let count = weeks * 5;
+  for (let d = weeks * 7; d < day; d++) {
+    if (isMarketDay(d)) {
+      count++;
+    }
+  }
+  return count;
+}

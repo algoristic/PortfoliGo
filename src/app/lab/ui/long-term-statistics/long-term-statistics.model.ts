@@ -10,6 +10,8 @@ export interface CheckpointRowView {
   id: string;
   label: string;
   values: { years: number; text: string }[];
+  /** Limit at the checkpoints of E-22, e.g. „≤ 40,0 %“; `–` without a limit. */
+  limit: string;
 }
 
 /** One measure of the rolling windows of one length. */
@@ -21,4 +23,6 @@ export interface WindowRowView {
   min: string;
   median: string;
   max: string;
+  /** Limit of the median (E-22); `–` without a limit. */
+  limit: string;
 }

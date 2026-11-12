@@ -7,6 +7,7 @@ import { recomputeSupportDays } from '@app/market/domain/market-history';
 import { MarketDay } from '@app/market/domain/models/market-day.model';
 import { FactorHistory } from '@app/market/domain/models/market-state.model';
 import { indexSeries, totalReturnSeries } from '@app/market/domain/series';
+import { REGION_IDS, RegionId } from '@app/world/domain/models/taxonomy.model';
 import { World } from '@app/world/domain/models/world.model';
 
 import { CHECKPOINT_YEARS, checkpointDay } from './long-term-statistics';
@@ -23,8 +24,8 @@ const ONE_EURO = 1;
 /** Overnight share of the daily variance, `Var(ln open / prev close) ÷ Var(ln close / prev close)`. */
 export interface OvernightShares {
   world: number;
-  /** Median over the broad regional indices. */
-  regions: number;
+  /** Per broad regional index; `NaN` for a region without one. */
+  regions: Readonly<Record<RegionId, number>>;
   /** Median over the shares. */
   stocks: number;
 }
@@ -118,6 +119,8 @@ export class MarketSampleCollector {
   readonly #totalReturnSeries: number;
   readonly #worldIndex: number;
   readonly #regionSeries: number[];
+  /** Region of each entry of `#regionSeries`. */
+  readonly #regionIds: (RegionId | null)[];
   readonly #days: Int32Array;
   readonly #phases: Uint8Array;
   readonly #worldPrice: Float64Array;
@@ -153,6 +156,9 @@ export class MarketSampleCollector {
     this.#totalReturnSeries = totalReturnSeries(context, this.#worldIndex);
     this.#regionSeries = world.indices.flatMap((index, x) =>
       index.kind === 'region-broad' ? [indexSeries(context, x)] : [],
+    );
+    this.#regionIds = world.indices.flatMap((index) =>
+      index.kind === 'region-broad' ? [index.regionId] : [],
     );
 
     let marketDays = 0;
@@ -251,7 +257,12 @@ export class MarketSampleCollector {
       closeSum: this.#closeSum,
       overnight: {
         world: this.#indexOvernight.share(0),
-        regions: median(this.#regionSeries.map((_, r) => this.#indexOvernight.share(r + 1))),
+        regions: Object.fromEntries(
+          REGION_IDS.map((region) => {
+            const r = this.#regionIds.indexOf(region);
+            return [region, r < 0 ? Number.NaN : this.#indexOvernight.share(r + 1)];
+          }),
+        ) as Record<RegionId, number>,
         stocks: median(
           Array.from({ length: this.#shareCount }, (_, i) => this.#stockOvernight.share(i)),
         ),

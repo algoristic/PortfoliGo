@@ -3,7 +3,8 @@ import { CENTS_PER_EURO } from '@app/shared/domain/models/money.model';
 import { normal, poisson, uniformInt } from '@app/simulation/util/distributions';
 
 import { announcementDay, dividendCents, exDayOnOrAfter, exMarkdown } from './dividend-logic';
-import { MarketContext } from './market-context';
+import { expectedLogPath } from './idio-path-logic';
+import { idioPathAt, MarketContext } from './market-context';
 import { LOADINGS_PER_INSTRUMENT } from './market-layout';
 import { MarketDay } from './models/market-day.model';
 import { InstrumentState } from './models/market-state.model';
@@ -28,7 +29,7 @@ export function stepInstrument(
   state: InstrumentState,
   out: MarketDay,
 ): void {
-  const { layout, dayYears, sqrtDayYears } = context;
+  const { layout, sqrtDayYears } = context;
   const rng = context.instrumentStreams[i].create(day);
   const vol = layout.idioVol[i];
   const overnightShock = normal(rng);
@@ -93,11 +94,22 @@ export function stepInstrument(
     state.nextExDay[i] = exDayOnOrAfter(dividend.schedule, dividend.frequency, day + 1);
     state.dividendCents[i] = Number.NaN;
   }
+  // Expected path m(t) = α·h(t) − ½·v·g(t) (decaying alpha, compensator of diffusion and jumps)
+  // and the return of the deviation from μ(t) = m(t) − ỹ·t, so paid dividends are not recovered
+  // (TS §6.4, E-22).
+  const path = idioPathAt(context, day);
+  const alpha = layout.alpha[i];
+  const variance = context.idioVariance[i];
+  const expectedBefore = expectedLogPath(alpha, path.alphaBefore, variance, path.varianceBefore);
+  const target = expectedBefore - context.dividendDrag[i] * path.years;
   const idioClose =
     idioOpen +
-    (layout.alpha[i] - 0.5 * vol * vol) * dayYears +
+    alpha * (path.alphaAfter - path.alphaBefore) -
+    0.5 * variance * (path.varianceAfter - path.varianceBefore) -
+    context.reversionDecay * (state.idioClose[i] - target) +
     context.sqrtSessionShare * vol * sqrtDayYears * sessionShock +
-    jumpSum;
+    jumpSum -
+    context.jumpDrift[i];
 
   const logClose = layout.logBase[i] + factorClose + idioClose;
   out.idioOpen[i] = idioOpen;

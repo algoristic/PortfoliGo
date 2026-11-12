@@ -12,13 +12,13 @@ import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { GOLDEN_SEED } from './golden-master';
 import { createMarketContext, MarketContext } from './market-context';
 import { createFactorHistory } from './market-history';
+import { WORLD_FACTOR } from './market-layout';
 import { advanceMarket, createMarketState } from './market-step';
-import { MARKET_PHASES } from './models/market-config.model';
 import { PriceSource } from './price-source';
-import { marketSpread, quote } from './quote-logic';
+import { marketSpread, quote, spreadVolFactor } from './quote-logic';
 import { etfSeries, indexSeries } from './series';
 
-const { base, phaseFactor, closedUnderlyingFactor } = DEFAULT_MARKET_CONFIG.spreads;
+const { base, maxVolFactor, closedUnderlyingFactor } = DEFAULT_MARKET_CONFIG.spreads;
 
 let world: World;
 let context: MarketContext;
@@ -65,23 +65,39 @@ describe('quote-logic', () => {
     });
   });
 
+  describe('spreadVolFactor', () => {
+    // TS §6.7 (E-23): factor = s_world / s̄_world, bounded to [1, 3].
+    it.each([
+      { ratio: 0.5, factor: 1 },
+      { ratio: 1, factor: 1 },
+      { ratio: 1.5, factor: 1.5 },
+      { ratio: 2, factor: 2 },
+      { ratio: 5, factor: 3 },
+    ])('gives $factor at a volatility ratio of $ratio', ({ ratio, factor }) => {
+      expect(spreadVolFactor(0.12 * ratio, 0.12, 3)).toBeCloseTo(factor, 12);
+    });
+  });
+
   describe('marketSpread', () => {
-    it('uses the base spread in a normal phase while the exchange is open', () => {
-      const { spreads } = context;
+    it('uses the base spread at normal volatility while the exchange is open', () => {
+      const { spreads, referenceWorldVol } = context;
       const { open } = sessionMinutes(0);
-      expect(marketSpread(context, 0, 'normal', open + 10)).toBe(spreads.stockBase[0]);
+      expect(marketSpread(context, 0, referenceWorldVol, open + 10)).toBe(spreads.stockBase[0]);
     });
 
-    it('widens with the market phase and when the exchange is closed', () => {
-      const { spreads } = context;
+    it('widens with the world factor volatility and when the exchange is closed', () => {
+      const { spreads, referenceWorldVol } = context;
       const { open, close } = sessionMinutes(0);
-      for (const phase of MARKET_PHASES) {
-        expect(marketSpread(context, 0, phase, open)).toBeCloseTo(
-          spreads.stockBase[0] * phaseFactor[phase],
-          15,
-        );
-      }
-      expect(marketSpread(context, 0, 'normal', close)).toBeCloseTo(
+      expect(marketSpread(context, 0, 0.5 * referenceWorldVol, open)).toBe(spreads.stockBase[0]);
+      expect(marketSpread(context, 0, 2 * referenceWorldVol, open)).toBeCloseTo(
+        spreads.stockBase[0] * 2,
+        15,
+      );
+      expect(marketSpread(context, 0, 10 * referenceWorldVol, open)).toBeCloseTo(
+        spreads.stockBase[0] * maxVolFactor,
+        15,
+      );
+      expect(marketSpread(context, 0, referenceWorldVol, close)).toBeCloseTo(
         spreads.stockBase[0] * closedUnderlyingFactor,
         15,
       );
@@ -90,18 +106,19 @@ describe('quote-logic', () => {
     it('widens the spread of ETFs by the closed share of the underlying', () => {
       const { spreads } = context;
       const series = etfSeries(context, 0);
-      const night = marketSpread(context, series, 'normal', 0);
+      const vol = context.referenceWorldVol;
+      const night = marketSpread(context, series, vol, 0);
       expect(night).toBeCloseTo(spreads.etfBase[0] * closedUnderlyingFactor, 15);
-      const day = marketSpread(context, series, 'normal', 12 * 60);
+      const day = marketSpread(context, series, vol, 12 * 60);
       expect(day).toBeGreaterThanOrEqual(spreads.etfBase[0]);
       expect(day).toBeLessThan(night);
-      expect(marketSpread(context, series, 'normal', MINUTES_PER_DAY)).toBe(night);
+      expect(marketSpread(context, series, vol, MINUTES_PER_DAY)).toBe(night);
     });
 
     it('rejects indices, which are not tradable', () => {
-      expect(() => marketSpread(context, indexSeries(context, 0), 'normal', 600)).toThrow(
-        RangeError,
-      );
+      expect(() =>
+        marketSpread(context, indexSeries(context, 0), context.referenceWorldVol, 600),
+      ).toThrow(RangeError);
     });
   });
 
@@ -148,11 +165,15 @@ describe('quote-logic', () => {
     const endOfJanuary = dayIndex(dateTimeToTick({ year: 2020, month: 2, day: 1 }));
     const now = dayStartTick(endOfJanuary) - 1;
     let source: PriceSource;
+    const worldVols = new Map<number, number>();
 
     beforeAll(() => {
       const history = createFactorHistory();
       const state = createMarketState(context);
-      advanceMarket(context, state, endOfJanuary, { history });
+      advanceMarket(context, state, endOfJanuary, {
+        history,
+        onDay: (day) => worldVols.set(day.day, day.factorVols[WORLD_FACTOR]),
+      });
       source = new PriceSource(context, history, state);
     });
 
@@ -162,8 +183,10 @@ describe('quote-logic', () => {
       const day = endOfJanuary - 2;
       const tick = dayStartTick(day) + sessionMinutes(0).open + 60;
       const result = source.quoteAt(0, tick, now, 0.001);
+      const ratio = (worldVols.get(day) ?? Number.NaN) / context.referenceWorldVol;
+      const factor = Math.min(maxVolFactor, Math.max(1, ratio));
       expect(result.mid).toBe(source.priceAt(0, tick, now));
-      expect(result.spread).toBeCloseTo(spreads.stockBase[0] * phaseFactor.normal + 0.001, 12);
+      expect(result.spread).toBeCloseTo(spreads.stockBase[0] * factor + 0.001, 12);
       expect(result.bid).toBeLessThan(result.mid);
       expect(result.ask).toBeGreaterThan(result.mid);
     });

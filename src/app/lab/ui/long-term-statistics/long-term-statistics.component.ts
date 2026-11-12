@@ -1,10 +1,11 @@
 import { Component, computed, input } from '@angular/core';
 
 import { FormatGameDatePipe } from '@app/clock/ui/pipes/format-game-date/format-game-date.pipe';
-import { formatOptional, formatPercent, formatPrice } from '@app/shared/util/format';
+import { formatOptional, formatPercent, formatPrice, MISSING_VALUE } from '@app/shared/util/format';
 
 import { CheckpointColumn, CheckpointRowView, WindowRowView } from './long-term-statistics.model';
 
+import { LONG_TERM_LIMITS, LongTermLimit } from '../../domain/calibration-targets';
 import {
   LongTermCheckpoint,
   LongTermStatistics,
@@ -40,6 +41,7 @@ export class LongTermStatisticsComponent {
       label: string,
       measure: CheckpointMeasure,
       format: (value: number) => string = percent,
+      limit?: LongTermLimit,
     ): CheckpointRowView => ({
       id,
       label,
@@ -47,14 +49,27 @@ export class LongTermStatisticsComponent {
         years: checkpoint.years,
         text: format(measure(checkpoint)),
       })),
+      limit: limitText(limit),
     });
     return [
-      row('top-five', this.labels.topFive, (c) => c.topFiveShare),
-      row('below-one-euro', this.labels.belowOneEuro, (c) => c.belowOneEuro.all),
+      row(
+        'top-five',
+        this.labels.topFive,
+        (c) => c.topFiveShare,
+        percent,
+        LONG_TERM_LIMITS.topFiveShare,
+      ),
+      row(
+        'below-one-euro',
+        this.labels.belowOneEuro,
+        (c) => c.belowOneEuro.all,
+        percent,
+        LONG_TERM_LIMITS.belowOneEuro,
+      ),
       row('below-one-euro-large', this.labels.belowOneEuroLarge, (c) => c.belowOneEuro.large),
       row('below-one-euro-mid', this.labels.belowOneEuroMid, (c) => c.belowOneEuro.mid),
       row('below-one-euro-small', this.labels.belowOneEuroSmall, (c) => c.belowOneEuro.small),
-      row('at-floor', this.labels.atFloor, (c) => c.atFloor),
+      row('at-floor', this.labels.atFloor, (c) => c.atFloor, percent, LONG_TERM_LIMITS.atFloor),
       row(
         'max-price',
         this.labels.maxPrice,
@@ -95,6 +110,11 @@ export class LongTermStatisticsComponent {
     const range: WindowRange = windows[measure];
     const text = (value: number): string =>
       formatOptional(value, (finite) => formatPercent(finite, 1));
+    const limits: Partial<Record<WindowMeasure, LongTermLimit>> = {
+      volatility: LONG_TERM_LIMITS.windowVolatility,
+      dividendYield: LONG_TERM_LIMITS.windowDividendYield,
+    };
+    const limit = limits[measure];
     return {
       id,
       years: windows.years,
@@ -103,6 +123,21 @@ export class LongTermStatisticsComponent {
       min: text(range.min),
       median: text(range.median),
       max: text(range.max),
+      limit: limitText(limit?.years === windows.years ? limit : undefined),
     };
   }
+}
+
+/** „≤ 40,0 %“, „≥ 1,5 %“ or „13,0 % – 20,0 %“; `–` without a limit. */
+function limitText(limit: LongTermLimit | undefined): string {
+  if (limit?.min !== undefined && limit.max !== undefined) {
+    return `${formatPercent(limit.min, 1)} – ${formatPercent(limit.max, 1)}`;
+  }
+  if (limit?.max !== undefined) {
+    return `≤ ${formatPercent(limit.max, 1)}`;
+  }
+  if (limit?.min !== undefined) {
+    return `≥ ${formatPercent(limit.min, 1)}`;
+  }
+  return MISSING_VALUE;
 }

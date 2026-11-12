@@ -113,7 +113,10 @@ export function computeLabStatistics(
     'stock-dividend-yield-max': Math.max(...stockYields),
     'intraday-profile': intraday.profileRatio,
     'overnight-share-world': sample.overnight.world,
-    'overnight-share-regions': sample.overnight.regions,
+    'overnight-share-north-america': sample.overnight.regions['north-america'],
+    'overnight-share-europe': sample.overnight.regions.europe,
+    'overnight-share-asia-pacific': sample.overnight.regions['asia-pacific'],
+    'overnight-share-emerging-markets': sample.overnight.regions['emerging-markets'],
     'overnight-share-stocks': sample.overnight.stocks,
   };
 

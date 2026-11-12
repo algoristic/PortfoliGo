@@ -20,6 +20,8 @@ const config = {
     'src/app/market/domain/candle-logic.ts',
     'src/app/market/domain/price-logic.ts',
     'src/app/market/domain/index-layout.ts',
+    'src/app/market/domain/idio-path-logic.ts',
+    'src/app/market/domain/market-calendar.ts',
     'src/app/lab/domain/calibration-targets.ts',
   ],
   coverageAnalysis: 'perTest',

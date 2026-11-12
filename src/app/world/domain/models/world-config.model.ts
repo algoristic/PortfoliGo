@@ -1,5 +1,6 @@
 import { BankType, InterestPayout } from '@app/banking/domain/models/bank-conditions.model';
 
+import { FactorLoadings } from './company.model';
 import { EtfReplication } from './etf.model';
 import { IndexKind } from './market-index.model';
 import { Cyclicality, RegionId, SectorId, SizeClass, Style } from './taxonomy.model';
@@ -45,13 +46,18 @@ export interface CompanyConfig {
   sizeLoading: Readonly<Record<SizeClass, Range>>;
   idioVol: Readonly<Record<SizeClass, Range>>;
   alphaSd: number;
-  jumpIntensity: Range;
+  /** Expected jumps per year by size class (TS §5.4). */
+  jumpIntensity: Readonly<Record<SizeClass, Range>>;
   jumpMean: number;
-  jumpSd: Range;
+  /** Standard deviation of the jump size by size class. */
+  jumpSd: Readonly<Record<SizeClass, Range>>;
   /** Upper volatility bounds of risk classes 1–4 (total volatility p. a.); above is class 5. */
   riskClassBounds: readonly [number, number, number, number];
-  /** Assumed world factor volatility for the risk class. */
-  riskClassMarketVol: number;
+  /**
+   * Assumed volatility p. a. per factor class for the risk class; mirrors the volatility targets
+   * of the market configuration in the reference phase (TS §5.4).
+   */
+  riskClassFactorVols: Readonly<Record<keyof FactorLoadings, number>>;
   savingsPlanSizes: readonly SizeClass[];
 }
 

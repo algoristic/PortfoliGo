@@ -9,6 +9,9 @@ import { FACTOR_KINDS, FactorKind } from './models/market-config.model';
 /** Number of factor loadings per instrument (TS §6.2): world, region, sector, industry, style, size. */
 export const LOADINGS_PER_INSTRUMENT = FACTOR_KINDS.length;
 
+/** Index of the world factor; it is always the first factor of the layout. */
+export const WORLD_FACTOR = 0;
+
 /**
  * Fixed order of factors and instruments with their parameters in flat arrays. All loops of the
  * market model run in this order (TS §4.5, rules 2 and 3).

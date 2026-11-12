@@ -5,7 +5,7 @@ import { SIZE_CLASSES } from '@app/world/domain/models/taxonomy.model';
 import { World } from '@app/world/domain/models/world.model';
 
 import { MarketContext } from './market-context';
-import { MarketConfig, MarketPhase, MarketRange } from './models/market-config.model';
+import { MarketConfig, MarketRange } from './models/market-config.model';
 import { seriesRef } from './series';
 
 /** Base spread per tradable instrument (TS §6.7), fixed per world. */
@@ -46,14 +46,24 @@ export function createSpreadLayout(world: World, config: MarketConfig): SpreadLa
 }
 
 /**
+ * Volatility factor of the spread (TS §6.7, E-23): the day's world factor volatility relative to
+ * its target in the reference phase, bounded to `[1, maxVolFactor]`. It follows what the prices
+ * show and does not reveal the market phase.
+ */
+export function spreadVolFactor(worldVol: number, referenceVol: number, maxFactor: number): number {
+  return Math.min(maxFactor, Math.max(1, worldVol / referenceVol));
+}
+
+/**
  * Relative spread of a share or ETF at a minute of the day (TS §6.7) before the venue mark-up:
- * `base × phase factor × (1 + (closed factor − 1) × closed share)`. A share counts as closed
+ * `base × volatility factor × (1 + (closed factor − 1) × closed share)`. A share counts as closed
  * outside its own session; an ETF by the weight of its index whose exchanges are closed.
+ * `worldVol` is the world factor volatility of the day.
  */
 export function marketSpread(
   context: MarketContext,
   series: number,
-  phase: MarketPhase,
+  worldVol: number,
   minute: number,
 ): number {
   const { layout, etfs, spreads, config } = context;
@@ -72,8 +82,9 @@ export function marketSpread(
   } else {
     throw new RangeError(`marketSpread: series ${series} is an index and not tradable`);
   }
-  const { phaseFactor, closedUnderlyingFactor } = config.spreads;
-  return base * phaseFactor[phase] * (1 + (closedUnderlyingFactor - 1) * closedShare);
+  const { maxVolFactor, closedUnderlyingFactor } = config.spreads;
+  const volFactor = spreadVolFactor(worldVol, context.referenceWorldVol, maxVolFactor);
+  return base * volFactor * (1 + (closedUnderlyingFactor - 1) * closedShare);
 }
 
 /** Quote around `mid` with the market spread plus the venue mark-up of the bank (TS §6.7). */

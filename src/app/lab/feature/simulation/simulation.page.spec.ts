@@ -211,20 +211,43 @@ describe('SimulationPage', () => {
       expect(
         page.querySelectorAll('[data-testid="lab.simulation.statistics.intraday.profile.bar"]'),
       ).toHaveLength(13);
+      // The world index is shown for information; the regions and the stocks have targets
+      // (TS §6.9, E-24).
+      const statusTexts = { ok: 'im Ziel', off: 'abweichend', short: 'zu kurz', info: 'Info' };
       for (const id of [
         'overnight-share-world',
-        'overnight-share-regions',
+        'overnight-share-north-america',
+        'overnight-share-europe',
+        'overnight-share-asia-pacific',
+        'overnight-share-emerging-markets',
         'overnight-share-stocks',
       ]) {
         expectShown(`lab.simulation.statistics.target.${id}.value`, target(id), 1, true);
+        const status = expected.targets.find((row) => row.id === id)?.status ?? 'info';
         expect(textOf(byTestId(page, `lab.simulation.statistics.target.${id}.status`))).toBe(
-          'Info',
+          statusTexts[status],
         );
       }
+      expect(
+        textOf(byTestId(page, 'lab.simulation.statistics.target.overnight-share-world.status')),
+      ).toBe('Info');
       // The prehistory ends at the game start: only the first checkpoint, and one ten-year window.
       expectCheckpoints(expected, [0]);
       expect(textOf(byTestId(page, 'lab.simulation.statistics.long-term.10.top-five'))).toBe('–');
       expect(queryByTestId(page, 'lab.simulation.statistics.long-term.hint')).not.toBeNull();
+      // Limits of E-22 (TS §6.9).
+      expect(textOf(byTestId(page, 'lab.simulation.statistics.long-term.limit.top-five'))).toBe(
+        '≤ 40,0 %',
+      );
+      expect(textOf(byTestId(page, 'lab.simulation.statistics.long-term.limit.max-price'))).toBe(
+        '–',
+      );
+      expect(textOf(byTestId(page, 'lab.simulation.statistics.window.10.volatility.limit'))).toBe(
+        '13,0 % – 20,0 %',
+      );
+      expect(
+        textOf(byTestId(page, 'lab.simulation.statistics.window.30.dividend-yield.limit')),
+      ).toBe('≥ 1,5 %');
       expectShown(
         'lab.simulation.statistics.window.10.total-return.median',
         expected.longTerm.windows[0].totalReturn.median,

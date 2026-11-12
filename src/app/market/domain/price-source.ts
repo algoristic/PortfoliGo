@@ -9,6 +9,7 @@ import { createCurveTables, CurveTables, DayCurves, etfValue } from './day-curve
 import { isMarketDay } from './market-calendar';
 import { MarketContext } from './market-context';
 import { recomputeSupportDays } from './market-history';
+import { WORLD_FACTOR } from './market-layout';
 import { copyMarketDay } from './market-step';
 import { Candle, CandleResolution } from './models/candle.model';
 import { MarketDay } from './models/market-day.model';
@@ -103,8 +104,8 @@ export class PriceSource {
 
   /**
    * Bid and ask of a share or ETF at `tick` (TS §6.7) around `priceAt`: market spread from size,
-   * market phase and closed underlying, plus the venue mark-up of the bank. Indices are not
-   * tradable.
+   * world factor volatility of the day and closed underlying, plus the venue mark-up of the bank.
+   * Indices are not tradable.
    */
   quoteAt(series: number, tick: Tick, now: Tick, venueMarkup: number): Quote {
     const mid = this.priceAt(series, tick, now);
@@ -112,9 +113,10 @@ export class PriceSource {
     while (day >= 0 && !isMarketDay(day)) {
       day--;
     }
-    const phase = day < 0 ? this.#context.config.referencePhase : this.#dayCurves(day).day.phase;
+    const worldVol =
+      day < 0 ? this.#context.referenceWorldVol : this.#dayCurves(day).day.factorVols[WORLD_FACTOR];
     const minute = day === dayIndex(tick) ? minuteOfDay(tick) : MINUTES_PER_DAY;
-    return quote(mid, marketSpread(this.#context, series, phase, minute) + venueMarkup);
+    return quote(mid, marketSpread(this.#context, series, worldVol, minute) + venueMarkup);
   }
 
   /**

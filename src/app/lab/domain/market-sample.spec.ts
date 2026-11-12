@@ -13,6 +13,7 @@ import { runPrehistory } from '@app/market/domain/prehistory';
 import { PriceSource } from '@app/market/domain/price-source';
 import { indexSeries, totalReturnSeries } from '@app/market/domain/series';
 import { deriveSeedKey } from '@app/simulation/util/seed';
+import { REGION_IDS } from '@app/world/domain/models/taxonomy.model';
 import { World } from '@app/world/domain/models/world.model';
 import { generateWorld } from '@app/world/domain/world-generator';
 
@@ -126,10 +127,14 @@ describe('MarketSampleCollector', () => {
     const x = world.indices.findIndex((index) => index.kind === 'world');
     expect(sample.overnight.world).toBeCloseTo(overnightShare(indexSeries(context, x)), 9);
     const regions = world.indices.flatMap((index, r) =>
-      index.kind === 'region-broad' ? [overnightShare(indexSeries(context, r))] : [],
+      index.kind === 'region-broad' ? [{ index, r }] : [],
     );
-    expect(regions.length).toBeGreaterThan(1);
-    expect(sample.overnight.regions).toBeCloseTo(middle(regions), 9);
+    expect(regions.length).toBe(4);
+    expect(new Set(regions.map(({ index }) => index.regionId))).toEqual(new Set(REGION_IDS));
+    for (const { index, r } of regions) {
+      const share = index.regionId === null ? Number.NaN : sample.overnight.regions[index.regionId];
+      expect(share).toBeCloseTo(overnightShare(indexSeries(context, r)), 9);
+    }
     const shares = world.companies.map((_, i) => overnightShare(i));
     expect(sample.overnight.stocks).toBeCloseTo(middle(shares), 9);
   });

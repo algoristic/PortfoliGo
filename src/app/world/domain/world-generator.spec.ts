@@ -188,16 +188,36 @@ describe('generateWorld', () => {
     });
 
     it('draws the model parameters from the ranges of the configuration', () => {
-      const { idioVol, jumpIntensity, worldBeta, sizeLoading } = config.companies;
+      const { idioVol, jumpIntensity, jumpSd, worldBeta, sizeLoading } = config.companies;
       const industries = new Map(INDUSTRIES.map((industry) => [industry.id, industry]));
       forAnyWorld((world) => {
         for (const company of world.companies) {
           const { model, size, cyclicality } = company;
           const factor = industries.get(company.industryId)?.volatilityFactor ?? Number.NaN;
           expectIn(model.idioVol / factor, idioVol[size], 'idiosyncratic volatility');
-          expectIn(model.jumpIntensity, jumpIntensity, 'jump intensity');
+          expectIn(model.jumpIntensity, jumpIntensity[size], 'jump intensity');
+          expectIn(model.jumpSd, jumpSd[size], 'jump size');
           expectIn(model.loadings.world, worldBeta[cyclicality], 'world beta');
           expectIn(model.loadings.size, sizeLoading[size], 'size loading');
+        }
+      });
+    });
+
+    it('derives the risk class from the full model volatility', () => {
+      const { riskClassBounds, riskClassFactorVols } = config.companies;
+      forAnyWorld((world) => {
+        for (const { model, riskClass } of world.companies) {
+          const { loadings } = model;
+          const factorVariance =
+            (loadings.world * riskClassFactorVols.world) ** 2 +
+            (loadings.region * riskClassFactorVols.region) ** 2 +
+            (loadings.sector * riskClassFactorVols.sector) ** 2 +
+            (loadings.industry * riskClassFactorVols.industry) ** 2 +
+            (loadings.style * riskClassFactorVols.style) ** 2 +
+            (loadings.size * riskClassFactorVols.size) ** 2;
+          const jumpVariance = model.jumpIntensity * (model.jumpMean ** 2 + model.jumpSd ** 2);
+          const vol = Math.sqrt(factorVariance + model.idioVol ** 2 + jumpVariance);
+          expect(riskClass).toBe(1 + riskClassBounds.filter((bound) => vol >= bound).length);
         }
       });
     });

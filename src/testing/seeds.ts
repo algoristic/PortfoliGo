@@ -11,4 +11,6 @@ export const TEST_SEEDS = {
   page: 'page-test',
   /** Statistical tests on fixed seeds. */
   calibration: COMPARISON_SEEDS,
+  /** Many worlds for cross-sectional tests of single instruments (`idio-1` … `idio-20`). */
+  crossSection: Array.from({ length: 20 }, (_, n) => `idio-${n + 1}`),
 } as const;
