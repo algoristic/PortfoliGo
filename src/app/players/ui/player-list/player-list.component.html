@@ -1,0 +1,81 @@
+<ul class="flex flex-col gap-3">
+  @for (player of rows(); track player.id) {
+    <li [class]="player.classes" [attr.data-testid]="'players.list.' + player.id">
+      <div class="flex min-w-0 flex-1 flex-col gap-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <h2
+            class="truncate text-base font-semibold"
+            [attr.data-testid]="'players.list.' + player.id + '.name'">
+            {{ player.name }}
+          </h2>
+          @if (player.isLast) {
+            <app-badge
+              tone="accent"
+              i18n="@@uiPlayers-playerList-lastPlayed"
+              [attr.data-testid]="'players.list.' + player.id + '.last-played'"
+              >Zuletzt gespielt</app-badge
+            >
+          }
+          @if (player.outdated) {
+            <app-badge
+              tone="warning"
+              i18n="@@uiPlayers-playerList-outdated"
+              [attr.data-testid]="'players.list.' + player.id + '.outdated'"
+              >Veraltet</app-badge
+            >
+          }
+        </div>
+        <dl class="grid grid-cols-[auto_1fr] gap-x-3 text-sm">
+          <dt class="text-fg-muted" i18n="@@uiPlayers-playerList-gameTime">Spielzeit</dt>
+          <dd class="tabular-nums" [attr.data-testid]="'players.list.' + player.id + '.game-time'">
+            {{ player.tick | formatGameTime }}
+          </dd>
+          <dt class="text-fg-muted" i18n="@@uiPlayers-playerList-lastSeen">Zuletzt genutzt</dt>
+          <dd class="tabular-nums" [attr.data-testid]="'players.list.' + player.id + '.last-seen'">
+            {{ player.lastSeenAt | formatDateTime }}
+          </dd>
+        </dl>
+        @if (player.outdated) {
+          <p
+            class="text-sm text-fg-muted"
+            i18n="@@uiPlayers-playerList-outdatedHint"
+            [attr.data-testid]="'players.list.' + player.id + '.outdated-hint'">
+            Dieser Spielstand stammt aus einer älteren Version und lässt sich nicht mehr öffnen. Du
+            kannst ihn nur löschen.
+          </p>
+        }
+      </div>
+      <div class="flex items-center gap-1 self-end sm:self-center">
+        @if (!player.outdated) {
+          <button
+            appIconButton
+            type="button"
+            [label]="player.renameLabel"
+            [attr.data-testid]="'players.list.' + player.id + '.rename'"
+            (click)="onRename(player.id)">
+            <i appIcon="pencil"></i>
+          </button>
+        }
+        <button
+          appIconButton
+          type="button"
+          [label]="player.deleteLabel"
+          [attr.data-testid]="'players.list.' + player.id + '.delete'"
+          (click)="onDelete(player.id)">
+          <i appIcon="trash"></i>
+        </button>
+        <button
+          appButton
+          type="button"
+          class="ml-2"
+          i18n="@@uiPlayers-playerList-open"
+          [variant]="player.isLast ? 'primary' : 'secondary'"
+          [disabled]="player.outdated"
+          [attr.data-testid]="'players.list.' + player.id + '.open'"
+          (click)="onOpen(player.id)">
+          Öffnen
+        </button>
+      </div>
+    </li>
+  }
+</ul>

@@ -1,4 +1,5 @@
 import { expect, expectAccessible, test } from './fixtures';
+import { createPlayer } from './players.po';
 
 // Colour scheme and accessibility (J8, J9).
 
@@ -25,7 +26,8 @@ test.describe('accessibility', () => {
   for (const colorScheme of ['light', 'dark'] as const) {
     test(`has no serious findings on the main views (${colorScheme})`, async ({ page }) => {
       await page.emulateMedia({ colorScheme });
-      for (const path of ['#/players', '#/game/preview/dashboard', '#/lab/components']) {
+      const game = await createPlayer(page, 'Anna');
+      for (const path of ['#/players', '#/players/new', `${game}/dashboard`, '#/lab/components']) {
         await page.goto(path);
         await page.waitForLoadState('networkidle');
         await expectAccessible(page);

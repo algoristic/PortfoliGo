@@ -1,0 +1,47 @@
+@let _name = renamePlayerForm.name();
+
+<form [formRoot]="renamePlayerForm">
+  <app-dialog [heading]="heading" testId="players.rename-dialog" (clickedClose)="decline()">
+    <div class="flex flex-col gap-1">
+      <label
+        class="font-medium"
+        for="players-rename-dialog-name"
+        i18n="@@featurePlayers-dialogRenamePlayer-name"
+        >Name</label
+      >
+      <input
+        id="players-rename-dialog-name"
+        class="h-10 rounded-md border border-border bg-surface px-3 text-fg aria-invalid:border-down"
+        autocomplete="off"
+        aria-describedby="players-rename-dialog-name-errors"
+        data-testid="players.rename-dialog.name"
+        [attr.aria-invalid]="_name.touched() && _name.invalid()"
+        [formField]="renamePlayerForm.name" />
+      <p id="players-rename-dialog-name-errors" class="text-down">
+        @if (_name.touched() && _name.invalid()) {
+          @for (error of _name.errors(); track error.kind) {
+            <span data-testid="players.rename-dialog.name-error">{{ error.message }}</span>
+          }
+        }
+      </p>
+    </div>
+    <ng-container dialogActions>
+      <button
+        appButton
+        type="button"
+        data-testid="players.rename-dialog.decline"
+        i18n="@@featurePlayers-dialogRenamePlayer-decline"
+        (click)="decline()">
+        Abbrechen
+      </button>
+      <button
+        appButton
+        type="submit"
+        variant="primary"
+        data-testid="players.rename-dialog.submit"
+        i18n="@@featurePlayers-dialogRenamePlayer-submit">
+        Speichern
+      </button>
+    </ng-container>
+  </app-dialog>
+</form>

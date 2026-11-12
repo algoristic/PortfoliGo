@@ -1,4 +1,4 @@
-import { DestroyRef, inject, Injectable } from '@angular/core';
+import { DestroyRef, inject, Injectable, PendingTasks } from '@angular/core';
 import { IDBPDatabase } from 'idb';
 import { defer, firstValueFrom, map, Observable, share } from 'rxjs';
 
@@ -53,6 +53,7 @@ export class PlayersService {
   readonly #persistence = inject(STORAGE_PERSISTENCE);
   readonly #now = inject(PLAYERS_CLOCK);
   readonly #random = inject(PLAYERS_RANDOM);
+  readonly #pendingTasks = inject(PendingTasks);
 
   #database: Promise<IDBPDatabase> | undefined;
   #channel: MessageChannelPort | undefined;
@@ -80,7 +81,7 @@ export class PlayersService {
 
   /** All players, most recently used first. */
   loadPlayers(): Observable<PlayerListEntry[]> {
-    return defer(async () => {
+    return this.#task(async () => {
       const database = await this.#db();
       const transaction = database.transaction(['players', 'runtime', 'snapshots'], 'readonly');
       const profiles = (await transaction.objectStore('players').getAll()) as PlayerProfile[];
@@ -106,7 +107,7 @@ export class PlayersService {
   }
 
   getProfile(playerId: string): Observable<PlayerProfile | undefined> {
-    return defer(async () => {
+    return this.#task(async () => {
       const database = await this.#db();
       return (await database.get('players', playerId)) as PlayerProfile | undefined;
     });
@@ -114,7 +115,7 @@ export class PlayersService {
 
   /** Creates the profile; the worker creates the game when it loads the player the first time. */
   createPlayer(input: NewPlayer): Observable<CreatedPlayer> {
-    return defer(async () => {
+    return this.#task(async () => {
       const profile = createPlayerProfile(input, createPlayerId(this.#random), this.#now());
       const database = await this.#db();
       const transaction = database.transaction('players', 'readwrite');
@@ -129,7 +130,7 @@ export class PlayersService {
 
   /** Read-modify-write of the profile; only the name changes (TS §9.1). */
   renamePlayer(playerId: string, name: string): Observable<PlayerProfile> {
-    return defer(async () => {
+    return this.#task(async () => {
       if (playerNameError(name) !== null) {
         throw new PlayersServiceError('invalid-input', playerId);
       }
@@ -156,7 +157,7 @@ export class PlayersService {
    * forgets the player as the last used one.
    */
   deletePlayer(playerId: string): Observable<void> {
-    return defer(async () => {
+    return this.#task(async () => {
       const lock = await this.#locks.acquire(playerId);
       if (lock === null) {
         throw new PlayersServiceError('player-locked', playerId);
@@ -191,7 +192,7 @@ export class PlayersService {
    * may decide without asking the user, and some always answer `false`.
    */
   requestPersistence(): Observable<boolean> {
-    return defer(() =>
+    return this.#task(() =>
       this.#persistence
         .persisted()
         .then((persisted) => persisted || this.#persistence.persist())
@@ -202,6 +203,14 @@ export class PlayersService {
   /** A shareable seed such as `kupfer-falke-731` (TS §4.1). */
   suggestSeed(): string {
     return generateSeed(this.#random);
+  }
+
+  /** Storage work keeps the app unstable until it is done, so `whenStable()` covers it. */
+  #task<T>(work: () => Promise<T>): Observable<T> {
+    return defer(() => {
+      const done = this.#pendingTasks.add();
+      return work().finally(done);
+    });
   }
 
   #db(): Promise<IDBPDatabase> {

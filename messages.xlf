@@ -2191,88 +2191,340 @@
           <context context-type="linenumber">10,11</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featurePlayers-dialogRenamePlayer-name" datatype="html">
+        <source>Name</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-rename-player/dialog-rename-player.component.html</context>
+          <context context-type="linenumber">10,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogRenamePlayer-decline" datatype="html">
+        <source> Abbrechen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-rename-player/dialog-rename-player.component.html</context>
+          <context context-type="linenumber">35,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogRenamePlayer-submit" datatype="html">
+        <source> Speichern </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-rename-player/dialog-rename-player.component.html</context>
+          <context context-type="linenumber">43,46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogRenamePlayer-heading" datatype="html">
+        <source>Spieler umbenennen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-rename-player/dialog-rename-player.component.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featurePlayers-newPlayerPage-title" datatype="html">
         <source>Spieler anlegen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/new-player/new-player.page.html</context>
-          <context context-type="linenumber">4,9</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="featurePlayers-newPlayerPage-emptyHeading" datatype="html">
-        <source>Noch keine Inhalte</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/players/feature/new-player/new-player.page.html</context>
-          <context context-type="linenumber">10,11</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="featurePlayers-newPlayerPage-emptyText" datatype="html">
-        <source>Das Formular entsteht in AP 2.4.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/players/feature/new-player/new-player.page.html</context>
-          <context context-type="linenumber">12,13</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="featurePlayers-newPlayerPage-back" datatype="html">
-        <source>Zur Spielerauswahl</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/players/feature/new-player/new-player.page.html</context>
-          <context context-type="linenumber">19,22</context>
+          <context context-type="linenumber">7,11</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersRoutes-playersTitle" datatype="html">
         <source>Spielerauswahl</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players.routes.ts</context>
-          <context context-type="linenumber">6</context>
+          <context context-type="linenumber">9</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersRoutes-newPlayerTitle" datatype="html">
         <source>Spieler anlegen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players.routes.ts</context>
-          <context context-type="linenumber">13</context>
+          <context context-type="linenumber">18</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersPage-title" datatype="html">
         <source>Spielerauswahl</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
-          <context context-type="linenumber">3,7</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="featurePlayers-playersPage-emptyHeading" datatype="html">
-        <source>Noch keine Spieler</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
           <context context-type="linenumber">8,9</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="featurePlayers-playersPage-emptyText" datatype="html">
-        <source>Spieler anlegen und auswählen folgt in AP 2.4. Bis dahin zeigt die Vorschau den leeren Spielbereich.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
-          <context context-type="linenumber">10,11</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersPage-create" datatype="html">
         <source>Neuer Spieler</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
-          <context context-type="linenumber">19,23</context>
+          <context context-type="linenumber">12,17</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featurePlayers-playersPage-preview" datatype="html">
-        <source>Vorschau des Spielbereichs</source>
+      <trans-unit id="featurePlayers-playersPage-emptyHeading" datatype="html">
+        <source>Noch keine Spieler</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
-          <context context-type="linenumber">26,30</context>
+          <context context-type="linenumber">32,33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-emptyText" datatype="html">
+        <source>Lege einen Spieler an, um ein Spiel zu beginnen. Jeder Spieler hat seine eigene Welt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
+          <context context-type="linenumber">34,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-createFirst" datatype="html">
+        <source>Neuer Spieler</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
+          <context context-type="linenumber">42,45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersPage-lab" datatype="html">
-        <source>Labor</source>
+        <source>Zum Labor</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
-          <context context-type="linenumber">34,36</context>
+          <context context-type="linenumber">54,58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-renameDialogLabel" datatype="html">
+        <source>Spieler umbenennen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">105</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-deleteHeading" datatype="html">
+        <source>Spieler löschen?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">142</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-deleteMessage" datatype="html">
+        <source>„<x id="name" equiv-text="name"/>“ wird mit allen Spieldaten endgültig gelöscht. Das lässt sich nicht rückgängig machen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">143</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-deleteConfirm" datatype="html">
+        <source>Löschen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">144</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-deleteSuccess" datatype="html">
+        <source>„<x id="name" equiv-text="name"/>“ wurde gelöscht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">207</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-deleteLocked" datatype="html">
+        <source>„<x id="name" equiv-text="name"/>“ ist in einem anderen Tab geöffnet und lässt sich gerade nicht löschen. Schließe den Spieler dort und versuche es erneut.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">221</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-deleteFailure" datatype="html">
+        <source>„<x id="name" equiv-text="name"/>“ konnte nicht gelöscht werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">225</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-loadFailure" datatype="html">
+        <source>Die Spieler konnten nicht geladen werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">249</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-createFailure" datatype="html">
+        <source>Der Spieler konnte nicht angelegt werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">250</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-renameNotFound" datatype="html">
+        <source>Den Spieler gibt es nicht mehr.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">269</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-renameInvalid" datatype="html">
+        <source>Der Name ist ungültig.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">272</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-renameFailure" datatype="html">
+        <source>Der Spieler konnte nicht umbenannt werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">274</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-name" datatype="html">
+        <source>Name</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.html</context>
+          <context context-type="linenumber">11,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-seed" datatype="html">
+        <source>Seed</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.html</context>
+          <context context-type="linenumber">32,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-suggestSeed" datatype="html">
+        <source>Neuer Vorschlag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.html</context>
+          <context context-type="linenumber">50,54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-seedHelp" datatype="html">
+        <source> Derselbe Seed ergibt dieselbe Welt mit denselben Banken, Wertpapieren und Kursen. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.html</context>
+          <context context-type="linenumber">57,59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-startConditions" datatype="html">
+        <source> Startbedingungen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.html</context>
+          <context context-type="linenumber">70,73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-presets" datatype="html">
+        <source>Voreinstellungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.html</context>
+          <context context-type="linenumber">75,76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-startCapital" datatype="html">
+        <source>Startkapital</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.html</context>
+          <context context-type="linenumber">97,100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-netIncome" datatype="html">
+        <source>Nettoeinkommen je Monat</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.html</context>
+          <context context-type="linenumber">118,121</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-livingCosts" datatype="html">
+        <source>Lebenshaltung je Monat</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.html</context>
+          <context context-type="linenumber">139,142</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-livingCostsHint" datatype="html">
+        <source>Die Lebenshaltung ist höher als das Einkommen: Dein Kontostand sinkt jeden Monat.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.html</context>
+          <context context-type="linenumber">158,162</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-cancel" datatype="html">
+        <source>Abbrechen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.html</context>
+          <context context-type="linenumber">173,177</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-submit" datatype="html">
+        <source> Spieler anlegen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.html</context>
+          <context context-type="linenumber">182,186</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-presetStudent" datatype="html">
+        <source>Studium</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.ts</context>
+          <context context-type="linenumber">64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-presetCareerStart" datatype="html">
+        <source>Berufseinstieg</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.ts</context>
+          <context context-type="linenumber">65</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-formNewPlayer-presetExperienced" datatype="html">
+        <source>Erfahren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.ts</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerList-lastPlayed" datatype="html">
+        <source>Zuletzt gespielt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-list/player-list.component.html</context>
+          <context context-type="linenumber">16,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerList-outdated" datatype="html">
+        <source>Veraltet</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-list/player-list.component.html</context>
+          <context context-type="linenumber">24,27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerList-gameTime" datatype="html">
+        <source>Spielzeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-list/player-list.component.html</context>
+          <context context-type="linenumber">29,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerList-lastSeen" datatype="html">
+        <source>Zuletzt genutzt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-list/player-list.component.html</context>
+          <context context-type="linenumber">33,34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerList-outdatedHint" datatype="html">
+        <source> Dieser Spielstand stammt aus einer älteren Version und lässt sich nicht mehr öffnen. Du kannst ihn nur löschen. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-list/player-list.component.html</context>
+          <context context-type="linenumber">43,46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerList-open" datatype="html">
+        <source> Öffnen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-list/player-list.component.html</context>
+          <context context-type="linenumber">76,78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerList-rename" datatype="html">
+        <source><x id="name" equiv-text="player.name"/> umbenennen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-list/player-list.component.ts</context>
+          <context context-type="linenumber">44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerList-delete" datatype="html">
+        <source><x id="name" equiv-text="player.name"/> löschen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-list/player-list.component.ts</context>
+          <context context-type="linenumber">45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPlayers-amountRangeSchema-required" datatype="html">
@@ -2301,6 +2553,41 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/ui/schemas/amount-range-schema.ts</context>
           <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-newPlayerSchema-seedRequired" datatype="html">
+        <source>Bitte gib einen Seed ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/schemas/new-player-schema.ts</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-newPlayerSchema-seedBlank" datatype="html">
+        <source>Bitte gib einen Seed ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/schemas/new-player-schema.ts</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerNameSchema-required" datatype="html">
+        <source>Bitte gib einen Namen ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/schemas/player-name-schema.ts</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerNameSchema-blank" datatype="html">
+        <source>Bitte gib einen Namen ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/schemas/player-name-schema.ts</context>
+          <context context-type="linenumber">19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerNameSchema-tooLong" datatype="html">
+        <source>Der Name darf höchstens <x id="maxLength" equiv-text="maxLength"/> Zeichen haben.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/schemas/player-name-schema.ts</context>
+          <context context-type="linenumber">24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePortfolio-portfolioRoutes-portfolioTitle" datatype="html">

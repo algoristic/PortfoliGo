@@ -1205,6 +1205,7 @@ Datenbank `portfoligo`, Version 4 (der Prototyp nutzte Version 2; dessen Stores 
 - Journal-Datensätze (`transactions`, `orders`, `notifications`, `series`) tragen ihren `tick` (letzte Änderung); die Wiederherstellung verwirft die nach dem Snapshot-Tick (§9.2, Schritt 2).
 - Ein neuer Snapshot behält die drei neuesten und löscht in derselben Transaktion die Kommandos mit einem Tick vor dem ältesten behaltenen Snapshot (E-08). Kommandos am Snapshot-Tick bleiben, weil der Snapshot sie enthalten kann oder nicht (`commandIds`, §8.5).
 - Tageskerzen bleiben je Spieler (`[playerId, instrumentId, resolution, bucket]`). Geprüft und verworfen (12.11.2026): Kerzen je Seed und `simVersion`. Das spart bei zwei Spielern desselben Seeds je rund 12 MB, bräuchte aber eine Regel fürs Löschen (letzter Spieler eines Seeds) und brächte Schreibkonflikte zwischen Tabs. Je Spieler löscht das Löschen eines Spielers seine Kerzen mit; die Doppelung wird in Kauf genommen.
+- **Profil (AP 2.4):** `{ id, name, seed, seedKey, start, simVersion, createdAt }`. `seedKey` ist `deriveSeedKey(seed)` als `number[]` mit vier vorzeichenlosen 32-Bit-Wörtern (in IndexedDB als einfache Zahlen statt als `Uint32Array`). Das Profil trägt keine `schemaVersion`: Das Schema betrifft nur die Snapshots des Workers; ein Spieler gilt als veraltet, wenn das Profil eine andere `simVersion` hat oder sein neuester Snapshot eine andere `simVersion` oder `schemaVersion` (E-25, §15). Die Spielerliste liest Profil, `runtime` und den neuesten Snapshot in einer Transaktion; sie zeigt bis M3 kein Vermögen (statt des Startkapitals nichts), Spielzeit und letzte Nutzung erst, nachdem der Worker den Spieler einmal geladen hat.
 - **Offen (AP 6.1):** `players` gehört der UI, aber der Import schreibt das Profil im Worker. Vorschlag: Beim Import legt die UI das Profil an. Der Name wird nur über den `PlayersService` geändert (entschieden 12.11.2026).
 
 ### 9.2 Speicherstrategie und Wiederherstellung (E-08)
@@ -1404,32 +1405,33 @@ Am 10.11.2026 freigegeben und in AP 0.2 in `CLAUDE.md` übernommen (§1, §3, §
 | `notifications` | `notifications/feature` | Benachrichtigungen (Entities), ungelesene                                                     | Engine                |
 
 - **Registrierung:** `settings` und `players` gehören in die Bootstrap-Provider (App-weit), alle übrigen Slices einmal an die Shell-Route `/game/:playerId` (§11.2, Punkt 4).
+- **Players (AP 2.4):** `providePlayersState()` steht in `provideAppCore()`. `enterPlayersPage` lädt die Liste samt `pgo.lastPlayerId` und hört bis `leavePlayersPage` auf `PlayersService.changes$` (Änderungen anderer Tabs laden die Liste neu); `enterNewPlayerPage` holt einen Seed-Vorschlag.
 - **Laden und Abonnieren:** Ein Guard beim Betreten einer Seite löst Abos und Abfragen aus (`enterXPage`), der Guard beim Verlassen beendet sie (`leaveXPage`). Ändert sich auf der Seite die benötigte Menge (Filter im Screener, Watchlist, nächste Seite des Kontoauszugs, Chart-Zeitraum), reagieren Effects auf die Aktion des Anwenders. Der Store hält nur das aktuelle Fenster – eine Kontoauszugsseite, die Kerzen des angezeigten Charts –, nie das komplette Journal oder alle Kerzen.
 
 ### 11.4 Routing
 
-| Pfad                                                | Ansicht                             | Guards                   |
-| --------------------------------------------------- | ----------------------------------- | ------------------------ |
-| `/players`                                          | Spielerauswahl                      | –                        |
-| `/players/new`                                      | Spieler anlegen                     | –                        |
-| `/game/:playerId`                                   | Spielbereich (Shell)                | `enterGame`, `leaveGame` |
-| `/game/:playerId/dashboard`                         | Übersicht                           |                          |
-| `/game/:playerId/markets`                           | Märkte und Screener                 |                          |
-| `/game/:playerId/markets/:instrumentId`             | Instrument                          |                          |
-| `/game/:playerId/portfolio`                         | Depot                               |                          |
-| `/game/:playerId/accounts`, `…/accounts/:accountId` | Konten, Kontoauszug                 |                          |
-| `/game/:playerId/banks`                             | Bankenvergleich                     |                          |
-| `/game/:playerId/orders`                            | Orders und Sparpläne                |                          |
-| `/game/:playerId/taxes`                             | Steuern                             |                          |
-| `/game/:playerId/notifications`                     | Benachrichtigungen                  |                          |
-| `/game/:playerId/settings`                          | Einstellungen                       |                          |
-| `/lab`                                              | Simulations-Labor, Entwicklerseiten | `devPages` (vorerst an)  |
+| Pfad                                                | Ansicht                             | Guards                                 |
+| --------------------------------------------------- | ----------------------------------- | -------------------------------------- |
+| `/players`                                          | Spielerauswahl                      | `enterPlayersPage`, `leavePlayersPage` |
+| `/players/new`                                      | Spieler anlegen                     | `enterNewPlayerPage`                   |
+| `/game/:playerId`                                   | Spielbereich (Shell)                | `enterGame`, `leaveGame`               |
+| `/game/:playerId/dashboard`                         | Übersicht                           |                                        |
+| `/game/:playerId/markets`                           | Märkte und Screener                 |                                        |
+| `/game/:playerId/markets/:instrumentId`             | Instrument                          |                                        |
+| `/game/:playerId/portfolio`                         | Depot                               |                                        |
+| `/game/:playerId/accounts`, `…/accounts/:accountId` | Konten, Kontoauszug                 |                                        |
+| `/game/:playerId/banks`                             | Bankenvergleich                     |                                        |
+| `/game/:playerId/orders`                            | Orders und Sparpläne                |                                        |
+| `/game/:playerId/taxes`                             | Steuern                             |                                        |
+| `/game/:playerId/notifications`                     | Benachrichtigungen                  |                                        |
+| `/game/:playerId/settings`                          | Einstellungen                       |                                        |
+| `/lab`                                              | Simulations-Labor, Entwicklerseiten | `devPages` (vorerst an)                |
 
 Das Labor (`/lab`) hat einen eigenen Rahmen mit Navigation zwischen Simulation, UI-Bausteinen und Design-Tokens und einen Link zurück zur App.
 
 Hash-Routing bleibt (statisches Hosting unter einem Unterpfad). Pfade sind englisch wie der übrige Code (E-15). Die leere Route führt zur Spielerauswahl; dort ist der zuletzt genutzte Spieler vorausgewählt (US-SP-02).
 
-- **Umsetzung (AP 0.4):** `app.routes.ts` lädt `players/feature/players.routes.ts` und `shell/feature/shell.routes.ts` lazy; unbekannte Pfade führen ebenfalls zur Spielerauswahl. Die Bereiche des Spielbereichs sind eigene Routen-Dateien ihrer Domänen (`dashboard`, `market`, `portfolio`, `banking` mit `accountsRoutes` und `banksRoutes`, `trading`, `taxes`, `notifications`, `settings`), `/game/:playerId` leitet auf `dashboard` weiter. Bis AP 2.4 bietet die Spielerauswahl einen Vorschau-Link nach `/game/preview`.
+- **Umsetzung (AP 0.4):** `app.routes.ts` lädt `players/feature/players.routes.ts` und `shell/feature/shell.routes.ts` lazy; unbekannte Pfade führen ebenfalls zur Spielerauswahl. Die Bereiche des Spielbereichs sind eigene Routen-Dateien ihrer Domänen (`dashboard`, `market`, `portfolio`, `banking` mit `accountsRoutes` und `banksRoutes`, `trading`, `taxes`, `notifications`, `settings`), `/game/:playerId` leitet auf `dashboard` weiter. Der Vorschau-Link nach `/game/preview` aus AP 0.4 ist mit AP 2.4 entfallen; die Spielerauswahl öffnet echte Spieler.
 - **Seitentitel:** Routen setzen `title` per `$localize`; die `PageTitleStrategy` (`shell/feature/page-title`) ergänzt „· PortfoliGo“.
 - **Navigation:** Ab 48rem (Tailwind `md`, `BreakpointObserver`) Seitennavigation, darunter eine untere Leiste mit Übersicht, Märkte, Depot, Konten und „Mehr“ (Orders, Steuern, Benachrichtigungen, Einstellungen). Benachrichtigungen und Einstellungen sind zusätzlich über die Glocke und das Spielermenü der Kopfzeile erreichbar. Der Bankenvergleich (`banks`) wird ab AP 3.5 aus den Konten verlinkt. Ein Skip-Link verschiebt den Fokus per Skript auf `<main>`, weil ein `href="#content"` die Hash-Route ändern würde. Die aktive Seite kennzeichnen Seitennavigation und untere Leiste per `routerLinkActive`; weil die Punkte im „Mehr“-Menü keine Links sind, liest die Shell den aktiven Bereich über `ShellFacade.activeNavPath$` (Selektor auf die URL im Router Store, `shell/feature/state`): Liegt er im „Mehr“-Menü, ist der „Mehr“-Button akzentuiert und der Menüpunkt mit Häkchen und `aria-current="page"` markiert. Ebenso markiert ist „Einstellungen“ im Spielermenü der Kopfzeile, wenn die Einstellungsseite offen ist.
 

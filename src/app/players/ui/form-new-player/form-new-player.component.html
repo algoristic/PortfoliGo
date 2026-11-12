@@ -1,0 +1,185 @@
+@let _name = newPlayerForm.name();
+@let _seed = newPlayerForm.seed();
+@let _startCapital = newPlayerForm.startCapital();
+@let _netIncome = newPlayerForm.netIncome();
+@let _livingCosts = newPlayerForm.livingCosts();
+@let _activePreset = activePreset();
+
+<form class="flex flex-col gap-5" [formRoot]="newPlayerForm">
+  <div class="flex flex-col gap-1">
+    <label class="text-sm font-medium" for="players-new-name" i18n="@@uiPlayers-formNewPlayer-name"
+      >Name</label
+    >
+    <input
+      id="players-new-name"
+      class="h-10 rounded-md border border-border bg-surface px-3 text-sm text-fg aria-invalid:border-down"
+      autocomplete="off"
+      aria-describedby="players-new-name-errors"
+      data-testid="players.new.name"
+      [attr.aria-invalid]="_name.touched() && _name.invalid()"
+      [formField]="newPlayerForm.name" />
+    <p id="players-new-name-errors" class="text-sm text-down">
+      @if (_name.touched() && _name.invalid()) {
+        @for (error of _name.errors(); track error.kind) {
+          <span data-testid="players.new.name-error">{{ error.message }}</span>
+        }
+      }
+    </p>
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label class="text-sm font-medium" for="players-new-seed" i18n="@@uiPlayers-formNewPlayer-seed"
+      >Seed</label
+    >
+    <div class="flex gap-2">
+      <input
+        id="players-new-seed"
+        class="h-10 min-w-0 flex-1 rounded-md border border-border bg-surface px-3 text-sm text-fg aria-invalid:border-down"
+        autocomplete="off"
+        spellcheck="false"
+        aria-describedby="players-new-seed-help players-new-seed-errors"
+        data-testid="players.new.seed"
+        [attr.aria-invalid]="_seed.touched() && _seed.invalid()"
+        [formField]="newPlayerForm.seed" />
+      <button
+        appButton
+        type="button"
+        data-testid="players.new.suggest-seed"
+        (click)="onSuggestSeed()">
+        <i appIcon="shuffle"></i>
+        <span i18n="@@uiPlayers-formNewPlayer-suggestSeed">Neuer Vorschlag</span>
+      </button>
+    </div>
+    <p
+      id="players-new-seed-help"
+      class="text-sm text-fg-muted"
+      i18n="@@uiPlayers-formNewPlayer-seedHelp">
+      Derselbe Seed ergibt dieselbe Welt mit denselben Banken, Wertpapieren und Kursen.
+    </p>
+    <p id="players-new-seed-errors" class="text-sm text-down">
+      @if (_seed.touched() && _seed.invalid()) {
+        @for (error of _seed.errors(); track error.kind) {
+          <span data-testid="players.new.seed-error">{{ error.message }}</span>
+        }
+      }
+    </p>
+  </div>
+
+  <fieldset class="flex flex-col gap-3">
+    <legend class="mb-2 text-sm font-medium" i18n="@@uiPlayers-formNewPlayer-startConditions">
+      Startbedingungen
+    </legend>
+    <div
+      class="flex flex-wrap gap-2"
+      role="group"
+      aria-label="Voreinstellungen"
+      i18n-aria-label="@@uiPlayers-formNewPlayer-presets">
+      @for (preset of presets; track preset.id) {
+        <button
+          appButton
+          type="button"
+          size="sm"
+          [variant]="preset.id === _activePreset ? 'primary' : 'secondary'"
+          [attr.aria-pressed]="preset.id === _activePreset"
+          [attr.data-testid]="'players.new.preset.' + preset.id"
+          (click)="onApplyPreset(preset.id)">
+          {{ presetLabels[preset.id] }}
+        </button>
+      }
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="flex flex-col gap-1">
+        <label
+          class="text-sm font-medium"
+          for="players-new-start-capital"
+          i18n="@@uiPlayers-formNewPlayer-startCapital"
+          >Startkapital</label
+        >
+        <app-amount-input
+          inputId="players-new-start-capital"
+          describedBy="players-new-start-capital-errors"
+          testId="players.new.start-capital"
+          [formField]="newPlayerForm.startCapital"></app-amount-input>
+        <p id="players-new-start-capital-errors" class="text-sm text-down">
+          @if (_startCapital.touched() && _startCapital.invalid()) {
+            @for (error of _startCapital.errors(); track error.kind) {
+              <span data-testid="players.new.start-capital-error">{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label
+          class="text-sm font-medium"
+          for="players-new-net-income"
+          i18n="@@uiPlayers-formNewPlayer-netIncome"
+          >Nettoeinkommen je Monat</label
+        >
+        <app-amount-input
+          inputId="players-new-net-income"
+          describedBy="players-new-net-income-errors"
+          testId="players.new.net-income"
+          [formField]="newPlayerForm.netIncome"></app-amount-input>
+        <p id="players-new-net-income-errors" class="text-sm text-down">
+          @if (_netIncome.touched() && _netIncome.invalid()) {
+            @for (error of _netIncome.errors(); track error.kind) {
+              <span data-testid="players.new.net-income-error">{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label
+          class="text-sm font-medium"
+          for="players-new-living-costs"
+          i18n="@@uiPlayers-formNewPlayer-livingCosts"
+          >Lebenshaltung je Monat</label
+        >
+        <app-amount-input
+          inputId="players-new-living-costs"
+          describedBy="players-new-living-costs-errors players-new-living-costs-hint"
+          testId="players.new.living-costs"
+          [formField]="newPlayerForm.livingCosts"></app-amount-input>
+        <p id="players-new-living-costs-errors" class="text-sm text-down">
+          @if (_livingCosts.touched() && _livingCosts.invalid()) {
+            @for (error of _livingCosts.errors(); track error.kind) {
+              <span data-testid="players.new.living-costs-error">{{ error.message }}</span>
+            }
+          }
+        </p>
+        <p id="players-new-living-costs-hint" class="text-sm text-warning">
+          @if (showLivingCostsHint()) {
+            <span
+              data-testid="players.new.living-costs-hint"
+              i18n="@@uiPlayers-formNewPlayer-livingCostsHint"
+              >Die Lebenshaltung ist höher als das Einkommen: Dein Kontostand sinkt jeden
+              Monat.</span
+            >
+          }
+        </p>
+      </div>
+    </div>
+  </fieldset>
+
+  <div class="flex flex-wrap justify-end gap-2">
+    <a
+      appButton
+      routerLink="/players"
+      data-testid="players.new.cancel"
+      i18n="@@uiPlayers-formNewPlayer-cancel"
+      >Abbrechen</a
+    >
+    <button
+      appButton
+      type="submit"
+      variant="primary"
+      data-testid="players.new.submit"
+      i18n="@@uiPlayers-formNewPlayer-submit"
+      [disabled]="creating()">
+      Spieler anlegen
+    </button>
+  </div>
+</form>

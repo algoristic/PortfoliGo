@@ -1,38 +1,57 @@
+@let players = playersFacade.players$ | async;
+@let loaded = playersFacade.loaded$ | async;
+@let lastPlayerId = playersFacade.lastPlayerId$ | async;
+
 <main class="mx-auto flex min-h-dvh max-w-2xl flex-col gap-4 px-4 py-8">
   <p class="text-lg font-semibold text-accent">PortfoliGo</p>
-  <h1 class="text-2xl font-semibold" i18n="@@featurePlayers-playersPage-title">Spielerauswahl</h1>
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h1 class="text-2xl font-semibold" i18n="@@featurePlayers-playersPage-title">Spielerauswahl</h1>
+    @if (players && players.length > 0) {
+      <a appButton variant="primary" routerLink="new" data-testid="players.list.create">
+        <i appIcon="person-plus"></i>
+        <span i18n="@@featurePlayers-playersPage-create">Neuer Spieler</span>
+      </a>
+    }
+  </div>
 
-  <app-panel>
-    <app-empty-state
-      icon="people"
-      heading="Noch keine Spieler"
-      i18n-heading="@@featurePlayers-playersPage-emptyHeading"
-      text="Spieler anlegen und auswählen folgt in AP 2.4. Bis dahin zeigt die Vorschau den leeren Spielbereich."
-      i18n-text="@@featurePlayers-playersPage-emptyText">
-      <div class="flex flex-wrap justify-center gap-2">
+  @if (!loaded) {
+    <app-panel>
+      <app-skeleton [lines]="3"></app-skeleton>
+    </app-panel>
+  } @else if (players && players.length > 0) {
+    <app-player-list
+      [players]="players"
+      [lastPlayerId]="lastPlayerId"
+      (selectedPlayer)="onOpenPlayer($event)"
+      (clickedRenamePlayer)="onRenamePlayer($event)"
+      (clickedDeletePlayer)="onDeletePlayer($event)"></app-player-list>
+  } @else {
+    <app-panel>
+      <app-empty-state
+        icon="people"
+        heading="Noch keine Spieler"
+        i18n-heading="@@featurePlayers-playersPage-emptyHeading"
+        text="Lege einen Spieler an, um ein Spiel zu beginnen. Jeder Spieler hat seine eigene Welt."
+        i18n-text="@@featurePlayers-playersPage-emptyText">
         <a
           appButton
           variant="primary"
           routerLink="new"
           data-testid="players.list.create"
-          i18n="@@featurePlayers-playersPage-create"
+          i18n="@@featurePlayers-playersPage-createFirst"
           >Neuer Spieler</a
         >
-        <a
-          appButton
-          routerLink="/game/preview"
-          data-testid="players.list.preview"
-          i18n="@@featurePlayers-playersPage-preview"
-          >Vorschau des Spielbereichs</a
-        >
-        <a
-          appButton
-          routerLink="/lab"
-          data-testid="players.list.lab"
-          i18n="@@featurePlayers-playersPage-lab"
-          >Labor</a
-        >
-      </div>
-    </app-empty-state>
-  </app-panel>
+      </app-empty-state>
+    </app-panel>
+  }
+
+  <p class="mt-auto pt-4 text-center text-sm">
+    <a
+      class="text-fg-muted underline hover:text-fg"
+      routerLink="/lab"
+      data-testid="players.list.lab"
+      i18n="@@featurePlayers-playersPage-lab"
+      >Zum Labor</a
+    >
+  </p>
 </main>

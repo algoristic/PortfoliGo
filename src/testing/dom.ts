@@ -74,3 +74,9 @@ export function select(element: HTMLSelectElement, value: string): void {
   element.value = value;
   element.dispatchEvent(new Event('change', { bubbles: true }));
 }
+
+/** Moves the focus away from the element like the user does; form fields count as touched then. */
+export function blur(element: HTMLElement): void {
+  element.dispatchEvent(new FocusEvent('blur'));
+  element.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+}

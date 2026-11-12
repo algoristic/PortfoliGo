@@ -6,6 +6,7 @@ import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { provideStore } from '@ngrx/store';
 
 import { provideEngineService } from '@app/engine/data-access/service/engine-service.providers';
+import { providePlayersState } from '@app/players/feature/state/players.providers';
 import { provideColorSchemeService } from '@app/shared/data-access/color-scheme/color-scheme-service.providers';
 import { provideToastService } from '@app/shared/ui/toast/toast-service.providers';
 import { providePageTitleStrategy } from '@app/shell/feature/page-title/page-title.providers';
@@ -26,5 +27,6 @@ export function provideAppCore(): Array<Provider | EnvironmentProviders> {
     provideColorSchemeService(),
     provideToastService(),
     provideEngineService(),
+    providePlayersState(),
   ];
 }

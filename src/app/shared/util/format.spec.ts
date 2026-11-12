@@ -1,6 +1,7 @@
 import {
   formatCents,
   formatCompact,
+  formatDateTime,
   formatNumber,
   formatOptional,
   formatPercent,
@@ -81,6 +82,14 @@ describe('format', () => {
 
     it('keeps smaller numbers in full', () => {
       expect(formatCompact(12_345)).toBe('12.345');
+    });
+  });
+
+  describe('formatDateTime', () => {
+    // Instants built from local date parts: the result is the same in every time zone of the runner.
+    it('formats an instant as local date and time with leading zeros', () => {
+      expect(formatDateTime(new Date(2026, 10, 12, 14, 30).getTime())).toBe('12.11.2026, 14:30');
+      expect(formatDateTime(new Date(2027, 0, 2, 3, 4, 59).getTime())).toBe('02.01.2027, 03:04');
     });
   });
 

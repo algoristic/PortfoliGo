@@ -1,3 +1,6 @@
+@let suggestedSeed = playersFacade.suggestedSeed$ | async;
+@let creating = playersFacade.creating$ | async;
+
 <main class="mx-auto flex min-h-dvh max-w-2xl flex-col gap-4 px-4 py-8">
   <p class="text-lg font-semibold text-accent">PortfoliGo</p>
   <h1 class="text-2xl font-semibold" i18n="@@featurePlayers-newPlayerPage-title"
@@ -5,19 +8,14 @@
   >
 
   <app-panel>
-    <app-empty-state
-      icon="person-plus"
-      heading="Noch keine Inhalte"
-      i18n-heading="@@featurePlayers-newPlayerPage-emptyHeading"
-      text="Das Formular entsteht in AP 2.4."
-      i18n-text="@@featurePlayers-newPlayerPage-emptyText">
-      <a
-        appButton
-        routerLink="/players"
-        data-testid="players.new.back"
-        i18n="@@featurePlayers-newPlayerPage-back"
-        >Zur Spielerauswahl</a
-      >
-    </app-empty-state>
+    @if (suggestedSeed) {
+      <app-form-new-player
+        [seed]="suggestedSeed"
+        [creating]="creating ?? false"
+        (clickedSuggestSeed)="onSuggestSeed()"
+        (submittedNewPlayer)="onSubmitNewPlayer($event)"></app-form-new-player>
+    } @else {
+      <app-skeleton [lines]="5"></app-skeleton>
+    }
   </app-panel>
 </main>

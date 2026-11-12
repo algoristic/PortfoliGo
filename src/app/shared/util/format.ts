@@ -4,6 +4,13 @@ const HYPHEN_MINUS = '-';
 const MINUS_SIGN = '\u2212';
 
 const formats = new Map<string, Intl.NumberFormat>();
+const dateTimeFormat = new Intl.DateTimeFormat(LOCALE, {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
 
 /** Shown instead of a missing or non-finite value. */
 export const MISSING_VALUE = '–';
@@ -68,6 +75,14 @@ export function formatNumber(value: number, fractionDigits = 0): string {
 /** Formats large numbers in short form, e.g. `1234567` → `1,2 Mio.`. */
 export function formatCompact(value: number): string {
   return numberFormat({ notation: 'compact', maximumFractionDigits: 1 }).format(value);
+}
+
+/**
+ * Date and time of a wall-clock instant (ms since the Unix epoch) in the browser's time zone,
+ * e.g. `12.11.2026, 14:30`. Game times use `formatGameTime` (`clock/domain`) instead.
+ */
+export function formatDateTime(epochMs: number): string {
+  return dateTimeFormat.format(epochMs);
 }
 
 function withMinusSign(formatted: string): string {

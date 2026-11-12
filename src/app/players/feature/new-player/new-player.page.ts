@@ -1,14 +1,27 @@
-import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 
-import { ButtonDirective } from '@app/shared/ui/button/button.directive';
-import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
+import { NewPlayer } from '@app/players/domain/models/player.model';
 import { PanelComponent } from '@app/shared/ui/panel/panel.component';
+import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
+
+import { FormNewPlayerComponent } from '../../ui/form-new-player/form-new-player.component';
+import { PlayersFacade } from '../state/players.facade';
 
 @Component({
   selector: 'app-new-player-page',
-  imports: [RouterModule, PanelComponent, EmptyStateComponent, ButtonDirective],
+  imports: [CommonModule, PanelComponent, SkeletonComponent, FormNewPlayerComponent],
   templateUrl: './new-player.page.html',
   host: { class: 'block' },
 })
-export class NewPlayerPage {}
+export class NewPlayerPage {
+  playersFacade = inject(PlayersFacade);
+
+  onSuggestSeed(): void {
+    this.playersFacade.suggestSeed();
+  }
+
+  onSubmitNewPlayer(newPlayer: NewPlayer): void {
+    this.playersFacade.createPlayer(newPlayer);
+  }
+}
