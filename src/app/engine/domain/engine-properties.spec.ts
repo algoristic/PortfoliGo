@@ -6,6 +6,10 @@ import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
 import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
+import {
+  AUTO_PAUSE_CODES,
+  GameNotification,
+} from '@app/notifications/domain/models/notification.model';
 import { miniWorld } from '@app/world/domain/testing/mini-world';
 
 import { GameEngine } from './game-engine';
@@ -26,8 +30,9 @@ import { TEST_SEEDS } from '../../../testing/seeds';
 // The player has accounts at the test banks that book every kind of household transaction (TS §7.4):
 // salary and living costs, account fees, overdraft interest beyond the limit, monthly savings
 // interest with tax, quarterly savings interest and debit interest on a clearing account. The
-// commands are random bank commands (AP 3.3) and background modes; many of them are rejected, which
-// must be just as deterministic.
+// commands are random bank commands (AP 3.3), background modes and the notification commands
+// (AP 3.6); many of them are rejected, which must be just as deterministic. The notifications of the
+// runs (overdrafts, interest, month ends) are part of both properties.
 
 /** End of the runs: four months after the start, across three month starts and a quarter. */
 const END_TICK = dateTimeToTick({ year: 2030, month: 8, day: 1 }) - 1;
@@ -64,6 +69,19 @@ const arbCommandBody = (): fc.Arbitrary<WithoutStamp<GameCommand>> =>
       purpose: fc.string({ maxLength: 8 }),
     }),
     fc.record({ type: fc.constant('setSalaryAccount' as const), accountId: arbAccountId() }),
+    fc.record({
+      type: fc.constant('setAutoPause' as const),
+      code: fc.constantFrom(...AUTO_PAUSE_CODES),
+      enabled: fc.boolean(),
+    }),
+    fc.record(
+      {
+        type: fc.constant('markNotificationsRead' as const),
+        upTo: fc.integer({ min: 0, max: 12 }),
+        seqs: fc.array(fc.integer({ min: 1, max: 12 }), { maxLength: 3 }),
+      },
+      { requiredKeys: ['type'] },
+    ),
     fc.record(
       {
         type: fc.constant('closeAccount' as const),
@@ -98,6 +116,7 @@ interface Reference {
   snapshot: ReturnType<GameEngine['snapshot']>;
   events: EngineEvent[];
   journal: Transaction[];
+  notifications: GameNotification[];
 }
 
 describe('GameEngine properties', () => {
@@ -133,6 +152,7 @@ describe('GameEngine properties', () => {
       snapshot: engine.snapshot(),
       events: engine.drainEvents(),
       journal: engine.drainTransactions(),
+      notifications: engine.drainNotifications(),
     };
   }
 
@@ -170,6 +190,12 @@ describe('GameEngine properties', () => {
       event.type === 'interest-credited' ? [event.accountId] : [],
     );
     expect(credited.filter((id) => id === 'acc-3')).toHaveLength(1);
+    const codes = new Set(referenceRun([]).notifications.map(({ code }) => code));
+    expect([...codes].sort()).toEqual([
+      'interest-credited',
+      'month-closed',
+      'overdraft-limit-exceeded',
+    ]);
   });
 
   it('ends in the same state with the same events for any split of the ticks', () => {
@@ -184,6 +210,7 @@ describe('GameEngine properties', () => {
         const engine = restoreStart();
         const events: EngineEvent[] = [];
         const journal: Transaction[] = [];
+        const notifications: GameNotification[] = [];
         const targets = [
           ...segments,
           ...commands.map((command) => ({ tick: command.tick, mode: 'runUntil', yieldEvery: 1 })),
@@ -200,6 +227,7 @@ describe('GameEngine properties', () => {
             while (!engine.runUntil(tick, () => ++calls % yieldEvery === 0)) {
               events.push(...engine.drainEvents());
               journal.push(...engine.drainTransactions());
+              notifications.push(...engine.drainNotifications());
             }
           } else {
             engine.runUntil(tick);
@@ -210,11 +238,13 @@ describe('GameEngine properties', () => {
           }
           events.push(...engine.drainEvents());
           journal.push(...engine.drainTransactions());
+          notifications.push(...engine.drainNotifications());
         }
         expect(next).toBe(commands.length);
         expect(engine.snapshot()).toEqual(reference.snapshot);
         expect(events).toEqual(reference.events);
         expect(journal).toEqual(reference.journal);
+        expect(notifications).toEqual(reference.notifications);
         expectBalancesOfJournal(reference.snapshot, reference.journal);
       }),
       { numRuns: 15 },
@@ -243,11 +273,13 @@ describe('GameEngine properties', () => {
           }
           live.drainEvents();
           const before = live.drainTransactions();
+          const notifiedBefore = live.drainNotifications();
           const snapshot = live.snapshot();
           const storedMonthStarts = live.monthStartsAfter(-1);
           replayCommands(live, commands.slice(next), END_TICK);
           const after = live.drainEvents();
           const journalAfter = live.drainTransactions();
+          const notifiedAfter = live.drainNotifications();
 
           const entries = {
             none: [],
@@ -261,10 +293,12 @@ describe('GameEngine properties', () => {
           expect(restored.snapshot()).toEqual(live.snapshot());
           expect(restored.drainEvents()).toEqual(after);
           expect(restored.drainTransactions()).toEqual(journalAfter);
+          expect(restored.drainNotifications()).toEqual(notifiedAfter);
           expect(restored.monthStartsAfter(-1)).toEqual(live.monthStartsAfter(-1));
           const reference = referenceRun(commands);
           expect(reference.snapshot).toEqual(live.snapshot());
           expect([...before, ...journalAfter]).toEqual(reference.journal);
+          expect([...notifiedBefore, ...notifiedAfter]).toEqual(reference.notifications);
           expectBalancesOfJournal(live.snapshot(), reference.journal);
         },
       ),

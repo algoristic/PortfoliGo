@@ -5,6 +5,7 @@ import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
+import { GameNotification } from '@app/notifications/domain/models/notification.model';
 
 import { candleYear, createCandleValues, patchCandleValues } from './daily-candles.utils';
 import {
@@ -30,11 +31,13 @@ interface PlayerRecords {
   candles: Map<string, DailyCandleBucket>;
   /** Journal transactions by running number. */
   transactions: Map<number, Transaction>;
+  /** Notifications by running number. */
+  notifications: Map<number, GameNotification>;
 }
 
 /**
  * Storage in memory (lost on reload) with the semantics of `IndexedDbEngineStorage`, for tests that
- * don't need a database. Of the journal it keeps the transactions.
+ * don't need a database. Of the journal it keeps the transactions and the notifications.
  */
 export class InMemoryEngineStorage implements EngineStorage {
   readonly commands: StoredCommand[] = [];
@@ -69,6 +72,15 @@ export class InMemoryEngineStorage implements EngineStorage {
     records.snapshots = snapshots.slice(-SNAPSHOTS_KEPT);
     this.#putMonthStarts(records, options.monthStarts ?? []);
     this.#putTransactions(records, options.transactions ?? []);
+    for (const notification of options.notifications ?? []) {
+      records.notifications.set(notification.seq, structuredClone(notification));
+    }
+    const keepFrom = options.keepNotificationsFrom;
+    for (const seq of records.notifications.keys()) {
+      if (keepFrom !== undefined && seq < keepFrom) {
+        records.notifications.delete(seq);
+      }
+    }
     if (options.clock !== undefined) {
       this.clocks.set(playerId, { ...options.clock });
     }
@@ -92,6 +104,22 @@ export class InMemoryEngineStorage implements EngineStorage {
       )
       .sort((a, b) => a.seq - b.seq)
       .map((transaction) => structuredClone(transaction));
+  }
+
+  async saveNotifications(
+    playerId: string,
+    notifications: readonly GameNotification[],
+  ): Promise<void> {
+    const stored = this.#records(playerId).notifications;
+    for (const notification of notifications) {
+      stored.set(notification.seq, structuredClone(notification));
+    }
+  }
+
+  async loadNotifications(playerId: string): Promise<GameNotification[]> {
+    return Array.from(this.#players.get(playerId)?.notifications.values() ?? [])
+      .sort((a, b) => a.seq - b.seq)
+      .map((notification) => structuredClone(notification));
   }
 
   async saveMonthStarts(playerId: string, entries: readonly FactorStateEntry[]): Promise<void> {
@@ -153,10 +181,12 @@ export class InMemoryEngineStorage implements EngineStorage {
   }
 
   async discardAfter(playerId: string, tick: Tick): Promise<void> {
-    const transactions = this.#players.get(playerId)?.transactions;
-    for (const [seq, transaction] of transactions ?? []) {
-      if (transaction.tick > tick) {
-        transactions?.delete(seq);
+    const records = this.#players.get(playerId);
+    for (const journal of [records?.transactions, records?.notifications]) {
+      for (const [seq, entry] of journal ?? []) {
+        if (entry.tick > tick) {
+          journal?.delete(seq);
+        }
       }
     }
   }
@@ -176,6 +206,7 @@ export class InMemoryEngineStorage implements EngineStorage {
         monthStarts: new Map(),
         candles: new Map(),
         transactions: new Map(),
+        notifications: new Map(),
       };
       this.#players.set(playerId, records);
     }

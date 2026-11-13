@@ -11,6 +11,11 @@ import { miniGame, MiniGame } from '@app/engine/domain/testing/mini-game';
 import { SIM_VERSION } from '@app/engine/domain/version';
 import { marketChecksum } from '@app/market/domain/market-checksum';
 import { seriesIds } from '@app/market/domain/series';
+import {
+  AUTO_PAUSE_CODES,
+  AutoPauseCode,
+  GameNotification,
+} from '@app/notifications/domain/models/notification.model';
 import { openPortfoligoDb } from '@app/persistence/data-access/schema/open-database';
 import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
 
@@ -88,12 +93,13 @@ describe('EngineHost persistence', () => {
   function uninterruptedRun(
     commands: readonly GameCommand[],
     to: number,
-  ): { snapshot: GameSnapshot; journal: Transaction[] } {
+  ): { snapshot: GameSnapshot; journal: Transaction[]; notifications: GameNotification[] } {
     const engine = GameEngine.restore(mini.world, mini.start, { monthStarts: mini.monthStarts });
     replayCommands(engine, commands, to);
     return {
       snapshot: engine.snapshot(),
       journal: [...mini.journal, ...engine.drainTransactions()],
+      notifications: engine.drainNotifications(),
     };
   }
 
@@ -675,13 +681,22 @@ describe('EngineHost persistence', () => {
     type Step =
       | { kind: 'advance'; ms: number }
       | { kind: 'mode'; mode: (typeof BACKGROUND_MODES)[number] }
-      | { kind: 'hide' | 'show' | 'pause' | 'resume' };
+      | { kind: 'auto-pause'; code: AutoPauseCode; enabled: boolean }
+      | { kind: 'hide' | 'show' | 'pause' | 'resume' | 'jump' };
 
+    // Jumps to the next month start create notifications (month-closed, AP 3.6), and an auto-pause
+    // of that code ends them there.
     const arbStep: fc.Arbitrary<Step> = fc.oneof(
       fc.record({ kind: fc.constant('advance' as const), ms: fc.integer({ min: 0, max: 12_000 }) }),
       fc.record({ kind: fc.constant('mode' as const), mode: fc.constantFrom(...BACKGROUND_MODES) }),
+      fc.record({
+        kind: fc.constant('auto-pause' as const),
+        code: fc.constantFrom<AutoPauseCode>('month-closed', ...AUTO_PAUSE_CODES.slice(0, 2)),
+        enabled: fc.boolean(),
+      }),
       fc.record({ kind: fc.constantFrom('hide' as const, 'show' as const) }),
       fc.record({ kind: fc.constantFrom('pause' as const, 'resume' as const) }),
+      { weight: 2, arbitrary: fc.record({ kind: fc.constant('jump' as const) }) },
     );
 
     it('restores the uninterrupted run with exactly the confirmed commands after a crash anywhere', async () => {
@@ -711,6 +726,31 @@ describe('EngineHost persistence', () => {
                     type: 'setBackgroundMode',
                     mode: step.mode,
                   });
+                }
+              } else if (step.kind === 'auto-pause') {
+                const reply = await crashing.send('setAutoPause', {
+                  code: step.code,
+                  enabled: step.enabled,
+                });
+                if (reply.ok) {
+                  const { tick: at } = reply.data as { tick: number };
+                  confirmed.push({
+                    id: crashing.lastId,
+                    tick: at,
+                    type: 'setAutoPause',
+                    code: step.code,
+                    enabled: step.enabled,
+                  });
+                }
+              } else if (step.kind === 'jump') {
+                const ended = (): number =>
+                  crashing.progress.filter(
+                    ({ kind, state }) => kind === 'jump' && state !== 'running',
+                  ).length;
+                const before = ended();
+                const reply = await crashing.send('jumpTo', { target: { kind: 'next-month' } });
+                if (reply.ok) {
+                  await runUntil(crashing, () => ended() > before);
                 }
               } else if (step.kind === 'hide' || step.kind === 'show') {
                 await crashing.send('setVisibility', { visible: step.kind === 'show' });
@@ -742,6 +782,9 @@ describe('EngineHost persistence', () => {
             const reference = uninterruptedRun(confirmed, restored.tick);
             expect(stateKey(restored)).toBe(stateKey(reference.snapshot));
             expect(await storedJournal()).toEqual(reference.journal);
+            expect(await new IndexedDbEngineStorage().loadNotifications(PLAYER.playerId)).toEqual(
+              reference.notifications,
+            );
           },
         ),
         { numRuns: 12 },

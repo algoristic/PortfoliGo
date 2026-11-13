@@ -17,7 +17,33 @@ import { replayCommands } from '@app/engine/domain/replay';
 import { seriesQuote } from '@app/engine/domain/series-quote';
 import { Throttle } from '@app/engine/domain/throttle-logic';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
-import { seriesCount } from '@app/market/domain/series';
+import { indexSeries, seriesCount } from '@app/market/domain/series';
+import {
+  closeAbsence,
+  openAbsence,
+  reportIndices,
+  tallyBookings,
+  tallyNotifications,
+} from '@app/notifications/domain/absence-report-logic';
+import {
+  autoPauseApplies,
+  autoPauseSettings,
+  RunMode,
+} from '@app/notifications/domain/auto-pause-logic';
+import {
+  AbsenceReport,
+  AbsenceTally,
+  IndexLevel,
+} from '@app/notifications/domain/models/absence-report.model';
+import {
+  AutoPauseCode,
+  GameNotification,
+} from '@app/notifications/domain/models/notification.model';
+import {
+  mergeNotifications,
+  notificationPage,
+} from '@app/notifications/domain/notification-page-logic';
+import { oldestKeptSeq, unreadCount } from '@app/notifications/domain/read-state-logic';
 import { PlayerLock } from '@app/persistence/data-access/locks/player-locks';
 import { deriveSeedKey } from '@app/simulation/util/seed';
 import { generateWorld } from '@app/world/domain/world-generator';
@@ -38,6 +64,7 @@ import {
 } from './engine-host.model';
 
 import {
+  AutoPauseCause,
   ClockPayload,
   ENGINE_COMMAND_TYPES,
   ENGINE_PROTOCOL,
@@ -51,6 +78,8 @@ import {
   EngineReplies,
   ExchangeInfo,
   LoadPlayerPayload,
+  NotificationsProjection,
+  NotificationsQuery,
   ProgressKind,
   ProgressPayload,
   ReplyPayload,
@@ -120,6 +149,24 @@ interface LoadedGame {
   /** Accounts changed since the last projection (TS §8.4), and whether the next one is full. */
   changedAccounts: Set<AccountId>;
   projectionFull: boolean;
+  /** Notifications not yet confirmed as stored, like `unsavedTransactions` (TS §9.2). */
+  unsavedNotifications: GameNotification[];
+  notificationsWrittenMs: number;
+  notificationWriteRunning: boolean;
+  /** New notifications not yet sent to the UI (TS §8.3). */
+  outgoingNotifications: GameNotification[];
+  /** Counter, unread number and auto-pause settings of the last projection that carried them. */
+  notificationsKey: string | null;
+  /** Loading and replaying: notifications are stored, but neither sent nor reported. */
+  replaying: boolean;
+  /** Indices of the absence report (positions in the world's index list). */
+  reportIndices: readonly number[];
+  /** Absence running since a catch-up or since the app was hidden (US-BN-03). */
+  absence?: AbsenceTally;
+  /** Last absence report since loading, for the UI to fetch if it missed the event. */
+  report: AbsenceReport | null;
+  /** The notification whose auto-pause holds the game (TS §3.6), until `resume`. */
+  autoPause?: AutoPauseCause;
 }
 
 /** What a snapshot writes, taken in one go (`#snapshotData`). */
@@ -157,6 +204,7 @@ export class EngineHost {
   readonly #clockThrottle: Throttle;
   readonly #quotesThrottle: Throttle;
   readonly #projectionThrottle: Throttle;
+  readonly #notificationThrottle: Throttle;
   readonly #subscriptions = new Set<number>();
   readonly #handlers: Handlers = {
     loadPlayer: (payload) => this.#load(payload),
@@ -238,6 +286,22 @@ export class EngineHost {
         }))
       ).tick,
     }),
+    setAutoPause: async ({ code, enabled }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({ id, tick, type: 'setAutoPause', code, enabled }))
+      ).tick,
+    }),
+    markNotificationsRead: async ({ upTo, seqs }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({
+          id,
+          tick,
+          type: 'markNotificationsRead',
+          ...(upTo === undefined ? {} : { upTo }),
+          ...(seqs === undefined ? {} : { seqs }),
+        }))
+      ).tick,
+    }),
   };
 
   #queue: Promise<void> = Promise.resolve();
@@ -272,6 +336,7 @@ export class EngineHost {
     this.#clockThrottle = new Throttle(this.#config.clockPerSecond);
     this.#quotesThrottle = new Throttle(this.#config.quotesPerSecond);
     this.#projectionThrottle = new Throttle(this.#config.projectionPerSecond);
+    this.#notificationThrottle = new Throttle(this.#config.notificationPerSecond);
   }
 
   /** Handles a message of the UI; resolves when it is answered. Never rejects. */
@@ -420,10 +485,19 @@ export class EngineHost {
       changedSinceSnapshot: false,
       changedAccounts: new Set(),
       projectionFull: true,
+      unsavedNotifications: [],
+      notificationsWrittenMs: now,
+      notificationWriteRunning: false,
+      outgoingNotifications: [],
+      notificationsKey: null,
+      replaying: true,
+      reportIndices: reportIndices(world.world.indices),
+      report: null,
     };
     this.#game = game;
     this.#drainEngineEvents(game, true);
     this.#replay(game, stored, payload.minTick);
+    game.replaying = false;
     game.pacer.update(
       { backgroundMode: engine.player.backgroundMode },
       engine.tick,
@@ -447,8 +521,12 @@ export class EngineHost {
     this.#quotesStale = true;
     this.#projectionDue = true;
     if (target > engine.tick) {
+      this.#openAbsence(game);
       this.#startBatch(game, 'catch-up', target);
     } else {
+      if (!this.#visible) {
+        this.#openAbsence(game);
+      }
       this.#startBackfill(game);
       this.#restartLoop(this.#config.loopIntervalMs);
     }
@@ -507,6 +585,9 @@ export class EngineHost {
     this.#clockEventsHeld++;
     try {
       game.pacer.update(change, game.engine.tick, this.#ports.now());
+      if (change.paused === false) {
+        game.autoPause = undefined;
+      }
       await this.#saveClock(game);
     } finally {
       this.#clockEventsHeld--;
@@ -520,7 +601,10 @@ export class EngineHost {
     const game = this.#game;
     if (game !== undefined) {
       game.pacer.update({ visible }, game.engine.tick, this.#ports.now());
-      if (!visible) {
+      if (visible) {
+        this.#closeAbsence(game);
+      } else {
+        this.#guarded(() => this.#openAbsence(game));
         await this.#snapshot(game);
       }
     }
@@ -616,7 +700,8 @@ export class EngineHost {
     this.#guarded(() => {
       if (this.#held === 0) {
         const start = this.#ports.now();
-        const shouldYield = (): boolean => this.#ports.now() - start >= this.#config.passBudgetMs;
+        const shouldYield = (): boolean =>
+          this.#ports.now() - start >= this.#config.passBudgetMs || this.#autoPauseDue(game);
         if (game.batch !== undefined) {
           this.#batchPass(game, game.batch, shouldYield);
         } else {
@@ -629,7 +714,7 @@ export class EngineHost {
           } finally {
             game.candles.keepSupport = false;
           }
-          game.overloaded = result.overloaded;
+          game.overloaded = result.overloaded && game.pacer.speed !== null;
           this.#periodicWrites(game);
           if (result.reached && !shouldYield()) {
             this.#backfillPass(game, start);
@@ -644,6 +729,12 @@ export class EngineHost {
         this.#config.transactionWriteIntervalMs
       ) {
         this.#writeTransactions(game);
+      }
+      if (
+        this.#ports.now() - game.notificationsWrittenMs >=
+        this.#config.transactionWriteIntervalMs
+      ) {
+        this.#writeNotifications(game);
       }
       this.#flush();
       this.#schedule(game.batch !== undefined ? 0 : this.#config.loopIntervalMs);
@@ -681,6 +772,10 @@ export class EngineHost {
     } finally {
       game.candles.keepSupport = false;
     }
+    if (game.batch !== batch) {
+      // An auto-pause ended the jump.
+      return;
+    }
     if (reached) {
       this.#endBatch(game, 'done');
       return;
@@ -715,16 +810,33 @@ export class EngineHost {
       void this.#snapshot(game);
       this.#startBackfill(game);
     }
+    if (batch.kind === 'catch-up' && state === 'done') {
+      this.#closeAbsence(game);
+    }
   }
 
   /**
-   * Engine events and transactions of the last steps. The transactions wait for the next write
-   * (TS §9.2). No event goes to the UI yet; notifications and the absence report follow in M3.
-   * `session-closed` buffers the daily candles (TS §6.8): with high and low when `highLow` (live up
-   * to `liveHighLowMaxSpeed`), else open and close only, and the background job adds the rest.
+   * Engine events, transactions and notifications of the last steps. Transactions and notifications
+   * wait for the next write (TS §9.2); notifications also go to the UI (not while catching up) and
+   * into a running absence (not while replaying). An auto-pause notification pauses the game when
+   * it applies (TS §3.6, §12). `session-closed` buffers the daily candles (TS §6.8): with high and
+   * low when `highLow` (live up to `liveHighLowMaxSpeed`), else open and close only, and the
+   * background job adds the rest.
    */
   #drainEngineEvents(game: LoadedGame, highLow: boolean): void {
-    game.unsavedTransactions.push(...game.engine.drainTransactions());
+    const trigger = game.engine.autoPauseNotification;
+    const transactions = game.engine.drainTransactions();
+    const notifications = game.engine.drainNotifications();
+    game.unsavedTransactions.push(...transactions);
+    game.unsavedNotifications.push(...notifications);
+    if (!game.replaying) {
+      if (game.absence !== undefined) {
+        game.absence = tallyNotifications(tallyBookings(game.absence, transactions), notifications);
+      }
+      if (this.#runMode(game) !== 'catch-up') {
+        game.outgoingNotifications.push(...notifications);
+      }
+    }
     for (const id of game.engine.drainChangedAccounts()) {
       game.changedAccounts.add(id);
     }
@@ -737,6 +849,92 @@ export class EngineHost {
         }
       }
     }
+    if (
+      trigger !== null &&
+      !game.replaying &&
+      autoPauseApplies(this.#runMode(game), this.#visible)
+    ) {
+      this.#autoPause(game, trigger);
+    }
+  }
+
+  #runMode(game: LoadedGame): RunMode {
+    if (game.replaying || game.batch?.kind === 'catch-up') {
+      return 'catch-up';
+    }
+    return game.batch?.kind === 'jump' ? 'jump' : 'live';
+  }
+
+  /** The engine holds a notification whose auto-pause applies now: stop at its tick. */
+  #autoPauseDue(game: LoadedGame): boolean {
+    return (
+      game.engine.autoPauseNotification !== null &&
+      !game.replaying &&
+      autoPauseApplies(this.#runMode(game), this.#visible)
+    );
+  }
+
+  /**
+   * Auto-pause (TS §3.6, §12): pauses at the current tick, ends a jump, and stores the clock like a
+   * pause of the player; the `clock` event waits for the write and names the notification.
+   */
+  #autoPause(game: LoadedGame, trigger: GameNotification): void {
+    if (!game.pacer.settings.paused) {
+      game.pacer.update({ paused: true }, game.engine.tick, this.#ports.now());
+      game.overloaded = false;
+    }
+    // The engine marks only notifications of codes with an auto-pause setting.
+    game.autoPause = { seq: trigger.seq, code: trigger.code as AutoPauseCode };
+    if (game.batch?.kind === 'jump') {
+      this.#endBatch(game, 'cancelled');
+    }
+    this.#clockEventsHeld++;
+    void this.#saveClock(game).finally(() => this.#clockEventsHeld--);
+  }
+
+  /** Starts an absence (US-BN-03) with the net worth and the index levels now, unless one runs. */
+  #openAbsence(game: LoadedGame): void {
+    if (game.absence === undefined) {
+      game.absence = openAbsence(
+        game.engine.tick,
+        netWorth(game.engine.player),
+        this.#indexLevels(game),
+      );
+    }
+  }
+
+  /**
+   * Ends the absence once the app is visible and no catch-up runs; its report goes to the UI and
+   * stays for the query, unless nothing was booked or notified.
+   */
+  #closeAbsence(game: LoadedGame): void {
+    const absence = game.absence;
+    if (absence === undefined || game.batch?.kind === 'catch-up' || !this.#visible) {
+      return;
+    }
+    game.absence = undefined;
+    const tick = game.engine.tick;
+    const report = closeAbsence(
+      absence,
+      tick,
+      netWorth(game.engine.player),
+      this.#indexLevels(game),
+    );
+    if (report !== null) {
+      game.report = report;
+      this.#post('report', report);
+    }
+  }
+
+  #indexLevels(game: LoadedGame): IndexLevel[] {
+    const { engine } = game;
+    const { context, world } = engine.world;
+    const tick = engine.tick;
+    return game.reportIndices.map((x) => {
+      const series = indexSeries(context, x);
+      const { id, name } = world.indices[x];
+      return { series, id, name, level: engine.prices.priceAt(series, tick, tick) };
+    });
   }
 
   /** Live, not jumping and not faster than `liveHighLowMaxSpeed` (TS §6.8, §14.3). */
@@ -802,7 +1000,13 @@ export class EngineHost {
     game.clockSavedTick = clock.tick;
     return {
       state,
-      options: { monthStarts, clock, transactions: game.unsavedTransactions.slice() },
+      options: {
+        monthStarts,
+        clock,
+        transactions: game.unsavedTransactions.slice(),
+        notifications: game.unsavedNotifications.slice(),
+        keepNotificationsFrom: oldestKeptSeq(state.player.notifications.nextSeq - 1),
+      },
       monthDay: monthStarts.at(-1)?.day ?? game.savedMonthDay,
     };
   }
@@ -810,6 +1014,7 @@ export class EngineHost {
   #snapshotWritten(game: LoadedGame, written: SnapshotData): void {
     game.savedMonthDay = Math.max(game.savedMonthDay, written.monthDay);
     this.#transactionsSaved(game, written.options.transactions);
+    this.#notificationsSaved(game, written.options.notifications);
   }
 
   /**
@@ -836,6 +1041,33 @@ export class EngineHost {
     const last = saved.at(-1);
     if (last !== undefined) {
       game.unsavedTransactions = game.unsavedTransactions.filter(({ seq }) => seq > last.seq);
+    }
+  }
+
+  /**
+   * Writes the notifications not yet stored (TS §9.2) like the transactions. The records never
+   * change afterwards; old ones are deleted with the snapshots (`keepNotificationsFrom`).
+   */
+  #writeNotifications(game: LoadedGame): void {
+    if (game.unsavedNotifications.length === 0 || game.notificationWriteRunning) {
+      return;
+    }
+    const notifications = game.unsavedNotifications.slice();
+    game.notificationWriteRunning = true;
+    game.notificationsWrittenMs = this.#ports.now();
+    void this.#write(
+      () => this.#ports.storage.saveNotifications(game.playerId, notifications),
+      () => this.#notificationsSaved(game, notifications),
+      () => {
+        game.notificationWriteRunning = false;
+      },
+    );
+  }
+
+  #notificationsSaved(game: LoadedGame, saved: readonly GameNotification[]): void {
+    const last = saved.at(-1);
+    if (last !== undefined) {
+      game.unsavedNotifications = game.unsavedNotifications.filter(({ seq }) => seq > last.seq);
     }
   }
 
@@ -999,27 +1231,54 @@ export class EngineHost {
     }
     const forced = this.#projectionDue;
     this.#projectionDue = false;
+    const notifications = this.#notificationsProjection(game);
+    const notificationsKey = JSON.stringify(notifications);
+    const notificationsChanged = notificationsKey !== game.notificationsKey;
     if (
-      (game.projectionFull || game.changedAccounts.size > 0) &&
+      (game.projectionFull || game.changedAccounts.size > 0 || notificationsChanged) &&
       (forced || this.#projectionThrottle.isDue(now))
     ) {
-      this.#postProjection(game);
+      this.#postProjection(game, notificationsChanged ? notifications : undefined);
+      game.notificationsKey = notificationsKey;
       this.#projectionThrottle.sent(now);
+    }
+    if (
+      game.outgoingNotifications.length > 0 &&
+      (forced || this.#notificationThrottle.isDue(now))
+    ) {
+      this.#post('notification', { tick, notifications: game.outgoingNotifications });
+      game.outgoingNotifications = [];
+      this.#notificationThrottle.sent(now);
     }
   }
 
-  /** The changed accounts and the net worth (TS §8.3, §8.4); after loading all accounts. */
-  #postProjection(game: LoadedGame): void {
+  /**
+   * The changed accounts and the net worth (TS §8.3, §8.4); after loading all accounts. The
+   * notification part goes with it when it changed or the projection is full.
+   */
+  #postProjection(game: LoadedGame, notifications: NotificationsProjection | undefined): void {
     const { player } = game.engine;
     const full = game.projectionFull;
+    const part = notifications ?? (full ? this.#notificationsProjection(game) : undefined);
     this.#post('projection', {
       tick: game.engine.tick,
       full,
       accounts: accountViews(player, full ? undefined : [...game.changedAccounts]),
       netWorth: netWorth(player),
+      ...(part === undefined ? {} : { notifications: part }),
     });
     game.projectionFull = false;
     game.changedAccounts.clear();
+  }
+
+  #notificationsProjection(game: LoadedGame): NotificationsProjection {
+    const state = game.engine.player.notifications;
+    const lastSeq = state.nextSeq - 1;
+    return {
+      lastSeq,
+      unread: unreadCount(state, lastSeq),
+      autoPause: autoPauseSettings(state.autoPause),
+    };
   }
 
   /** Queries (TS §8.2) answer from the engine's state and the journal; they write nothing. */
@@ -1045,7 +1304,39 @@ export class EngineHost {
         };
       case 'statement':
         return this.#statement(game, query);
+      case 'notifications':
+        return this.#notifications(game, query);
+      case 'absenceReport':
+        return { kind: 'absenceReport', report: game.report };
     }
+  }
+
+  /**
+   * A page of the notification centre (TS §8.2, US-BN-01) from the stored notifications and those
+   * not yet stored, up to the current tick and with the read state of the player state; like the
+   * statement, limit, read state and unsaved notifications are taken before reading.
+   */
+  async #notifications(game: LoadedGame, query: NotificationsQuery): Promise<EngineQueryResult> {
+    const { category, offset, limit } = query;
+    const tick = game.engine.tick;
+    const state = game.engine.player.notifications;
+    const read = { readUpTo: state.readUpTo, readSeqs: state.readSeqs.slice() };
+    const lastSeq = state.nextSeq - 1;
+    const unsaved = game.unsavedNotifications.slice();
+    let stored: GameNotification[];
+    try {
+      stored = await this.#ports.storage.loadNotifications(game.playerId);
+    } catch (error) {
+      throw new CommandFailure('storage-failed', errorMessage(error));
+    }
+    const page = notificationPage(mergeNotifications(stored, unsaved), read, {
+      tick,
+      lastSeq,
+      category,
+      offset,
+      limit,
+    });
+    return { kind: 'notifications', ...page, tick };
   }
 
   /**
@@ -1082,7 +1373,7 @@ export class EngineHost {
   #clockPayload(game: LoadedGame): ClockPayload {
     const { settings } = game.pacer;
     const jumping = game.batch !== undefined;
-    return {
+    const payload: ClockPayload = {
       tick: game.engine.tick,
       speed: settings.speed,
       paused: settings.paused,
@@ -1092,6 +1383,9 @@ export class EngineHost {
       overloaded: !jumping && game.overloaded,
       jumping,
     };
+    return game.autoPause === undefined
+      ? payload
+      : { ...payload, autoPause: { ...game.autoPause } };
   }
 
   /**
@@ -1195,7 +1489,8 @@ function sameClock(a: ClockPayload, b: ClockPayload | null): boolean {
     a.backgroundMode === b.backgroundMode &&
     a.effectiveSpeed === b.effectiveSpeed &&
     a.overloaded === b.overloaded &&
-    a.jumping === b.jumping
+    a.jumping === b.jumping &&
+    a.autoPause?.seq === b.autoPause?.seq
   );
 }
 

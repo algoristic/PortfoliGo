@@ -6,6 +6,7 @@ import { PricePortFactory } from '@app/engine/domain/game-engine';
 import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
+import { GameNotification } from '@app/notifications/domain/models/notification.model';
 import { PlayerLocks } from '@app/persistence/data-access/locks/player-locks';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { SeedKey } from '@app/simulation/util/seed';
@@ -56,6 +57,14 @@ export interface SaveSnapshotOptions {
    * snapshot never lacks a transaction up to its tick (TS §9.2).
    */
   transactions?: readonly Transaction[];
+  /** Notifications not yet stored, written in the same transaction like `transactions` (TS §9.2). */
+  notifications?: readonly GameNotification[];
+  /**
+   * Oldest notification to keep (TS §9.1): older ones are deleted in the same transaction. The host
+   * derives it from the snapshot's own counter, so a restore from this snapshot finds every
+   * notification it keeps (`oldestKeptSeq`).
+   */
+  keepNotificationsFrom?: number;
 }
 
 /**
@@ -108,6 +117,10 @@ export interface EngineStorage {
   saveTransactions(playerId: string, transactions: readonly Transaction[]): Promise<void>;
   /** Stored transactions of the player, or of one of its accounts, by running number. */
   loadTransactions(playerId: string, accountId?: AccountId): Promise<Transaction[]>;
+  /** Notifications (TS §9.1, §12); a stored running number is overwritten with the same record. */
+  saveNotifications(playerId: string, notifications: readonly GameNotification[]): Promise<void>;
+  /** Stored notifications of the player by running number. */
+  loadNotifications(playerId: string): Promise<GameNotification[]>;
   /** Market states at month starts (E-08); existing days are overwritten. */
   saveMonthStarts(playerId: string, entries: readonly FactorStateEntry[]): Promise<void>;
   /** Merges daily candles into their year buckets in one transaction (see `DailyCandlePatch`). */
@@ -172,10 +185,12 @@ export interface EngineHostConfig {
    */
   candleWriteIntervalMs: number;
   /**
-   * Real time after which booked transactions are written at the latest (TS §9.2); snapshots write
-   * the ones not yet stored as well.
+   * Real time after which booked transactions and new notifications are written at the latest
+   * (TS §9.2); snapshots write the ones not yet stored as well.
    */
   transactionWriteIntervalMs: number;
+  /** Rate limit of the `notification` events (TS §8.3); commands send theirs at once. */
+  notificationPerSecond: number;
   /**
    * Upper limit of the candle job's computing time as a share of the wall clock (TS §6.8). 10 %: at
    * 1 w/s, the engine without minute curves plus the job stay below the 15 % of a core of TS §14.3,
@@ -201,6 +216,7 @@ export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
   snapshotIntervalMs: 30_000,
   candleWriteIntervalMs: 5_000,
   transactionWriteIntervalMs: 1_000,
+  notificationPerSecond: 4,
   backfillShare: 0.1,
   liveHighLowMaxSpeed: '1d',
 };

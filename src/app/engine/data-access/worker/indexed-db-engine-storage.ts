@@ -8,6 +8,7 @@ import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
+import { GameNotification } from '@app/notifications/domain/models/notification.model';
 import {
   JOURNAL_STORES,
   TRANSACTIONS_BY_ACCOUNT_INDEX,
@@ -34,6 +35,7 @@ import {
   CommandRecord,
   JournalRecord,
   MarketStateRecord,
+  NotificationRecord,
   RuntimeRecord,
   SnapshotRecord,
   TransactionRecord,
@@ -71,6 +73,17 @@ async function putTransactions(
       .filter(isPlayerAccount)
       .map((id): [string, AccountId] => [playerId, id]);
     await store.put({ ...booked, playerId, accountIds } satisfies TransactionRecord);
+  }
+}
+
+async function putNotifications(
+  transaction: WriteTransaction,
+  playerId: string,
+  notifications: readonly GameNotification[],
+): Promise<void> {
+  const store = transaction.objectStore('notifications');
+  for (const notification of notifications) {
+    await store.put({ ...notification, playerId } satisfies NotificationRecord);
   }
 }
 
@@ -123,11 +136,23 @@ export class IndexedDbEngineStorage implements EngineStorage {
     snapshot: GameSnapshot,
     options: SaveSnapshotOptions = {},
   ): Promise<void> {
-    const { monthStarts = [], clock, transactions = [] } = options;
+    const {
+      monthStarts = [],
+      clock,
+      transactions = [],
+      notifications = [],
+      keepNotificationsFrom,
+    } = options;
     return this.#write(
-      ['snapshots', 'commands', 'marketStates', 'runtime', 'transactions'],
+      ['snapshots', 'commands', 'marketStates', 'runtime', 'transactions', 'notifications'],
       async (transaction) => {
         await putTransactions(transaction, playerId, transactions);
+        await putNotifications(transaction, playerId, notifications);
+        if (keepNotificationsFrom !== undefined) {
+          await transaction
+            .objectStore('notifications')
+            .delete(IDBKeyRange.bound([playerId], [playerId, keepNotificationsFrom], false, true));
+        }
         const snapshots = transaction.objectStore('snapshots');
         await snapshots.put({
           playerId,
@@ -176,6 +201,23 @@ export class IndexedDbEngineStorage implements EngineStorage {
           )
     ) as TransactionRecord[];
     return records.map(fromTransactionRecord);
+  }
+
+  saveNotifications(playerId: string, notifications: readonly GameNotification[]): Promise<void> {
+    return this.#write(['notifications'], (transaction) =>
+      putNotifications(transaction, playerId, notifications),
+    );
+  }
+
+  async loadNotifications(playerId: string): Promise<GameNotification[]> {
+    const database = await this.#db();
+    const records = (await database.getAll(
+      'notifications',
+      playerKeyRange(playerId),
+    )) as NotificationRecord[];
+    return records.map(
+      ({ playerId: _playerId, ...notification }) => notification as GameNotification,
+    );
   }
 
   saveMonthStarts(playerId: string, entries: readonly FactorStateEntry[]): Promise<void> {

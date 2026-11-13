@@ -8,6 +8,7 @@ import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { miniGame, MiniGame } from '@app/engine/domain/testing/mini-game';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
+import { GameNotification } from '@app/notifications/domain/models/notification.model';
 import {
   DB_NAME,
   DB_VERSION,
@@ -59,6 +60,15 @@ function transfer(seq: number, tick: number, from: AccountId, to: AccountId): Tr
       { account: from, amount: -50, balanceAfter: 50 },
       { account: to, amount: 50, balanceAfter: 50 },
     ],
+  };
+}
+
+function interest(seq: number, tick: number): GameNotification {
+  return {
+    seq,
+    tick,
+    code: 'interest-credited',
+    params: { accountId: 'acc-2', amount: 300 + seq, tax: 0 },
   };
 }
 
@@ -134,6 +144,47 @@ function describeStorageContract(name: string, create: () => EngineStorage): voi
 
       expect(await storage.loadTransactions('p1')).toEqual(journal);
       expect(await storage.loadTransactions('p2')).toHaveLength(1);
+    });
+
+    it('stores notifications with a snapshot and on their own, by running number', async () => {
+      const first = interest(1, base);
+      const second = interest(2, base + 10);
+      const third = interest(3, base + 20);
+      await storage.saveSnapshot('p1', game.start, { notifications: [first] });
+      await storage.saveNotifications('p1', [third, second]);
+      await storage.saveNotifications('p1', [third]);
+      await storage.saveNotifications('p10', [interest(1, base)]);
+
+      expect(await storage.loadNotifications('p1')).toEqual([first, second, third]);
+      expect(await storage.loadNotifications('p10')).toEqual([interest(1, base)]);
+      expect(await storage.loadNotifications('p2')).toEqual([]);
+    });
+
+    it('deletes the notifications before the kept ones with a snapshot (TS §9.1)', async () => {
+      await storage.saveNotifications('p1', [
+        interest(1, base),
+        interest(2, base),
+        interest(3, base),
+      ]);
+      await storage.saveNotifications('p10', [interest(1, base)]);
+
+      await storage.saveSnapshot('p1', game.start, {
+        notifications: [interest(4, base)],
+        keepNotificationsFrom: 3,
+      });
+
+      expect((await storage.loadNotifications('p1')).map(({ seq }) => seq)).toEqual([3, 4]);
+      expect(await storage.loadNotifications('p10')).toHaveLength(1);
+    });
+
+    it('discards the notifications after a tick', async () => {
+      await storage.saveNotifications('p1', [interest(1, base), interest(2, base + 11)]);
+      await storage.saveNotifications('p2', [interest(1, base + 11)]);
+
+      await storage.discardAfter('p1', base + 10);
+
+      expect(await storage.loadNotifications('p1')).toEqual([interest(1, base)]);
+      expect(await storage.loadNotifications('p2')).toHaveLength(1);
     });
 
     it('loads clock, snapshot, month starts and commands as they were saved', async () => {
@@ -226,6 +277,7 @@ function describeStorageContract(name: string, create: () => EngineStorage): voi
           { seriesId: 'A', day: day(2031, 1, 1), open: 1, high: 1, low: 1, close: 1 },
         ]);
         await storage.saveTransactions(playerId, [salary(1, base, 'acc-1')]);
+        await storage.saveNotifications(playerId, [interest(1, base)]);
       }
       const before = await storage.loadPlayerState('p10');
 
@@ -234,6 +286,8 @@ function describeStorageContract(name: string, create: () => EngineStorage): voi
       expect(await storage.loadPlayerState('p1')).toEqual({ monthStarts: [], commands: [] });
       expect(await storage.loadTransactions('p1')).toEqual([]);
       expect(await storage.loadTransactions('p10')).toEqual([salary(1, base, 'acc-1')]);
+      expect(await storage.loadNotifications('p1')).toEqual([]);
+      expect(await storage.loadNotifications('p10')).toEqual([interest(1, base)]);
       expect(await storage.loadDailyCandles('p1', 'A', 2031, 2031)).toEqual([]);
       expect(await storage.loadPlayerState('p10')).toEqual(before);
       expect(await storage.loadDailyCandles('p10', 'A', 2031, 2031)).toHaveLength(1);

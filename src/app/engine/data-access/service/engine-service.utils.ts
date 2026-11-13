@@ -3,6 +3,13 @@ import { TRANSACTION_TYPES } from '@app/banking/domain/models/ledger.model';
 import { MAX_STATEMENT_LIMIT } from '@app/banking/domain/models/statement.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
 import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
+import {
+  AUTO_PAUSE_CODES,
+  NOTIFICATION_CATEGORIES,
+  NOTIFICATION_CODES,
+} from '@app/notifications/domain/models/notification.model';
+import { MAX_NOTIFICATION_LIMIT } from '@app/notifications/domain/notification-page-logic';
+import { MAX_STORED_NOTIFICATIONS } from '@app/notifications/domain/read-state-logic';
 
 import {
   ENGINE_COMMAND_TYPES,
@@ -118,6 +125,30 @@ function isStatementQuery(value: Fields): boolean {
   });
 }
 
+function isNotificationsQuery(value: Fields): boolean {
+  return hasFields(value, {
+    category: isOptional(isOneOf(NOTIFICATION_CATEGORIES)),
+    offset: isCount,
+    limit: (limit) => isCount(limit) && limit <= MAX_NOTIFICATION_LIMIT,
+  });
+}
+
+/** At least one of `upTo` and `seqs`; numbers of notifications are ≥ 1. */
+function isMarkReadPayload(value: unknown): boolean {
+  return (
+    hasFields(value, {
+      upTo: isOptional(isCount),
+      seqs: isOptional(
+        (seqs) =>
+          Array.isArray(seqs) &&
+          seqs.length <= MAX_STORED_NOTIFICATIONS &&
+          seqs.every((seq) => isCount(seq) && seq >= 1),
+      ),
+    }) &&
+    ((value as Fields)['upTo'] !== undefined || (value as Fields)['seqs'] !== undefined)
+  );
+}
+
 function isQuery(value: unknown): boolean {
   if (!isFields(value) || !isOneOf(ENGINE_QUERY_KINDS)(value['kind'])) {
     return false;
@@ -127,6 +158,8 @@ function isQuery(value: unknown): boolean {
       return isAccountId(value['accountId']);
     case 'statement':
       return isStatementQuery(value);
+    case 'notifications':
+      return isNotificationsQuery(value);
     default:
       return true;
   }
@@ -164,6 +197,9 @@ const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = 
       amount: isCents,
       purpose: isString,
     }),
+  setAutoPause: (payload) =>
+    hasFields(payload, { code: isOneOf(AUTO_PAUSE_CODES), enabled: isBoolean }),
+  markNotificationsRead: isMarkReadPayload,
 };
 
 function isQuote(value: unknown): boolean {
@@ -194,6 +230,86 @@ function isAccountView(value: unknown): boolean {
   });
 }
 
+function isMonthlyValues(value: unknown): boolean {
+  return hasFields(value, {
+    income: isCents,
+    livingCosts: isCents,
+    fees: isCents,
+    creditInterest: isCents,
+    debitInterest: isCents,
+    taxes: isCents,
+    dividends: isCents,
+  });
+}
+
+const isCoverageParams: Check = (params) =>
+  hasFields(params, { accountId: isAccountId, balance: isCents, limit: isNullOr(isCount) });
+
+/** Parameters of the codes the engine creates; the others are flat codes and numbers. */
+const NOTIFICATION_PARAMS: Readonly<Partial<Record<string, Check>>> = {
+  'account-uncovered': isCoverageParams,
+  'overdraft-limit-exceeded': isCoverageParams,
+  'interest-credited': (params) =>
+    hasFields(params, { accountId: isAccountId, amount: isCents, tax: isCents }),
+  'tax-refund': (params) => hasFields(params, { accountId: isAccountId, amount: isCents }),
+  'month-closed': (params) =>
+    hasFields(params, { year: isCount, month: isCount, values: isMonthlyValues }),
+  'year-closed': (params) =>
+    hasFields(params, { year: isCount, taxableIncome: isCents, taxWithheld: isCents }),
+};
+
+const isFlatParams: Check = (params) =>
+  isFields(params) &&
+  Object.values(params).every(
+    (value) => value === null || isString(value) || isFiniteNumber(value),
+  );
+
+function isNotification(value: unknown): boolean {
+  if (
+    !hasFields(value, { seq: isCount, tick: isCount, code: isOneOf(NOTIFICATION_CODES) }) ||
+    (value as Fields)['seq'] === 0
+  ) {
+    return false;
+  }
+  const fields = value as Fields;
+  const check = NOTIFICATION_PARAMS[fields['code'] as string] ?? isFlatParams;
+  return check(fields['params']);
+}
+
+const isNotificationList: Check = (list) => Array.isArray(list) && list.every(isNotification);
+
+function isAbsenceReport(value: unknown): boolean {
+  return hasFields(value, {
+    from: isCount,
+    to: isCount,
+    netWorthBefore: isCents,
+    netWorthAfter: isCents,
+    flows: isMonthlyValues,
+    bookings: isCount,
+    notifications: isCount,
+    warnings: isNotificationList,
+    warningCount: isCount,
+    indices: (indices) =>
+      Array.isArray(indices) &&
+      indices.every((index) =>
+        hasFields(index, {
+          series: isCount,
+          id: isString,
+          name: isString,
+          start: isFiniteNumber,
+          end: isFiniteNumber,
+        }),
+      ),
+  });
+}
+
+function isNotificationsProjection(value: unknown): boolean {
+  return (
+    hasFields(value, { lastSeq: isCount, unread: isCount, autoPause: isFields }) &&
+    AUTO_PAUSE_CODES.every((code) => isBoolean(((value as Fields)['autoPause'] as Fields)[code]))
+  );
+}
+
 function isReply(payload: unknown): boolean {
   if (!isFields(payload)) {
     return false;
@@ -219,6 +335,9 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
       effectiveSpeed: isNullOr(isSpeedId),
       overloaded: isBoolean,
       jumping: isBoolean,
+      autoPause: isOptional((cause) =>
+        hasFields(cause, { seq: isCount, code: isOneOf(AUTO_PAUSE_CODES) }),
+      ),
     }),
   quotes: (payload) =>
     hasFields(payload, {
@@ -231,7 +350,11 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
       full: isBoolean,
       accounts: (accounts) => Array.isArray(accounts) && accounts.every(isAccountView),
       netWorth: isCents,
+      notifications: isOptional(isNotificationsProjection),
     }),
+  notification: (payload) =>
+    hasFields(payload, { tick: isCount, notifications: isNotificationList }),
+  report: isAbsenceReport,
   progress: (payload) =>
     hasFields(payload, {
       kind: isOneOf(PROGRESS_KINDS),

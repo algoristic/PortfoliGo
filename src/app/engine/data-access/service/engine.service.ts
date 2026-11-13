@@ -7,6 +7,7 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { BackgroundMode } from '@app/engine/domain/models/game-state.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import { AutoPauseCode } from '@app/notifications/domain/models/notification.model';
 
 import { ENGINE_WORKER_FACTORY, MAX_WORKER_FAILURES } from './engine-service.config';
 import {
@@ -23,6 +24,7 @@ import {
   EngineReplies,
   EngineWorkerPort,
   LoadPlayerPayload,
+  NotificationsRequest,
   StatementRequest,
   TransferPayload,
 } from './engine-service.model';
@@ -82,6 +84,13 @@ export class EngineService implements OnDestroy {
    * after every `loadPlayer`, also after a worker restart.
    */
   projection$ = this.#payloads('projection');
+  /**
+   * New notifications (TS §8.3, §12) as the worker bundles them; none while catching up, those are
+   * in the absence report.
+   */
+  notification$ = this.#payloads('notification');
+  /** Absence report after a catch-up or a hidden period (US-BN-03). */
+  report$ = this.#payloads('report');
   /** Problems the engine survives, e.g. failed periodic writes (TS §9.5). */
   warning$ = this.#payloads('warning');
   fatal$ = this.#fatal.asObservable();
@@ -156,6 +165,35 @@ export class EngineService implements OnDestroy {
    */
   statement(request: StatementRequest): Observable<EngineQueryResultOf<'statement'>> {
     return this.#query({ kind: 'statement', ...request });
+  }
+
+  /**
+   * One page of the notification centre up to the current tick (US-BN-01), newest first, with the
+   * read state.
+   */
+  notifications(request: NotificationsRequest): Observable<EngineQueryResultOf<'notifications'>> {
+    return this.#query({ kind: 'notifications', ...request });
+  }
+
+  /** The last absence report since the player was loaded, if the UI missed the `report` event. */
+  absenceReport(): Observable<EngineQueryResultOf<'absenceReport'>> {
+    return this.#query({ kind: 'absenceReport' });
+  }
+
+  /** Switches the auto-pause of a notification code (TS §12, US-ZT-06). */
+  setAutoPause(code: AutoPauseCode, enabled: boolean): Observable<EngineReplies['setAutoPause']> {
+    return this.#request('setAutoPause', { code, enabled });
+  }
+
+  /**
+   * Marks notifications as read: all up to `upTo` (for "all read" the `lastSeq` of the projection)
+   * and the single ones in `seqs`.
+   */
+  markNotificationsRead(request: {
+    upTo?: number;
+    seqs?: number[];
+  }): Observable<EngineReplies['markNotificationsRead']> {
+    return this.#request('markNotificationsRead', { ...request });
   }
 
   setBackgroundMode(mode: BackgroundMode): Observable<EngineReplies['setBackgroundMode']> {

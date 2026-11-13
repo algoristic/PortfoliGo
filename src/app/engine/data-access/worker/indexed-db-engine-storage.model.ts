@@ -4,6 +4,7 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { CandleResolution } from '@app/market/domain/models/candle.model';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
+import { GameNotification } from '@app/notifications/domain/models/notification.model';
 
 import { StoredClock, StoredSnapshot } from './engine-host.model';
 
@@ -65,3 +66,9 @@ export interface TransactionRecord extends Transaction {
   playerId: string;
   accountIds: Array<[string, AccountId]>;
 }
+
+/**
+ * `notifications`, key `[playerId, seq]`: the notification as the engine created it; it never changes,
+ * because its read state lives in the player state (TS §9.1).
+ */
+export type NotificationRecord = GameNotification & { playerId: string };

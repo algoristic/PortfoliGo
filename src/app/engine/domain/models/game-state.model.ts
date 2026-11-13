@@ -9,6 +9,7 @@ import {
 import { Balances } from '@app/banking/domain/models/ledger.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { MarketState } from '@app/market/domain/models/market-state.model';
+import { NotificationState } from '@app/notifications/domain/models/notification.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { TaxYear } from '@app/taxes/domain/models/tax.model';
 
@@ -54,6 +55,8 @@ export interface PlayerState {
   monthlyValues: MonthlyValues;
   /** Household flows of the closed months since the game start, oldest first. */
   closedMonths: ClosedMonth[];
+  /** Counter, read state and auto-pause settings of the notifications (TS §9.1, §12). */
+  notifications: NotificationState;
 }
 
 /** Dynamic state of a game (TS §8.1). Everything in it is plain, structured-cloneable data. */

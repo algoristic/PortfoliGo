@@ -9,6 +9,14 @@ import { AccountView } from '@app/engine/domain/models/account-view.model';
 import { BackgroundMode, StartConditions } from '@app/engine/domain/models/game-state.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import { AbsenceReport } from '@app/notifications/domain/models/absence-report.model';
+import {
+  AutoPauseCode,
+  GameNotification,
+  NOTIFICATION_COMMAND_ERRORS,
+  NotificationCategory,
+  NotificationEntry,
+} from '@app/notifications/domain/models/notification.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { Bank } from '@app/world/domain/models/bank.model';
 import { RegionId } from '@app/world/domain/models/taxonomy.model';
@@ -64,6 +72,19 @@ export interface StatementQuery {
 export type StatementRequest = Omit<StatementQuery, 'kind'>;
 
 /**
+ * One page of the notification centre (US-BN-01, TS §8.2), newest first, optionally of one
+ * category. `limit` is at most `MAX_NOTIFICATION_LIMIT`.
+ */
+export interface NotificationsQuery {
+  kind: 'notifications';
+  category?: NotificationCategory;
+  offset: number;
+  limit: number;
+}
+
+export type NotificationsRequest = Omit<NotificationsQuery, 'kind'>;
+
+/**
  * Queries (TS §8.2); they write nothing and don't hold the clock. `closingPreview` shows what
  * closing an account now would book (TS §7.4); `monthlyValues` the household months (US-EK-03).
  */
@@ -72,7 +93,10 @@ export type EngineQuery =
   | { kind: 'banks' }
   | { kind: 'closingPreview'; accountId: AccountId }
   | { kind: 'monthlyValues' }
-  | StatementQuery;
+  | StatementQuery
+  | NotificationsQuery
+  /** The last absence report since loading the player (US-BN-03), `null` without one. */
+  | { kind: 'absenceReport' };
 export type EngineQueryKind = EngineQuery['kind'];
 export const ENGINE_QUERY_KINDS = [
   'exchanges',
@@ -80,6 +104,8 @@ export const ENGINE_QUERY_KINDS = [
   'closingPreview',
   'monthlyValues',
   'statement',
+  'notifications',
+  'absenceReport',
 ] as const satisfies readonly EngineQueryKind[];
 
 /** Own transfer (US-BK-04): whole cents ≥ 1, purpose up to `MAX_PURPOSE_LENGTH` characters. */
@@ -109,6 +135,12 @@ export interface EngineCommandPayloads {
   closeAccount: { accountId: AccountId; targetAccountId?: AccountId };
   setSalaryAccount: { accountId: AccountId };
   transfer: TransferPayload;
+  setAutoPause: { code: AutoPauseCode; enabled: boolean };
+  /**
+   * Marks notifications as read: all up to `upTo` (the newest the UI knows, `lastSeq` of the
+   * projection, for "all read") and the single ones in `seqs`; at least one of them.
+   */
+  markNotificationsRead: { upTo?: number; seqs?: number[] };
 }
 
 export const ENGINE_COMMAND_TYPES = [
@@ -128,6 +160,8 @@ export const ENGINE_COMMAND_TYPES = [
   'closeAccount',
   'setSalaryAccount',
   'transfer',
+  'setAutoPause',
+  'markNotificationsRead',
 ] as const satisfies readonly (keyof EngineCommandPayloads)[];
 export type EngineCommandType = (typeof ENGINE_COMMAND_TYPES)[number];
 
@@ -165,13 +199,25 @@ export interface StatementResult {
   tick: Tick;
 }
 
+/**
+ * A page of notifications up to `tick` (the query limit): `total` matches among the kept ones, the
+ * entries with their read state.
+ */
+export interface NotificationsResult {
+  total: number;
+  entries: NotificationEntry[];
+  tick: Tick;
+}
+
 export type EngineQueryResult =
   | { kind: 'exchanges'; exchanges: ExchangeInfo[] }
   /** Banks of the world with their conditions (bank comparison, account cards). */
   | { kind: 'banks'; banks: Bank[] }
   | { kind: 'closingPreview'; preview: ClosingPreview }
   | ({ kind: 'monthlyValues' } & MonthlyValuesResult)
-  | ({ kind: 'statement' } & StatementResult);
+  | ({ kind: 'statement' } & StatementResult)
+  | ({ kind: 'notifications' } & NotificationsResult)
+  | { kind: 'absenceReport'; report: AbsenceReport | null };
 
 /** The result of a query of kind `K`. */
 export type EngineQueryResultOf<K extends EngineQueryKind> = Extract<
@@ -208,6 +254,8 @@ export interface EngineReplies {
   closeAccount: GameCommandReply;
   setSalaryAccount: GameCommandReply;
   transfer: GameCommandReply;
+  setAutoPause: GameCommandReply;
+  markNotificationsRead: GameCommandReply;
 }
 
 /** Error codes of replies (TS §8.3); the UI turns them into texts. */
@@ -233,6 +281,8 @@ export const ENGINE_ERRORS = [
   'internal-error',
   /** The engine rejected a bank command or query (TS §7.4); see `BANK_COMMAND_ERRORS`. */
   ...BANK_COMMAND_ERRORS,
+  /** The engine rejected a notification command (TS §8.2); see `NOTIFICATION_COMMAND_ERRORS`. */
+  ...NOTIFICATION_COMMAND_ERRORS,
 ] as const;
 export type EngineErrorCode = (typeof ENGINE_ERRORS)[number];
 
@@ -251,6 +301,17 @@ export interface ClockPayload {
   /** Backlog above two seconds of real time (TS §3.5). */
   overloaded: boolean;
   jumping: boolean;
+  /**
+   * While the game rests because of an auto-pause (TS §3.6, §12): the notification that paused it.
+   * Missing otherwise; `resume` clears it.
+   */
+  autoPause?: AutoPauseCause;
+}
+
+/** The notification an auto-pause stopped at. */
+export interface AutoPauseCause {
+  seq: number;
+  code: AutoPauseCode;
 }
 
 export interface QuotesPayload {
@@ -285,6 +346,27 @@ export interface ProjectionPayload {
   accounts: AccountView[];
   /** Sum of the account balances in M3 (TS §7.9). */
   netWorth: Cents;
+  /** With `full` and whenever counter, unread number or auto-pause settings changed (AP 3.6). */
+  notifications?: NotificationsProjection;
+}
+
+/** Counter of the header and switches of the settings page (TS §8.3, §12). */
+export interface NotificationsProjection {
+  /** Running number of the newest notification, 0 without one. */
+  lastSeq: number;
+  /** Unread among the kept notifications. */
+  unread: number;
+  /** Effective auto-pause of every code that has one (TS §12). */
+  autoPause: Record<AutoPauseCode, boolean>;
+}
+
+/**
+ * New notifications (TS §8.3), oldest first: at once after a command, else bundled at most
+ * `notificationPerSecond` times per second. Not sent while catching up: those go into the report.
+ */
+export interface NotificationPayload {
+  tick: Tick;
+  notifications: GameNotification[];
 }
 
 export interface FatalPayload {
@@ -313,6 +395,9 @@ export interface EngineEventPayloads {
   clock: ClockPayload;
   quotes: QuotesPayload;
   projection: ProjectionPayload;
+  notification: NotificationPayload;
+  /** Absence report after a catch-up or a hidden period (US-BN-03). */
+  report: AbsenceReport;
   progress: ProgressPayload;
   reply: ReplyPayload;
   warning: WarningPayload;
@@ -323,6 +408,8 @@ export const ENGINE_EVENT_TYPES = [
   'clock',
   'quotes',
   'projection',
+  'notification',
+  'report',
   'progress',
   'reply',
   'warning',

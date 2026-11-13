@@ -1,6 +1,10 @@
 import { AccountId, DepotId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
 import { BANK_COMMAND_ERRORS } from '@app/banking/domain/models/bank-command.model';
 import { Tick } from '@app/clock/domain/models/time.model';
+import {
+  AutoPauseCode,
+  NOTIFICATION_COMMAND_ERRORS,
+} from '@app/notifications/domain/models/notification.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 
 import { BackgroundMode } from './game-state.model';
@@ -47,14 +51,35 @@ export interface TransferCommand extends CommandBase {
   purpose: string;
 }
 
+/** Auto-pause of a notification code (TS §12, US-ZT-06). */
+export interface SetAutoPauseCommand extends CommandBase {
+  type: 'setAutoPause';
+  code: AutoPauseCode;
+  enabled: boolean;
+}
+
+/** Marks notifications as read: all up to `upTo` and the single ones in `seqs` (US-BN-01). */
+export interface MarkNotificationsReadCommand extends CommandBase {
+  type: 'markNotificationsRead';
+  upTo?: number;
+  seqs?: number[];
+}
+
 export type GameCommand =
   | SetBackgroundModeCommand
+  | SetAutoPauseCommand
+  | MarkNotificationsReadCommand
   | OpenAccountCommand
   | CloseAccountCommand
   | SetSalaryAccountCommand
   | TransferCommand;
 
-export const COMMAND_ERRORS = ['tick-mismatch', 'invalid-command', ...BANK_COMMAND_ERRORS] as const;
+export const COMMAND_ERRORS = [
+  'tick-mismatch',
+  'invalid-command',
+  ...BANK_COMMAND_ERRORS,
+  ...NOTIFICATION_COMMAND_ERRORS,
+] as const;
 export type CommandError = (typeof COMMAND_ERRORS)[number];
 
 /** The account that `openAccount` opened; `depotId` only for a depot. */

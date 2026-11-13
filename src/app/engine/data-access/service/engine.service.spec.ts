@@ -6,7 +6,12 @@ import { TestMarket, TestPrice } from '@app/engine/domain/testing/test-market';
 import { IndexedDbService } from '@app/persistence/data-access/indexed-db/indexed-db.service';
 import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
 
-import { EngineCommandMessage, ProgressPayload, ProjectionPayload } from './engine-service.model';
+import {
+  ClockPayload,
+  EngineCommandMessage,
+  ProgressPayload,
+  ProjectionPayload,
+} from './engine-service.model';
 import { EngineCommandError, EngineFatal, EngineService } from './engine.service';
 
 import {
@@ -23,10 +28,10 @@ const PLAYER = {
   start: { startCapital: 1_000_000, netIncome: 280_000, livingCosts: 170_000 },
 };
 
+/** Series 0 at 100, every other series (indices of the absence report included) at 50. */
 function market(): TestMarket {
-  const prices: TestPrice[][] = [];
+  const prices: TestPrice[][] = Array.from({ length: 1_000 }, () => [{ tick: 0, price: 50 }]);
   prices[0] = [{ tick: 0, price: 100 }];
-  prices[1] = [{ tick: 0, price: 50 }];
   return new TestMarket(prices);
 }
 
@@ -197,6 +202,84 @@ describe('EngineService', () => {
         service.statement({ accountId: 'acc-7', offset: 0, limit: 10 }),
       ).catch((e: EngineCommandError) => e.code);
       expect(failure).toBe('unknown-account');
+    });
+  });
+
+  describe('notifications', () => {
+    /** Living costs far beyond the limit: the first bank run (06:00) exceeds it (TS §12). */
+    const OVERDRAWN = {
+      ...PLAYER,
+      start: { startCapital: 0, netIncome: 100_000, livingCosts: 5_000_000 },
+    };
+    const BANK_RUN = GAME_START + 6 * 60;
+
+    beforeEach(() => setup());
+
+    it('streams the notifications and the auto-pause and answers the centre and its commands', async () => {
+      const notified: number[] = [];
+      const projections: ProjectionPayload[] = [];
+      const clocks: ClockPayload[] = [];
+      const subscriptions = [
+        service.clock$.subscribe((payload) => clocks.push(payload)),
+        service.notification$.subscribe(({ notifications }) =>
+          notified.push(...notifications.map(({ seq }) => seq)),
+        ),
+        service.projection$.subscribe((payload) => projections.push(payload)),
+      ];
+      await firstValueFrom(service.loadPlayer(OVERDRAWN));
+      await firstValueFrom(service.setSpeed('1h'));
+      await firstValueFrom(service.resume());
+      await engine.advance(10_000);
+      await engine.advance(200);
+      expect(clocks.at(-1)).toMatchObject({
+        tick: BANK_RUN,
+        paused: true,
+        autoPause: { seq: 2, code: 'overdraft-limit-exceeded' },
+      });
+      expect(notified).toEqual([1, 2]);
+
+      const page = await firstValueFrom(service.notifications({ offset: 0, limit: 10 }));
+      expect(page.total).toBe(2);
+      expect(page.entries.map(({ code, read }) => [code, read])).toEqual([
+        ['overdraft-limit-exceeded', false],
+        ['account-uncovered', false],
+      ]);
+      expect(await firstValueFrom(service.markNotificationsRead({ upTo: 2 }))).toEqual({
+        tick: BANK_RUN,
+      });
+      expect(await firstValueFrom(service.setAutoPause('account-uncovered', true))).toEqual({
+        tick: BANK_RUN,
+      });
+      expect(projections.at(-1)?.notifications).toMatchObject({
+        lastSeq: 2,
+        unread: 0,
+        autoPause: { 'account-uncovered': true, 'overdraft-limit-exceeded': true },
+      });
+      const error = await firstValueFrom(service.markNotificationsRead({ upTo: 3 })).catch(
+        (e: unknown) => e,
+      );
+      expect((error as EngineCommandError).code).toBe('unknown-notification');
+      subscriptions.forEach((subscription) => subscription.unsubscribe());
+    });
+
+    it('emits the absence report after catching up and answers it again on request', async () => {
+      const reports: unknown[] = [];
+      const subscription = service.report$.subscribe((report) => reports.push(report));
+      await firstValueFrom(service.loadPlayer(OVERDRAWN));
+      await firstValueFrom(service.resume());
+      await firstValueFrom(service.unloadPlayer());
+      await engine.advance(7 * 3_600_000);
+      await firstValueFrom(service.loadPlayer(OVERDRAWN));
+      await engine.advance(100);
+      subscription.unsubscribe();
+
+      expect(reports).toEqual([
+        expect.objectContaining({ from: GAME_START, to: GAME_START + 7 * 60, warningCount: 2 }),
+      ]);
+      expect(await firstValueFrom(service.absenceReport())).toEqual({
+        kind: 'absenceReport',
+        report: reports[0],
+      });
     });
   });
 

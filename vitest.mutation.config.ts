@@ -55,6 +55,11 @@ const RULE_SPECS = [
   'src/app/banking/domain/bank-comparison-logic.spec.ts',
   'src/app/taxes/domain/tax-logic.spec.ts',
   'src/app/players/domain/player-logic.spec.ts',
+  'src/app/notifications/domain/auto-pause-logic.spec.ts',
+  'src/app/notifications/domain/read-state-logic.spec.ts',
+  'src/app/notifications/domain/notification-page-logic.spec.ts',
+  'src/app/notifications/domain/absence-report-logic.spec.ts',
+  'src/app/engine/domain/notification-system.spec.ts',
 ];
 
 export default mergeConfig(

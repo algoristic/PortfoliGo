@@ -139,6 +139,7 @@ describe('EngineHost banking', () => {
             },
           ],
           netWorth: PLAYER.start.startCapital,
+          notifications: { lastSeq: 0, unread: 0, autoPause: expect.any(Object) },
         },
       ]);
     });

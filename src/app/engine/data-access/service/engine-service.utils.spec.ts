@@ -5,6 +5,11 @@ import { TRANSACTION_TYPES } from '@app/banking/domain/models/ledger.model';
 import { MAX_STATEMENT_LIMIT } from '@app/banking/domain/models/statement.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
 import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
+import {
+  AUTO_PAUSE_CODES,
+  NOTIFICATION_CATEGORIES,
+} from '@app/notifications/domain/models/notification.model';
+import { MAX_NOTIFICATION_LIMIT } from '@app/notifications/domain/notification-page-logic';
 
 import {
   ENGINE_ERRORS,
@@ -43,6 +48,66 @@ const arbStatementQuery = fc.record(
   },
   { requiredKeys: ['kind', 'accountId', 'offset', 'limit'] },
 );
+
+const arbMonthlyValues = fc.record({
+  income: arbCents,
+  livingCosts: arbCents,
+  fees: arbCents,
+  creditInterest: arbCents,
+  debitInterest: arbCents,
+  taxes: arbCents,
+  dividends: arbCents,
+});
+
+const arbNotification = fc
+  .oneof(
+    fc.record({
+      code: fc.constantFrom('account-uncovered' as const, 'overdraft-limit-exceeded' as const),
+      params: fc.record({
+        accountId: arbAccountId,
+        balance: arbCents,
+        limit: fc.option(arbCount, { nil: null }),
+      }),
+    }),
+    fc.record({
+      code: fc.constant('interest-credited' as const),
+      params: fc.record({ accountId: arbAccountId, amount: arbCents, tax: arbCents }),
+    }),
+    fc.record({
+      code: fc.constant('tax-refund' as const),
+      params: fc.record({ accountId: arbAccountId, amount: arbCents }),
+    }),
+    fc.record({
+      code: fc.constant('month-closed' as const),
+      params: fc.record({
+        year: arbCount,
+        month: fc.integer({ min: 1, max: 12 }),
+        values: arbMonthlyValues,
+      }),
+    }),
+    fc.record({
+      code: fc.constant('year-closed' as const),
+      params: fc.record({ year: arbCount, taxableIncome: arbCents, taxWithheld: arbCents }),
+    }),
+    fc.record({
+      code: fc.constantFrom('order-executed' as const, 'storage-quota-exceeded' as const),
+      params: fc.dictionary(
+        fc.string({ maxLength: 6 }),
+        fc.oneof(fc.string(), arbCents, fc.constant(null)),
+        { maxKeys: 3 },
+      ),
+    }),
+  )
+  .chain((body) =>
+    fc.record({ seq: fc.integer({ min: 1, max: 1e9 }), tick: arbCount }).map((stamp) => ({
+      ...stamp,
+      ...body,
+    })),
+  );
+
+const arbAutoPause = fc
+  .array(fc.boolean(), { minLength: AUTO_PAUSE_CODES.length, maxLength: AUTO_PAUSE_CODES.length })
+  .map((flags) => Object.fromEntries(AUTO_PAUSE_CODES.map((code, n) => [code, flags[n]])));
 
 function envelope<T extends string, P>(type: T, payload: fc.Arbitrary<P>) {
   return fc.record({
@@ -93,6 +158,16 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
         fc.constant({ kind: 'monthlyValues' as const }),
         fc.record({ kind: fc.constant('closingPreview' as const), accountId: arbAccountId }),
         arbStatementQuery,
+        fc.record(
+          {
+            kind: fc.constant('notifications' as const),
+            category: fc.constantFrom(...NOTIFICATION_CATEGORIES),
+            offset: arbCount,
+            limit: fc.integer({ min: 0, max: MAX_NOTIFICATION_LIMIT }),
+          },
+          { requiredKeys: ['kind', 'offset', 'limit'] },
+        ),
+        fc.constant({ kind: 'absenceReport' as const }),
       ),
     }),
   ),
@@ -117,6 +192,21 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
       amount: arbCents,
       purpose: fc.string(),
     }),
+  ),
+  envelope(
+    'setAutoPause',
+    fc.record({ code: fc.constantFrom(...AUTO_PAUSE_CODES), enabled: fc.boolean() }),
+  ),
+  envelope(
+    'markNotificationsRead',
+    fc.oneof(
+      fc.record({ upTo: arbCount }),
+      fc.record({ seqs: fc.array(fc.integer({ min: 1, max: 1e9 }), { maxLength: 5 }) }),
+      fc.record({
+        upTo: arbCount,
+        seqs: fc.array(fc.integer({ min: 1, max: 1e9 }), { maxLength: 5 }),
+      }),
+    ),
   ),
 ) as fc.Arbitrary<EngineCommandMessage>;
 
@@ -147,25 +237,75 @@ const arbAccountView = fc.record({
 const arbEvent: fc.Arbitrary<EngineEventMessage> = fc.oneof(
   envelope(
     'clock',
-    fc.record({
-      tick: arbCount,
-      speed: arbSpeed,
-      paused: fc.boolean(),
-      visible: fc.boolean(),
-      backgroundMode: arbMode,
-      effectiveSpeed: fc.option(arbSpeed, { nil: null }),
-      overloaded: fc.boolean(),
-      jumping: fc.boolean(),
-    }),
+    fc.record(
+      {
+        tick: arbCount,
+        speed: arbSpeed,
+        paused: fc.boolean(),
+        visible: fc.boolean(),
+        backgroundMode: arbMode,
+        effectiveSpeed: fc.option(arbSpeed, { nil: null }),
+        overloaded: fc.boolean(),
+        jumping: fc.boolean(),
+        autoPause: fc.record({
+          seq: fc.integer({ min: 1, max: 1e9 }),
+          code: fc.constantFrom(...AUTO_PAUSE_CODES),
+        }),
+      },
+      {
+        requiredKeys: [
+          'tick',
+          'speed',
+          'paused',
+          'visible',
+          'backgroundMode',
+          'effectiveSpeed',
+          'overloaded',
+          'jumping',
+        ],
+      },
+    ),
   ),
   envelope('quotes', fc.record({ tick: arbCount, quotes: fc.array(arbQuote, { maxLength: 4 }) })),
   envelope(
     'projection',
+    fc.record(
+      {
+        tick: arbCount,
+        full: fc.boolean(),
+        accounts: fc.array(arbAccountView, { maxLength: 4 }),
+        netWorth: arbCents,
+        notifications: fc.record({ lastSeq: arbCount, unread: arbCount, autoPause: arbAutoPause }),
+      },
+      { requiredKeys: ['tick', 'full', 'accounts', 'netWorth'] },
+    ),
+  ),
+  envelope(
+    'notification',
+    fc.record({ tick: arbCount, notifications: fc.array(arbNotification, { maxLength: 4 }) }),
+  ),
+  envelope(
+    'report',
     fc.record({
-      tick: arbCount,
-      full: fc.boolean(),
-      accounts: fc.array(arbAccountView, { maxLength: 4 }),
-      netWorth: arbCents,
+      from: arbCount,
+      to: arbCount,
+      netWorthBefore: arbCents,
+      netWorthAfter: arbCents,
+      flows: arbMonthlyValues,
+      bookings: arbCount,
+      notifications: arbCount,
+      warnings: fc.array(arbNotification, { maxLength: 3 }),
+      warningCount: arbCount,
+      indices: fc.array(
+        fc.record({
+          series: arbCount,
+          id: fc.string(),
+          name: fc.string(),
+          start: arbPrice,
+          end: arbPrice,
+        }),
+        { maxLength: 3 },
+      ),
     }),
   ),
   envelope(
@@ -253,6 +393,32 @@ const ACCOUNT = {
 const STATEMENT = { kind: 'statement', accountId: 'acc-1', offset: 0, limit: 50 };
 const projection = (fields: Record<string, unknown>): unknown =>
   event('projection', { tick: 1, full: false, accounts: [ACCOUNT], netWorth: 0, ...fields });
+const MONTH_CLOSED = {
+  seq: 1,
+  tick: 5_433_120,
+  code: 'month-closed',
+  params: {
+    year: 2030,
+    month: 4,
+    values: {
+      income: 280_000,
+      livingCosts: 170_000,
+      fees: 0,
+      creditInterest: 0,
+      debitInterest: 0,
+      taxes: 0,
+      dividends: 0,
+    },
+  },
+};
+const UNCOVERED = {
+  seq: 2,
+  tick: 5_433_480,
+  code: 'account-uncovered',
+  params: { accountId: 'acc-1', balance: -100, limit: 200_000 },
+};
+const notification = (fields: Record<string, unknown>): unknown =>
+  event('notification', { tick: 1, notifications: [{ ...UNCOVERED, ...fields }] });
 const QUOTE = {
   series: 0,
   last: 1,
@@ -412,6 +578,31 @@ describe('engine protocol guards', () => {
       ['an unknown booking type', command('query', { query: { ...STATEMENT, types: ['gift'] } })],
       ['types that are not a list', command('query', { query: { ...STATEMENT, types: 'salary' } })],
       ['a search that is not a string', command('query', { query: { ...STATEMENT, search: 12 } })],
+      ['an unknown notification code', command('setAutoPause', { code: 'fire', enabled: true })],
+      [
+        'auto-pause for the UI code',
+        command('setAutoPause', { code: 'backup-reminder', enabled: true }),
+      ],
+      [
+        'auto-pause switched by a string',
+        command('setAutoPause', { code: 'month-closed', enabled: 'on' }),
+      ],
+      ['nothing to mark read', command('markNotificationsRead', {})],
+      ['notification number 0', command('markNotificationsRead', { seqs: [0] })],
+      ['a fractional mark', command('markNotificationsRead', { upTo: 1.5 })],
+      ['numbers that are not a list', command('markNotificationsRead', { seqs: 3 })],
+      [
+        'more numbers than notifications are kept',
+        command('markNotificationsRead', { seqs: Array.from({ length: 1_001 }, (_, n) => n + 1) }),
+      ],
+      [
+        'a notification page above the limit',
+        command('query', { query: { kind: 'notifications', offset: 0, limit: 201 } }),
+      ],
+      [
+        'an unknown notification category',
+        command('query', { query: { kind: 'notifications', category: 'x', offset: 0, limit: 1 } }),
+      ],
     ])('rejects a command with %s', (_label, message) => {
       expect(isEngineCommandMessage(message)).toBe(false);
     });
@@ -446,6 +637,19 @@ describe('engine protocol guards', () => {
         }),
       ],
       ['an empty type list', command('query', { query: { ...STATEMENT, types: [] } })],
+      ['all read up to 0', command('markNotificationsRead', { upTo: 0 })],
+      ['single numbers read', command('markNotificationsRead', { seqs: [3, 1] })],
+      [
+        'auto-pause off',
+        command('setAutoPause', { code: 'overdraft-limit-exceeded', enabled: false }),
+      ],
+      [
+        'a notification page of a category',
+        command('query', {
+          query: { kind: 'notifications', category: 'account', offset: 0, limit: 200 },
+        }),
+      ],
+      ['the absence report', command('query', { query: { kind: 'absenceReport' } })],
     ])('accepts a command with %s', (_label, message) => {
       expect(isEngineCommandMessage(message)).toBe(true);
     });
@@ -565,6 +769,29 @@ describe('engine protocol guards', () => {
         projection({ accounts: [{ ...ACCOUNT, depot: { id: 'dep-3' } }] }),
       ],
       ['an engine error the protocol does not know', reply({ ok: false, error: 'no-money' })],
+      ['a notification number 0', notification({ seq: 0 })],
+      ['an unknown notification code', notification({ code: 'fire' })],
+      ['coverage without balance', notification({ params: { accountId: 'acc-1', limit: 0 } })],
+      [
+        'nested parameters of a pending code',
+        notification({ code: 'order-executed', params: { a: {} } }),
+      ],
+      [
+        'a closed month without values',
+        event('notification', {
+          tick: 1,
+          notifications: [{ ...MONTH_CLOSED, params: { year: 2030, month: 4 } }],
+        }),
+      ],
+      [
+        'a clock paused by an unknown code',
+        event('clock', { ...CLOCK, autoPause: { seq: 1, code: 'x' } }),
+      ],
+      [
+        'auto-pause settings that miss a code',
+        projection({ notifications: { lastSeq: 1, unread: 0, autoPause: {} } }),
+      ],
+      ['a report without flows', event('report', { from: 0, to: 1 })],
     ])('rejects an event with %s', (_label, message) => {
       expect(isEngineEventMessage(message)).toBe(false);
     });
@@ -581,6 +808,19 @@ describe('engine protocol guards', () => {
       ['a projection with a negative net worth', projection({ netWorth: -500 })],
       ['a full projection without accounts', projection({ full: true, accounts: [] })],
       ['a rejected transfer', reply({ ok: false, error: 'insufficient-funds' })],
+      [
+        'new notifications',
+        event('notification', { tick: 1, notifications: [MONTH_CLOSED, UNCOVERED] }),
+      ],
+      [
+        'a clock paused by a notification',
+        event('clock', {
+          ...CLOCK,
+          paused: true,
+          autoPause: { seq: 2, code: 'overdraft-limit-exceeded' },
+        }),
+      ],
+      ['a rejected read request', reply({ ok: false, error: 'unknown-notification' })],
     ])('accepts an event with %s', (_label, message) => {
       expect(isEngineEventMessage(message)).toBe(true);
     });

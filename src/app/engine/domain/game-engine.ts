@@ -3,6 +3,7 @@ import { findHomeBank } from '@app/banking/domain/home-bank-logic';
 import { startInflows } from '@app/banking/domain/inflow-logic';
 import { OPENING_BALANCE_ACCOUNT } from '@app/banking/domain/ledger-logic';
 import { AccountId, OPENABLE_ACCOUNT_KINDS } from '@app/banking/domain/models/account.model';
+import { ClosedMonth } from '@app/banking/domain/models/household.model';
 import { Transaction, TransactionDraft } from '@app/banking/domain/models/ledger.model';
 import { emptyMonthlyValues } from '@app/banking/domain/monthly-values-logic';
 import {
@@ -27,6 +28,7 @@ import {
 } from '@app/market/domain/models/market-state.model';
 import { PriceSource } from '@app/market/domain/price-source';
 import { etfSeries } from '@app/market/domain/series';
+import { GameNotification } from '@app/notifications/domain/models/notification.model';
 import { openTaxYear } from '@app/taxes/domain/tax-logic';
 
 import { BankCommands, ClosingPreviewResult } from './bank-commands';
@@ -43,6 +45,7 @@ import {
 import { GameWorld } from './models/game-world.model';
 import { PricePort } from './models/price-port.model';
 import { ExDividend, ScheduledTask } from './models/scheduled-task.model';
+import { NotificationSystem } from './notification-system';
 import { copyScheduler, createScheduler, peekTask, popTask, scheduleTask } from './scheduler';
 
 /** Creates the price port over the engine's market; the history and the state grow in place. */
@@ -82,6 +85,7 @@ export class GameEngine {
   readonly #marketDay: MarketDay;
   readonly #banking: BankingSystem;
   readonly #bankCommands: BankCommands;
+  readonly #notifications: NotificationSystem;
   #events: EngineEvent[] = [];
   #journal: Transaction[] = [];
   /** Accounts whose projection changed since the last `drainChangedAccounts` (TS §8.4). */
@@ -101,9 +105,10 @@ export class GameEngine {
     const changed = (id: AccountId): void => {
       this.#changedAccounts.add(id);
     };
+    this.#notifications = new NotificationSystem(state.player);
     this.#banking = new BankingSystem(world, state.player, {
       journal: (transaction) => this.#journal.push(transaction),
-      emit: (event) => this.#events.push(event),
+      emit: (event) => this.#emit(event),
       changed,
     });
     this.#bankCommands = new BankCommands(world, state.player, this.#banking, changed);
@@ -158,6 +163,7 @@ export class GameEngine {
         taxYear: openTaxYear(tickToDateTime(GAME_START_TICK).year),
         monthlyValues: emptyMonthlyValues(),
         closedMonths: [],
+        notifications: { nextSeq: 1, readUpTo: 0, readSeqs: [], autoPause: {} },
       },
       scheduler,
       commandIds: [],
@@ -261,6 +267,23 @@ export class GameEngine {
   }
 
   /**
+   * Returns the notifications created since the last call in order of their running numbers and
+   * empties the buffer (TS §12); the host stores and sends them.
+   */
+  drainNotifications(): GameNotification[] {
+    return this.#notifications.drain();
+  }
+
+  /**
+   * The first notification in the buffer whose code has auto-pause on (TS §12), else `null`. The
+   * host checks it in `shouldYield` to stop at exactly the tick of the notification and decides
+   * whether the pause applies (run mode, visibility); `drainNotifications` resets it.
+   */
+  get autoPauseNotification(): GameNotification | null {
+    return this.#notifications.autoPauseNotification;
+  }
+
+  /**
    * IDs of the accounts whose projection changed since the last call (postings, limits, opening,
    * closing, salary flag), in the order of their first change; the host sends them (TS §8.4).
    */
@@ -292,7 +315,7 @@ export class GameEngine {
           return { ok: false, error: 'invalid-command' };
         }
         this.#state.player.backgroundMode = command.mode;
-        this.#events.push({
+        this.#emit({
           type: 'background-mode-changed',
           tick: this.#state.tick,
           mode: command.mode,
@@ -312,9 +335,19 @@ export class GameEngine {
           return { ok: false, error: 'invalid-command' };
         }
         return this.#bankCommands.transfer(command, this.#state.tick);
+      case 'setAutoPause':
+        return this.#notifications.setAutoPause(command);
+      case 'markNotificationsRead':
+        return this.#notifications.markRead(command);
       default:
         return { ok: false, error: 'invalid-command' };
     }
+  }
+
+  /** Buffers an event and the notifications it creates (TS §12). */
+  #emit(event: EngineEvent): void {
+    this.#events.push(event);
+    this.#notifications.fromEvent(event);
   }
 
   /** Books a transaction on the player's balances and buffers it for the journal (TS §7.2). */
@@ -373,15 +406,22 @@ export class GameEngine {
       case 'month-end': {
         const { year, month } = tickToDateTime(tick - TICKS_PER_MINUTE);
         this.#banking.closeMonth(tick);
-        this.#events.push({ type: 'month-ended', tick, year, month });
+        this.#emit({ type: 'month-ended', tick, year, month });
+        this.#notifications.monthClosed(
+          tick,
+          this.#state.player.closedMonths.at(-1) as ClosedMonth,
+        );
         scheduleTask(this.#state.scheduler, startOfNextMonth(tick), { kind: 'month-end' });
         break;
       }
-      case 'year-end':
+      case 'year-end': {
+        const closing = this.#state.player.taxYear;
         this.#banking.closeYear();
-        this.#events.push({ type: 'year-ended', tick, year: tickToDateTime(tick).year - 1 });
+        this.#emit({ type: 'year-ended', tick, year: tickToDateTime(tick).year - 1 });
+        this.#notifications.yearClosed(tick, closing);
         scheduleTask(this.#state.scheduler, startOfNextYear(tick), { kind: 'year-end' });
         break;
+      }
       default:
         throw new Error(`GameEngine: no system for task ${task.kind}`);
     }
@@ -479,6 +519,11 @@ function copyPlayer(player: Readonly<PlayerState>): PlayerState {
       month: { ...month },
       values: { ...values },
     })),
+    notifications: {
+      ...player.notifications,
+      readSeqs: player.notifications.readSeqs.slice(),
+      autoPause: { ...player.notifications.autoPause },
+    },
   };
 }
 

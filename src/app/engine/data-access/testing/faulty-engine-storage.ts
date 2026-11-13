@@ -4,6 +4,7 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
+import { GameNotification } from '@app/notifications/domain/models/notification.model';
 
 import {
   DailyCandleBucket,
@@ -76,6 +77,14 @@ export class FaultyEngineStorage implements EngineStorage {
 
   loadTransactions(playerId: string, accountId?: AccountId): Promise<Transaction[]> {
     return this.inner.loadTransactions(playerId, accountId);
+  }
+
+  saveNotifications(playerId: string, notifications: readonly GameNotification[]): Promise<void> {
+    return this.#write(() => this.inner.saveNotifications(playerId, notifications));
+  }
+
+  loadNotifications(playerId: string): Promise<GameNotification[]> {
+    return this.inner.loadNotifications(playerId);
   }
 
   saveMonthStarts(playerId: string, entries: readonly FactorStateEntry[]): Promise<void> {
