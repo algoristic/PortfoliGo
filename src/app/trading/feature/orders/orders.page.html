@@ -1,10 +1,37 @@
-<h1 class="text-xl font-semibold" i18n="@@featureTrading-ordersPage-title">Orders</h1>
+@let loaded = tradingFacade.tradingLoaded$ | async;
+@let openOrders = tradingFacade.openOrderEntries$ | async;
+@let history = tradingFacade.orderHistoryEntries$ | async;
+@let reservations = tradingFacade.depotReservations$ | async;
 
-<app-panel class="mt-4">
-  <app-empty-state
-    icon="list-check"
-    heading="Noch keine Inhalte"
-    i18n-heading="@@featureTrading-ordersPage-emptyHeading"
-    text="Diese Ansicht entsteht in AP 5.4."
-    i18n-text="@@featureTrading-ordersPage-emptyText"></app-empty-state>
-</app-panel>
+<h1
+  #heading
+  class="rounded-md text-xl font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+  tabindex="-1"
+  i18n="@@featureTrading-ordersPage-title">
+  Orders
+</h1>
+
+<app-tabs class="mt-4" testId="trading.orders.tabs" [tabs]="tabs" [label]="tabsLabel">
+  <ng-template appTabPanel="open">
+    @if (!loaded || !openOrders) {
+      <app-skeleton class="h-32" [block]="true"></app-skeleton>
+    } @else {
+      <app-open-orders
+        data-testid="trading.open-orders"
+        [entries]="openOrders"
+        [reservations]="reservations ?? []"
+        (clickedChange)="onChange($event)"
+        (clickedCancel)="onCancel($event)"></app-open-orders>
+    }
+  </ng-template>
+
+  <ng-template appTabPanel="history">
+    @if (!loaded || !history) {
+      <app-skeleton class="h-32" [block]="true"></app-skeleton>
+    } @else {
+      <app-order-history
+        data-testid="trading.order-history"
+        [entries]="history"></app-order-history>
+    }
+  </ng-template>
+</app-tabs>

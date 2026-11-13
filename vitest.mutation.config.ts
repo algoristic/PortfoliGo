@@ -77,6 +77,8 @@ const RULE_SPECS = [
   'src/app/trading/domain/order-reservation-logic.spec.ts',
   'src/app/trading/domain/order-command-logic.spec.ts',
   'src/app/trading/domain/position-logic.spec.ts',
+  'src/app/trading/domain/order-input-logic.spec.ts',
+  'src/app/trading/domain/order-preview-logic.spec.ts',
   'src/app/engine/domain/game-engine-orders.spec.ts',
   'src/app/engine/domain/game-engine-portfolio.spec.ts',
   'src/app/engine/domain/game-engine-taxes.spec.ts',

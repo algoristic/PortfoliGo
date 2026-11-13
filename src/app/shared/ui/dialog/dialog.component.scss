@@ -1,0 +1,5 @@
+// The same limit as the `maxHeight` every dialog opens with: the CDK pane only caps its own height,
+// so header and actions stay in view while the content between them scrolls.
+.dialog {
+  max-height: calc(100dvh - 2rem);
+}

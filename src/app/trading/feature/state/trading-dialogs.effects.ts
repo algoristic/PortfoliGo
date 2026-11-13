@@ -10,12 +10,18 @@ import * as MarketActions from '@app/market/feature/state/market.actions';
 import { selectInstrumentEntities } from '@app/market/feature/state/market.selectors';
 import { openConfirmDialog } from '@app/shared/ui/dialog-confirm/dialog-confirm.utils';
 import { OrderSide } from '@app/trading/domain/models/order.model';
+import { isActive } from '@app/trading/domain/order-reservation-logic';
 
 import * as TradingActions from './trading.actions';
-import { ORDER_TICKET_SUBSCRIPTION } from './trading.model';
-import { selectDepots } from './trading.selectors';
+import { ORDER_CHANGE_SUBSCRIPTION, ORDER_TICKET_SUBSCRIPTION } from './trading.model';
+import { selectDepots, selectOrderEntities } from './trading.selectors';
 import { preselectedDepot } from './trading.utils';
 
+import { DialogChangeOrderComponent } from '../dialog-change-order/dialog-change-order.component';
+import {
+  ChangeOrderDialogData,
+  ChangeOrderDialogResult,
+} from '../dialog-change-order/dialog-change-order.model';
 import { DialogOrderTicketComponent } from '../dialog-order-ticket/dialog-order-ticket.component';
 import {
   OrderTicketDialogData,
@@ -30,8 +36,11 @@ type TicketStart =
  * The order ticket (AP 5.4, TS §11.4, §11.6): `clickedBuy`/`clickedSell` open it for a tradable
  * instrument with the preselected depot, watch the instrument's quote under
  * `ORDER_TICKET_SUBSCRIPTION` while it is open and turn its result into `submittedPlaceOrder`.
- * Without an open depot a hint offers „Konto eröffnen“ instead. The focus goes into the first
- * field (`cdkFocusInitial`), Escape closes and the CDK returns the focus to the button.
+ * Without an open depot a hint offers „Konto eröffnen“ with the kind „Depot“ instead. In the order
+ * book `clickedChangeOrder` opens „Order ändern“ for an active order (quote under
+ * `ORDER_CHANGE_SUBSCRIPTION`, result → `submittedChangeOrder`) and `clickedCancelOrder` asks to
+ * confirm (→ `submittedCancelOrder`). The focus goes into the first field (`cdkFocusInitial`),
+ * Escape closes and the CDK returns the focus to the button.
  */
 @Injectable()
 export class TradingDialogEffects {
@@ -70,6 +79,89 @@ export class TradingDialogEffects {
     ),
   );
 
+  changeOrderDialog$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(TradingActions.clickedChangeOrder),
+      concatLatestFrom(() => [
+        this.#store.pipe(select(selectOrderEntities)),
+        this.#store.pipe(select(selectInstrumentEntities)),
+      ]),
+      map(([{ orderId }, orders, instruments]) => {
+        const order = orders[orderId];
+        const instrument = order === undefined ? undefined : instruments[order.instrumentId];
+        return order === undefined || instrument === undefined || !isActive(order.status)
+          ? null
+          : { orderId, series: instrument.series };
+      }),
+      filter((start): start is { orderId: string; series: number } => start !== null),
+      exhaustMap(({ orderId, series }) => this.#openChange(orderId, series)),
+    ),
+  );
+
+  cancelOrderDialog$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(TradingActions.clickedCancelOrder),
+      concatLatestFrom(() => [
+        this.#store.pipe(select(selectOrderEntities)),
+        this.#store.pipe(select(selectInstrumentEntities)),
+      ]),
+      map(([{ orderId }, orders, instruments]) => {
+        const order = orders[orderId];
+        return order === undefined || !isActive(order.status)
+          ? null
+          : {
+              orderId,
+              side: order.side,
+              name: instruments[order.instrumentId]?.name ?? order.instrumentId,
+            };
+      }),
+      filter(
+        (order): order is { orderId: string; side: OrderSide; name: string } => order !== null,
+      ),
+      exhaustMap(({ orderId, side, name }) =>
+        openConfirmDialog(this.#dialog, {
+          heading: $localize`:@@featureTrading-tradingDialogEffects-cancelHeading:Order stornieren?`,
+          message:
+            side === 'buy'
+              ? $localize`:@@featureTrading-tradingDialogEffects-cancelBuyMessage:Die Kauforder für ${name}:instrument: wird storniert, ihre Reservierung auf dem Verrechnungskonto wird frei.`
+              : $localize`:@@featureTrading-tradingDialogEffects-cancelSellMessage:Die Verkaufsorder für ${name}:instrument: wird storniert, ihre Stück sind wieder frei.`,
+          confirmLabel: $localize`:@@featureTrading-tradingDialogEffects-cancelConfirm:Stornieren`,
+          declineLabel: $localize`:@@featureTrading-tradingDialogEffects-cancelDecline:Behalten`,
+          tone: 'danger',
+        }).pipe(
+          filter(Boolean),
+          map(() => TradingActions.submittedCancelOrder({ orderId })),
+        ),
+      ),
+    ),
+  );
+
+  #openChange(orderId: string, series: number): Observable<Action> {
+    const change$ = this.#dialog
+      .open<ChangeOrderDialogResult, ChangeOrderDialogData>(DialogChangeOrderComponent, {
+        data: { orderId },
+        injector: this.#injector,
+        ariaLabel: $localize`:@@featureTrading-tradingDialogEffects-changeLabel:Order ändern`,
+        width: '32rem',
+        maxWidth: 'calc(100vw - 2rem)',
+        maxHeight: 'calc(100dvh - 2rem)',
+      })
+      .closed.pipe(
+        filter((change): change is ChangeOrderDialogResult => change !== undefined),
+        map((change) => TradingActions.submittedChangeOrder({ orderId, change })),
+      );
+    return concat(
+      of(
+        MarketActions.quotesSubscriptionChanged({
+          key: ORDER_CHANGE_SUBSCRIPTION,
+          series: [series],
+        }),
+      ),
+      change$,
+      of(MarketActions.quotesSubscriptionEnded({ key: ORDER_CHANGE_SUBSCRIPTION })),
+    );
+  }
+
   #openTicket(data: OrderTicketDialogData, series: number): Observable<Action> {
     const ticket$ = this.#dialog
       .open<OrderTicketDialogResult, OrderTicketDialogData>(DialogOrderTicketComponent, {
@@ -106,7 +198,7 @@ export class TradingDialogEffects {
       confirmLabel: $localize`:@@featureTrading-tradingDialogEffects-noDepotConfirm:Depot eröffnen`,
     }).pipe(
       filter(Boolean),
-      map(() => BankingActions.clickedOpenAccount({})),
+      map(() => BankingActions.clickedOpenAccount({ kind: 'depot' })),
     );
   }
 }

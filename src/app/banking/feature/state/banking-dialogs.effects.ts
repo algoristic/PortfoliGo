@@ -62,7 +62,10 @@ export class BankingDialogEffects {
   readonly #store = inject(Store);
   readonly #toastService = inject(ToastService);
 
-  /** The preselected bank: the clicked one, else the bank of the salary account, else the first. */
+  /**
+   * The preselected bank: the clicked one, else the bank of the salary account, else the first; the
+   * kind when the action names one.
+   */
   openAccountDialog$ = createEffect(() =>
     this.#actions$.pipe(
       ofType(BankingActions.clickedOpenAccount),
@@ -70,9 +73,14 @@ export class BankingDialogEffects {
         this.#store.pipe(select(selectBanks)),
         this.#store.pipe(select(selectSalaryAccount)),
       ]),
-      map(([{ bankId }, banks, salaryAccount]) => {
+      map(([{ bankId, kind }, banks, salaryAccount]): OpenAccountDialogData | null => {
         const preselected = bankId ?? salaryAccount?.bankId ?? banks?.[0]?.id;
-        return banks === null || preselected === undefined ? null : { banks, bankId: preselected };
+        if (banks === null || preselected === undefined) {
+          return null;
+        }
+        return kind === undefined
+          ? { banks, bankId: preselected }
+          : { banks, bankId: preselected, kind };
       }),
       filter((data): data is OpenAccountDialogData => data !== null),
       exhaustMap((data) =>

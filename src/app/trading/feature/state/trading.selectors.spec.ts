@@ -7,7 +7,10 @@ import { Bank } from '@app/world/domain/models/bank.model';
 
 import { DepotEntry } from './trading.model';
 import {
+  selectChangeOrderContext,
+  selectDepotReservations,
   selectDepots,
+  selectOpenOrderEntries,
   selectOpenOrders,
   selectOrderHistory,
   selectPosition,
@@ -195,6 +198,63 @@ describe('trading selectors', () => {
         false,
         false,
       ]);
+    });
+  });
+
+  describe('order book', () => {
+    const buy = { ...order(1, 'open'), depotId: 'dep-7', instrumentId: 'stk-1' } as OrderView;
+    const unknown = { ...order(2, 'open'), depotId: 'dep-9', instrumentId: 'stk-9' } as OrderView;
+
+    it('names the instrument and the depot of every order (US-HD-04)', () => {
+      expect(
+        selectOpenOrderEntries.projector([buy, unknown], { [SHARE.id]: SHARE }, depots),
+      ).toEqual([
+        { order: buy, instrumentName: 'Astix', depotNumber: 'Ddep-7', bankName: 'Darara Invest' },
+        // Without master data or depot the IDs stand in.
+        { order: unknown, instrumentName: 'stk-9', depotNumber: 'dep-9', bankName: null },
+      ]);
+    });
+
+    it('lists the clearing accounts that reserve money', () => {
+      const [first, , last] = depots;
+      const free = { ...first, clearingAccount: { ...first.clearingAccount, reserved: 0 } };
+      expect(selectDepotReservations.projector([free, last])).toEqual([
+        {
+          depotId: 'dep-7',
+          depotNumber: 'Ddep-7',
+          bankName: 'Darara Invest',
+          reserved: 10_000,
+          available: 40_000,
+        },
+      ]);
+    });
+
+    it('gives the change dialog the order, the clearing account and the ask', () => {
+      const quote = { series: 0, last: 100, bid: 99.9, ask: 100.1 } as SeriesQuote;
+      const context = selectChangeOrderContext('ord-1').projector(
+        { 'ord-1': buy },
+        { [SHARE.id]: SHARE },
+        { 0: quote },
+        depots,
+        5_390_520,
+      );
+      expect(context).toEqual({
+        order: buy,
+        instrumentName: 'Astix',
+        tick: 5_390_520,
+        conditions: BANK.conditions.depot,
+        clearingBalance: 50_000,
+        reserved: 10_000,
+        ask: 100.1,
+      });
+      expect(
+        selectChangeOrderContext('ord-1').projector({ 'ord-1': buy }, {}, {}, depots, 5_390_520)
+          ?.ask,
+      ).toBeNull();
+      expect(selectChangeOrderContext('ord-9').projector({}, {}, {}, depots, 5_390_520)).toBeNull();
+      expect(
+        selectChangeOrderContext('ord-1').projector({ 'ord-1': buy }, {}, {}, depots, null),
+      ).toBeNull();
     });
   });
 });

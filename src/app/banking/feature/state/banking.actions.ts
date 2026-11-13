@@ -14,10 +14,13 @@ import { Bank } from '@app/world/domain/models/bank.model';
 
 import { StatementRange } from './banking.model';
 
-/** Opens the dialog „Konto eröffnen“, with the bank preselected when given (bank comparison). */
+/**
+ * Opens the dialog „Konto eröffnen“, with the bank (bank comparison) or the kind (the order
+ * ticket's hint „Kein Depot“) preselected when given.
+ */
 export const clickedOpenAccount = createAction(
   '[Banking/Page] Clicked open account',
-  props<{ bankId?: string }>(),
+  props<{ bankId?: string; kind?: OpenableAccountKind }>(),
 );
 /** Opens the transfer dialog, from `fromAccountId` when given. */
 export const clickedTransfer = createAction(

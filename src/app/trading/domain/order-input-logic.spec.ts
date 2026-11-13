@@ -1,4 +1,6 @@
-import { parsePriceInput, parseQuantityInput } from './order-input-logic';
+import fc from 'fast-check';
+
+import { formatPriceInput, parsePriceInput, parseQuantityInput } from './order-input-logic';
 
 // TS §11.8: number fields of the order ticket in German format.
 describe('parseQuantityInput', () => {
@@ -46,5 +48,29 @@ describe('parsePriceInput', () => {
 
   it.each(['0,00001', '-5', '1,2,3', 'x'])('rejects %j', (text) => {
     expect(parsePriceInput(text)).toEqual({ kind: 'invalid' });
+  });
+});
+
+describe('formatPriceInput', () => {
+  // TS §11.8: the fields of a change start with the order's prices.
+  it.each([
+    [99.5, '99,50'],
+    [105, '105,00'],
+    [1234.5, '1234,50'],
+    [0.0125, '0,0125'],
+    [8.002, '8,002'],
+    [0.1, '0,10'],
+    [99.9999, '99,9999'],
+  ])('shows %d € as %j', (price, text) => {
+    expect(formatPriceInput(price)).toBe(text);
+  });
+
+  it('reads back every price with up to four decimal places', () => {
+    fc.assert(
+      fc.property(fc.integer({ min: 1, max: 999_999_999 }), (units) => {
+        const price = units / 10_000;
+        expect(parsePriceInput(formatPriceInput(price))).toEqual({ kind: 'value', value: price });
+      }),
+    );
   });
 });

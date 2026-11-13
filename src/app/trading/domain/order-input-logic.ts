@@ -44,6 +44,26 @@ export function parsePriceInput(text: string): OrderInputResult<number> {
   return { kind: 'value', value: Number(`${integer || '0'}.${fraction || '0'}`) };
 }
 
+/** Units of the finest price grid per euro: 10⁴ for four decimal places. */
+const PRICE_INPUT_SCALE = 10_000;
+/** Least decimal places a price field shows, like the price grid above 1 € (TS §6.7). */
+const MIN_PRICE_INPUT_DECIMALS = 2;
+
+/**
+ * A limit or stop as the price field shows it, the inverse of `parsePriceInput`: no grouping, a
+ * comma, two to four decimal places (`99,50`, `1234,50`, `0,0125`). It fills the fields of a
+ * change with the order's prices (US-HD-04).
+ */
+export function formatPriceInput(price: number): string {
+  const units = Math.round(price * PRICE_INPUT_SCALE);
+  const integer = String(Math.trunc(units / PRICE_INPUT_SCALE));
+  const fraction = String(units % PRICE_INPUT_SCALE)
+    .padStart(PRICE_INPUT_DECIMALS, '0')
+    .replace(/0+$/, '')
+    .padEnd(MIN_PRICE_INPUT_DECIMALS, '0');
+  return `${integer},${fraction}`;
+}
+
 function decimalParts(
   text: string,
   maxDecimals: number,

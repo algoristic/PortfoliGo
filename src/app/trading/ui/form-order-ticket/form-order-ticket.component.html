@@ -431,7 +431,7 @@
                 Voraussichtlicher Gewinn/Verlust
               </dt>
               <dd class="text-right" data-testid="trading.order-ticket.gain">
-                {{ _tax.realizedGain | formatCents }}
+                {{ _tax.realizedGain | formatSignedCents }}
               </dd>
               @if (_tax.tax >= 0) {
                 <dt class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-tax">Steuer</dt>

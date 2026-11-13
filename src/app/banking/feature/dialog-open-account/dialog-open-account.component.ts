@@ -40,7 +40,10 @@ export class DialogOpenAccountComponent {
 
   openAccountModel = signal<OpenAccountFormModel>({
     bankId: this.data.bankId,
-    kind: offeredKinds(findBank(this.data.banks, this.data.bankId))[0] ?? '',
+    kind: preselectedKind(
+      offeredKinds(findBank(this.data.banks, this.data.bankId)),
+      this.data.kind,
+    ),
   });
   openAccountForm = form(
     this.openAccountModel,
@@ -93,6 +96,13 @@ export class DialogOpenAccountComponent {
 
 function findBank(banks: readonly Bank[], bankId: string): Bank | undefined {
   return banks.find((bank) => bank.id === bankId);
+}
+
+function preselectedKind(
+  offered: readonly OpenableAccountKind[],
+  kind: OpenableAccountKind | undefined,
+): OpenableAccountKind | '' {
+  return (kind !== undefined && offered.includes(kind) ? kind : offered[0]) ?? '';
 }
 
 function offeredKinds(bank: Bank | undefined): OpenableAccountKind[] {

@@ -9,7 +9,10 @@ import { instrumentStatus } from '@app/market/feature/state/instrument-view.util
 import { TaxYear } from '@app/taxes/domain/models/tax.model';
 import { ORDER_HISTORY_LENGTH, OrderSide } from '@app/trading/domain/models/order.model';
 import { isAtPriceFloor } from '@app/trading/domain/order-command-logic';
+import { venueQuote } from '@app/trading/domain/order-preview-logic';
 import { isActive } from '@app/trading/domain/order-reservation-logic';
+import { ChangeOrderContext } from '@app/trading/ui/models/change-order.model';
+import { DepotReservation, OrderBookEntry } from '@app/trading/ui/models/order-book.model';
 import { OrderTicketContext } from '@app/trading/ui/models/order-ticket.model';
 import { InstrumentTradeView } from '@app/trading/ui/models/trade-actions.model';
 
@@ -155,4 +158,75 @@ export function preselectedDepot(
         )
       : undefined;
   return (given ?? holding ?? open[0])?.depotId ?? null;
+}
+
+/**
+ * Orders of the order book (US-HD-04) with the instrument's name (its ID while the master data is
+ * missing) and the depot's number and bank, in the given order.
+ */
+export function orderBookEntries(
+  orders: readonly OrderView[],
+  instruments: Readonly<Record<string, Instrument | undefined>>,
+  depots: readonly DepotEntry[],
+): OrderBookEntry[] {
+  const byId = new Map(depots.map((depot) => [depot.depotId, depot] as const));
+  return orders.map((order) => {
+    const depot = byId.get(order.depotId);
+    return {
+      order,
+      instrumentName: instruments[order.instrumentId]?.name ?? order.instrumentId,
+      depotNumber: depot?.number ?? order.depotId,
+      bankName: depot?.bank?.name ?? null,
+    };
+  });
+}
+
+/** Reserved money per clearing account (US-HD-04): the depots whose active buy orders reserve. */
+export function depotReservations(depots: readonly DepotEntry[]): DepotReservation[] {
+  return depots.flatMap((depot) =>
+    depot.clearingAccount.reserved === 0
+      ? []
+      : [
+          {
+            depotId: depot.depotId,
+            depotNumber: depot.number,
+            bankName: depot.bank?.name ?? null,
+            reserved: depot.clearingAccount.reserved,
+            available: depot.clearingAccount.available,
+          },
+        ],
+  );
+}
+
+/**
+ * Live state of the dialog „Order ändern“ (US-HD-04): the order, the clearing account of its depot
+ * and the ask at the depot's bank, which the engine uses for the new reservation of market and stop
+ * purchases (`changedReservation`). `null` while the order or its depot is unknown.
+ */
+export function changeOrderContext(
+  order: OrderView | undefined,
+  instrument: Instrument | undefined,
+  quote: SeriesQuote | null,
+  depots: readonly DepotEntry[],
+  tick: Tick,
+): ChangeOrderContext | null {
+  const depot = depots.find((candidate) => candidate.depotId === order?.depotId);
+  if (order === undefined || depot === undefined) {
+    return null;
+  }
+  const conditions = depot.bank?.conditions.depot ?? null;
+  const ask =
+    conditions === null || quote === null || quote.bid === null || quote.ask === null
+      ? null
+      : venueQuote({ last: quote.last, bid: quote.bid, ask: quote.ask }, conditions.spreadMarkup)
+          .ask;
+  return {
+    order,
+    instrumentName: instrument?.name ?? order.instrumentId,
+    tick,
+    conditions,
+    clearingBalance: depot.clearingAccount.balance,
+    reserved: depot.clearingAccount.reserved,
+    ask,
+  };
 }

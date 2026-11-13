@@ -2,6 +2,7 @@ import { formatCents } from '@app/shared/util/format';
 import {
   OrderCommandError,
   OrderSide,
+  OrderStatus,
   OrderType,
   OrderValidityKind,
 } from '@app/trading/domain/models/order.model';
@@ -27,6 +28,24 @@ export function orderTypeLabel(type: OrderType): string {
       return $localize`:@@uiTrading-orderLabels-stop:Stop (Stop-Loss/Stop-Buy)`;
     case 'stop-limit':
       return $localize`:@@uiTrading-orderLabels-stopLimit:Stop-Limit`;
+  }
+}
+
+/** Names of the order states (TS §7.5, US-HD-04). */
+export function orderStatusLabel(status: OrderStatus): string {
+  switch (status) {
+    case 'open':
+      return $localize`:@@uiTrading-orderLabels-statusOpen:Offen`;
+    case 'triggered':
+      return $localize`:@@uiTrading-orderLabels-statusTriggered:Ausgelöst`;
+    case 'executed':
+      return $localize`:@@uiTrading-orderLabels-statusExecuted:Ausgeführt`;
+    case 'cancelled':
+      return $localize`:@@uiTrading-orderLabels-statusCancelled:Storniert`;
+    case 'expired':
+      return $localize`:@@uiTrading-orderLabels-statusExpired:Abgelaufen`;
+    case 'rejected':
+      return $localize`:@@uiTrading-orderLabels-statusRejected:Abgelehnt`;
   }
 }
 

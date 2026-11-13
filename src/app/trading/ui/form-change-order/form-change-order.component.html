@@ -1,0 +1,203 @@
+@let _context = context();
+@let _order = order();
+@let _limit = changeForm.limit();
+@let _stop = changeForm.stop();
+@let _date = changeForm.validityDate();
+@let _newReservation = newReservation();
+
+<form [formRoot]="changeForm">
+  <app-dialog [heading]="heading" testId="trading.change-order" (clickedClose)="cancel()">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <p class="font-medium" data-testid="trading.change-order.instrument">
+          {{ _context.instrumentName }}
+        </p>
+        <p class="text-fg-muted tabular-nums" data-testid="trading.change-order.summary">
+          {{ summary() }} ·
+          @if (_order.size.kind === 'quantity') {
+            <ng-container i18n="@@uiTrading-formChangeOrder-quantity"
+              >{{ _order.size.quantity | formatQuantity }} Stück</ng-container
+            >
+          } @else {
+            <ng-container i18n="@@uiTrading-formChangeOrder-amount"
+              >für {{ _order.size.amount | formatCents }}</ng-container
+            >
+          }
+        </p>
+        <p class="text-fg-muted tabular-nums" data-testid="trading.change-order.expires">
+          <ng-container i18n="@@uiTrading-formChangeOrder-expires"
+            >Gilt bisher bis {{ _order.expiresAt | formatGameTime }}</ng-container
+          >
+        </p>
+      </div>
+
+      @if (inactive()) {
+        <p
+          class="rounded-md border border-border px-3 py-2 text-warning"
+          role="status"
+          data-testid="trading.change-order.inactive"
+          i18n="@@uiTrading-formChangeOrder-inactive">
+          Die Order ist nicht mehr offen und lässt sich nicht mehr ändern.
+        </p>
+      }
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        @if (showLimit()) {
+          <div class="flex flex-col gap-1">
+            <label
+              class="font-medium"
+              for="trading-change-order-limit"
+              i18n="@@uiTrading-formChangeOrder-limit"
+              >Limit (€)</label
+            >
+            <input
+              id="trading-change-order-limit"
+              class="h-10 rounded-md border border-border bg-surface px-3 text-right text-fg tabular-nums aria-invalid:border-down"
+              type="text"
+              inputmode="decimal"
+              autocomplete="off"
+              cdkFocusInitial
+              aria-describedby="trading-change-order-limit-errors"
+              data-testid="trading.change-order.limit"
+              [attr.aria-invalid]="_limit.touched() && _limit.invalid()"
+              [formField]="changeForm.limit" />
+            <p id="trading-change-order-limit-errors" class="text-down">
+              @if (_limit.touched() && _limit.invalid()) {
+                @for (error of _limit.errors(); track error.kind) {
+                  <span data-testid="trading.change-order.limit-error">{{ error.message }}</span>
+                }
+              }
+            </p>
+          </div>
+        }
+
+        @if (showStop()) {
+          <div class="flex flex-col gap-1">
+            <label
+              class="font-medium"
+              for="trading-change-order-stop"
+              i18n="@@uiTrading-formChangeOrder-stop"
+              >Stop-Kurs (€)</label
+            >
+            <input
+              id="trading-change-order-stop"
+              class="h-10 rounded-md border border-border bg-surface px-3 text-right text-fg tabular-nums disabled:text-fg-muted aria-invalid:border-down"
+              type="text"
+              inputmode="decimal"
+              autocomplete="off"
+              aria-describedby="trading-change-order-stop-hint"
+              data-testid="trading.change-order.stop"
+              cdkFocusInitial
+              [attr.aria-invalid]="_stop.touched() && _stop.invalid()"
+              [formField]="changeForm.stop" />
+            <p id="trading-change-order-stop-hint" class="text-down">
+              @if (stopLocked()) {
+                <span
+                  class="text-fg-muted"
+                  data-testid="trading.change-order.stop-locked"
+                  i18n="@@uiTrading-formChangeOrder-stopLocked"
+                  >Der Stop ist ausgelöst und lässt sich nicht mehr ändern.</span
+                >
+              } @else if (_stop.touched() && _stop.invalid()) {
+                @for (error of _stop.errors(); track error.kind) {
+                  <span data-testid="trading.change-order.stop-error">{{ error.message }}</span>
+                }
+              }
+            </p>
+          </div>
+        }
+
+        <div class="flex flex-col gap-1">
+          <label
+            class="font-medium"
+            for="trading-change-order-validity"
+            i18n="@@uiTrading-formChangeOrder-validity"
+            >Gültigkeit</label
+          >
+          <select
+            id="trading-change-order-validity"
+            cdkFocusInitial
+            class="h-10 rounded-md border border-border bg-surface px-2 text-fg"
+            data-testid="trading.change-order.validity"
+            [formField]="changeForm.validity">
+            @for (option of validityOptions; track option.kind) {
+              <option [value]="option.kind">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        @if (showDate()) {
+          <div class="flex flex-col gap-1">
+            <label
+              class="font-medium"
+              for="trading-change-order-date"
+              i18n="@@uiTrading-formChangeOrder-date"
+              >Gültig bis</label
+            >
+            <input
+              id="trading-change-order-date"
+              class="h-10 rounded-md border border-border bg-surface px-3 text-fg aria-invalid:border-down"
+              type="date"
+              aria-describedby="trading-change-order-date-errors"
+              data-testid="trading.change-order.validity-date"
+              [attr.min]="minDate()"
+              [attr.max]="maxDate()"
+              [attr.aria-invalid]="_date.touched() && _date.invalid()"
+              [formField]="changeForm.validityDate" />
+            <p id="trading-change-order-date-errors" class="text-down">
+              @if (_date.touched() && _date.invalid()) {
+                @for (error of _date.errors(); track error.kind) {
+                  <span data-testid="trading.change-order.date-error">{{ error.message }}</span>
+                }
+              }
+            </p>
+          </div>
+        }
+      </div>
+
+      <p class="text-fg-muted" i18n="@@uiTrading-formChangeOrder-validityNote">
+        Eine neue Gültigkeit zählt ab jetzt, höchstens ein Jahr.
+      </p>
+
+      @if (isBuy()) {
+        <dl
+          class="flex flex-col gap-1 rounded-md bg-surface-raised p-3 tabular-nums"
+          data-testid="trading.change-order.reservation">
+          <div class="flex justify-between gap-4">
+            <dt class="text-fg-muted" i18n="@@uiTrading-formChangeOrder-reserved">
+              Reserviert bisher
+            </dt>
+            <dd data-testid="trading.change-order.reserved">{{ _order.reserved | formatCents }}</dd>
+          </div>
+          <div class="flex justify-between gap-4">
+            <dt class="font-medium" i18n="@@uiTrading-formChangeOrder-newReservation">
+              Reservierung nach der Änderung
+            </dt>
+            <dd class="font-medium" data-testid="trading.change-order.new-reservation">
+              {{ _newReservation | formatCents }}
+            </dd>
+          </div>
+        </dl>
+      }
+    </div>
+
+    <ng-container dialogActions>
+      <button
+        appButton
+        type="button"
+        data-testid="trading.change-order.decline"
+        i18n="@@uiTrading-formChangeOrder-decline"
+        (click)="cancel()">
+        Abbrechen
+      </button>
+      <button
+        appButton
+        type="submit"
+        variant="primary"
+        data-testid="trading.change-order.submit"
+        i18n="@@uiTrading-formChangeOrder-submit">
+        Ändern
+      </button>
+    </ng-container>
+  </app-dialog>
+</form>

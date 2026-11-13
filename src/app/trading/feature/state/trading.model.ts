@@ -6,6 +6,9 @@ import { Bank } from '@app/world/domain/models/bank.model';
 /** Quote subscription of the open order ticket (TS §8.4, §11.3). */
 export const ORDER_TICKET_SUBSCRIPTION = 'order-ticket';
 
+/** Quote subscription of the open dialog „Order ändern“ (TS §8.4, §11.3). */
+export const ORDER_CHANGE_SUBSCRIPTION = 'order-change';
+
 /** The order commands of the slice (TS §8.2); each has its own pending count. */
 export const ORDER_COMMANDS = ['placeOrder', 'changeOrder', 'cancelOrder'] as const;
 export type OrderCommand = (typeof ORDER_COMMANDS)[number];

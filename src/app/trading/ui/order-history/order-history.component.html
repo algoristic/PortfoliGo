@@ -1,0 +1,120 @@
+@let _rows = rows();
+
+@if (_rows.length === 0) {
+  <app-empty-state
+    icon="clock-history"
+    data-testid="trading.order-history.empty"
+    heading="Noch keine abgeschlossenen Orders"
+    i18n-heading="@@uiTrading-orderHistory-emptyHeading"
+    text="Ausgeführte, stornierte, abgelaufene und abgelehnte Orders erscheinen hier."
+    i18n-text="@@uiTrading-orderHistory-emptyText"></app-empty-state>
+} @else {
+  <div
+    class="hidden items-center gap-3 border-b border-border px-3 py-2 text-xs font-medium text-fg-muted md:flex"
+    aria-hidden="true">
+    <span class="min-w-0 flex-1" i18n="@@uiTrading-orderHistory-instrument">Wertpapier</span>
+    <span class="w-56" i18n="@@uiTrading-orderHistory-order">Auftrag</span>
+    <span class="w-48 text-right" i18n="@@uiTrading-orderHistory-execution">Ausführung</span>
+  </div>
+  <ul class="flex flex-col" data-testid="trading.order-history.list" [attr.aria-label]="label">
+    @for (row of _rows; track row.id) {
+      <li
+        class="flex flex-col gap-2 border-b border-border px-3 py-3 md:flex-row md:items-start md:gap-3"
+        data-testid="trading.order-history.row"
+        [attr.data-order-id]="row.id">
+        <div class="min-w-0 md:flex-1">
+          <a
+            class="block truncate text-sm font-medium hover:underline"
+            data-testid="trading.order-history.row.name"
+            [routerLink]="['../markets', row.instrumentId]"
+            >{{ row.instrumentName }}</a
+          >
+          <p class="truncate text-xs text-fg-muted" data-testid="trading.order-history.row.depot">
+            {{ row.depotLabel }}
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-1 text-sm md:w-56">
+          <p class="flex flex-wrap gap-1">
+            <app-badge data-testid="trading.order-history.row.side" [tone]="row.sideTone">{{
+              row.sideLabel
+            }}</app-badge>
+            <app-badge data-testid="trading.order-history.row.status" [tone]="row.statusTone">{{
+              row.statusLabel
+            }}</app-badge>
+          </p>
+          <p class="tabular-nums">
+            <span data-testid="trading.order-history.row.type">{{ row.typeLabel }}</span>
+            @if (row.stop !== null) {
+              <span class="text-fg-muted">
+                · <ng-container i18n="@@uiTrading-orderHistory-stop">Stop</ng-container>
+                {{ row.stop | formatPrice }}</span
+              >
+            }
+            @if (row.limit !== null) {
+              <span class="text-fg-muted">
+                · <ng-container i18n="@@uiTrading-orderHistory-limit">Limit</ng-container>
+                {{ row.limit | formatPrice }}</span
+              >
+            }
+            ·
+            <span data-testid="trading.order-history.row.size">
+              @if (row.quantity !== null) {
+                <ng-container i18n="@@uiTrading-orderHistory-quantity"
+                  >{{ row.quantity | formatQuantity }} Stück</ng-container
+                >
+              } @else {
+                <ng-container i18n="@@uiTrading-orderHistory-amount"
+                  >für {{ row.amount | formatCents }}</ng-container
+                >
+              }
+            </span>
+          </p>
+          <p
+            class="text-xs text-fg-muted tabular-nums"
+            data-testid="trading.order-history.row.closed">
+            {{ row.closedAt | formatGameTime }}
+          </p>
+        </div>
+
+        <div class="text-sm tabular-nums md:w-48 md:text-right">
+          @if (row.execution; as execution) {
+            <dl class="flex flex-col">
+              <div class="flex justify-between gap-2 md:justify-end">
+                <dt class="text-fg-muted md:sr-only" i18n="@@uiTrading-orderHistory-executed">
+                  Ausgeführt
+                </dt>
+                <dd data-testid="trading.order-history.row.executed">
+                  <ng-container i18n="@@uiTrading-orderHistory-quantityAtPrice"
+                    >{{ execution.quantity | formatQuantity }} Stück zu
+                    {{ execution.price | formatPrice }}</ng-container
+                  >
+                </dd>
+              </div>
+              <div class="flex justify-between gap-2 md:justify-end">
+                <dt class="text-fg-muted" i18n="@@uiTrading-orderHistory-costs">Kosten</dt>
+                <dd data-testid="trading.order-history.row.costs">
+                  {{ execution.costs | formatCents }}
+                </dd>
+              </div>
+              <div class="flex justify-between gap-2 font-medium md:justify-end">
+                <dt i18n="@@uiTrading-orderHistory-total">Gesamt</dt>
+                <dd data-testid="trading.order-history.row.total">
+                  {{ execution.total | formatCents }}
+                </dd>
+              </div>
+            </dl>
+          } @else if (row.rejectionLabel) {
+            <p class="text-down" data-testid="trading.order-history.row.rejection">
+              {{ row.rejectionLabel }}
+            </p>
+          } @else {
+            <p class="text-fg-muted" i18n="@@uiTrading-orderHistory-notExecuted">
+              Nicht ausgeführt
+            </p>
+          }
+        </div>
+      </li>
+    }
+  </ul>
+}

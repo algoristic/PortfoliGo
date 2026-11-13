@@ -36,6 +36,17 @@ export const placeOrderFailure = createAction(
   props<{ order: OrderSpec; error: unknown }>(),
 );
 
+/** Opens the dialog „Order ändern“ for an active order (US-HD-04). */
+export const clickedChangeOrder = createAction(
+  '[Trading/Page] Clicked change order',
+  props<{ orderId: string }>(),
+);
+/** Asks to confirm the cancellation of an active order (US-HD-04). */
+export const clickedCancelOrder = createAction(
+  '[Trading/Page] Clicked cancel order',
+  props<{ orderId: string }>(),
+);
+
 export const submittedChangeOrder = createAction(
   '[Trading/Page] Submitted change order',
   props<{ orderId: string; change: OrderChange }>(),

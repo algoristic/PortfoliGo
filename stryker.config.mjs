@@ -81,6 +81,8 @@ const config = {
     'src/app/trading/domain/order-reservation-logic.ts',
     'src/app/trading/domain/order-command-logic.ts',
     'src/app/trading/domain/position-logic.ts',
+    'src/app/trading/domain/order-input-logic.ts',
+    'src/app/trading/domain/order-preview-logic.ts',
     'src/app/engine/domain/order-system.ts',
     'src/app/engine/domain/distribution-system.ts',
     'src/app/engine/domain/valuation.ts',

@@ -1,0 +1,167 @@
+@let _rows = rows();
+@let _reservations = reservationRows();
+
+@if (_reservations.length > 0) {
+  <section
+    class="mb-4 rounded-lg border border-border bg-surface p-3"
+    aria-labelledby="trading-open-orders-reservations"
+    data-testid="trading.open-orders.reservations">
+    <h2
+      id="trading-open-orders-reservations"
+      class="text-sm font-semibold"
+      i18n="@@uiTrading-openOrders-reservationsHeading"
+      >Reserviert für offene Kauforders</h2
+    >
+    <ul class="mt-2 flex flex-col gap-2 text-sm">
+      @for (reservation of _reservations; track reservation.depotId) {
+        <li
+          class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1"
+          data-testid="trading.open-orders.reservation"
+          [attr.data-depot-id]="reservation.depotId">
+          <span class="text-fg-muted" data-testid="trading.open-orders.reservation.label">{{
+            reservation.label
+          }}</span>
+          <span class="flex flex-wrap gap-x-4 tabular-nums">
+            <span>
+              <ng-container i18n="@@uiTrading-openOrders-reserved">Reserviert</ng-container>
+              <span
+                class="ml-1 font-medium"
+                data-testid="trading.open-orders.reservation.reserved"
+                >{{ reservation.reserved | formatCents }}</span
+              >
+            </span>
+            <span class="text-fg-muted">
+              <ng-container i18n="@@uiTrading-openOrders-available">Verfügbar</ng-container>
+              <span class="ml-1" data-testid="trading.open-orders.reservation.available">{{
+                reservation.available | formatCents
+              }}</span>
+            </span>
+          </span>
+        </li>
+      }
+    </ul>
+  </section>
+}
+
+@if (_rows.length === 0) {
+  <app-empty-state
+    icon="list-check"
+    data-testid="trading.open-orders.empty"
+    heading="Keine offenen Orders"
+    i18n-heading="@@uiTrading-openOrders-emptyHeading"
+    text="Orders erteilst du auf der Seite eines Wertpapiers mit „Kaufen“ oder „Verkaufen“."
+    i18n-text="@@uiTrading-openOrders-emptyText"></app-empty-state>
+} @else {
+  <div
+    class="hidden items-center gap-3 border-b border-border px-3 py-2 text-xs font-medium text-fg-muted md:flex"
+    aria-hidden="true">
+    <span class="min-w-0 flex-1" i18n="@@uiTrading-openOrders-instrument">Wertpapier</span>
+    <span class="w-56" i18n="@@uiTrading-openOrders-order">Auftrag</span>
+    <span class="w-32 text-right" i18n="@@uiTrading-openOrders-size">Menge</span>
+    <span class="w-20"></span>
+  </div>
+  <ul class="flex flex-col" data-testid="trading.open-orders.list" [attr.aria-label]="label">
+    @for (row of _rows; track row.id) {
+      <li
+        class="flex flex-col gap-2 border-b border-border px-3 py-3 md:flex-row md:items-start md:gap-3"
+        data-testid="trading.open-orders.row"
+        [attr.data-order-id]="row.id">
+        <div class="min-w-0 md:flex-1">
+          <a
+            class="block truncate text-sm font-medium hover:underline"
+            data-testid="trading.open-orders.row.name"
+            [routerLink]="['../markets', row.instrumentId]"
+            >{{ row.instrumentName }}</a
+          >
+          <p class="truncate text-xs text-fg-muted" data-testid="trading.open-orders.row.depot">
+            {{ row.depotLabel }}
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-1 text-sm md:w-56">
+          <p class="flex flex-wrap gap-1">
+            <app-badge data-testid="trading.open-orders.row.side" [tone]="row.sideTone">{{
+              row.sideLabel
+            }}</app-badge>
+            <app-badge data-testid="trading.open-orders.row.status" [tone]="row.statusTone">{{
+              row.statusLabel
+            }}</app-badge>
+          </p>
+          <p class="tabular-nums">
+            <span data-testid="trading.open-orders.row.type">{{ row.typeLabel }}</span>
+            @if (row.stop !== null) {
+              <span class="text-fg-muted">
+                · <ng-container i18n="@@uiTrading-openOrders-stop">Stop</ng-container>
+                <span class="ml-1" data-testid="trading.open-orders.row.stop">{{
+                  row.stop | formatPrice
+                }}</span>
+              </span>
+            }
+            @if (row.limit !== null) {
+              <span class="text-fg-muted">
+                · <ng-container i18n="@@uiTrading-openOrders-limit">Limit</ng-container>
+                <span class="ml-1" data-testid="trading.open-orders.row.limit">{{
+                  row.limit | formatPrice
+                }}</span>
+              </span>
+            }
+          </p>
+          <p class="text-xs text-fg-muted tabular-nums">
+            <ng-container i18n="@@uiTrading-openOrders-expires">gilt bis</ng-container>
+            <span class="ml-1" data-testid="trading.open-orders.row.expires">{{
+              row.expiresAt | formatGameTime
+            }}</span>
+          </p>
+        </div>
+
+        <div
+          class="flex flex-wrap items-baseline justify-between gap-x-4 text-sm tabular-nums md:w-32 md:flex-col md:items-end">
+          <span data-testid="trading.open-orders.row.size">
+            @if (row.quantity !== null) {
+              <ng-container i18n="@@uiTrading-openOrders-quantity"
+                >{{ row.quantity | formatQuantity }} Stück</ng-container
+              >
+            } @else {
+              <ng-container i18n="@@uiTrading-openOrders-amount"
+                >für {{ row.amount | formatCents }}</ng-container
+              >
+            }
+          </span>
+          @if (row.reserved !== null) {
+            <span class="text-xs text-fg-muted">
+              <ng-container i18n="@@uiTrading-openOrders-rowReserved">reserviert</ng-container>
+              <span class="ml-1" data-testid="trading.open-orders.row.reserved">{{
+                row.reserved | formatCents
+              }}</span>
+            </span>
+          }
+        </div>
+
+        <div class="flex gap-2 md:w-20 md:justify-end">
+          <button
+            appButton
+            type="button"
+            size="sm"
+            data-testid="trading.open-orders.row.change"
+            [attr.aria-label]="row.changeLabel"
+            [attr.title]="row.changeLabel"
+            (click)="onChange(row.id)">
+            <i appIcon="pencil"></i>
+            <span class="md:hidden" i18n="@@uiTrading-openOrders-change">Ändern</span>
+          </button>
+          <button
+            appButton
+            type="button"
+            size="sm"
+            data-testid="trading.open-orders.row.cancel"
+            [attr.aria-label]="row.cancelLabel"
+            [attr.title]="row.cancelLabel"
+            (click)="onCancel(row.id)">
+            <i appIcon="x-circle"></i>
+            <span class="md:hidden" i18n="@@uiTrading-openOrders-cancel">Stornieren</span>
+          </button>
+        </div>
+      </li>
+    }
+  </ul>
+}

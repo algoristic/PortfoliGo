@@ -16,18 +16,22 @@ import { isActive } from '@app/trading/domain/order-reservation-logic';
 import { OrderCommand } from './trading.model';
 import { ordersAdapter, TRADING_FEATURE_KEY, TradingState } from './trading.reducer';
 import {
+  changeOrderContext,
   compareByPlacement,
   compareNewestClosed,
   depotEntries,
+  depotReservations,
   instrumentTradeView,
+  orderBookEntries,
   orderTicketContext,
 } from './trading.utils';
 
 const selectState = createFeatureSelector<TradingState>(TRADING_FEATURE_KEY);
-const { selectAll } = ordersAdapter.getSelectors();
+const { selectAll, selectEntities } = ordersAdapter.getSelectors();
 
 /** Active and closed orders as the projection carried them. */
 export const selectOrders = createSelector(selectState, selectAll);
+export const selectOrderEntities = createSelector(selectState, selectEntities);
 export const selectHoldings = createSelector(selectState, (state) => state.holdings);
 export const selectPending = createSelector(selectState, (state) => state.pending);
 /** The first full trading projection arrived. */
@@ -92,6 +96,51 @@ export const selectOrderTicketContext = (instrumentId: string) =>
             tick,
             taxYear,
             DEFAULT_MARKET_CONFIG.priceFloor,
+          );
+    },
+  );
+
+/** Open orders of the order book with instrument and depot names (US-HD-04). */
+export const selectOpenOrderEntries = createSelector(
+  selectOpenOrders,
+  selectInstrumentEntities,
+  selectDepots,
+  orderBookEntries,
+);
+
+/** Closed orders of the order book, newest first, with instrument and depot names (US-HD-04). */
+export const selectOrderHistoryEntries = createSelector(
+  selectOrderHistory,
+  selectInstrumentEntities,
+  selectDepots,
+  orderBookEntries,
+);
+
+/** Clearing accounts with reserved money (US-HD-04). */
+export const selectDepotReservations = createSelector(selectDepots, depotReservations);
+
+/**
+ * Live state of the dialog „Order ändern“ (US-HD-04); `null` while the order, its depot or the
+ * clock is unknown. It follows the order, the quote and the clearing account.
+ */
+export const selectChangeOrderContext = (orderId: string) =>
+  createSelector(
+    selectOrderEntities,
+    selectInstrumentEntities,
+    selectQuoteEntities,
+    selectDepots,
+    selectTick,
+    (orders, instruments, quotes, depots, tick) => {
+      const order = orders[orderId];
+      const instrument = order === undefined ? undefined : instruments[order.instrumentId];
+      return tick === null
+        ? null
+        : changeOrderContext(
+            order,
+            instrument,
+            instrument === undefined ? null : (quotes[instrument.series] ?? null),
+            depots,
+            tick,
           );
     },
   );

@@ -5,6 +5,8 @@ export interface OpenAccountDialogData {
   banks: Bank[];
   /** The preselected bank. */
   bankId: string;
+  /** The preselected kind, if the bank offers it; else the first kind it offers. */
+  kind?: OpenableAccountKind;
 }
 
 /** The bank and kind to open; `undefined` when the dialog was closed without opening. */

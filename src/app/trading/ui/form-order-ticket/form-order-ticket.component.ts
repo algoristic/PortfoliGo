@@ -9,6 +9,7 @@ import { DialogComponent } from '@app/shared/ui/dialog/dialog.component';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { FormatPricePipe } from '@app/shared/ui/pipes/format-price/format-price.pipe';
 import { FormatQuantityPipe } from '@app/shared/ui/pipes/format-quantity/format-quantity.pipe';
+import { FormatSignedCentsPipe } from '@app/shared/ui/pipes/format-signed-cents/format-signed-cents.pipe';
 import { formatQuantity } from '@app/shared/util/format';
 import {
   ORDER_TYPES,
@@ -55,6 +56,7 @@ interface TicketStart {
     FormatCentsPipe,
     FormatPricePipe,
     FormatQuantityPipe,
+    FormatSignedCentsPipe,
   ],
   templateUrl: './form-order-ticket.component.html',
   host: { class: 'block' },

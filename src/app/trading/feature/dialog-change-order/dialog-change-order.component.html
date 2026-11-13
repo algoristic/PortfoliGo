@@ -1,0 +1,8 @@
+@let context = context$ | async;
+
+@if (context) {
+  <app-form-change-order
+    [context]="context"
+    (submittedChange)="submit($event)"
+    (clickedCancel)="decline()"></app-form-change-order>
+}

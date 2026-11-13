@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { DepotId } from '@app/banking/domain/models/account.model';
 import { PositionView } from '@app/engine/domain/models/trading-view.model';
 import { OrderChange, OrderSpec } from '@app/trading/domain/models/order.model';
+import { ChangeOrderContext } from '@app/trading/ui/models/change-order.model';
 import { OrderTicketContext } from '@app/trading/ui/models/order-ticket.model';
 
 import * as TradingActions from './trading.actions';
@@ -23,6 +24,9 @@ export class TradingFacade {
   tradingLoaded$ = this.#store.pipe(select(TradingSelectors.selectTradingLoaded));
   pending$ = this.#store.pipe(select(TradingSelectors.selectPending));
   routeInstrumentTrade$ = this.#store.pipe(select(TradingSelectors.selectRouteInstrumentTrade));
+  openOrderEntries$ = this.#store.pipe(select(TradingSelectors.selectOpenOrderEntries));
+  orderHistoryEntries$ = this.#store.pipe(select(TradingSelectors.selectOrderHistoryEntries));
+  depotReservations$ = this.#store.pipe(select(TradingSelectors.selectDepotReservations));
 
   position$(depotId: DepotId, instrumentId: string): Observable<PositionView | null> {
     return this.#store.pipe(select(TradingSelectors.selectPosition(depotId, instrumentId)));
@@ -30,6 +34,10 @@ export class TradingFacade {
 
   orderTicketContext$(instrumentId: string): Observable<OrderTicketContext | null> {
     return this.#store.pipe(select(TradingSelectors.selectOrderTicketContext(instrumentId)));
+  }
+
+  changeOrderContext$(orderId: string): Observable<ChangeOrderContext | null> {
+    return this.#store.pipe(select(TradingSelectors.selectChangeOrderContext(orderId)));
   }
 
   isPending$(command: OrderCommand): Observable<boolean> {
@@ -50,6 +58,14 @@ export class TradingFacade {
         depotId === undefined ? { instrumentId } : { instrumentId, depotId },
       ),
     );
+  }
+
+  clickChangeOrder(orderId: string): void {
+    this.#store.dispatch(TradingActions.clickedChangeOrder({ orderId }));
+  }
+
+  clickCancelOrder(orderId: string): void {
+    this.#store.dispatch(TradingActions.clickedCancelOrder({ orderId }));
   }
 
   placeOrder(order: OrderSpec): void {

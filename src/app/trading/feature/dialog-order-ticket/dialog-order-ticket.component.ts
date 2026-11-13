@@ -18,8 +18,7 @@ import { TradingFacade } from '../state/trading.facade';
   selector: 'app-dialog-order-ticket',
   imports: [CommonModule, FormOrderTicketComponent],
   templateUrl: './dialog-order-ticket.component.html',
-  styleUrl: './dialog-order-ticket.component.scss',
-  host: { class: 'block overflow-y-auto rounded-lg' },
+  host: { class: 'block' },
 })
 export class DialogOrderTicketComponent {
   readonly #dialogRef = inject<DialogRef<OrderTicketDialogResult>>(DialogRef);
