@@ -204,6 +204,31 @@ export class EngineService implements OnDestroy {
   }
 
   /**
+   * Key figures of one series at the current tick (TS §8.2, US-MK-03): market capitalisation,
+   * dividend yield, volatility, beta, performance 1M/1Y/5Y and the indicative value; fails with
+   * `unknown-instrument` for an unknown ID.
+   */
+  instrumentFigures(id: string): Observable<EngineQueryResultOf<'instrumentFigures'>> {
+    return this.#query({ kind: 'instrumentFigures', id });
+  }
+
+  /**
+   * Dividend history up to now and the next ex-date of a share or distributing ETF (TS §6.5,
+   * US-MK-03, US-MK-06); the amount of the next date only once announced.
+   */
+  instrumentDividends(id: string): Observable<EngineQueryResultOf<'instrumentDividends'>> {
+    return this.#query({ kind: 'instrumentDividends', id });
+  }
+
+  /**
+   * Composition of an index or of the index an ETF tracks (TS §8.2, US-MK-03): largest positions
+   * and the weights per region and sector; `null` for shares.
+   */
+  instrumentComposition(id: string): Observable<EngineQueryResultOf<'instrumentComposition'>> {
+    return this.#query({ kind: 'instrumentComposition', id });
+  }
+
+  /**
    * The screener up to the current tick (TS §8.2, US-MK-02): all matches with their figures and
    * a one-month sparkline, sorted.
    */

@@ -11,6 +11,11 @@ import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { MarketMovers } from '@app/engine/domain/models/market-movers.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
+import {
+  IndexComposition,
+  InstrumentDividends,
+  InstrumentFigures,
+} from '@app/market/domain/models/instrument-figures.model';
 import { Instrument, InstrumentDetails } from '@app/market/domain/models/instrument.model';
 import { ScreenerCriteria, ScreenerRow } from '@app/market/domain/models/screener.model';
 import { WATCHLIST_COMMAND_ERRORS } from '@app/market/domain/models/watchlist.model';
@@ -130,6 +135,10 @@ export type EngineQuery =
   /** Master data of all series (AP 4.1); it doesn't change during a game. */
   | { kind: 'instruments' }
   | { kind: 'instrumentDetails'; id: string }
+  /** Key figures, dividends and the index composition of a series (AP 4.5, US-MK-03). */
+  | { kind: 'instrumentFigures'; id: string }
+  | { kind: 'instrumentDividends'; id: string }
+  | { kind: 'instrumentComposition'; id: string }
   | ScreenerQuery
   | CandlesQuery;
 export type EngineQueryKind = EngineQuery['kind'];
@@ -143,6 +152,9 @@ export const ENGINE_QUERY_KINDS = [
   'absenceReport',
   'instruments',
   'instrumentDetails',
+  'instrumentFigures',
+  'instrumentDividends',
+  'instrumentComposition',
   'screener',
   'candles',
 ] as const satisfies readonly EngineQueryKind[];
@@ -291,6 +303,10 @@ export type EngineQueryResult =
   | { kind: 'absenceReport'; report: AbsenceReport | null }
   | { kind: 'instruments'; instruments: Instrument[] }
   | { kind: 'instrumentDetails'; details: InstrumentDetails }
+  | { kind: 'instrumentFigures'; figures: InstrumentFigures; tick: Tick }
+  | ({ kind: 'instrumentDividends'; tick: Tick } & InstrumentDividends)
+  /** `composition` is `null` for shares. */
+  | { kind: 'instrumentComposition'; composition: IndexComposition | null; tick: Tick }
   | ({ kind: 'screener' } & ScreenerResult)
   | ({ kind: 'candles' } & CandlesResult);
 
@@ -373,8 +389,9 @@ export const ENGINE_ERRORS = [
   ...NOTIFICATION_COMMAND_ERRORS,
   /**
    * The engine rejected `updateWatchlist` (TS §8.2); see `WATCHLIST_COMMAND_ERRORS`.
-   * `unknown-instrument` also answers `instrumentDetails` with an ID, or `candles` with a series,
-   * that is no series of the world.
+   * `unknown-instrument` also answers `instrumentDetails`, `instrumentFigures`,
+   * `instrumentDividends` and `instrumentComposition` with an ID, or `candles` with a series, that
+   * is no series of the world.
    */
   ...WATCHLIST_COMMAND_ERRORS,
 ] as const;

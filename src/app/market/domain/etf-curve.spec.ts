@@ -263,3 +263,86 @@ describe('ETFs', () => {
     });
   });
 });
+
+// TS §6.6, decided 13.11.2026: at the weekend the indicative value shows the level of Friday 24:00.
+describe('indicative values at the weekend', () => {
+  const EPOCH_MS = Date.UTC(2020, 0, 1);
+  const dayOf = (month: number, dayOfMonth: number): number =>
+    (Date.UTC(2020, month - 1, dayOfMonth) - EPOCH_MS) / 86_400_000;
+  const tickOf = (month: number, dayOfMonth: number, hour: number, minute = 0): number =>
+    dayOf(month, dayOfMonth) * MINUTES_PER_DAY + hour * 60 + minute;
+
+  let source: PriceSource;
+  let friday: MarketDay;
+  let monday: MarketDay;
+  /** An Asian share: closed from Friday afternoon to Monday morning. */
+  let share: number;
+  let etf: number;
+
+  beforeAll(() => {
+    source = new PriceSource(context, history, state);
+    friday = days.find((day) => day.day === dayOf(12, 18)) as MarketDay;
+    monday = days.find((day) => day.day === dayOf(12, 21)) as MarketDay;
+    share = layout.openBoundary.findIndex((boundary) => layout.boundaries[boundary] < 180);
+    etf = etfSeries(context, accumulating);
+  });
+
+  function factorPart(target: MarketDay, i: number, boundary: number): number {
+    let sum = 0;
+    for (let l = 0; l < LOADINGS_PER_INSTRUMENT; l++) {
+      const k = layout.loadingFactors[i * LOADINGS_PER_INSTRUMENT + l];
+      sum +=
+        layout.loadings[i * LOADINGS_PER_INSTRUMENT + l] *
+        target.factorLevels[k * boundaryCount + boundary];
+    }
+    return sum;
+  }
+
+  /** The share's Friday close moved with the factors to `boundary` of `target`. */
+  function movedClose(target: MarketDay, boundary: number): number {
+    const close = layout.closeBoundary[share];
+    return (
+      priceFromLog(friday.logClose[share], floor) *
+      detExp(factorPart(target, share, boundary) - factorPart(friday, share, close))
+    );
+  }
+
+  it('shows the level of Friday 24:00 from Saturday to Sunday 23:59', () => {
+    expect(share).toBeGreaterThanOrEqual(0);
+    const midnight = movedClose(friday, boundaryCount - 1);
+    // Fr 24:00 is the last minute of Friday's indicative curve, not the Friday close.
+    expect(midnight).not.toBeCloseTo(priceFromLog(friday.logClose[share], floor), 10);
+    for (const tick of [tickOf(12, 19, 0), tickOf(12, 19, 12), tickOf(12, 20, 23, 59)]) {
+      expect(source.indicativeAt(share, tick, endOfToday) / midnight).toBeCloseTo(1, 10);
+    }
+  });
+
+  it('continues on Monday 00:00 without a jump of the factor level', () => {
+    const saturday = source.indicativeAt(share, tickOf(12, 19, 12), endOfToday);
+    expect(source.indicativeAt(share, tickOf(12, 21, 0), endOfToday) / saturday).toBeCloseTo(1, 12);
+    expect(movedClose(monday, 0) / saturday).toBeCloseTo(1, 12);
+    // An ETF moves only by the daily step of k (TER of three calendar days, tracking noise), which
+    // applies from 00:00 of every market day.
+    const etfSaturday = source.indicativeAt(etf, tickOf(12, 19, 12), endOfToday);
+    const scaleStep = monday.etfScale[accumulating] / friday.etfScale[accumulating];
+    expect(
+      source.indicativeAt(etf, tickOf(12, 21, 0), endOfToday) / etfSaturday / scaleStep,
+    ).toBeCloseTo(1, 12);
+  });
+
+  it('moves with the factors until Friday 23:59 and equals the price in the ETF session', () => {
+    // Fr 17:30: the ETF's close; Mo 09:00: its open.
+    expect(source.indicativeAt(etf, tickOf(12, 18, 17, 30), endOfToday)).toBe(
+      source.priceAt(etf, tickOf(12, 18, 17, 30), endOfToday),
+    );
+    expect(source.indicativeAt(etf, tickOf(12, 21, 9), endOfToday)).toBe(
+      source.priceAt(etf, tickOf(12, 21, 9), endOfToday),
+    );
+    const late = source.indicativeAt(etf, tickOf(12, 18, 23, 59), endOfToday);
+    const weekend = source.indicativeAt(etf, tickOf(12, 19, 12), endOfToday);
+    expect(late).not.toBe(source.priceAt(etf, tickOf(12, 18, 23, 59), endOfToday));
+    expect(Math.abs(late / weekend - 1)).toBeLessThan(0.01);
+    // The weekend no longer falls back to the official value (the Friday close).
+    expect(weekend).not.toBe(source.priceAt(etf, tickOf(12, 19, 12), endOfToday));
+  });
+});

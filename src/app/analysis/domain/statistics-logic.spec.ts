@@ -3,7 +3,9 @@ import fc from 'fast-check';
 import {
   annualizedVolatility,
   autocorrelation,
+  beta,
   correlation,
+  covariance,
   geometricReturn,
   histogram,
   kurtosis,
@@ -104,6 +106,61 @@ describe('statistics-logic', () => {
     it('returns NaN without a positive start value', () => {
       expect(geometricReturn(0, 121, 1)).toBeNaN();
       expect(geometricReturn(-100, 121, 1)).toBeNaN();
+    });
+  });
+
+  // TS §8.2 (AP 4.5): key figures from hand-computed daily log returns.
+  describe('covariance and beta', () => {
+    const benchmark = [0.01, -0.02, 0.03, 0];
+
+    it.each<[string, number[], number]>([
+      ['twice the benchmark', [0.02, -0.04, 0.06, 0], 2],
+      ['the benchmark shifted by 0.001', [0.011, -0.019, 0.031, 0.001], 1],
+      ['an unrelated series', [0.02, 0.01, -0.01, 0.02], -5 / 13],
+    ])('gives the beta of %s', (_name, returns, expected) => {
+      expect(beta(returns, benchmark)).toBeCloseTo(expected, 12);
+    });
+
+    it('computes the sample covariance', () => {
+      // Deviations (0.01, 0, −0.02, 0.01) and (0.005, −0.025, 0.025, −0.005): sum −0.0005, n − 1 = 3.
+      expect(covariance([0.02, 0.01, -0.01, 0.02], benchmark)).toBeCloseTo(-0.0005 / 3, 15);
+      expect(covariance([1], [1])).toBeNaN();
+      expect(covariance([1, 2], [1, 2, 3])).toBeNaN();
+    });
+
+    it('gives exactly 1 for a series against itself and NaN against a constant', () => {
+      fc.assert(
+        fc.property(arbValues(2), (xs) => {
+          fc.pre(variance(xs) > 0);
+          expect(beta(xs, xs)).toBe(1);
+          expect(covariance(xs, xs)).toBe(variance(xs));
+        }),
+      );
+      expect(beta([1, 2, 3], [2, 2, 2])).toBeNaN();
+    });
+
+    it('scales beta with a leverage and ignores a constant shift', () => {
+      fc.assert(
+        fc.property(
+          arbValues(3),
+          fc.double({ min: -10, max: 10, noNaN: true }),
+          fc.double({ min: -1e3, max: 1e3, noNaN: true }),
+          (xs, leverage, shift) => {
+            fc.pre(variance(xs) > 1e-6);
+            const ys = xs.map((x) => leverage * x + shift);
+            expectClose(beta(ys, xs), leverage, Math.abs(leverage), 1e-6);
+          },
+        ),
+      );
+    });
+
+    it('annualises the volatility of the same returns with √252', () => {
+      // sd = √(0.0013 / 3); × √252 = √0.1092.
+      expect(annualizedVolatility(benchmark, 252)).toBeCloseTo(Math.sqrt(0.1092), 12);
+      expect(annualizedVolatility([0.02, 0.01, -0.01, 0.02], 252)).toBeCloseTo(
+        Math.sqrt(0.0504),
+        12,
+      );
     });
   });
 

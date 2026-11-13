@@ -238,6 +238,14 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
         fc.constant({ kind: 'absenceReport' as const }),
         fc.constant({ kind: 'instruments' as const }),
         fc.record({ kind: fc.constant('instrumentDetails' as const), id: arbId }),
+        fc.record({
+          kind: fc.constantFrom(
+            'instrumentFigures' as const,
+            'instrumentDividends' as const,
+            'instrumentComposition' as const,
+          ),
+          id: arbId,
+        }),
         arbScreenerQuery,
         arbCandlesQuery,
       ),
@@ -710,6 +718,15 @@ describe('engine protocol guards', () => {
         command('updateWatchlist', { ids: Array.from({ length: 1_001 }, (_, n) => `c${n}`) }),
       ],
       ['details without an ID', command('query', { query: { kind: 'instrumentDetails' } })],
+      ['figures without an ID', command('query', { query: { kind: 'instrumentFigures' } })],
+      [
+        'dividends of an ID that is no string',
+        command('query', { query: { kind: 'instrumentDividends', id: 7 } }),
+      ],
+      [
+        'a composition of an empty ID',
+        command('query', { query: { kind: 'instrumentComposition', id: '' } }),
+      ],
       [
         'details of an empty ID',
         command('query', { query: { kind: 'instrumentDetails', id: '' } }),
@@ -828,6 +845,18 @@ describe('engine protocol guards', () => {
       [
         'the details of a share',
         command('query', { query: { kind: 'instrumentDetails', id: 'cmp-001' } }),
+      ],
+      [
+        'the figures of a share',
+        command('query', { query: { kind: 'instrumentFigures', id: 'cmp-001' } }),
+      ],
+      [
+        'the dividends of an ETF',
+        command('query', { query: { kind: 'instrumentDividends', id: 'etf-001' } }),
+      ],
+      [
+        'the composition of an index',
+        command('query', { query: { kind: 'instrumentComposition', id: 'idx-world' } }),
       ],
       ['a screener without criteria', command('query', { query: { kind: 'screener' } })],
       [

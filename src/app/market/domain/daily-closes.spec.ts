@@ -56,6 +56,23 @@ describe('DailyCloses', () => {
     return days;
   }
 
+  it('keeps only the closes of the first series when asked to', () => {
+    const days = sampleDays().slice(0, 3);
+    const all = new DailyCloses(context, history, tables);
+    const withoutEtfs = new DailyCloses(context, history, tables, etfSeries(context, 0));
+    all.prepare(days, days);
+    withoutEtfs.prepare(days, days);
+    for (const day of days) {
+      for (let series = 0; series < etfSeries(context, 0); series++) {
+        expect(withoutEtfs.close(series, day)).toBe(all.close(series, day));
+      }
+      expect(() => withoutEtfs.close(etfSeries(context, 0), day)).toThrow(RangeError);
+      expect(withoutEtfs.dividendCents(etfSeries(context, 0), day)).toBe(
+        all.dividendCents(etfSeries(context, 0), day),
+      );
+    }
+  });
+
   it('gives the closes of the minute curves for every series', () => {
     const closes = new DailyCloses(context, history, tables);
     const days = sampleDays();

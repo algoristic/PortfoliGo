@@ -98,7 +98,6 @@ export function screenInstruments(
     closes.prepare(closeDays, dividendDays);
   }
 
-  const minute = minuteOfDay(now);
   const entries = candidates.map(({ instrument, quote, previousCloseDay }) => {
     const { series } = instrument;
     const performance = {} as Record<PerformancePeriod, number | null>;
@@ -107,18 +106,14 @@ export function screenInstruments(
       performance[period] =
         day === null ? null : relativeChange(quote.last, closes.close(series, day));
     }
-    let yieldValue: number | null = null;
-    if (instrument.kind !== 'index') {
-      // The ex-date of today counts from the open, where the price is marked down (TS §6.5).
-      const opened = minute >= seriesSession(context, series).open;
-      let cents = 0;
-      for (const day of dividendDays) {
-        if (day < today || opened) {
-          cents += closes.dividendCents(series, day);
-        }
-      }
-      yieldValue = dividendYield(cents, quote.last);
-    }
+    const yieldValue = trailingDividendYield(
+      context,
+      closes,
+      instrument,
+      dividendDays,
+      now,
+      quote.last,
+    );
     const metrics: ScreenerMetrics = {
       changeRatio: quote.changeRatio,
       performance,
@@ -145,6 +140,33 @@ export function screenInstruments(
       sparkline,
     })),
   };
+}
+
+/**
+ * Trailing dividend yield at `now` (TS §8.2): the dividends with an ex-date on the prepared
+ * `dividendDays` ÷ `last`. The ex-date of today counts from the open of the series, where the
+ * price is marked down (TS §6.5). Indices have none (`null`).
+ */
+export function trailingDividendYield(
+  context: MarketContext,
+  closes: DailyCloses,
+  instrument: Instrument,
+  dividendDays: readonly number[],
+  now: Tick,
+  last: number,
+): number | null {
+  if (instrument.kind === 'index') {
+    return null;
+  }
+  const today = dayIndex(now);
+  const opened = minuteOfDay(now) >= seriesSession(context, instrument.series).open;
+  let cents = 0;
+  for (const day of dividendDays) {
+    if (day < today || opened) {
+      cents += closes.dividendCents(instrument.series, day);
+    }
+  }
+  return dividendYield(cents, last);
 }
 
 /**

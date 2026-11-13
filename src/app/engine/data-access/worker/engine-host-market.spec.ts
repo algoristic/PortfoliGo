@@ -176,4 +176,54 @@ describe('EngineHost market queries', () => {
       expect(stocks.has(quote.series)).toBe(true);
     }
   });
+
+  describe('instrument facts (AP 4.5)', () => {
+    it('answers figures, dividends and composition up to the current tick', async () => {
+      const harness = await running();
+      await harness.send('pause', {});
+      const tick = harness.clock.tick;
+      const today = Math.floor(tick / 1_440);
+      const company = world.companies[0];
+      const { figures, tick: figuresTick } = await query(harness, {
+        kind: 'instrumentFigures',
+        id: company.id,
+      });
+      expect(figuresTick).toBe(tick);
+      expect(figures.id).toBe(company.id);
+      expect(figures.marketCap).toBe(company.sharesOutstanding * figures.last);
+      expect(figures.volatility).toBeGreaterThan(0);
+      expect(typeof figures.indicativeValue).toBe('number');
+      for (const instrument of [
+        ...world.companies.map(({ id }) => id),
+        ...world.etfs.map(({ id }) => id),
+      ]) {
+        const dividends = await query(harness, { kind: 'instrumentDividends', id: instrument });
+        expect(dividends.tick).toBe(tick);
+        expect(dividends.history.every(({ exDay }) => exDay <= today)).toBe(true);
+        if (dividends.next !== null) {
+          expect(dividends.next.exDay).toBeGreaterThanOrEqual(today);
+        }
+      }
+      const index = world.indices[0];
+      const { composition } = await query(harness, { kind: 'instrumentComposition', id: index.id });
+      expect(composition?.constituentCount).toBe(index.constituents.length);
+      const stock = await query(harness, { kind: 'instrumentComposition', id: company.id });
+      expect(stock.composition).toBeNull();
+    });
+
+    it.each(['instrumentFigures', 'instrumentDividends', 'instrumentComposition'] as const)(
+      'answers %s with unknown-instrument or invalid-command',
+      async (kind) => {
+        const harness = new HostHarness();
+        await harness.send('loadPlayer', MINI_PLAYER);
+        expect(await harness.send('query', { query: { kind, id: 'cmp-999' } })).toMatchObject({
+          ok: false,
+          error: 'unknown-instrument',
+        });
+        expect(
+          await harness.send('query', { query: { kind, id: 7 } as unknown as EngineQuery }),
+        ).toMatchObject({ ok: false, error: 'invalid-command' });
+      },
+    );
+  });
 });

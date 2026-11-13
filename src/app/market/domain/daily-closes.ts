@@ -29,12 +29,24 @@ export class DailyCloses {
   readonly #context: MarketContext;
   readonly #history: FactorHistory;
   readonly #tables: CurveTables;
+  /** Closes are kept for the series `0 … closeCount − 1`. */
+  readonly #closeCount: number;
   readonly #entries = new Map<number, DayEntry>();
 
-  constructor(context: MarketContext, history: FactorHistory, tables: CurveTables) {
+  /**
+   * With `closeCount`, only the closes of the first series are computed, e.g. shares and indices
+   * without the ETFs, whose closes need the idiosyncratic bridges of all shares in session.
+   */
+  constructor(
+    context: MarketContext,
+    history: FactorHistory,
+    tables: CurveTables,
+    closeCount: number = seriesCount(context),
+  ) {
     this.#context = context;
     this.#history = history;
     this.#tables = tables;
+    this.#closeCount = closeCount;
   }
 
   /** Days held in the cache, ascending. */
@@ -89,6 +101,9 @@ export class DailyCloses {
 
   /** Close of `series` on the prepared market day `day`. */
   close(series: number, day: number): number {
+    if (series >= this.#closeCount) {
+      throw new RangeError(`DailyCloses: closes of series ${series} are not kept`);
+    }
     const closes = this.#entries.get(day)?.closes;
     if (closes === null || closes === undefined) {
       throw new RangeError(`DailyCloses: no closes of day ${day} prepared`);
@@ -114,8 +129,8 @@ export class DailyCloses {
     let closes: Float64Array | null = null;
     if (withCloses) {
       const support = new SupportValues(this.#tables, marketDay);
-      closes = new Float64Array(count);
-      for (let s = 0; s < count; s++) {
+      closes = new Float64Array(this.#closeCount);
+      for (let s = 0; s < this.#closeCount; s++) {
         closes[s] = support.value(s, 'close');
       }
     }

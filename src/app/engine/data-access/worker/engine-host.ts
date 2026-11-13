@@ -10,6 +10,7 @@ import { catchUpSeenAt, catchUpTarget } from '@app/engine/domain/catch-up-logic'
 import { ClockPacer } from '@app/engine/domain/clock-pacing-logic';
 import { GameEngine } from '@app/engine/domain/game-engine';
 import { createGameWorld } from '@app/engine/domain/game-world';
+import { InstrumentFacts } from '@app/engine/domain/instrument-figures';
 import { jumpTargetTick } from '@app/engine/domain/jump-target-logic';
 import { marketMovers, screenInstruments } from '@app/engine/domain/market-screen';
 import { ClockSettings } from '@app/engine/domain/models/engine-clock.model';
@@ -196,6 +197,8 @@ interface LoadedGame {
 interface MarketData {
   catalog: Instrument[];
   closes: DailyCloses;
+  /** Figures, dividends and compositions of the instrument page (AP 4.5). */
+  facts: InstrumentFacts;
 }
 
 /** A subscribed chart (TS §8.4) and the newest candle sent for it, `null` before the first. */
@@ -1478,6 +1481,10 @@ export class EngineHost {
         }
         return { kind: 'instrumentDetails', details };
       }
+      case 'instrumentFigures':
+      case 'instrumentDividends':
+      case 'instrumentComposition':
+        return this.#instrumentFacts(game, query);
       case 'screener':
         return this.#screener(game, query);
       case 'candles':
@@ -1547,13 +1554,54 @@ export class EngineHost {
     return { kind: 'screener', ...result, tick };
   }
 
+  /**
+   * Figures, dividends or composition of one series (TS §8.2, AP 4.5) at the current tick, the
+   * query limit.
+   */
+  #instrumentFacts(
+    game: LoadedGame,
+    query: Extract<
+      EngineQuery,
+      { kind: 'instrumentFigures' | 'instrumentDividends' | 'instrumentComposition' }
+    >,
+  ): EngineQueryResult {
+    const tick = game.engine.tick;
+    const { catalog, facts } = this.#marketData(game);
+    const instrument = catalog.find(({ id }) => id === query.id);
+    if (instrument === undefined) {
+      throw new CommandFailure('unknown-instrument');
+    }
+    switch (query.kind) {
+      case 'instrumentFigures':
+        return { kind: query.kind, figures: facts.figures(instrument, tick), tick };
+      case 'instrumentDividends':
+        return { kind: query.kind, ...facts.dividends(instrument, tick), tick };
+      case 'instrumentComposition':
+        return { kind: query.kind, composition: facts.composition(instrument, tick), tick };
+    }
+  }
+
   #marketData(game: LoadedGame): MarketData {
     if (game.market === undefined) {
       const { world, context } = game.engine.world;
       const { candles } = game;
+      const catalog = instrumentCatalog(world, context);
+      const priceSource = candles.priceSource;
       game.market = {
-        catalog: instrumentCatalog(world, context),
+        catalog,
         closes: new DailyCloses(context, candles.history, candles.tables),
+        facts: new InstrumentFacts({
+          world,
+          context,
+          catalog,
+          prices: game.engine.prices,
+          history: candles.history,
+          tables: candles.tables,
+          indicative:
+            priceSource === null
+              ? null
+              : (series, now) => priceSource.indicativeAt(series, now, now),
+        }),
       };
     }
     return game.market;

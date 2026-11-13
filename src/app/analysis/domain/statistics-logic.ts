@@ -53,6 +53,30 @@ export function geometricReturn(first: number, last: number, years: number): num
   return Math.pow(last / first, 1 / years) - 1;
 }
 
+/** Sample covariance (divisor `n − 1`); `NaN` for fewer than two pairs or different lengths. */
+export function covariance(xs: Values, ys: Values): number {
+  const n = xs.length;
+  if (n !== ys.length || n < 2) {
+    return Number.NaN;
+  }
+  const mx = mean(xs);
+  const my = mean(ys);
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
+    sum += (xs[i] - mx) * (ys[i] - my);
+  }
+  return sum / (n - 1);
+}
+
+/**
+ * Beta of `returns` against `benchmark`: covariance ÷ variance of the benchmark; `NaN` if the
+ * benchmark is constant or the lengths differ. A series against itself gives exactly 1.
+ */
+export function beta(returns: Values, benchmark: Values): number {
+  // A constant benchmark gives 0 / 0 = NaN.
+  return covariance(returns, benchmark) / covariance(benchmark, benchmark);
+}
+
 /** Pearson correlation; `NaN` if a series is constant or the lengths differ. */
 export function correlation(xs: Values, ys: Values): number {
   const n = xs.length;

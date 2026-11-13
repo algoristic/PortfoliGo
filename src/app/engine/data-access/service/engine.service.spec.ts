@@ -398,6 +398,37 @@ describe('EngineService', () => {
       ]);
     });
 
+    it('answers the figures, dividends and composition of an instrument', async () => {
+      const { tick } = await firstValueFrom(service.loadPlayer(PLAYER));
+      const { instruments } = await firstValueFrom(service.instruments());
+      const etf = instruments.find(({ kind }) => kind === 'etf');
+      if (etf === undefined) {
+        throw new Error('no ETF in the mini world');
+      }
+      const { figures, tick: figuresTick } = await firstValueFrom(
+        service.instrumentFigures(etf.id),
+      );
+      expect(figuresTick).toBe(tick);
+      expect(figures).toMatchObject({ id: etf.id, series: etf.series, marketCap: null });
+      expect(figures.volatility).toBeGreaterThan(0);
+      const dividends = await firstValueFrom(service.instrumentDividends(etf.id));
+      expect(dividends).toMatchObject({ kind: 'instrumentDividends', tick });
+      const { composition } = await firstValueFrom(service.instrumentComposition(etf.id));
+      expect(composition?.indexId).toBe(etf.kind === 'etf' ? etf.indexId : null);
+      const failures = [
+        service.instrumentFigures('cmp-999'),
+        service.instrumentDividends('cmp-999'),
+        service.instrumentComposition('cmp-999'),
+      ].map((request: Observable<unknown>) =>
+        firstValueFrom(request).catch((e: EngineCommandError) => e.code),
+      );
+      expect(await Promise.all(failures)).toEqual([
+        'unknown-instrument',
+        'unknown-instrument',
+        'unknown-instrument',
+      ]);
+    });
+
     it('answers a block of candles up to the current tick', async () => {
       const { tick } = await firstValueFrom(service.loadPlayer(PLAYER));
       const result = await firstValueFrom(service.candles({ series: 0, interval: '1d', limit: 5 }));

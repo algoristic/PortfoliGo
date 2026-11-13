@@ -91,15 +91,22 @@ export class PriceSource {
    * Indicative value of a series at `tick` (TS §6.6): outside the session of a share, its last
    * price moves with the factors; indices and ETFs follow from the indicative values of their
    * constituents. For shares and ETFs it equals `priceAt` during the session. On days without
-   * trading, the official value applies.
+   * trading, the value of 24:00 of the last trading day applies (decided 13.11.2026), so the value
+   * neither falls back to the close at the weekend nor jumps on Monday 00:00. A display rule: the
+   * market and the ETF curves don't read it.
    */
   indicativeAt(series: number, tick: Tick, now: Tick): number {
     assertNotAfter(tick, now);
     const day = dayIndex(tick);
-    if (!isMarketDay(day)) {
-      return this.#lastClose(series, day - 1);
+    if (isMarketDay(day)) {
+      return this.#dayCurves(day).indicativeCurve(series)[minuteOfDay(tick)];
     }
-    return this.#dayCurves(day).indicativeCurve(series)[minuteOfDay(tick)];
+    for (let previous = day - 1; previous >= 0; previous--) {
+      if (isMarketDay(previous)) {
+        return this.#dayCurves(previous).indicativeCurve(series)[MINUTES_PER_DAY];
+      }
+    }
+    return this.#startValue(series);
   }
 
   /**

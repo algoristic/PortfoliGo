@@ -233,6 +233,9 @@ function isQuery(value: unknown): boolean {
     case 'notifications':
       return isNotificationsQuery(value);
     case 'instrumentDetails':
+    case 'instrumentFigures':
+    case 'instrumentDividends':
+    case 'instrumentComposition':
       return isNonEmptyString(value['id']);
     case 'screener':
       return isScreenerQuery(value);
