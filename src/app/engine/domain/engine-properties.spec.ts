@@ -4,22 +4,30 @@ import { journalBalances } from '@app/banking/domain/ledger-logic';
 import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
 import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
+import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
+import { miniWorld } from '@app/world/domain/testing/mini-world';
 
 import { GameEngine } from './game-engine';
+import { createGameWorld } from './game-world';
 import { GameCommand } from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
-import { BACKGROUND_MODES } from './models/game-state.model';
+import { BACKGROUND_MODES, GameSnapshot } from './models/game-state.model';
+import { GameWorld } from './models/game-world.model';
 import { replayCommands } from './replay';
-import { MiniGame, miniGame } from './testing/mini-game';
+import { startBankingGame, withBooks, withTestBanks } from './testing/banking-game';
+import { MINI_START_CONDITIONS } from './testing/mini-game';
 
 import { TEST_SEEDS } from '../../../testing/seeds';
 
 // Determinism contract of the engine (TS §4.5 rule 5, §4.6) as properties on the mini world:
 // any split of the ticks equals one run; snapshot, restore and replay equal an uninterrupted run.
 // Both include the journal, and the cached balances always equal the sums of the journal (TS §7.2).
+// The player has accounts at the test banks that book every kind of household transaction (TS §7.4):
+// salary and living costs, account fees, overdraft interest beyond the limit, monthly savings
+// interest with tax, quarterly savings interest and debit interest on a clearing account.
 
-/** End of the runs: three months after the start, across two month starts. */
-const END_TICK = dateTimeToTick({ year: 2030, month: 7, day: 1 }) - 1;
+/** End of the runs: four months after the start, across three month starts and a quarter. */
+const END_TICK = dateTimeToTick({ year: 2030, month: 8, day: 1 }) - 1;
 /** Longest segment that a run walks with `step()`, so that a run stays cheap. */
 const MAX_STEPPED_TICKS = 3 * TICKS_PER_DAY;
 
@@ -44,14 +52,27 @@ interface Reference {
 }
 
 describe('GameEngine properties', () => {
-  let mini: MiniGame;
+  let world: GameWorld;
+  let start: GameSnapshot;
+  let monthStarts: readonly FactorStateEntry[];
 
   beforeAll(() => {
-    mini = miniGame(TEST_SEEDS.mini);
+    const { seedKey, world: mini } = miniWorld(TEST_SEEDS.mini);
+    const engine = startBankingGame(createGameWorld(seedKey, mini), MINI_START_CONDITIONS);
+    world = withTestBanks(engine.world);
+    start = withBooks(engine.snapshot(), {
+      accounts: [
+        { kind: 'savings', bankId: 'b1', balance: 30_000_000 },
+        { kind: 'savings', bankId: 'b2', balance: 1_000_000 },
+        { kind: 'clearing', bankId: 'b3', balance: -200_000 },
+      ],
+      balances: { 'acc-1': -600_000 },
+    });
+    monthStarts = engine.monthStartsAfter(-1);
   });
 
   function restoreStart(): GameEngine {
-    return GameEngine.restore(mini.world, mini.start, { monthStarts: mini.monthStarts });
+    return GameEngine.restore(world, start, { monthStarts });
   }
 
   /** One uninterrupted run with the commands applied at their ticks. */
@@ -65,12 +86,35 @@ describe('GameEngine properties', () => {
     };
   }
 
+  /** The balances of the start (set without transactions) plus the sums of the journal. */
   function expectBalancesOfJournal(
     snapshot: ReturnType<GameEngine['snapshot']>,
     journal: readonly Transaction[],
   ): void {
-    expect(snapshot.player.balances).toEqual(journalBalances([...mini.journal, ...journal]));
+    const sums = journalBalances(journal);
+    const expected = new Map(
+      [...start.player.balances].map(([id, balance]) => [id, balance + (sums.get(id) ?? 0)]),
+    );
+    expect(snapshot.player.balances).toEqual(expected);
   }
+
+  it('runs through every kind of household transaction', () => {
+    const { journal, events } = referenceRun([]);
+    const types = new Set(journal.map(({ type }) => type));
+    expect([...types].sort()).toEqual([
+      'account-fee',
+      'credit-interest',
+      'debit-interest',
+      'living-costs',
+      'overdraft-interest',
+      'salary',
+      'tax',
+    ]);
+    const credited = events.flatMap((event) =>
+      event.type === 'interest-credited' ? [event.accountId] : [],
+    );
+    expect(credited.filter((id) => id === 'acc-3')).toHaveLength(1);
+  });
 
   it('ends in the same state with the same events for any split of the ticks', () => {
     const arbSegment = fc.record({
@@ -154,7 +198,7 @@ describe('GameEngine properties', () => {
             'until-snapshot': storedMonthStarts,
             'first-months': storedMonthStarts.slice(0, 7),
           }[monthStarts];
-          const restored = GameEngine.restore(mini.world, snapshot, { monthStarts: entries });
+          const restored = GameEngine.restore(world, snapshot, { monthStarts: entries });
           replayCommands(restored, commands, END_TICK);
 
           expect(restored.snapshot()).toEqual(live.snapshot());

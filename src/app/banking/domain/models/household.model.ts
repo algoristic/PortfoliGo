@@ -79,3 +79,23 @@ export interface MonthlyValues {
   /** Dividends and fund distributions before tax; 0 until AP 5.2. */
   dividends: Cents;
 }
+
+/** Household flows of a closed month (TS §7.4), oldest first in the player state. */
+export interface ClosedMonth {
+  month: CalendarMonth;
+  values: MonthlyValues;
+}
+
+/**
+ * Interest accrued on an account (TS §7.3, §7.4) in unrounded cents: credit ≥ 0, debit ≤ 0. The
+ * running month accrues day by day; the month end adds it to the pending amounts, which the bank
+ * run books when it settles the period (monthly, or quarterly for some savings accounts). The days
+ * of a new month before its bank run stay in the running amounts.
+ */
+export interface InterestAccrual {
+  accountId: AccountId;
+  credit: number;
+  debit: number;
+  pendingCredit: number;
+  pendingDebit: number;
+}

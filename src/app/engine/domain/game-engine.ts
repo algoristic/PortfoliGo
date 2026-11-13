@@ -1,8 +1,9 @@
-import { accountId, accountNumber } from '@app/banking/domain/account-logic';
+import { nextBankRunTick } from '@app/banking/domain/bank-run-logic';
 import { findHomeBank } from '@app/banking/domain/home-bank-logic';
-import { bookTransaction, OPENING_BALANCE_ACCOUNT } from '@app/banking/domain/ledger-logic';
-import { Account, AccountKind } from '@app/banking/domain/models/account.model';
+import { startInflows } from '@app/banking/domain/inflow-logic';
+import { OPENING_BALANCE_ACCOUNT } from '@app/banking/domain/ledger-logic';
 import { Transaction, TransactionDraft } from '@app/banking/domain/models/ledger.model';
+import { emptyMonthlyValues } from '@app/banking/domain/monthly-values-logic';
 import {
   dayIndex,
   dayStartTick,
@@ -25,7 +26,9 @@ import {
 } from '@app/market/domain/models/market-state.model';
 import { PriceSource } from '@app/market/domain/price-source';
 import { etfSeries } from '@app/market/domain/series';
+import { openTaxYear } from '@app/taxes/domain/tax-logic';
 
+import { AccountBooks, BankingSystem, openAccount } from './banking-system';
 import { CommandResult, GameCommand } from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
 import {
@@ -66,7 +69,7 @@ export const priceSourcePort: PricePortFactory = (world, history, market) =>
 /**
  * The pure, deterministic engine (TS §2.2, §8.1). It knows no clock: the host calls `runUntil`
  * with its target tick and a `shouldYield` callback. Ticks without due tasks change nothing and
- * are skipped; per-tick systems (open orders) arrive in M3. Create it with `start` or `restore`.
+ * are skipped; per-tick systems (open orders) arrive in M5. Create it with `start` or `restore`.
  */
 export class GameEngine {
   readonly world: GameWorld;
@@ -75,6 +78,7 @@ export class GameEngine {
   readonly #history: FactorHistory;
   /** Reused buffer of the day step; not part of the state. */
   readonly #marketDay: MarketDay;
+  readonly #banking: BankingSystem;
   #events: EngineEvent[] = [];
   #journal: Transaction[] = [];
 
@@ -89,13 +93,18 @@ export class GameEngine {
     this.#history = history;
     this.#marketDay = createMarketDay(world.context);
     this.prices = (options.prices ?? priceSourcePort)(world, history, state.market);
+    this.#banking = new BankingSystem(world, state.player, {
+      journal: (transaction) => this.#journal.push(transaction),
+      emit: (event) => this.#events.push(event),
+    });
   }
 
   /**
    * New game: prehistory from the epoch (TS §6.8), then the first tick `GAME_START_TICK`
    * (Monday, 01.04.2030, 00:00) is processed. A current account at the home bank becomes the
-   * salary account and receives the start capital (TS §7.2). Events and the opening transaction
-   * wait in the buffers.
+   * salary account and receives the start capital (TS §7.2); it starts with the full overdraft
+   * limit, as if it had received the net income in the three previous months (TS §7.4). Events and
+   * the opening transaction wait in the buffers.
    */
   static start(
     world: GameWorld,
@@ -114,8 +123,17 @@ export class GameEngine {
     scheduleTask(scheduler, GAME_START_TICK, { kind: 'day-change' });
     scheduleTask(scheduler, startOfNextMonth(GAME_START_TICK), { kind: 'month-end' });
     scheduleTask(scheduler, startOfNextYear(GAME_START_TICK), { kind: 'year-end' });
-    const books: AccountBooks = { accounts: [], balances: new Map(), accountSequence: 0 };
+    scheduleTask(scheduler, nextBankRunTick(GAME_START_TICK), { kind: 'bank-run' });
+    const books: AccountBooks = {
+      accounts: [],
+      balances: new Map(),
+      accountSequence: 0,
+      overdraftLimits: [],
+      inflows: [],
+      interest: [],
+    };
     const salaryAccount = openAccount(books, 'current', homeBank.id, GAME_START_TICK);
+    books.inflows = [startInflows(salaryAccount.id, start.netIncome)];
     const state: GameState = {
       tick: GAME_START_TICK - TICKS_PER_MINUTE,
       market,
@@ -127,12 +145,16 @@ export class GameEngine {
         depots: [],
         salaryAccountId: salaryAccount.id,
         nextTransactionSeq: 1,
+        taxYear: openTaxYear(tickToDateTime(GAME_START_TICK).year),
+        monthlyValues: emptyMonthlyValues(),
+        closedMonths: [],
       },
       scheduler,
       commandIds: [],
     };
     const engine = new GameEngine(world, state, history, options);
     engine.step();
+    engine.#banking.updateLimits(engine.tick);
     if (start.startCapital !== 0) {
       engine.#book({
         tick: engine.tick,
@@ -259,11 +281,7 @@ export class GameEngine {
 
   /** Books a transaction on the player's balances and buffers it for the journal (TS §7.2). */
   #book(draft: TransactionDraft): Transaction {
-    const { player } = this.#state;
-    const transaction = bookTransaction(player.balances, player.nextTransactionSeq, draft);
-    player.nextTransactionSeq++;
-    this.#journal.push(transaction);
-    return transaction;
+    return this.#banking.book(draft);
   }
 
   #setTick(tick: Tick): void {
@@ -289,6 +307,12 @@ export class GameEngine {
       case 'day-change':
         this.#dayChange(tick);
         break;
+      case 'bank-run':
+        this.#banking.runBank(tick);
+        scheduleTask(this.#state.scheduler, nextBankRunTick(tick + TICKS_PER_MINUTE), {
+          kind: 'bank-run',
+        });
+        break;
       case 'session-open': {
         const exchangeId = this.world.exchanges[task.exchange].id;
         this.#events.push({ type: 'session-opened', tick, exchangeId });
@@ -310,11 +334,13 @@ export class GameEngine {
       }
       case 'month-end': {
         const { year, month } = tickToDateTime(tick - TICKS_PER_MINUTE);
+        this.#banking.closeMonth(tick);
         this.#events.push({ type: 'month-ended', tick, year, month });
         scheduleTask(this.#state.scheduler, startOfNextMonth(tick), { kind: 'month-end' });
         break;
       }
       case 'year-end':
+        this.#banking.closeYear();
         this.#events.push({ type: 'year-ended', tick, year: tickToDateTime(tick).year - 1 });
         scheduleTask(this.#state.scheduler, startOfNextYear(tick), { kind: 'year-end' });
         break;
@@ -323,7 +349,10 @@ export class GameEngine {
     }
   }
 
-  /** Day change at 00:00: the market day step on trading days (TS §3.8), then the next day. */
+  /**
+   * Day change at 00:00: the market day step on trading days, then the interest of the day that
+   * ended (TS §3.8), then the next day.
+   */
   #dayChange(tick: Tick): void {
     const day = dayIndex(tick);
     advanceMarket(
@@ -333,6 +362,7 @@ export class GameEngine {
       { history: this.#history, onDay: (marketDay) => this.#onMarketDay(marketDay, tick) },
       this.#marketDay,
     );
+    this.#banking.accrueInterest();
     scheduleTask(this.#state.scheduler, dayStartTick(day + 1), { kind: 'day-change' });
   }
 
@@ -381,30 +411,6 @@ export class GameEngine {
   }
 }
 
-type AccountBooks = Pick<PlayerState, 'accounts' | 'balances' | 'accountSequence'>;
-
-/** Opens an account with the next number of the shared counter and a balance of 0 (TS §7.2). */
-function openAccount(
-  books: AccountBooks,
-  kind: Exclude<AccountKind, 'clearing'>,
-  bankId: string,
-  tick: Tick,
-): Account {
-  const sequence = books.accountSequence + 1;
-  const account: Account = {
-    id: accountId(sequence),
-    kind,
-    bankId,
-    number: accountNumber(sequence),
-    openedAt: tick,
-    closedAt: null,
-  };
-  books.accountSequence = sequence;
-  books.accounts.push(account);
-  books.balances.set(account.id, 0);
-  return account;
-}
-
 function copyState(state: Readonly<GameState>): GameState {
   return {
     tick: state.tick,
@@ -426,6 +432,15 @@ function copyPlayer(player: Readonly<PlayerState>): PlayerState {
     salaryAccountId: player.salaryAccountId,
     accountSequence: player.accountSequence,
     nextTransactionSeq: player.nextTransactionSeq,
+    overdraftLimits: player.overdraftLimits.map((entry) => ({ ...entry })),
+    inflows: player.inflows.map((entry) => ({ ...entry, salaryWindow: [...entry.salaryWindow] })),
+    interest: player.interest.map((accrual) => ({ ...accrual })),
+    taxYear: { ...player.taxYear },
+    monthlyValues: { ...player.monthlyValues },
+    closedMonths: player.closedMonths.map(({ month, values }) => ({
+      month: { ...month },
+      values: { ...values },
+    })),
   };
 }
 

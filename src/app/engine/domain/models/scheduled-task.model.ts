@@ -1,8 +1,8 @@
 import { Cents } from '@app/shared/domain/models/money.model';
 
 /**
- * Kinds of scheduled tasks in their fixed order within one tick (TS §3.8, §8.1). Bank run and
- * order expiry are reserved for M3; their ranks are fixed already.
+ * Kinds of scheduled tasks in their fixed order within one tick (TS §3.8, §8.1). Order expiry is
+ * reserved for M5; its rank is fixed already.
  */
 export const TASK_ORDER = [
   'day-change',
@@ -24,7 +24,7 @@ export interface ExDividend {
   paymentDay: number;
 }
 
-/** Bank run and order expiry are reserved for M3; the engine does not schedule them yet. */
+/** Order expiry is reserved for M5; the engine does not schedule it yet. */
 export type TaskSpec =
   | { kind: 'day-change' }
   | { kind: 'bank-run' }

@@ -1,8 +1,16 @@
 import { Account, AccountId, Depot } from '@app/banking/domain/models/account.model';
+import {
+  AccountInflows,
+  ClosedMonth,
+  InterestAccrual,
+  MonthlyValues,
+  OverdraftLimit,
+} from '@app/banking/domain/models/household.model';
 import { Balances } from '@app/banking/domain/models/ledger.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { MarketState } from '@app/market/domain/models/market-state.model';
 import { Cents } from '@app/shared/domain/models/money.model';
+import { TaxYear } from '@app/taxes/domain/models/tax.model';
 
 import { SchedulerState } from './scheduled-task.model';
 
@@ -17,7 +25,7 @@ export interface StartConditions {
   livingCosts: Cents;
 }
 
-/** Player state (TS §7.2); household and trading fields follow in M3 and M5. */
+/** Player state (TS §7.2, §7.4); trading fields follow in M5. */
 export interface PlayerState {
   start: StartConditions;
   /** Bank of the first current account, fixed when the game starts (TS §5.7). */
@@ -34,6 +42,18 @@ export interface PlayerState {
   accountSequence: number;
   /** Running number of the next transaction. */
   nextTransactionSeq: number;
+  /** Limits of the open current accounts in account order, set by the bank run (TS §7.4). */
+  overdraftLimits: OverdraftLimit[];
+  /** External deposits per current account, closed ones included (TS §7.4). */
+  inflows: AccountInflows[];
+  /** Accrued interest per account in account order (TS §7.3). */
+  interest: InterestAccrual[];
+  /** Tax state of the current calendar year (TS §7.7). */
+  taxYear: TaxYear;
+  /** Household flows of the current month (TS §7.4). */
+  monthlyValues: MonthlyValues;
+  /** Household flows of the closed months since the game start, oldest first. */
+  closedMonths: ClosedMonth[];
 }
 
 /** Dynamic state of a game (TS §8.1). Everything in it is plain, structured-cloneable data. */

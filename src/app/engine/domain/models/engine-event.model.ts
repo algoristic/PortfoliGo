@@ -1,3 +1,5 @@
+import { AccountId } from '@app/banking/domain/models/account.model';
+import { AccountEventCode } from '@app/banking/domain/models/household.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 
@@ -27,6 +29,23 @@ export type EngineEvent =
     }
   | { type: 'month-ended'; tick: Tick; year: number; month: number }
   | { type: 'year-ended'; tick: Tick; year: number }
-  | { type: 'background-mode-changed'; tick: Tick; mode: BackgroundMode };
+  | { type: 'background-mode-changed'; tick: Tick; mode: BackgroundMode }
+  | {
+      /** A balance or limit change uncovered the account or exceeded its limit (TS §7.4). */
+      type: AccountEventCode;
+      tick: Tick;
+      accountId: AccountId;
+      balance: Cents;
+      /** Overdraft limit; `null` for accounts without overdraft facility. */
+      limit: Cents | null;
+    }
+  | {
+      /** Credit interest was booked; `tax` is the tax booked right after it (refunds negative). */
+      type: 'interest-credited';
+      tick: Tick;
+      accountId: AccountId;
+      amount: Cents;
+      tax: Cents;
+    };
 
 export type EngineEventType = EngineEvent['type'];

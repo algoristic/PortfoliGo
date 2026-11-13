@@ -482,9 +482,9 @@ describe('GameEngine', () => {
 
     it('never runs a reserved task silently', () => {
       const snapshot = engine.snapshot();
-      scheduleTask(snapshot.scheduler, snapshot.tick + 1, { kind: 'bank-run' });
+      scheduleTask(snapshot.scheduler, snapshot.tick + 1, { kind: 'order-expiry' });
       const restored = GameEngine.restore(mini.world, snapshot, { monthStarts: mini.monthStarts });
-      expect(() => restored.step()).toThrow(/bank-run/);
+      expect(() => restored.step()).toThrow(/order-expiry/);
     });
   });
 

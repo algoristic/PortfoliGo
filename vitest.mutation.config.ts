@@ -27,6 +27,7 @@ const RULE_SPECS = [
   'src/app/engine/domain/scheduler.spec.ts',
   'src/app/engine/domain/game-engine.spec.ts',
   'src/app/engine/domain/engine-properties.spec.ts',
+  'src/app/engine/domain/banking-system.spec.ts',
   'src/app/engine/domain/clock-pacing-logic.spec.ts',
   'src/app/engine/domain/last-tick-logic.spec.ts',
   'src/app/engine/domain/jump-target-logic.spec.ts',

@@ -25,6 +25,7 @@ import {
   advance,
   FINE,
   GAME_START,
+  gameTick,
   HostHarness,
   HostHarnessPorts,
   MINI_PLAYER as PLAYER,
@@ -161,12 +162,18 @@ describe('EngineHost persistence', () => {
       await first.send('resume', {});
       await advance(first, 3_000);
       await first.send('unloadPlayer', {});
+      // The bank run of 01.04.2030, 06:00 booked the living costs of April (TS §7.4).
+      const unloaded = await storedJournal();
+      expect(unloaded.map(({ seq, type }) => [seq, type])).toEqual([
+        [1, 'opening-balance'],
+        [2, 'living-costs'],
+      ]);
 
       const second = reload({ startMs: first.timeline.now() });
       await second.send('loadPlayer', PLAYER);
       await second.send('unloadPlayer', {});
-      expect(await storedJournal()).toEqual(journal);
-      expect(await new IndexedDbEngineStorage().loadTransactions('p1', 'acc-1')).toEqual(journal);
+      expect(await storedJournal()).toEqual(unloaded);
+      expect(await new IndexedDbEngineStorage().loadTransactions('p1', 'acc-1')).toEqual(unloaded);
     });
 
     it('replays a command after the last snapshot at its original tick after a crash', async () => {
@@ -463,6 +470,56 @@ describe('EngineHost persistence', () => {
       expect(inner.clocks.get('p1')?.tick).toBe(GAME_START + 10);
       expect(harness.events('warning')).toHaveLength(1);
       expect(harness.clock.tick).toBe(GAME_START + 11);
+    });
+
+    // TS §9.2: transactions go out bundled at the latest after 1 s; a failed write keeps them
+    it('stores the transactions of the bank run within 1 s and again after a failed write', async () => {
+      class FlakyTransactionStorage extends InMemoryEngineStorage {
+        failures = 0;
+
+        override async saveTransactions(
+          ...args: Parameters<InMemoryEngineStorage['saveTransactions']>
+        ): Promise<void> {
+          if (this.failures > 0) {
+            this.failures--;
+            throw new Error('transactions not written');
+          }
+          return super.saveTransactions(...args);
+        }
+      }
+      const stored = async (storage: EngineStorage) =>
+        (await storage.loadTransactions(PLAYER.playerId)).map(({ seq, tick, type }) => ({
+          seq,
+          tick,
+          type,
+        }));
+      const opening = { seq: 1, tick: GAME_START, type: 'opening-balance' };
+      // At 1 d/s the bank run at 06:00 on 01.04.2030 books the living costs after 250 ms.
+      const livingCosts = { seq: 2, tick: gameTick(2030, 4, 1, 6), type: 'living-costs' };
+
+      const storage = new FlakyTransactionStorage();
+      const harness = new HostHarness({ config: FINE }, { storage });
+      await harness.send('loadPlayer', PLAYER);
+      await harness.send('setSpeed', { speed: '1d' });
+      await harness.send('resume', {});
+      await advance(harness, 990);
+      expect(await stored(storage)).toEqual([opening]);
+      await advance(harness, 10);
+      expect(await stored(storage)).toEqual([opening, livingCosts]);
+
+      const flaky = new FlakyTransactionStorage();
+      flaky.failures = 1;
+      const retrying = new HostHarness({ config: FINE }, { storage: flaky });
+      await retrying.send('loadPlayer', PLAYER);
+      await retrying.send('setSpeed', { speed: '1d' });
+      await retrying.send('resume', {});
+      await advance(retrying, 1_000);
+      expect(await stored(flaky)).toEqual([opening]);
+      expect(retrying.events('warning').map(({ payload }) => payload)).toEqual([
+        { code: 'storage-failed', message: 'transactions not written' },
+      ]);
+      await advance(retrying, 1_000);
+      expect(await stored(flaky)).toEqual([opening, livingCosts]);
     });
   });
 

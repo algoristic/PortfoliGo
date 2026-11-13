@@ -28,6 +28,7 @@ const config = {
     'src/app/lab/domain/calibration-targets.ts',
     'src/app/engine/domain/scheduler.ts',
     'src/app/engine/domain/game-engine.ts',
+    'src/app/engine/domain/banking-system.ts',
     'src/app/engine/domain/game-world.ts',
     'src/app/engine/domain/replay.ts',
     'src/app/engine/domain/clock-pacing-logic.ts',
