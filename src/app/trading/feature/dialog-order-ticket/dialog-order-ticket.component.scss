@@ -1,0 +1,4 @@
+:host {
+  // The CDK pane limits the height (`maxHeight`); the ticket scrolls within it.
+  max-height: inherit;
+}

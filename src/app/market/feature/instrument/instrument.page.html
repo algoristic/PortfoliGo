@@ -1,6 +1,7 @@
 @let head = facade.instrumentHead$ | async;
 @let detail = facade.instrumentDetail$ | async;
 @let watchlist = facade.routeInstrumentWatchlist$ | async;
+@let trade = tradingFacade.routeInstrumentTrade$ | async;
 
 @if (detail?.notFound) {
   <app-empty-state
@@ -34,6 +35,14 @@
       <ng-container i18n="@@featureMarket-instrumentPage-title">Instrument</ng-container>
     </h1>
     <app-skeleton class="mt-2 w-64" [lines]="2"></app-skeleton>
+  }
+
+  @if (trade) {
+    <app-trade-actions
+      class="mt-3"
+      [view]="trade"
+      (clickedBuy)="onBuy(trade.instrumentId)"
+      (clickedSell)="onSell(trade.instrumentId)"></app-trade-actions>
   }
 
   @if (detail?.failed) {

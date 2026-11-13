@@ -4,15 +4,13 @@ import {
   savingsRate,
 } from '@app/banking/domain/monthly-values-logic';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
-import { MicroUnits } from '@app/shared/domain/models/money.model';
-import { microUnitsToUnits } from '@app/shared/domain/money-logic';
 import { priceDecimals } from '@app/shared/domain/price-step-logic';
 import {
   formatCents,
-  formatNumber,
   formatOptional,
   formatPercent,
   formatPrice,
+  formatQuantity,
 } from '@app/shared/util/format';
 
 import { notificationCodeLabel, orderRejectionLabel } from './notification-labels';
@@ -203,13 +201,4 @@ export function notificationText(
     default:
       return { title, text: '' };
   }
-}
-
-/** Shares with as many decimal places as the millionths need, e.g. `10`, `0,5`, `1,234567`. */
-function formatQuantity(quantity: MicroUnits): string {
-  let digits = 6;
-  for (let step = 10; digits > 0 && quantity % step === 0; step *= 10) {
-    digits--;
-  }
-  return formatNumber(microUnitsToUnits(quantity), digits);
 }

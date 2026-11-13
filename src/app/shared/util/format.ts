@@ -89,6 +89,22 @@ export function formatNumber(value: number, fractionDigits = 0): string {
   }).format(value);
 }
 
+/** Millionths per share: quantities are integer millionths (`MicroUnits`, TS §7.1). */
+const MILLIONTHS_PER_UNIT = 1_000_000;
+const MILLIONTHS_DIGITS = 6;
+
+/**
+ * Formats a number of shares given in millionths with as many decimal places as they need, e.g.
+ * `10000000` → `10`, `500000` → `0,5`, `1234567` → `1,234567`.
+ */
+export function formatQuantity(millionths: number): string {
+  let digits = MILLIONTHS_DIGITS;
+  for (let step = 10; digits > 0 && millionths % step === 0; step *= 10) {
+    digits--;
+  }
+  return formatNumber(millionths / MILLIONTHS_PER_UNIT, digits);
+}
+
 /** Formats large numbers in short form, e.g. `1234567` → `1,2 Mio.`. */
 export function formatCompact(value: number): string {
   return numberFormat({ notation: 'compact', maximumFractionDigits: 1 }).format(value);

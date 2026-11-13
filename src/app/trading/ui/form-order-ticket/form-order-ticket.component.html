@@ -1,0 +1,492 @@
+@let _depot = ticketForm.depotId();
+@let _side = ticketForm.side();
+@let _quantity = ticketForm.quantity();
+@let _amount = ticketForm.amount();
+@let _limit = ticketForm.limit();
+@let _stop = ticketForm.stop();
+@let _date = ticketForm.validityDate();
+@let _quote = quote();
+@let _preview = preview();
+@let _position = position();
+@let _tax = tax();
+
+<form [formRoot]="ticketForm">
+  <app-dialog [heading]="heading()" testId="trading.order-ticket" (clickedClose)="cancel()">
+    <div class="flex flex-col gap-4">
+      <p
+        class="flex flex-wrap gap-x-4 gap-y-1 tabular-nums"
+        data-testid="trading.order-ticket.quote">
+        @if (_quote) {
+          <span class="flex gap-1">
+            <span class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-bid">Geld</span>
+            <span data-testid="trading.order-ticket.bid">{{ _quote.bid | formatPrice }}</span>
+          </span>
+          <span class="flex gap-1">
+            <span class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-ask">Brief</span>
+            <span data-testid="trading.order-ticket.ask">{{ _quote.ask | formatPrice }}</span>
+          </span>
+        } @else {
+          <span class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-noQuote"
+            >Noch kein Kurs</span
+          >
+        }
+      </p>
+
+      @if (marketClosed()) {
+        <p
+          class="rounded-md border border-border px-3 py-2 text-fg-muted"
+          data-testid="trading.order-ticket.market-closed"
+          i18n="@@uiTrading-formOrderTicket-marketClosed">
+          Die Börse ist geschlossen. Die Order wird zur Eröffnung geprüft und dann zum ersten Kurs
+          ausgeführt, wenn ihre Bedingung erfüllt ist.
+        </p>
+      }
+
+      <div class="flex flex-col gap-1">
+        <label
+          class="font-medium"
+          for="trading-order-ticket-depot"
+          i18n="@@uiTrading-formOrderTicket-depot"
+          >Depot</label
+        >
+        <select
+          id="trading-order-ticket-depot"
+          class="h-10 rounded-md border border-border bg-surface px-2 text-fg aria-invalid:border-down"
+          cdkFocusInitial
+          aria-describedby="trading-order-ticket-depot-errors"
+          data-testid="trading.order-ticket.depot"
+          [attr.aria-invalid]="_depot.touched() && _depot.invalid()"
+          [formField]="ticketForm.depotId">
+          @for (option of depotOptions(); track option.id) {
+            <option [value]="option.id">{{ option.label }}</option>
+          }
+        </select>
+        <p id="trading-order-ticket-depot-errors" class="text-down">
+          @if (_depot.touched() && _depot.invalid()) {
+            @for (error of _depot.errors(); track error.kind) {
+              <span data-testid="trading.order-ticket.depot-error">{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+
+      <fieldset class="flex flex-col gap-2" aria-describedby="trading-order-ticket-side-errors">
+        <legend class="mb-1 font-medium" i18n="@@uiTrading-formOrderTicket-side">Auftrag</legend>
+        <div class="grid grid-cols-2 gap-2">
+          <label
+            class="flex cursor-pointer items-center gap-2 rounded-md border border-border p-2 has-checked:border-accent">
+            <input
+              type="radio"
+              value="buy"
+              data-testid="trading.order-ticket.side.buy"
+              [formField]="ticketForm.side" />
+            <span i18n="@@uiTrading-formOrderTicket-buy">Kaufen</span>
+          </label>
+          <label
+            class="flex cursor-pointer items-center gap-2 rounded-md border border-border p-2 has-checked:border-accent">
+            <input
+              type="radio"
+              value="sell"
+              data-testid="trading.order-ticket.side.sell"
+              [formField]="ticketForm.side" />
+            <span i18n="@@uiTrading-formOrderTicket-sell">Verkaufen</span>
+          </label>
+        </div>
+        <p id="trading-order-ticket-side-errors" class="text-down">
+          @if (_side.invalid()) {
+            @for (error of _side.errors(); track error.kind) {
+              <span data-testid="trading.order-ticket.side-error">{{ error.message }}</span>
+            }
+          }
+        </p>
+        @if (clearingNegative()) {
+          <p class="text-warning" data-testid="trading.order-ticket.clearing-negative">
+            <ng-container i18n="@@uiTrading-formOrderTicket-clearingNegative"
+              >Das Verrechnungskonto ist im Minus. Neue Käufe sind gesperrt, bis es ausgeglichen
+              ist.</ng-container
+            >
+          </p>
+        }
+        @if (atPriceFloor()) {
+          <p class="text-warning" data-testid="trading.order-ticket.price-floor">
+            <ng-container i18n="@@uiTrading-formOrderTicket-priceFloor"
+              >Der Kurs liegt an der Kursuntergrenze. Kaufen ist gesperrt.</ng-container
+            >
+          </p>
+        }
+      </fieldset>
+
+      @if (isBuy()) {
+        <fieldset class="flex flex-col gap-2">
+          <legend class="mb-1 font-medium" i18n="@@uiTrading-formOrderTicket-sizeKind"
+            >Ordergröße</legend
+          >
+          <div class="grid grid-cols-2 gap-2">
+            <label
+              class="flex cursor-pointer items-center gap-2 rounded-md border border-border p-2 has-checked:border-accent">
+              <input
+                type="radio"
+                value="quantity"
+                data-testid="trading.order-ticket.size.quantity"
+                [formField]="ticketForm.sizeKind" />
+              <span i18n="@@uiTrading-formOrderTicket-byQuantity">Stückzahl</span>
+            </label>
+            <label
+              class="flex cursor-pointer items-center gap-2 rounded-md border border-border p-2 has-checked:border-accent">
+              <input
+                type="radio"
+                value="amount"
+                data-testid="trading.order-ticket.size.amount"
+                [formField]="ticketForm.sizeKind" />
+              <span i18n="@@uiTrading-formOrderTicket-byAmount">Betrag</span>
+            </label>
+          </div>
+        </fieldset>
+      }
+
+      @if (byAmount()) {
+        <div class="flex flex-col gap-1">
+          <label
+            class="font-medium"
+            for="trading-order-ticket-amount"
+            i18n="@@uiTrading-formOrderTicket-amount"
+            >Betrag</label
+          >
+          <app-amount-input
+            inputId="trading-order-ticket-amount"
+            describedBy="trading-order-ticket-amount-hint trading-order-ticket-amount-errors"
+            testId="trading.order-ticket.amount"
+            [formField]="ticketForm.amount"></app-amount-input>
+          <p id="trading-order-ticket-amount-hint" class="text-fg-muted">
+            <ng-container i18n="@@uiTrading-formOrderTicket-amountHint"
+              >Die Stückzahl ergibt sich bei der Ausführung aus Betrag minus Kosten durch den
+              Briefkurs.</ng-container
+            >
+          </p>
+          <p id="trading-order-ticket-amount-errors" class="text-down">
+            @if (_amount.touched() && _amount.invalid()) {
+              @for (error of _amount.errors(); track error.kind) {
+                <span data-testid="trading.order-ticket.amount-error">{{ error.message }}</span>
+              }
+            }
+          </p>
+        </div>
+      } @else {
+        <div class="flex flex-col gap-1">
+          <label
+            class="font-medium"
+            for="trading-order-ticket-quantity"
+            i18n="@@uiTrading-formOrderTicket-quantity"
+            >Stückzahl</label
+          >
+          <div class="flex gap-2">
+            <input
+              id="trading-order-ticket-quantity"
+              class="h-10 min-w-0 flex-1 rounded-md border border-border bg-surface px-3 text-right text-fg tabular-nums aria-invalid:border-down"
+              type="text"
+              inputmode="decimal"
+              autocomplete="off"
+              aria-describedby="trading-order-ticket-quantity-hint trading-order-ticket-quantity-errors"
+              data-testid="trading.order-ticket.quantity"
+              [attr.aria-invalid]="_quantity.touched() && _quantity.invalid()"
+              [formField]="ticketForm.quantity" />
+            @if (!isBuy() && _position) {
+              <button
+                appButton
+                type="button"
+                data-testid="trading.order-ticket.sell-all"
+                i18n="@@uiTrading-formOrderTicket-sellAll"
+                (click)="onSellAll()">
+                Alle
+              </button>
+            }
+          </div>
+          <p id="trading-order-ticket-quantity-hint" class="text-fg-muted tabular-nums">
+            @if (!isBuy()) {
+              <span data-testid="trading.order-ticket.free">
+                <ng-container i18n="@@uiTrading-formOrderTicket-free"
+                  >Frei im Depot: {{ _position?.free ?? 0 | formatQuantity }} Stück</ng-container
+                >
+              </span>
+            } @else if (depot()?.conditions?.fractionalShares) {
+              <span i18n="@@uiTrading-formOrderTicket-fractional"
+                >Diese Bank kauft auch Bruchstücke.</span
+              >
+            } @else {
+              <span i18n="@@uiTrading-formOrderTicket-whole"
+                >Diese Bank kauft nur ganze Stück.</span
+              >
+            }
+          </p>
+          <p id="trading-order-ticket-quantity-errors" class="text-down">
+            @if (_quantity.touched() && _quantity.invalid()) {
+              @for (error of _quantity.errors(); track error.kind) {
+                <span data-testid="trading.order-ticket.quantity-error">{{ error.message }}</span>
+              }
+            }
+          </p>
+        </div>
+      }
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1">
+          <label
+            class="font-medium"
+            for="trading-order-ticket-type"
+            i18n="@@uiTrading-formOrderTicket-type"
+            >Orderart</label
+          >
+          <select
+            id="trading-order-ticket-type"
+            class="h-10 rounded-md border border-border bg-surface px-2 text-fg"
+            data-testid="trading.order-ticket.type"
+            [formField]="ticketForm.type">
+            @for (option of typeOptions; track option.type) {
+              <option [value]="option.type">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label
+            class="font-medium"
+            for="trading-order-ticket-validity"
+            i18n="@@uiTrading-formOrderTicket-validity"
+            >Gültigkeit</label
+          >
+          <select
+            id="trading-order-ticket-validity"
+            class="h-10 rounded-md border border-border bg-surface px-2 text-fg"
+            data-testid="trading.order-ticket.validity"
+            [formField]="ticketForm.validity">
+            @for (option of validityOptions; track option.kind) {
+              <option [value]="option.kind">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+
+        @if (showStop()) {
+          <div class="flex flex-col gap-1">
+            <label
+              class="font-medium"
+              for="trading-order-ticket-stop"
+              i18n="@@uiTrading-formOrderTicket-stop"
+              >Stop-Kurs (€)</label
+            >
+            <input
+              id="trading-order-ticket-stop"
+              class="h-10 rounded-md border border-border bg-surface px-3 text-right text-fg tabular-nums aria-invalid:border-down"
+              type="text"
+              inputmode="decimal"
+              autocomplete="off"
+              aria-describedby="trading-order-ticket-stop-errors"
+              data-testid="trading.order-ticket.stop"
+              [attr.aria-invalid]="_stop.touched() && _stop.invalid()"
+              [formField]="ticketForm.stop" />
+            <p id="trading-order-ticket-stop-errors" class="text-down">
+              @if (_stop.touched() && _stop.invalid()) {
+                @for (error of _stop.errors(); track error.kind) {
+                  <span data-testid="trading.order-ticket.stop-error">{{ error.message }}</span>
+                }
+              }
+            </p>
+          </div>
+        }
+
+        @if (showLimit()) {
+          <div class="flex flex-col gap-1">
+            <label
+              class="font-medium"
+              for="trading-order-ticket-limit"
+              i18n="@@uiTrading-formOrderTicket-limit"
+              >Limit (€)</label
+            >
+            <input
+              id="trading-order-ticket-limit"
+              class="h-10 rounded-md border border-border bg-surface px-3 text-right text-fg tabular-nums aria-invalid:border-down"
+              type="text"
+              inputmode="decimal"
+              autocomplete="off"
+              aria-describedby="trading-order-ticket-limit-errors"
+              data-testid="trading.order-ticket.limit"
+              [attr.aria-invalid]="_limit.touched() && _limit.invalid()"
+              [formField]="ticketForm.limit" />
+            <p id="trading-order-ticket-limit-errors" class="text-down">
+              @if (_limit.touched() && _limit.invalid()) {
+                @for (error of _limit.errors(); track error.kind) {
+                  <span data-testid="trading.order-ticket.limit-error">{{ error.message }}</span>
+                }
+              }
+            </p>
+          </div>
+        }
+
+        @if (showDate()) {
+          <div class="flex flex-col gap-1">
+            <label
+              class="font-medium"
+              for="trading-order-ticket-date"
+              i18n="@@uiTrading-formOrderTicket-date"
+              >Gültig bis</label
+            >
+            <input
+              id="trading-order-ticket-date"
+              class="h-10 rounded-md border border-border bg-surface px-3 text-fg aria-invalid:border-down"
+              type="date"
+              aria-describedby="trading-order-ticket-date-errors"
+              data-testid="trading.order-ticket.validity-date"
+              [attr.min]="minDate()"
+              [attr.max]="maxDate()"
+              [attr.aria-invalid]="_date.touched() && _date.invalid()"
+              [formField]="ticketForm.validityDate" />
+            <p id="trading-order-ticket-date-errors" class="text-down">
+              @if (_date.touched() && _date.invalid()) {
+                @for (error of _date.errors(); track error.kind) {
+                  <span data-testid="trading.order-ticket.date-error">{{ error.message }}</span>
+                }
+              }
+            </p>
+          </div>
+        }
+      </div>
+
+      <section
+        class="flex flex-col gap-2 rounded-md bg-surface-raised p-3"
+        aria-labelledby="trading-order-ticket-preview"
+        data-testid="trading.order-ticket.preview">
+        <h3
+          id="trading-order-ticket-preview"
+          class="font-medium"
+          i18n="@@uiTrading-formOrderTicket-preview"
+          >Kostenvorschau</h3
+        >
+        @if (_preview) {
+          <dl class="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 tabular-nums">
+            <dt class="text-fg-muted">
+              @if (isBuy()) {
+                <ng-container i18n="@@uiTrading-formOrderTicket-previewAsk"
+                  >Kurs (Brief, geschätzt)</ng-container
+                >
+              } @else {
+                <ng-container i18n="@@uiTrading-formOrderTicket-previewBid"
+                  >Kurs (Geld, geschätzt)</ng-container
+                >
+              }
+            </dt>
+            <dd class="text-right" data-testid="trading.order-ticket.price">
+              {{ _preview.price | formatPrice }}
+            </dd>
+            <dt class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-previewQuantity">Stück</dt>
+            <dd class="text-right" data-testid="trading.order-ticket.preview-quantity">
+              {{ _preview.fill.quantity | formatQuantity }}
+            </dd>
+            <dt class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-marketValue">Kurswert</dt>
+            <dd class="text-right" data-testid="trading.order-ticket.market-value">
+              {{ _preview.fill.marketValue | formatCents }}
+            </dd>
+            <dt class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-orderFee">Orderentgelt</dt>
+            <dd class="text-right" data-testid="trading.order-ticket.order-fee">
+              {{ _preview.fill.orderFee | formatCents }}
+            </dd>
+            <dt class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-exchangeFee">
+              Fremdkosten (Börsenentgelt)
+            </dt>
+            <dd class="text-right" data-testid="trading.order-ticket.exchange-fee">
+              {{ _preview.fill.exchangeFee | formatCents }}
+            </dd>
+            <dt class="font-medium">
+              @if (isBuy()) {
+                <ng-container i18n="@@uiTrading-formOrderTicket-debit">Gesamtbetrag</ng-container>
+              } @else {
+                <ng-container i18n="@@uiTrading-formOrderTicket-credit"
+                  >Erlös nach Kosten</ng-container
+                >
+              }
+            </dt>
+            <dd class="text-right font-medium" data-testid="trading.order-ticket.total">
+              {{ _preview.fill.total | formatCents }}
+            </dd>
+
+            @if (isBuy()) {
+              <dt class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-reservation">
+                Reservierung
+              </dt>
+              <dd class="text-right" data-testid="trading.order-ticket.reservation">
+                {{ _preview.reservation | formatCents }}
+              </dd>
+              <dt class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-available">
+                Verfügbar (nach Reservierungen)
+              </dt>
+              <dd class="text-right" data-testid="trading.order-ticket.available">
+                {{ _preview.available | formatCents }}
+              </dd>
+              @if (_preview.shortfall > 0) {
+                <dt class="text-down" i18n="@@uiTrading-formOrderTicket-shortfall">Fehlbetrag</dt>
+                <dd class="text-right text-down" data-testid="trading.order-ticket.shortfall">
+                  {{ _preview.shortfall | formatCents }}
+                </dd>
+              }
+            } @else if (_tax) {
+              <dt class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-gain">
+                Voraussichtlicher Gewinn/Verlust
+              </dt>
+              <dd class="text-right" data-testid="trading.order-ticket.gain">
+                {{ _tax.realizedGain | formatCents }}
+              </dd>
+              @if (_tax.tax >= 0) {
+                <dt class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-tax">Steuer</dt>
+                <dd class="text-right" data-testid="trading.order-ticket.tax">
+                  {{ _tax.tax | formatCents }}
+                </dd>
+              } @else {
+                <dt class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-refund">
+                  Steuererstattung
+                </dt>
+                <dd class="text-right" data-testid="trading.order-ticket.tax-refund">
+                  {{ -_tax.tax | formatCents }}
+                </dd>
+              }
+              <dt class="font-medium" i18n="@@uiTrading-formOrderTicket-net">
+                Gutschrift nach Kosten und Steuern
+              </dt>
+              <dd class="text-right font-medium" data-testid="trading.order-ticket.net">
+                {{ _tax.net | formatCents }}
+              </dd>
+            }
+          </dl>
+          @if (buffered()) {
+            <p class="text-fg-muted" data-testid="trading.order-ticket.buffer-note">
+              <ng-container i18n="@@uiTrading-formOrderTicket-bufferNote"
+                >Market- und Stop-Kauforders reservieren 5 % mehr als den geschätzten Kurswert, weil
+                sich der Kurs bis zur Ausführung ändern kann.</ng-container
+              >
+            </p>
+          }
+        } @else {
+          <p class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-previewEmpty">
+            Die Vorschau erscheint, sobald Stückzahl bzw. Betrag und die Kurse der Orderart
+            feststehen.
+          </p>
+        }
+      </section>
+    </div>
+
+    <ng-container dialogActions>
+      <button
+        appButton
+        type="button"
+        data-testid="trading.order-ticket.decline"
+        i18n="@@uiTrading-formOrderTicket-decline"
+        (click)="cancel()">
+        Abbrechen
+      </button>
+      <button appButton type="submit" variant="primary" data-testid="trading.order-ticket.submit">
+        @if (isBuy()) {
+          <ng-container i18n="@@uiTrading-formOrderTicket-submitBuy">Kaufen</ng-container>
+        } @else {
+          <ng-container i18n="@@uiTrading-formOrderTicket-submitSell">Verkaufen</ng-container>
+        }
+      </button>
+    </ng-container>
+  </app-dialog>
+</form>

@@ -4304,63 +4304,63 @@
         <source>Zu den Märkten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
-          <context context-type="linenumber">16,21</context>
+          <context context-type="linenumber">17,22</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentPage-title" datatype="html">
         <source>Instrument</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
-          <context context-type="linenumber">34,36</context>
+          <context context-type="linenumber">35,37</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentPage-failed" datatype="html">
         <source> Einige Angaben konnten nicht geladen werden. Sie erscheinen beim nächsten Besuch der Seite. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
-          <context context-type="linenumber">45,49</context>
+          <context context-type="linenumber">54,58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentPage-figures" datatype="html">
         <source>Kennzahlen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.ts</context>
-          <context context-type="linenumber">47</context>
+          <context context-type="linenumber">51</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentPage-profile" datatype="html">
         <source>Profil</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.ts</context>
-          <context context-type="linenumber">48</context>
+          <context context-type="linenumber">52</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentPage-composition" datatype="html">
         <source>Zusammensetzung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.ts</context>
-          <context context-type="linenumber">49</context>
+          <context context-type="linenumber">53</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentPage-dividends" datatype="html">
         <source>Dividenden</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentPage-notFound" datatype="html">
         <source>Wertpapier nicht gefunden</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.ts</context>
-          <context context-type="linenumber">51</context>
+          <context context-type="linenumber">55</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentPage-notFoundText" datatype="html">
         <source>Zu dieser Adresse gibt es in dieser Welt kein Wertpapier.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.ts</context>
-          <context context-type="linenumber">52</context>
+          <context context-type="linenumber">56</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketOverviewPage-indices" datatype="html">
@@ -7631,175 +7631,175 @@
         <source><x id="account" equiv-text="name"/> steht bei <x id="balance" equiv-text="amount"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-accountUncoveredWithLimit" datatype="html">
         <source><x id="account" equiv-text="name"/> steht bei <x id="balance" equiv-text="amount"/> (Dispo-Rahmen <x id="limit" equiv-text="formatCents(limit)"/>).</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">64</context>
+          <context context-type="linenumber">62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-overdraftWithoutLimit" datatype="html">
         <source><x id="account" equiv-text="name"/> steht bei <x id="balance" equiv-text="amount"/> und hat keinen Dispo-Rahmen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">75</context>
+          <context context-type="linenumber">73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-overdraftLimitExceeded" datatype="html">
         <source><x id="account" equiv-text="name"/> steht bei <x id="balance" equiv-text="amount"/> und überschreitet den Dispo-Rahmen von <x id="limit" equiv-text="formatCents(limit)"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">76</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-interestWithTax" datatype="html">
         <source><x id="amount" equiv-text="interest"/> Habenzinsen auf <x id="account" equiv-text="name"/>, davon <x id="tax" equiv-text="formatCents(tax)"/> Steuer einbehalten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">86</context>
+          <context context-type="linenumber">84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-interestWithRefund" datatype="html">
         <source><x id="amount" equiv-text="interest"/> Habenzinsen auf <x id="account" equiv-text="name"/>, dazu <x id="tax" equiv-text="formatCents(-tax)"/> Steuer erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">92</context>
+          <context context-type="linenumber">90</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-interest" datatype="html">
         <source><x id="amount" equiv-text="interest"/> Habenzinsen auf <x id="account" equiv-text="name"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">97</context>
+          <context context-type="linenumber">95</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-taxRefund" datatype="html">
         <source><x id="amount" equiv-text="formatCents(amount)"/> Steuer auf <x id="account" equiv-text="account(accountId)"/> erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">104</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-monthClosedTitle" datatype="html">
         <source>Monatsabschluss <x id="month" equiv-text="monthName"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">112</context>
+          <context context-type="linenumber">110</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-monthClosed" datatype="html">
         <source>Einnahmen <x id="earnings" equiv-text="formatCents(monthlyEarnings(values))"/>, Ausgaben <x id="spending" equiv-text="formatCents(monthlySpending(values))"/>, Sparquote <x id="rate" equiv-text="rate"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">113</context>
+          <context context-type="linenumber">111</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-yearClosedTitle" datatype="html">
         <source>Steuerjahr <x id="year" equiv-text="year"/> abgeschlossen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">119</context>
+          <context context-type="linenumber">117</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-yearClosed" datatype="html">
         <source>Steuerpflichtige Kapitalerträge <x id="income" equiv-text="formatCents(taxableIncome)"/>, einbehaltene Steuer <x id="tax" equiv-text="formatCents(taxWithheld)"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">120</context>
+          <context context-type="linenumber">118</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-fundDistributionTitle" datatype="html">
         <source>Ausschüttung erhalten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">132</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-dividend" datatype="html">
         <source>Dividende von <x id="amount" equiv-text="gross"/> für <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> auf <x id="account" equiv-text="target"/> gutgeschrieben</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">135</context>
+          <context context-type="linenumber">133</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-fundDistribution" datatype="html">
         <source>Ausschüttung von <x id="amount" equiv-text="gross"/> für <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> auf <x id="account" equiv-text="target"/> gutgeschrieben</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">136</context>
+          <context context-type="linenumber">134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-distributionWithTax" datatype="html">
         <source><x id="credited" equiv-text="credited"/>, davon <x id="tax" equiv-text="formatCents(tax)"/> Steuer einbehalten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">140</context>
+          <context context-type="linenumber">138</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-distributionWithRefund" datatype="html">
         <source><x id="credited" equiv-text="credited"/>, dazu <x id="tax" equiv-text="formatCents(-tax)"/> Steuer erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">146</context>
+          <context context-type="linenumber">144</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedBuy" datatype="html">
         <source>Kauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, belastet <x id="total" equiv-text="amount"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">160</context>
+          <context context-type="linenumber">158</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedSellWithTax" datatype="html">
         <source>Verkauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, gutgeschrieben <x id="total" equiv-text="amount"/>, davon <x id="tax" equiv-text="formatCents(tax)"/> Steuer einbehalten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">166</context>
+          <context context-type="linenumber">164</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedSellWithRefund" datatype="html">
         <source>Verkauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, gutgeschrieben <x id="total" equiv-text="amount"/>, dazu <x id="tax" equiv-text="formatCents(-tax)"/> Steuer erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">172</context>
+          <context context-type="linenumber">170</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedSell" datatype="html">
         <source>Verkauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, gutgeschrieben <x id="total" equiv-text="amount"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">177</context>
+          <context context-type="linenumber">175</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderRejectedBuy" datatype="html">
         <source>Kauforder für <x id="instrument" equiv-text="name"/> abgelehnt: <x id="reason" equiv-text="why"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">188</context>
+          <context context-type="linenumber">186</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderRejectedSell" datatype="html">
         <source>Verkaufsorder für <x id="instrument" equiv-text="name"/> abgelehnt: <x id="reason" equiv-text="why"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">189</context>
+          <context context-type="linenumber">187</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExpiredBuy" datatype="html">
         <source>Die Kauforder für <x id="instrument" equiv-text="name"/> ist verfallen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">199</context>
+          <context context-type="linenumber">197</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExpiredSell" datatype="html">
         <source>Die Verkaufsorder für <x id="instrument" equiv-text="name"/> ist verfallen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">200</context>
+          <context context-type="linenumber">198</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationFilter-category" datatype="html">
@@ -8769,11 +8769,760 @@
           <context context-type="linenumber">8,9</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureTrading-tradingDialogEffects-buyLabel" datatype="html">
+        <source>Kaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading-dialogs.effects.ts</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingDialogEffects-sellLabel" datatype="html">
+        <source>Verkaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading-dialogs.effects.ts</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingDialogEffects-noDepotHeading" datatype="html">
+        <source>Kein Depot</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading-dialogs.effects.ts</context>
+          <context context-type="linenumber">104</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingDialogEffects-noDepotMessage" datatype="html">
+        <source>Zum Handeln brauchst du ein Depot mit Verrechnungskonto. Du kannst es bei jeder Bank sofort und kostenlos eröffnen und dann Geld auf das Verrechnungskonto überweisen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading-dialogs.effects.ts</context>
+          <context context-type="linenumber">105</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingDialogEffects-noDepotConfirm" datatype="html">
+        <source>Depot eröffnen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading-dialogs.effects.ts</context>
+          <context context-type="linenumber">106</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingErrors-busy" datatype="html">
+        <source>Das geht gerade nicht, weil die Spielzeit noch berechnet wird.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingErrors-storageFailed" datatype="html">
+        <source>Der Auftrag konnte nicht gespeichert werden und wurde nicht ausgeführt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingErrors-placeOrderFailure" datatype="html">
+        <source>Die Order konnte nicht erteilt werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingErrors-changeOrderFailure" datatype="html">
+        <source>Die Order konnte nicht geändert werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingErrors-cancelOrderFailure" datatype="html">
+        <source>Die Order konnte nicht storniert werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingEffects-placeBuySuccess" datatype="html">
+        <source>Kauforder für <x id="instrument" equiv-text="name"/> erteilt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading.effects.ts</context>
+          <context context-type="linenumber">122</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingEffects-placeSellSuccess" datatype="html">
+        <source>Verkaufsorder für <x id="instrument" equiv-text="name"/> erteilt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading.effects.ts</context>
+          <context context-type="linenumber">123</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingEffects-changeOrderSuccess" datatype="html">
+        <source>Die Order ist geändert.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading.effects.ts</context>
+          <context context-type="linenumber">129</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingEffects-cancelOrderSuccess" datatype="html">
+        <source>Die Order ist storniert.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading.effects.ts</context>
+          <context context-type="linenumber">134</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureTrading-tradingRoutes-ordersTitle" datatype="html">
         <source>Orders</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/feature/trading.routes.ts</context>
           <context context-type="linenumber">6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-bid" datatype="html">
+        <source>Geld</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">21,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-ask" datatype="html">
+        <source>Brief</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">25,26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-noQuote" datatype="html">
+        <source>Noch kein Kurs</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">30,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-marketClosed" datatype="html">
+        <source> Die Börse ist geschlossen. Die Order wird zur Eröffnung geprüft und dann zum ersten Kurs ausgeführt, wenn ihre Bedingung erfüllt ist. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">40,45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-depot" datatype="html">
+        <source>Depot</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">50,53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-side" datatype="html">
+        <source>Auftrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">74,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-buy" datatype="html">
+        <source>Kaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">83,86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-sell" datatype="html">
+        <source>Verkaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">92,95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-clearingNegative" datatype="html">
+        <source>Das Verrechnungskonto ist im Minus. Neue Käufe sind gesperrt, bis es ausgeglichen ist.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">105,108</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-priceFloor" datatype="html">
+        <source>Der Kurs liegt an der Kursuntergrenze. Kaufen ist gesperrt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">113,116</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-sizeKind" datatype="html">
+        <source>Ordergröße</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">122,124</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-byQuantity" datatype="html">
+        <source>Stückzahl</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">132,135</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-byAmount" datatype="html">
+        <source>Betrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">141,144</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-amount" datatype="html">
+        <source>Betrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">153,155</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-amountHint" datatype="html">
+        <source>Die Stückzahl ergibt sich bei der Ausführung aus Betrag minus Kosten durch den Briefkurs.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">162,165</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-quantity" datatype="html">
+        <source>Stückzahl</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">180,182</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-sellAll" datatype="html">
+        <source> Alle </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">200,202</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-free" datatype="html">
+        <source>Frei im Depot: <x id="INTERPOLATION" equiv-text="{{ _position?.free ?? 0 | formatQuantity }}"/> Stück</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">208,209</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-fractional" datatype="html">
+        <source>Diese Bank kauft auch Bruchstücke.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">213,216</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-whole" datatype="html">
+        <source>Diese Bank kauft nur ganze Stück.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">217,220</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-type" datatype="html">
+        <source>Orderart</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">237,240</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-validity" datatype="html">
+        <source>Gültigkeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">255,258</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-stop" datatype="html">
+        <source>Stop-Kurs (€)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">274,277</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-limit" datatype="html">
+        <source>Limit (€)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">302,305</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-date" datatype="html">
+        <source>Gültig bis</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">330,333</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-preview" datatype="html">
+        <source>Kostenvorschau</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">361,364</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-previewAsk" datatype="html">
+        <source>Kurs (Brief, geschätzt)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">368,370</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-previewBid" datatype="html">
+        <source>Kurs (Geld, geschätzt)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">372,375</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-previewQuantity" datatype="html">
+        <source>Stück</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">379,380</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-marketValue" datatype="html">
+        <source>Kurswert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">383,384</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-orderFee" datatype="html">
+        <source>Orderentgelt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">387,388</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-exchangeFee" datatype="html">
+        <source> Fremdkosten (Börsenentgelt) </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">392,394</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-debit" datatype="html">
+        <source>Gesamtbetrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">399,401</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-credit" datatype="html">
+        <source>Erlös nach Kosten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">402,404</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-reservation" datatype="html">
+        <source> Reservierung </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">412,414</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-available" datatype="html">
+        <source> Verfügbar (nach Reservierungen) </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">418,420</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-shortfall" datatype="html">
+        <source>Fehlbetrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">424,425</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-gain" datatype="html">
+        <source> Voraussichtlicher Gewinn/Verlust </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">431,433</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-tax" datatype="html">
+        <source>Steuer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">437,438</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-refund" datatype="html">
+        <source> Steuererstattung </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">443,445</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-net" datatype="html">
+        <source> Gutschrift nach Kosten und Steuern </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">450,452</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-bufferNote" datatype="html">
+        <source>Market- und Stop-Kauforders reservieren 5 % mehr als den geschätzten Kurswert, weil sich der Kurs bis zur Ausführung ändern kann.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">460,463</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-previewEmpty" datatype="html">
+        <source> Die Vorschau erscheint, sobald Stückzahl bzw. Betrag und die Kurse der Orderart feststehen. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">467,471</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-decline" datatype="html">
+        <source> Abbrechen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">481,483</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-submitBuy" datatype="html">
+        <source>Kaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">485,487</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-submitSell" datatype="html">
+        <source>Verkaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">487,490</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-depotOption" datatype="html">
+        <source>Depot <x id="number" equiv-text="depot.number"/> · <x id="bank" equiv-text="depot.bankName"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.ts</context>
+          <context context-type="linenumber">108</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-buyHeading" datatype="html">
+        <source><x id="name" equiv-text="name"/> kaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.ts</context>
+          <context context-type="linenumber">140</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-sellHeading" datatype="html">
+        <source><x id="name" equiv-text="name"/> verkaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.ts</context>
+          <context context-type="linenumber">141</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-market" datatype="html">
+        <source>Market (bestens/billigst)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-limit" datatype="html">
+        <source>Limit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-stop" datatype="html">
+        <source>Stop (Stop-Loss/Stop-Buy)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-stopLimit" datatype="html">
+        <source>Stop-Limit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-day" datatype="html">
+        <source>Bis Tagesende</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-date" datatype="html">
+        <source>Bis Datum</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-gtc" datatype="html">
+        <source>Bis auf Widerruf (1 Jahr)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-unknownDepot" datatype="html">
+        <source>Dieses Depot gibt es nicht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-depotClosed" datatype="html">
+        <source>Dieses Depot ist geschlossen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-unknownInstrument" datatype="html">
+        <source>Dieses Wertpapier gibt es nicht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-notTradable" datatype="html">
+        <source>Indizes sind nicht handelbar. Handle sie über einen ETF.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-invalidQuantity" datatype="html">
+        <source>Die Stückzahl muss größer als 0 sein (höchstens sechs Nachkommastellen).</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-invalidAmount" datatype="html">
+        <source>Der Betrag muss mindestens 0,01 € sein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-amountOnlyForBuy" datatype="html">
+        <source>Verkaufen lässt sich nur nach Stückzahl.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-fractionalNotAllowed" datatype="html">
+        <source>Diese Bank kauft nur ganze Stück.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-invalidLimit" datatype="html">
+        <source>Bitte gib ein Limit größer als 0 ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-invalidStop" datatype="html">
+        <source>Bitte gib einen Stop-Kurs größer als 0 ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-invalidValidity" datatype="html">
+        <source>Das Datum darf nicht in der Vergangenheit liegen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-validityTooLong" datatype="html">
+        <source>Eine Order gilt höchstens ein Jahr.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-insufficientQuantity" datatype="html">
+        <source>So viele freie Stück liegen nicht im Depot (offene Verkaufsorders sind abgezogen).</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-priceFloor" datatype="html">
+        <source>Der Kurs liegt an der Kursuntergrenze. Kaufen ist gesperrt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-clearingNegative" datatype="html">
+        <source>Das Verrechnungskonto ist im Minus. Gleiche es zuerst aus, dann kannst du wieder kaufen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-insufficientFunds" datatype="html">
+        <source>Das Guthaben auf dem Verrechnungskonto reicht nicht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-insufficientFundsShortfall" datatype="html">
+        <source>Das Guthaben auf dem Verrechnungskonto reicht nicht, es fehlen <x id="shortfall" equiv-text="formatCents(shortfall)"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-amountTooSmall" datatype="html">
+        <source>Der Betrag reicht nach Abzug der Kosten für kein Stück.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-unknownOrder" datatype="html">
+        <source>Diese Order gibt es nicht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">88</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-orderNotActive" datatype="html">
+        <source>Die Order ist nicht mehr offen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-stopTriggered" datatype="html">
+        <source>Der Stop wurde schon ausgelöst und lässt sich nicht mehr ändern.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderTicketSchema-depotRequired" datatype="html">
+        <source>Bitte wähle ein Depot.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/schemas/order-ticket-schema.ts</context>
+          <context context-type="linenumber">141</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderTicketSchema-quantityRequired" datatype="html">
+        <source>Bitte gib die Stückzahl ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/schemas/order-ticket-schema.ts</context>
+          <context context-type="linenumber">154</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderTicketSchema-quantityInvalid" datatype="html">
+        <source>Bitte gib eine Stückzahl ein, z. B. 10 oder 0,5.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/schemas/order-ticket-schema.ts</context>
+          <context context-type="linenumber">159</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderTicketSchema-amountRequired" datatype="html">
+        <source>Bitte gib einen Betrag ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/schemas/order-ticket-schema.ts</context>
+          <context context-type="linenumber">172</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderTicketSchema-dateRequired" datatype="html">
+        <source>Bitte wähle ein Datum.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/schemas/order-ticket-schema.ts</context>
+          <context context-type="linenumber">193</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderTicketSchema-limitRequired" datatype="html">
+        <source>Bitte gib ein Limit ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/schemas/order-ticket-schema.ts</context>
+          <context context-type="linenumber">250</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderTicketSchema-limitInvalid" datatype="html">
+        <source>Bitte gib ein Limit ein, z. B. 99,50.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/schemas/order-ticket-schema.ts</context>
+          <context context-type="linenumber">254</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderTicketSchema-stopRequired" datatype="html">
+        <source>Bitte gib einen Stop-Kurs ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/schemas/order-ticket-schema.ts</context>
+          <context context-type="linenumber">260</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderTicketSchema-stopInvalid" datatype="html">
+        <source>Bitte gib einen Stop-Kurs ein, z. B. 95,00.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/schemas/order-ticket-schema.ts</context>
+          <context context-type="linenumber">264</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-tradeActions-buy" datatype="html">
+        <source> Kaufen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/trade-actions/trade-actions.component.html</context>
+          <context context-type="linenumber">12,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-tradeActions-sell" datatype="html">
+        <source> Verkaufen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/trade-actions/trade-actions.component.html</context>
+          <context context-type="linenumber">22,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-tradeActions-position" datatype="html">
+        <source>Im Depot: <x id="INTERPOLATION" equiv-text="{{ _view.quantity | formatQuantity }}"/> Stück</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/trade-actions/trade-actions.component.html</context>
+          <context context-type="linenumber">27,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-tradeActions-noDepot" datatype="html">
+        <source>Zum Handeln brauchst du ein Depot. „Kaufen“ hilft dir beim Eröffnen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/trade-actions/trade-actions.component.html</context>
+          <context context-type="linenumber">41,45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-tradeActions-notTradable" datatype="html">
+        <source>Indizes sind nicht handelbar. Du kannst sie über einen ETF kaufen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/trade-actions/trade-actions.component.html</context>
+          <context context-type="linenumber">48,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-tradeActions-allBlocked" datatype="html">
+        <source>Alle Stück sind in offenen Verkaufsorders.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/trade-actions/trade-actions.component.ts</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-tradeActions-noPosition" datatype="html">
+        <source>Du hast dieses Wertpapier nicht im Depot.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/trade-actions/trade-actions.component.ts</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
     </body>

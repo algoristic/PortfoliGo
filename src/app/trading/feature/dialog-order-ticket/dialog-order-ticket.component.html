@@ -1,0 +1,10 @@
+@let context = context$ | async;
+
+@if (context) {
+  <app-form-order-ticket
+    [context]="context"
+    [side]="data.side"
+    [depotId]="data.depotId"
+    (submittedOrder)="submit($event)"
+    (clickedCancel)="decline()"></app-form-order-ticket>
+}

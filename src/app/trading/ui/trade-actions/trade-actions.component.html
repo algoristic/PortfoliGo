@@ -1,0 +1,51 @@
+@let _view = view();
+
+@if (_view.tradable) {
+  <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+    <button
+      appButton
+      type="button"
+      variant="primary"
+      data-testid="trading.trade-actions.buy"
+      i18n="@@uiTrading-tradeActions-buy"
+      (click)="onBuy()">
+      Kaufen
+    </button>
+    <button
+      appButton
+      type="button"
+      aria-describedby="trading-trade-actions-sell-reason"
+      data-testid="trading.trade-actions.sell"
+      [attr.aria-disabled]="sellBlocked() || null"
+      i18n="@@uiTrading-tradeActions-sell"
+      (click)="onSell()">
+      Verkaufen
+    </button>
+    @if (_view.quantity > 0) {
+      <span class="text-sm text-fg-muted tabular-nums" data-testid="trading.trade-actions.position">
+        <ng-container i18n="@@uiTrading-tradeActions-position"
+          >Im Depot: {{ _view.quantity | formatQuantity }} Stück</ng-container
+        >
+      </span>
+    }
+    <span
+      id="trading-trade-actions-sell-reason"
+      class="text-sm text-fg-muted"
+      data-testid="trading.trade-actions.sell-reason"
+      >{{ sellBlocked() ? sellReason() : '' }}</span
+    >
+  </div>
+  @if (!_view.hasDepot) {
+    <p class="mt-2 text-sm text-fg-muted" data-testid="trading.trade-actions.no-depot">
+      <ng-container i18n="@@uiTrading-tradeActions-noDepot"
+        >Zum Handeln brauchst du ein Depot. „Kaufen“ hilft dir beim Eröffnen.</ng-container
+      >
+    </p>
+  }
+} @else {
+  <p class="text-sm text-fg-muted" data-testid="trading.trade-actions.not-tradable">
+    <ng-container i18n="@@uiTrading-tradeActions-notTradable"
+      >Indizes sind nicht handelbar. Du kannst sie über einen ETF kaufen.</ng-container
+    >
+  </p>
+}

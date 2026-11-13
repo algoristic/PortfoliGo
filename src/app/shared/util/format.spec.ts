@@ -7,6 +7,7 @@ import {
   formatOptional,
   formatPercent,
   formatPrice,
+  formatQuantity,
   formatSignedCents,
   formatSignedPercent,
   formatSignedPrice,
@@ -103,6 +104,20 @@ describe('format', () => {
     it('groups thousands and rounds to the given decimal places', () => {
       expect(formatNumber(12_345.6)).toBe('12.346');
       expect(formatNumber(1.25, 1)).toBe('1,3');
+    });
+  });
+
+  describe('formatQuantity', () => {
+    it.each([
+      [10_000_000, '10'],
+      [500_000, '0,5'],
+      [1_234_567, '1,234567'],
+      [29_975_997, '29,975997'],
+      [1_000, '0,001'],
+      [12_345_000_000, '12.345'],
+      [0, '0'],
+    ])('shows %d millionths as %s', (millionths, expected) => {
+      expect(formatQuantity(millionths)).toBe(expected);
     });
   });
 
