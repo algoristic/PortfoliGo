@@ -114,7 +114,9 @@ export function orderChangeError(
   }
   const growth =
     changedReservation(order, change, context.ask, context.conditions) - order.reserved;
-  return growth > freeFunds(context.clearingBalance, context.reserved)
+  // Only a growing reservation needs free money; a sale or a cheaper purchase never does, even
+  // when other reservations exceed the clearing balance.
+  return growth > 0 && growth > freeFunds(context.clearingBalance, context.reserved)
     ? 'insufficient-funds'
     : null;
 }

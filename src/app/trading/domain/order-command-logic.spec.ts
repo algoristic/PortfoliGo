@@ -230,6 +230,18 @@ describe('order-command-logic', () => {
       expect(orderChangeError(order, change, CHANGE)).toBe(expected);
     });
 
+    it('lets a sale or a cheaper purchase change its limit when reservations exceed the balance', () => {
+      const overbooked: OrderChangeContext = {
+        ...CHANGE,
+        clearingBalance: 100_000,
+        reserved: 150_300,
+      };
+      const sale: Order = { ...LIMIT_ORDER, side: 'sell', reserved: 0 };
+      expect(orderChangeError(sale, { limit: 500 }, overbooked)).toBeNull();
+      expect(orderChangeError(LIMIT_ORDER, { limit: 90 }, overbooked)).toBeNull();
+      expect(orderChangeError(LIMIT_ORDER, { limit: 100 }, overbooked)).toBe('insufficient-funds');
+    });
+
     it('keeps the reservation when only the validity changes and recomputes it for new prices', () => {
       const market: Order = { ...LIMIT_ORDER, type: 'market', limit: null, reserved: 99_999 };
       expect(changedReservation(market, { validity: { kind: 'gtc' } }, 100.1, BRANCH)).toBe(99_999);
