@@ -164,7 +164,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 5.6b | Sparpläne                                        | offen  | 5.5             |
 | 5.7  | Dashboard und Performance                        | offen  | 5.5             |
 | 5.8  | Chart: wählbare Auflösung und Indikatorfarben    | offen  | 4.5             |
-| 5.9  | Kopfzeile: stabiles Layout der Uhr               | offen  | 2.5             |
+| 5.9  | Kopfzeile: stabiles Layout der Uhr               | fertig | 2.5             |
 | 6.1  | Export und Import                                | offen  | 5.6a, 5.6b, 5.7 |
 | 6.2  | Einstellungen                                    | offen  | 6.1, 3.6, 2.6   |
 | 6.3  | PWA und Browser-Benachrichtigungen               | offen  | 6.2             |
@@ -320,7 +320,7 @@ flowchart TD
   AP3_5 --> AP6_6
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5 done
+  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_9 done
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6

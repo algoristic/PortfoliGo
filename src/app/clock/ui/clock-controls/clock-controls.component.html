@@ -7,9 +7,18 @@
 <div class="flex shrink-0 items-center gap-2 text-sm" [attr.title]="clockLabel">
   <i appIcon="clock" class="text-fg-muted max-sm:hidden"></i>
   <span class="sr-only">{{ clockLabel }}</span>
-  <span class="font-medium whitespace-nowrap tabular-nums" data-testid="shell.header.clock">{{
-    tick() | formatGameTime
-  }}</span>
+  <!-- The weekdays differ in width; invisible copies of a whole week reserve the widest one, so
+    the controls after the clock stand still. -->
+  <span class="inline-grid font-medium whitespace-nowrap tabular-nums">
+    @for (weekdayTick of weekTicks; track weekdayTick) {
+      <span aria-hidden="true" class="invisible col-start-1 row-start-1">{{
+        weekdayTick | formatGameTime
+      }}</span>
+    }
+    <span class="col-start-1 row-start-1" data-testid="shell.header.clock">{{
+      tick() | formatGameTime
+    }}</span>
+  </span>
 </div>
 
 @if (jumping()) {
@@ -44,24 +53,6 @@
   </div>
 } @else {
   <div class="ml-1 flex min-w-0 items-center gap-1 md:ml-3">
-    @if (_paused) {
-      <app-badge tone="warning" data-testid="shell.header.paused" [attr.title]="pausedTitle()">
-        <i [appIcon]="pausedIcon()"></i>
-        <span [class.sr-only]="_compact">{{ pausedLabel() }}</span>
-      </app-badge>
-    }
-    @if (overloaded() && !_paused) {
-      <app-badge
-        tone="warning"
-        data-testid="shell.header.overloaded"
-        [attr.title]="overloadedLabel">
-        <i appIcon="speedometer"></i>
-        <span [class.sr-only]="_compact" i18n="@@uiClock-clockControls-overloaded"
-          >ausgelastet</span
-        >
-      </app-badge>
-    }
-
     <button
       #togglePause
       appIconButton
@@ -159,6 +150,25 @@
         <i appIcon="fast-forward"></i>
         {{ jumpLabel }}
       </button>
+    }
+
+    <!-- After the buttons, so that its changing text moves nothing but what follows it. -->
+    @if (_paused) {
+      <app-badge tone="warning" data-testid="shell.header.paused" [attr.title]="pausedTitle()">
+        <i [appIcon]="pausedIcon()"></i>
+        <span [class.sr-only]="_compact">{{ pausedLabel() }}</span>
+      </app-badge>
+    }
+    @if (overloaded() && !_paused) {
+      <app-badge
+        tone="warning"
+        data-testid="shell.header.overloaded"
+        [attr.title]="overloadedLabel">
+        <i appIcon="speedometer"></i>
+        <span [class.sr-only]="_compact" i18n="@@uiClock-clockControls-overloaded"
+          >ausgelastet</span
+        >
+      </app-badge>
     }
   </div>
 }

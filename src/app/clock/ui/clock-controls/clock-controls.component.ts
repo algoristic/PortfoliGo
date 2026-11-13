@@ -11,8 +11,9 @@ import {
   viewChild,
 } from '@angular/core';
 
+import { GAME_START_TICK } from '@app/clock/domain/calendar-logic';
 import { SpeedId, SPEEDS } from '@app/clock/domain/models/speed.model';
-import { Tick } from '@app/clock/domain/models/time.model';
+import { DAYS_PER_WEEK, Tick, TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
 import { AutoPauseCode } from '@app/notifications/domain/models/notification.model';
 import { notificationCodeLabel } from '@app/notifications/ui/labels/notification-labels';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
@@ -32,6 +33,8 @@ import { FormatGameTimePipe } from '../pipes/format-game-time/format-game-time.p
  * Game time with pause, speed, load and jump (PS US-ZT-01–03, US-ZT-05) and the reason of an
  * auto-pause (US-ZT-06; on phones only the icon, the text for screen readers). The clock shows the
  * minute of the last `clock` event; seconds are not shown, so real time needs no interpolation.
+ * The clock keeps the width of its widest weekday and the status chip follows the buttons, so the
+ * pause button stays in place when the weekday or the pause changes (AP 5.9).
  */
 @Component({
   selector: 'app-clock-controls',
@@ -82,6 +85,14 @@ export class ClockControlsComponent {
   cancelJumpButton = viewChild<ElementRef<HTMLButtonElement>>('cancelJump');
 
   speedOptions: SpeedOption[] = SPEEDS.map(({ id }) => ({ id, label: speedLabel(id) }));
+  /**
+   * One tick per weekday; the clock reserves the width of the widest. Only the weekday changes the
+   * width, because day, month, year and time always have the same number of tabular digits.
+   */
+  weekTicks: Tick[] = Array.from(
+    { length: DAYS_PER_WEEK },
+    (_, day) => GAME_START_TICK + day * TICKS_PER_DAY,
+  );
 
   isDisabled = computed(() => this.tick() === null || this.jumping());
   speedLabel = computed(() => {
