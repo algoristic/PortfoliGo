@@ -30,9 +30,9 @@ import { TEST_SEEDS } from '../../../testing/seeds';
 // The player has accounts at the test banks that book every kind of household transaction (TS §7.4):
 // salary and living costs, account fees, overdraft interest beyond the limit, monthly savings
 // interest with tax, quarterly savings interest and debit interest on a clearing account. The
-// commands are random bank commands (AP 3.3), background modes and the notification commands
-// (AP 3.6); many of them are rejected, which must be just as deterministic. The notifications of the
-// runs (overdrafts, interest, month ends) are part of both properties.
+// commands are random bank commands (AP 3.3), background modes, the notification commands (AP 3.6)
+// and watchlist updates (AP 4.4); many of them are rejected, which must be just as deterministic. The
+// notifications of the runs (overdrafts, interest, month ends) are part of both properties.
 
 /** End of the runs: four months after the start, across three month starts and a quarter. */
 const END_TICK = dateTimeToTick({ year: 2030, month: 8, day: 1 }) - 1;
@@ -50,7 +50,11 @@ const arbAccountId = (): fc.Arbitrary<AccountId> =>
 
 type WithoutStamp<T> = T extends unknown ? Omit<T, 'id' | 'tick'> : never;
 
-const arbCommandBody = (): fc.Arbitrary<WithoutStamp<GameCommand>> =>
+/** Watchlists from a few instruments of the world and an unknown ID, often with a repeated ID. */
+const arbWatchlist = (instruments: readonly string[]): fc.Arbitrary<string[]> =>
+  fc.array(fc.constantFrom(...instruments, 'unknown'), { maxLength: 4 });
+
+const arbCommandBody = (instruments: readonly string[]): fc.Arbitrary<WithoutStamp<GameCommand>> =>
   fc.oneof(
     fc.record({
       type: fc.constant('setBackgroundMode' as const),
@@ -90,17 +94,18 @@ const arbCommandBody = (): fc.Arbitrary<WithoutStamp<GameCommand>> =>
       },
       { requiredKeys: ['type', 'accountId'] },
     ),
+    fc.record({ type: fc.constant('updateWatchlist' as const), ids: arbWatchlist(instruments) }),
   );
 
 /**
  * Commands at random ticks in log order (ascending tick, stable). The ticks come from a small pool,
  * so that several commands often share a tick, also the tick of a snapshot.
  */
-const arbCommands = (): fc.Arbitrary<GameCommand[]> =>
+const arbCommands = (instruments: readonly string[]): fc.Arbitrary<GameCommand[]> =>
   fc
     .tuple(
       fc.array(arbRunTick(), { minLength: 1, maxLength: 4 }),
-      fc.array(fc.record({ slot: fc.nat(), body: arbCommandBody() }), { maxLength: 10 }),
+      fc.array(fc.record({ slot: fc.nat(), body: arbCommandBody(instruments) }), { maxLength: 10 }),
     )
     .map(([ticks, drafts]) =>
       drafts
@@ -123,6 +128,7 @@ describe('GameEngine properties', () => {
   let world: GameWorld;
   let start: GameSnapshot;
   let monthStarts: readonly FactorStateEntry[];
+  let instruments: string[];
 
   beforeAll(() => {
     const { seedKey, world: mini } = miniWorld(TEST_SEEDS.mini);
@@ -137,6 +143,8 @@ describe('GameEngine properties', () => {
       balances: { 'acc-1': -600_000 },
     });
     monthStarts = engine.monthStartsAfter(-1);
+    const { companies, indices, etfs } = mini;
+    instruments = [companies[0].id, `${indices[0].id}-tr`, etfs[0].id, companies[1].id];
   });
 
   function restoreStart(): GameEngine {
@@ -205,48 +213,52 @@ describe('GameEngine properties', () => {
       yieldEvery: fc.integer({ min: 1, max: 5 }),
     });
     fc.assert(
-      fc.property(arbCommands(), fc.array(arbSegment, { maxLength: 8 }), (commands, segments) => {
-        const reference = referenceRun(commands);
-        const engine = restoreStart();
-        const events: EngineEvent[] = [];
-        const journal: Transaction[] = [];
-        const notifications: GameNotification[] = [];
-        const targets = [
-          ...segments,
-          ...commands.map((command) => ({ tick: command.tick, mode: 'runUntil', yieldEvery: 1 })),
-          { tick: END_TICK, mode: 'runUntil', yieldEvery: 1 },
-        ].sort((a, b) => a.tick - b.tick);
-        let next = 0;
-        for (const { tick, mode, yieldEvery } of targets) {
-          if (mode === 'step' && tick - engine.tick <= MAX_STEPPED_TICKS) {
-            while (engine.tick < tick) {
-              engine.step();
+      fc.property(
+        arbCommands(instruments),
+        fc.array(arbSegment, { maxLength: 8 }),
+        (commands, segments) => {
+          const reference = referenceRun(commands);
+          const engine = restoreStart();
+          const events: EngineEvent[] = [];
+          const journal: Transaction[] = [];
+          const notifications: GameNotification[] = [];
+          const targets = [
+            ...segments,
+            ...commands.map((command) => ({ tick: command.tick, mode: 'runUntil', yieldEvery: 1 })),
+            { tick: END_TICK, mode: 'runUntil', yieldEvery: 1 },
+          ].sort((a, b) => a.tick - b.tick);
+          let next = 0;
+          for (const { tick, mode, yieldEvery } of targets) {
+            if (mode === 'step' && tick - engine.tick <= MAX_STEPPED_TICKS) {
+              while (engine.tick < tick) {
+                engine.step();
+              }
+            } else if (mode === 'yielding') {
+              let calls = 0;
+              while (!engine.runUntil(tick, () => ++calls % yieldEvery === 0)) {
+                events.push(...engine.drainEvents());
+                journal.push(...engine.drainTransactions());
+                notifications.push(...engine.drainNotifications());
+              }
+            } else {
+              engine.runUntil(tick);
             }
-          } else if (mode === 'yielding') {
-            let calls = 0;
-            while (!engine.runUntil(tick, () => ++calls % yieldEvery === 0)) {
-              events.push(...engine.drainEvents());
-              journal.push(...engine.drainTransactions());
-              notifications.push(...engine.drainNotifications());
+            while (next < commands.length && commands[next].tick === engine.tick) {
+              expect(engine.applyCommand(commands[next])).toEqual(reference.results[next]);
+              next++;
             }
-          } else {
-            engine.runUntil(tick);
+            events.push(...engine.drainEvents());
+            journal.push(...engine.drainTransactions());
+            notifications.push(...engine.drainNotifications());
           }
-          while (next < commands.length && commands[next].tick === engine.tick) {
-            expect(engine.applyCommand(commands[next])).toEqual(reference.results[next]);
-            next++;
-          }
-          events.push(...engine.drainEvents());
-          journal.push(...engine.drainTransactions());
-          notifications.push(...engine.drainNotifications());
-        }
-        expect(next).toBe(commands.length);
-        expect(engine.snapshot()).toEqual(reference.snapshot);
-        expect(events).toEqual(reference.events);
-        expect(journal).toEqual(reference.journal);
-        expect(notifications).toEqual(reference.notifications);
-        expectBalancesOfJournal(reference.snapshot, reference.journal);
-      }),
+          expect(next).toBe(commands.length);
+          expect(engine.snapshot()).toEqual(reference.snapshot);
+          expect(events).toEqual(reference.events);
+          expect(journal).toEqual(reference.journal);
+          expect(notifications).toEqual(reference.notifications);
+          expectBalancesOfJournal(reference.snapshot, reference.journal);
+        },
+      ),
       { numRuns: 15 },
     );
   });
@@ -254,7 +266,7 @@ describe('GameEngine properties', () => {
   it('continues a restored snapshot with replayed commands like an uninterrupted run', () => {
     fc.assert(
       fc.property(
-        arbCommands(),
+        arbCommands(instruments),
         arbRunTick(),
         fc.nat(),
         fc.constantFrom('none', 'all', 'until-snapshot', 'first-months'),

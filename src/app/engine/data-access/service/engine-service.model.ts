@@ -13,6 +13,7 @@ import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
 import { Instrument, InstrumentDetails } from '@app/market/domain/models/instrument.model';
 import { ScreenerCriteria, ScreenerRow } from '@app/market/domain/models/screener.model';
+import { WATCHLIST_COMMAND_ERRORS } from '@app/market/domain/models/watchlist.model';
 import { AbsenceReport } from '@app/notifications/domain/models/absence-report.model';
 import {
   AutoPauseCode,
@@ -196,6 +197,11 @@ export interface EngineCommandPayloads {
    * projection, for "all read") and the single ones in `seqs`; at least one of them.
    */
   markNotificationsRead: { upTo?: number; seqs?: number[] };
+  /**
+   * The complete new watchlist in its order (US-MK-04): adds, removes and reorders with one
+   * command; at most `MAX_WATCHLIST_LENGTH` instruments of the world, none twice.
+   */
+  updateWatchlist: { ids: string[] };
 }
 
 export const ENGINE_COMMAND_TYPES = [
@@ -217,6 +223,7 @@ export const ENGINE_COMMAND_TYPES = [
   'transfer',
   'setAutoPause',
   'markNotificationsRead',
+  'updateWatchlist',
 ] as const satisfies readonly (keyof EngineCommandPayloads)[];
 export type EngineCommandType = (typeof ENGINE_COMMAND_TYPES)[number];
 
@@ -336,6 +343,7 @@ export interface EngineReplies {
   transfer: GameCommandReply;
   setAutoPause: GameCommandReply;
   markNotificationsRead: GameCommandReply;
+  updateWatchlist: GameCommandReply;
 }
 
 /** Error codes of replies (TS §8.3); the UI turns them into texts. */
@@ -359,12 +367,16 @@ export const ENGINE_ERRORS = [
   /** The stored game has another `simVersion` or `schemaVersion` (TS §15); it is not loaded. */
   'player-outdated',
   'internal-error',
-  /** `instrumentDetails` with an ID, or `candles` with a series, that is no series of the world. */
-  'unknown-instrument',
   /** The engine rejected a bank command or query (TS §7.4); see `BANK_COMMAND_ERRORS`. */
   ...BANK_COMMAND_ERRORS,
   /** The engine rejected a notification command (TS §8.2); see `NOTIFICATION_COMMAND_ERRORS`. */
   ...NOTIFICATION_COMMAND_ERRORS,
+  /**
+   * The engine rejected `updateWatchlist` (TS §8.2); see `WATCHLIST_COMMAND_ERRORS`.
+   * `unknown-instrument` also answers `instrumentDetails` with an ID, or `candles` with a series,
+   * that is no series of the world.
+   */
+  ...WATCHLIST_COMMAND_ERRORS,
 ] as const;
 export type EngineErrorCode = (typeof ENGINE_ERRORS)[number];
 
@@ -449,6 +461,14 @@ export interface ProjectionPayload {
   netWorth: Cents;
   /** With `full` and whenever counter, unread number or auto-pause settings changed (AP 3.6). */
   notifications?: NotificationsProjection;
+  /** With `full` and whenever the watchlist changed (AP 4.4). */
+  watchlist?: WatchlistProjection;
+}
+
+/** The player's watchlist (US-MK-04, TS §8.3). */
+export interface WatchlistProjection {
+  /** Instrument IDs in the player's order. */
+  ids: string[];
 }
 
 /** Counter of the header and switches of the settings page (TS §8.3, §12). */

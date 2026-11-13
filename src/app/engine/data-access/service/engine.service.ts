@@ -236,6 +236,11 @@ export class EngineService implements OnDestroy {
     return this.#request('markNotificationsRead', { ...request });
   }
 
+  /** Replaces the watchlist with `ids` in this order (US-MK-04). */
+  updateWatchlist(ids: readonly string[]): Observable<EngineReplies['updateWatchlist']> {
+    return this.#request('updateWatchlist', { ids: [...ids] });
+  }
+
   setBackgroundMode(mode: BackgroundMode): Observable<EngineReplies['setBackgroundMode']> {
     return this.#request('setBackgroundMode', { mode });
   }

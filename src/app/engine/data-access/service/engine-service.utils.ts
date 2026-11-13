@@ -177,6 +177,18 @@ function isMarkReadPayload(value: unknown): boolean {
   );
 }
 
+/**
+ * Longest list `updateWatchlist` may carry: a bound of the message shape only; the engine checks
+ * `MAX_WATCHLIST_LENGTH`, the IDs and duplicates with its own codes.
+ */
+const MAX_WATCHLIST_PAYLOAD_LENGTH = 1_000;
+
+function isWatchlistIds(value: unknown): boolean {
+  return (
+    Array.isArray(value) && value.length <= MAX_WATCHLIST_PAYLOAD_LENGTH && value.every(isString)
+  );
+}
+
 function isScreenerQuery(value: Fields): boolean {
   return hasFields(value, {
     search: isOptional((search) => isString(search) && search.length <= MAX_SCREENER_SEARCH_LENGTH),
@@ -266,6 +278,7 @@ const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = 
   setAutoPause: (payload) =>
     hasFields(payload, { code: isOneOf(AUTO_PAUSE_CODES), enabled: isBoolean }),
   markNotificationsRead: isMarkReadPayload,
+  updateWatchlist: (payload) => hasFields(payload, { ids: isWatchlistIds }),
 };
 
 function isQuote(value: unknown): boolean {
@@ -445,6 +458,7 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
       accounts: (accounts) => Array.isArray(accounts) && accounts.every(isAccountView),
       netWorth: isCents,
       notifications: isOptional(isNotificationsProjection),
+      watchlist: isOptional((watchlist) => hasFields(watchlist, { ids: isListOf(isString) })),
     }),
   notification: (payload) =>
     hasFields(payload, { tick: isCount, notifications: isNotificationList }),

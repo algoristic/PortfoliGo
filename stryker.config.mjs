@@ -34,6 +34,7 @@ const config = {
     'src/app/market/domain/chart-candles.ts',
     'src/app/market/domain/chart-view-logic.ts',
     'src/app/market/domain/chart-indicator-logic.ts',
+    'src/app/market/domain/watchlist-logic.ts',
     'src/app/charts/util/sparkline-geometry.ts',
     'src/app/charts/util/donut-geometry.ts',
     'src/app/lab/domain/calibration-targets.ts',

@@ -174,6 +174,11 @@ interface LoadedGame {
   outgoingNotifications: GameNotification[];
   /** Counter, unread number and auto-pause settings of the last projection that carried them. */
   notificationsKey: string | null;
+  /**
+   * The watchlist of the last projection that carried it; the engine replaces the list on every
+   * accepted `updateWatchlist`, so a new reference means a change.
+   */
+  watchlistSent: readonly string[] | null;
   /** Loading and replaying: notifications are stored, but neither sent nor reported. */
   replaying: boolean;
   /** Indices of the absence report (positions in the world's index list). */
@@ -363,6 +368,10 @@ export class EngineHost {
           ...(seqs === undefined ? {} : { seqs }),
         }))
       ).tick,
+    }),
+    updateWatchlist: async ({ ids }, id) => ({
+      tick: (await this.#applyGameCommand((tick) => ({ id, tick, type: 'updateWatchlist', ids })))
+        .tick,
     }),
   };
 
@@ -561,6 +570,7 @@ export class EngineHost {
       notificationWriteRunning: false,
       outgoingNotifications: [],
       notificationsKey: null,
+      watchlistSent: null,
       replaying: true,
       reportIndices: reportIndices(world.world.indices),
       report: null,
@@ -1331,11 +1341,19 @@ export class EngineHost {
     const notifications = this.#notificationsProjection(game);
     const notificationsKey = JSON.stringify(notifications);
     const notificationsChanged = notificationsKey !== game.notificationsKey;
+    const watchlistChanged = game.engine.player.watchlist !== game.watchlistSent;
     if (
-      (game.projectionFull || game.changedAccounts.size > 0 || notificationsChanged) &&
+      (game.projectionFull ||
+        game.changedAccounts.size > 0 ||
+        notificationsChanged ||
+        watchlistChanged) &&
       (forced || this.#projectionThrottle.isDue(now))
     ) {
-      this.#postProjection(game, notificationsChanged ? notifications : undefined);
+      this.#postProjection(
+        game,
+        notificationsChanged ? notifications : undefined,
+        watchlistChanged,
+      );
       game.notificationsKey = notificationsKey;
       this.#projectionThrottle.sent(now);
     }
@@ -1387,19 +1405,26 @@ export class EngineHost {
 
   /**
    * The changed accounts and the net worth (TS §8.3, §8.4); after loading all accounts. The
-   * notification part goes with it when it changed or the projection is full.
+   * notification and the watchlist part go with it when they changed or the projection is full.
    */
-  #postProjection(game: LoadedGame, notifications: NotificationsProjection | undefined): void {
+  #postProjection(
+    game: LoadedGame,
+    notifications: NotificationsProjection | undefined,
+    watchlistChanged: boolean,
+  ): void {
     const { player } = game.engine;
     const full = game.projectionFull;
     const part = notifications ?? (full ? this.#notificationsProjection(game) : undefined);
+    const watchlist = full || watchlistChanged ? { ids: player.watchlist.slice() } : undefined;
     this.#post('projection', {
       tick: game.engine.tick,
       full,
       accounts: accountViews(player, full ? undefined : [...game.changedAccounts]),
       netWorth: netWorth(player),
       ...(part === undefined ? {} : { notifications: part }),
+      ...(watchlist === undefined ? {} : { watchlist }),
     });
+    game.watchlistSent = player.watchlist;
     game.projectionFull = false;
     game.changedAccounts.clear();
   }

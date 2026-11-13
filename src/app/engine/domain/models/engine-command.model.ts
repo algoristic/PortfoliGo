@@ -1,6 +1,7 @@
 import { AccountId, DepotId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
 import { BANK_COMMAND_ERRORS } from '@app/banking/domain/models/bank-command.model';
 import { Tick } from '@app/clock/domain/models/time.model';
+import { WATCHLIST_COMMAND_ERRORS } from '@app/market/domain/models/watchlist.model';
 import {
   AutoPauseCode,
   NOTIFICATION_COMMAND_ERRORS,
@@ -65,10 +66,17 @@ export interface MarkNotificationsReadCommand extends CommandBase {
   seqs?: number[];
 }
 
+/** Replaces the watchlist with `ids` in this order: adds, removes and reorders (US-MK-04). */
+export interface UpdateWatchlistCommand extends CommandBase {
+  type: 'updateWatchlist';
+  ids: string[];
+}
+
 export type GameCommand =
   | SetBackgroundModeCommand
   | SetAutoPauseCommand
   | MarkNotificationsReadCommand
+  | UpdateWatchlistCommand
   | OpenAccountCommand
   | CloseAccountCommand
   | SetSalaryAccountCommand
@@ -79,6 +87,7 @@ export const COMMAND_ERRORS = [
   'invalid-command',
   ...BANK_COMMAND_ERRORS,
   ...NOTIFICATION_COMMAND_ERRORS,
+  ...WATCHLIST_COMMAND_ERRORS,
 ] as const;
 export type CommandError = (typeof COMMAND_ERRORS)[number];
 

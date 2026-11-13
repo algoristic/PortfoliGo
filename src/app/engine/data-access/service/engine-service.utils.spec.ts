@@ -280,6 +280,7 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
       }),
     ),
   ),
+  envelope('updateWatchlist', fc.record({ ids: fc.array(fc.string(), { maxLength: 60 }) })),
 ) as fc.Arbitrary<EngineCommandMessage>;
 
 const arbQuote = fc.record({
@@ -372,6 +373,7 @@ const arbEvent: fc.Arbitrary<EngineEventMessage> = fc.oneof(
         accounts: fc.array(arbAccountView, { maxLength: 4 }),
         netWorth: arbCents,
         notifications: fc.record({ lastSeq: arbCount, unread: arbCount, autoPause: arbAutoPause }),
+        watchlist: fc.record({ ids: fc.array(fc.string(), { maxLength: 4 }) }),
       },
       { requiredKeys: ['tick', 'full', 'accounts', 'netWorth'] },
     ),
@@ -700,6 +702,13 @@ describe('engine protocol guards', () => {
         command('query', { query: { kind: 'notifications', category: 'x', offset: 0, limit: 1 } }),
       ],
       ['movers switched by a string', command('subscribe', { series: [], movers: 'yes' })],
+      ['a watchlist without IDs', command('updateWatchlist', {})],
+      ['a watchlist that is not a list', command('updateWatchlist', { ids: 'cmp-001' })],
+      ['a watchlist with a number', command('updateWatchlist', { ids: ['cmp-001', 7] })],
+      [
+        'a watchlist beyond the shape bound',
+        command('updateWatchlist', { ids: Array.from({ length: 1_001 }, (_, n) => `c${n}`) }),
+      ],
       ['details without an ID', command('query', { query: { kind: 'instrumentDetails' } })],
       [
         'details of an empty ID',
@@ -808,6 +817,14 @@ describe('engine protocol guards', () => {
       ['the absence report', command('query', { query: { kind: 'absenceReport' } })],
       ['the movers', command('subscribe', { series: [], movers: true })],
       ['the instruments', command('query', { query: { kind: 'instruments' } })],
+      ['an empty watchlist', command('updateWatchlist', { ids: [] })],
+      // Unknown, repeated and too many IDs are rules of the engine, which answers with its codes.
+      [
+        'a watchlist the engine rejects',
+        command('updateWatchlist', {
+          ids: ['x', 'x', ...Array.from({ length: 998 }, (_, n) => `c${n}`)],
+        }),
+      ],
       [
         'the details of a share',
         command('query', { query: { kind: 'instrumentDetails', id: 'cmp-001' } }),
@@ -1005,6 +1022,8 @@ describe('engine protocol guards', () => {
         'a clock paused by an unknown code',
         event('clock', { ...CLOCK, autoPause: { seq: 1, code: 'x' } }),
       ],
+      ['a watchlist part without IDs', projection({ watchlist: {} })],
+      ['a watchlist part with a number', projection({ watchlist: { ids: [1] } })],
       [
         'auto-pause settings that miss a code',
         projection({ notifications: { lastSeq: 1, unread: 0, autoPause: {} } }),
@@ -1043,6 +1062,11 @@ describe('engine protocol guards', () => {
       ['a quote of series 0 without bid and ask', event('quotes', { tick: 0, quotes: [QUOTE] })],
       ['a projection with a negative net worth', projection({ netWorth: -500 })],
       ['a full projection without accounts', projection({ full: true, accounts: [] })],
+      [
+        'a projection with the watchlist',
+        projection({ watchlist: { ids: ['cmp-001', 'idx-1-tr'] } }),
+      ],
+      ['a rejected watchlist', reply({ ok: false, error: 'duplicate-instrument' })],
       ['a rejected transfer', reply({ ok: false, error: 'insufficient-funds' })],
       [
         'new notifications',

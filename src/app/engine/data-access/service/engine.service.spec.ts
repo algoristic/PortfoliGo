@@ -354,6 +354,23 @@ describe('EngineService', () => {
       });
     });
 
+    it('updates the watchlist and streams it in the projection (US-MK-04)', async () => {
+      const projections: ProjectionPayload[] = [];
+      const subscription = service.projection$.subscribe((payload) => projections.push(payload));
+      const { tick } = await firstValueFrom(service.loadPlayer(PLAYER));
+      expect(projections.at(-1)?.watchlist).toEqual({ ids: [] });
+      const { instruments } = await firstValueFrom(service.instruments());
+      const ids = [instruments[2].id, instruments[0].id];
+      expect(await firstValueFrom(service.updateWatchlist(ids))).toEqual({ tick });
+      expect(received('updateWatchlist').at(-1)?.payload).toEqual({ ids });
+      expect(projections.at(-1)?.watchlist).toEqual({ ids });
+      const failure = await firstValueFrom(service.updateWatchlist([ids[0], ids[0]])).catch(
+        (e: EngineCommandError) => e.code,
+      );
+      expect(failure).toBe('duplicate-instrument');
+      subscription.unsubscribe();
+    });
+
     it('subscribes the movers once for all subscribers and resends them after a restart', async () => {
       await firstValueFrom(service.loadPlayer(PLAYER));
       const ticks: number[] = [];
@@ -548,6 +565,22 @@ describe('EngineService', () => {
         tick: GAME_START,
       });
       second.ngOnDestroy();
+    });
+
+    it('keeps the watchlist after reloading the player (US-MK-04)', async () => {
+      setup({ storage: 'indexed-db', locks: new FakePlayerLocks() });
+      const projections: ProjectionPayload[] = [];
+      const subscription = service.projection$.subscribe((payload) => projections.push(payload));
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      const { instruments } = await firstValueFrom(service.instruments());
+      const ids = [instruments.at(-1)?.id ?? '', instruments[1].id];
+      await firstValueFrom(service.updateWatchlist(ids));
+      await firstValueFrom(service.unloadPlayer());
+      projections.length = 0;
+
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      expect(projections[0]).toMatchObject({ full: true, watchlist: { ids } });
+      subscription.unsubscribe();
     });
   });
 });

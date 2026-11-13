@@ -57,6 +57,8 @@ export interface PlayerState {
   closedMonths: ClosedMonth[];
   /** Counter, read state and auto-pause settings of the notifications (TS §9.1, §12). */
   notifications: NotificationState;
+  /** Instrument IDs of the watchlist in the player's order (US-MK-04), at most `MAX_WATCHLIST_LENGTH`. */
+  watchlist: string[];
 }
 
 /** Dynamic state of a game (TS §8.1). Everything in it is plain, structured-cloneable data. */

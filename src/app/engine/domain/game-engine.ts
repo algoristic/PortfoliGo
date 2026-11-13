@@ -27,7 +27,8 @@ import {
   MarketState,
 } from '@app/market/domain/models/market-state.model';
 import { PriceSource } from '@app/market/domain/price-source';
-import { etfSeries } from '@app/market/domain/series';
+import { etfSeries, seriesIds } from '@app/market/domain/series';
+import { watchlistError } from '@app/market/domain/watchlist-logic';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
 import { openTaxYear } from '@app/taxes/domain/tax-logic';
 
@@ -90,6 +91,8 @@ export class GameEngine {
   #journal: Transaction[] = [];
   /** Accounts whose projection changed since the last `drainChangedAccounts` (TS §8.4). */
   #changedAccounts = new Set<AccountId>();
+  /** IDs of all instruments of the world, made on the first `updateWatchlist`. */
+  #instrumentIds: ReadonlySet<string> | null = null;
 
   constructor(
     world: GameWorld,
@@ -164,6 +167,7 @@ export class GameEngine {
         monthlyValues: emptyMonthlyValues(),
         closedMonths: [],
         notifications: { nextSeq: 1, readUpTo: 0, readSeqs: [], autoPause: {} },
+        watchlist: [],
       },
       scheduler,
       commandIds: [],
@@ -339,9 +343,25 @@ export class GameEngine {
         return this.#notifications.setAutoPause(command);
       case 'markNotificationsRead':
         return this.#notifications.markRead(command);
+      case 'updateWatchlist':
+        return this.#updateWatchlist(command.ids);
       default:
         return { ok: false, error: 'invalid-command' };
     }
+  }
+
+  /** Replaces the watchlist when the new list is valid (US-MK-04, TS §8.2). */
+  #updateWatchlist(ids: unknown): CommandResult {
+    if (!Array.isArray(ids) || !ids.every((id) => typeof id === 'string')) {
+      return { ok: false, error: 'invalid-command' };
+    }
+    this.#instrumentIds ??= new Set(seriesIds(this.world.context));
+    const error = watchlistError(ids, this.#instrumentIds);
+    if (error !== null) {
+      return { ok: false, error };
+    }
+    this.#state.player.watchlist = ids.slice();
+    return { ok: true };
   }
 
   /** Buffers an event and the notifications it creates (TS §12). */
@@ -524,6 +544,7 @@ function copyPlayer(player: Readonly<PlayerState>): PlayerState {
       readSeqs: player.notifications.readSeqs.slice(),
       autoPause: { ...player.notifications.autoPause },
     },
+    watchlist: player.watchlist.slice(),
   };
 }
 
