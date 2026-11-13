@@ -5,10 +5,12 @@ import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
 import { Candle } from '@app/market/domain/models/candle.model';
 
 import {
+  candleAt,
   chartTimeToTick,
   formatChartTime,
   formatTickMark,
   HISTORY_THRESHOLD_BARS,
+  incrementalUpdates,
   isPrepended,
   readChartColors,
   shouldRequestHistory,
@@ -67,6 +69,11 @@ describe('price chart utils', () => {
         'Mo., 01.04.2030, 09:30',
       );
     });
+
+    it('formats the first weekly candle before the epoch (tick −2,880)', () => {
+      expect(tickToChartTime(-2880) * MS_PER_SECOND).toBe(Date.UTC(2019, 11, 30));
+      expect(formatChartTime(tickToChartTime(-2880))).toBe('Mo., 30.12.2019, 00:00');
+    });
   });
 
   describe('formatTickMark', () => {
@@ -117,6 +124,12 @@ describe('price chart utils', () => {
         '--pgo-accent': '#4c9eff',
         '--pgo-up': '#26c281',
         '--pgo-down': '#ff6b6b ',
+        '--pgo-chart-1': '#000001',
+        '--pgo-chart-2': '#000002',
+        '--pgo-chart-3': '#000003',
+        '--pgo-chart-4': '#000004',
+        '--pgo-chart-5': '#000005',
+        '--pgo-chart-6': ' #000006',
       };
       expect(readChartColors({ getPropertyValue: (name) => values[name] ?? '' })).toEqual({
         background: '#121821',
@@ -126,6 +139,14 @@ describe('price chart utils', () => {
         line: '#4c9eff',
         up: '#26c281',
         down: '#ff6b6b',
+        categories: {
+          'chart-1': '#000001',
+          'chart-2': '#000002',
+          'chart-3': '#000003',
+          'chart-4': '#000004',
+          'chart-5': '#000005',
+          'chart-6': '#000006',
+        },
       });
     });
   });
@@ -178,6 +199,70 @@ describe('price chart utils', () => {
     it('waits until the view reaches the threshold', () => {
       expect(shouldRequestHistory({ ...trigger, from: HISTORY_THRESHOLD_BARS })).toBe(false);
       expect(shouldRequestHistory({ ...trigger, from: null })).toBe(false);
+    });
+  });
+
+  describe('incrementalUpdates', () => {
+    const candle = (tick: number, close = 1): Candle => ({ tick, open: 1, high: 2, low: 0, close });
+    const loaded = [candle(0), candle(15), candle(30)];
+
+    it('updates the newest candle when only it changed', () => {
+      const running = candle(30, 1.5);
+      expect(incrementalUpdates(loaded, [loaded[0], loaded[1], running])).toEqual([running]);
+    });
+
+    it('finishes the newest candle and appends the new one', () => {
+      const finished = candle(30, 1.7);
+      const next = candle(45);
+      expect(incrementalUpdates(loaded, [...loaded.slice(0, 2), finished, next])).toEqual([
+        finished,
+        next,
+      ]);
+      expect(incrementalUpdates(loaded, [...loaded, next])).toEqual([next]);
+    });
+
+    it('updates nothing for the same candles in a new array', () => {
+      expect(incrementalUpdates(loaded, [...loaded])).toEqual([]);
+    });
+
+    it('needs setData for every other change', () => {
+      expect(incrementalUpdates([], loaded)).toBeNull();
+      expect(incrementalUpdates(loaded, [candle(-15), ...loaded])).toBeNull();
+      expect(incrementalUpdates(loaded, [loaded[0], candle(15, 3), loaded[2]])).toBeNull();
+      expect(incrementalUpdates(loaded, [loaded[0], loaded[1], candle(31)])).toBeNull();
+      expect(incrementalUpdates(loaded, [...loaded, candle(45), candle(60)])).toBeNull();
+      expect(incrementalUpdates(loaded, loaded.slice(0, 2))).toBeNull();
+    });
+
+    it('compares with the given equality', () => {
+      const same = (a: Candle, b: Candle): boolean => a.tick === b.tick && a.close === b.close;
+      expect(
+        incrementalUpdates(
+          loaded,
+          loaded.map((c) => ({ ...c })),
+          same,
+        ),
+      ).toEqual([]);
+    });
+  });
+
+  describe('candleAt', () => {
+    it('finds the candle that starts at a tick', () => {
+      fc.assert(
+        fc.property(
+          fc.uniqueArray(fc.integer({ min: -5000, max: 5000 })),
+          fc.integer(),
+          (ticks, probe) => {
+            const candles = [...ticks]
+              .sort((a, b) => a - b)
+              .map((tick): Candle => ({ tick, open: 1, high: 1, low: 1, close: tick }));
+            const wanted = ticks.includes(probe) ? probe : (ticks[0] ?? probe);
+            // Oracle: a linear search.
+            expect(candleAt(candles, wanted)).toBe(candles.find((c) => c.tick === wanted));
+            expect(candleAt(candles, probe)).toBe(candles.find((c) => c.tick === probe));
+          },
+        ),
+      );
     });
   });
 });

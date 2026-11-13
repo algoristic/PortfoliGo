@@ -1,9 +1,16 @@
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
+import { Candle } from '@app/market/domain/models/candle.model';
 import { PlayerProfile } from '@app/players/domain/models/player.model';
 
 import * as MarketActions from './market.actions';
-import { initialMarketState, marketReducer, MarketState } from './market.reducer';
+import { InstrumentChartState } from './market.model';
+import {
+  initialChartState,
+  initialMarketState,
+  marketReducer,
+  MarketState,
+} from './market.reducer';
 
 function quote(series: number, last = 100): SeriesQuote {
   return { series, last, bid: null, ask: null, previousClose: 100, change: 0, changeRatio: 0 };
@@ -99,5 +106,182 @@ describe('marketReducer', () => {
     expect(
       marketReducer(state, SessionActions.enterGame({ profile: { id: 'p' } as PlayerProfile })),
     ).toEqual(initialMarketState);
+  });
+
+  describe('chart', () => {
+    const candle = (tick: number, close = 10): Candle => ({
+      tick,
+      open: 10,
+      high: 11,
+      low: 9,
+      close,
+    });
+    const loaded = [candle(600), candle(601)];
+
+    function withChart(chart: Partial<InstrumentChartState>): MarketState {
+      return { ...initialMarketState, chart: { ...initialChartState, ...chart } };
+    }
+
+    it('starts the live chart of a new instrument with period and chart type kept', () => {
+      const state = marketReducer(
+        withChart({ range: '1y', chartType: 'line', day: 5, generation: 4, candles: loaded }),
+        MarketActions.enterInstrumentPage(),
+      );
+      expect(state.chart).toEqual({
+        ...initialChartState,
+        range: '1y',
+        chartType: 'line',
+        generation: 5,
+        loading: true,
+      });
+    });
+
+    it('drops the candles when the page is left', () => {
+      const state = marketReducer(
+        withChart({ generation: 2, candles: loaded, loadingOlder: true }),
+        MarketActions.leaveInstrumentPage(),
+      );
+      expect(state.chart).toEqual({ ...initialChartState, generation: 3 });
+    });
+
+    it('loads a new block for another period, a past day or the live day again', () => {
+      const live = withChart({ range: '1d', generation: 1, candles: loaded });
+      expect(marketReducer(live, MarketActions.clickedChartRange({ range: '1d' }))).toBe(live);
+      expect(marketReducer(live, MarketActions.clickedChartDay({ day: null }))).toBe(live);
+
+      const month = marketReducer(live, MarketActions.clickedChartRange({ range: '1m' })).chart;
+      expect(month).toMatchObject({ range: '1m', generation: 2, loading: true, candles: [] });
+
+      // A day switches to 1T; 1T on a past day returns to live.
+      const day = marketReducer(
+        withChart({ range: '1m', generation: 2 }),
+        MarketActions.submittedChartDate({ day: 2000 }),
+      ).chart;
+      expect(day).toMatchObject({ range: '1d', day: 2000, generation: 3, loading: true });
+      const back = marketReducer(
+        withChart(day),
+        MarketActions.clickedChartRange({ range: '1d' }),
+      ).chart;
+      expect(back).toMatchObject({ day: null, generation: 4 });
+    });
+
+    it('keeps the chart type without loading', () => {
+      const state = marketReducer(
+        withChart({ generation: 1, candles: loaded }),
+        MarketActions.clickedChartType({ chartType: 'area' }),
+      );
+      expect(state.chart).toMatchObject({ chartType: 'area', generation: 1, candles: loaded });
+    });
+
+    it('takes only the answer of the current generation', () => {
+      const waiting = withChart({ generation: 3, loading: true });
+      const stale = MarketActions.retrievedChartCandles({
+        generation: 2,
+        candles: loaded,
+        hasOlder: true,
+      });
+      expect(marketReducer(waiting, stale)).toBe(waiting);
+      const state = marketReducer(
+        waiting,
+        MarketActions.retrievedChartCandles({ generation: 3, candles: loaded, hasOlder: true }),
+      );
+      expect(state.chart).toMatchObject({ candles: loaded, hasOlder: true, loading: false });
+      const failed = marketReducer(
+        waiting,
+        MarketActions.loadChartCandlesFailure({ generation: 3, error: 'x' }),
+      );
+      expect(failed.chart).toMatchObject({ loading: false, error: 'x' });
+    });
+
+    describe('older candles', () => {
+      const ready = withChart({ generation: 1, candles: loaded, hasOlder: true });
+
+      it('asks once while idle and only when older candles exist', () => {
+        const asking = marketReducer(ready, MarketActions.scrolledToChartStart());
+        expect(asking.chart.loadingOlder).toBe(true);
+        expect(marketReducer(asking, MarketActions.scrolledToChartStart())).toBe(asking);
+        const complete = withChart({ generation: 1, candles: loaded, hasOlder: false });
+        expect(marketReducer(complete, MarketActions.scrolledToChartStart())).toBe(complete);
+        const loading = withChart({ ...ready.chart, reloading: true });
+        expect(marketReducer(loading, MarketActions.scrolledToChartStart())).toBe(loading);
+      });
+
+      it('prepends the block and keeps the candles for an empty one', () => {
+        const asking = marketReducer(ready, MarketActions.scrolledToChartStart());
+        const older = [candle(500), candle(600, 99)];
+        const state = marketReducer(
+          asking,
+          MarketActions.retrievedOlderChartCandles({
+            generation: 1,
+            candles: older,
+            hasOlder: false,
+          }),
+        );
+        expect(state.chart).toMatchObject({
+          candles: [candle(500), ...loaded],
+          hasOlder: false,
+          loadingOlder: false,
+        });
+        const empty = marketReducer(
+          asking,
+          MarketActions.retrievedOlderChartCandles({ generation: 1, candles: [], hasOlder: true }),
+        );
+        expect(empty.chart.candles).toBe(loaded);
+        const stale = marketReducer(
+          asking,
+          MarketActions.retrievedOlderChartCandles({
+            generation: 0,
+            candles: older,
+            hasOlder: false,
+          }),
+        );
+        expect(stale).toBe(asking);
+      });
+    });
+
+    describe('live candles', () => {
+      const live = withChart({ generation: 2, candles: loaded });
+
+      it('replaces the running candle and appends the next one', () => {
+        const running = candle(601, 12);
+        const replaced = marketReducer(
+          live,
+          MarketActions.receivedLiveCandle({ generation: 2, live: { candle: running } }),
+        );
+        expect(replaced.chart.candles).toEqual([loaded[0], running]);
+        const next = candle(602);
+        const appended = marketReducer(
+          replaced,
+          MarketActions.receivedLiveCandle({
+            generation: 2,
+            live: { candle: next, previous: candle(601, 13) },
+          }),
+        );
+        expect(appended.chart.candles).toEqual([loaded[0], candle(601, 13), next]);
+      });
+
+      it('ignores live candles of an old generation or while a block loads', () => {
+        const action = MarketActions.receivedLiveCandle({
+          generation: 2,
+          live: { candle: candle(601, 12) },
+        });
+        expect(
+          marketReducer(withChart({ ...live.chart, reloading: true }), action).chart.candles,
+        ).toBe(loaded);
+        const old = withChart({ ...live.chart, generation: 3 });
+        expect(marketReducer(old, action)).toBe(old);
+      });
+
+      it('loads the block again after a gap and keeps the candles meanwhile', () => {
+        const state = marketReducer(live, MarketActions.detectedChartGap({ generation: 2 }));
+        expect(state.chart).toMatchObject({
+          generation: 3,
+          reloading: true,
+          loading: false,
+          candles: loaded,
+        });
+        expect(marketReducer(state, MarketActions.detectedChartGap({ generation: 2 }))).toBe(state);
+      });
+    });
   });
 });

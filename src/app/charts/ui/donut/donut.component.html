@@ -1,0 +1,22 @@
+<svg class="block size-full" viewBox="0 0 100 100" role="img" [attr.aria-label]="label()">
+  <circle
+    cx="50"
+    cy="50"
+    [attr.r]="radius"
+    fill="none"
+    class="stroke-border"
+    [attr.stroke-width]="thickness()"></circle>
+  @for (stroke of strokes(); track stroke.id) {
+    <circle
+      cx="50"
+      cy="50"
+      [attr.r]="radius"
+      fill="none"
+      [class]="stroke.strokeClass"
+      [attr.stroke-width]="thickness()"
+      [attr.stroke-dasharray]="stroke.dashArray"
+      [attr.stroke-dashoffset]="stroke.dashOffset"
+      [attr.data-segment]="stroke.id"
+      transform="rotate(-90 50 50)"></circle>
+  }
+</svg>

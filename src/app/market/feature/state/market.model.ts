@@ -1,5 +1,9 @@
+import { PriceChartType } from '@app/charts/ui/price-chart/price-chart.model';
+import { Tick } from '@app/clock/domain/models/time.model';
 import { MoversPayload } from '@app/engine/data-access/service/engine-service.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
+import { ChartRange } from '@app/market/domain/models/chart.model';
 import { Instrument, InstrumentKind } from '@app/market/domain/models/instrument.model';
 
 /** Quote packages of all subscriptions within this much real time make one `receivedQuotes`. */
@@ -21,4 +25,54 @@ export type InstrumentsByKind = Readonly<Record<InstrumentKind, readonly Instrum
 export interface InstrumentQuote {
   instrument: Instrument;
   quote: SeriesQuote | null;
+}
+
+/**
+ * The chart of the instrument page (TS §11.3, §11.7): period, chart type, the chosen past day of 1T
+ * (`null` = live), the loaded candles of the shown chart only, and the loading state. Every new
+ * start block raises `generation`; answers of older generations are dropped.
+ */
+export interface InstrumentChartState {
+  range: ChartRange;
+  chartType: PriceChartType;
+  day: number | null;
+  generation: number;
+  candles: readonly Candle[];
+  hasOlder: boolean;
+  /** The start block loads after a change of the user (shown as a placeholder). */
+  loading: boolean;
+  /** The start block loads again after skipped live candles (the chart stays visible). */
+  reloading: boolean;
+  loadingOlder: boolean;
+  error?: unknown;
+}
+
+/** What the chart subscription follows: live candles only while the block reaches now. */
+export interface ChartSubscription {
+  interval: CandleResolution;
+  live: boolean;
+}
+
+/** The chart of the instrument page as the view shows it. */
+export interface InstrumentChartView {
+  range: ChartRange;
+  interval: CandleResolution;
+  chartType: PriceChartType;
+  candles: readonly Candle[];
+  /** The newest candle, `null` without candles. */
+  lastCandle: Candle | null;
+  loading: boolean;
+  loadingOlder: boolean;
+  failed: boolean;
+  /** Day navigation of 1T (day indices): live or a chosen day, the days before and after. */
+  live: boolean;
+  /** Start of the shown day. */
+  shownDayTick: Tick;
+  shownDay: number;
+  /** The market day before the shown one, `null` at the first market day. */
+  previousDay: number | null;
+  /** The day after the shown one, `null` for live; `undefined` while already live. */
+  nextDay: number | null | undefined;
+  /** Today (day index), the latest date the day field offers. */
+  today: number;
 }

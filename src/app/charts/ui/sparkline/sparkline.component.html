@@ -1,0 +1,32 @@
+@let _geometry = geometry();
+@let _label = label();
+
+<svg
+  class="block size-full overflow-visible"
+  [class]="colorClass()"
+  [attr.viewBox]="'0 0 ' + width() + ' ' + height()"
+  preserveAspectRatio="none"
+  [attr.role]="_label ? 'img' : null"
+  [attr.aria-label]="_label ?? null"
+  [attr.aria-hidden]="_label ? null : 'true'"
+  [attr.data-direction]="_geometry.direction">
+  @if (_geometry.referenceY !== null) {
+    <line
+      x1="0"
+      [attr.x2]="width()"
+      [attr.y1]="_geometry.referenceY"
+      [attr.y2]="_geometry.referenceY"
+      class="stroke-fg-muted"
+      stroke-width="1"
+      stroke-dasharray="2 2"
+      vector-effect="non-scaling-stroke"></line>
+  }
+  <path
+    [attr.d]="_geometry.path"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.5"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+    vector-effect="non-scaling-stroke"></path>
+</svg>

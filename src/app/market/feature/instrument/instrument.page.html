@@ -1,10 +1,21 @@
-<h1 class="text-xl font-semibold" i18n="@@featureMarket-instrumentPage-title">Instrument</h1>
+@let instrument = facade.routeInstrument$ | async;
+
+<h1 class="text-xl font-semibold" data-testid="market.instrument.name">
+  @if (instrument) {
+    {{ instrument.name }}
+  } @else {
+    <ng-container i18n="@@featureMarket-instrumentPage-title">Instrument</ng-container>
+  }
+</h1>
+@if (instrument) {
+  <p class="text-sm text-fg-muted" data-testid="market.instrument.ticker">
+    {{ instrument.ticker }}
+    @if (instrument.isin) {
+      · {{ instrument.isin }}
+    }
+  </p>
+}
 
 <app-panel class="mt-4">
-  <app-empty-state
-    icon="bar-chart-line"
-    heading="Noch keine Inhalte"
-    i18n-heading="@@featureMarket-instrumentPage-emptyHeading"
-    text="Diese Ansicht entsteht in AP 4.5."
-    i18n-text="@@featureMarket-instrumentPage-emptyText"></app-empty-state>
+  <app-instrument-chart></app-instrument-chart>
 </app-panel>

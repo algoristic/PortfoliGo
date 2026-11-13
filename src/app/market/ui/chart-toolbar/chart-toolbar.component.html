@@ -1,0 +1,100 @@
+@let _range = range();
+@let _chartType = chartType();
+@let _live = live();
+@let _previousDay = previousDay();
+@let _nextDay = nextDay();
+
+<div class="flex flex-wrap items-center justify-between gap-2">
+  <div
+    class="flex flex-wrap gap-1"
+    role="group"
+    aria-label="Zeitraum"
+    i18n-aria-label="@@uiMarket-chartToolbar-rangeGroup">
+    @for (range of ranges; track range) {
+      <button
+        appButton
+        type="button"
+        size="sm"
+        [variant]="range === _range ? 'primary' : 'secondary'"
+        [attr.aria-pressed]="range === _range"
+        [attr.data-testid]="'market.instrument.chart.range.' + range"
+        (click)="onSelectRange(range)">
+        {{ rangeLabels[range] }}
+      </button>
+    }
+  </div>
+
+  <div
+    class="flex flex-wrap gap-1"
+    role="group"
+    aria-label="Darstellung"
+    i18n-aria-label="@@uiMarket-chartToolbar-chartTypeGroup">
+    @for (chartType of chartTypes; track chartType) {
+      <button
+        appButton
+        type="button"
+        size="sm"
+        [variant]="chartType === _chartType ? 'primary' : 'secondary'"
+        [attr.aria-pressed]="chartType === _chartType"
+        [attr.data-testid]="'market.instrument.chart.type.' + chartType"
+        (click)="onSelectChartType(chartType)">
+        {{ chartTypeLabels[chartType] }}
+      </button>
+    }
+  </div>
+</div>
+
+@if (_range === '1d') {
+  <div class="mt-2 flex flex-wrap items-center gap-2 text-sm">
+    <button
+      appButton
+      type="button"
+      size="sm"
+      variant="ghost"
+      [disabled]="_previousDay === null"
+      aria-label="Vorheriger Markttag"
+      i18n-aria-label="@@uiMarket-chartToolbar-previousDay"
+      data-testid="market.instrument.chart.previous-day"
+      (click)="onSelectDay(_previousDay)">
+      <i appIcon="chevron-left"></i>
+    </button>
+    <span class="min-w-24 text-center tabular-nums" data-testid="market.instrument.chart.day">{{
+      shownDayTick() | formatGameDate
+    }}</span>
+    <button
+      appButton
+      type="button"
+      size="sm"
+      variant="ghost"
+      [disabled]="_nextDay === undefined"
+      aria-label="Nächster Markttag"
+      i18n-aria-label="@@uiMarket-chartToolbar-nextDay"
+      data-testid="market.instrument.chart.next-day"
+      (click)="onSelectDay(_nextDay)">
+      <i appIcon="chevron-right"></i>
+    </button>
+    <label class="flex items-center gap-2">
+      <span class="text-fg-muted" i18n="@@uiMarket-chartToolbar-date">Tag</span>
+      <input
+        #dateInput
+        type="date"
+        class="h-8 rounded-md border border-border bg-bg px-2 text-fg"
+        [value]="dateValue()"
+        [min]="minDate"
+        [max]="maxDate()"
+        data-testid="market.instrument.chart.date"
+        (change)="onChangeDate(dateInput.value)" />
+    </label>
+    <button
+      appButton
+      type="button"
+      size="sm"
+      [variant]="_live ? 'primary' : 'secondary'"
+      [attr.aria-pressed]="_live"
+      data-testid="market.instrument.chart.today"
+      i18n="@@uiMarket-chartToolbar-today"
+      (click)="onSelectDay(null)">
+      Heute
+    </button>
+  </div>
+}

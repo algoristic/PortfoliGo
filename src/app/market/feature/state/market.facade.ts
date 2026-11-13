@@ -2,6 +2,9 @@ import { inject, Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
+import { PriceChartType } from '@app/charts/ui/price-chart/price-chart.model';
+import { ChartRange } from '@app/market/domain/models/chart.model';
+
 import * as MarketActions from './market.actions';
 import { InstrumentQuote } from './market.model';
 import * as MarketSelectors from './market.selectors';
@@ -18,6 +21,7 @@ export class MarketFacade {
   movers$ = this.#store.pipe(select(MarketSelectors.selectMovers));
   routeInstrument$ = this.#store.pipe(select(MarketSelectors.selectRouteInstrument));
   routeInstrumentQuote$ = this.#store.pipe(select(MarketSelectors.selectRouteInstrumentQuote));
+  chart$ = this.#store.pipe(select(MarketSelectors.selectChartView));
 
   instrumentQuote$(id: string): Observable<InstrumentQuote | null> {
     return this.#store.pipe(select(MarketSelectors.selectInstrumentQuote(id)));
@@ -54,5 +58,27 @@ export class MarketFacade {
 
   stopWatchingMovers(key: string): void {
     this.#store.dispatch(MarketActions.moversSubscriptionEnded({ key }));
+  }
+
+  selectChartRange(range: ChartRange): void {
+    this.#store.dispatch(MarketActions.clickedChartRange({ range }));
+  }
+
+  selectChartType(chartType: PriceChartType): void {
+    this.#store.dispatch(MarketActions.clickedChartType({ chartType }));
+  }
+
+  /** Shows a past day in 1T; `null` returns to the live day. */
+  showChartDay(day: number | null): void {
+    this.#store.dispatch(MarketActions.clickedChartDay({ day }));
+  }
+
+  /** Shows the day of the date field (already the market day on or before it, `null` = live). */
+  submitChartDate(day: number | null): void {
+    this.#store.dispatch(MarketActions.submittedChartDate({ day }));
+  }
+
+  loadOlderChartCandles(): void {
+    this.#store.dispatch(MarketActions.scrolledToChartStart());
   }
 }

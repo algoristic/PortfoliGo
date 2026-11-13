@@ -5,6 +5,8 @@ import { Candle } from '@app/market/domain/models/candle.model';
 
 import { PriceChartCandle, PriceChartColors, PriceChartLinePoint } from './price-chart.model';
 
+import { CHART_COLORS, ChartColor } from '../models/chart-color.model';
+
 const MS_PER_SECOND = 1000;
 const LOCALE = 'de-DE';
 
@@ -61,19 +63,27 @@ export function formatTickMark(time: number, tickMarkType: number): string {
   }
 }
 
-export function toLinePoints(candles: readonly Candle[]): PriceChartLinePoint[] {
-  return candles.map((candle) => ({ time: tickToChartTime(candle.tick), value: candle.close }));
+export function toLinePoint(candle: Candle): PriceChartLinePoint {
+  return { time: tickToChartTime(candle.tick), value: candle.close };
 }
 
-/** Chart candles; missing high and low (`NaN` after batch runs) fall back to open and close. */
-export function toChartCandles(candles: readonly Candle[]): PriceChartCandle[] {
-  return candles.map((candle) => ({
+export function toLinePoints(candles: readonly Candle[]): PriceChartLinePoint[] {
+  return candles.map(toLinePoint);
+}
+
+/** Chart candle; missing high and low (`NaN` after batch runs) fall back to open and close. */
+export function toChartCandle(candle: Candle): PriceChartCandle {
+  return {
     time: tickToChartTime(candle.tick),
     open: candle.open,
     high: Number.isNaN(candle.high) ? Math.max(candle.open, candle.close) : candle.high,
     low: Number.isNaN(candle.low) ? Math.min(candle.open, candle.close) : candle.low,
     close: candle.close,
-  }));
+  };
+}
+
+export function toChartCandles(candles: readonly Candle[]): PriceChartCandle[] {
+  return candles.map(toChartCandle);
 }
 
 /** Reads the chart colours from the `--pgo-*` tokens (computed style of `<html>`). */
@@ -89,6 +99,10 @@ export function readChartColors(
     line: token('accent'),
     up: token('up'),
     down: token('down'),
+    categories: Object.fromEntries(CHART_COLORS.map((color) => [color, token(color)])) as Record<
+      ChartColor,
+      string
+    >,
   };
 }
 
@@ -101,6 +115,51 @@ export function isPrepended(previous: readonly Candle[], next: readonly Candle[]
     next[offset].tick === previous[0].tick &&
     next[next.length - 1].tick === previous[previous.length - 1].tick
   );
+}
+
+/**
+ * The items to pass to `series.update`, in order, when `next` differs from `previous` only at the
+ * end (TS §11.7): the newest item changed, or it was finished and one new item follows; empty when
+ * nothing changed. `null`
+ * when the series needs `setData` (other changes, prepended history, a new data set).
+ */
+export function incrementalUpdates<T extends { tick: number }>(
+  previous: readonly T[],
+  next: readonly T[],
+  equal: (a: T, b: T) => boolean = (a, b) => a === b,
+): T[] | null {
+  const last = previous.length - 1;
+  if (last < 0 || (next.length !== previous.length && next.length !== previous.length + 1)) {
+    return null;
+  }
+  for (let index = 0; index < last; index++) {
+    if (!equal(previous[index], next[index])) {
+      return null;
+    }
+  }
+  if (next[last].tick !== previous[last].tick) {
+    return null;
+  }
+  return next.slice(equal(previous[last], next[last]) ? last + 1 : last);
+}
+
+/** The candle that starts at `tick`, `undefined` if none does (binary search, ascending ticks). */
+export function candleAt(candles: readonly Candle[], tick: number): Candle | undefined {
+  let low = 0;
+  let high = candles.length - 1;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    const candidate = candles[middle];
+    if (candidate.tick === tick) {
+      return candidate;
+    }
+    if (candidate.tick < tick) {
+      low = middle + 1;
+    } else {
+      high = middle - 1;
+    }
+  }
+  return undefined;
 }
 
 /** Bars before the oldest candle at which the chart asks for older candles. */

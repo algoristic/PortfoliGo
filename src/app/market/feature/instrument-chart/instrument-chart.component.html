@@ -1,0 +1,50 @@
+@let chart = facade.chart$ | async;
+@let _crosshair = crosshair();
+
+@if (chart) {
+  <app-chart-toolbar
+    [range]="chart.range"
+    [chartType]="chart.chartType"
+    [live]="chart.live"
+    [shownDayTick]="chart.shownDayTick"
+    [previousDay]="chart.previousDay"
+    [nextDay]="chart.nextDay"
+    [today]="chart.today"
+    (selectedRange)="facade.selectChartRange($event)"
+    (selectedChartType)="facade.selectChartType($event)"
+    (selectedDay)="facade.showChartDay($event)"
+    (submittedDate)="onSubmitDate($event, chart.today)"></app-chart-toolbar>
+
+  <app-candle-readout
+    class="mt-3"
+    [candle]="_crosshair?.candle ?? chart.lastCandle"
+    [interval]="chart.interval"></app-candle-readout>
+
+  <div class="relative mt-2 h-80 md:h-96">
+    <app-price-chart
+      class="h-full"
+      [candles]="chart.candles"
+      [chartType]="chart.chartType"
+      [loading]="chart.loading"
+      [label]="chartLabel"
+      data-testid="market.instrument.chart"
+      (scrolledToStart)="facade.loadOlderChartCandles()"
+      (movedCrosshair)="onMoveCrosshair($event)"></app-price-chart>
+    @if (chart.failed) {
+      <p
+        class="absolute inset-0 flex items-center justify-center text-sm text-fg-muted"
+        data-testid="market.instrument.chart.failed"
+        i18n="@@featureMarket-instrumentChart-failed">
+        Der Kursverlauf konnte nicht geladen werden.
+      </p>
+    }
+  </div>
+  @if (chart.loadingOlder) {
+    <p
+      class="mt-1 text-sm text-fg-muted"
+      data-testid="market.instrument.chart.loading-older"
+      i18n="@@featureMarket-instrumentChart-loadingOlder">
+      Lade ältere Kerzen …
+    </p>
+  }
+}

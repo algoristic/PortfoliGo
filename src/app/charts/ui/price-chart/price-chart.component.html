@@ -1,1 +1,10 @@
-<div #container class="size-full" role="figure" [attr.aria-label]="label()"></div>
+<div
+  #container
+  class="size-full"
+  role="figure"
+  [attr.aria-label]="label()"
+  [attr.aria-busy]="loading()"></div>
+@if (loading()) {
+  <!-- Above the canvases of the library, which carry their own z-index. -->
+  <app-skeleton class="absolute inset-0 z-10" [block]="true"></app-skeleton>
+}

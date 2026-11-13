@@ -2337,109 +2337,130 @@
           <context context-type="linenumber">183,187</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureLab-componentsPage-charts" datatype="html">
+        <source>Sparkline und Donut</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">193</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-sparklineRising" datatype="html">
+        <source>Kursverlauf steigend</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">200,201</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-donutLabel" datatype="html">
+        <source>Aufteilung nach Anlageklasse</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">213,214</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureLab-componentsPage-overlays" datatype="html">
         <source>Toasts und Dialoge</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">193</context>
+          <context context-type="linenumber">229</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-openConfirm" datatype="html">
         <source> Bestätigungsdialog öffnen </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">211,213</context>
+          <context context-type="linenumber">247,249</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-confirmed" datatype="html">
         <source>Bestätigt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">216,218</context>
+          <context context-type="linenumber">252,254</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-declined" datatype="html">
         <source>Abgebrochen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">218,221</context>
+          <context context-type="linenumber">254,257</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tabOverview" datatype="html">
         <source>Übersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">76</context>
+          <context context-type="linenumber">93</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tabChart" datatype="html">
         <source>Chart</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">77</context>
+          <context context-type="linenumber">94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tabProfile" datatype="html">
         <source>Profil</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">78</context>
+          <context context-type="linenumber">95</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navSimulation" datatype="html">
         <source>Simulation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">86</context>
+          <context context-type="linenumber">103</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navComponents" datatype="html">
         <source>UI-Bausteine</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">91</context>
+          <context context-type="linenumber">108</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navTokens" datatype="html">
         <source>Design-Tokens</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">96</context>
+          <context context-type="linenumber">113</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-toastMessage" datatype="html">
         <source>Beispielhinweis</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">106</context>
+          <context context-type="linenumber">123</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-confirmHeading" datatype="html">
         <source>Spieler löschen?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">107</context>
+          <context context-type="linenumber">124</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-confirmMessage" datatype="html">
         <source>Der Spieler wird endgültig gelöscht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">108</context>
+          <context context-type="linenumber">125</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-confirmLabel" datatype="html">
         <source>Löschen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">109</context>
+          <context context-type="linenumber">126</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navLabel" datatype="html">
         <source>Beispielnavigation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">110</context>
+          <context context-type="linenumber">127</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-labRoutes-simulationTitle" datatype="html">
@@ -2743,8 +2764,8 @@
           <context context-type="linenumber">58,60</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featureLab-tokensPage-contrast" datatype="html">
-        <source> Kontraste (mindestens <x id="INTERPOLATION" equiv-text="{{ minimumRatio }}"/>:1) </source>
+      <trans-unit id="featureLab-tokensPage-contrastMinimums" datatype="html">
+        <source> Kontraste (Text mindestens <x id="INTERPOLATION" equiv-text="{{ minimumRatio }}"/>:1, Chartfarben <x id="INTERPOLATION_1" equiv-text="{{ minimumGraphicRatio }}"/>:1) </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
           <context context-type="linenumber">69,71</context>
@@ -3919,18 +3940,25 @@
           <context context-type="linenumber">79</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiLab-seriesChart-chartTypeArea" datatype="html">
+        <source>Fläche</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/ui/series-chart/series-chart.component.ts</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiLab-seriesChart-chartTypeCandles" datatype="html">
         <source>Kerzen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/series-chart/series-chart.component.ts</context>
-          <context context-type="linenumber">80</context>
+          <context context-type="linenumber">81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seriesChart-chartLabel" datatype="html">
         <source>Kursverlauf</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/series-chart/series-chart.component.ts</context>
-          <context context-type="linenumber">82</context>
+          <context context-type="linenumber">83</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-ticker" datatype="html">
@@ -4181,25 +4209,32 @@
           <context context-type="linenumber">52</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureMarket-instrumentChart-failed" datatype="html">
+        <source> Der Kursverlauf konnte nicht geladen werden. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument-chart/instrument-chart.component.html</context>
+          <context context-type="linenumber">38,42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentChart-loadingOlder" datatype="html">
+        <source> Lade ältere Kerzen … </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument-chart/instrument-chart.component.html</context>
+          <context context-type="linenumber">47,51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentChart-chartLabel" datatype="html">
+        <source>Kursverlauf</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument-chart/instrument-chart.component.ts</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureMarket-instrumentPage-title" datatype="html">
         <source>Instrument</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
-          <context context-type="linenumber">1,4</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="featureMarket-instrumentPage-emptyHeading" datatype="html">
-        <source>Noch keine Inhalte</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
-          <context context-type="linenumber">6,7</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="featureMarket-instrumentPage-emptyText" datatype="html">
-        <source>Diese Ansicht entsteht in AP 4.5.</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
-          <context context-type="linenumber">8,9</context>
+          <context context-type="linenumber">7,11</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketRoutes-marketsTitle" datatype="html">
@@ -4241,7 +4276,189 @@
         <source>Die Wertpapiere konnten nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">169</context>
+          <context context-type="linenumber">304</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketEffects-loadChartCandlesFailure" datatype="html">
+        <source>Der Kursverlauf konnte nicht geladen werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
+          <context context-type="linenumber">317</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-candleReadout-openTitle" datatype="html">
+        <source>Eröffnung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-candleReadout-open" datatype="html">
+        <source>E</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
+          <context context-type="linenumber">18,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-candleReadout-highTitle" datatype="html">
+        <source>Hoch</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-candleReadout-high" datatype="html">
+        <source>H</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
+          <context context-type="linenumber">27,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-candleReadout-lowTitle" datatype="html">
+        <source>Tief</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-candleReadout-low" datatype="html">
+        <source>T</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
+          <context context-type="linenumber">36,37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-candleReadout-closeTitle" datatype="html">
+        <source>Schluss</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-candleReadout-close" datatype="html">
+        <source>S</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
+          <context context-type="linenumber">45,46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-candleReadout-empty" datatype="html">
+        <source>Keine Kerzen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
+          <context context-type="linenumber">49,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-rangeGroup" datatype="html">
+        <source>Zeitraum</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.html</context>
+          <context context-type="linenumber">11,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-chartTypeGroup" datatype="html">
+        <source>Darstellung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.html</context>
+          <context context-type="linenumber">30,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-previousDay" datatype="html">
+        <source>Vorheriger Markttag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.html</context>
+          <context context-type="linenumber">55,56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-nextDay" datatype="html">
+        <source>Nächster Markttag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.html</context>
+          <context context-type="linenumber">70,71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-date" datatype="html">
+        <source>Tag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.html</context>
+          <context context-type="linenumber">77,80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-today" datatype="html">
+        <source> Heute </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.html</context>
+          <context context-type="linenumber">97,101</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-range1d" datatype="html">
+        <source>1T</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-range5d" datatype="html">
+        <source>5T</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-range1m" datatype="html">
+        <source>1M</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-range6m" datatype="html">
+        <source>6M</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.ts</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-range1y" datatype="html">
+        <source>1J</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-range5y" datatype="html">
+        <source>5J</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-rangeMax" datatype="html">
+        <source>Max</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.ts</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-chartTypeLine" datatype="html">
+        <source>Linie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.ts</context>
+          <context context-type="linenumber">58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-chartTypeArea" datatype="html">
+        <source>Fläche</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.ts</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartToolbar-chartTypeCandles" datatype="html">
+        <source>Kerzen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.ts</context>
+          <context context-type="linenumber">60</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-dialogAbsenceReport-continue" datatype="html">

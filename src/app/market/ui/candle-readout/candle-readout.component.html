@@ -1,0 +1,51 @@
+@let _candle = candle();
+
+<p class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-fg-muted tabular-nums" aria-live="off">
+  @if (_candle) {
+    <span class="text-fg" data-testid="market.instrument.chart.readout.time">
+      @if (showTime()) {
+        {{ _candle.tick | formatGameTime }}
+      } @else {
+        {{ _candle.tick | formatGameDate }}
+      }
+    </span>
+    <span
+      ><abbr
+        title="Eröffnung"
+        i18n-title="@@uiMarket-candleReadout-openTitle"
+        i18n="@@uiMarket-candleReadout-open"
+        >E</abbr
+      >
+      {{ _candle.open | formatPrice }}</span
+    >
+    <span
+      ><abbr
+        title="Hoch"
+        i18n-title="@@uiMarket-candleReadout-highTitle"
+        i18n="@@uiMarket-candleReadout-high"
+        >H</abbr
+      >
+      {{ _candle.high | formatPrice }}</span
+    >
+    <span
+      ><abbr
+        title="Tief"
+        i18n-title="@@uiMarket-candleReadout-lowTitle"
+        i18n="@@uiMarket-candleReadout-low"
+        >T</abbr
+      >
+      {{ _candle.low | formatPrice }}</span
+    >
+    <span data-testid="market.instrument.chart.readout.close"
+      ><abbr
+        title="Schluss"
+        i18n-title="@@uiMarket-candleReadout-closeTitle"
+        i18n="@@uiMarket-candleReadout-close"
+        >S</abbr
+      >
+      {{ _candle.close | formatPrice }}</span
+    >
+  } @else {
+    <span i18n="@@uiMarket-candleReadout-empty">Keine Kerzen</span>
+  }
+</p>

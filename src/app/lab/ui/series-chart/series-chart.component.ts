@@ -77,6 +77,7 @@ export class SeriesChartComponent {
   };
   chartTypeLabels: Record<PriceChartType, string> = {
     line: $localize`:@@uiLab-seriesChart-chartTypeLine:Linie`,
+    area: $localize`:@@uiLab-seriesChart-chartTypeArea:Fläche`,
     candles: $localize`:@@uiLab-seriesChart-chartTypeCandles:Kerzen`,
   };
   chartLabel = $localize`:@@uiLab-seriesChart-chartLabel:Kursverlauf`;

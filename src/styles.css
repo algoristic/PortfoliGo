@@ -26,6 +26,12 @@
   --color-up: var(--pgo-up);
   --color-down: var(--pgo-down);
   --color-warning: var(--pgo-warning);
+  --color-chart-1: var(--pgo-chart-1);
+  --color-chart-2: var(--pgo-chart-2);
+  --color-chart-3: var(--pgo-chart-3);
+  --color-chart-4: var(--pgo-chart-4);
+  --color-chart-5: var(--pgo-chart-5);
+  --color-chart-6: var(--pgo-chart-6);
   --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -43,6 +49,13 @@
   --pgo-up: #0f7b3f;
   --pgo-down: #c62828;
   --pgo-warning: #8a5a00;
+  /* Categories of charts (donut segments, overlays): ≥ 3:1 on bg/surface/surface-raised. */
+  --pgo-chart-1: #1f6fd1;
+  --pgo-chart-2: #c4520f;
+  --pgo-chart-3: #2b8a3e;
+  --pgo-chart-4: #8e3fb0;
+  --pgo-chart-5: #0b7f8f;
+  --pgo-chart-6: #c2255c;
 }
 
 .dark {
@@ -57,6 +70,12 @@
   --pgo-up: #26c281;
   --pgo-down: #ff6b6b;
   --pgo-warning: #f0b429;
+  --pgo-chart-1: #5c9dff;
+  --pgo-chart-2: #ff8a4c;
+  --pgo-chart-3: #4fc46a;
+  --pgo-chart-4: #c77dff;
+  --pgo-chart-5: #33c3d6;
+  --pgo-chart-6: #f06595;
 }
 
 @layer base {

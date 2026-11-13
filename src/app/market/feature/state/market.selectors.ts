@@ -1,9 +1,22 @@
 import { getRouterSelectors } from '@ngrx/router-store';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
+import { dayIndex, dayStartTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
+import { selectTick } from '@app/clock/feature/state/clock.selectors';
+import {
+  CHART_RANGE_INTERVALS,
+  nextChartDay,
+  previousChartDay,
+  shownChartDay,
+} from '@app/market/domain/chart-view-logic';
 import { Instrument, INSTRUMENT_KINDS } from '@app/market/domain/models/instrument.model';
 
-import { InstrumentQuote, InstrumentsByKind } from './market.model';
+import {
+  ChartSubscription,
+  InstrumentChartView,
+  InstrumentQuote,
+  InstrumentsByKind,
+} from './market.model';
 import {
   instrumentsAdapter,
   MARKET_FEATURE_KEY,
@@ -102,4 +115,40 @@ export const selectRouteInstrumentQuote = createSelector(
   selectQuoteEntities,
   (instrument, quotes): InstrumentQuote | null =>
     instrument === null ? null : { instrument, quote: quotes[instrument.series] ?? null },
+);
+
+export const selectChart = createSelector(selectState, (state) => state.chart);
+
+/** The chart subscription of the instrument page: live candles only while the block reaches now. */
+export const selectChartSubscription = createSelector(selectChart, (chart): ChartSubscription => ({
+  interval: CHART_RANGE_INTERVALS[chart.range],
+  live: chart.day === null,
+}));
+
+/** Today's day index; changes once a day, so the chart view doesn't follow every clock tick. */
+const selectToday = createSelector(selectTick, (tick) => dayIndex(tick ?? GAME_START_TICK));
+
+export const selectChartView = createSelector(
+  selectChart,
+  selectToday,
+  (chart, today): InstrumentChartView => {
+    const now = dayStartTick(today);
+    const shownDay = shownChartDay(chart.day, chart.candles, now);
+    return {
+      range: chart.range,
+      interval: CHART_RANGE_INTERVALS[chart.range],
+      chartType: chart.chartType,
+      candles: chart.candles,
+      lastCandle: chart.candles.at(-1) ?? null,
+      loading: chart.loading,
+      loadingOlder: chart.loadingOlder,
+      failed: chart.error !== undefined && chart.candles.length === 0,
+      live: chart.day === null,
+      shownDay,
+      shownDayTick: dayStartTick(shownDay),
+      previousDay: previousChartDay(shownDay),
+      nextDay: chart.day === null ? undefined : nextChartDay(chart.day, now),
+      today,
+    };
+  },
 );

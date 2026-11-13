@@ -13,6 +13,7 @@ import { COLOR_SCHEMES } from '@app/shared/data-access/color-scheme/color-scheme
 
 import {
   COLOR_TOKENS,
+  MINIMUM_GRAPHIC_CONTRAST,
   MINIMUM_TEXT_CONTRAST,
   ThemeMeasurement,
   TokenSample,
@@ -33,6 +34,7 @@ export class TokensPage {
 
   themes = COLOR_SCHEMES;
   minimumRatio = MINIMUM_TEXT_CONTRAST;
+  minimumGraphicRatio = MINIMUM_GRAPHIC_CONTRAST;
   swatches: TokenSwatch[] = [
     { token: 'bg', swatchClass: 'bg-bg' },
     { token: 'surface', swatchClass: 'bg-surface' },
@@ -44,6 +46,12 @@ export class TokensPage {
     { token: 'up', swatchClass: 'bg-up' },
     { token: 'down', swatchClass: 'bg-down' },
     { token: 'warning', swatchClass: 'bg-warning' },
+    { token: 'chart-1', swatchClass: 'bg-chart-1' },
+    { token: 'chart-2', swatchClass: 'bg-chart-2' },
+    { token: 'chart-3', swatchClass: 'bg-chart-3' },
+    { token: 'chart-4', swatchClass: 'bg-chart-4' },
+    { token: 'chart-5', swatchClass: 'bg-chart-5' },
+    { token: 'chart-6', swatchClass: 'bg-chart-6' },
   ];
   samples: TokenSample[] = [
     { token: 'fg', textClass: 'text-fg' },

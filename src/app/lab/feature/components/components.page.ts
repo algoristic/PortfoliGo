@@ -5,6 +5,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { apply, form, FormField } from '@angular/forms/signals';
 import { RouterModule } from '@angular/router';
 
+import { DonutComponent } from '@app/charts/ui/donut/donut.component';
+import { DonutSegment } from '@app/charts/ui/donut/donut.model';
+import { CHART_COLOR_BACKGROUND_CLASSES } from '@app/charts/ui/models/chart-color.model';
+import { SparklineComponent } from '@app/charts/ui/sparkline/sparkline.component';
 import { START_CAPITAL_RANGE } from '@app/players/domain/player-limits';
 import { amountRangeSchema } from '@app/players/ui/schemas/amount-range-schema';
 import { AmountInputComponent } from '@app/shared/ui/amount-input/amount-input.component';
@@ -39,6 +43,7 @@ import { formatCents } from '@app/shared/util/format';
     AmountInputComponent,
     BadgeComponent,
     ButtonDirective,
+    DonutComponent,
     EmptyStateComponent,
     FormatNumberPipe,
     FormField,
@@ -53,6 +58,7 @@ import { formatCents } from '@app/shared/util/format';
     PanelComponent,
     PriceChangeComponent,
     SkeletonComponent,
+    SparklineComponent,
     StatTileComponent,
     TabPanelDirective,
     RouterModule,
@@ -71,6 +77,17 @@ export class ComponentsPage {
   badgeTones = BADGE_TONES;
   toastTones = TOAST_TONES;
   changes = [0.0129, -0.0451, 0, -0.00004];
+  sparklineRising = [100, 101.5, 100.8, 102.4, 103.1, 102.7, 104.2];
+  sparklineFalling = [104, 103.2, 103.8, 102.1, 101.4, 101.9, 100.6];
+  donutSegments: DonutSegment[] = [
+    { id: 'shares', value: 52, color: 'chart-1' },
+    { id: 'etfs', value: 23, color: 'chart-2' },
+    { id: 'bonds', value: 11, color: 'chart-3' },
+    { id: 'cash', value: 8, color: 'chart-4' },
+    { id: 'commodities', value: 4, color: 'chart-5' },
+    { id: 'other', value: 2, color: 'chart-6' },
+  ];
+  swatchClasses = CHART_COLOR_BACKGROUND_CLASSES;
   netWorth = formatCents(2451230);
   tabs: TabItem[] = [
     { id: 'overview', label: $localize`:@@featureLab-componentsPage-tabOverview:Übersicht` },

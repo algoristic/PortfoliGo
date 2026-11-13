@@ -9,6 +9,12 @@ const CHART_TOKENS: Record<string, string> = {
   accent: '#2563eb',
   up: '#15803d',
   down: '#b91c1c',
+  'chart-1': '#1f6fd1',
+  'chart-2': '#c4520f',
+  'chart-3': '#2b8a3e',
+  'chart-4': '#8e3fb0',
+  'chart-5': '#0b7f8f',
+  'chart-6': '#c2255c',
 };
 
 /**

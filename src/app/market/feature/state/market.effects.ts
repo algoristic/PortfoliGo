@@ -24,20 +24,30 @@ import {
   timer,
 } from 'rxjs';
 
+import { selectTick } from '@app/clock/feature/state/clock.selectors';
 import { EngineService } from '@app/engine/data-access/service/engine.service';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
+import {
+  chartStartRequest,
+  liveCandleStep,
+  olderChartRequest,
+  trimChartBlock,
+} from '@app/market/domain/chart-view-logic';
 import { Instrument } from '@app/market/domain/models/instrument.model';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
 import * as MarketActions from './market.actions';
 import {
+  ChartSubscription,
   INSTRUMENT_PAGE_SUBSCRIPTION,
   MARKETS_PAGE_SUBSCRIPTION,
   QUOTES_BUNDLE_WINDOW_MS,
   QuoteSubscriptions,
 } from './market.model';
 import {
+  selectChart,
+  selectChartSubscription,
   selectInstrumentsLoaded,
   selectMoversWanted,
   selectOverviewIndexSeries,
@@ -57,6 +67,18 @@ export class MarketEffects {
   /** Ends what a loaded player started: leaving the game or entering another one. */
   readonly #ended$ = this.#actions$.pipe(
     ofType(SessionActions.leaveGame, SessionActions.enterGame),
+  );
+
+  /** Actions after which the chart loads a new start block (a new generation). */
+  readonly #chartRestarted$ = this.#actions$.pipe(
+    ofType(
+      MarketActions.enterInstrumentPage,
+      MarketActions.leaveInstrumentPage,
+      MarketActions.clickedChartRange,
+      MarketActions.clickedChartDay,
+      MarketActions.submittedChartDate,
+      MarketActions.detectedChartGap,
+    ),
   );
 
   /** Master data of all series (TS §8.2); it doesn't change during a game. */
@@ -137,10 +159,7 @@ export class MarketEffects {
     this.#actions$.pipe(
       ofType(MarketActions.enterInstrumentPage),
       switchMap(() =>
-        this.#store.pipe(
-          select(selectRouteInstrument),
-          filter((instrument): instrument is Instrument => instrument !== null),
-          take(1),
+        this.#whenRouteInstrument().pipe(
           map((instrument) =>
             MarketActions.quotesSubscriptionChanged({
               key: INSTRUMENT_PAGE_SUBSCRIPTION,
@@ -160,6 +179,122 @@ export class MarketEffects {
     ),
   );
 
+  /**
+   * The start block of the chart (TS §11.7) once the instrument and the clock are known: on
+   * entering the page, a new period or day, and after skipped live candles. A new block replaces a
+   * running query; live 1T and 5T keep the last 1 or 5 days that have candles.
+   */
+  loadChart$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(
+        MarketActions.enterInstrumentPage,
+        MarketActions.clickedChartRange,
+        MarketActions.clickedChartDay,
+        MarketActions.submittedChartDate,
+        MarketActions.detectedChartGap,
+      ),
+      switchMap(() =>
+        this.#whenRouteInstrument().pipe(
+          switchMap((instrument) =>
+            this.#store.pipe(
+              select(selectTick),
+              filter((tick): tick is number => tick !== null),
+              take(1),
+              concatLatestFrom(() => this.#store.pipe(select(selectChart))),
+              switchMap(([now, chart]) => {
+                if (!chart.loading && !chart.reloading) {
+                  return EMPTY;
+                }
+                const { generation, range, day } = chart;
+                return this.#engine
+                  .candles({ series: instrument.series, ...chartStartRequest(range, day, now) })
+                  .pipe(
+                    map((result) => trimChartBlock(range, day, result)),
+                    map(({ candles, hasOlder }) =>
+                      MarketActions.retrievedChartCandles({ generation, candles, hasOlder }),
+                    ),
+                    catchError((error: unknown) =>
+                      of(MarketActions.loadChartCandlesFailure({ generation, error })),
+                    ),
+                  );
+              }),
+            ),
+          ),
+          takeUntil(this.#actions$.pipe(ofType(MarketActions.leaveInstrumentPage))),
+        ),
+      ),
+    ),
+  );
+
+  /**
+   * The next older block when the user scrolled to the oldest candle (TS §11.7), until `hasOlder`
+   * is `false`; one at a time, ended by a new start block.
+   */
+  loadOlderChartCandles$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(MarketActions.scrolledToChartStart),
+      concatLatestFrom(() => [
+        this.#store.pipe(select(selectChart)),
+        this.#store.pipe(select(selectRouteInstrument)),
+      ]),
+      exhaustMap(([, chart, instrument]) => {
+        const oldest = chart.candles[0];
+        if (!chart.loadingOlder || instrument === null || oldest === undefined) {
+          return EMPTY;
+        }
+        const { generation } = chart;
+        return this.#engine
+          .candles({ series: instrument.series, ...olderChartRequest(chart.range, oldest.tick) })
+          .pipe(
+            map(({ candles, hasOlder }) =>
+              MarketActions.retrievedOlderChartCandles({ generation, candles, hasOlder }),
+            ),
+            catchError((error: unknown) =>
+              of(MarketActions.loadOlderChartCandlesFailure({ generation, error })),
+            ),
+            takeUntil(this.#chartRestarted$),
+          );
+      }),
+    ),
+  );
+
+  /**
+   * Live candles of the chart (TS §8.4) while the instrument page is open and the shown block
+   * reaches now (not for a chosen past day). Candles that skip the loaded ones start a new block;
+   * events during a running start block are dropped, the block brings them.
+   */
+  watchChart$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(MarketActions.enterInstrumentPage),
+      switchMap(() =>
+        this.#whenRouteInstrument().pipe(
+          switchMap((instrument) =>
+            this.#store.pipe(
+              select(selectChartSubscription),
+              distinctUntilChanged(sameChartSubscription),
+              switchMap(({ interval, live }) =>
+                live ? this.#engine.chartCandles(instrument.series, interval) : EMPTY,
+              ),
+            ),
+          ),
+          concatLatestFrom(() => this.#store.pipe(select(selectChart))),
+          filter(([, chart]) => !chart.loading && !chart.reloading),
+          map(([{ candle, previous }, chart]) => {
+            const live = previous === undefined ? { candle } : { candle, previous };
+            return { live, chart, step: liveCandleStep(chart.range, chart.candles, live) };
+          }),
+          filter(({ step }) => step !== 'ignore'),
+          map(({ live, chart: { generation }, step }) =>
+            step === 'reload'
+              ? MarketActions.detectedChartGap({ generation })
+              : MarketActions.receivedLiveCandle({ generation, live }),
+          ),
+          takeUntil(this.#actions$.pipe(ofType(MarketActions.leaveInstrumentPage))),
+        ),
+      ),
+    ),
+  );
+
   showFailure$ = createEffect(
     () =>
       this.#actions$.pipe(
@@ -167,6 +302,19 @@ export class MarketEffects {
         tap(() =>
           this.#toastService.error(
             $localize`:@@featureMarket-marketEffects-loadInstrumentsFailure:Die Wertpapiere konnten nicht geladen werden.`,
+          ),
+        ),
+      ),
+    { dispatch: false },
+  );
+
+  showChartFailure$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(MarketActions.loadChartCandlesFailure, MarketActions.loadOlderChartCandlesFailure),
+        tap(() =>
+          this.#toastService.error(
+            $localize`:@@featureMarket-marketEffects-loadChartCandlesFailure:Der Kursverlauf konnte nicht geladen werden.`,
           ),
         ),
       ),
@@ -227,6 +375,15 @@ export class MarketEffects {
     });
   }
 
+  /** The instrument of the route once the master data is there. */
+  #whenRouteInstrument(): Observable<Instrument> {
+    return this.#store.pipe(
+      select(selectRouteInstrument),
+      filter((instrument): instrument is Instrument => instrument !== null),
+      take(1),
+    );
+  }
+
   #whenInstrumentsLoaded(): Observable<boolean> {
     return this.#store.pipe(select(selectInstrumentsLoaded), filter(Boolean), take(1));
   }
@@ -238,4 +395,8 @@ export class MarketEffects {
       return timer(QUOTES_BUNDLE_WINDOW_MS).pipe(finalize(done));
     });
   }
+}
+
+function sameChartSubscription(a: ChartSubscription, b: ChartSubscription): boolean {
+  return a.interval === b.interval && a.live === b.live;
 }

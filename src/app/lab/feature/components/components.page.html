@@ -190,6 +190,42 @@
     </div>
   </app-panel>
 
+  <app-panel heading="Sparkline und Donut" i18n-heading="@@featureLab-componentsPage-charts">
+    <div class="flex flex-wrap items-center gap-8">
+      <div class="flex flex-col gap-2 text-sm">
+        <app-sparkline
+          class="h-8 w-32"
+          [values]="sparklineRising"
+          [reference]="101"
+          label="Kursverlauf steigend"
+          i18n-label="@@featureLab-componentsPage-sparklineRising"
+          data-testid="lab.components.sparkline-rising"></app-sparkline>
+        <app-sparkline
+          class="h-8 w-32"
+          [values]="sparklineFalling"
+          [reference]="103"
+          data-testid="lab.components.sparkline-falling"></app-sparkline>
+      </div>
+      <div class="flex items-center gap-4">
+        <app-donut
+          class="size-32"
+          [segments]="donutSegments"
+          label="Aufteilung nach Anlageklasse"
+          i18n-label="@@featureLab-componentsPage-donutLabel"
+          data-testid="lab.components.donut"></app-donut>
+        <ul class="flex flex-col gap-1 text-sm tabular-nums">
+          @for (segment of donutSegments; track segment.id) {
+            <li class="flex items-center gap-2">
+              <span class="size-3 rounded-sm" [class]="swatchClasses[segment.color]"></span>
+              <span class="font-mono">{{ segment.id }}</span>
+              <span class="text-fg-muted">{{ segment.value }} %</span>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </app-panel>
+
   <app-panel heading="Toasts und Dialoge" i18n-heading="@@featureLab-componentsPage-overlays">
     <div class="flex flex-wrap items-center gap-2">
       @for (tone of toastTones; track tone) {
