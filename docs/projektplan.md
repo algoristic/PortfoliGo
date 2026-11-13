@@ -52,7 +52,7 @@ flowchart LR
 | M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Daueraufträge, Sparpläne, Steuern, Depot, Dashboard mit Benchmark   | 10  |
 | M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen                                     | 6   |
 
-**Empfohlene Reihenfolge:** M3 und M4 sind abgeschlossen (M4 mit AP 4.5). Als Nächstes folgt M5 mit AP 5.1 (abhängig von AP 3.3 und AP 1.6b); M5 braucht M3 und M4. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
+**Empfohlene Reihenfolge:** M3 und M4 sind abgeschlossen (M4 mit AP 4.5). M5 läuft: AP 5.1 (in drei Teilen), AP 5.8 und AP 5.9 sind fertig; als Nächstes folgt AP 5.2. M5 braucht M3 und M4. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
 
 ## 2. Arbeitsweise in Sessions
 
@@ -155,12 +155,14 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 4.3  | Indikatoren                                      | fertig | 4.2             |
 | 4.4  | Marktübersicht, Screener und Watchlist           | fertig | 4.2             |
 | 4.5  | Instrument-Detailseite                           | fertig | 4.3, 4.4, 1.8a  |
-| 5.1  | Depot und Orderausführung                        | offen  | 3.3, 1.6b       |
-| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1             |
+| 5.1a | Orderregeln als reine Funktionen                 | fertig | 3.3, 1.6b       |
+| 5.1b | Orders in der Engine                             | fertig | 5.1a            |
+| 5.1c | Orders im Protokoll, Projektion, Texte           | fertig | 5.1b            |
+| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1c            |
 | 5.3  | Steuern                                          | offen  | 5.2             |
 | 5.4  | Order-Ticket und Orderbuch                       | offen  | 5.3, 4.5, 3.6   |
 | 5.5  | Depot, Positionen und Steuerübersicht (UI)       | offen  | 5.4             |
-| 5.6a | Daueraufträge                                    | offen  | 3.5, 5.1        |
+| 5.6a | Daueraufträge                                    | offen  | 3.5, 5.1c       |
 | 5.6b | Sparpläne                                        | offen  | 5.5             |
 | 5.7  | Dashboard und Performance                        | offen  | 5.5             |
 | 5.8  | Chart: wählbare Auflösung und Indikatorfarben    | fertig | 4.5             |
@@ -320,7 +322,7 @@ flowchart TD
   AP3_5 --> AP6_6
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_8,AP5_9 done
+  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_1,AP5_8,AP5_9 done
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6
@@ -704,13 +706,15 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 - **Referenzen:** US-HD-01–US-HD-03; TS §7.4, §7.5
 - **Abhängig von:** AP 3.3, AP 1.6b
 
+AP 5.1 wurde nach §2.5 geteilt (13.11.2026) und ist mit allen drei Teilen fertig: **AP 5.1a** die Orderregeln als reine Funktionen in `trading/domain` mit den Beispieltabellen in TS §7.5, **AP 5.1b** die Orders in der `GameEngine` (`engine/domain/order-system.ts`: Kommandos, Prüfung je Tick, Ausführung, Ablauf, Reservierungen, Bestände), **AP 5.1c** Protokoll und Worker-Host, Projektion der Orders und Bestände an die UI, `AccountView.reserved`, `EngineService` und die Texte der Order-Benachrichtigungen samt Abwesenheitsbericht (TS §8.2–§8.4, §12).
+
 #### AP 5.2 – Positionen, Lots, Ausschüttungen und Depotgebühr
 
 - **Umfang:** Positionen und Lots nach FIFO mit Anschaffungskosten in Cent, Einstandskurs, realisierte Gewinne und Verluste; Dividenden und ETF-Ausschüttungen an die Bestände am Stichtag, Gutschrift am Zahltag; Depotgebühr quartalsweise auf den durchschnittlichen Depotwert.
 - **Abnahme:** Tests für FIFO-Teilverkäufe (Anschaffungskosten summieren sich exakt), Stichtagsregel, ausschüttende ETFs, Depotgebühr inklusive Belastung eines leeren Verrechnungskontos.
 - **Geklärt (13.11.2026):** Ein Depot darf zwischen Ex-Tag und Zahltag geschlossen werden; die Dividende bzw. Ausschüttung geht am Zahltag auf das beim Schließen gewählte Zielkonto (TS §7.4). Depotgebühr bei angebrochenen Quartalen (Festlegung ohne PO-Entscheidung, TS §7.3): anteilig nach Kalendertagen wie die Kontoführung, der Durchschnitt läuft über die Tage, an denen das Depot offen war; beim Schließen wird die anteilige Gebühr mit der Abrechnung gebucht. Die Details legt AP 5.2 fest.
 - **Referenzen:** US-PF-06, US-BK-08; TS §6.5, §7.4, §7.6
-- **Abhängig von:** AP 5.1
+- **Abhängig von:** AP 5.1c
 
 #### AP 5.3 – Steuern
 
@@ -740,7 +744,7 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 - **Vor der Umsetzung klären:** Was geschieht mit einem Dauerauftrag, dessen Quell- oder Zielkonto geschlossen wird (TS §7.4)?
 - **Hinweis:** Fachlich hängt das AP nur an AP 3.5 und AP 5.1 (Reservierungen mindern den verfügbaren Betrag); im Plan läuft es nach AP 5.5.
 - **Referenzen:** US-BK-10; TS §7.4; E-21
-- **Abhängig von:** AP 3.5, AP 5.1
+- **Abhängig von:** AP 3.5, AP 5.1c
 
 #### AP 5.6b – Sparpläne
 

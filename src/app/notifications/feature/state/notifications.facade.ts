@@ -19,6 +19,7 @@ export class NotificationsFacade {
   category$ = this.#store.pipe(select(NotificationsSelectors.selectCenterCategory));
   centerWindow$ = this.#store.pipe(select(NotificationsSelectors.selectCenterWindow));
   accountNames$ = this.#store.pipe(select(NotificationsSelectors.selectAccountNames));
+  instrumentNames$ = this.#store.pipe(select(NotificationsSelectors.selectInstrumentNames));
 
   enterNotificationsPage(): void {
     this.#store.dispatch(NotificationsActions.enterNotificationsPage());

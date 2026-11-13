@@ -18,11 +18,11 @@ import {
 
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { AbsenceReport } from '@app/notifications/domain/models/absence-report.model';
-import { AccountNames } from '@app/notifications/ui/labels/notification-text.utils';
 
 import * as NotificationsActions from './notifications.actions';
 import {
   selectAccountNames,
+  selectInstrumentNames,
   selectPendingReport,
   selectReportToShow,
 } from './notifications.selectors';
@@ -49,25 +49,31 @@ export class AbsenceReportEffects {
       select(selectReportToShow),
       distinctUntilChanged(),
       filter((report): report is AbsenceReport => report !== null),
-      concatLatestFrom(() => this.#store.pipe(select(selectAccountNames))),
-      concatMap(([report, accountNames]) =>
+      concatLatestFrom(() => [
+        this.#store.pipe(select(selectAccountNames)),
+        this.#store.pipe(select(selectInstrumentNames)),
+      ]),
+      concatMap(([report, accountNames, instrumentNames]) =>
         this.#store.pipe(
           select(selectPendingReport),
           take(1),
           // A report shown or replaced while waiting for an earlier dialog opens no second one.
           filter((pending) => pending === report),
-          switchMap(() => this.#openDialog(report, accountNames)),
+          switchMap(() => this.#openDialog(report, { accountNames, instrumentNames })),
         ),
       ),
     ),
   );
 
-  #openDialog(report: AbsenceReport, accountNames: AccountNames): Observable<Action> {
+  #openDialog(
+    report: AbsenceReport,
+    names: Pick<AbsenceReportDialogData, 'accountNames' | 'instrumentNames'>,
+  ): Observable<Action> {
     return defer(() => {
       const dialogRef = this.#dialog.open<void, AbsenceReportDialogData>(
         DialogAbsenceReportComponent,
         {
-          data: { report, accountNames },
+          data: { report, ...names },
           ariaLabel: $localize`:@@featureNotifications-absenceReportEffects-dialogLabel:Abwesenheitsbericht`,
           // A report to read: the screen reader starts at its title, not at a button.
           autoFocus: 'dialog',

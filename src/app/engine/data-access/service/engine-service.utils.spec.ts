@@ -15,6 +15,12 @@ import {
 } from '@app/notifications/domain/models/notification.model';
 import { MAX_NOTIFICATION_LIMIT } from '@app/notifications/domain/notification-page-logic';
 import {
+  ORDER_REJECTIONS,
+  ORDER_SIDES,
+  ORDER_STATUSES,
+  ORDER_TYPES,
+} from '@app/trading/domain/models/order.model';
+import {
   REGION_IDS,
   SECTOR_IDS,
   SIZE_CLASSES,
@@ -127,6 +133,61 @@ const arbMonthlyValues = fc.record({
   dividends: arbCents,
 });
 
+const arbValidity = fc.oneof(
+  fc.constant({ kind: 'day' as const }),
+  fc.constant({ kind: 'gtc' as const }),
+  fc.record({
+    kind: fc.constant('date' as const),
+    date: fc.record({ year: arbCount, month: arbCount, day: arbCount }),
+  }),
+);
+
+const arbOrderSpec = fc.record({
+  depotId: arbDepotId,
+  instrumentId: arbId,
+  side: fc.constantFrom(...ORDER_SIDES),
+  type: fc.constantFrom(...ORDER_TYPES),
+  size: fc.oneof(
+    fc.record({ kind: fc.constant('quantity' as const), quantity: arbCount }),
+    fc.record({ kind: fc.constant('amount' as const), amount: arbCount }),
+  ),
+  limit: fc.option(arbPrice, { nil: null }),
+  stop: fc.option(arbPrice, { nil: null }),
+  validity: arbValidity,
+});
+
+const arbOrderView = fc
+  .record({
+    id: arbId,
+    status: fc.constantFrom(...ORDER_STATUSES),
+    placedAt: arbCount,
+    expiresAt: arbCount,
+    reserved: arbCount,
+    triggeredAt: fc.option(arbCount, { nil: null }),
+    execution: fc.option(
+      fc.record({
+        tick: arbCount,
+        quantity: arbCount,
+        price: arbPrice,
+        marketValue: arbCount,
+        orderFee: arbCount,
+        exchangeFee: arbCount,
+        total: arbCount,
+      }),
+      { nil: null },
+    ),
+    closedAt: fc.option(arbCount, { nil: null }),
+    rejection: fc.option(fc.constantFrom(...ORDER_REJECTIONS), { nil: null }),
+  })
+  .chain((fields) => arbOrderSpec.map((spec) => ({ ...spec, ...fields })));
+
+const arbOrderParams = fc.record({
+  orderId: arbId,
+  depotId: arbDepotId,
+  instrumentId: arbId,
+  side: fc.constantFrom(...ORDER_SIDES),
+});
+
 const arbNotification = fc
   .oneof(
     fc.record({
@@ -158,7 +219,22 @@ const arbNotification = fc
       params: fc.record({ year: arbCount, taxableIncome: arbCents, taxWithheld: arbCents }),
     }),
     fc.record({
-      code: fc.constantFrom('order-executed' as const, 'storage-quota-exceeded' as const),
+      code: fc.constant('order-executed' as const),
+      params: arbOrderParams.chain((order) =>
+        fc
+          .record({ quantity: arbCount, price: arbPrice, total: arbCount })
+          .map((fill) => ({ ...order, ...fill })),
+      ),
+    }),
+    fc.record({
+      code: fc.constant('order-rejected' as const),
+      params: arbOrderParams.chain((order) =>
+        fc.constantFrom(...ORDER_REJECTIONS).map((reason) => ({ ...order, reason })),
+      ),
+    }),
+    fc.record({ code: fc.constant('order-expired' as const), params: arbOrderParams }),
+    fc.record({
+      code: fc.constantFrom('dividend-received' as const, 'storage-quota-exceeded' as const),
       params: fc.dictionary(
         fc.string({ maxLength: 6 }),
         fc.oneof(fc.string(), arbCents, fc.constant(null)),
@@ -289,6 +365,18 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
     ),
   ),
   envelope('updateWatchlist', fc.record({ ids: fc.array(fc.string(), { maxLength: 60 }) })),
+  envelope('placeOrder', fc.record({ order: arbOrderSpec })),
+  envelope(
+    'changeOrder',
+    fc.record({
+      orderId: arbId,
+      change: fc.record(
+        { limit: arbPrice, stop: arbPrice, validity: arbValidity },
+        { requiredKeys: [] },
+      ),
+    }),
+  ),
+  envelope('cancelOrder', fc.record({ orderId: arbId })),
 ) as fc.Arbitrary<EngineCommandMessage>;
 
 const arbQuote = fc.record({
@@ -312,6 +400,7 @@ const arbAccountView = fc.record({
   balance: arbCents,
   overdraftLimit: fc.option(arbCount, { nil: null }),
   available: arbCount,
+  reserved: arbCount,
   salaryAccount: fc.boolean(),
 });
 
@@ -382,6 +471,19 @@ const arbEvent: fc.Arbitrary<EngineEventMessage> = fc.oneof(
         netWorth: arbCents,
         notifications: fc.record({ lastSeq: arbCount, unread: arbCount, autoPause: arbAutoPause }),
         watchlist: fc.record({ ids: fc.array(fc.string(), { maxLength: 4 }) }),
+        trading: fc.record({
+          orders: fc.array(arbOrderView, { maxLength: 3 }),
+          depots: fc.array(
+            fc.record({
+              depotId: arbDepotId,
+              positions: fc.array(
+                fc.record({ instrumentId: arbId, quantity: arbCount, free: arbCents }),
+                { maxLength: 3 },
+              ),
+            }),
+            { maxLength: 2 },
+          ),
+        }),
       },
       { requiredKeys: ['tick', 'full', 'accounts', 'netWorth'] },
     ),
@@ -402,6 +504,8 @@ const arbEvent: fc.Arbitrary<EngineEventMessage> = fc.oneof(
       notifications: arbCount,
       warnings: fc.array(arbNotification, { maxLength: 3 }),
       warningCount: arbCount,
+      orders: fc.array(arbNotification, { maxLength: 3 }),
+      orderCount: arbCount,
       indices: fc.array(
         fc.record({
           series: arbCount,
@@ -494,7 +598,30 @@ const ACCOUNT = {
   balance: -1_479,
   overdraftLimit: null,
   available: 0,
+  reserved: 0,
   salaryAccount: false,
+};
+const SPEC = {
+  depotId: 'dep-3',
+  instrumentId: 'cmp-001',
+  side: 'buy',
+  type: 'market',
+  size: { kind: 'quantity', quantity: 1_000_000 },
+  limit: null,
+  stop: null,
+  validity: { kind: 'day' },
+};
+const ORDER_VIEW = {
+  ...SPEC,
+  id: 'ord-1',
+  status: 'open',
+  placedAt: 1,
+  expiresAt: 2,
+  reserved: 5_000,
+  triggeredAt: null,
+  execution: null,
+  closedAt: null,
+  rejection: null,
 };
 const STATEMENT = { kind: 'statement', accountId: 'acc-1', offset: 0, limit: 50 };
 const projection = (fields: Record<string, unknown>): unknown =>
@@ -710,6 +837,18 @@ describe('engine protocol guards', () => {
         command('query', { query: { kind: 'notifications', category: 'x', offset: 0, limit: 1 } }),
       ],
       ['movers switched by a string', command('subscribe', { series: [], movers: 'yes' })],
+      ['an order without spec', command('placeOrder', {})],
+      ['an order of an unknown side', command('placeOrder', { order: { ...SPEC, side: 'short' } })],
+      [
+        'an order with a quantity as a string',
+        command('placeOrder', { order: { ...SPEC, size: { kind: 'quantity', quantity: '1' } } }),
+      ],
+      ['a change without an order ID', command('changeOrder', { change: { limit: 10 } })],
+      [
+        'a change of a limit as a string',
+        command('changeOrder', { orderId: 'ord-1', change: { limit: '10' } }),
+      ],
+      ['a cancellation of an empty ID', command('cancelOrder', { orderId: '' })],
       ['a watchlist without IDs', command('updateWatchlist', {})],
       ['a watchlist that is not a list', command('updateWatchlist', { ids: 'cmp-001' })],
       ['a watchlist with a number', command('updateWatchlist', { ids: ['cmp-001', 7] })],
@@ -835,6 +974,19 @@ describe('engine protocol guards', () => {
       ['the movers', command('subscribe', { series: [], movers: true })],
       ['the instruments', command('query', { query: { kind: 'instruments' } })],
       ['an empty watchlist', command('updateWatchlist', { ids: [] })],
+      ['a market purchase', command('placeOrder', { order: SPEC })],
+      // Quantities, prices and dates are rules of the engine, which answers with its codes.
+      [
+        'an order the engine rejects',
+        command('placeOrder', {
+          order: { ...SPEC, size: { kind: 'quantity', quantity: -1.5 }, limit: 0 },
+        }),
+      ],
+      [
+        'a new validity',
+        command('changeOrder', { orderId: 'ord-1', change: { validity: { kind: 'gtc' } } }),
+      ],
+      ['a cancellation', command('cancelOrder', { orderId: 'ord-1' })],
       // Unknown, repeated and too many IDs are rules of the engine, which answers with its codes.
       [
         'a watchlist the engine rejects',
@@ -1029,6 +1181,51 @@ describe('engine protocol guards', () => {
       ['an account of an unknown kind', projection({ accounts: [{ ...ACCOUNT, kind: 'cfd' }] })],
       ['a negative available amount', projection({ accounts: [{ ...ACCOUNT, available: -1 }] })],
       [
+        'an account without reserved amount',
+        projection({ accounts: [{ ...ACCOUNT, reserved: undefined }] }),
+      ],
+      [
+        'an order of an unknown status',
+        projection({ trading: { orders: [{ ...ORDER_VIEW, status: 'parked' }], depots: [] } }),
+      ],
+      [
+        'an order with an unknown rejection',
+        projection({ trading: { orders: [{ ...ORDER_VIEW, rejection: 'no-money' }], depots: [] } }),
+      ],
+      ['trading without depots', projection({ trading: { orders: [] } })],
+      [
+        'an executed order without its price',
+        event('notification', {
+          tick: 1,
+          notifications: [
+            {
+              seq: 3,
+              tick: 1,
+              code: 'order-executed',
+              params: {
+                orderId: 'ord-1',
+                depotId: 'dep-3',
+                instrumentId: 'cmp-001',
+                side: 'buy',
+                quantity: 1_000_000,
+                total: 1_340,
+              },
+            },
+          ],
+        }),
+      ],
+      [
+        'a position with a fractional quantity',
+        projection({
+          trading: {
+            orders: [],
+            depots: [
+              { depotId: 'dep-3', positions: [{ instrumentId: 'x', quantity: 0.5, free: 0 }] },
+            ],
+          },
+        }),
+      ],
+      [
         'a depot without number',
         projection({ accounts: [{ ...ACCOUNT, depot: { id: 'dep-3' } }] }),
       ],
@@ -1096,6 +1293,52 @@ describe('engine protocol guards', () => {
         projection({ watchlist: { ids: ['cmp-001', 'idx-1-tr'] } }),
       ],
       ['a rejected watchlist', reply({ ok: false, error: 'duplicate-instrument' })],
+      [
+        'a projection with orders and holdings',
+        projection({
+          trading: {
+            orders: [
+              ORDER_VIEW,
+              {
+                ...ORDER_VIEW,
+                id: 'ord-2',
+                side: 'sell',
+                status: 'rejected',
+                reserved: 0,
+                closedAt: 5,
+                rejection: 'insufficient-quantity',
+              },
+            ],
+            depots: [
+              { depotId: 'dep-3', positions: [{ instrumentId: 'cmp-001', quantity: 1, free: 1 }] },
+              { depotId: 'dep-5', positions: [] },
+            ],
+          },
+        }),
+      ],
+      ['a rejected order', reply({ ok: false, error: 'insufficient-funds' })],
+      [
+        'an executed order',
+        event('notification', {
+          tick: 1,
+          notifications: [
+            {
+              seq: 3,
+              tick: 1,
+              code: 'order-executed',
+              params: {
+                orderId: 'ord-1',
+                depotId: 'dep-3',
+                instrumentId: 'cmp-001',
+                side: 'buy',
+                quantity: 1_000_000,
+                price: 12.5,
+                total: 1_340,
+              },
+            },
+          ],
+        }),
+      ],
       ['a rejected transfer', reply({ ok: false, error: 'insufficient-funds' })],
       [
         'new notifications',

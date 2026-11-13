@@ -1,7 +1,8 @@
 <app-dialog [heading]="heading" testId="notifications.absence-report" (clickedClose)="close()">
   <app-absence-report
     [report]="data.report"
-    [accountNames]="data.accountNames"></app-absence-report>
+    [accountNames]="data.accountNames"
+    [instrumentNames]="data.instrumentNames"></app-absence-report>
   <button
     dialogActions
     appButton

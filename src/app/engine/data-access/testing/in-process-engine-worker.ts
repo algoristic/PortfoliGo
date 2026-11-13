@@ -8,7 +8,7 @@ import { generateWorld } from '@app/world/domain/world-generator';
 
 import { ManualTimeline } from './manual-timeline';
 
-import { ENGINE_WORKER_FACTORY } from '../service/engine-service.config';
+import { ENGINE_COMMAND_ID_PREFIX, ENGINE_WORKER_FACTORY } from '../service/engine-service.config';
 import {
   EngineCommandMessage,
   EngineEventMessage,
@@ -55,6 +55,7 @@ export class InProcessEngine {
   readonly locks: PlayerLocks;
   /** Every worker the service started, the current one last. */
   readonly workers: InProcessEngineWorker[] = [];
+  #services = 0;
   readonly #options: EngineHostOptions;
   #inFlight = 0;
 
@@ -68,6 +69,11 @@ export class InProcessEngine {
     this.locks = locks ?? new FakePlayerLocks();
     // The candle job would recompute years of the mini world in one pass of the manual timeline.
     this.#options = { createWorld: generateMiniWorld, candleBackfillFrom: null, ...hostOptions };
+  }
+
+  /** Prefix of the command IDs of the next `EngineService` on this engine (`s1`, `s2`, …). */
+  nextCommandIdPrefix(): string {
+    return `s${++this.#services}`;
   }
 
   get current(): InProcessEngineWorker | undefined {
@@ -205,11 +211,15 @@ export class InProcessEngineWorker implements EngineWorkerPort {
  * `InProcessEngine` in the test to move the time: `await engine.advance(1000)`.
  */
 export function provideInProcessEngineWorker(engine = new InProcessEngine()): Provider {
-  return {
-    provide: ENGINE_WORKER_FACTORY,
-    useFactory: () => {
-      const pendingTasks = inject(PendingTasks);
-      return () => engine.createWorker(pendingTasks);
+  return [
+    {
+      provide: ENGINE_WORKER_FACTORY,
+      useFactory: () => {
+        const pendingTasks = inject(PendingTasks);
+        return () => engine.createWorker(pendingTasks);
+      },
     },
-  };
+    // Deterministic command IDs: every service on this engine gets its own prefix (`s1`, `s2`, …).
+    { provide: ENGINE_COMMAND_ID_PREFIX, useValue: () => engine.nextCommandIdPrefix() },
+  ];
 }

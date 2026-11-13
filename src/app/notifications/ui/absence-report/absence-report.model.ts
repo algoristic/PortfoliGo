@@ -33,6 +33,14 @@ export interface AbsenceReportWarningView {
   text: string;
 }
 
+/** An executed or expired order of the period with its text. */
+export interface AbsenceReportOrderView {
+  seq: number;
+  tick: number;
+  title: string;
+  text: string;
+}
+
 export interface AbsenceReportIndexView {
   id: string;
   name: string;

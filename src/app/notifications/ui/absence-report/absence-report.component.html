@@ -1,5 +1,6 @@
 @let _report = report();
 @let _warnings = warnings();
+@let _orders = orders();
 @let _indices = indices();
 
 <div class="flex flex-col gap-5">
@@ -119,6 +120,36 @@
       }
     }
   </section>
+
+  @if (_report.orderCount > 0) {
+    <section aria-labelledby="absence-report-orders">
+      <h3
+        id="absence-report-orders"
+        class="text-xs font-medium tracking-wide text-fg-muted uppercase"
+        data-testid="notifications.absence-report.order-count">
+        <ng-container i18n="@@uiNotifications-absenceReport-orderCount"
+          >Orders ({{ _report.orderCount }})</ng-container
+        >
+      </h3>
+      <ul class="mt-1 flex flex-col gap-2">
+        @for (order of _orders; track order.seq) {
+          <li class="flex min-w-0 flex-col" data-testid="notifications.absence-report.order">
+            <span class="font-medium">{{ order.title }}</span>
+            <span data-testid="notifications.absence-report.order-text">{{ order.text }}</span>
+            <span class="text-xs text-fg-muted tabular-nums">{{
+              order.tick | formatGameTime
+            }}</span>
+          </li>
+        }
+      </ul>
+      @if (hiddenOrders() > 0) {
+        <p class="mt-2 text-fg-muted" i18n="@@uiNotifications-absenceReport-moreOrders">
+          Die neuesten {{ _orders.length }} von {{ _report.orderCount }}; alle stehen im
+          Benachrichtigungszentrum.
+        </p>
+      }
+    </section>
+  }
 
   @if (_indices.length > 0) {
     <section aria-labelledby="absence-report-indices">

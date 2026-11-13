@@ -2,6 +2,7 @@
 @let hasUnread = notificationsFacade.hasUnread$ | async;
 @let centerWindow = notificationsFacade.centerWindow$ | async;
 @let accountNames = notificationsFacade.accountNames$ | async;
+@let instrumentNames = notificationsFacade.instrumentNames$ | async;
 
 <h1 class="text-xl font-semibold" i18n="@@featureNotifications-notificationsPage-title"
   >Benachrichtigungen</h1
@@ -37,6 +38,7 @@
       <app-notification-list
         [entries]="centerWindow.entries"
         [accountNames]="accountNames"
+        [instrumentNames]="instrumentNames"
         (markedRead)="onMarkRead($event)"></app-notification-list>
 
       <div

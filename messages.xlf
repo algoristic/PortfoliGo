@@ -7090,7 +7090,7 @@
         <source> Weiter </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/dialog-absence-report/dialog-absence-report.component.html</context>
-          <context context-type="linenumber">13,16</context>
+          <context context-type="linenumber">14,17</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-dialogAbsenceReport-heading" datatype="html">
@@ -7111,56 +7111,56 @@
         <source>Benachrichtigungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/notifications/notifications.page.html</context>
-          <context context-type="linenumber">7,11</context>
+          <context context-type="linenumber">8,12</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-notificationsPage-noNotificationsHeading" datatype="html">
         <source>Keine Benachrichtigungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/notifications/notifications.page.html</context>
-          <context context-type="linenumber">24,25</context>
+          <context context-type="linenumber">25,26</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-notificationsPage-noNotificationsText" datatype="html">
         <source>Hier erscheinen Warnungen zu deinen Konten, Zinsgutschriften sowie Monats- und Jahresabschlüsse.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/notifications/notifications.page.html</context>
-          <context context-type="linenumber">26,27</context>
+          <context context-type="linenumber">27,28</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-notificationsPage-noMatchesHeading" datatype="html">
         <source>Keine Benachrichtigungen in dieser Kategorie</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/notifications/notifications.page.html</context>
-          <context context-type="linenumber">32,33</context>
+          <context context-type="linenumber">33,34</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-notificationsPage-range" datatype="html">
         <source><x id="INTERPOLATION" equiv-text="{{ centerWindow.first }}"/>–<x id="INTERPOLATION_1" equiv-text="{{ centerWindow.last }}"/> von <x id="INTERPOLATION_2" equiv-text="{{ centerWindow.total }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/notifications/notifications.page.html</context>
-          <context context-type="linenumber">46,48</context>
+          <context context-type="linenumber">48,50</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-notificationsPage-newer" datatype="html">
         <source>Neuere</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/notifications/notifications.page.html</context>
-          <context context-type="linenumber">61,64</context>
+          <context context-type="linenumber">63,66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-notificationsPage-older" datatype="html">
         <source>Ältere</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/notifications/notifications.page.html</context>
-          <context context-type="linenumber">72,74</context>
+          <context context-type="linenumber">74,76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-absenceReportEffects-dialogLabel" datatype="html">
         <source>Abwesenheitsbericht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/state/absence-report.effects.ts</context>
-          <context context-type="linenumber">71</context>
+          <context context-type="linenumber">77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-notificationsErrors-unknownNotificationCode" datatype="html">
@@ -7223,14 +7223,14 @@
         <source> Zeitraum </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
-          <context context-type="linenumber">11,14</context>
+          <context context-type="linenumber">12,15</context>
         </context-group>
       </trans-unit>
       <trans-unit id="1718382655855295778" datatype="html">
         <source>{VAR_PLURAL, plural, =0 {Keine Buchungen} =1 {1 Buchung} other {<x id="INTERPOLATION"/> Buchungen}}</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
-          <context context-type="linenumber">22,25</context>
+          <context context-type="linenumber">23,26</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-counts" datatype="html">
@@ -7246,427 +7246,511 @@
         }" xid="6298074979490012748"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
-          <context context-type="linenumber">22,34</context>
+          <context context-type="linenumber">23,35</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8461098773326030283" datatype="html">
         <source>{VAR_PLURAL, plural, =0 {keine Benachrichtigungen} =1 {1 Benachrichtigung} other {<x id="INTERPOLATION"/> Benachrichtigungen}}</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
-          <context context-type="linenumber">28,31</context>
+          <context context-type="linenumber">29,32</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-netWorth" datatype="html">
         <source> Gesamtvermögen </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
-          <context context-type="linenumber">42,44</context>
+          <context context-type="linenumber">43,45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-warningCount" datatype="html">
         <source>Warnungen (<x id="INTERPOLATION" equiv-text="{{ _report.warningCount }}"/>)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
-          <context context-type="linenumber">85,86</context>
+          <context context-type="linenumber">86,87</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-noWarnings" datatype="html">
         <source> Keine Warnungen. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
-          <context context-type="linenumber">90,93</context>
+          <context context-type="linenumber">91,94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-moreWarnings" datatype="html">
         <source> Die neuesten <x id="INTERPOLATION" equiv-text="{{ _warnings.length }}"/> von <x id="INTERPOLATION_1" equiv-text="{{ _report.warningCount }}"/>; alle stehen im Benachrichtigungszentrum. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
-          <context context-type="linenumber">116,118</context>
+          <context context-type="linenumber">117,119</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-absenceReport-orderCount" datatype="html">
+        <source>Orders (<x id="INTERPOLATION" equiv-text="{{ _report.orderCount }}"/>)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
+          <context context-type="linenumber">131,132</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-absenceReport-moreOrders" datatype="html">
+        <source> Die neuesten <x id="INTERPOLATION" equiv-text="{{ _orders.length }}"/> von <x id="INTERPOLATION_1" equiv-text="{{ _report.orderCount }}"/>; alle stehen im Benachrichtigungszentrum. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
+          <context context-type="linenumber">147,149</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-index" datatype="html">
         <source> Index </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
-          <context context-type="linenumber">143,145</context>
+          <context context-type="linenumber">174,176</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-indexStart" datatype="html">
         <source> Beginn </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
-          <context context-type="linenumber">149,152</context>
+          <context context-type="linenumber">180,183</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-indexEnd" datatype="html">
         <source> Ende </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
-          <context context-type="linenumber">155,157</context>
+          <context context-type="linenumber">186,188</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-indexChange" datatype="html">
         <source> Veränderung </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.html</context>
-          <context context-type="linenumber">161,164</context>
+          <context context-type="linenumber">192,195</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-income" datatype="html">
         <source>Einnahmen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.ts</context>
-          <context context-type="linenumber">98</context>
+          <context context-type="linenumber">117</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-expenses" datatype="html">
         <source>Ausgaben</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.ts</context>
-          <context context-type="linenumber">99</context>
+          <context context-type="linenumber">118</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-indices" datatype="html">
         <source>Indizes</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.ts</context>
-          <context context-type="linenumber">100</context>
+          <context context-type="linenumber">119</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-flowIncome" datatype="html">
         <source>Einkommen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.ts</context>
-          <context context-type="linenumber">110</context>
+          <context context-type="linenumber">129</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-flowCreditInterest" datatype="html">
         <source>Habenzinsen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.ts</context>
-          <context context-type="linenumber">112</context>
+          <context context-type="linenumber">131</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-flowDividends" datatype="html">
         <source>Dividenden</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.ts</context>
-          <context context-type="linenumber">114</context>
+          <context context-type="linenumber">133</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-flowLivingCosts" datatype="html">
         <source>Lebenshaltung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.ts</context>
-          <context context-type="linenumber">116</context>
+          <context context-type="linenumber">135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-flowFees" datatype="html">
         <source>Gebühren</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.ts</context>
-          <context context-type="linenumber">118</context>
+          <context context-type="linenumber">137</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-flowDebitInterest" datatype="html">
         <source>Soll- und Dispozinsen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.ts</context>
-          <context context-type="linenumber">120</context>
+          <context context-type="linenumber">139</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-flowTaxes" datatype="html">
         <source>Steuern</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/absence-report/absence-report.component.ts</context>
-          <context context-type="linenumber">122</context>
+          <context context-type="linenumber">141</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-account" datatype="html">
         <source>Konto</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">11</context>
+          <context context-type="linenumber">12</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-order" datatype="html">
         <source>Order</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">13</context>
+          <context context-type="linenumber">14</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-earnings" datatype="html">
         <source>Erträge</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">15</context>
+          <context context-type="linenumber">16</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-taxes" datatype="html">
         <source>Steuern</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">17</context>
+          <context context-type="linenumber">18</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-savingsPlan" datatype="html">
         <source>Sparplan</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">19</context>
+          <context context-type="linenumber">20</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-system" datatype="html">
         <source>System</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">21</context>
+          <context context-type="linenumber">22</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-hint" datatype="html">
         <source>Hinweis</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">28</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-info" datatype="html">
         <source>Info</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">30</context>
+          <context context-type="linenumber">31</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-warning" datatype="html">
         <source>Warnung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">32</context>
+          <context context-type="linenumber">33</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-critical" datatype="html">
         <source>Kritisch</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">34</context>
+          <context context-type="linenumber">35</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-hintCount" datatype="html">
         <source><x id="count" equiv-text="count"/> Hinweise</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">42</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-infoCount" datatype="html">
         <source><x id="count" equiv-text="count"/> Meldungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">44</context>
+          <context context-type="linenumber">45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-warningCount" datatype="html">
         <source><x id="count" equiv-text="count"/> Warnungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">46</context>
+          <context context-type="linenumber">47</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-criticalCount" datatype="html">
         <source><x id="count" equiv-text="count"/> kritische Meldungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">48</context>
+          <context context-type="linenumber">49</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-accountUncovered" datatype="html">
         <source>Konto nicht gedeckt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">59</context>
+          <context context-type="linenumber">60</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-overdraftLimitExceeded" datatype="html">
         <source>Dispo überschritten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">61</context>
+          <context context-type="linenumber">62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-orderExecuted" datatype="html">
         <source>Order ausgeführt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">64</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-orderRejected" datatype="html">
         <source>Order abgelehnt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-orderExpired" datatype="html">
         <source>Order verfallen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-savingsPlanExecuted" datatype="html">
         <source>Sparplan ausgeführt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">69</context>
+          <context context-type="linenumber">70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-savingsPlanFailed" datatype="html">
         <source>Sparplan fehlgeschlagen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">71</context>
+          <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-dividendReceived" datatype="html">
         <source>Dividende erhalten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">73</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-interestCredited" datatype="html">
         <source>Zinsen gutgeschrieben</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">75</context>
+          <context context-type="linenumber">76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-taxRefund" datatype="html">
         <source>Steuererstattung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">77</context>
+          <context context-type="linenumber">78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-monthClosed" datatype="html">
         <source>Monatsabschluss</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">79</context>
+          <context context-type="linenumber">80</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-yearClosed" datatype="html">
         <source>Steuerjahr abgeschlossen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">81</context>
+          <context context-type="linenumber">82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-storageQuotaExceeded" datatype="html">
         <source>Speicher voll</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">83</context>
+          <context context-type="linenumber">84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-marketChecksumMismatch" datatype="html">
         <source>Kursdaten weichen ab</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">85</context>
+          <context context-type="linenumber">86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-backupReminder" datatype="html">
         <source>Sicherung empfohlen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">87</context>
+          <context context-type="linenumber">88</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationLabels-rejectionInsufficientFunds" datatype="html">
+        <source>Das Guthaben auf dem Verrechnungskonto reicht nicht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
+          <context context-type="linenumber">96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationLabels-rejectionPriceFloor" datatype="html">
+        <source>Der Kurs liegt an der Preisuntergrenze.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationLabels-rejectionAmountTooSmall" datatype="html">
+        <source>Der Betrag reicht nach Abzug der Kosten für keinen Kauf.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
+          <context context-type="linenumber">100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationLabels-rejectionInsufficientQuantity" datatype="html">
+        <source>Im Depot liegen nicht genug freie Stücke.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-accountUncovered" datatype="html">
         <source><x id="account" equiv-text="name"/> steht bei <x id="balance" equiv-text="amount"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">46</context>
+          <context context-type="linenumber">63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-accountUncoveredWithLimit" datatype="html">
         <source><x id="account" equiv-text="name"/> steht bei <x id="balance" equiv-text="amount"/> (Dispo-Rahmen <x id="limit" equiv-text="formatCents(limit)"/>).</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">47</context>
+          <context context-type="linenumber">64</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-overdraftWithoutLimit" datatype="html">
         <source><x id="account" equiv-text="name"/> steht bei <x id="balance" equiv-text="amount"/> und hat keinen Dispo-Rahmen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">58</context>
+          <context context-type="linenumber">75</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-overdraftLimitExceeded" datatype="html">
         <source><x id="account" equiv-text="name"/> steht bei <x id="balance" equiv-text="amount"/> und überschreitet den Dispo-Rahmen von <x id="limit" equiv-text="formatCents(limit)"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">59</context>
+          <context context-type="linenumber">76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-interestWithTax" datatype="html">
         <source><x id="amount" equiv-text="interest"/> Habenzinsen auf <x id="account" equiv-text="name"/>, davon <x id="tax" equiv-text="formatCents(tax)"/> Steuer einbehalten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">69</context>
+          <context context-type="linenumber">86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-interestWithRefund" datatype="html">
         <source><x id="amount" equiv-text="interest"/> Habenzinsen auf <x id="account" equiv-text="name"/>, dazu <x id="tax" equiv-text="formatCents(-tax)"/> Steuer erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">75</context>
+          <context context-type="linenumber">92</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-interest" datatype="html">
         <source><x id="amount" equiv-text="interest"/> Habenzinsen auf <x id="account" equiv-text="name"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">80</context>
+          <context context-type="linenumber">97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-taxRefund" datatype="html">
         <source><x id="amount" equiv-text="formatCents(amount)"/> Steuer auf <x id="account" equiv-text="account(accountId)"/> erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">87</context>
+          <context context-type="linenumber">104</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-monthClosedTitle" datatype="html">
         <source>Monatsabschluss <x id="month" equiv-text="monthName"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">95</context>
+          <context context-type="linenumber">112</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-monthClosed" datatype="html">
         <source>Einnahmen <x id="earnings" equiv-text="formatCents(monthlyEarnings(values))"/>, Ausgaben <x id="spending" equiv-text="formatCents(monthlySpending(values))"/>, Sparquote <x id="rate" equiv-text="rate"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">96</context>
+          <context context-type="linenumber">113</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-yearClosedTitle" datatype="html">
         <source>Steuerjahr <x id="year" equiv-text="year"/> abgeschlossen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">102</context>
+          <context context-type="linenumber">119</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-yearClosed" datatype="html">
         <source>Steuerpflichtige Kapitalerträge <x id="income" equiv-text="formatCents(taxableIncome)"/>, einbehaltene Steuer <x id="tax" equiv-text="formatCents(taxWithheld)"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">103</context>
+          <context context-type="linenumber">120</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationText-orderExecutedBuy" datatype="html">
+        <source>Kauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, belastet <x id="total" equiv-text="amount"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
+          <context context-type="linenumber">133</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationText-orderExecutedSell" datatype="html">
+        <source>Verkauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, gutgeschrieben <x id="total" equiv-text="amount"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
+          <context context-type="linenumber">134</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationText-orderRejectedBuy" datatype="html">
+        <source>Kauforder für <x id="instrument" equiv-text="name"/> abgelehnt: <x id="reason" equiv-text="why"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
+          <context context-type="linenumber">145</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationText-orderRejectedSell" datatype="html">
+        <source>Verkaufsorder für <x id="instrument" equiv-text="name"/> abgelehnt: <x id="reason" equiv-text="why"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
+          <context context-type="linenumber">146</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationText-orderExpiredBuy" datatype="html">
+        <source>Die Kauforder für <x id="instrument" equiv-text="name"/> ist verfallen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
+          <context context-type="linenumber">156</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationText-orderExpiredSell" datatype="html">
+        <source>Die Verkaufsorder für <x id="instrument" equiv-text="name"/> ist verfallen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
+          <context context-type="linenumber">157</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationFilter-category" datatype="html">
@@ -7694,21 +7778,21 @@
         <source>„<x id="title" equiv-text="title"/>“ als gelesen markieren</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/notification-list/notification-list.component.ts</context>
-          <context context-type="linenumber">55</context>
+          <context context-type="linenumber">61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationList-label" datatype="html">
         <source>Benachrichtigungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/notification-list/notification-list.component.ts</context>
-          <context context-type="linenumber">60</context>
+          <context context-type="linenumber">66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationList-unread" datatype="html">
         <source>Ungelesen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/notification-list/notification-list.component.ts</context>
-          <context context-type="linenumber">61</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-dialogRenamePlayer-name" datatype="html">

@@ -309,6 +309,8 @@ describe('EngineHost notifications', () => {
           notifications: 1,
           warnings: [],
           warningCount: 0,
+          orders: [],
+          orderCount: 0,
           indices: selected.map(({ x, series }, n) => ({
             series,
             id: world.indices[x].id,

@@ -40,6 +40,7 @@ function entry(id: AccountId, kind: AccountKind, salaryAccount = false): Account
     balance: 100_000,
     overdraftLimit: null,
     available: 100_000,
+    reserved: 0,
     salaryAccount,
     bank: HOME,
   };

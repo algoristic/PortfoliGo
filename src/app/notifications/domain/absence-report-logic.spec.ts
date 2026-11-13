@@ -13,6 +13,7 @@ import { MarketIndex } from '@app/world/domain/models/market-index.model';
 import {
   closeAbsence,
   isWarning,
+  MAX_REPORT_ORDERS,
   MAX_REPORT_WARNINGS,
   openAbsence,
   reportIndices,
@@ -47,6 +48,35 @@ function interest(seq: number): GameNotification {
     tick: 1_000 + seq,
     code: 'interest-credited',
     params: { accountId: 'acc-2', amount: 300, tax: 79 },
+  };
+}
+
+const ORDER = { depotId: 'dep-3', instrumentId: 'stk-0001', side: 'buy' } as const;
+
+function executed(seq: number): GameNotification {
+  return {
+    seq,
+    tick: 1_000 + seq,
+    code: 'order-executed',
+    params: { ...ORDER, orderId: `ord-${seq}`, quantity: 1_000_000, price: 50, total: 5_090 },
+  };
+}
+
+function expired(seq: number): GameNotification {
+  return {
+    seq,
+    tick: 1_000 + seq,
+    code: 'order-expired',
+    params: { ...ORDER, orderId: `ord-${seq}` },
+  };
+}
+
+function rejected(seq: number): GameNotification {
+  return {
+    seq,
+    tick: 1_000 + seq,
+    code: 'order-rejected',
+    params: { ...ORDER, orderId: `ord-${seq}`, reason: 'insufficient-funds' },
   };
 }
 
@@ -134,6 +164,8 @@ describe('absence-report-logic', () => {
         notifications: 2,
         warnings: [uncovered(1)],
         warningCount: 1,
+        orders: [],
+        orderCount: 0,
         indices: [
           { series: 7, id: 'idx-world', name: 'Welt', start: 1_000, end: 1_100 },
           { series: 8, id: 'idx-eu', name: 'Europa', start: 500, end: 450 },
@@ -162,6 +194,42 @@ describe('absence-report-logic', () => {
       expect(report?.warningCount).toBe(60);
       expect(report?.warnings.map(({ seq }) => seq)).toEqual(
         Array.from({ length: 50 }, (_, n) => n + 11),
+      );
+    });
+
+    // US-BN-03: executed orders appear in the report; a rejected one is a warning
+    it('lists executed and expired orders and leaves rejected ones to the warnings', () => {
+      const tally = tallyNotifications(openAbsence(0, 0, []), [
+        executed(1),
+        interest(2),
+        rejected(3),
+        expired(4),
+      ]);
+      const report = closeAbsence(tally, 1, 0, []);
+      expect(report?.orders).toEqual([executed(1), expired(4)]);
+      expect(report?.orderCount).toBe(2);
+      expect(report?.warnings).toEqual([rejected(3)]);
+    });
+
+    it('lists the newest orders up to the limit and counts all of them', () => {
+      fc.assert(
+        fc.property(
+          fc.array(fc.constantFrom('executed', 'expired', 'other'), { maxLength: 130 }),
+          (kinds) => {
+            let tally = openAbsence(0, 0, []);
+            kinds.forEach((kind, n) => {
+              const seq = n + 1;
+              const make = kind === 'executed' ? executed : kind === 'expired' ? expired : interest;
+              tally = tallyNotifications(tally, [make(seq)]);
+            });
+            const orders = kinds.flatMap((kind, n) => (kind === 'other' ? [] : [n + 1]));
+            const report = closeAbsence(tally, 1, 0, []);
+            expect(report?.orderCount ?? 0).toBe(orders.length);
+            expect((report?.orders ?? []).map(({ seq }) => seq)).toEqual(
+              orders.slice(-MAX_REPORT_ORDERS),
+            );
+          },
+        ),
       );
     });
 

@@ -3,7 +3,11 @@ import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { selectAccounts } from '@app/banking/feature/state/banking.selectors';
 import { accountTitle } from '@app/banking/ui/labels/banking-labels';
 import { selectStatus } from '@app/engine/feature/state/session.selectors';
-import { AccountNames } from '@app/notifications/ui/labels/notification-text.utils';
+import { selectInstruments } from '@app/market/feature/state/market.selectors';
+import {
+  AccountNames,
+  InstrumentNames,
+} from '@app/notifications/ui/labels/notification-text.utils';
 
 import { AutoPauseSettingsView, NOTIFICATION_PAGE_SIZE } from './notifications.model';
 import { NOTIFICATIONS_FEATURE_KEY, NotificationsState } from './notifications.reducer';
@@ -47,6 +51,12 @@ export const selectAccountNames = createSelector(
   selectAccounts,
   (accounts): AccountNames =>
     new Map(accounts.map((account) => [account.id, accountTitle(account, account.bank?.name)])),
+);
+
+/** Names of the instruments for the texts of order notifications; empty until loaded. */
+export const selectInstrumentNames = createSelector(
+  selectInstruments,
+  (instruments): InstrumentNames => new Map(instruments.map(({ id, name }) => [id, name])),
 );
 
 /**

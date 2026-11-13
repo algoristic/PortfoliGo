@@ -15,6 +15,12 @@ import {
 import { MAX_NOTIFICATION_LIMIT } from '@app/notifications/domain/notification-page-logic';
 import { MAX_STORED_NOTIFICATIONS } from '@app/notifications/domain/read-state-logic';
 import {
+  ORDER_REJECTIONS,
+  ORDER_SIDES,
+  ORDER_STATUSES,
+} from '@app/trading/domain/models/order.model';
+import { isOrderChange, isOrderSpec } from '@app/trading/domain/order-command-logic';
+import {
   REGION_IDS,
   SECTOR_IDS,
   SIZE_CLASSES,
@@ -282,6 +288,11 @@ const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = 
     hasFields(payload, { code: isOneOf(AUTO_PAUSE_CODES), enabled: isBoolean }),
   markNotificationsRead: isMarkReadPayload,
   updateWatchlist: (payload) => hasFields(payload, { ids: isWatchlistIds }),
+  // The shape only; quantities, prices and dates are rules of the engine (TS §7.5).
+  placeOrder: (payload) => hasFields(payload, { order: isOrderSpec }),
+  changeOrder: (payload) =>
+    hasFields(payload, { orderId: isNonEmptyString, change: isOrderChange }),
+  cancelOrder: (payload) => hasFields(payload, { orderId: isNonEmptyString }),
 };
 
 function isQuote(value: unknown): boolean {
@@ -319,7 +330,50 @@ function isAccountView(value: unknown): boolean {
     balance: isCents,
     overdraftLimit: isNullOr(isCount),
     available: isCount,
+    reserved: isCount,
     salaryAccount: isBoolean,
+  });
+}
+
+function isOrderView(value: unknown): boolean {
+  return (
+    isOrderSpec(value) &&
+    hasFields(value, {
+      id: isNonEmptyString,
+      depotId: isDepotId,
+      status: isOneOf(ORDER_STATUSES),
+      placedAt: isCount,
+      expiresAt: isCount,
+      reserved: isCount,
+      triggeredAt: isNullOr(isCount),
+      execution: isNullOr((execution) =>
+        hasFields(execution, {
+          tick: isCount,
+          quantity: isCount,
+          price: isFiniteNumber,
+          marketValue: isCount,
+          orderFee: isCount,
+          exchangeFee: isCount,
+          total: isCount,
+        }),
+      ),
+      closedAt: isNullOr(isCount),
+      rejection: isNullOr(isOneOf(ORDER_REJECTIONS)),
+    })
+  );
+}
+
+function isTradingProjection(value: unknown): boolean {
+  return hasFields(value, {
+    orders: isListOf(isOrderView),
+    depots: isListOf((depot) =>
+      hasFields(depot, {
+        depotId: isDepotId,
+        positions: isListOf((position) =>
+          hasFields(position, { instrumentId: isNonEmptyString, quantity: isCount, free: isCents }),
+        ),
+      }),
+    ),
   });
 }
 
@@ -332,6 +386,15 @@ function isMonthlyValues(value: unknown): boolean {
     debitInterest: isCents,
     taxes: isCents,
     dividends: isCents,
+  });
+}
+
+function isOrderParams(params: unknown): boolean {
+  return hasFields(params, {
+    orderId: isNonEmptyString,
+    depotId: isDepotId,
+    instrumentId: isNonEmptyString,
+    side: isOneOf(ORDER_SIDES),
   });
 }
 
@@ -349,6 +412,12 @@ const NOTIFICATION_PARAMS: Readonly<Partial<Record<string, Check>>> = {
     hasFields(params, { year: isCount, month: isCount, values: isMonthlyValues }),
   'year-closed': (params) =>
     hasFields(params, { year: isCount, taxableIncome: isCents, taxWithheld: isCents }),
+  'order-executed': (params) =>
+    isOrderParams(params) &&
+    hasFields(params, { quantity: isCount, price: isFiniteNumber, total: isCount }),
+  'order-rejected': (params) =>
+    isOrderParams(params) && hasFields(params, { reason: isOneOf(ORDER_REJECTIONS) }),
+  'order-expired': isOrderParams,
 };
 
 const isFlatParams: Check = (params) =>
@@ -382,6 +451,8 @@ function isAbsenceReport(value: unknown): boolean {
     notifications: isCount,
     warnings: isNotificationList,
     warningCount: isCount,
+    orders: isNotificationList,
+    orderCount: isCount,
     indices: (indices) =>
       Array.isArray(indices) &&
       indices.every((index) =>
@@ -462,6 +533,7 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
       netWorth: isCents,
       notifications: isOptional(isNotificationsProjection),
       watchlist: isOptional((watchlist) => hasFields(watchlist, { ids: isListOf(isString) })),
+      trading: isOptional(isTradingProjection),
     }),
   notification: (payload) =>
     hasFields(payload, { tick: isCount, notifications: isNotificationList }),

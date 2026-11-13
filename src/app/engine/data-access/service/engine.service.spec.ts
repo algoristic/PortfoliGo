@@ -5,12 +5,14 @@ import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import { TestMarket, TestPrice } from '@app/engine/domain/testing/test-market';
 import { IndexedDbService } from '@app/persistence/data-access/indexed-db/indexed-db.service';
 import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
+import { OrderSpec } from '@app/trading/domain/models/order.model';
 
 import {
   ClockPayload,
   EngineCommandMessage,
   ProgressPayload,
   ProjectionPayload,
+  TradingProjectionUpdate,
 } from './engine-service.model';
 import { EngineCommandError, EngineFatal, EngineService } from './engine.service';
 
@@ -371,6 +373,57 @@ describe('EngineService', () => {
       subscription.unsubscribe();
     });
 
+    it('places, changes and cancels orders and streams them as trading projections (AP 5.1)', async () => {
+      const updates: TradingProjectionUpdate[] = [];
+      const subscription = service.trading$.subscribe((update) => updates.push(update));
+      const { tick } = await firstValueFrom(service.loadPlayer(PLAYER));
+      expect(updates).toEqual([{ tick, full: true, orders: [], depots: [] }]);
+      const { banks } = await firstValueFrom(service.banks());
+      const broker = banks.find(({ conditions }) => conditions.depot !== null);
+      const { accountId, depotId } = await firstValueFrom(
+        service.openAccount(broker?.id ?? '', 'depot'),
+      );
+      await firstValueFrom(
+        service.transfer({
+          fromAccountId: 'acc-1',
+          toAccountId: accountId,
+          amount: 500_000,
+          purpose: '',
+        }),
+      );
+      const { instruments } = await firstValueFrom(service.instruments());
+      const share = instruments.find(({ kind }) => kind === 'stock');
+      const order: OrderSpec = {
+        depotId: depotId ?? 'dep-0',
+        instrumentId: share?.id ?? '',
+        side: 'buy',
+        type: 'limit',
+        size: { kind: 'quantity', quantity: 1_000_000 },
+        limit: 1,
+        stop: null,
+        validity: { kind: 'gtc' },
+      };
+      expect(await firstValueFrom(service.placeOrder(order))).toEqual({ tick, orderId: 'ord-1' });
+      expect(received('placeOrder').at(-1)?.payload).toEqual({ order });
+      expect(updates.at(-1)).toMatchObject({
+        full: false,
+        orders: [{ id: 'ord-1', status: 'open', limit: 1 }],
+      });
+      await firstValueFrom(service.changeOrder('ord-1', { limit: 2 }));
+      expect(received('changeOrder').at(-1)?.payload).toEqual({
+        orderId: 'ord-1',
+        change: { limit: 2 },
+      });
+      expect(updates.at(-1)?.orders).toMatchObject([{ id: 'ord-1', limit: 2 }]);
+      await firstValueFrom(service.cancelOrder('ord-1'));
+      expect(updates.at(-1)?.orders).toMatchObject([{ id: 'ord-1', status: 'cancelled' }]);
+      const failure = await firstValueFrom(service.cancelOrder('ord-1')).catch(
+        (e: EngineCommandError) => e.code,
+      );
+      expect(failure).toBe('order-not-active');
+      subscription.unsubscribe();
+    });
+
     it('subscribes the movers once for all subscribers and resends them after a restart', async () => {
       await firstValueFrom(service.loadPlayer(PLAYER));
       const ticks: number[] = [];
@@ -596,6 +649,38 @@ describe('EngineService', () => {
         tick: GAME_START,
       });
       second.ngOnDestroy();
+    });
+
+    it('applies a command after a reload in the same paused tick (TS §8.5)', async () => {
+      // The engine ignores a command ID it already saw in the same tick; a new page numbers its
+      // commands from 1 again, so only the prefix per service keeps them apart.
+      setup({ storage: 'indexed-db', locks: new FakePlayerLocks() });
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      const { instruments } = await firstValueFrom(service.instruments());
+      await firstValueFrom(service.updateWatchlist([instruments[0].id]));
+      await firstValueFrom(service.unloadPlayer());
+      service.ngOnDestroy();
+
+      const reloaded = Injector.create({
+        providers: [EngineService, provideInProcessEngineWorker(engine)],
+        parent: TestBed.inject(Injector),
+      }).get(EngineService);
+      const projections: ProjectionPayload[] = [];
+      const subscription = reloaded.projection$.subscribe((payload) => projections.push(payload));
+      expect(await firstValueFrom(reloaded.loadPlayer(PLAYER))).toEqual({
+        playerId: 'p1',
+        tick: GAME_START,
+      });
+      // Same order of commands as before the reload: load, query, update.
+      await firstValueFrom(reloaded.instruments());
+      expect(await firstValueFrom(reloaded.updateWatchlist([instruments[1].id]))).toEqual({
+        tick: GAME_START,
+      });
+      expect(projections.at(-1)?.watchlist).toEqual({ ids: [instruments[1].id] });
+      const ids = engine.workers.flatMap((worker) => worker.received.map(({ id }) => id));
+      expect(new Set(ids).size).toBe(ids.length);
+      subscription.unsubscribe();
+      reloaded.ngOnDestroy();
     });
 
     it('keeps the watchlist after reloading the player (US-MK-04)', async () => {

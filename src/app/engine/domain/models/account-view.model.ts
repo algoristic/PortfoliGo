@@ -20,5 +20,10 @@ export interface AccountView {
    * reservations of active buy orders (TS §7.5); 0 for closed accounts.
    */
   available: Cents;
+  /**
+   * Money reserved by active buy orders (TS §7.5, US-HD-04); 0 for all accounts but open clearing
+   * accounts with such orders.
+   */
+  reserved: Cents;
   salaryAccount: boolean;
 }

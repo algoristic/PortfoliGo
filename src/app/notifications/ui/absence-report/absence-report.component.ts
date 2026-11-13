@@ -13,19 +13,20 @@ import {
   AbsenceReportFlowId,
   AbsenceReportFlowView,
   AbsenceReportIndexView,
+  AbsenceReportOrderView,
   AbsenceReportWarningView,
 } from './absence-report.model';
 
 import { notificationSeverityLabel } from '../labels/notification-labels';
-import { AccountNames, notificationText } from '../labels/notification-text.utils';
+import { AccountNames, InstrumentNames, notificationText } from '../labels/notification-text.utils';
 import { SEVERITY_ICONS } from '../notification-list/notification-list.model';
 
 const NO_NAMES: AccountNames = new Map();
 
 /**
  * What happened while the player was away (US-BN-03): period, change of the net worth, income and
- * expenses by category including interest, the warnings and the development of the indices.
- * Executed orders and savings plans follow in M5.
+ * expenses by category including interest, the warnings, executed and expired orders and the
+ * development of the indices. Savings plans follow with AP 5.6.
  */
 @Component({
   selector: 'app-absence-report',
@@ -43,6 +44,8 @@ export class AbsenceReportComponent {
   report = input.required<AbsenceReport>();
   /** `null` until the accounts are known; texts then show account IDs. */
   accountNames = input<AccountNames | null>(null);
+  /** `null` until the master data is loaded; texts then show instrument IDs. */
+  instrumentNames = input<InstrumentNames | null>(null);
 
   severityIcons = SEVERITY_ICONS;
 
@@ -80,10 +83,26 @@ export class AbsenceReportComponent {
         tick: notification.tick,
         severity,
         severityLabel: notificationSeverityLabel(severity),
-        ...notificationText(notification, this.accountNames() ?? NO_NAMES),
+        ...notificationText(
+          notification,
+          this.accountNames() ?? NO_NAMES,
+          this.instrumentNames() ?? NO_NAMES,
+        ),
       };
     }),
   );
+  orders = computed((): AbsenceReportOrderView[] =>
+    [...this.report().orders].reverse().map((notification) => ({
+      seq: notification.seq,
+      tick: notification.tick,
+      ...notificationText(
+        notification,
+        this.accountNames() ?? NO_NAMES,
+        this.instrumentNames() ?? NO_NAMES,
+      ),
+    })),
+  );
+  hiddenOrders = computed(() => this.report().orderCount - this.report().orders.length);
   hiddenWarnings = computed(() => this.report().warningCount - this.report().warnings.length);
   indices = computed((): AbsenceReportIndexView[] =>
     this.report().indices.map(({ id, name, start, end }) => ({

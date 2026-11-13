@@ -8,6 +8,15 @@ const NAMES = new Map([
   ['acc-2', 'Tagesgeld 0000000002 · Direktbank Süd'],
 ]);
 
+const INSTRUMENTS = new Map([['stk-0001', 'Nordwerk AG']]);
+
+const ORDER = {
+  orderId: 'ord-1',
+  depotId: 'dep-3',
+  instrumentId: 'stk-0001',
+  side: 'buy',
+} as const;
+
 const APRIL: MonthlyValues = {
   income: 250_000,
   livingCosts: 180_000,
@@ -105,13 +114,92 @@ describe('notificationText', () => {
       'Steuerpflichtige Kapitalerträge 123,00 €, einbehaltene Steuer 32,44 €.',
     ],
     [
-      'a code whose parameters follow in M5',
-      { code: 'order-executed', params: {} },
-      'Order ausgeführt',
+      'a code whose parameters follow with its AP',
+      { code: 'dividend-received', params: {} },
+      'Dividende erhalten',
       '',
     ],
   ])('words %s', (_case, partial, title, text) => {
     expect(notificationText(notification(partial), NAMES)).toEqual({ title, text });
+  });
+
+  // TS §7.5, §8.6: order texts with shares (as many decimals as the millionths need), the price
+  // with the decimals of its grid (PS §10.4: 2 from 10 €, 3 from 1 €, else 4) and the total.
+  it.each<[string, Pick<GameNotification, 'code' | 'params'>, string, string]>([
+    [
+      'an executed purchase of whole shares',
+      {
+        code: 'order-executed',
+        params: { ...ORDER, quantity: 10_000_000, price: 123.45, total: 124_845 },
+      },
+      'Order ausgeführt',
+      'Kauf von 10 Stück Nordwerk AG zu 123,45 €, belastet 1.248,45 €.',
+    ],
+    [
+      'an executed sale of a fraction below 10 €',
+      {
+        code: 'order-executed',
+        params: { ...ORDER, side: 'sell', quantity: 1_500_000, price: 8.002, total: 1_103 },
+      },
+      'Order ausgeführt',
+      'Verkauf von 1,5 Stück Nordwerk AG zu 8,002 €, gutgeschrieben 11,03 €.',
+    ],
+    [
+      'an executed purchase of millionths below 1 €',
+      {
+        code: 'order-executed',
+        params: { ...ORDER, quantity: 1_234_567, price: 0.5123, total: 63 },
+      },
+      'Order ausgeführt',
+      'Kauf von 1,234567 Stück Nordwerk AG zu 0,5123 €, belastet 0,63 €.',
+    ],
+    [
+      'a purchase rejected for missing funds',
+      { code: 'order-rejected', params: { ...ORDER, reason: 'insufficient-funds' } },
+      'Order abgelehnt',
+      'Kauforder für Nordwerk AG abgelehnt: Das Guthaben auf dem Verrechnungskonto reicht nicht.',
+    ],
+    [
+      'a purchase rejected at the price floor',
+      { code: 'order-rejected', params: { ...ORDER, reason: 'price-floor' } },
+      'Order abgelehnt',
+      'Kauforder für Nordwerk AG abgelehnt: Der Kurs liegt an der Preisuntergrenze.',
+    ],
+    [
+      'a purchase by amount too small',
+      { code: 'order-rejected', params: { ...ORDER, reason: 'amount-too-small' } },
+      'Order abgelehnt',
+      'Kauforder für Nordwerk AG abgelehnt: Der Betrag reicht nach Abzug der Kosten für keinen Kauf.',
+    ],
+    [
+      'a sale rejected for missing shares',
+      {
+        code: 'order-rejected',
+        params: { ...ORDER, side: 'sell', reason: 'insufficient-quantity' },
+      },
+      'Order abgelehnt',
+      'Verkaufsorder für Nordwerk AG abgelehnt: Im Depot liegen nicht genug freie Stücke.',
+    ],
+    [
+      'an expired purchase',
+      { code: 'order-expired', params: ORDER },
+      'Order verfallen',
+      'Die Kauforder für Nordwerk AG ist verfallen.',
+    ],
+    [
+      'an expired sale',
+      { code: 'order-expired', params: { ...ORDER, side: 'sell' } },
+      'Order verfallen',
+      'Die Verkaufsorder für Nordwerk AG ist verfallen.',
+    ],
+  ])('words %s', (_case, partial, title, text) => {
+    expect(notificationText(notification(partial), NAMES, INSTRUMENTS)).toEqual({ title, text });
+  });
+
+  it('shows the ID of an instrument it has no name for', () => {
+    expect(
+      notificationText(notification({ code: 'order-expired', params: ORDER }), NAMES).text,
+    ).toBe('Die Kauforder für stk-0001 ist verfallen.');
   });
 
   it('shows the ID of an account it has no name for', () => {

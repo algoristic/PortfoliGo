@@ -135,12 +135,14 @@ describe('EngineHost banking', () => {
               balance: PLAYER.start.startCapital,
               overdraftLimit: START_LIMIT,
               available: PLAYER.start.startCapital + START_LIMIT,
+              reserved: 0,
               salaryAccount: true,
             },
           ],
           netWorth: PLAYER.start.startCapital,
           notifications: { lastSeq: 0, unread: 0, autoPause: expect.any(Object) },
           watchlist: { ids: [] },
+          trading: { orders: [], depots: [] },
         },
       ]);
     });

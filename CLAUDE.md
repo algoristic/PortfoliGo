@@ -36,6 +36,7 @@ Rules for implementing Angular code in this repository, so that generated code l
 | `settings.md`      | `settings`, `index.html`                              | device and player settings (AP 2.6)                                                          |
 | `banking.md`       | `banking`, `taxes`, banking parts of `engine/domain`  | ledger, accounts, bank run, interest, taxes, bank commands, statement, banks (AP 3.1–3.5)    |
 | `notifications.md` | `notifications`, `engine/domain/notification-system*` | notifications, auto-pause, absence report (AP 3.6)                                           |
+| `trading.md`       | `trading`, `engine/domain/order-*`                    | order rules, orders in the engine, order commands and projection (AP 5.1)                    |
 | `testing.md`       | `*.spec.ts`, `e2e`, `src/testing`                     | test suites, helpers, fixtures, page tests of the game area (AP 0.5, 2.5)                    |
 
 `dashboard`, `portfolio` and `trading` hold only placeholder pages so far.

@@ -46,6 +46,7 @@ function entry(
     balance,
     overdraftLimit: null,
     available: balance,
+    reserved: 0,
     salaryAccount: options.salaryAccount ?? false,
     bank,
   };

@@ -40,6 +40,7 @@ import {
 } from '@app/notifications/ui/labels/notification-labels';
 import {
   AccountNames,
+  InstrumentNames,
   notificationText,
 } from '@app/notifications/ui/labels/notification-text.utils';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
@@ -47,7 +48,12 @@ import { ToastService } from '@app/shared/ui/toast/toast.service';
 import { notificationFailureMessage } from './notifications-errors.utils';
 import * as NotificationsActions from './notifications.actions';
 import { NOTIFICATION_PAGE_SIZE, NotificationBundle } from './notifications.model';
-import { selectAccountNames, selectCenter, selectLastSeq } from './notifications.selectors';
+import {
+  selectAccountNames,
+  selectCenter,
+  selectInstrumentNames,
+  selectLastSeq,
+} from './notifications.selectors';
 import { bundleToastNotifications, toastTone } from './notifications.utils';
 
 /** Notifications of one code within this much real time make one toast (US-BN-02, TS §12). */
@@ -107,10 +113,16 @@ export class NotificationsEffects {
           notifications$.pipe(buffer(notifications$.pipe(exhaustMap(() => this.#window())))),
         ),
         map((windows) => bundleToastNotifications(windows.flat())),
-        concatLatestFrom(() => this.#store.pipe(select(selectAccountNames))),
-        tap(([bundles, accountNames]) => {
+        concatLatestFrom(() => [
+          this.#store.pipe(select(selectAccountNames)),
+          this.#store.pipe(select(selectInstrumentNames)),
+        ]),
+        tap(([bundles, accountNames, instrumentNames]) => {
           for (const bundle of bundles) {
-            this.#toastService.show(toastTone(bundle.severity), toastMessage(bundle, accountNames));
+            this.#toastService.show(
+              toastTone(bundle.severity),
+              toastMessage(bundle, accountNames, instrumentNames),
+            );
           }
         }),
       ),
@@ -306,10 +318,14 @@ export class NotificationsEffects {
 }
 
 /** One notification with its text, several of one code with their number (TS §12). */
-function toastMessage(bundle: NotificationBundle, accountNames: AccountNames): string {
+function toastMessage(
+  bundle: NotificationBundle,
+  accountNames: AccountNames,
+  instrumentNames: InstrumentNames,
+): string {
   if (bundle.count > 1) {
     return `${notificationCountLabel(bundle.severity, bundle.count)}: ${notificationCodeLabel(bundle.code)}`;
   }
-  const { title, text } = notificationText(bundle.latest, accountNames);
+  const { title, text } = notificationText(bundle.latest, accountNames, instrumentNames);
   return text === '' ? title : `${title}: ${text}`;
 }

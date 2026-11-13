@@ -603,6 +603,7 @@ describe('BankCommands', () => {
           balance: 800_000,
           overdraftLimit: 500_000,
           available: 1_300_000,
+          reserved: 0,
           salaryAccount: true,
         },
         {
@@ -616,6 +617,7 @@ describe('BankCommands', () => {
           balance: 200_000,
           overdraftLimit: null,
           available: 200_000,
+          reserved: 0,
           salaryAccount: false,
         },
         {
@@ -629,6 +631,7 @@ describe('BankCommands', () => {
           balance: 0,
           overdraftLimit: 0,
           available: 0,
+          reserved: 0,
           salaryAccount: false,
         },
       ]);

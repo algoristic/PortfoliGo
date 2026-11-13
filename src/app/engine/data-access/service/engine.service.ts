@@ -10,8 +10,13 @@ import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import { CandleResolution } from '@app/market/domain/models/candle.model';
 import { ScreenerCriteria } from '@app/market/domain/models/screener.model';
 import { AutoPauseCode } from '@app/notifications/domain/models/notification.model';
+import { OrderChange, OrderSpec } from '@app/trading/domain/models/order.model';
 
-import { ENGINE_WORKER_FACTORY, MAX_WORKER_FAILURES } from './engine-service.config';
+import {
+  ENGINE_COMMAND_ID_PREFIX,
+  ENGINE_WORKER_FACTORY,
+  MAX_WORKER_FAILURES,
+} from './engine-service.config';
 import {
   CandlePayload,
   CandlesRequest,
@@ -32,6 +37,7 @@ import {
   MoversPayload,
   NotificationsRequest,
   StatementRequest,
+  TradingProjectionUpdate,
   TransferPayload,
 } from './engine-service.model';
 import { isEngineEventMessage } from './engine-service.utils';
@@ -68,6 +74,8 @@ export interface EngineFatal {
 @Injectable()
 export class EngineService implements OnDestroy {
   readonly #createWorker = inject(ENGINE_WORKER_FACTORY);
+  /** Unique per service, so that command IDs never repeat after a page reload (TS §8.5). */
+  readonly #idPrefix = inject(ENGINE_COMMAND_ID_PREFIX)();
   readonly #events = new Subject<EngineEventMessage>();
   /** Ends the open commands when the worker fails. */
   readonly #failures = new Subject<EngineCommandError>();
@@ -94,6 +102,19 @@ export class EngineService implements OnDestroy {
    * after every `loadPlayer`, also after a worker restart.
    */
   projection$ = this.#payloads('projection');
+  /**
+   * Orders and holdings per depot (AP 5.1, TS §8.3) from the projections that carry them: all of
+   * them after every `loadPlayer` (`full`), else the changed orders and depots.
+   */
+  trading$: Observable<TradingProjectionUpdate> = this.projection$.pipe(
+    filter((payload) => payload.trading !== undefined),
+    map(({ tick, full, trading }) => ({
+      tick,
+      full,
+      orders: trading?.orders ?? [],
+      depots: trading?.depots ?? [],
+    })),
+  );
   /**
    * New notifications (TS §8.3, §12) as the worker bundles them; none while catching up, those are
    * in the absence report.
@@ -295,6 +316,24 @@ export class EngineService implements OnDestroy {
   }
 
   /**
+   * Places an order (US-HD-01–03, TS §7.5) and answers with its ID; the engine checks it at once
+   * and executes it in the same tick when its exchange is open and its condition holds.
+   */
+  placeOrder(order: OrderSpec): Observable<EngineReplies['placeOrder']> {
+    return this.#request('placeOrder', { order });
+  }
+
+  /** New limit, stop or validity of an active order (US-HD-04). */
+  changeOrder(orderId: string, change: OrderChange): Observable<EngineReplies['changeOrder']> {
+    return this.#request('changeOrder', { orderId, change });
+  }
+
+  /** Cancels an active order (US-HD-04). */
+  cancelOrder(orderId: string): Observable<EngineReplies['cancelOrder']> {
+    return this.#request('cancelOrder', { orderId });
+  }
+
+  /**
    * Quotes of `series` (TS §8.4) as the worker sends them, at most four times per second. The
    * worker gets one `subscribe` per series however many views watch it, and the `unsubscribe` when
    * the last of them unsubscribes.
@@ -446,7 +485,7 @@ export class EngineService implements OnDestroy {
   ): EngineCommandMessage {
     return {
       protocol: ENGINE_PROTOCOL,
-      id: `u${this.#nextId++}`,
+      id: `u-${this.#idPrefix}-${this.#nextId++}`,
       type,
       payload,
     } as EngineCommandMessage;

@@ -4,9 +4,18 @@ import {
   savingsRate,
 } from '@app/banking/domain/monthly-values-logic';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
-import { formatCents, formatOptional, formatPercent } from '@app/shared/util/format';
+import { MicroUnits } from '@app/shared/domain/models/money.model';
+import { microUnitsToUnits } from '@app/shared/domain/money-logic';
+import { priceDecimals } from '@app/shared/domain/price-step-logic';
+import {
+  formatCents,
+  formatNumber,
+  formatOptional,
+  formatPercent,
+  formatPrice,
+} from '@app/shared/util/format';
 
-import { notificationCodeLabel } from './notification-labels';
+import { notificationCodeLabel, orderRejectionLabel } from './notification-labels';
 
 /** Title and text of a notification as the centre, the toasts and the absence report show it. */
 export interface NotificationText {
@@ -18,6 +27,11 @@ export interface NotificationText {
 /** Names of the player's accounts by ID, e.g. `Girokonto 0000000001 · Hansebank`. */
 export type AccountNames = ReadonlyMap<string, string>;
 
+/** Names of the instruments by ID, from the master data (AP 4.1). */
+export type InstrumentNames = ReadonlyMap<string, string>;
+
+const NO_INSTRUMENT_NAMES: InstrumentNames = new Map();
+
 const monthFormat = new Intl.DateTimeFormat('de-DE', {
   timeZone: 'UTC',
   month: 'long',
@@ -26,14 +40,17 @@ const monthFormat = new Intl.DateTimeFormat('de-DE', {
 
 /**
  * Title and text of a notification from its code and parameters (TS §8.6, §12): the engine sends
- * codes and numbers only. An account the names don't know shows its ID.
+ * codes and numbers only. An account or instrument the names don't know shows its ID.
  */
 export function notificationText(
   notification: GameNotification,
   accountNames: AccountNames,
+  instrumentNames: InstrumentNames = NO_INSTRUMENT_NAMES,
 ): NotificationText {
   const title = notificationCodeLabel(notification.code);
   const account = (accountId: string): string => accountNames.get(accountId) ?? accountId;
+  const instrument = (instrumentId: string): string =>
+    instrumentNames.get(instrumentId) ?? instrumentId;
   switch (notification.code) {
     case 'account-uncovered': {
       const { accountId, balance, limit } = notification.params;
@@ -103,7 +120,53 @@ export function notificationText(
         text: $localize`:@@uiNotifications-notificationText-yearClosed:Steuerpflichtige Kapitalerträge ${formatCents(taxableIncome)}:income:, einbehaltene Steuer ${formatCents(taxWithheld)}:tax:.`,
       };
     }
+    case 'order-executed': {
+      const { instrumentId, side, quantity, price, total } = notification.params;
+      const name = instrument(instrumentId);
+      const shares = formatQuantity(quantity);
+      const at = formatPrice(price, priceDecimals(price));
+      const amount = formatCents(total);
+      return {
+        title,
+        text:
+          side === 'buy'
+            ? $localize`:@@uiNotifications-notificationText-orderExecutedBuy:Kauf von ${shares}:quantity: Stück ${name}:instrument: zu ${at}:price:, belastet ${amount}:total:.`
+            : $localize`:@@uiNotifications-notificationText-orderExecutedSell:Verkauf von ${shares}:quantity: Stück ${name}:instrument: zu ${at}:price:, gutgeschrieben ${amount}:total:.`,
+      };
+    }
+    case 'order-rejected': {
+      const { instrumentId, side, reason } = notification.params;
+      const name = instrument(instrumentId);
+      const why = orderRejectionLabel(reason);
+      return {
+        title,
+        text:
+          side === 'buy'
+            ? $localize`:@@uiNotifications-notificationText-orderRejectedBuy:Kauforder für ${name}:instrument: abgelehnt: ${why}:reason:`
+            : $localize`:@@uiNotifications-notificationText-orderRejectedSell:Verkaufsorder für ${name}:instrument: abgelehnt: ${why}:reason:`,
+      };
+    }
+    case 'order-expired': {
+      const { instrumentId, side } = notification.params;
+      const name = instrument(instrumentId);
+      return {
+        title,
+        text:
+          side === 'buy'
+            ? $localize`:@@uiNotifications-notificationText-orderExpiredBuy:Die Kauforder für ${name}:instrument: ist verfallen.`
+            : $localize`:@@uiNotifications-notificationText-orderExpiredSell:Die Verkaufsorder für ${name}:instrument: ist verfallen.`,
+      };
+    }
     default:
       return { title, text: '' };
   }
+}
+
+/** Shares with as many decimal places as the millionths need, e.g. `10`, `0,5`, `1,234567`. */
+function formatQuantity(quantity: MicroUnits): string {
+  let digits = 6;
+  for (let step = 10; digits > 0 && quantity % step === 0; step *= 10) {
+    digits--;
+  }
+  return formatNumber(microUnitsToUnits(quantity), digits);
 }

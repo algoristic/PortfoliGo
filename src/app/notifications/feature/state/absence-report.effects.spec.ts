@@ -14,6 +14,7 @@ import { AbsenceReportEffects } from './absence-report.effects';
 import * as NotificationsActions from './notifications.actions';
 import {
   selectAccountNames,
+  selectInstrumentNames,
   selectPendingReport,
   selectReportToShow,
 } from './notifications.selectors';
@@ -21,6 +22,7 @@ import {
 import { DialogAbsenceReportComponent } from '../dialog-absence-report/dialog-absence-report.component';
 
 const NAMES = new Map([['acc-1', 'Girokonto 0000000001 · Hansebank']]);
+const INSTRUMENTS = new Map([['stk-0001', 'Nordwerk AG']]);
 
 function report(from: number, to: number): AbsenceReport {
   return {
@@ -33,6 +35,8 @@ function report(from: number, to: number): AbsenceReport {
     notifications: 0,
     warnings: [],
     warningCount: 0,
+    orders: [],
+    orderCount: 0,
     indices: [],
   };
 }
@@ -72,6 +76,7 @@ describe('AbsenceReportEffects', () => {
         provideMockStore({
           selectors: [
             { selector: selectAccountNames, value: NAMES },
+            { selector: selectInstrumentNames, value: INSTRUMENTS },
             { selector: selectPendingReport, value: null },
             { selector: selectReportToShow, value: null },
           ],
@@ -93,7 +98,11 @@ describe('AbsenceReportEffects', () => {
     show(first);
     expect(dialog.open).toHaveBeenCalledTimes(1);
     expect(dialog.open.mock.calls[0]?.[0]).toBe(DialogAbsenceReportComponent);
-    expect(dialog.open.mock.calls[0]?.[1]?.data).toEqual({ report: first, accountNames: NAMES });
+    expect(dialog.open.mock.calls[0]?.[1]?.data).toEqual({
+      report: first,
+      accountNames: NAMES,
+      instrumentNames: INSTRUMENTS,
+    });
 
     closed.next();
     closed.complete();

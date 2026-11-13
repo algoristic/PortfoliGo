@@ -1,5 +1,5 @@
 import { monthOf } from '@app/banking/domain/bank-run-logic';
-import { AccountId } from '@app/banking/domain/models/account.model';
+import { AccountId, DepotId } from '@app/banking/domain/models/account.model';
 import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { mergeJournal, statementPage } from '@app/banking/domain/statement-logic';
 import { dayIndex } from '@app/clock/domain/calendar-logic';
@@ -15,6 +15,7 @@ import { jumpTargetTick } from '@app/engine/domain/jump-target-logic';
 import { marketMovers, screenInstruments } from '@app/engine/domain/market-screen';
 import { ClockSettings } from '@app/engine/domain/models/engine-clock.model';
 import { GameCommand, OpenedAccount } from '@app/engine/domain/models/engine-command.model';
+import { tradingProjection } from '@app/engine/domain/order-projection';
 import { replayCommands } from '@app/engine/domain/replay';
 import { seriesQuote } from '@app/engine/domain/series-quote';
 import { Throttle } from '@app/engine/domain/throttle-logic';
@@ -166,6 +167,9 @@ interface LoadedGame {
   changedSinceSnapshot: boolean;
   /** Accounts changed since the last projection (TS §8.4), and whether the next one is full. */
   changedAccounts: Set<AccountId>;
+  /** Orders and depots changed since the last projection (AP 5.1). */
+  changedOrders: Set<string>;
+  changedDepots: Set<DepotId>;
   projectionFull: boolean;
   /** Notifications not yet confirmed as stored, like `unsavedTransactions` (TS §9.2). */
   unsavedNotifications: GameNotification[];
@@ -376,6 +380,27 @@ export class EngineHost {
       tick: (await this.#applyGameCommand((tick) => ({ id, tick, type: 'updateWatchlist', ids })))
         .tick,
     }),
+    placeOrder: async ({ order }, id) => {
+      const { tick, orderId } = await this.#applyGameCommand((at) => ({
+        id,
+        tick: at,
+        type: 'placeOrder',
+        order,
+      }));
+      if (orderId === undefined) {
+        throw new CommandFailure('internal-error', 'placeOrder placed no order');
+      }
+      return { tick, orderId };
+    },
+    changeOrder: async ({ orderId, change }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({ id, tick, type: 'changeOrder', orderId, change }))
+      ).tick,
+    }),
+    cancelOrder: async ({ orderId }, id) => ({
+      tick: (await this.#applyGameCommand((tick) => ({ id, tick, type: 'cancelOrder', orderId })))
+        .tick,
+    }),
   };
 
   #queue: Promise<void> = Promise.resolve();
@@ -567,6 +592,8 @@ export class EngineHost {
       snapshotTick: engine.tick,
       changedSinceSnapshot: false,
       changedAccounts: new Set(),
+      changedOrders: new Set(),
+      changedDepots: new Set(),
       projectionFull: true,
       unsavedNotifications: [],
       notificationsWrittenMs: now,
@@ -703,7 +730,7 @@ export class EngineHost {
    */
   async #applyGameCommand(
     build: (tick: number) => GameCommand,
-  ): Promise<{ tick: number; opened?: OpenedAccount }> {
+  ): Promise<{ tick: number; opened?: OpenedAccount; orderId?: string }> {
     const game = this.#requireIdle();
     this.#held++;
     try {
@@ -727,9 +754,11 @@ export class EngineHost {
         game.engine.tick,
         this.#ports.now(),
       );
-      return result.opened === undefined
-        ? { tick: command.tick }
-        : { tick: command.tick, opened: result.opened };
+      return {
+        tick: command.tick,
+        ...(result.opened === undefined ? {} : { opened: result.opened }),
+        ...(result.orderId === undefined ? {} : { orderId: result.orderId }),
+      };
     } finally {
       this.#held--;
       game.pacer.reanchor(game.engine.tick, this.#ports.now());
@@ -925,6 +954,12 @@ export class EngineHost {
     }
     for (const id of game.engine.drainChangedAccounts()) {
       game.changedAccounts.add(id);
+    }
+    for (const id of game.engine.drainChangedOrders()) {
+      game.changedOrders.add(id);
+    }
+    for (const id of game.engine.drainChangedDepots()) {
+      game.changedDepots.add(id);
     }
     for (const event of game.engine.drainEvents()) {
       if (event.type === 'session-closed') {
@@ -1348,6 +1383,8 @@ export class EngineHost {
     if (
       (game.projectionFull ||
         game.changedAccounts.size > 0 ||
+        game.changedOrders.size > 0 ||
+        game.changedDepots.size > 0 ||
         notificationsChanged ||
         watchlistChanged) &&
       (forced || this.#projectionThrottle.isDue(now))
@@ -1408,7 +1445,8 @@ export class EngineHost {
 
   /**
    * The changed accounts and the net worth (TS §8.3, §8.4); after loading all accounts. The
-   * notification and the watchlist part go with it when they changed or the projection is full.
+   * notification, watchlist and trading parts go with it when they changed or the projection is
+   * full; the trading part then holds only the changed orders and depots.
    */
   #postProjection(
     game: LoadedGame,
@@ -1419,6 +1457,11 @@ export class EngineHost {
     const full = game.projectionFull;
     const part = notifications ?? (full ? this.#notificationsProjection(game) : undefined);
     const watchlist = full || watchlistChanged ? { ids: player.watchlist.slice() } : undefined;
+    const trading = full
+      ? tradingProjection(player)
+      : game.changedOrders.size > 0 || game.changedDepots.size > 0
+        ? tradingProjection(player, { orders: game.changedOrders, depots: game.changedDepots })
+        : undefined;
     this.#post('projection', {
       tick: game.engine.tick,
       full,
@@ -1426,10 +1469,13 @@ export class EngineHost {
       netWorth: netWorth(player),
       ...(part === undefined ? {} : { notifications: part }),
       ...(watchlist === undefined ? {} : { watchlist }),
+      ...(trading === undefined ? {} : { trading }),
     });
     game.watchlistSent = player.watchlist;
     game.projectionFull = false;
     game.changedAccounts.clear();
+    game.changedOrders.clear();
+    game.changedDepots.clear();
   }
 
   #notificationsProjection(game: LoadedGame): NotificationsProjection {

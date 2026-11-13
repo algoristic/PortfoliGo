@@ -21,6 +21,7 @@ function account(id: AccountId, balance: number, closedAt: number | null = null)
     balance,
     overdraftLimit: 0,
     available: balance,
+    reserved: 0,
     salaryAccount: false,
   };
 }

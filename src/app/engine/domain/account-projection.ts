@@ -25,6 +25,8 @@ export function accountViews(
     const balance = player.balances.get(account.id) ?? 0;
     const overdraftLimit =
       open && account.kind === 'current' ? (limits.get(account.id) ?? 0) : null;
+    const reserved =
+      open && account.kind === 'clearing' ? reservedAmount(player.orders, account.depotId) : 0;
     const depot = player.depots.find((candidate) => candidate.clearingAccountId === account.id);
     views.push({
       id: account.id,
@@ -37,11 +39,9 @@ export function accountViews(
       balance,
       overdraftLimit,
       available: open
-        ? availableAfterReservations(
-            { balance, limit: overdraftLimit },
-            account.kind === 'clearing' ? reservedAmount(player.orders, account.depotId) : 0,
-          )
+        ? availableAfterReservations({ balance, limit: overdraftLimit }, reserved)
         : 0,
+      reserved,
       salaryAccount: account.id === player.salaryAccountId,
     });
   }

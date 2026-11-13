@@ -15,7 +15,7 @@ import {
   notificationCategoryLabel,
   notificationSeverityLabel,
 } from '../labels/notification-labels';
-import { AccountNames, notificationText } from '../labels/notification-text.utils';
+import { AccountNames, InstrumentNames, notificationText } from '../labels/notification-text.utils';
 
 const NO_NAMES: AccountNames = new Map();
 
@@ -33,6 +33,8 @@ export class NotificationListComponent {
   entries = input.required<NotificationEntry[]>();
   /** `null` until the accounts are known; texts then show account IDs. */
   accountNames = input<AccountNames | null>(null);
+  /** `null` until the master data is loaded; texts then show instrument IDs. */
+  instrumentNames = input<InstrumentNames | null>(null);
 
   markedRead = output<number>();
 
@@ -41,7 +43,11 @@ export class NotificationListComponent {
   rows = computed((): NotificationRowView[] =>
     this.entries().map((entry) => {
       const info = NOTIFICATION_CODE_INFO[entry.code];
-      const { title, text } = notificationText(entry, this.accountNames() ?? NO_NAMES);
+      const { title, text } = notificationText(
+        entry,
+        this.accountNames() ?? NO_NAMES,
+        this.instrumentNames() ?? NO_NAMES,
+      );
       return {
         seq: entry.seq,
         tick: entry.tick,

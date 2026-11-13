@@ -15,6 +15,15 @@ import {
 /** Warnings listed in a report; the report counts the others. */
 export const MAX_REPORT_WARNINGS = 50;
 
+/** Executed and expired orders listed in a report; the report counts the others. */
+export const MAX_REPORT_ORDERS = 50;
+
+/** Order codes the report lists besides the warnings (US-BN-03); rejections are warnings. */
+export const REPORT_ORDER_CODES = [
+  'order-executed',
+  'order-expired',
+] as const satisfies readonly NotificationCode[];
+
 const WARNING_RANK = NOTIFICATION_SEVERITIES.indexOf('warning');
 
 /** Severity warning or critical: these go into the absence report (US-BN-03). */
@@ -49,6 +58,8 @@ export function openAbsence(
     notifications: 0,
     warnings: [],
     warningCount: 0,
+    orders: [],
+    orderCount: 0,
   };
 }
 
@@ -64,17 +75,25 @@ export function tallyBookings(
   return { ...tally, flows, bookings: tally.bookings + transactions.length };
 }
 
-/** Adds notifications; warnings and above are listed, the newest `MAX_REPORT_WARNINGS` of them. */
+/**
+ * Adds notifications; warnings and above are listed, the newest `MAX_REPORT_WARNINGS` of them, and
+ * executed and expired orders, the newest `MAX_REPORT_ORDERS`.
+ */
 export function tallyNotifications(
   tally: Readonly<AbsenceTally>,
   notifications: readonly GameNotification[],
 ): AbsenceTally {
   const warnings = notifications.filter(({ code }) => isWarning(code));
+  const orders = notifications.filter(({ code }) =>
+    (REPORT_ORDER_CODES as readonly NotificationCode[]).includes(code),
+  );
   return {
     ...tally,
     notifications: tally.notifications + notifications.length,
     warnings: [...tally.warnings, ...warnings].slice(-MAX_REPORT_WARNINGS),
     warningCount: tally.warningCount + warnings.length,
+    orders: [...tally.orders, ...orders].slice(-MAX_REPORT_ORDERS),
+    orderCount: tally.orderCount + orders.length,
   };
 }
 
@@ -102,6 +121,8 @@ export function closeAbsence(
     notifications: tally.notifications,
     warnings: tally.warnings,
     warningCount: tally.warningCount,
+    orders: tally.orders,
+    orderCount: tally.orderCount,
     indices: tally.indices.flatMap(({ series, id, name, level }) => {
       const last = end.get(series);
       return last === undefined ? [] : [{ series, id, name, start: level, end: last }];

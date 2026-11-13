@@ -10,6 +10,7 @@ import { BackgroundMode, StartConditions } from '@app/engine/domain/models/game-
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { MarketMovers } from '@app/engine/domain/models/market-movers.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import { TradingProjection } from '@app/engine/domain/models/trading-view.model';
 import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
 import {
   IndexComposition,
@@ -28,7 +29,11 @@ import {
   NotificationEntry,
 } from '@app/notifications/domain/models/notification.model';
 import { Cents } from '@app/shared/domain/models/money.model';
-import { ORDER_COMMAND_ERRORS } from '@app/trading/domain/models/order.model';
+import {
+  ORDER_COMMAND_ERRORS,
+  OrderChange,
+  OrderSpec,
+} from '@app/trading/domain/models/order.model';
 import { Bank } from '@app/world/domain/models/bank.model';
 import { RegionId } from '@app/world/domain/models/taxonomy.model';
 
@@ -215,6 +220,12 @@ export interface EngineCommandPayloads {
    * command; at most `MAX_WATCHLIST_LENGTH` instruments of the world, none twice.
    */
   updateWatchlist: { ids: string[] };
+  /** Places an order (US-HD-01–03, TS §7.5); the engine checks it and answers with its ID. */
+  placeOrder: { order: OrderSpec };
+  /** New limit, stop or validity of an active order (US-HD-04); missing fields stay. */
+  changeOrder: { orderId: string; change: OrderChange };
+  /** Cancels an active order (US-HD-04). */
+  cancelOrder: { orderId: string };
 }
 
 export const ENGINE_COMMAND_TYPES = [
@@ -237,6 +248,9 @@ export const ENGINE_COMMAND_TYPES = [
   'setAutoPause',
   'markNotificationsRead',
   'updateWatchlist',
+  'placeOrder',
+  'changeOrder',
+  'cancelOrder',
 ] as const satisfies readonly (keyof EngineCommandPayloads)[];
 export type EngineCommandType = (typeof ENGINE_COMMAND_TYPES)[number];
 
@@ -328,6 +342,11 @@ export interface OpenedAccountReply extends GameCommandReply {
   depotId: DepotId | null;
 }
 
+/** Reply to `placeOrder`: the ID of the new order (`ord-<n>`). */
+export interface PlacedOrderReply extends GameCommandReply {
+  orderId: string;
+}
+
 /**
  * A block of candles up to `tick` (the query limit), ascending; `hasOlder` is `false` once the
  * block reaches the first candle since the epoch.
@@ -361,6 +380,9 @@ export interface EngineReplies {
   setAutoPause: GameCommandReply;
   markNotificationsRead: GameCommandReply;
   updateWatchlist: GameCommandReply;
+  placeOrder: PlacedOrderReply;
+  changeOrder: GameCommandReply;
+  cancelOrder: GameCommandReply;
 }
 
 /** Error codes of replies (TS §8.3); the UI turns them into texts. */
@@ -483,6 +505,20 @@ export interface ProjectionPayload {
   notifications?: NotificationsProjection;
   /** With `full` and whenever the watchlist changed (AP 4.4). */
   watchlist?: WatchlistProjection;
+  /**
+   * Orders and holdings per depot (AP 5.1, TS §8.3): all of them with `full`, else only the orders
+   * and depots that changed; missing when nothing changed.
+   */
+  trading?: TradingProjection;
+}
+
+/**
+ * The trading part of a projection as `EngineService.trading$` emits it: with `full` it replaces
+ * what the UI had, else its orders and depots replace those with the same ID.
+ */
+export interface TradingProjectionUpdate extends TradingProjection {
+  tick: Tick;
+  full: boolean;
 }
 
 /** The player's watchlist (US-MK-04, TS §8.3). */

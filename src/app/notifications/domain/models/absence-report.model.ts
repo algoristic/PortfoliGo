@@ -23,7 +23,7 @@ export interface IndexDevelopment {
 
 /**
  * What happened while the player was away (US-BN-03, TS §8.3 `report`): after a catch-up or while
- * the app was hidden. Executed orders and savings plans follow in M5.
+ * the app was hidden. Savings plans follow with AP 5.6.
  */
 export interface AbsenceReport {
   /** Last tick before the period and last tick of it. */
@@ -41,6 +41,13 @@ export interface AbsenceReport {
   warnings: GameNotification[];
   /** All warnings of the period, also those beyond the list. */
   warningCount: number;
+  /**
+   * The newest notifications of executed and expired orders, oldest first (AP 5.1); rejected
+   * orders are warnings.
+   */
+  orders: GameNotification[];
+  /** All of them in the period, also those beyond the list. */
+  orderCount: number;
   indices: IndexDevelopment[];
 }
 
@@ -54,4 +61,6 @@ export interface AbsenceTally {
   notifications: number;
   warnings: GameNotification[];
   warningCount: number;
+  orders: GameNotification[];
+  orderCount: number;
 }

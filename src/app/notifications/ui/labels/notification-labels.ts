@@ -3,6 +3,7 @@ import {
   NotificationCode,
   NotificationSeverity,
 } from '@app/notifications/domain/models/notification.model';
+import { OrderRejection } from '@app/trading/domain/models/order.model';
 
 /** Names of the categories of the notification centre (PS US-BN-01, TS §12). */
 export function notificationCategoryLabel(category: NotificationCategory): string {
@@ -85,5 +86,19 @@ export function notificationCodeLabel(code: NotificationCode): string {
       return $localize`:@@uiNotifications-notificationLabels-marketChecksumMismatch:Kursdaten weichen ab`;
     case 'backup-reminder':
       return $localize`:@@uiNotifications-notificationLabels-backupReminder:Sicherung empfohlen`;
+  }
+}
+
+/** Why an order was rejected at execution (TS §7.5), as a sentence. */
+export function orderRejectionLabel(reason: OrderRejection): string {
+  switch (reason) {
+    case 'insufficient-funds':
+      return $localize`:@@uiNotifications-notificationLabels-rejectionInsufficientFunds:Das Guthaben auf dem Verrechnungskonto reicht nicht.`;
+    case 'price-floor':
+      return $localize`:@@uiNotifications-notificationLabels-rejectionPriceFloor:Der Kurs liegt an der Preisuntergrenze.`;
+    case 'amount-too-small':
+      return $localize`:@@uiNotifications-notificationLabels-rejectionAmountTooSmall:Der Betrag reicht nach Abzug der Kosten für keinen Kauf.`;
+    case 'insufficient-quantity':
+      return $localize`:@@uiNotifications-notificationLabels-rejectionInsufficientQuantity:Im Depot liegen nicht genug freie Stücke.`;
   }
 }

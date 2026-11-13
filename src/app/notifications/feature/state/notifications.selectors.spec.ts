@@ -30,6 +30,8 @@ const REPORT: AbsenceReport = {
   notifications: 0,
   warnings: [],
   warningCount: 0,
+  orders: [],
+  orderCount: 0,
   indices: [],
 };
 

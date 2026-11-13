@@ -16,9 +16,14 @@ import { ToastService } from '@app/shared/ui/toast/toast.service';
 
 import * as NotificationsActions from './notifications.actions';
 import { NotificationsEffects, TOAST_BUNDLE_WINDOW_MS } from './notifications.effects';
-import { selectAccountNames, selectLastSeq } from './notifications.selectors';
+import {
+  selectAccountNames,
+  selectInstrumentNames,
+  selectLastSeq,
+} from './notifications.selectors';
 
 const NAMES = new Map([['acc-1', 'Girokonto 0000000001 · Hansebank']]);
+const INSTRUMENTS = new Map([['stk-0001', 'Nordwerk AG']]);
 
 function uncovered(seq: number): GameNotification {
   return {
@@ -57,6 +62,8 @@ const REPORT: AbsenceReport = {
   notifications: 1,
   warnings: [uncovered(1)],
   warningCount: 1,
+  orders: [],
+  orderCount: 0,
   indices: [],
 };
 
@@ -90,6 +97,7 @@ describe('NotificationsEffects', () => {
         provideMockStore({
           selectors: [
             { selector: selectAccountNames, value: NAMES },
+            { selector: selectInstrumentNames, value: INSTRUMENTS },
             { selector: selectLastSeq, value: 7 },
             { selector: selectStatus, value: 'ready' },
           ],
@@ -143,6 +151,19 @@ describe('NotificationsEffects', () => {
       expect(toasts.show.mock.calls.map(([, message]) => message)).toEqual([
         'Konto nicht gedeckt: Girokonto 0000000001 · Hansebank steht bei -120,00 € (Dispo-Rahmen 5.000,00 €).',
         'Konto nicht gedeckt: Girokonto 0000000001 · Hansebank steht bei -120,00 € (Dispo-Rahmen 5.000,00 €).',
+      ]);
+    });
+
+    it('names the instrument of an order notification', () => {
+      receive({
+        seq: 1,
+        tick: 600,
+        code: 'order-expired',
+        params: { orderId: 'ord-1', depotId: 'dep-3', instrumentId: 'stk-0001', side: 'sell' },
+      });
+      vi.advanceTimersByTime(TOAST_BUNDLE_WINDOW_MS);
+      expect(toasts.show.mock.calls.map(([, message]) => message)).toEqual([
+        'Order verfallen: Die Verkaufsorder für Nordwerk AG ist verfallen.',
       ]);
     });
 
