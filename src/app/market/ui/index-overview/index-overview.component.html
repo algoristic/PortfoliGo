@@ -1,0 +1,53 @@
+<ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+  @for (card of cards(); track card.id) {
+    <li
+      class="flex items-center gap-3 rounded-md border border-border bg-surface-raised p-3"
+      data-testid="market.overview.index"
+      [attr.data-instrument-id]="card.id">
+      <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+        <a
+          class="truncate text-sm font-semibold hover:underline"
+          data-testid="market.overview.index.name"
+          [routerLink]="[card.id]"
+          >{{ card.name }}</a
+        >
+        <span class="text-xs text-fg-muted">{{ card.ticker }}</span>
+        @if (card.quote; as quote) {
+          <span class="flex flex-wrap items-baseline gap-x-2 text-sm">
+            <span class="sr-only">{{ levelLabel }}</span>
+            <span
+              class="px-0.5 font-medium tabular-nums"
+              data-testid="market.overview.index.level"
+              [appValueFlash]="quote.last"
+              [enabled]="flashEnabled()"
+              >{{ quote.last | formatNumber: 2 }}</span
+            >
+            <span
+              class="text-xs tabular-nums"
+              data-testid="market.overview.index.change"
+              [class]="card.changeClass"
+              >{{ quote.change | formatSignedNumber }}</span
+            >
+            <app-price-change
+              class="text-xs"
+              data-testid="market.overview.index.change-percent"
+              [value]="quote.changeRatio"></app-price-change>
+          </span>
+        } @else {
+          <app-skeleton class="w-32"></app-skeleton>
+        }
+      </div>
+      @if (card.sparkline.length > 0) {
+        <app-sparkline
+          class="h-10 w-24 shrink-0"
+          data-testid="market.overview.index.sparkline"
+          [attr.data-points]="card.sparkline.length"
+          [values]="card.sparkline"
+          [reference]="card.quote?.previousClose ?? null"
+          [label]="card.sparklineLabel"></app-sparkline>
+      } @else {
+        <app-skeleton class="h-10 w-24 shrink-0" [block]="true"></app-skeleton>
+      }
+    </li>
+  }
+</ul>

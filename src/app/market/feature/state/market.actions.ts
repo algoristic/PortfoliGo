@@ -2,16 +2,23 @@ import { createAction, props } from '@ngrx/store';
 
 import { IndicatorSpec } from '@app/analysis/domain/models/indicator.model';
 import { PriceChartType } from '@app/charts/ui/price-chart/price-chart.model';
-import { MoversPayload } from '@app/engine/data-access/service/engine-service.model';
+import {
+  MoversPayload,
+  ScreenerResult,
+} from '@app/engine/data-access/service/engine-service.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import { Candle } from '@app/market/domain/models/candle.model';
 import { ChartRange, LiveCandle } from '@app/market/domain/models/chart.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
+import { ScreenerSortKey, YieldRange } from '@app/market/domain/models/screener.model';
+import { ScreenerFilterDimension, ScreenerRange } from '@app/market/ui/models/screener-view.model';
 
 import { ChartSettings } from './market.model';
 
 export const enterMarketsPage = createAction('[Market/Page] Enter markets page');
 export const leaveMarketsPage = createAction('[Market/Page] Leave markets page');
+export const enterScreenerPage = createAction('[Market/Page] Enter screener page');
+export const leaveScreenerPage = createAction('[Market/Page] Leave screener page');
 export const enterInstrumentPage = createAction('[Market/Page] Enter instrument page');
 export const leaveInstrumentPage = createAction('[Market/Page] Leave instrument page');
 /**
@@ -121,4 +128,60 @@ export const submittedChartIndicator = createAction(
 export const clickedRemoveChartIndicator = createAction(
   '[Market/Page] Clicked remove chart indicator',
   props<{ id: string }>(),
+);
+
+/** The 15-minute candles of the trading day of an overview index (US-MK-01). */
+export const retrievedOverviewSparkline = createAction(
+  '[Market/API] Retrieved overview sparkline',
+  props<{ series: number; candles: Candle[] }>(),
+);
+export const loadOverviewSparklineFailure = createAction(
+  '[Market/API] Load overview sparkline failure',
+  props<{ series: number; error: unknown }>(),
+);
+/** A live candle of an overview index that changes or extends its sparkline. */
+export const receivedOverviewSparklineCandle = createAction(
+  '[Market/API] Received overview sparkline candle',
+  props<{ series: number; live: LiveCandle }>(),
+);
+/** A live candle skipped candles or began a new day: the sparkline loads again. */
+export const detectedOverviewSparklineGap = createAction(
+  '[Market/API] Detected overview sparkline gap',
+  props<{ series: number }>(),
+);
+
+/** Every keystroke of the screener search; the query follows debounced. */
+export const enteredScreenerSearch = createAction(
+  '[Market/Page] Entered screener search',
+  props<{ search: string }>(),
+);
+/** The chosen values of a list dimension of the screener filter (empty = all). */
+export const selectedScreenerFilter = createAction(
+  '[Market/Page] Selected screener filter',
+  props<{ dimension: ScreenerFilterDimension; values: string[] }>(),
+);
+/** Dividend yield range as fractions; a missing bound is open. */
+export const submittedScreenerDividendYield = createAction(
+  '[Market/Page] Submitted screener dividend yield',
+  props<{ range: YieldRange }>(),
+);
+export const clickedScreenerSort = createAction(
+  '[Market/Page] Clicked screener sort',
+  props<{ key: ScreenerSortKey }>(),
+);
+export const clickedResetScreenerFilter = createAction(
+  '[Market/Page] Clicked reset screener filter',
+);
+/** The rows the list renders changed (scrolling, resizing). */
+export const scrolledScreener = createAction(
+  '[Market/Page] Scrolled screener',
+  props<{ range: ScreenerRange }>(),
+);
+export const retrievedScreener = createAction(
+  '[Market/API] Retrieved screener',
+  props<{ generation: number; result: ScreenerResult }>(),
+);
+export const loadScreenerFailure = createAction(
+  '[Market/API] Load screener failure',
+  props<{ generation: number; error: unknown }>(),
 );

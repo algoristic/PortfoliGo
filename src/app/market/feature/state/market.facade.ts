@@ -5,6 +5,8 @@ import { Observable } from 'rxjs';
 import { IndicatorSpec } from '@app/analysis/domain/models/indicator.model';
 import { PriceChartType } from '@app/charts/ui/price-chart/price-chart.model';
 import { ChartRange } from '@app/market/domain/models/chart.model';
+import { ScreenerSortKey, YieldRange } from '@app/market/domain/models/screener.model';
+import { ScreenerFilterDimension, ScreenerRange } from '@app/market/ui/models/screener-view.model';
 
 import * as MarketActions from './market.actions';
 import { InstrumentQuote } from './market.model';
@@ -23,6 +25,10 @@ export class MarketFacade {
   routeInstrument$ = this.#store.pipe(select(MarketSelectors.selectRouteInstrument));
   routeInstrumentQuote$ = this.#store.pipe(select(MarketSelectors.selectRouteInstrumentQuote));
   chart$ = this.#store.pipe(select(MarketSelectors.selectChartView));
+  overviewIndices$ = this.#store.pipe(select(MarketSelectors.selectOverviewIndices));
+  moversView$ = this.#store.pipe(select(MarketSelectors.selectMoversView));
+  screener$ = this.#store.pipe(select(MarketSelectors.selectScreenerView));
+  screenerRows$ = this.#store.pipe(select(MarketSelectors.selectScreenerRows));
 
   instrumentQuote$(id: string): Observable<InstrumentQuote | null> {
     return this.#store.pipe(select(MarketSelectors.selectInstrumentQuote(id)));
@@ -34,6 +40,14 @@ export class MarketFacade {
 
   leaveMarketsPage(): void {
     this.#store.dispatch(MarketActions.leaveMarketsPage());
+  }
+
+  enterScreenerPage(): void {
+    this.#store.dispatch(MarketActions.enterScreenerPage());
+  }
+
+  leaveScreenerPage(): void {
+    this.#store.dispatch(MarketActions.leaveScreenerPage());
   }
 
   enterInstrumentPage(): void {
@@ -90,5 +104,30 @@ export class MarketFacade {
 
   removeChartIndicator(id: string): void {
     this.#store.dispatch(MarketActions.clickedRemoveChartIndicator({ id }));
+  }
+
+  searchScreener(search: string): void {
+    this.#store.dispatch(MarketActions.enteredScreenerSearch({ search }));
+  }
+
+  filterScreener(dimension: ScreenerFilterDimension, values: string[]): void {
+    this.#store.dispatch(MarketActions.selectedScreenerFilter({ dimension, values }));
+  }
+
+  filterScreenerDividendYield(range: YieldRange): void {
+    this.#store.dispatch(MarketActions.submittedScreenerDividendYield({ range }));
+  }
+
+  sortScreener(key: ScreenerSortKey): void {
+    this.#store.dispatch(MarketActions.clickedScreenerSort({ key }));
+  }
+
+  resetScreenerFilter(): void {
+    this.#store.dispatch(MarketActions.clickedResetScreenerFilter());
+  }
+
+  /** The rows the screener list renders (the visible rows subscribe their quotes). */
+  scrollScreener(range: ScreenerRange): void {
+    this.#store.dispatch(MarketActions.scrolledScreener({ range }));
   }
 }

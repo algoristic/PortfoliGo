@@ -46,6 +46,44 @@
       <app-price-change [value]="31240" mode="cents"></app-price-change>
       <app-price-change [value]="-4510" mode="cents"></app-price-change>
     </div>
+    <div class="mt-4 flex flex-wrap items-center gap-2" data-testid="lab.components.value-flash">
+      <span
+        class="px-1 text-lg font-semibold tabular-nums"
+        data-testid="lab.components.value-flash.value"
+        [appValueFlash]="flashPrice()"
+        [enabled]="flashEnabled()"
+        >{{ flashPrice() | formatPrice }}</span
+      >
+      <button
+        appButton
+        size="sm"
+        type="button"
+        data-testid="lab.components.value-flash.up"
+        (click)="onMovePrice(1)"
+        i18n="@@featureLab-componentsPage-flashUp">
+        Kurs steigt
+      </button>
+      <button
+        appButton
+        size="sm"
+        type="button"
+        data-testid="lab.components.value-flash.down"
+        (click)="onMovePrice(-1)"
+        i18n="@@featureLab-componentsPage-flashDown">
+        Kurs fällt
+      </button>
+      <label class="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          class="size-4 accent-accent"
+          data-testid="lab.components.value-flash.enabled"
+          [checked]="flashEnabled()"
+          (change)="onToggleFlash($event)" />
+        <span i18n="@@featureLab-componentsPage-flashEnabled"
+          >Hervorhebung (entfällt bei „Bewegung reduzieren“)</span
+        >
+      </label>
+    </div>
   </app-panel>
 
   <div class="grid gap-4 sm:grid-cols-3">

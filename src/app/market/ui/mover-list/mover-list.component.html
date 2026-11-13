@@ -1,0 +1,36 @@
+@let _testId = testId();
+
+@if (movers().length === 0) {
+  <p class="text-sm text-fg-muted" [attr.data-testid]="_testId + '.empty'">{{ emptyText }}</p>
+} @else {
+  <ol class="flex flex-col divide-y divide-border">
+    @for (mover of movers(); track mover.instrument.id) {
+      <li>
+        <a
+          class="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-surface-raised"
+          [attr.data-testid]="_testId + '.row'"
+          [attr.data-instrument-id]="mover.instrument.id"
+          [routerLink]="[mover.instrument.id]">
+          <span class="flex min-w-0 flex-1 flex-col">
+            <span class="truncate text-sm font-medium" [attr.data-testid]="_testId + '.name'">{{
+              mover.instrument.name
+            }}</span>
+            <span class="text-xs text-fg-muted">{{ mover.instrument.ticker }}</span>
+          </span>
+          <span class="flex shrink-0 flex-col items-end">
+            <span
+              class="px-0.5 text-sm tabular-nums"
+              [appValueFlash]="mover.quote.last"
+              [enabled]="flashEnabled()"
+              >{{ mover.quote.last | formatPrice }}</span
+            >
+            <app-price-change
+              class="text-xs"
+              [attr.data-testid]="_testId + '.change'"
+              [value]="mover.quote.changeRatio"></app-price-change>
+          </span>
+        </a>
+      </li>
+    }
+  </ol>
+}

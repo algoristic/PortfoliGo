@@ -33,6 +33,8 @@ const RULE_SPECS = [
   'src/app/market/domain/chart-view-logic.spec.ts',
   'src/app/market/domain/chart-indicator-logic.spec.ts',
   'src/app/market/domain/watchlist-logic.spec.ts',
+  'src/app/market/domain/heatmap-logic.spec.ts',
+  'src/app/market/domain/overview-sparkline-logic.spec.ts',
   'src/app/charts/util/sparkline-geometry.spec.ts',
   'src/app/charts/util/donut-geometry.spec.ts',
   'src/app/lab/domain/calibration-targets.spec.ts',

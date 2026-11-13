@@ -4,11 +4,14 @@ import { ChartIndicator } from '@app/market/ui/models/chart-indicator.model';
 
 import {
   DEFAULT_CHART_SETTINGS,
+  DEFAULT_SCREENER_FILTER,
+  isScreenerFiltered,
   latestQuotes,
   nextIndicatorColor,
   nextIndicatorId,
   normalizeSeries,
   parseChartSettings,
+  screenerCriteria,
   subscribedSeries,
   withChartIndicator,
 } from './market.utils';
@@ -141,5 +144,38 @@ describe('market utils', () => {
       const six = Array.from({ length: 6 }, (_, index) => ({ ...SMA, id: `i${index + 1}` }));
       expect(withChartIndicator(six, null, SMA.spec)).toBe(six);
     });
+  });
+});
+
+describe('screenerCriteria', () => {
+  it('sends only what filters, the search trimmed', () => {
+    expect(screenerCriteria(DEFAULT_SCREENER_FILTER)).toEqual({
+      sort: { key: 'name', direction: 'asc' },
+    });
+    expect(
+      screenerCriteria({
+        ...DEFAULT_SCREENER_FILTER,
+        search: '  vel ',
+        regions: ['europe'],
+        dividendYield: { min: 0.02 },
+      }),
+    ).toEqual({
+      sort: { key: 'name', direction: 'asc' },
+      search: 'vel',
+      regions: ['europe'],
+      dividendYield: { min: 0.02 },
+    });
+  });
+
+  it('counts search and filters, not the sort, as filtered', () => {
+    expect(isScreenerFiltered(DEFAULT_SCREENER_FILTER)).toBe(false);
+    expect(
+      isScreenerFiltered({ ...DEFAULT_SCREENER_FILTER, sort: { key: 'y1', direction: 'desc' } }),
+    ).toBe(false);
+    expect(isScreenerFiltered({ ...DEFAULT_SCREENER_FILTER, search: ' ' })).toBe(false);
+    expect(isScreenerFiltered({ ...DEFAULT_SCREENER_FILTER, styles: ['value'] })).toBe(true);
+    expect(isScreenerFiltered({ ...DEFAULT_SCREENER_FILTER, dividendYield: { max: 0 } })).toBe(
+      true,
+    );
   });
 });

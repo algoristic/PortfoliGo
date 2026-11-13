@@ -18,6 +18,7 @@ import {
 import { EngineCommandError, EngineService } from '@app/engine/data-access/service/engine.service';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
+import { selectPhase } from '@app/engine/feature/state/session.selectors';
 import { Candle } from '@app/market/domain/models/candle.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
 import { LocalStorageService } from '@app/persistence/data-access/local-storage/local-storage.service';
@@ -34,17 +35,24 @@ import {
   MARKETS_PAGE_SUBSCRIPTION,
   QUOTES_BUNDLE_WINDOW_MS,
   QuoteSubscriptions,
+  SCREENER_SEARCH_DEBOUNCE_MS,
+  SCREENER_SUBSCRIPTION,
 } from './market.model';
-import { initialChartState } from './market.reducer';
+import { initialChartState, initialScreenerState } from './market.reducer';
 import {
   selectChart,
   selectChartSettings,
   selectChartSubscription,
   selectInstrumentsLoaded,
+  selectMarketDay,
   selectMoversWanted,
   selectOverviewIndexSeries,
+  selectOverviewSparklines,
   selectQuoteSubscriptions,
   selectRouteInstrument,
+  selectScreener,
+  selectScreenerCriteria,
+  selectScreenerWindowSeries,
 } from './market.selectors';
 
 /** The worker boundary: records the commands and lets the test send events. */
@@ -156,6 +164,15 @@ describe('MarketEffects', () => {
             { selector: selectChart, value: initialChartState },
             { selector: selectChartSubscription, value: { interval: '1m', live: true } },
             { selector: selectChartSettings, value: CHART_SETTINGS },
+            { selector: selectPhase, value: 'loading' },
+            { selector: selectScreener, value: initialScreenerState },
+            {
+              selector: selectScreenerCriteria,
+              value: { sort: { key: 'name', direction: 'asc' } },
+            },
+            { selector: selectScreenerWindowSeries, value: [] },
+            { selector: selectMarketDay, value: 3_744 },
+            { selector: selectOverviewSparklines, value: {} },
           ],
         }),
       ],
@@ -607,6 +624,198 @@ describe('MarketEffects', () => {
       expect(toasts.error).toHaveBeenCalledWith(
         'Die Chart-Einstellungen gelten nur bis zum Neuladen, weil sie auf diesem Gerät nicht gespeichert werden konnten.',
       );
+    });
+  });
+
+  describe('loadScreener$', () => {
+    const RESULT = { total: 0, rows: [], tick: NOW };
+
+    function setScreener(generation: number): void {
+      store.overrideSelector(selectScreener, { ...initialScreenerState, generation });
+      store.refreshState();
+    }
+
+    function loaded(): void {
+      store.overrideSelector(selectPhase, 'loaded');
+      store.refreshState();
+    }
+
+    it('queries once the player is loaded, at once after a filter and debounced after typing', () => {
+      vi.useFakeTimers();
+      const screener = vi
+        .spyOn(engine, 'screener')
+        .mockReturnValue(of({ kind: 'screener' as const, ...RESULT }));
+      const received: Action[] = [];
+      subscription = effects.loadScreener$.subscribe((action) => received.push(action));
+      setScreener(4);
+      actions$.next(MarketActions.enterScreenerPage());
+      expect(screener).not.toHaveBeenCalled();
+      loaded();
+      expect(received).toEqual([
+        MarketActions.retrievedScreener({ generation: 4, result: RESULT }),
+      ]);
+
+      setScreener(5);
+      actions$.next(MarketActions.clickedScreenerSort({ key: 'y1' }));
+      expect(received.at(-1)).toEqual(
+        MarketActions.retrievedScreener({ generation: 5, result: RESULT }),
+      );
+      expect(screener).toHaveBeenCalledTimes(2);
+
+      actions$.next(MarketActions.enteredScreenerSearch({ search: 'a' }));
+      vi.advanceTimersByTime(SCREENER_SEARCH_DEBOUNCE_MS - 1);
+      actions$.next(MarketActions.enteredScreenerSearch({ search: 'ab' }));
+      vi.advanceTimersByTime(SCREENER_SEARCH_DEBOUNCE_MS - 1);
+      expect(screener).toHaveBeenCalledTimes(2);
+      vi.advanceTimersByTime(1);
+      expect(screener).toHaveBeenCalledTimes(3);
+    });
+
+    it('queries again when a new market day begins and stops when the page is left', () => {
+      const screener = vi
+        .spyOn(engine, 'screener')
+        .mockReturnValue(of({ kind: 'screener' as const, ...RESULT }));
+      subscription = effects.loadScreener$.subscribe();
+      actions$.next(MarketActions.enterScreenerPage());
+      loaded();
+      store.overrideSelector(selectMarketDay, 3_744);
+      store.refreshState();
+      expect(screener).toHaveBeenCalledTimes(1);
+      store.overrideSelector(selectMarketDay, 3_745);
+      store.refreshState();
+      expect(screener).toHaveBeenCalledTimes(2);
+
+      actions$.next(MarketActions.leaveScreenerPage());
+      store.overrideSelector(selectMarketDay, 3_746);
+      store.refreshState();
+      actions$.next(MarketActions.clickedResetScreenerFilter());
+      expect(screener).toHaveBeenCalledTimes(2);
+    });
+
+    it('dispatches loadScreenerFailure for the generation of a failed query', async () => {
+      const error = new EngineCommandError('invalid-command');
+      vi.spyOn(engine, 'screener').mockReturnValue(throwError(() => error));
+      setScreener(7);
+      const result = firstValueFrom(effects.loadScreener$);
+      actions$.next(MarketActions.enterScreenerPage());
+      loaded();
+      expect(await result).toEqual(MarketActions.loadScreenerFailure({ generation: 7, error }));
+    });
+  });
+
+  describe('watchScreenerQuotes$', () => {
+    it('watches the window of the rendered rows from the first result on', () => {
+      vi.useFakeTimers();
+      const received: Action[] = [];
+      subscription = effects.watchScreenerQuotes$.subscribe((action) => received.push(action));
+      actions$.next(MarketActions.enterScreenerPage());
+      expect(received).toEqual([]);
+
+      store.overrideSelector(selectScreenerWindowSeries, [1, 2, 3]);
+      store.refreshState();
+      expect(received).toEqual([
+        MarketActions.quotesSubscriptionChanged({ key: SCREENER_SUBSCRIPTION, series: [1, 2, 3] }),
+      ]);
+
+      // Scrolling within the throttle: only the newest window follows at its end.
+      store.overrideSelector(selectScreenerWindowSeries, [2, 3, 4]);
+      store.refreshState();
+      store.overrideSelector(selectScreenerWindowSeries, [3, 4, 5]);
+      store.refreshState();
+      expect(received).toHaveLength(1);
+      vi.advanceTimersByTime(200);
+      expect(received.at(-1)).toEqual(
+        MarketActions.quotesSubscriptionChanged({ key: SCREENER_SUBSCRIPTION, series: [3, 4, 5] }),
+      );
+
+      actions$.next(MarketActions.leaveScreenerPage());
+      vi.advanceTimersByTime(200);
+      store.overrideSelector(selectScreenerWindowSeries, [9]);
+      store.refreshState();
+      vi.advanceTimersByTime(200);
+      expect(received).toHaveLength(2);
+    });
+
+    it('ends the subscription when the page is left', async () => {
+      const result = firstValueFrom(effects.leaveScreenerPage$);
+      actions$.next(MarketActions.leaveScreenerPage());
+      expect(await result).toEqual(
+        MarketActions.quotesSubscriptionEnded({ key: SCREENER_SUBSCRIPTION }),
+      );
+    });
+  });
+
+  describe('overview sparklines', () => {
+    function open(): void {
+      store.overrideSelector(selectOverviewIndexSeries, [20, 21]);
+      store.overrideSelector(selectInstrumentsLoaded, true);
+      store.overrideSelector(selectTick, NOW);
+      store.refreshState();
+    }
+
+    it('loads the 15-minute candles of every index and again after a gap of one', () => {
+      const candles = vi.spyOn(engine, 'candles').mockReturnValue(
+        of({
+          kind: 'candles' as const,
+          series: 20,
+          interval: '15m' as const,
+          tick: NOW,
+          candles: [candle(FRIDAY)],
+          hasOlder: false,
+        }),
+      );
+      const received: Action[] = [];
+      subscription = effects.loadOverviewSparklines$.subscribe((action) => received.push(action));
+      actions$.next(MarketActions.enterMarketsPage());
+      open();
+      // Mon 01.04.2030 08:00: from Friday 29.03.2030, the market day before.
+      const request = { interval: '15m', from: tickAt(2030, 3, 29), limit: 2_000 };
+      expect(candles.mock.calls).toEqual([
+        [{ series: 20, ...request }],
+        [{ series: 21, ...request }],
+      ]);
+      expect(received).toEqual([
+        MarketActions.retrievedOverviewSparkline({ series: 20, candles: [candle(FRIDAY)] }),
+        MarketActions.retrievedOverviewSparkline({ series: 21, candles: [candle(FRIDAY)] }),
+      ]);
+
+      actions$.next(MarketActions.detectedOverviewSparklineGap({ series: 21 }));
+      expect(candles.mock.calls.at(-1)).toEqual([{ series: 21, ...request }]);
+      expect(candles).toHaveBeenCalledTimes(3);
+    });
+
+    it('turns live candles into changes and gaps of the sparkline', () => {
+      const received: Action[] = [];
+      subscription = effects.watchOverviewSparklines$.subscribe((action) => received.push(action));
+      store.overrideSelector(selectOverviewSparklines, {
+        20: { candles: [candle(NOW)], loading: false },
+        21: { candles: [], loading: true },
+      });
+      actions$.next(MarketActions.enterMarketsPage());
+      open();
+      expect(worker.subscriptions().map(({ payload }) => payload.charts)).toEqual([
+        [{ series: 20, interval: '15m' }],
+        [{ series: 21, interval: '15m' }],
+      ]);
+
+      const event = (series: number, at: number, previous?: Candle) => ({
+        tick: at,
+        series,
+        interval: '15m' as const,
+        candle: candle(at, 12),
+        ...(previous === undefined ? {} : { previous }),
+      });
+      worker.emit('candle', event(20, NOW));
+      // The index whose block loads waits for it.
+      worker.emit('candle', event(21, NOW));
+      worker.emit('candle', event(20, NOW + 30, candle(NOW + 15)));
+      expect(received).toEqual([
+        MarketActions.receivedOverviewSparklineCandle({
+          series: 20,
+          live: { candle: candle(NOW, 12) },
+        }),
+        MarketActions.detectedOverviewSparklineGap({ series: 20 }),
+      ]);
     });
   });
 });

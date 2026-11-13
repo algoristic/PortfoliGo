@@ -2,12 +2,40 @@ import { isIndicatorSpec } from '@app/analysis/domain/indicator-logic';
 import { IndicatorSpec } from '@app/analysis/domain/models/indicator.model';
 import { CHART_COLORS, ChartColor } from '@app/charts/ui/models/chart-color.model';
 import { PRICE_CHART_TYPES } from '@app/charts/ui/price-chart/price-chart.model';
+import { MoversPayload } from '@app/engine/data-access/service/engine-service.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import { heatLevel } from '@app/market/domain/heatmap-logic';
 import { CHART_RANGES } from '@app/market/domain/models/chart.model';
-
+import { Instrument } from '@app/market/domain/models/instrument.model';
+import {
+  ScreenerCriteria,
+  ScreenerRow,
+  ScreenerSort,
+  ScreenerSortKey,
+} from '@app/market/domain/models/screener.model';
+import { overviewSparklinePoints } from '@app/market/domain/overview-sparkline-logic';
+import { PERFORMANCE_PERIODS, PerformancePeriod } from '@app/market/domain/performance-logic';
+import { DEFAULT_SCREENER_SORT } from '@app/market/domain/screener-logic';
 import { ChartIndicator } from '@app/market/ui/models/chart-indicator.model';
+import {
+  MarketMoversViewModel,
+  MoverView,
+  OverviewIndexView,
+} from '@app/market/ui/models/overview-view.model';
+import {
+  SCREENER_FILTER_DIMENSIONS,
+  ScreenerFilter,
+  ScreenerRange,
+  ScreenerRowView,
+} from '@app/market/ui/models/screener-view.model';
 
-import { ChartSettings, MAX_CHART_INDICATORS, QuoteSubscriptions } from './market.model';
+import {
+  ChartSettings,
+  MAX_CHART_INDICATORS,
+  OverviewSparklines,
+  QuoteSubscriptions,
+  SCREENER_ROW_BUFFER,
+} from './market.model';
 
 /** The series of a subscription, sorted and without duplicates. */
 export function normalizeSeries(series: readonly number[]): number[] {
@@ -126,4 +154,166 @@ export function withChartIndicator(
         ];
   }
   return indicators.map((indicator) => (indicator.id === id ? { ...indicator, spec } : indicator));
+}
+
+/** The screener without search, filters or a chosen sort. */
+export const DEFAULT_SCREENER_FILTER: ScreenerFilter = {
+  search: '',
+  assetClasses: [],
+  regions: [],
+  countries: [],
+  sectors: [],
+  industries: [],
+  sizes: [],
+  styles: [],
+  dividendYield: {},
+  sort: DEFAULT_SCREENER_SORT,
+};
+
+/** The query of a filter (TS §8.2): only what filters, the search trimmed. */
+export function screenerCriteria(filter: ScreenerFilter): ScreenerCriteria {
+  const criteria: ScreenerCriteria = { sort: filter.sort };
+  const search = filter.search.trim();
+  if (search !== '') {
+    criteria.search = search;
+  }
+  for (const dimension of SCREENER_FILTER_DIMENSIONS) {
+    const values = filter[dimension];
+    if (values.length > 0) {
+      (criteria as Record<string, unknown>)[dimension] = [...values];
+    }
+  }
+  const { min, max } = filter.dividendYield;
+  if (min !== undefined || max !== undefined) {
+    criteria.dividendYield = {
+      ...(min === undefined ? {} : { min }),
+      ...(max === undefined ? {} : { max }),
+    };
+  }
+  return criteria;
+}
+
+/** Whether a filter differs from the default in more than the sort. */
+export function isScreenerFiltered(filter: ScreenerFilter): boolean {
+  return (
+    filter.search.trim() !== '' ||
+    SCREENER_FILTER_DIMENSIONS.some((dimension) => filter[dimension].length > 0) ||
+    filter.dividendYield.min !== undefined ||
+    filter.dividendYield.max !== undefined
+  );
+}
+
+/**
+ * The sort after a click on a column (as in the bank comparison): the same column turns the
+ * direction around, another one starts with names ascending and figures descending.
+ */
+export function nextScreenerSort(sort: ScreenerSort, key: ScreenerSortKey): ScreenerSort {
+  if (sort.key === key) {
+    return { key, direction: sort.direction === 'asc' ? 'desc' : 'asc' };
+  }
+  return { key, direction: key === 'name' ? 'asc' : 'desc' };
+}
+
+/** The period of the performance column: the sorted one, else one year. */
+export function performancePeriodOf(sort: ScreenerSort): PerformancePeriod {
+  return PERFORMANCE_PERIODS.find((period) => period === sort.key) ?? 'y1';
+}
+
+/** The series whose quotes the screener watches: the rendered rows and a buffer around them. */
+export function screenerWindowSeries(
+  rows: readonly ScreenerRow[],
+  range: ScreenerRange,
+  buffer = SCREENER_ROW_BUFFER,
+): number[] {
+  const start = Math.max(0, range.start - buffer);
+  const end = Math.min(rows.length, Math.max(range.end, range.start) + buffer);
+  const series: number[] = [];
+  for (let index = start; index < end; index++) {
+    series.push(rows[index].series);
+  }
+  return series;
+}
+
+/**
+ * The rows of the screener list: master data, the figures of the query and – where a quote of a
+ * watched row arrived since – its live price and change.
+ */
+export function screenerRowViews(
+  rows: readonly ScreenerRow[],
+  quotes: Readonly<Record<number, SeriesQuote | undefined>>,
+  instruments: ReadonlyMap<number, Instrument>,
+  period: PerformancePeriod,
+): ScreenerRowView[] {
+  const views: ScreenerRowView[] = [];
+  for (const row of rows) {
+    const instrument = instruments.get(row.series);
+    if (instrument === undefined) {
+      continue;
+    }
+    const quote = quotes[row.series];
+    views.push({
+      id: row.id,
+      series: row.series,
+      name: instrument.name,
+      ticker: instrument.ticker,
+      kind: instrument.kind,
+      last: quote?.last ?? row.last,
+      changeRatio: quote?.changeRatio ?? row.changeRatio,
+      sparkline: row.sparkline,
+      performance: row.performance[period],
+      dividendYield: row.dividendYield,
+    });
+  }
+  return views;
+}
+
+/** The indices of the overview in their order, with quote and the line of the day. */
+export function overviewIndexViews(
+  series: readonly number[],
+  instruments: ReadonlyMap<number, Instrument>,
+  quotes: Readonly<Record<number, SeriesQuote | undefined>>,
+  sparklines: OverviewSparklines,
+): OverviewIndexView[] {
+  return series.flatMap((index) => {
+    const instrument = instruments.get(index);
+    if (instrument === undefined) {
+      return [];
+    }
+    const sparkline = sparklines[index];
+    return [
+      {
+        instrument,
+        quote: quotes[index] ?? null,
+        sparkline:
+          sparkline === undefined || sparkline.loading
+            ? []
+            : overviewSparklinePoints(sparkline.candles),
+      },
+    ];
+  });
+}
+
+/**
+ * Gainers, losers and the sector heat map: quotes with their instruments (unknown series are left
+ * out) and the sector tiles with their level and the sector's price index.
+ */
+export function moversViewModel(
+  movers: MoversPayload,
+  instruments: ReadonlyMap<number, Instrument>,
+): MarketMoversViewModel {
+  const withInstrument = (quotes: readonly SeriesQuote[]): MoverView[] =>
+    quotes.flatMap((quote) => {
+      const instrument = instruments.get(quote.series);
+      return instrument === undefined ? [] : [{ instrument, quote }];
+    });
+  return {
+    gainers: withInstrument(movers.gainers),
+    losers: withInstrument(movers.losers),
+    sectors: movers.sectors.map(({ sectorId, quote }) => ({
+      sectorId,
+      instrumentId: instruments.get(quote.series)?.id ?? null,
+      changeRatio: quote.changeRatio,
+      level: heatLevel(quote.changeRatio),
+    })),
+  };
 }

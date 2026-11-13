@@ -1,0 +1,41 @@
+@let indices = facade.overviewIndices$ | async;
+@let movers = facade.moversView$ | async;
+@let regions = clockFacade.regionStatuses$ | async;
+
+<div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+  <app-panel class="lg:col-span-3" data-testid="market.overview.indices" [heading]="indicesHeading">
+    @if (indices && indices.length > 0) {
+      <app-index-overview [indices]="indices"></app-index-overview>
+    } @else {
+      <app-skeleton [lines]="4"></app-skeleton>
+    }
+  </app-panel>
+
+  <app-panel data-testid="market.overview.sessions" [heading]="sessionsHeading">
+    <app-region-sessions [regions]="regions ?? []"></app-region-sessions>
+  </app-panel>
+
+  <app-panel data-testid="market.overview.gainers" [heading]="gainersHeading">
+    @if (movers) {
+      <app-mover-list testId="market.overview.gainers" [movers]="movers.gainers"></app-mover-list>
+    } @else {
+      <app-skeleton [lines]="5"></app-skeleton>
+    }
+  </app-panel>
+
+  <app-panel data-testid="market.overview.losers" [heading]="losersHeading">
+    @if (movers) {
+      <app-mover-list testId="market.overview.losers" [movers]="movers.losers"></app-mover-list>
+    } @else {
+      <app-skeleton [lines]="5"></app-skeleton>
+    }
+  </app-panel>
+
+  <app-panel class="lg:col-span-3" data-testid="market.overview.sectors" [heading]="sectorsHeading">
+    @if (movers) {
+      <app-sector-heatmap [sectors]="movers.sectors"></app-sector-heatmap>
+    } @else {
+      <app-skeleton [lines]="4"></app-skeleton>
+    }
+  </app-panel>
+</div>

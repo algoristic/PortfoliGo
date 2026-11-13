@@ -1,0 +1,31 @@
+@if (allClosed()) {
+  <p
+    class="mb-3 flex items-center gap-2 rounded-md border border-border bg-surface-raised px-3 py-2 text-sm"
+    role="status"
+    data-testid="market.overview.closed">
+    <i appIcon="moon"></i>
+    <span i18n="@@uiMarket-regionSessions-allClosed"
+      >Börse geschlossen – die Kurse stehen still, bis die nächste Börse öffnet.</span
+    >
+  </p>
+}
+<ul class="flex flex-col gap-2">
+  @for (row of rows(); track row.regionId) {
+    <li
+      class="flex items-center gap-2 text-sm"
+      data-testid="market.overview.region"
+      [attr.data-region-id]="row.regionId"
+      [attr.data-open]="row.open">
+      @if (row.open) {
+        <i appIcon="circle-fill" class="text-xs text-up"></i>
+      } @else {
+        <i appIcon="circle" class="text-xs text-fg-muted"></i>
+      }
+      <span class="min-w-0 flex-1 font-medium">{{ row.label }}</span>
+      <span class="sr-only">{{ row.state }}</span>
+      <span class="text-right text-xs text-fg-muted" data-testid="market.overview.region.status">{{
+        row.statusText
+      }}</span>
+    </li>
+  }
+</ul>

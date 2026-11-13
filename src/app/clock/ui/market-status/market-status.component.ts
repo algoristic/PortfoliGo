@@ -2,18 +2,12 @@ import { CdkTrapFocus } from '@angular/cdk/a11y';
 import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
 import { Component, computed, ElementRef, input, signal, viewChild } from '@angular/core';
 
-import { formatGameWeekdayTime } from '@app/clock/domain/game-time-format';
-import { ExchangeStatus } from '@app/clock/domain/models/exchange-status.model';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { IconButtonDirective } from '@app/shared/ui/icon-button/icon-button.directive';
-import { RegionId } from '@app/world/domain/models/taxonomy.model';
 
 import { ExchangeStatusEntry, RegionStatusEntry } from './market-status.model';
 
-interface RegionLabels {
-  label: string;
-  short: string;
-}
+import { exchangeChangeText, regionLabels, regionStatusText } from '../labels/region-labels';
 
 const PANEL_POSITIONS: ConnectedPosition[] = [
   { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 4 },
@@ -85,44 +79,5 @@ export class MarketStatusComponent {
     if (!(event.target instanceof Node && this.origin().nativeElement.contains(event.target))) {
       this.onClose();
     }
-  }
-}
-
-function regionStatusText({ open, changesAt }: ExchangeStatus): string {
-  const time = formatGameWeekdayTime(changesAt);
-  return open
-    ? $localize`:@@uiClock-marketStatus-openUntil:offen bis ${time}:time:`
-    : $localize`:@@uiClock-marketStatus-opensAt:öffnet ${time}:time:`;
-}
-
-function exchangeChangeText({ open, changesAt }: ExchangeStatus): string {
-  const time = formatGameWeekdayTime(changesAt);
-  return open
-    ? $localize`:@@uiClock-marketStatus-closesAt:schließt ${time}:time:`
-    : $localize`:@@uiClock-marketStatus-opensAtExchange:öffnet ${time}:time:`;
-}
-
-function regionLabels(regionId: RegionId): RegionLabels {
-  switch (regionId) {
-    case 'asia-pacific':
-      return {
-        label: $localize`:@@uiClock-marketStatus-asiaPacific:Asien-Pazifik`,
-        short: $localize`:@@uiClock-marketStatus-asiaPacificShort:AP`,
-      };
-    case 'europe':
-      return {
-        label: $localize`:@@uiClock-marketStatus-europe:Europa`,
-        short: $localize`:@@uiClock-marketStatus-europeShort:EU`,
-      };
-    case 'north-america':
-      return {
-        label: $localize`:@@uiClock-marketStatus-northAmerica:Nordamerika`,
-        short: $localize`:@@uiClock-marketStatus-northAmericaShort:NA`,
-      };
-    case 'emerging-markets':
-      return {
-        label: $localize`:@@uiClock-marketStatus-emergingMarkets:Schwellenländer`,
-        short: $localize`:@@uiClock-marketStatus-emergingMarketsShort:SL`,
-      };
   }
 }

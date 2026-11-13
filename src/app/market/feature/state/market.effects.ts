@@ -1,28 +1,37 @@
 import { inject, Injectable, PendingTasks } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
-import { select, Store } from '@ngrx/store';
+import { Action, select, Store } from '@ngrx/store';
 import {
+  asyncScheduler,
   buffer,
   catchError,
   concat,
   concatMap,
   connect,
+  debounceTime,
   defer,
   distinctUntilChanged,
   EMPTY,
   exhaustMap,
   filter,
   finalize,
+  from,
+  groupBy,
   ignoreElements,
   map,
+  merge,
+  mergeMap,
   Observable,
   of,
+  skip,
+  skipWhile,
   Subscription,
   switchMap,
   take,
   takeUntil,
   tap,
+  throttleTime,
   timer,
 } from 'rxjs';
 
@@ -30,6 +39,7 @@ import { selectTick } from '@app/clock/feature/state/clock.selectors';
 import { EngineService } from '@app/engine/data-access/service/engine.service';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
+import { selectPhase } from '@app/engine/feature/state/session.selectors';
 import {
   chartStartRequest,
   liveCandleStep,
@@ -37,6 +47,11 @@ import {
   trimChartBlock,
 } from '@app/market/domain/chart-view-logic';
 import { Instrument } from '@app/market/domain/models/instrument.model';
+import {
+  OVERVIEW_SPARKLINE_INTERVAL,
+  overviewSparklineRequest,
+  overviewSparklineStep,
+} from '@app/market/domain/overview-sparkline-logic';
 import { LocalStorageService } from '@app/persistence/data-access/local-storage/local-storage.service';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
@@ -48,18 +63,26 @@ import {
   MARKETS_PAGE_SUBSCRIPTION,
   QUOTES_BUNDLE_WINDOW_MS,
   QuoteSubscriptions,
+  SCREENER_SCROLL_THROTTLE_MS,
+  SCREENER_SEARCH_DEBOUNCE_MS,
+  SCREENER_SUBSCRIPTION,
 } from './market.model';
 import {
   selectChart,
   selectChartSettings,
   selectChartSubscription,
   selectInstrumentsLoaded,
+  selectMarketDay,
   selectMoversWanted,
   selectOverviewIndexSeries,
+  selectOverviewSparklines,
   selectQuoteSubscriptions,
   selectRouteInstrument,
+  selectScreener,
+  selectScreenerCriteria,
+  selectScreenerWindowSeries,
 } from './market.selectors';
-import { latestQuotes, parseChartSettings } from './market.utils';
+import { latestQuotes, parseChartSettings, sameSeries } from './market.utils';
 
 @Injectable()
 export class MarketEffects {
@@ -157,6 +180,149 @@ export class MarketEffects {
         MarketActions.quotesSubscriptionEnded({ key: MARKETS_PAGE_SUBSCRIPTION }),
         MarketActions.moversSubscriptionEnded({ key: MARKETS_PAGE_SUBSCRIPTION }),
       ]),
+    ),
+  );
+
+  /**
+   * The sparklines of the overview indices (US-MK-01): the 15-minute candles of the trading day of
+   * every index once the master data is there, and again for an index whose live candles skipped
+   * candles or began a new day. A new load of an index replaces its running one.
+   */
+  loadOverviewSparklines$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(MarketActions.enterMarketsPage),
+      switchMap(() =>
+        this.#whenInstrumentsLoaded().pipe(
+          concatLatestFrom(() => this.#store.pipe(select(selectOverviewIndexSeries))),
+          switchMap(([, series]) =>
+            merge(
+              from(series),
+              this.#actions$.pipe(
+                ofType(MarketActions.detectedOverviewSparklineGap),
+                map((gap) => gap.series),
+              ),
+            ),
+          ),
+          groupBy((series) => series),
+          mergeMap((group$) =>
+            group$.pipe(switchMap((series) => this.#loadOverviewSparkline(series))),
+          ),
+          takeUntil(this.#actions$.pipe(ofType(MarketActions.leaveMarketsPage))),
+        ),
+      ),
+    ),
+  );
+
+  /**
+   * Live 15-minute candles of the overview indices (TS §8.4) while the markets page is open; events
+   * of an index whose block loads are dropped, the block brings them.
+   */
+  watchOverviewSparklines$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(MarketActions.enterMarketsPage),
+      switchMap(() =>
+        this.#whenInstrumentsLoaded().pipe(
+          concatLatestFrom(() => this.#store.pipe(select(selectOverviewIndexSeries))),
+          switchMap(([, series]) =>
+            merge(
+              ...series.map((index) =>
+                this.#engine
+                  .chartCandles(index, OVERVIEW_SPARKLINE_INTERVAL)
+                  .pipe(map((payload) => ({ series: index, payload }))),
+              ),
+            ),
+          ),
+          concatLatestFrom(() => this.#store.pipe(select(selectOverviewSparklines))),
+          map(([{ series, payload }, sparklines]) => {
+            const sparkline = sparklines[series];
+            if (sparkline === undefined || sparkline.loading) {
+              return null;
+            }
+            const live =
+              payload.previous === undefined
+                ? { candle: payload.candle }
+                : { candle: payload.candle, previous: payload.previous };
+            switch (overviewSparklineStep(sparkline.candles, live)) {
+              case 'ignore':
+                return null;
+              case 'reload':
+                return MarketActions.detectedOverviewSparklineGap({ series });
+              default:
+                return MarketActions.receivedOverviewSparklineCandle({ series, live });
+            }
+          }),
+          filter((action) => action !== null),
+          takeUntil(this.#actions$.pipe(ofType(MarketActions.leaveMarketsPage))),
+        ),
+      ),
+    ),
+  );
+
+  /**
+   * The screener (US-MK-02, TS §8.2) once the player is loaded: a query on entering, at once after
+   * a change of filters or sort, 300 ms after the last keystroke of the search and again when a new
+   * market day begins (the performance figures change daily), not on every tick. A new query
+   * replaces the running one; the reducer drops answers of older generations.
+   */
+  loadScreener$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(MarketActions.enterScreenerPage),
+      switchMap(() =>
+        this.#store.pipe(
+          select(selectPhase),
+          filter((phase) => phase === 'loaded'),
+          take(1),
+          switchMap(() => this.#screenerTriggers()),
+          concatLatestFrom(() => [
+            this.#store.pipe(select(selectScreenerCriteria)),
+            this.#store.pipe(select(selectScreener)),
+          ]),
+          switchMap(([, criteria, { generation }]) =>
+            this.#engine.screener(criteria).pipe(
+              map(({ total, rows, tick }) =>
+                MarketActions.retrievedScreener({ generation, result: { total, rows, tick } }),
+              ),
+              catchError((error: unknown) =>
+                of(MarketActions.loadScreenerFailure({ generation, error })),
+              ),
+            ),
+          ),
+          takeUntil(this.#actions$.pipe(ofType(MarketActions.leaveScreenerPage))),
+        ),
+      ),
+    ),
+  );
+
+  /**
+   * Live quotes only for the rows the list renders and a buffer around them (TS §8.4), following
+   * scrolling and new results at most every `SCREENER_SCROLL_THROTTLE_MS`; leaving ends them.
+   */
+  watchScreenerQuotes$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(MarketActions.enterScreenerPage),
+      switchMap(() =>
+        this.#store.pipe(
+          select(selectScreenerWindowSeries),
+          // Nothing to watch before the first result; then the first rows subscribe at once.
+          skipWhile((series) => series.length === 0),
+          distinctUntilChanged(sameSeries),
+          throttleTime(SCREENER_SCROLL_THROTTLE_MS, asyncScheduler, {
+            leading: true,
+            trailing: true,
+          }),
+          map((series) =>
+            MarketActions.quotesSubscriptionChanged({ key: SCREENER_SUBSCRIPTION, series }),
+          ),
+          takeUntil(this.#actions$.pipe(ofType(MarketActions.leaveScreenerPage))),
+        ),
+      ),
+    ),
+  );
+
+  leaveScreenerPage$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(MarketActions.leaveScreenerPage),
+      map(() => MarketActions.quotesSubscriptionEnded({ key: SCREENER_SUBSCRIPTION })),
     ),
   );
 
@@ -351,6 +517,19 @@ export class MarketEffects {
     { dispatch: false },
   );
 
+  showScreenerFailure$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(MarketActions.loadScreenerFailure),
+        tap(() =>
+          this.#toastService.error(
+            $localize`:@@featureMarket-marketEffects-loadScreenerFailure:Die Trefferliste konnte nicht geladen werden.`,
+          ),
+        ),
+      ),
+    { dispatch: false },
+  );
+
   showChartFailure$ = createEffect(
     () =>
       this.#actions$.pipe(
@@ -429,6 +608,43 @@ export class MarketEffects {
         open.clear();
       };
     });
+  }
+
+  /** The 15-minute candles of the trading day of an overview index, once the clock is known. */
+  #loadOverviewSparkline(series: number): Observable<Action> {
+    return this.#store.pipe(
+      select(selectTick),
+      filter((tick): tick is number => tick !== null),
+      take(1),
+      switchMap((now) =>
+        this.#engine.candles({ series, ...overviewSparklineRequest(now) }).pipe(
+          map(({ candles }) => MarketActions.retrievedOverviewSparkline({ series, candles })),
+          catchError((error: unknown) =>
+            of(MarketActions.loadOverviewSparklineFailure({ series, error })),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /** When the screener queries: at once, after filter changes, the debounced search, a new day. */
+  #screenerTriggers(): Observable<unknown> {
+    return merge(
+      of(null),
+      this.#actions$.pipe(
+        ofType(
+          MarketActions.selectedScreenerFilter,
+          MarketActions.submittedScreenerDividendYield,
+          MarketActions.clickedScreenerSort,
+          MarketActions.clickedResetScreenerFilter,
+        ),
+      ),
+      this.#actions$.pipe(
+        ofType(MarketActions.enteredScreenerSearch),
+        debounceTime(SCREENER_SEARCH_DEBOUNCE_MS),
+      ),
+      this.#store.pipe(select(selectMarketDay), distinctUntilChanged(), skip(1)),
+    );
   }
 
   /** The instrument of the route once the master data is there. */

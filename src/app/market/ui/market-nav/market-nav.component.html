@@ -1,0 +1,18 @@
+<nav class="border-b border-border pb-2" [attr.aria-label]="navLabel">
+  <ul class="flex flex-wrap gap-1">
+    @for (item of items(); track item.path) {
+      <li>
+        <a
+          appNavLink
+          [routerLink]="item.path"
+          routerLinkActive
+          ariaCurrentWhenActive="page"
+          [routerLinkActiveOptions]="{ exact: item.path === '.' }"
+          [attr.data-testid]="'market.nav.' + (item.path === '.' ? 'overview' : item.path)">
+          <i class="text-base" [appIcon]="item.icon"></i>
+          {{ item.label }}
+        </a>
+      </li>
+    }
+  </ul>
+</nav>

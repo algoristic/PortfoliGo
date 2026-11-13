@@ -23,6 +23,8 @@ export const BUDGETS_MS = {
   statementPage: 50,
   /** Main-thread work per arriving statement page at 10,000 bookings: reducer, selectors, rows (AP 3.4). */
   statementPageUi: 4,
+  /** Main-thread work per arriving quote package for 250 instruments: reducer, selectors, rows (AP 4.4). */
+  quotesUi: 4,
 } as const;
 
 /** Median wall time of `runs` calls after `warmUp` calls. */

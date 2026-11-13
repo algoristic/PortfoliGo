@@ -2013,116 +2013,116 @@
           <context context-type="linenumber">197</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiClock-marketStatus-openUntil" datatype="html">
+        <source>offen bis <x id="time" equiv-text="time"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
+          <context context-type="linenumber">17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-opensAt" datatype="html">
+        <source>öffnet <x id="time" equiv-text="time"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-closesAt" datatype="html">
+        <source>schließt <x id="time" equiv-text="time"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-opensAtExchange" datatype="html">
+        <source>öffnet <x id="time" equiv-text="time"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
+          <context context-type="linenumber">25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-asiaPacific" datatype="html">
+        <source>Asien-Pazifik</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-asiaPacificShort" datatype="html">
+        <source>AP</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-europe" datatype="html">
+        <source>Europa</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-europeShort" datatype="html">
+        <source>EU</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-northAmerica" datatype="html">
+        <source>Nordamerika</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
+          <context context-type="linenumber">43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-northAmericaShort" datatype="html">
+        <source>NA</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
+          <context context-type="linenumber">44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-emergingMarkets" datatype="html">
+        <source>Schwellenländer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-marketStatus-emergingMarketsShort" datatype="html">
+        <source>SL</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiClock-marketStatus-heading" datatype="html">
         <source>Börsen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">70</context>
+          <context context-type="linenumber">64</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-marketStatus-close" datatype="html">
         <source>Schließen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">71</context>
+          <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-marketStatus-open" datatype="html">
         <source>offen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">72</context>
+          <context context-type="linenumber">66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-marketStatus-closed" datatype="html">
         <source>geschlossen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">73</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-marketStatus-openUntil" datatype="html">
-        <source>offen bis <x id="time" equiv-text="time"/></source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">94</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-marketStatus-opensAt" datatype="html">
-        <source>öffnet <x id="time" equiv-text="time"/></source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">95</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-marketStatus-closesAt" datatype="html">
-        <source>schließt <x id="time" equiv-text="time"/></source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">101</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-marketStatus-opensAtExchange" datatype="html">
-        <source>öffnet <x id="time" equiv-text="time"/></source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">102</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-marketStatus-asiaPacific" datatype="html">
-        <source>Asien-Pazifik</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">109</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-marketStatus-asiaPacificShort" datatype="html">
-        <source>AP</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">110</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-marketStatus-europe" datatype="html">
-        <source>Europa</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">114</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-marketStatus-europeShort" datatype="html">
-        <source>EU</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">115</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-marketStatus-northAmerica" datatype="html">
-        <source>Nordamerika</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">119</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-marketStatus-northAmericaShort" datatype="html">
-        <source>NA</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">120</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-marketStatus-emergingMarkets" datatype="html">
-        <source>Schwellenländer</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">124</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-marketStatus-emergingMarketsShort" datatype="html">
-        <source>SL</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/market-status/market-status.component.ts</context>
-          <context context-type="linenumber">125</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureDashboard-dashboardRoutes-dashboardTitle" datatype="html">
@@ -2216,116 +2216,137 @@
           <context context-type="linenumber">36</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureLab-componentsPage-flashUp" datatype="html">
+        <source> Kurs steigt </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">64,67</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-flashDown" datatype="html">
+        <source> Kurs fällt </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">73,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-flashEnabled" datatype="html">
+        <source>Hervorhebung (entfällt bei „Bewegung reduzieren“)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">83,87</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureLab-componentsPage-netWorth" datatype="html">
         <source>Gesamtvermögen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">53,54</context>
+          <context context-type="linenumber">91,92</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-today" datatype="html">
         <source>Heute</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">59</context>
+          <context context-type="linenumber">97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-noChange" datatype="html">
         <source>Ohne Veränderung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">64,65</context>
+          <context context-type="linenumber">102,103</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navigation" datatype="html">
         <source>Icons, Navigation und Menü</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">70,71</context>
+          <context context-type="linenumber">108,109</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-openMenu" datatype="html">
         <source> Menü öffnen </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">103,105</context>
+          <context context-type="linenumber">141,143</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-menuNormal" datatype="html">
         <source>Eintrag</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">108,111</context>
+          <context context-type="linenumber">146,149</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-menuActive" datatype="html">
         <source>Aktive Seite</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">117,119</context>
+          <context context-type="linenumber">155,157</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-menuDisabled" datatype="html">
         <source>Deaktiviert</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">127,130</context>
+          <context context-type="linenumber">165,168</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tabs" datatype="html">
         <source>Tabs</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">134</context>
+          <context context-type="linenumber">172</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tabsLabel" datatype="html">
         <source>Beispiel-Tabs</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">136,137</context>
+          <context context-type="linenumber">174,175</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tabOverviewContent" datatype="html">
         <source>Inhalt der Übersicht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">141,143</context>
+          <context context-type="linenumber">179,181</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-emptyState" datatype="html">
         <source>Leerzustand</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">152</context>
+          <context context-type="linenumber">190</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-emptyHeading" datatype="html">
         <source>Noch keine Watchlist</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">155,156</context>
+          <context context-type="linenumber">193,194</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-emptyText" datatype="html">
         <source>Füge Instrumente hinzu, um sie hier zu verfolgen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">157,158</context>
+          <context context-type="linenumber">195,196</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-amountInput" datatype="html">
         <source>Betragseingabe</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">161</context>
+          <context context-type="linenumber">199</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-amountLabel" datatype="html">
         <source>Startkapital</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">167,170</context>
+          <context context-type="linenumber">205,208</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-amountValue" datatype="html">
@@ -2334,133 +2355,133 @@
             }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">183,187</context>
+          <context context-type="linenumber">221,225</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-charts" datatype="html">
         <source>Sparkline und Donut</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">193</context>
+          <context context-type="linenumber">231</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-sparklineRising" datatype="html">
         <source>Kursverlauf steigend</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">200,201</context>
+          <context context-type="linenumber">238,239</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-donutLabel" datatype="html">
         <source>Aufteilung nach Anlageklasse</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">213,214</context>
+          <context context-type="linenumber">251,252</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-overlays" datatype="html">
         <source>Toasts und Dialoge</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">229</context>
+          <context context-type="linenumber">267</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-openConfirm" datatype="html">
         <source> Bestätigungsdialog öffnen </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">247,249</context>
+          <context context-type="linenumber">285,287</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-confirmed" datatype="html">
         <source>Bestätigt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">252,254</context>
+          <context context-type="linenumber">290,292</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-declined" datatype="html">
         <source>Abgebrochen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">254,257</context>
+          <context context-type="linenumber">292,295</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tabOverview" datatype="html">
         <source>Übersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">93</context>
+          <context context-type="linenumber">97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tabChart" datatype="html">
         <source>Chart</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">94</context>
+          <context context-type="linenumber">98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tabProfile" datatype="html">
         <source>Profil</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">95</context>
+          <context context-type="linenumber">99</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navSimulation" datatype="html">
         <source>Simulation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">103</context>
+          <context context-type="linenumber">107</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navComponents" datatype="html">
         <source>UI-Bausteine</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">108</context>
+          <context context-type="linenumber">112</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navTokens" datatype="html">
         <source>Design-Tokens</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">113</context>
+          <context context-type="linenumber">117</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-toastMessage" datatype="html">
         <source>Beispielhinweis</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">123</context>
+          <context context-type="linenumber">129</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-confirmHeading" datatype="html">
         <source>Spieler löschen?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">124</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-confirmMessage" datatype="html">
         <source>Der Spieler wird endgültig gelöscht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">125</context>
+          <context context-type="linenumber">131</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-confirmLabel" datatype="html">
         <source>Löschen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">126</context>
+          <context context-type="linenumber">132</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navLabel" datatype="html">
         <source>Beispielnavigation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">127</context>
+          <context context-type="linenumber">133</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-labRoutes-simulationTitle" datatype="html">
@@ -4237,60 +4258,144 @@
           <context context-type="linenumber">7,11</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureMarket-marketOverviewPage-indices" datatype="html">
+        <source>Indizes</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/market-overview/market-overview.page.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketOverviewPage-sessions" datatype="html">
+        <source>Börsenstatus</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/market-overview/market-overview.page.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketOverviewPage-gainers" datatype="html">
+        <source>Gewinner des Tages</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/market-overview/market-overview.page.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketOverviewPage-losers" datatype="html">
+        <source>Verlierer des Tages</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/market-overview/market-overview.page.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketOverviewPage-sectors" datatype="html">
+        <source>Sektoren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/market-overview/market-overview.page.ts</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureMarket-marketRoutes-marketsTitle" datatype="html">
         <source>Märkte</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/market.routes.ts</context>
-          <context context-type="linenumber">13</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketRoutes-screenerTitle" datatype="html">
+        <source>Screener</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/market.routes.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketRoutes-watchlistTitle" datatype="html">
+        <source>Watchlist</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/market.routes.ts</context>
+          <context context-type="linenumber">45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketRoutes-instrumentTitle" datatype="html">
         <source>Instrument</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/market.routes.ts</context>
-          <context context-type="linenumber">22</context>
+          <context context-type="linenumber">54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketsPage-title" datatype="html">
         <source>Märkte</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/markets/markets.page.html</context>
-          <context context-type="linenumber">1,4</context>
+          <context context-type="linenumber">1,3</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featureMarket-marketsPage-emptyHeading" datatype="html">
-        <source>Noch keine Inhalte</source>
+      <trans-unit id="featureMarket-marketsPage-navOverview" datatype="html">
+        <source>Übersicht</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/market/feature/markets/markets.page.html</context>
-          <context context-type="linenumber">6,7</context>
+          <context context-type="sourcefile">src/app/market/feature/markets/markets.page.ts</context>
+          <context context-type="linenumber">19</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featureMarket-marketsPage-emptyText" datatype="html">
-        <source>Diese Ansicht entsteht in AP 4.4.</source>
+      <trans-unit id="featureMarket-marketsPage-navScreener" datatype="html">
+        <source>Screener</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/market/feature/markets/markets.page.html</context>
-          <context context-type="linenumber">8,9</context>
+          <context context-type="sourcefile">src/app/market/feature/markets/markets.page.ts</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketsPage-navWatchlist" datatype="html">
+        <source>Watchlist</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/markets/markets.page.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-screenerPage-failed" datatype="html">
+        <source> Die Trefferliste konnte nicht geladen werden. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/screener/screener.page.html</context>
+          <context context-type="linenumber">24,27</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketEffects-loadInstrumentsFailure" datatype="html">
         <source>Die Wertpapiere konnten nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">347</context>
+          <context context-type="linenumber">513</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketEffects-loadScreenerFailure" datatype="html">
+        <source>Die Trefferliste konnte nicht geladen werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
+          <context context-type="linenumber">526</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketEffects-loadChartCandlesFailure" datatype="html">
         <source>Der Kursverlauf konnte nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">360</context>
+          <context context-type="linenumber">539</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketEffects-saveChartSettingsFailure" datatype="html">
         <source>Die Chart-Einstellungen gelten nur bis zum Neuladen, weil sie auf diesem Gerät nicht gespeichert werden konnten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">373</context>
+          <context context-type="linenumber">552</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-watchlistPage-emptyHeading" datatype="html">
+        <source>Watchlist folgt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/watchlist/watchlist.page.html</context>
+          <context context-type="linenumber">4,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-watchlistPage-emptyText" datatype="html">
+        <source>Diese Ansicht entsteht im weiteren Verlauf von AP 4.4.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/watchlist/watchlist.page.html</context>
+          <context context-type="linenumber">6,7</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-candleReadout-openTitle" datatype="html">
@@ -4559,6 +4664,20 @@
           <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiMarket-indexOverview-sparklineLabel" datatype="html">
+        <source>Tagesverlauf <x id="name" equiv-text="instrument.name"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/index-overview/index-overview.component.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indexOverview-level" datatype="html">
+        <source>Stand</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/index-overview/index-overview.component.ts</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiMarket-indicatorLabels-sma" datatype="html">
         <source>SMA</source>
         <context-group purpose="location">
@@ -4585,6 +4704,720 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/labels/indicator-labels.ts</context>
           <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-kindStock" datatype="html">
+        <source>Aktie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-kindIndex" datatype="html">
+        <source>Index</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-kindEtf" datatype="html">
+        <source>ETF</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sectorTechnology" datatype="html">
+        <source>Technologie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sectorHealthCare" datatype="html">
+        <source>Gesundheit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sectorFinancials" datatype="html">
+        <source>Finanzen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sectorEnergy" datatype="html">
+        <source>Energie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sectorUtilities" datatype="html">
+        <source>Versorger</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sectorIndustrials" datatype="html">
+        <source>Industrie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sectorMaterials" datatype="html">
+        <source>Grundstoffe</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sectorConsumerDiscretionary" datatype="html">
+        <source>Zyklischer Konsum</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sectorConsumerStaples" datatype="html">
+        <source>Basiskonsum</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sectorCommunicationServices" datatype="html">
+        <source>Kommunikation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sectorRealEstate" datatype="html">
+        <source>Immobilien</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industrySemiconductors" datatype="html">
+        <source>Halbleiter</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industrySoftware" datatype="html">
+        <source>Software</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryItServices" datatype="html">
+        <source>IT-Dienstleistungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryHardware" datatype="html">
+        <source>Hardware</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryPharma" datatype="html">
+        <source>Pharma</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryBiotech" datatype="html">
+        <source>Biotechnologie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryMedtech" datatype="html">
+        <source>Medizintechnik</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryBanks" datatype="html">
+        <source>Banken</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryInsurance" datatype="html">
+        <source>Versicherungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryAssetManagement" datatype="html">
+        <source>Vermögensverwaltung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryOilGas" datatype="html">
+        <source>Öl und Gas</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryRenewables" datatype="html">
+        <source>Erneuerbare Energien</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryPowerUtilities" datatype="html">
+        <source>Stromversorger</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryGasWaterUtilities" datatype="html">
+        <source>Gas- und Wasserversorger</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryAerospaceDefense" datatype="html">
+        <source>Luftfahrt und Verteidigung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryMachinery" datatype="html">
+        <source>Maschinenbau</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryLogistics" datatype="html">
+        <source>Logistik</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryConstruction" datatype="html">
+        <source>Bau</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryChemicals" datatype="html">
+        <source>Chemie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryMetalsMining" datatype="html">
+        <source>Metalle und Bergbau</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">88</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryAutomotive" datatype="html">
+        <source>Automobil</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryRetail" datatype="html">
+        <source>Einzelhandel</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryTravelLeisure" datatype="html">
+        <source>Reisen und Freizeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">94</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryLuxury" datatype="html">
+        <source>Luxusgüter</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryFoodBeverages" datatype="html">
+        <source>Nahrungsmittel und Getränke</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryHouseholdProducts" datatype="html">
+        <source>Haushaltsprodukte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryTelecom" datatype="html">
+        <source>Telekommunikation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">102</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryMediaEntertainment" datatype="html">
+        <source>Medien und Unterhaltung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">104</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryInternetPlatforms" datatype="html">
+        <source>Internetplattformen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">106</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryResidentialRealEstate" datatype="html">
+        <source>Wohnimmobilien</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">108</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-industryCommercialRealEstate" datatype="html">
+        <source>Gewerbeimmobilien</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-countryUs" datatype="html">
+        <source>USA</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">120</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-countryCa" datatype="html">
+        <source>Kanada</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">122</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-countryDe" datatype="html">
+        <source>Deutschland</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">124</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-countryFr" datatype="html">
+        <source>Frankreich</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">126</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-countryGb" datatype="html">
+        <source>Vereinigtes Königreich</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">128</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-countryCh" datatype="html">
+        <source>Schweiz</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">130</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-countryNl" datatype="html">
+        <source>Niederlande</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">132</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-countryJp" datatype="html">
+        <source>Japan</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">134</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-countryAu" datatype="html">
+        <source>Australien</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">136</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-countryHk" datatype="html">
+        <source>Hongkong</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">138</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-countryIn" datatype="html">
+        <source>Indien</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">140</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-countryBr" datatype="html">
+        <source>Brasilien</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">142</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sizeLarge" datatype="html">
+        <source>Large Cap</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">151</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sizeMid" datatype="html">
+        <source>Mid Cap</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">153</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-sizeSmall" datatype="html">
+        <source>Small Cap</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">155</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-styleValue" datatype="html">
+        <source>Value</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">162</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-styleBlend" datatype="html">
+        <source>Blend</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">164</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-taxonomyLabels-styleGrowth" datatype="html">
+        <source>Growth</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/taxonomy-labels.ts</context>
+          <context context-type="linenumber">166</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-marketNav-navLabel" datatype="html">
+        <source>Märkte-Navigation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/market-nav/market-nav.component.ts</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-moverList-empty" datatype="html">
+        <source>Heute noch keine Veränderungen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/mover-list/mover-list.component.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-regionSessions-allClosed" datatype="html">
+        <source>Börse geschlossen – die Kurse stehen still, bis die nächste Börse öffnet.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/region-sessions/region-sessions.component.html</context>
+          <context context-type="linenumber">8,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-regionSessions-open" datatype="html">
+        <source>Geöffnet</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/region-sessions/region-sessions.component.ts</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-regionSessions-closed" datatype="html">
+        <source>Geschlossen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/region-sessions/region-sessions.component.ts</context>
+          <context context-type="linenumber">35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-clearGroup" datatype="html">
+        <source> Auswahl aufheben </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.html</context>
+          <context context-type="linenumber">59,62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-dividendYield" datatype="html">
+        <source> Dividendenrendite in % </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.html</context>
+          <context context-type="linenumber">69,71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-dividendYieldMin" datatype="html">
+        <source>von</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.html</context>
+          <context context-type="linenumber">72,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-dividendYieldMax" datatype="html">
+        <source>bis</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.html</context>
+          <context context-type="linenumber">83,86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-yieldInvalid" datatype="html">
+        <source> Bitte eine Zahl ab 0 mit höchstens zwei Nachkommastellen eingeben. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.html</context>
+          <context context-type="linenumber">98,103</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-total" datatype="html">
+        <source><x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span data-testid=&quot;market.screener.total.count&quot;&gt;"/><x id="INTERPOLATION" equiv-text="{{ _total | formatNumber }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/> Treffer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.html</context>
+          <context context-type="linenumber">107,109</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-loading" datatype="html">
+        <source>Wird geladen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.html</context>
+          <context context-type="linenumber">112,116</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-reset" datatype="html">
+        <source>Filter zurücksetzen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.html</context>
+          <context context-type="linenumber">124,128</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-search" datatype="html">
+        <source>Suche</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.ts</context>
+          <context context-type="linenumber">104</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-searchPlaceholder" datatype="html">
+        <source>Name, Ticker oder Kennung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.ts</context>
+          <context context-type="linenumber">105</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-assetClasses" datatype="html">
+        <source>Assetklasse</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.ts</context>
+          <context context-type="linenumber">106</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-regions" datatype="html">
+        <source>Region</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.ts</context>
+          <context context-type="linenumber">107</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-countries" datatype="html">
+        <source>Land</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.ts</context>
+          <context context-type="linenumber">108</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-sectors" datatype="html">
+        <source>Sektor</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.ts</context>
+          <context context-type="linenumber">109</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-industries" datatype="html">
+        <source>Branche</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.ts</context>
+          <context context-type="linenumber">110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-sizes" datatype="html">
+        <source>Größe</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.ts</context>
+          <context context-type="linenumber">111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerFilter-styles" datatype="html">
+        <source>Stil</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-filter/screener-filter.component.ts</context>
+          <context context-type="linenumber">112</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-m1" datatype="html">
+        <source>1M</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-m1Long" datatype="html">
+        <source>Performance 1 Monat</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-m6" datatype="html">
+        <source>6M</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-m6Long" datatype="html">
+        <source>Performance 6 Monate</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-y1" datatype="html">
+        <source>1J</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-y1Long" datatype="html">
+        <source>Performance 1 Jahr</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">79</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-y5" datatype="html">
+        <source>5J</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-y5Long" datatype="html">
+        <source>Performance 5 Jahre</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-label" datatype="html">
+        <source>Trefferliste</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">109</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-name" datatype="html">
+        <source>Name</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-price" datatype="html">
+        <source>Kurs</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-change" datatype="html">
+        <source>Veränderung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">112</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-trend" datatype="html">
+        <source>Verlauf 1M</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">113</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-performance" datatype="html">
+        <source>Performance</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-yield" datatype="html">
+        <source>Dividendenrendite</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">115</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-yieldShort" datatype="html">
+        <source>Div.-Rendite</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">116</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-empty" datatype="html">
+        <source>Keine Treffer. Ändere die Suche oder setze die Filter zurück.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">117</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-dialogAbsenceReport-continue" datatype="html">

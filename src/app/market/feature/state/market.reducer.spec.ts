@@ -1,6 +1,7 @@
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { Candle } from '@app/market/domain/models/candle.model';
+import { ScreenerRow } from '@app/market/domain/models/screener.model';
 import { PlayerProfile } from '@app/players/domain/models/player.model';
 
 import * as MarketActions from './market.actions';
@@ -333,6 +334,182 @@ describe('marketReducer', () => {
         MarketActions.clickedRemoveChartIndicator({ id: 'i4' }),
       );
       expect(removed.chart.indicators.map(({ id }) => id)).toEqual(['i5']);
+    });
+  });
+
+  describe('screener', () => {
+    const entered = reduce(MarketActions.enterScreenerPage());
+
+    function row(series: number): ScreenerRow {
+      return {
+        id: `s${series}`,
+        series,
+        last: 10,
+        changeRatio: 0,
+        performance: { m1: null, m6: null, y1: null, y5: null },
+        dividendYield: null,
+        sparkline: [],
+      };
+    }
+
+    it('starts a new generation for every change of search, filter or sort', () => {
+      const searched = marketReducer(
+        entered,
+        MarketActions.enteredScreenerSearch({ search: 'ab' }),
+      );
+      expect(searched.screener.generation).toBe(entered.screener.generation + 1);
+      expect(searched.screener.loading).toBe(true);
+      expect(searched.screener.filter.search).toBe('ab');
+
+      const filtered = marketReducer(
+        searched,
+        MarketActions.selectedScreenerFilter({ dimension: 'sizes', values: ['large'] }),
+      );
+      expect(filtered.screener.generation).toBe(searched.screener.generation + 1);
+      // The same values and the same search keep the state.
+      expect(
+        marketReducer(
+          filtered,
+          MarketActions.selectedScreenerFilter({ dimension: 'sizes', values: ['large'] }),
+        ),
+      ).toBe(filtered);
+      expect(marketReducer(filtered, MarketActions.enteredScreenerSearch({ search: 'ab' }))).toBe(
+        filtered,
+      );
+    });
+
+    it('turns the direction on the same column and starts figures descending', () => {
+      const byChange = marketReducer(
+        entered,
+        MarketActions.clickedScreenerSort({ key: 'changeRatio' }),
+      );
+      expect(byChange.screener.filter.sort).toEqual({ key: 'changeRatio', direction: 'desc' });
+      const turned = marketReducer(
+        byChange,
+        MarketActions.clickedScreenerSort({ key: 'changeRatio' }),
+      );
+      expect(turned.screener.filter.sort).toEqual({ key: 'changeRatio', direction: 'asc' });
+      const byName = marketReducer(turned, MarketActions.clickedScreenerSort({ key: 'name' }));
+      expect(byName.screener.filter.sort).toEqual({ key: 'name', direction: 'asc' });
+    });
+
+    it('drops countries outside the chosen regions and industries outside the chosen sectors', () => {
+      const state = reduce(
+        MarketActions.selectedScreenerFilter({ dimension: 'countries', values: ['DE', 'US'] }),
+        MarketActions.selectedScreenerFilter({
+          dimension: 'industries',
+          values: ['software', 'banks'],
+        }),
+        MarketActions.selectedScreenerFilter({ dimension: 'regions', values: ['europe'] }),
+        MarketActions.selectedScreenerFilter({ dimension: 'sectors', values: ['financials'] }),
+      );
+      expect(state.screener.filter.countries).toEqual(['DE']);
+      expect(state.screener.filter.industries).toEqual(['banks']);
+    });
+
+    it('resets the filter but keeps the sort', () => {
+      const state = reduce(
+        MarketActions.enteredScreenerSearch({ search: 'x' }),
+        MarketActions.submittedScreenerDividendYield({ range: { min: 0.02 } }),
+        MarketActions.clickedScreenerSort({ key: 'y1' }),
+        MarketActions.clickedResetScreenerFilter(),
+      );
+      expect(state.screener.filter).toEqual({
+        ...initialMarketState.screener.filter,
+        sort: { key: 'y1', direction: 'desc' },
+      });
+    });
+
+    it('takes only the answer of the current generation', () => {
+      const searched = marketReducer(entered, MarketActions.enteredScreenerSearch({ search: 'a' }));
+      const result = { total: 1, rows: [row(3)], tick: 0 };
+      const stale = marketReducer(
+        searched,
+        MarketActions.retrievedScreener({ generation: entered.screener.generation, result }),
+      );
+      expect(stale).toBe(searched);
+      const current = marketReducer(
+        searched,
+        MarketActions.retrievedScreener({ generation: searched.screener.generation, result }),
+      );
+      expect(current.screener).toMatchObject({ rows: [row(3)], total: 1, loading: false });
+    });
+
+    it('keeps the filter for the next visit but drops the rows', () => {
+      const state = reduce(
+        MarketActions.enterScreenerPage(),
+        MarketActions.enteredScreenerSearch({ search: 'a' }),
+        MarketActions.retrievedScreener({
+          generation: 2,
+          result: { total: 1, rows: [row(3)], tick: 0 },
+        }),
+        MarketActions.leaveScreenerPage(),
+      );
+      expect(state.screener.filter.search).toBe('a');
+      expect(state.screener.rows).toEqual([]);
+      expect(state.screener.total).toBeNull();
+    });
+  });
+
+  describe('overview sparklines', () => {
+    const MINUTE = 1;
+    const FRIDAY = 5_000_000;
+    const MONDAY = FRIDAY + 3 * 1_440;
+
+    function candle(at: number, close = 10): Candle {
+      return { tick: at, open: 10, high: 11, low: 9, close };
+    }
+
+    it('keeps the candles of the newest day of a loaded block', () => {
+      const state = reduce(
+        MarketActions.enterMarketsPage(),
+        MarketActions.retrievedOverviewSparkline({
+          series: 7,
+          candles: [candle(FRIDAY), candle(MONDAY), candle(MONDAY + 15 * MINUTE)],
+        }),
+      );
+      expect(state.overviewSparklines[7]).toEqual({
+        candles: [candle(MONDAY), candle(MONDAY + 15 * MINUTE)],
+        loading: false,
+      });
+    });
+
+    it('applies live candles and waits for the block after a gap', () => {
+      const loaded = reduce(
+        MarketActions.enterMarketsPage(),
+        MarketActions.retrievedOverviewSparkline({ series: 7, candles: [candle(MONDAY)] }),
+      );
+      const replaced = marketReducer(
+        loaded,
+        MarketActions.receivedOverviewSparklineCandle({
+          series: 7,
+          live: { candle: candle(MONDAY, 12) },
+        }),
+      );
+      expect(replaced.overviewSparklines[7].candles).toEqual([candle(MONDAY, 12)]);
+
+      const gap = marketReducer(
+        replaced,
+        MarketActions.detectedOverviewSparklineGap({ series: 7 }),
+      );
+      expect(gap.overviewSparklines[7].loading).toBe(true);
+      const ignored = marketReducer(
+        gap,
+        MarketActions.receivedOverviewSparklineCandle({
+          series: 7,
+          live: { candle: candle(MONDAY, 13) },
+        }),
+      );
+      expect(ignored).toBe(gap);
+    });
+
+    it('drops the sparklines when the page is left', () => {
+      const state = reduce(
+        MarketActions.enterMarketsPage(),
+        MarketActions.retrievedOverviewSparkline({ series: 7, candles: [candle(MONDAY)] }),
+        MarketActions.leaveMarketsPage(),
+      );
+      expect(state.overviewSparklines).toEqual({});
     });
   });
 });

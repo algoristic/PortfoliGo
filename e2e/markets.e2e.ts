@@ -1,3 +1,5 @@
+import { Page } from '@playwright/test';
+
 import { expect, expectAccessible, test } from './fixtures';
 import { expectGameReady } from './game.po';
 import { createPlayer } from './players.po';
@@ -46,4 +48,95 @@ test.describe('markets', () => {
     await expectGameReady(page);
     await expect(page.locator('canvas')).toHaveCount(0);
   });
+
+  test('shows the overview with indices, movers and the sector heat map', async ({ page }) => {
+    const game = await createPlayer(page, 'Anna');
+    await expectGameReady(page);
+    await page.goto(`${game}/markets`);
+    await expectGameReady(page);
+
+    await expect(page.getByTestId('market.nav.overview')).toHaveAttribute('aria-current', 'page');
+    await expect(page.getByTestId('market.overview.index').first()).toBeVisible();
+    await expect(page.getByTestId('market.overview.index.sparkline').first()).toBeVisible();
+    // Five gainers and five losers (TS §8.4), one tile per sector (TS §5.5: eleven sectors).
+    await expect(page.getByTestId('market.overview.gainers.row')).toHaveCount(5);
+    await expect(page.getByTestId('market.overview.losers.row')).toHaveCount(5);
+    await expect(page.getByTestId('market.overview.sector')).toHaveCount(11);
+    // The game starts on Mon 01.04.2030 at 00:00, before any exchange opens.
+    await expect(page.getByTestId('market.overview.closed')).toBeVisible();
+    await expect(page.getByTestId('market.overview.region')).toHaveCount(4);
+    await expectAccessible(page);
+
+    await page.getByTestId('market.overview.sector').first().click();
+    await expect(page).toHaveURL(/\/markets\/[^/]+$/);
+    await expect(page.getByTestId('market.instrument.name')).not.toHaveText('Instrument');
+  });
+
+  test('filters, sorts and opens the matches of the screener', async ({ page }) => {
+    const game = await createPlayer(page, 'Anna');
+    await expectGameReady(page);
+    await page.goto(`${game}/markets`);
+    await expectGameReady(page);
+    await page.getByTestId('market.nav.screener').click();
+    await expect(page).toHaveURL(/\/markets\/screener$/);
+
+    const total = page.getByTestId('market.screener.total.count');
+    await expect(page.getByTestId('market.screener.row').first()).toBeVisible();
+    const all = await readCount(page);
+
+    await page.getByTestId('market.screener.filter.assetClasses.toggle').click();
+    await page.getByTestId('market.screener.filter.assetClasses.stock').check();
+    await page.getByTestId('market.screener.filter.regions.toggle').click();
+    await page.getByTestId('market.screener.filter.regions.europe').check();
+    await expect(total).not.toHaveText(String(all));
+    const kinds = page.getByTestId('market.screener.row.kind');
+    await expect(kinds.first()).toHaveText('Aktie');
+    expect(new Set(await kinds.allTextContents())).toEqual(new Set(['Aktie']));
+    await expectAccessible(page);
+
+    await page.getByTestId('market.screener.sort.y1').click();
+    await expect(page.getByTestId('market.screener.sort.y1')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    await page.getByTestId('market.screener.filter.search').fill('zzzzzz');
+    await expect(page.getByTestId('market.screener.empty')).toBeVisible();
+    await page.getByTestId('market.screener.filter.reset').click();
+    await expect(total).toHaveText(new Intl.NumberFormat('de-DE').format(all));
+
+    const first = page.getByTestId('market.screener.row').first();
+    const name = (await first.getByTestId('market.screener.row.name').textContent())?.trim();
+    await first.getByTestId('market.screener.row.name').click();
+    await expect(page).toHaveURL(/\/markets\/[^/]+$/);
+    await expect(page.getByTestId('market.instrument.name')).toHaveText(name ?? '');
+  });
+
+  test('fits the overview and the screener into 360 px', async ({ page }) => {
+    // TS §11.4: nothing scrolls horizontally at 360 px.
+    await page.setViewportSize({ width: 360, height: 740 });
+    const game = await createPlayer(page, 'Anna');
+    await expectGameReady(page);
+    await page.goto(`${game}/markets`);
+    await expectGameReady(page);
+    await expect(page.getByTestId('market.overview.sector').first()).toBeVisible();
+    await expectNoHorizontalScroll(page);
+    await page.getByTestId('market.nav.screener').click();
+    await expect(page.getByTestId('market.screener.row').first()).toBeVisible();
+    await expectNoHorizontalScroll(page);
+    await expectAccessible(page);
+  });
 });
+
+async function readCount(page: Page): Promise<number> {
+  const text = (await page.getByTestId('market.screener.total.count').textContent()) ?? '';
+  return Number(text.replace(/\./g, ''));
+}
+
+async function expectNoHorizontalScroll(page: Page): Promise<void> {
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    ),
+  ).toBe(0);
+}

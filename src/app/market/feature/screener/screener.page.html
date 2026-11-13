@@ -1,0 +1,38 @@
+@let screener = facade.screener$ | async;
+@let rows = facade.screenerRows$ | async;
+
+@if (screener) {
+  <div class="flex flex-col gap-4">
+    <app-panel>
+      <app-screener-filter
+        [filter]="screener.filter"
+        [total]="screener.total"
+        [loading]="screener.loading"
+        [filtered]="screener.filtered"
+        (enteredSearch)="onSearch($event)"
+        (selectedFilter)="onFilter($event)"
+        (submittedDividendYield)="onDividendYield($event)"
+        (clickedReset)="onReset()"></app-screener-filter>
+    </app-panel>
+
+    <app-panel>
+      @if (screener.failed) {
+        <p
+          class="text-sm text-down"
+          data-testid="market.screener.failed"
+          i18n="@@featureMarket-screenerPage-failed">
+          Die Trefferliste konnte nicht geladen werden.
+        </p>
+      } @else {
+        <app-screener-list
+          [rows]="rows ?? []"
+          [total]="screener.total"
+          [sort]="screener.filter.sort"
+          [performancePeriod]="screener.performancePeriod"
+          [resetKey]="screener.generation"
+          (clickedSort)="onSort($event)"
+          (changedRange)="onRange($event)"></app-screener-list>
+      }
+    </app-panel>
+  </div>
+}

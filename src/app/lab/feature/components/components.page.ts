@@ -26,6 +26,7 @@ import { NavItem } from '@app/shared/ui/nav-link/nav-item.model';
 import { NavLinkDirective } from '@app/shared/ui/nav-link/nav-link.directive';
 import { PanelComponent } from '@app/shared/ui/panel/panel.component';
 import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
+import { FormatPricePipe } from '@app/shared/ui/pipes/format-price/format-price.pipe';
 import { PriceChangeComponent } from '@app/shared/ui/price-change/price-change.component';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
 import { StatTileComponent } from '@app/shared/ui/stat-tile/stat-tile.component';
@@ -34,6 +35,7 @@ import { TabsComponent } from '@app/shared/ui/tabs/tabs.component';
 import { TabItem } from '@app/shared/ui/tabs/tabs.model';
 import { TOAST_TONES, ToastTone } from '@app/shared/ui/toast/toast.model';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
+import { ValueFlashDirective } from '@app/shared/ui/value-flash/value-flash.directive';
 import { formatCents } from '@app/shared/util/format';
 
 /** Developer page with all `shared/ui` building blocks (`#/lab/components`). */
@@ -46,6 +48,7 @@ import { formatCents } from '@app/shared/util/format';
     DonutComponent,
     EmptyStateComponent,
     FormatNumberPipe,
+    FormatPricePipe,
     FormField,
     IconButtonDirective,
     IconDirective,
@@ -63,6 +66,7 @@ import { formatCents } from '@app/shared/util/format';
     TabPanelDirective,
     RouterModule,
     TabsComponent,
+    ValueFlashDirective,
   ],
   templateUrl: './components.page.html',
   host: { class: 'block' },
@@ -115,6 +119,8 @@ export class ComponentsPage {
   ];
 
   confirmResult = signal<boolean | null>(null);
+  flashPrice = signal(42.5);
+  flashEnabled = signal(true);
   amountModel = signal<{ amount: number | null }>({ amount: 1_000_000 });
   amountForm = form(this.amountModel, (path) => {
     apply(path.amount, amountRangeSchema(START_CAPITAL_RANGE));
@@ -128,6 +134,14 @@ export class ComponentsPage {
 
   onShowToast(tone: ToastTone): void {
     this.#toastService.show(tone, `${this.toastMessage} (${tone})`);
+  }
+
+  onMovePrice(direction: 1 | -1): void {
+    this.flashPrice.update((price) => price + direction * 0.25);
+  }
+
+  onToggleFlash(event: Event): void {
+    this.flashEnabled.set((event.target as HTMLInputElement).checked);
   }
 
   onOpenConfirmDialog(): void {

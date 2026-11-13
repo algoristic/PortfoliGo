@@ -1,5 +1,6 @@
 import { Candle } from '@app/market/domain/models/candle.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
+import { ScreenerRow } from '@app/market/domain/models/screener.model';
 
 import { initialChartState } from './market.reducer';
 import {
@@ -7,8 +8,11 @@ import {
   selectInstrumentQuote,
   selectInstrumentsByKind,
   selectInstrumentsBySeries,
+  selectMoversView,
   selectOverviewIndexSeries,
   selectRouteInstrument,
+  selectScreenerRows,
+  selectScreenerWindowSeries,
 } from './market.selectors';
 
 const STOCK = { id: 'cmp-0001', series: 0, kind: 'stock' } as Instrument;
@@ -140,5 +144,105 @@ describe('selectChartView', () => {
       selectChartView.projector({ ...initialChartState, error: 'x', candles: [candle(1)] }, today)
         .failed,
     ).toBe(false);
+  });
+
+  describe('selectScreenerRows', () => {
+    const row: ScreenerRow = {
+      id: STOCK.id,
+      series: 0,
+      last: 10,
+      changeRatio: 0.01,
+      performance: { m1: 0.02, m6: 0.06, y1: 0.12, y5: 0.6 },
+      dividendYield: 0.03,
+      sparkline: [9, 10],
+    };
+    const unknown: ScreenerRow = { ...row, id: 'x', series: 99 };
+    const instruments = new Map([[0, { ...STOCK, name: 'Velora AG', ticker: 'VEL' }]]);
+
+    it('shows the live quote where one arrived and the performance of the sorted period', () => {
+      const views = selectScreenerRows.projector(
+        [row, unknown],
+        {
+          0: {
+            series: 0,
+            last: 11,
+            bid: 10.99,
+            ask: 11.01,
+            previousClose: 10.78,
+            change: 0.22,
+            changeRatio: 0.02,
+          },
+        },
+        instruments,
+        'm6',
+      );
+      expect(views).toEqual([
+        {
+          id: STOCK.id,
+          series: 0,
+          name: 'Velora AG',
+          ticker: 'VEL',
+          kind: 'stock',
+          last: 11,
+          changeRatio: 0.02,
+          sparkline: [9, 10],
+          performance: 0.06,
+          dividendYield: 0.03,
+        },
+      ]);
+    });
+
+    it('keeps the figures of the query without a quote', () => {
+      const [view] = selectScreenerRows.projector([row], {}, instruments, 'y1');
+      expect(view).toMatchObject({ last: 10, changeRatio: 0.01, performance: 0.12 });
+    });
+  });
+
+  describe('selectScreenerWindowSeries', () => {
+    const rows = Array.from({ length: 50 }, (_, index) => ({ series: 100 + index }) as ScreenerRow);
+
+    it('watches the rendered rows and ten before and after them', () => {
+      expect(selectScreenerWindowSeries.projector(rows, { start: 20, end: 25 })).toEqual(
+        Array.from({ length: 25 }, (_, index) => 110 + index),
+      );
+      expect(selectScreenerWindowSeries.projector(rows, { start: 0, end: 5 })).toEqual(
+        Array.from({ length: 15 }, (_, index) => 100 + index),
+      );
+      expect(selectScreenerWindowSeries.projector(rows, { start: 45, end: 60 })).toEqual(
+        Array.from({ length: 15 }, (_, index) => 135 + index),
+      );
+    });
+  });
+
+  describe('selectMoversView', () => {
+    it('adds the instruments, the heat level and the sector index of every tile', () => {
+      const quote = (series: number, changeRatio: number) => ({
+        series,
+        last: 10,
+        bid: null,
+        ask: null,
+        previousClose: 10,
+        change: 0,
+        changeRatio,
+      });
+      const view = selectMoversView.projector(
+        {
+          tick: 0,
+          gainers: [quote(0, 0.03), quote(42, 0.02)],
+          losers: [],
+          sectors: [{ sectorId: 'technology', quote: quote(2, -0.012) }],
+        },
+        new Map([
+          [0, STOCK],
+          [2, SECTOR],
+        ]),
+      );
+      expect(view?.gainers.map(({ instrument }) => instrument.id)).toEqual([STOCK.id]);
+      // TS §11.3: a loss of 1.2 % is level −3 (from 1 %).
+      expect(view?.sectors).toEqual([
+        { sectorId: 'technology', instrumentId: SECTOR.id, changeRatio: -0.012, level: -3 },
+      ]);
+      expect(selectMoversView.projector(null, new Map())).toBeNull();
+    });
   });
 });

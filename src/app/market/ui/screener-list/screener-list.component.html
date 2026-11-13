@@ -1,0 +1,159 @@
+@let _views = views();
+@let _total = total();
+@let _nameSort = nameSort();
+@let _changeSort = changeSort();
+@let _yieldSort = yieldSort();
+
+<div
+  class="flex flex-col"
+  role="table"
+  data-testid="market.screener.list"
+  [attr.aria-label]="label"
+  [attr.aria-rowcount]="(_total ?? _views.length) + 1">
+  <div role="rowgroup">
+    <div
+      class="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-border px-2 py-1 text-xs font-medium text-fg-muted md:flex-nowrap md:gap-3"
+      role="row"
+      aria-rowindex="1">
+      <div class="min-w-0 md:flex-1" role="columnheader" [attr.aria-sort]="_nameSort.ariaSort">
+        <button
+          type="button"
+          class="inline-flex min-h-6 min-w-6 items-center justify-center gap-1 rounded-md px-1 py-1 hover:bg-surface-raised"
+          data-testid="market.screener.sort.name"
+          (click)="onSort('name')">
+          {{ _nameSort.label }}
+          @if (_nameSort.description) {
+            <span class="sr-only">{{ _nameSort.description }}</span>
+          }
+          <i [appIcon]="_nameSort.icon" [class.text-fg]="_nameSort.active"></i>
+        </button>
+      </div>
+      <div class="hidden w-28 text-right md:block" role="columnheader">{{ priceLabel }}</div>
+      <div
+        class="md:w-28 md:text-right"
+        role="columnheader"
+        [attr.aria-sort]="_changeSort.ariaSort">
+        <button
+          type="button"
+          class="inline-flex min-h-6 min-w-6 items-center justify-center gap-1 rounded-md px-1 py-1 hover:bg-surface-raised"
+          data-testid="market.screener.sort.changeRatio"
+          (click)="onSort('changeRatio')">
+          {{ _changeSort.label }}
+          @if (_changeSort.description) {
+            <span class="sr-only">{{ _changeSort.description }}</span>
+          }
+          <i [appIcon]="_changeSort.icon" [class.text-fg]="_changeSort.active"></i>
+        </button>
+      </div>
+      <div class="hidden w-24 sm:block" role="columnheader">{{ trendLabel }}</div>
+      <div
+        class="flex items-center gap-0.5 md:w-36 md:justify-end"
+        role="columnheader"
+        [attr.aria-sort]="performanceAriaSort()">
+        <span class="sr-only">{{ performanceLabel }}</span>
+        @for (button of periodSorts(); track button.key) {
+          <button
+            type="button"
+            class="inline-flex min-h-6 min-w-6 items-center justify-center gap-0.5 rounded-md px-1 py-1 hover:bg-surface-raised aria-pressed:bg-surface-raised aria-pressed:text-fg"
+            [attr.data-testid]="'market.screener.sort.' + button.key"
+            [attr.aria-pressed]="button.active"
+            (click)="onSort(button.key)">
+            {{ button.label }}
+            <span class="sr-only">{{ button.description }}</span>
+            @if (button.active) {
+              <i [appIcon]="button.icon"></i>
+            }
+          </button>
+        }
+      </div>
+      <div class="md:w-28 md:text-right" role="columnheader" [attr.aria-sort]="_yieldSort.ariaSort">
+        <button
+          type="button"
+          class="inline-flex min-h-6 min-w-6 items-center justify-center gap-1 rounded-md px-1 py-1 hover:bg-surface-raised"
+          data-testid="market.screener.sort.dividendYield"
+          (click)="onSort('dividendYield')">
+          {{ _yieldSort.label }}
+          @if (_yieldSort.description) {
+            <span class="sr-only">{{ _yieldSort.description }}</span>
+          }
+          <i [appIcon]="_yieldSort.icon" [class.text-fg]="_yieldSort.active"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  @if (_total === 0) {
+    <p class="px-2 py-6 text-center text-sm text-fg-muted" data-testid="market.screener.empty">
+      {{ emptyText }}
+    </p>
+  }
+
+  <cdk-virtual-scroll-viewport
+    class="h-128 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+    role="rowgroup"
+    tabindex="0"
+    data-testid="market.screener.viewport"
+    [attr.aria-label]="label"
+    [itemSize]="rowHeight"
+    (scrolledIndexChange)="onScrolledIndex($event)">
+    <div
+      *cdkVirtualFor="let row of _views; let index = index; trackBy: trackRow"
+      class="relative flex h-14 items-center gap-2 border-b border-border px-2 hover:bg-surface-raised md:gap-3"
+      role="row"
+      data-testid="market.screener.row"
+      [attr.data-instrument-id]="row.id"
+      [attr.aria-rowindex]="index + 2">
+      <div class="min-w-0 flex-1" role="cell">
+        <a
+          class="block truncate text-sm font-medium after:absolute after:inset-0 hover:underline"
+          data-testid="market.screener.row.name"
+          [routerLink]="['..', row.id]"
+          >{{ row.name }}</a
+        >
+        <p class="truncate text-xs text-fg-muted">
+          <span data-testid="market.screener.row.ticker">{{ row.ticker }}</span>
+          · <span data-testid="market.screener.row.kind">{{ row.kindLabel }}</span>
+          <span class="md:hidden">
+            · {{ performanceShort() }}
+            <span class="tabular-nums">{{ row.performance | formatSignedPercent: 1 }}</span>
+          </span>
+        </p>
+      </div>
+      <div class="flex shrink-0 flex-col items-end md:contents">
+        <div class="md:w-28 md:text-right" role="cell">
+          <span
+            class="px-0.5 text-sm tabular-nums"
+            data-testid="market.screener.row.price"
+            [appValueFlash]="row.last"
+            [enabled]="flashEnabled()">
+            @if (row.isIndex) {
+              {{ row.last | formatNumber: 2 }}
+            } @else {
+              {{ row.last | formatPrice }}
+            }
+          </span>
+        </div>
+        <div class="md:w-28 md:text-right" role="cell">
+          <app-price-change
+            class="text-xs md:text-sm"
+            data-testid="market.screener.row.change"
+            [value]="row.changeRatio"></app-price-change>
+        </div>
+      </div>
+      <div class="hidden w-24 sm:block" role="cell">
+        <app-sparkline
+          class="h-8 w-24"
+          data-testid="market.screener.row.sparkline"
+          [values]="row.sparkline"></app-sparkline>
+      </div>
+      <div class="hidden w-36 text-right text-sm tabular-nums md:block" role="cell">
+        <span data-testid="market.screener.row.performance">{{
+          row.performance | formatSignedPercent: 1
+        }}</span>
+      </div>
+      <div class="hidden w-28 text-right text-sm tabular-nums md:block" role="cell">
+        <span data-testid="market.screener.row.yield">{{ row.dividendYield | formatPercent }}</span>
+      </div>
+    </div>
+  </cdk-virtual-scroll-viewport>
+</div>

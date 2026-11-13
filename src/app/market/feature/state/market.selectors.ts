@@ -10,6 +10,12 @@ import {
   shownChartDay,
 } from '@app/market/domain/chart-view-logic';
 import { Instrument, INSTRUMENT_KINDS } from '@app/market/domain/models/instrument.model';
+import { marketDayOnOrBefore } from '@app/market/domain/performance-logic';
+import {
+  MarketMoversViewModel,
+  OverviewIndexView,
+} from '@app/market/ui/models/overview-view.model';
+import { ScreenerRowView } from '@app/market/ui/models/screener-view.model';
 
 import {
   ChartSettings,
@@ -17,6 +23,7 @@ import {
   InstrumentChartView,
   InstrumentQuote,
   InstrumentsByKind,
+  ScreenerView,
 } from './market.model';
 import {
   instrumentsAdapter,
@@ -24,6 +31,15 @@ import {
   MarketState,
   quotesAdapter,
 } from './market.reducer';
+import {
+  isScreenerFiltered,
+  moversViewModel,
+  overviewIndexViews,
+  performancePeriodOf,
+  screenerCriteria,
+  screenerRowViews,
+  screenerWindowSeries,
+} from './market.utils';
 
 const selectState = createFeatureSelector<MarketState>(MARKET_FEATURE_KEY);
 const instrumentSelectors = instrumentsAdapter.getSelectors();
@@ -133,7 +149,7 @@ export const selectChartSubscription = createSelector(selectChart, (chart): Char
 }));
 
 /** Today's day index; changes once a day, so the chart view doesn't follow every clock tick. */
-const selectToday = createSelector(selectTick, (tick) => dayIndex(tick ?? GAME_START_TICK));
+export const selectToday = createSelector(selectTick, (tick) => dayIndex(tick ?? GAME_START_TICK));
 
 export const selectChartView = createSelector(
   selectChart,
@@ -159,4 +175,70 @@ export const selectChartView = createSelector(
       today,
     };
   },
+);
+
+/** The newest market day that has begun; the screener figures change with it. */
+export const selectMarketDay = createSelector(selectToday, (today) => marketDayOnOrBefore(today));
+
+export const selectOverviewSparklines = createSelector(
+  selectState,
+  (state) => state.overviewSparklines,
+);
+
+/** The indices of the markets page with quote and sparkline (US-MK-01). */
+export const selectOverviewIndices = createSelector(
+  selectOverviewIndexSeries,
+  selectInstrumentsBySeries,
+  selectQuoteEntities,
+  selectOverviewSparklines,
+  (series, instruments, quotes, sparklines): OverviewIndexView[] =>
+    overviewIndexViews(series, instruments, quotes, sparklines),
+);
+
+/** Gainers, losers and sector heat map; `null` until the first movers event. */
+export const selectMoversView = createSelector(
+  selectMovers,
+  selectInstrumentsBySeries,
+  (movers, instruments): MarketMoversViewModel | null =>
+    movers === null ? null : moversViewModel(movers, instruments),
+);
+
+export const selectScreener = createSelector(selectState, (state) => state.screener);
+export const selectScreenerFilter = createSelector(selectScreener, (screener) => screener.filter);
+
+/** The query of the current filter (TS §8.2). */
+export const selectScreenerCriteria = createSelector(selectScreenerFilter, screenerCriteria);
+
+export const selectScreenerView = createSelector(selectScreener, (screener): ScreenerView => ({
+  filter: screener.filter,
+  filtered: isScreenerFiltered(screener.filter),
+  generation: screener.generation,
+  loading: screener.loading,
+  failed: screener.error !== undefined && screener.total === null,
+  total: screener.total,
+  performancePeriod: performancePeriodOf(screener.filter.sort),
+}));
+
+const selectScreenerRowsState = createSelector(selectScreener, (screener) => screener.rows);
+const selectPerformancePeriod = createSelector(selectScreenerFilter, (filter) =>
+  performancePeriodOf(filter.sort),
+);
+
+/** The rows of the screener list with the live quotes of the watched rows. */
+export const selectScreenerRows = createSelector(
+  selectScreenerRowsState,
+  selectQuoteEntities,
+  selectInstrumentsBySeries,
+  selectPerformancePeriod,
+  (rows, quotes, instruments, period): ScreenerRowView[] =>
+    screenerRowViews(rows, quotes, instruments, period),
+);
+
+const selectScreenerRange = createSelector(selectScreener, (screener) => screener.range);
+
+/** The series whose quotes the screener watches: rendered rows plus a buffer. */
+export const selectScreenerWindowSeries = createSelector(
+  selectScreenerRowsState,
+  selectScreenerRange,
+  (rows, range) => screenerWindowSeries(rows, range),
 );

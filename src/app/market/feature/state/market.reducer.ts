@@ -10,11 +10,27 @@ import {
 } from '@app/market/domain/chart-view-logic';
 import { ChartRange } from '@app/market/domain/models/chart.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
+import {
+  overviewSparklineCandles,
+  overviewSparklineStep,
+} from '@app/market/domain/overview-sparkline-logic';
+import { ScreenerFilter, ScreenerFilterDimension } from '@app/market/ui/models/screener-view.model';
+import { COUNTRIES, INDUSTRIES } from '@app/world/domain/taxonomy';
 
 import * as MarketActions from './market.actions';
-import { InstrumentChartState, MarketMoversView, QuoteSubscriptions } from './market.model';
+import {
+  InstrumentChartState,
+  MarketMoversView,
+  OverviewSparkline,
+  OverviewSparklines,
+  QuoteSubscriptions,
+  SCREENER_INITIAL_ROWS,
+  ScreenerState,
+} from './market.model';
 import {
   DEFAULT_CHART_SETTINGS,
+  DEFAULT_SCREENER_FILTER,
+  nextScreenerSort,
   normalizeSeries,
   sameSeries,
   subscribedSeries,
@@ -26,7 +42,7 @@ export const MARKET_FEATURE_KEY = 'market';
 /**
  * Market data of the loaded player (TS §11.3): master data of all series, the quotes of the
  * subscribed series, the movers while a view watches them and the chart of the instrument page
- * (AP 4.2). Screener filters and watchlist follow in AP 4.4.
+ * (AP 4.2), the sparklines of the overview indices and the screener (AP 4.4).
  */
 export interface MarketState {
   instruments: EntityState<Instrument>;
@@ -39,6 +55,9 @@ export interface MarketState {
   /** `null` while no view watches them or before their first event. */
   movers: MarketMoversView | null;
   chart: InstrumentChartState;
+  /** Only while the markets page is open. */
+  overviewSparklines: OverviewSparklines;
+  screener: ScreenerState;
   error?: unknown;
 }
 
@@ -58,6 +77,15 @@ export const initialChartState: InstrumentChartState = {
   loadingOlder: false,
 };
 
+export const initialScreenerState: ScreenerState = {
+  filter: DEFAULT_SCREENER_FILTER,
+  generation: 0,
+  loading: false,
+  rows: [],
+  total: null,
+  range: { start: 0, end: SCREENER_INITIAL_ROWS },
+};
+
 export const initialMarketState: MarketState = {
   instruments: instrumentsAdapter.getInitialState(),
   instrumentsLoaded: false,
@@ -66,7 +94,12 @@ export const initialMarketState: MarketState = {
   moversSubscriptions: [],
   movers: null,
   chart: initialChartState,
+  overviewSparklines: {},
+  screener: initialScreenerState,
 };
+
+const COUNTRY_REGIONS = new Map(COUNTRIES.map((country) => [country.id, country.regionId]));
+const INDUSTRY_SECTORS = new Map(INDUSTRIES.map((industry) => [industry.id, industry.sectorId]));
 
 /** New subscriptions; quotes of series that no subscription watches any more are dropped. */
 function withSubscriptions(state: MarketState, subscriptions: QuoteSubscriptions): MarketState {
@@ -119,6 +152,75 @@ function forGeneration(
   }
   const chart = change(state.chart);
   return chart === state.chart ? state : { ...state, chart };
+}
+
+function withSparkline(
+  state: MarketState,
+  series: number,
+  change: (sparkline: OverviewSparkline | undefined) => OverviewSparkline | undefined,
+): MarketState {
+  const current = state.overviewSparklines[series];
+  const next = change(current);
+  return next === current || next === undefined
+    ? state
+    : { ...state, overviewSparklines: { ...state.overviewSparklines, [series]: next } };
+}
+
+/** A new filter starts a new query (next generation) at the top of the list. */
+function withScreenerFilter(state: MarketState, filter: ScreenerFilter): MarketState {
+  const { screener } = state;
+  if (filter === screener.filter) {
+    return state;
+  }
+  return {
+    ...state,
+    screener: {
+      ...screener,
+      filter,
+      generation: screener.generation + 1,
+      loading: true,
+      range: initialScreenerState.range,
+    },
+  };
+}
+
+/**
+ * The values of a list dimension, without duplicates. Countries outside chosen regions and
+ * industries outside chosen sectors are dropped, because the filter no longer offers them.
+ */
+function withDimension(
+  filter: ScreenerFilter,
+  dimension: ScreenerFilterDimension,
+  values: readonly string[],
+): ScreenerFilter {
+  const unique = [...new Set(values)];
+  const current = filter[dimension] as readonly string[];
+  if (unique.length === current.length && unique.every((value, i) => value === current[i])) {
+    return filter;
+  }
+  const next = { ...filter, [dimension]: unique } as ScreenerFilter;
+  if (dimension === 'regions' && unique.length > 0) {
+    next.countries = next.countries.filter((country) =>
+      unique.includes(COUNTRY_REGIONS.get(country) ?? ''),
+    );
+  }
+  if (dimension === 'sectors' && unique.length > 0) {
+    next.industries = next.industries.filter((industry) =>
+      unique.includes(INDUSTRY_SECTORS.get(industry) ?? ''),
+    );
+  }
+  return next;
+}
+
+/** Changes the screener only for an answer of its current generation. */
+function forScreenerGeneration(
+  state: MarketState,
+  generation: number,
+  change: (screener: ScreenerState) => ScreenerState,
+): MarketState {
+  return generation === state.screener.generation
+    ? { ...state, screener: change(state.screener) }
+    : state;
 }
 
 const reducer = createReducer(
@@ -276,6 +378,115 @@ const reducer = createReducer(
   ),
 );
 
+const screenerReducer = createReducer(
+  initialMarketState,
+  // The filter stays for the next visit; the rows load again.
+  on(MarketActions.enterScreenerPage, (state) => ({
+    ...state,
+    screener: {
+      ...initialScreenerState,
+      filter: state.screener.filter,
+      generation: state.screener.generation + 1,
+      loading: true,
+    },
+  })),
+  on(MarketActions.leaveScreenerPage, (state) => ({
+    ...state,
+    screener: {
+      ...initialScreenerState,
+      filter: state.screener.filter,
+      generation: state.screener.generation + 1,
+    },
+  })),
+  on(MarketActions.enteredScreenerSearch, (state, { search }) =>
+    search === state.screener.filter.search
+      ? state
+      : withScreenerFilter(state, { ...state.screener.filter, search }),
+  ),
+  on(MarketActions.selectedScreenerFilter, (state, { dimension, values }) =>
+    withScreenerFilter(state, withDimension(state.screener.filter, dimension, values)),
+  ),
+  on(MarketActions.submittedScreenerDividendYield, (state, { range }) => {
+    const { min, max } = state.screener.filter.dividendYield;
+    return range.min === min && range.max === max
+      ? state
+      : withScreenerFilter(state, {
+          ...state.screener.filter,
+          dividendYield: {
+            ...(range.min === undefined ? {} : { min: range.min }),
+            ...(range.max === undefined ? {} : { max: range.max }),
+          },
+        });
+  }),
+  on(MarketActions.clickedScreenerSort, (state, { key }) =>
+    withScreenerFilter(state, {
+      ...state.screener.filter,
+      sort: nextScreenerSort(state.screener.filter.sort, key),
+    }),
+  ),
+  // The sort stays.
+  on(MarketActions.clickedResetScreenerFilter, (state) =>
+    withScreenerFilter(state, { ...DEFAULT_SCREENER_FILTER, sort: state.screener.filter.sort }),
+  ),
+  on(MarketActions.scrolledScreener, (state, { range }) =>
+    range.start === state.screener.range.start && range.end === state.screener.range.end
+      ? state
+      : { ...state, screener: { ...state.screener, range } },
+  ),
+  on(MarketActions.retrievedScreener, (state, { generation, result }) =>
+    forScreenerGeneration(state, generation, (screener) => ({
+      ...screener,
+      rows: result.rows,
+      total: result.total,
+      loading: false,
+      error: undefined,
+    })),
+  ),
+  on(MarketActions.loadScreenerFailure, (state, { generation, error }) =>
+    forScreenerGeneration(state, generation, (screener) => ({
+      ...screener,
+      loading: false,
+      error,
+    })),
+  ),
+);
+
+const overviewReducer = createReducer(
+  initialMarketState,
+  on(MarketActions.enterMarketsPage, MarketActions.leaveMarketsPage, (state) =>
+    Object.keys(state.overviewSparklines).length === 0
+      ? state
+      : { ...state, overviewSparklines: {} },
+  ),
+  on(MarketActions.retrievedOverviewSparkline, (state, { series, candles }) =>
+    withSparkline(state, series, () => ({
+      candles: overviewSparklineCandles(candles),
+      loading: false,
+    })),
+  ),
+  on(MarketActions.loadOverviewSparklineFailure, (state, { series }) =>
+    withSparkline(state, series, (sparkline) => ({
+      candles: sparkline?.candles ?? [],
+      loading: false,
+    })),
+  ),
+  on(MarketActions.receivedOverviewSparklineCandle, (state, { series, live }) =>
+    withSparkline(state, series, (sparkline) => {
+      if (sparkline === undefined || sparkline.loading) {
+        return sparkline;
+      }
+      const step = overviewSparklineStep(sparkline.candles, live);
+      const candles = applyLiveCandle(sparkline.candles, live, step);
+      return candles === sparkline.candles ? sparkline : { ...sparkline, candles };
+    }),
+  ),
+  on(MarketActions.detectedOverviewSparklineGap, (state, { series }) =>
+    withSparkline(state, series, (sparkline) =>
+      sparkline === undefined || sparkline.loading ? sparkline : { ...sparkline, loading: true },
+    ),
+  ),
+);
+
 export function marketReducer(state: MarketState | undefined, action: Action): MarketState {
-  return reducer(state, action);
+  return overviewReducer(screenerReducer(reducer(state, action), action), action);
 }
