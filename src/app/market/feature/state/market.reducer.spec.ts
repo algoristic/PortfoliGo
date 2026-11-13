@@ -175,6 +175,56 @@ describe('marketReducer', () => {
       expect(back).toMatchObject({ day: null, generation: 4 });
     });
 
+    // AP 5.8: the chosen resolution loads a new block, stays with another period while allowed
+    // (TS §11.7) and falls back to „Auto“ otherwise.
+    it('loads a new block for a resolution and keeps it while the period allows it', () => {
+      const live = withChart({ range: '5d', generation: 1, candles: loaded });
+      const hourly = marketReducer(
+        live,
+        MarketActions.clickedChartResolution({ resolution: '1h' }),
+      ).chart;
+      expect(hourly).toMatchObject({ resolution: '1h', generation: 2, loading: true, candles: [] });
+      const hourlyState = withChart(hourly);
+      expect(
+        marketReducer(hourlyState, MarketActions.clickedChartResolution({ resolution: '1h' })),
+      ).toBe(hourlyState);
+      // 1m candles are not allowed for 5T: nothing changes.
+      expect(
+        marketReducer(hourlyState, MarketActions.clickedChartResolution({ resolution: '1m' })),
+      ).toBe(hourlyState);
+
+      const month = marketReducer(
+        withChart(hourly),
+        MarketActions.clickedChartRange({ range: '1m' }),
+      ).chart;
+      expect(month).toMatchObject({ range: '1m', resolution: '1h', generation: 3 });
+      const year = marketReducer(
+        withChart(month),
+        MarketActions.clickedChartRange({ range: '1y' }),
+      ).chart;
+      expect(year).toMatchObject({ range: '1y', resolution: null, generation: 4 });
+      // A day of 1T keeps 1h as well; „Auto“ is a choice of its own.
+      const day = marketReducer(
+        withChart(month),
+        MarketActions.clickedChartDay({ day: 2000 }),
+      ).chart;
+      expect(day).toMatchObject({ range: '1d', resolution: '1h', day: 2000 });
+      expect(
+        marketReducer(withChart(day), MarketActions.clickedChartResolution({ resolution: null }))
+          .chart,
+      ).toMatchObject({ resolution: null, generation: day.generation + 1 });
+    });
+
+    it('starts with „Auto“ when a game reads its settings', () => {
+      const state = marketReducer(
+        withChart({ resolution: '1d' }),
+        MarketActions.loadedChartSettings({
+          settings: { range: '1y', chartType: 'line', indicators: [] },
+        }),
+      );
+      expect(state.chart).toMatchObject({ range: '1y', resolution: null });
+    });
+
     it('keeps the chart type without loading', () => {
       const state = marketReducer(
         withChart({ generation: 1, candles: loaded }),
@@ -323,20 +373,25 @@ describe('marketReducer', () => {
         MarketActions.submittedChartIndicator({
           id: null,
           spec: { kind: 'bollinger', period: 20, multiplier: 2 },
+          color: 'chart-3',
         }),
       );
       expect(added.chart.indicators.map(({ id, color }) => [id, color])).toEqual([
         ['i4', 'chart-3'],
-        ['i5', 'chart-1'],
+        ['i5', 'chart-3'],
       ]);
       const changed = marketReducer(
         added,
-        MarketActions.submittedChartIndicator({ id: 'i4', spec: { kind: 'ema', period: 9 } }),
+        MarketActions.submittedChartIndicator({
+          id: 'i4',
+          spec: { kind: 'ema', period: 9 },
+          color: 'chart-6',
+        }),
       );
       expect(changed.chart.indicators[0]).toEqual({
         id: 'i4',
         spec: { kind: 'ema', period: 9 },
-        color: 'chart-3',
+        color: 'chart-6',
       });
       const removed = marketReducer(
         changed,

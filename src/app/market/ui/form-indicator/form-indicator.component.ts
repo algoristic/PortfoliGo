@@ -14,44 +14,61 @@ import {
   IndicatorKind,
   IndicatorSpec,
 } from '@app/analysis/domain/models/indicator.model';
+import { ChartColorPickerComponent } from '@app/charts/ui/chart-color-picker/chart-color-picker.component';
+import { ChartColor } from '@app/charts/ui/models/chart-color.model';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
 
-import { IndicatorFormModel } from './form-indicator.model';
+import { IndicatorFormModel, SubmittedIndicator } from './form-indicator.model';
 
 import { indicatorKindLabel } from '../labels/indicator-labels';
 
+/** What resets the form model: the chosen kind, the edited indicator and its colour. */
+interface IndicatorModelSource {
+  kind: IndicatorKind;
+  spec: IndicatorSpec;
+  color: ChartColor;
+}
+
 /**
  * Kind and parameters of a chart indicator (US-CH-02, TS §11.7): period `n` from 2 to 200, for
- * Bollinger bands the multiplier `k`. A new indicator chooses its kind and starts from the kind's
- * defaults; an existing one keeps its kind.
+ * Bollinger bands the multiplier `k`, and its colour from the chart palette (AP 5.8). A new
+ * indicator chooses its kind and starts from the kind's defaults; an existing one keeps its kind.
+ * Changing the kind keeps the chosen colour.
  */
 @Component({
   selector: 'app-form-indicator',
-  imports: [ButtonDirective, FormField, FormRoot, FormatNumberPipe],
+  imports: [ButtonDirective, ChartColorPickerComponent, FormField, FormRoot, FormatNumberPipe],
   templateUrl: './form-indicator.component.html',
   host: { class: 'block' },
 })
 export class FormIndicatorComponent {
   /** The indicator to change, or the defaults of a new one. */
   spec = input.required<IndicatorSpec>();
+  /** The indicator's colour, or the first free one for a new indicator. */
+  color = input.required<ChartColor>();
   isNew = input(false);
 
   kinds = INDICATOR_KINDS;
   multipliers = BOLLINGER_MULTIPLIERS;
 
-  submittedIndicator = output<IndicatorSpec>();
+  submittedIndicator = output<SubmittedIndicator>();
   clickedCancel = output<void>();
 
   kind = linkedSignal<IndicatorKind>(() => this.spec().kind);
-  indicatorModel = linkedSignal<IndicatorFormModel>(() => {
-    const kind = this.kind();
-    const spec = this.spec();
-    const base = spec.kind === kind ? spec : DEFAULT_INDICATOR_SPECS[kind];
-    return {
-      period: base.period,
-      multiplier: String(base.kind === 'bollinger' ? base.multiplier : 2),
-    };
+  indicatorModel = linkedSignal<IndicatorModelSource, IndicatorFormModel>({
+    source: () => ({ kind: this.kind(), spec: this.spec(), color: this.color() }),
+    computation: ({ kind, spec, color }, previous) => {
+      const base = spec.kind === kind ? spec : DEFAULT_INDICATOR_SPECS[kind];
+      // Another kind keeps the colour the user chose; another indicator starts from its own.
+      const sameIndicator =
+        previous !== undefined && previous.source.spec === spec && previous.source.color === color;
+      return {
+        period: base.period,
+        multiplier: String(base.kind === 'bollinger' ? base.multiplier : 2),
+        color: sameIndicator ? previous.value.color : color,
+      };
+    },
   });
   indicatorForm = form(
     this.indicatorModel,
@@ -76,14 +93,16 @@ export class FormIndicatorComponent {
     {
       submission: {
         action: async (field) => {
-          const { period, multiplier } = field().value();
+          const { period, multiplier, color } = field().value();
           if (period !== null) {
             const kind = this.kind();
-            this.submittedIndicator.emit(
-              kind === 'bollinger'
-                ? { kind, period, multiplier: Number(multiplier) }
-                : { kind, period },
-            );
+            this.submittedIndicator.emit({
+              spec:
+                kind === 'bollinger'
+                  ? { kind, period, multiplier: Number(multiplier) }
+                  : { kind, period },
+              color,
+            });
           }
         },
       },

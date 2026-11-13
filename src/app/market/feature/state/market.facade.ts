@@ -3,7 +3,9 @@ import { select, Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
 import { IndicatorSpec } from '@app/analysis/domain/models/indicator.model';
+import { ChartColor } from '@app/charts/ui/models/chart-color.model';
 import { PriceChartType } from '@app/charts/ui/price-chart/price-chart.model';
+import { CandleResolution } from '@app/market/domain/models/candle.model';
 import { ChartRange } from '@app/market/domain/models/chart.model';
 import { ScreenerSortKey, YieldRange } from '@app/market/domain/models/screener.model';
 import { ScreenerFilterDimension, ScreenerRange } from '@app/market/ui/models/screener-view.model';
@@ -95,6 +97,11 @@ export class MarketFacade {
     this.#store.dispatch(MarketActions.clickedChartRange({ range }));
   }
 
+  /** A candle resolution of the chart; `null` is „Auto“. */
+  selectChartResolution(resolution: CandleResolution | null): void {
+    this.#store.dispatch(MarketActions.clickedChartResolution({ resolution }));
+  }
+
   selectChartType(chartType: PriceChartType): void {
     this.#store.dispatch(MarketActions.clickedChartType({ chartType }));
   }
@@ -113,9 +120,9 @@ export class MarketFacade {
     this.#store.dispatch(MarketActions.scrolledToChartStart());
   }
 
-  /** Adds an indicator (`id` `null`) or changes the parameters of one. */
-  submitChartIndicator(id: string | null, spec: IndicatorSpec): void {
-    this.#store.dispatch(MarketActions.submittedChartIndicator({ id, spec }));
+  /** Adds an indicator (`id` `null`) or changes the parameters and colour of one. */
+  submitChartIndicator(id: string | null, spec: IndicatorSpec, color: ChartColor): void {
+    this.#store.dispatch(MarketActions.submittedChartIndicator({ id, spec, color }));
   }
 
   removeChartIndicator(id: string): void {

@@ -484,7 +484,8 @@ Als Anwender möchte ich eine jährliche Steuerübersicht sehen, damit ich meine
 **US-CH-01 – Kurschart** · Stufe 1 · M
 Als Anwender möchte ich den Kursverlauf eines Instruments in verschiedenen Zeiträumen sehen, damit ich Entwicklungen einschätzen kann.
 
-- Darstellung als Linie, Fläche oder Kerzen; Zeiträume 1T, 5T, 1M, 6M, 1J, 5J und Max; die Auflösung passt sich an.
+- Darstellung als Linie, Fläche oder Kerzen; Zeiträume 1T, 5T, 1M, 6M, 1J, 5J und Max.
+- Die Kerzen-Auflösung (1 Minute bis 1 Woche) passt sich standardmäßig dem Zeitraum an („Auto“); der Anwender kann eine andere wählen, soweit der Zeitraum sie zulässt. Beim Wechsel des Zeitraums bleibt sie erhalten, solange sie zulässig ist, sonst gilt wieder „Auto“; sie wird nicht gespeichert.
 - Jeder vergangene Tag lässt sich minutengenau ansehen – auch vor dem Spielstart.
 - Fadenkreuz mit Datum und Werten; Zoomen und Verschieben mit Maus und Touch.
 - Der Chart aktualisiert sich live, während die Zeit läuft.
@@ -493,7 +494,8 @@ Als Anwender möchte ich den Kursverlauf eines Instruments in verschiedenen Zeit
 Als Anwender möchte ich einfache Indikatoren über den Kursverlauf legen, damit ich technische Analysen durchführen kann.
 
 - Indikatoren: SMA, EMA, SMMA (geglätteter gleitender Durchschnitt) und Bollinger-Bänder, mit einstellbaren Parametern; mehrere gleichzeitig.
-- Die Auswahl wird gespeichert.
+- Jeder Indikator hat eine wählbare Farbe aus der Chart-Palette (mehrere dürfen dieselbe haben); ein neuer startet mit der ersten freien. Bei Bollinger-Bändern ist die Fläche zwischen den Bändern leicht eingefärbt.
+- Die Auswahl wird samt Farben gespeichert.
 
 ### 7.10 Benachrichtigungen (BN)
 

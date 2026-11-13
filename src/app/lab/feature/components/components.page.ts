@@ -5,9 +5,13 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { apply, form, FormField } from '@angular/forms/signals';
 import { RouterModule } from '@angular/router';
 
+import { ChartColorPickerComponent } from '@app/charts/ui/chart-color-picker/chart-color-picker.component';
 import { DonutComponent } from '@app/charts/ui/donut/donut.component';
 import { DonutSegment } from '@app/charts/ui/donut/donut.model';
-import { CHART_COLOR_BACKGROUND_CLASSES } from '@app/charts/ui/models/chart-color.model';
+import {
+  CHART_COLOR_BACKGROUND_CLASSES,
+  ChartColor,
+} from '@app/charts/ui/models/chart-color.model';
 import { SparklineComponent } from '@app/charts/ui/sparkline/sparkline.component';
 import { START_CAPITAL_RANGE } from '@app/players/domain/player-limits';
 import { amountRangeSchema } from '@app/players/ui/schemas/amount-range-schema';
@@ -45,6 +49,7 @@ import { formatCents } from '@app/shared/util/format';
     AmountInputComponent,
     BadgeComponent,
     ButtonDirective,
+    ChartColorPickerComponent,
     DonutComponent,
     EmptyStateComponent,
     FormatNumberPipe,
@@ -125,6 +130,8 @@ export class ComponentsPage {
   amountForm = form(this.amountModel, (path) => {
     apply(path.amount, amountRangeSchema(START_CAPITAL_RANGE));
   });
+  colorModel = signal<{ color: ChartColor }>({ color: 'chart-3' });
+  colorForm = form(this.colorModel);
 
   toastMessage = $localize`:@@featureLab-componentsPage-toastMessage:Beispielhinweis`;
   confirmHeading = $localize`:@@featureLab-componentsPage-confirmHeading:Spieler löschen?`;

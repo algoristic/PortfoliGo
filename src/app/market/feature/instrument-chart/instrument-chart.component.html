@@ -7,6 +7,8 @@
 @if (_chart) {
   <app-chart-toolbar
     [range]="_chart.range"
+    [resolution]="_chart.resolution"
+    [interval]="_chart.interval"
     [chartType]="_chart.chartType"
     [live]="_chart.live"
     [shownDayTick]="_chart.shownDayTick"
@@ -14,6 +16,7 @@
     [nextDay]="_chart.nextDay"
     [today]="_chart.today"
     (selectedRange)="facade.selectChartRange($event)"
+    (selectedResolution)="facade.selectChartResolution($event)"
     (selectedChartType)="facade.selectChartType($event)"
     (selectedDay)="facade.showChartDay($event)"
     (submittedDate)="onSubmitDate($event, _chart.today)"></app-chart-toolbar>
@@ -37,6 +40,7 @@
     <app-form-indicator
       class="mt-2"
       [spec]="_editing.spec"
+      [color]="_editing.color"
       [isNew]="_editing.id === null"
       (submittedIndicator)="onSubmitIndicator($event, _editing.id)"
       (clickedCancel)="onCancelIndicator()"></app-form-indicator>

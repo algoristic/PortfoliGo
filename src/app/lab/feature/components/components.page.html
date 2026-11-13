@@ -261,6 +261,16 @@
           }
         </ul>
       </div>
+      <div class="flex flex-col gap-2 text-sm">
+        <app-chart-color-picker
+          label="Farbe"
+          i18n-label="@@featureLab-componentsPage-colorPickerLabel"
+          testId="lab.components.color-picker"
+          [formField]="colorForm.color"></app-chart-color-picker>
+        <span class="text-fg-muted" data-testid="lab.components.color-picker.value">{{
+          colorModel().color
+        }}</span>
+      </div>
     </div>
   </app-panel>
 

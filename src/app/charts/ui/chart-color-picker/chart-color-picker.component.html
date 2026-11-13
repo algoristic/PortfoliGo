@@ -1,0 +1,23 @@
+@let _value = value();
+
+<div class="flex flex-wrap gap-1" role="radiogroup" [attr.aria-label]="label()">
+  @for (color of colors; track color) {
+    <label class="cursor-pointer rounded-full p-0.5 has-disabled:cursor-not-allowed">
+      <input
+        type="radio"
+        class="peer sr-only"
+        [name]="groupName"
+        [value]="color"
+        [checked]="color === _value"
+        [disabled]="disabled()"
+        [attr.aria-label]="colorLabels[color]"
+        [attr.data-testid]="testId() + '.' + color"
+        (change)="onSelect(color)"
+        (blur)="touch.emit()" />
+      <span
+        class="block size-6 rounded-full border-2 border-bg outline-offset-1 peer-checked:outline-2 peer-checked:outline-fg peer-focus-visible:outline-2 peer-focus-visible:outline-accent peer-disabled:opacity-50"
+        [class]="swatchClasses[color]"
+        aria-hidden="true"></span>
+    </label>
+  }
+</div>

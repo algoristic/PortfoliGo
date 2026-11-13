@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import type { IChartApi, ISeriesApi, SeriesType } from 'lightweight-charts';
+import type { IChartApi, ISeriesApi, ISeriesPrimitive, SeriesType, Time } from 'lightweight-charts';
 import type { MockInstance } from 'vitest';
 
 import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
@@ -31,6 +31,8 @@ interface RecordedSeries {
   series: ISeriesApi<SeriesType>;
   setData: MockInstance;
   update: MockInstance;
+  attachPrimitive: MockInstance;
+  detachPrimitive: MockInstance;
 }
 
 /** What the component did with the real library. */
@@ -56,6 +58,8 @@ function recordingLibrary(calls: LibraryCalls): () => Promise<PriceChartLibrary>
           series,
           setData: vi.spyOn(series, 'setData'),
           update: vi.spyOn(series, 'update'),
+          attachPrimitive: vi.spyOn(series, 'attachPrimitive'),
+          detachPrimitive: vi.spyOn(series, 'detachPrimitive'),
         });
         return series;
       });
@@ -245,6 +249,69 @@ describe('PriceChartComponent', () => {
       expect(fixture.nativeElement.getAttribute('data-overlay-points')).toBe(
         'bb.upper:20 bb.middle:20',
       );
+    });
+  });
+
+  // AP 5.8: the area between two lines (Bollinger bands) as a series primitive below the candles.
+  describe('filled bands', () => {
+    const line = (count: number, value: number): Array<{ tick: number; value: number }> =>
+      Array.from({ length: count }, (_, index) => ({ tick: start + index * STEP, value }));
+
+    /** Draws the primitive into a recording context and returns the path it filled. */
+    function drawnPath(primitive: ISeriesPrimitive<Time>): {
+      points: number;
+      fillStyle: unknown;
+    } {
+      let points = 0;
+      const context = {
+        fillStyle: '' as unknown,
+        beginPath: vi.fn(),
+        moveTo: () => points++,
+        lineTo: () => points++,
+        closePath: vi.fn(),
+        fill: vi.fn(),
+      };
+      const target = {
+        useMediaCoordinateSpace: (draw: (scope: { context: typeof context }) => void) =>
+          draw({ context }),
+      };
+      const renderer = primitive.paneViews?.()[0].renderer();
+      renderer?.draw(target as unknown as Parameters<NonNullable<typeof renderer>['draw']>[0]);
+      return {
+        points: context.fill.mock.calls.length > 0 ? points : 0,
+        fillStyle: context.fillStyle,
+      };
+    }
+
+    it('fills between an overlay and its second line below the series and detaches the fill', async () => {
+      fixture.componentRef.setInput('overlays', [
+        { id: 'bb.upper', points: line(130, 12), color: 'chart-2', fillTo: line(130, 8) },
+        { id: 'bb.lower', points: line(130, 8), color: 'chart-2' },
+      ]);
+      await settle(fixture);
+      const upper = calls.series[1];
+      expect(upper.attachPrimitive).toHaveBeenCalledTimes(1);
+      expect(calls.series[2].attachPrimitive).not.toHaveBeenCalled();
+      expect(fixture.nativeElement.getAttribute('data-overlay-fills')).toBe('bb.upper');
+      const primitive = upper.attachPrimitive.mock.lastCall?.[0] as ISeriesPrimitive<Time>;
+      expect(primitive.paneViews?.()[0].zOrder?.()).toBe('bottom');
+      // Along the upper line and back along the lower one, in chart-2 with alpha.
+      expect(drawnPath(primitive)).toEqual({ points: 260, fillStyle: '#c4520f1f' });
+
+      fixture.componentRef.setInput('overlays', [
+        { id: 'bb.upper', points: line(130, 13), color: 'chart-3', fillTo: line(130, 7) },
+        { id: 'bb.lower', points: line(130, 7), color: 'chart-3' },
+      ]);
+      await settle(fixture);
+      expect(upper.attachPrimitive).toHaveBeenCalledTimes(1);
+      expect(drawnPath(primitive).fillStyle).toBe('#2b8a3e1f');
+
+      fixture.componentRef.setInput('overlays', [
+        { id: 'bb.upper', points: line(130, 13), color: 'chart-3' },
+      ]);
+      await settle(fixture);
+      expect(upper.detachPrimitive).toHaveBeenCalledWith(primitive);
+      expect(fixture.nativeElement.getAttribute('data-overlay-fills')).toBe('');
     });
   });
 

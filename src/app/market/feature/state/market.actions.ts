@@ -1,6 +1,7 @@
 import { createAction, props } from '@ngrx/store';
 
 import { IndicatorSpec } from '@app/analysis/domain/models/indicator.model';
+import { ChartColor } from '@app/charts/ui/models/chart-color.model';
 import { PriceChartType } from '@app/charts/ui/price-chart/price-chart.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import {
@@ -8,7 +9,7 @@ import {
   ScreenerResult,
 } from '@app/engine/data-access/service/engine-service.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
-import { Candle } from '@app/market/domain/models/candle.model';
+import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
 import { ChartRange, LiveCandle } from '@app/market/domain/models/chart.model';
 import {
   IndexComposition,
@@ -72,6 +73,11 @@ export const clickedChartRange = createAction(
   '[Market/Page] Clicked chart range',
   props<{ range: ChartRange }>(),
 );
+/** A resolution of the price chart; `null` is „Auto“ (TS §11.7). */
+export const clickedChartResolution = createAction(
+  '[Market/Page] Clicked chart resolution',
+  props<{ resolution: CandleResolution | null }>(),
+);
 export const clickedChartType = createAction(
   '[Market/Page] Clicked chart type',
   props<{ chartType: PriceChartType }>(),
@@ -128,10 +134,10 @@ export const saveChartSettingsFailure = createAction(
   '[Market/API] Save chart settings failure',
   props<{ error: unknown }>(),
 );
-/** A new indicator (`id` `null`) or new parameters of an existing one (US-CH-02). */
+/** A new indicator (`id` `null`) or new parameters and colour of an existing one (US-CH-02). */
 export const submittedChartIndicator = createAction(
   '[Market/Page] Submitted chart indicator',
-  props<{ id: string | null; spec: IndicatorSpec }>(),
+  props<{ id: string | null; spec: IndicatorSpec; color: ChartColor }>(),
 );
 export const clickedRemoveChartIndicator = createAction(
   '[Market/Page] Clicked remove chart indicator',

@@ -41,6 +41,7 @@ import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { selectPhase } from '@app/engine/feature/state/session.selectors';
 import {
+  chartInterval,
   chartStartRequest,
   liveCandleStep,
   olderChartRequest,
@@ -119,6 +120,7 @@ export class MarketEffects {
       MarketActions.enterInstrumentPage,
       MarketActions.leaveInstrumentPage,
       MarketActions.clickedChartRange,
+      MarketActions.clickedChartResolution,
       MarketActions.clickedChartDay,
       MarketActions.submittedChartDate,
       MarketActions.detectedChartGap,
@@ -494,14 +496,15 @@ export class MarketEffects {
 
   /**
    * The start block of the chart (TS §11.7) once the instrument and the clock are known: on
-   * entering the page, a new period or day, and after skipped live candles. A new block replaces a
-   * running query; live 1T and 5T keep the last 1 or 5 days that have candles.
+   * entering the page, a new period, resolution or day, and after skipped live candles. A new
+   * block replaces a running query; live 1T and 5T keep the last 1 or 5 days that have candles.
    */
   loadChart$ = createEffect(() =>
     this.#actions$.pipe(
       ofType(
         MarketActions.enterInstrumentPage,
         MarketActions.clickedChartRange,
+        MarketActions.clickedChartResolution,
         MarketActions.clickedChartDay,
         MarketActions.submittedChartDate,
         MarketActions.detectedChartGap,
@@ -519,8 +522,12 @@ export class MarketEffects {
                   return EMPTY;
                 }
                 const { generation, range, day } = chart;
+                const interval = chartInterval(range, chart.resolution);
                 return this.#engine
-                  .candles({ series: instrument.series, ...chartStartRequest(range, day, now) })
+                  .candles({
+                    series: instrument.series,
+                    ...chartStartRequest(range, day, now, interval),
+                  })
                   .pipe(
                     map((result) => trimChartBlock(range, day, result)),
                     map(({ candles, hasOlder }) =>
@@ -555,9 +562,13 @@ export class MarketEffects {
         if (!chart.loadingOlder || instrument === null || oldest === undefined) {
           return EMPTY;
         }
-        const { generation } = chart;
+        const { generation, range, resolution } = chart;
+        const interval = chartInterval(range, resolution);
         return this.#engine
-          .candles({ series: instrument.series, ...olderChartRequest(chart.range, oldest.tick) })
+          .candles({
+            series: instrument.series,
+            ...olderChartRequest(range, oldest.tick, interval),
+          })
           .pipe(
             map(({ candles, hasOlder }) =>
               MarketActions.retrievedOlderChartCandles({ generation, candles, hasOlder }),

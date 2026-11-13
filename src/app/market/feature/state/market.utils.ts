@@ -81,21 +81,15 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/** Type guard for a stored indicator: `i<n>` id, valid spec, a chart colour. */
-export function isChartIndicator(value: unknown): value is ChartIndicator {
-  return (
-    isRecord(value) &&
-    typeof value['id'] === 'string' &&
-    INDICATOR_ID.test(value['id']) &&
-    isIndicatorSpec(value['spec']) &&
-    CHART_COLORS.some((color) => color === value['color'])
-  );
+function isChartColor(value: unknown): value is ChartColor {
+  return CHART_COLORS.some((color) => color === value);
 }
 
 /**
  * The settings of `pgo.ui.chart` (TS §9.3) from a stored value: every missing or invalid field
  * falls back to its default on its own; invalid indicators and repeated ids are dropped, at most
- * `MAX_CHART_INDICATORS` stay.
+ * `MAX_CHART_INDICATORS` stay. An indicator without a valid colour gets the first colour the
+ * indicators before it leave free, as it did when it was added.
  */
 export function parseChartSettings(data: unknown): ChartSettings {
   if (!isRecord(data)) {
@@ -105,12 +99,21 @@ export function parseChartSettings(data: unknown): ChartSettings {
   const valid: ChartIndicator[] = [];
   if (Array.isArray(indicators)) {
     for (const indicator of indicators) {
+      if (!isRecord(indicator) || valid.length >= MAX_CHART_INDICATORS) {
+        continue;
+      }
+      const { id, spec, color } = indicator;
       if (
-        isChartIndicator(indicator) &&
-        valid.length < MAX_CHART_INDICATORS &&
-        !valid.some((other) => other.id === indicator.id)
+        typeof id === 'string' &&
+        INDICATOR_ID.test(id) &&
+        isIndicatorSpec(spec) &&
+        !valid.some((other) => other.id === id)
       ) {
-        valid.push({ id: indicator.id, spec: copySpec(indicator.spec), color: indicator.color });
+        valid.push({
+          id,
+          spec: copySpec(spec),
+          color: isChartColor(color) ? color : nextIndicatorColor(valid),
+        });
       }
     }
   }
@@ -134,32 +137,36 @@ export function nextIndicatorId(indicators: readonly ChartIndicator[]): string {
   return `i${highest + 1}`;
 }
 
-/** The first chart colour no indicator uses; when all are taken, they repeat in order. */
+/**
+ * The colour a new indicator starts with (TS §11.7): the first chart colour no indicator uses;
+ * when all are in use, the first one.
+ */
 export function nextIndicatorColor(indicators: readonly ChartIndicator[]): ChartColor {
   return (
     CHART_COLORS.find((color) => !indicators.some((indicator) => indicator.color === color)) ??
-    CHART_COLORS[indicators.length % CHART_COLORS.length]
+    CHART_COLORS[0]
   );
 }
 
 /**
- * Adds an indicator (`id` `null`, with the next id and colour; ignored at `MAX_CHART_INDICATORS`)
- * or changes the parameters of an existing one, which keeps its id and colour.
+ * Adds an indicator (`id` `null`, with the next id; ignored at `MAX_CHART_INDICATORS`) or changes
+ * the parameters and the colour of an existing one, which keeps its id. Several indicators may
+ * share a colour.
  */
 export function withChartIndicator(
   indicators: readonly ChartIndicator[],
   id: string | null,
   spec: IndicatorSpec,
+  color: ChartColor,
 ): readonly ChartIndicator[] {
   if (id === null) {
     return indicators.length >= MAX_CHART_INDICATORS
       ? indicators
-      : [
-          ...indicators,
-          { id: nextIndicatorId(indicators), spec, color: nextIndicatorColor(indicators) },
-        ];
+      : [...indicators, { id: nextIndicatorId(indicators), spec, color }];
   }
-  return indicators.map((indicator) => (indicator.id === id ? { ...indicator, spec } : indicator));
+  return indicators.map((indicator) =>
+    indicator.id === id ? { ...indicator, spec, color } : indicator,
+  );
 }
 
 /** The screener without search, filters or a chosen sort. */

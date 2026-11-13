@@ -1,19 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { IndicatorSpec } from '@app/analysis/domain/models/indicator.model';
+import { ChartColor } from '@app/charts/ui/models/chart-color.model';
 
 import { FormIndicatorComponent } from './form-indicator.component';
+import { SubmittedIndicator } from './form-indicator.model';
 
 import { byTestId, click, queryByTestId, select, textOf, typeText } from '../../../../testing/dom';
 
 describe('FormIndicatorComponent', () => {
   let fixture: ComponentFixture<FormIndicatorComponent>;
-  let submitted: IndicatorSpec[];
+  let submitted: SubmittedIndicator[];
   let root: HTMLElement;
 
-  async function render(spec: IndicatorSpec, isNew: boolean): Promise<void> {
+  async function render(
+    spec: IndicatorSpec,
+    isNew: boolean,
+    color: ChartColor = 'chart-1',
+  ): Promise<void> {
     fixture = TestBed.createComponent(FormIndicatorComponent);
     fixture.componentRef.setInput('spec', spec);
+    fixture.componentRef.setInput('color', color);
     fixture.componentRef.setInput('isNew', isNew);
     submitted = [];
     fixture.componentInstance.submittedIndicator.subscribe((value) => submitted.push(value));
@@ -61,7 +68,9 @@ describe('FormIndicatorComponent', () => {
     select(multiplier, '2.5');
     typeText(period(), '30');
     await submit();
-    expect(submitted).toEqual([{ kind: 'bollinger', period: 30, multiplier: 2.5 }]);
+    expect(submitted).toEqual([
+      { spec: { kind: 'bollinger', period: 30, multiplier: 2.5 }, color: 'chart-1' },
+    ]);
   });
 
   it.each(['1', '201', '20.5', ''])('rejects the period %j', async (value) => {
@@ -83,16 +92,51 @@ describe('FormIndicatorComponent', () => {
     typeText(period(), '200');
     await submit();
     expect(submitted).toEqual([
-      { kind: 'ema', period: 2 },
-      { kind: 'ema', period: 200 },
+      { spec: { kind: 'ema', period: 2 }, color: 'chart-1' },
+      { spec: { kind: 'ema', period: 200 }, color: 'chart-1' },
     ]);
     expect(queryByTestId(root, 'market.instrument.indicator-form.period-error')).toBeNull();
   });
 
   it('starts from the parameters of an existing Bollinger indicator', async () => {
-    await render({ kind: 'bollinger', period: 50, multiplier: 0.5 }, false);
+    await render({ kind: 'bollinger', period: 50, multiplier: 0.5 }, false, 'chart-4');
     expect(period().value).toBe('50');
     await submit();
-    expect(submitted).toEqual([{ kind: 'bollinger', period: 50, multiplier: 0.5 }]);
+    expect(submitted).toEqual([
+      { spec: { kind: 'bollinger', period: 50, multiplier: 0.5 }, color: 'chart-4' },
+    ]);
+  });
+
+  // AP 5.8: the colour is a named radio group of the six chart colours.
+  it('offers the chart colours as a named radio group and submits the chosen one', async () => {
+    await render({ kind: 'sma', period: 20 }, true, 'chart-3');
+    const group = root.querySelector('[role="radiogroup"]');
+    expect(group?.getAttribute('aria-label')).toBe('Farbe');
+    const radios = Array.from(
+      root.querySelectorAll<HTMLInputElement>('[role="radiogroup"] input[type="radio"]'),
+    );
+    expect(radios.map((radio) => radio.getAttribute('aria-label'))).toEqual([
+      'Blau',
+      'Orange',
+      'Grün',
+      'Violett',
+      'Türkis',
+      'Magenta',
+    ]);
+    expect(new Set(radios.map((radio) => radio.name)).size).toBe(1);
+    expect(radios.filter((radio) => radio.checked).map((radio) => radio.value)).toEqual([
+      'chart-3',
+    ]);
+
+    click(byTestId(root, 'market.instrument.indicator-form.color.chart-5'));
+    await fixture.whenStable();
+    // Another kind keeps the chosen colour.
+    select(byTestId(root, 'market.instrument.indicator-form.kind'), 'ema');
+    await fixture.whenStable();
+    expect(
+      byTestId<HTMLInputElement>(root, 'market.instrument.indicator-form.color.chart-5').checked,
+    ).toBe(true);
+    await submit();
+    expect(submitted).toEqual([{ spec: { kind: 'ema', period: 20 }, color: 'chart-5' }]);
   });
 });

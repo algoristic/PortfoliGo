@@ -4,8 +4,12 @@ import {
   applyLiveCandle,
   CHART_RANGE_INTERVALS,
   chartBlockStartDay,
+  chartInterval,
+  chartResolutions,
   chartStartRequest,
   chosenChartDay,
+  isChartResolutionAllowed,
+  keptChartResolution,
   liveCandleStep,
   nextChartDay,
   olderChartRequest,
@@ -14,7 +18,7 @@ import {
   shownChartDay,
   trimChartBlock,
 } from './chart-view-logic';
-import { Candle } from './models/candle.model';
+import { Candle, CANDLE_RESOLUTIONS } from './models/candle.model';
 import { CHART_RANGES } from './models/chart.model';
 
 // Views of the price chart (US-CH-01, TS §11.7). Days and ticks come from `Date.UTC`
@@ -50,6 +54,66 @@ describe('chart view logic', () => {
       ['max', '1w'],
     ] as const)('shows %s in %s candles', (range, interval) => {
       expect(CHART_RANGE_INTERVALS[range]).toBe(interval);
+    });
+  });
+
+  describe('isChartResolutionAllowed', () => {
+    // TS §11.7, AP 5.8: a period holds more than one candle and at most 2,000, counted with
+    // 1,440 minute candles a day; intraday at most 23 market days. Periods in market days at most:
+    // 1T 1, 5T 5, a month 23, 6M 138, 1J 276, 5J 1,380, Max unbounded.
+    it.each([
+      ['1d', ['1m', '5m', '15m', '1h']],
+      ['5d', ['5m', '15m', '1h', '1d']],
+      ['1m', ['1h', '1d', '1w']],
+      ['6m', ['1d', '1w']],
+      ['1y', ['1d', '1w']],
+      ['5y', ['1d', '1w']],
+      ['max', []],
+    ] as const)('lets %s choose %j', (range, allowed) => {
+      expect(chartResolutions(range)).toEqual(allowed);
+      for (const resolution of CANDLE_RESOLUTIONS) {
+        expect(isChartResolutionAllowed(range, resolution)).toBe(
+          (allowed as readonly string[]).includes(resolution),
+        );
+      }
+    });
+  });
+
+  describe('keptChartResolution and chartInterval', () => {
+    // TS §11.7: the chosen resolution stays with a new period while allowed, else „Auto“.
+    it.each([
+      ['1h', '1d', '1h'],
+      ['1h', '1m', '1h'],
+      ['1h', '6m', null],
+      ['5m', '5d', '5m'],
+      ['5m', '1m', null],
+      ['1d', '5d', '1d'],
+      ['1d', '1d', null],
+      ['1w', '5y', '1w'],
+      ['1w', 'max', null],
+      [null, '1y', null],
+    ] as const)('keeps %s for %s as %s', (resolution, range, expected) => {
+      expect(keptChartResolution(range, resolution)).toBe(expected);
+    });
+
+    it('loads the chosen resolution, otherwise the automatic one', () => {
+      expect(chartInterval('1m', '1d')).toBe('1d');
+      expect(chartInterval('1m', null)).toBe('1h');
+      expect(chartInterval('max', null)).toBe('1w');
+    });
+
+    it('keeps a resolution exactly when it is allowed for the new period', () => {
+      fc.assert(
+        fc.property(
+          fc.constantFrom(...CHART_RANGES),
+          fc.constantFrom(...CANDLE_RESOLUTIONS),
+          (range, resolution) => {
+            const kept = keptChartResolution(range, resolution);
+            expect(kept === resolution).toBe(isChartResolutionAllowed(range, resolution));
+            expect(kept === null || kept === resolution).toBe(true);
+          },
+        ),
+      );
     });
   });
 
@@ -110,6 +174,28 @@ describe('chart view logic', () => {
         limit: LIMIT,
       });
       expect(chartStartRequest('max', null, now)).toEqual({ interval: '1w', limit: LIMIT });
+    });
+  });
+
+  describe('chartStartRequest with a chosen resolution', () => {
+    it('loads the period of the range in the chosen resolution', () => {
+      const now = tick(2030, 4, 1, 8);
+      expect(chartStartRequest('5d', null, now, '1d')).toEqual({
+        interval: '1d',
+        from: tick(2030, 3, 25),
+        limit: LIMIT,
+      });
+      expect(chartStartRequest('1d', day(2025, 6, 4), now, '5m')).toEqual({
+        interval: '5m',
+        from: tick(2025, 6, 4),
+        to: tick(2025, 6, 4, 23, 59),
+        limit: LIMIT,
+      });
+      expect(chartStartRequest('1y', null, tick(2030, 6, 15, 10), '1w')).toEqual({
+        interval: '1w',
+        from: tick(2029, 6, 15),
+        limit: LIMIT,
+      });
     });
   });
 
@@ -178,6 +264,21 @@ describe('chart view logic', () => {
       expect(olderChartRequest('max', tick(2025, 1, 6))).toEqual({
         interval: '1w',
         to: tick(2025, 1, 5, 23, 59),
+        limit: LIMIT,
+      });
+    });
+
+    it('loads older blocks in the chosen resolution', () => {
+      expect(olderChartRequest('1d', tick(2030, 4, 1, 9), '15m')).toEqual({
+        interval: '15m',
+        from: tick(2030, 3, 29),
+        to: tick(2030, 3, 31, 23, 59),
+        limit: LIMIT,
+      });
+      expect(olderChartRequest('1m', tick(2030, 4, 1), '1d')).toEqual({
+        interval: '1d',
+        from: tick(2030, 2, 28),
+        to: tick(2030, 3, 31, 23, 59),
         limit: LIMIT,
       });
     });

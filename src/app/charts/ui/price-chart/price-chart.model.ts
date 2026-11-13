@@ -45,13 +45,15 @@ export type PriceChartLineStyle = (typeof PRICE_CHART_LINE_STYLES)[number];
 /**
  * A line over the price (e.g. an indicator, AP 4.3) in a category colour, solid unless `lineStyle`
  * says otherwise. Points that keep their values from one input to the next are updated
- * incrementally like candles.
+ * incrementally like candles. `fillTo` fills the area between this line and a second line with the
+ * same ticks translucently in a colour derived from `color` (Bollinger bands, AP 5.8).
  */
 export interface PriceChartOverlay {
   id: string;
   points: readonly PriceChartOverlayPoint[];
   color: ChartColor;
   lineStyle?: PriceChartLineStyle;
+  fillTo?: readonly PriceChartOverlayPoint[];
 }
 
 /** The visible period of the chart in game time; `null` without data. */

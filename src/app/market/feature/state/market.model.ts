@@ -48,7 +48,7 @@ export const SCREENER_INITIAL_ROWS = 20;
 /** Version of `pgo.ui.chart` (TS §9.3); entries of other versions count as missing. */
 export const CHART_SETTINGS_VERSION = 1;
 
-/** At most one indicator per chart colour (TS §11.7). */
+/** Most indicators on the chart (TS §11.7). */
 export const MAX_CHART_INDICATORS = 6;
 
 /** What `pgo.ui.chart` keeps on this device (TS §9.3): period, chart type and indicators. */
@@ -73,12 +73,14 @@ export interface InstrumentQuote {
 }
 
 /**
- * The chart of the instrument page (TS §11.3, §11.7): period, chart type, the chosen past day of 1T
+ * The chart of the instrument page (TS §11.3, §11.7): period, resolution, chart type, the chosen past day of 1T
  * (`null` = live), the loaded candles of the shown chart only, and the loading state. Every new
  * start block raises `generation`; answers of older generations are dropped.
  */
 export interface InstrumentChartState {
   range: ChartRange;
+  /** The chosen candle resolution, `null` = „Auto“ (not stored, TS §11.7). */
+  resolution: CandleResolution | null;
   chartType: PriceChartType;
   indicators: readonly ChartIndicator[];
   day: number | null;
@@ -102,6 +104,9 @@ export interface ChartSubscription {
 /** The chart of the instrument page as the view shows it. */
 export interface InstrumentChartView {
   range: ChartRange;
+  /** The chosen resolution, `null` = „Auto“. */
+  resolution: CandleResolution | null;
+  /** The resolution of the loaded candles. */
   interval: CandleResolution;
   chartType: PriceChartType;
   indicators: readonly ChartIndicator[];

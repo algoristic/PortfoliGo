@@ -749,7 +749,7 @@ ask    = roundUp(mid × (1 + spread/2), priceStep(mid))     mit ask − bid ≥ 
 - **Marktzustände zu Monatsbeginn:** Im Arbeitsspeicher bleibt zu jedem Monatsbeginn der vollständige Marktzustand: Faktorzustände, unternehmensspezifische Anteile `U_i`, letzte Log-Schlusskurse, nächste Ex-Tage mit angekündigten Beträgen, `R` je Index sowie `k`, Topf und nächster Ex-Tag je ETF (Standardwelt rund 7 kB je Monat). Jeder vergangene Tag entsteht daraus mit höchstens einem Monat Tagesschritten bitgleich neu (`recomputeSupportDays`). Die Einträge werden mitgespeichert (E-08, rund 80 kB je Spieljahr, eigener Store, §9.1) und beim Laden (AP 2.3) gelesen. Der Aufbau durch volle Tagesschritte seit der Epoche (rund 45 ms je Spieljahr) kostete bei jedem Laden eines Spielers mit 80 Spieljahren rund 3,6 s auf dem Entwicklungsrechner. Faktorzustände allein ließen sich schneller nachrechnen. `U_i` müsste dann aber je Instrument seit der Epoche nachgerechnet werden, und ab AP 1.6 hängt es über die Ex-Tag-Abschläge von den Faktoren ab.
 - **Historie eines Instruments:** Seine Tagesstützpunkte lassen sich aus den Marktzuständen zu Monatsbeginn und seinen eigenen Strömen neu berechnen (§4.2), ohne andere Instrumente; ab der Epoche reicht dafür die Faktorhistorie (`recomputeInstrumentHistory`). Jeder vergangene Tag ist so minutengenau abrufbar.
 - **Vorlauf:** Von der Epoche (01.01.2020) bis zum Spielstart laufen dieselben Tagesschritte wie im Spiel; ein Sonderverfahren gibt es nicht. Charts aller Zeiträume haben ab dem ersten Spieltag Daten, auch Intraday-Charts.
-- **Chart-Auflösung je Zeitraum:** 1T → 1m bzw. 5m, 5T → 15m, 1M → 1h, 6M bis 5J → 1d, Max → 1d bzw. 1w. Zwischenstufen werden beim Abruf aggregiert.
+- **Chart-Auflösung je Zeitraum:** automatisch 1T → 1m, 5T → 15m, 1M → 1h, 6M und 1J → 1d, 5J und Max → 1w; ab AP 5.8 wählt der Anwender auch eine andere Auflösung, soweit der Zeitraum sie zulässt (§11.7). Zwischenstufen werden beim Abruf aggregiert.
 - **Zeitachse:** Spielzeit als UTC-Zeitstempel; Charts formatieren in UTC und zeigen so die Spielzeit unverfälscht.
 
 ### 6.9 Kalibrierung
@@ -1976,7 +1976,7 @@ Alle Werte sind versioniertes JSON (`{ "v": 1, "data": … }`; Einträge mit and
 
 `parseSettings` (`settings/domain/settings-logic.ts`) ersetzt jeden fehlenden oder ungültigen Wert einzeln durch seine Vorgabe und behält gültige Werte anderer Abschnitte. Spätere APs ergänzen Abschnitte (Farben, Bewegung, Toasts und Browser-Benachrichtigungen je Ereignis-Code) ohne neue Version; erst eine inkompatible Änderung erhöht `SETTINGS_VERSION` (`settings/data-access/service/settings-service.model.ts`) – und zugleich die Version im Inline-Skript von `src/index.html` (§11.5), das `data.appearance.colorScheme` direkt liest. Gespeichert wird nach jeder Änderung; schlägt das fehl, gilt die Einstellung bis zum Neuladen und ein Toast weist darauf hin.
 
-**`pgo.ui.chart` (AP 4.3):** Version 1 (`CHART_SETTINGS_VERSION`), geräteweit für alle Spieler; gelesen beim Betreten eines Spiels, geschrieben nach jeder Änderung von Zeitraum, Charttyp oder Indikatoren (Effects über den `LocalStorageService`):
+**`pgo.ui.chart` (AP 4.3, AP 5.8):** Version 1 (`CHART_SETTINGS_VERSION`), geräteweit für alle Spieler; gelesen beim Betreten eines Spiels, geschrieben nach jeder Änderung von Zeitraum, Charttyp oder Indikatoren samt Farbe (Effects über den `LocalStorageService`). Die gewählte Kerzen-Auflösung wird nicht gespeichert; nach dem Neuladen gilt „Auto“. Die Farbe lag schon in Version 1 bei jedem Indikator, deshalb bleibt die Version mit AP 5.8 unverändert:
 
 ```json
 {
@@ -1996,7 +1996,14 @@ Alle Werte sind versioniertes JSON (`{ "v": 1, "data": … }`; Einträge mit and
 }
 ```
 
-`parseChartSettings` (`market/feature/state/market.utils.ts`) ersetzt einen fehlenden oder ungültigen Zeitraum bzw. Charttyp durch die Vorgabe (1T, Kerzen) und verwirft ungültige Indikatoren einzeln (Id `i<n>`, Parameter nach §11.7, Kategoriefarbe), doppelte Ids und alles über sechs Indikatoren. Ein gewählter vergangener Tag (1T) wird nicht gespeichert; jedes Instrument beginnt live. Schlägt das Speichern fehl, gilt die Auswahl bis zum Neuladen und ein Toast weist darauf hin.
+`parseChartSettings` (`market/feature/state/market.utils.ts`) ersetzt einen fehlenden oder ungültigen Zeitraum bzw. Charttyp durch die Vorgabe (1T, Kerzen) und verwirft ungültige Indikatoren einzeln (Id `i<n>`, Parameter nach §11.7), doppelte Ids und alles über sechs Indikatoren. Mehrere Indikatoren dürfen dieselbe Farbe haben. Ein Indikator ohne gültige Kategoriefarbe wird nicht mehr verworfen, sondern bekommt die erste Farbe, die die Indikatoren vor ihm frei lassen (Regel beim Hinzufügen, §11.7). Ein gewählter vergangener Tag (1T) wird nicht gespeichert; jedes Instrument beginnt live. Schlägt das Speichern fehl, gilt die Auswahl bis zum Neuladen und ein Toast weist darauf hin.
+
+| Gespeicherte Farben      | Gelesene Farben           |
+| ------------------------ | ------------------------- |
+| –, –                     | chart-1, chart-2          |
+| chart-2, –               | chart-2, chart-1          |
+| `red`, chart-1, –        | chart-1, chart-1, chart-2 |
+| chart-4, chart-4, `null` | chart-4, chart-4, chart-1 |
 
 ### 9.4 Mehrere Tabs
 
@@ -2284,11 +2291,24 @@ Seit Angular 21 gibt es mit Angular Aria (`@angular/aria`) offizielle, ungestylt
 - Zeitachse in Spielzeit: Tick 0 entspricht 01.01.2020 00:00 UTC (`tickToChartTime` in `charts/ui/price-chart/price-chart.utils.ts`); weil der Spielkalender gregorianisch ist, gelten die Datumsgrenzen der Bibliothek unverändert, Nächte und Wochenenden entfallen auf der indexbasierten Zeitachse. Fadenkreuz und Achsenmarken formatiert die App (`formatGameTime`, deutsch).
 - Historie beim Scrollen: Der gewählte Zeitraum legt nur den Startausschnitt fest. Erreicht der sichtbare Bereich durch Scrollen oder Zoomen des Nutzers die älteste Kerze, meldet der Wrapper das (`scrolledToStart`); der eingepasste Startausschnitt eines neuen Datensatzes lädt nichts nach, und die Seite lädt den nächsten älteren Block (Länge je Zeitraum) bis zur Epoche nach. Vorangestellte Kerzen behalten den Ausschnitt; steht er danach noch an der ältesten Kerze, folgt der nächste Block. Andere neue Daten werden eingepasst. Der Store hält nur die geladenen Kerzen des sichtbaren Charts (im Labor umgesetzt, Muster für AP 4.2).
   - Umsetzung im Worker (AP 4.1, §8.2): Der Startausschnitt ist eine `candles`-Abfrage ohne `to` (bis jetzt) mit einer `limit` je Zeitraum; jeder ältere Block dieselbe Abfrage mit `to` = Beginn der ältesten geladenen Kerze − 1, bis `hasOlder` `false` ist. Intraday-Blöcke umfassen höchstens 23 Markttage und können weniger als `limit` Kerzen enthalten. Die laufende Kerze schreibt das Chart-Abo fort (`chartCandles`, `series.update`; bei übersprungenen Kerzen neu laden, §8.4).
-- **Instrumentseite (AP 4.2, US-CH-01):** Die Auflösung folgt dem Zeitraum (`CHART_RANGE_INTERVALS` in `market/domain/chart-view-logic.ts`):
+- **Instrumentseite (AP 4.2, US-CH-01):** Ohne Wahl („Auto“) folgt die Auflösung dem Zeitraum (`CHART_RANGE_INTERVALS` in `market/domain/chart-view-logic.ts`):
 
   | Zeitraum | 1T  | 5T  | 1M  | 6M  | 1J  | 5J  | Max |
   | -------- | --- | --- | --- | --- | --- | --- | --- |
   | Kerze    | 1m  | 15m | 1h  | 1d  | 1d  | 1w  | 1w  |
+  - **Wählbare Auflösung (AP 5.8):** Neben dem Zeitraum wählt der Anwender „Auto“ oder eine Auflösung (`market/ui/chart-toolbar`, Auswahlliste „Auflösung“; unzulässige Einträge sind gesperrt). Zulässig ist eine Auflösung für einen Zeitraum, wenn der Zeitraum mehr als eine Kerze enthält und in eine Antwort der Kerzenabfrage passt (§8.2): höchstens `MAX_CANDLE_LIMIT` = 2.000 Kerzen, gezählt mit einem ganzen Handelstag (1.440 Minutenkerzen je Tag, also unabhängig vom Instrument), und intraday höchstens `MAX_INTRADAY_DAYS` = 23 Markttage. Als Länge zählen die Markttage höchstens: 1T 1, 5T 5, je Monat 23 (1M 23, 6M 138, 1J 276, 5J 1.380), Max unbegrenzt; eine Wochenkerze zählt fünf Markttage (`isChartResolutionAllowed`, `chartResolutions`, Beispieltabelle der Logik-Tests):
+
+    | Zeitraum | 1m  | 5m  | 15m | 1h  | 1d  | 1w  |
+    | -------- | --- | --- | --- | --- | --- | --- |
+    | 1T       | ja  | ja  | ja  | ja  | –   | –   |
+    | 5T       | –   | ja  | ja  | ja  | ja  | –   |
+    | 1M       | –   | –   | –   | ja  | ja  | ja  |
+    | 6M, 1J   | –   | –   | –   | –   | ja  | ja  |
+    | 5J       | –   | –   | –   | –   | ja  | ja  |
+    | Max      | –   | –   | –   | –   | –   | –   |
+
+    Max bietet damit nur „Auto“. Beim Wechsel des Zeitraums (auch zu einem Tag in 1T) bleibt die gewählte Auflösung erhalten, solange sie zulässig ist, sonst gilt „Auto“ (`keptChartResolution`); Beispiele: 1h von 5T nach 1M bleibt, nach 6M „Auto“; 5m von 1T nach 5T bleibt, nach 1M „Auto“; 1d von 5T nach 1T „Auto“; 1w von 5J nach Max „Auto“. Startblock, ältere Blöcke beim Scrollen und das Chart-Abo der Live-Kerzen laufen in der gewählten Auflösung (`chartInterval`); die Blocklänge folgt weiter dem Zeitraum. Die Wahl liegt nur im Slice (`market.chart.resolution`, `null` = „Auto“), nicht in `pgo.ui.chart`.
+
   - Startblock (`chartStartRequest`): live ohne `to` ab dem ersten Tag des Zeitraums – 1T und 5T die letzten 1 bzw. 5 Markttage, und zwar einen Markttag weiter zurück, weil vor der Eröffnung heute noch keine Kerzen hat; `trimChartBlock` behält dann die letzten 1 bzw. 5 Tage mit Kerzen. 1M, 6M, 1J, 5J beginnen am selben Datum 1, 6, 12, 60 Monate zurück (`monthsBackDay`), Max an der Epoche. Ältere Blöcke (`olderChartRequest`) umfassen denselben Zeitraum vor der ältesten Kerze; intraday enden sie mit dem Vortag, damit sie ganze Tage enthalten.
   - Tag-Navigation in 1T: vorheriger und nächster Markttag, ein Datumsfeld (Markttag am oder vor dem Datum, frühestens der erste Markttag 01.01.2020, ab heute live) und „Heute“. Ein gewählter Tag lädt den ganzen Tag und abonniert keine Live-Kerzen.
   - Live (`liveCandleStep`): gleicher Beginn ersetzt die neueste Kerze; eine neue Kerze wird angehängt, wenn `previous` die neueste geladene abschließt, sonst lädt der Startblock neu (§8.4); 1T lädt auch neu, sobald ein neuer Tag beginnt, und zeigt so immer einen Tag.
@@ -2317,8 +2337,19 @@ Seit Angular 21 gibt es mit Angular Aria (`@angular/aria`) offizielle, ungestylt
   | Bollinger oben  | –   | –   | 7,2660          | 9,2660          | 8,6330          | 9,6330          |
   | Bollinger unten | –   | –   | 0,7340          | 2,7340          | 5,3670          | 6,3670          |
   - Inkrementell: `createIndicatorTracker(spec)` liefert einen Fortschreiber mit `push(x)` (neue Kerze) und `replaceLast(x)` (laufende Kerze geändert). Er hält das Fenster der letzten `n` Werte (SMA, Bollinger: jeder Punkt wird über das Fenster in derselben Reihenfolge neu summiert, keine gleitende Summe) bzw. den Durchschnitt vor dem neuesten Wert (EMA, SMMA); seine Ergebnisse sind bitgleich zur Vollberechnung `indicatorSeries(values, spec)`. `market/domain/chart-indicator-logic.ts` (`ChartIndicatorSet`) setzt die Indikatoren des Charts fort, wenn sich nur die neueste Kerze geändert hat oder eine angehängt wurde (wie `incrementalUpdates` des Wrappers), sonst (neuer Datensatz, vorangestellte Kerzen, geänderte Parameter) rechnet es neu.
-  - Bedienung: Die Legende unter der OHLC-Anzeige (`market/ui/chart-indicators`) zeigt je Indikator Farbe, Name mit Parametern („SMA 20“, „Bollinger 20/2,5“) und die Werte unter dem Fadenkreuz bzw. an der neuesten Kerze (Bollinger: Mitte · oben · unten), dazu „Ändern“, „Entfernen“ und „+ Indikator“. Das Formular (`market/ui/form-indicator`, Signal Forms) wählt beim Hinzufügen die Art (Vorgaben je Art) und ändert sonst nur die Parameter. Mehrere Indikatoren gleichzeitig, auch dieselbe Art mehrfach, höchstens sechs (`MAX_CHART_INDICATORS`): Jeder bekommt beim Hinzufügen die erste freie Kategoriefarbe `--pgo-chart-1` … `-6` und behält sie, sodass heute höchstens ein Indikator je Chart-Farbe besteht. Bollinger zeichnet drei Linien in derselben Farbe, die Bänder gestrichelt (`PriceChartOverlay.lineStyle`).
-  - **Ab AP 5.8 (entschieden 13.11.2026):** Der Anwender wählt die Farbe; mehrere Indikatoren dürfen dieselbe Farbe haben, die Regel „höchstens ein Indikator je Chart-Farbe“ entfällt. Ein neuer Indikator bekommt weiterhin die erste freie Farbe, sind alle belegt, die erste. Die Obergrenze von sechs Indikatoren bleibt. Die wählbare Kerzen-Auflösung bleibt beim Wechsel des Zeitraums erhalten, solange sie für den neuen Zeitraum zulässig ist, sonst fällt sie auf „Auto“ zurück; sie wird nicht in `pgo.ui.chart` gespeichert.
+  - Bedienung: Die Legende unter der OHLC-Anzeige (`market/ui/chart-indicators`) zeigt je Indikator Farbe, Name mit Parametern („SMA 20“, „Bollinger 20/2,5“) und die Werte unter dem Fadenkreuz bzw. an der neuesten Kerze (Bollinger: Mitte · oben · unten), dazu „Ändern“, „Entfernen“ und „+ Indikator“. Das Formular (`market/ui/form-indicator`, Signal Forms) wählt beim Hinzufügen die Art (Vorgaben je Art) und ändert sonst nur die Parameter. Mehrere Indikatoren gleichzeitig, auch dieselbe Art mehrfach, höchstens sechs (`MAX_CHART_INDICATORS`). Das Formular wählt auch die Farbe aus `--pgo-chart-1` … `-6` (AP 5.8, `charts/ui/chart-color-picker`: Radiogruppe „Farbe“ mit benannten Farbfeldern Blau, Orange, Grün, Violett, Türkis, Magenta, per Tab und Pfeiltasten bedienbar); mehrere Indikatoren dürfen dieselbe Farbe haben. Ein neuer Indikator startet mit der ersten freien Farbe, sind alle belegt, mit der ersten (`nextIndicatorColor`):
+
+    | Farben der vorhandenen Indikatoren          | neuer Indikator |
+    | ------------------------------------------- | --------------- |
+    | –                                           | chart-1         |
+    | chart-2                                     | chart-1         |
+    | chart-1, chart-2                            | chart-3         |
+    | chart-1, chart-1, chart-3                   | chart-2         |
+    | chart-6, chart-5, chart-4, chart-3, chart-2 | chart-1         |
+    | chart-1 … chart-6                           | chart-1         |
+
+    SMA, EMA und SMMA zeichnen eine Linie in der Farbe. Bollinger zeichnet drei Linien in derselben Farbe, die Bänder gestrichelt (`PriceChartOverlay.lineStyle`), und füllt die Fläche zwischen den Bändern in der Linienfarbe mit 12 % Deckkraft (`PriceChartOverlay.fillTo`; ein eigenes Series-Primitive `BandFillPrimitive` in `charts/ui/price-chart/band-fill.primitive.ts`, unter der Kursreihe gezeichnet, ohne neue Abhängigkeit). Die Fläche ist im hellen und im dunklen Theme lesbar, Kerzen und Linien bleiben darüber erkennbar (Sichtprüfung AP 5.8).
+
   - Gespeichert wird die Auswahl geräteweit in `pgo.ui.chart` (§9.3).
 
 ### 11.8 Formulare

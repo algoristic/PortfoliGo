@@ -80,8 +80,6 @@ describe('market utils', () => {
         { ...SMA, id: 7 },
         { ...SMA, id: 'i9', spec: { kind: 'sma', period: 1 } },
         { ...SMA, id: 'i9', spec: { kind: 'bollinger', period: 20 } },
-        { ...SMA, id: 'i9', color: 'red' },
-        { ...SMA, id: 'i9', color: undefined },
         null,
         'i9',
         { ...SMA, color: 'chart-3' },
@@ -101,6 +99,32 @@ describe('market utils', () => {
       ]);
     });
 
+    // TS §9.3: an indicator without a valid colour gets the first colour the ones before it leave
+    // free, as when it was added.
+    it.each([
+      [
+        [undefined, undefined],
+        ['chart-1', 'chart-2'],
+      ],
+      [
+        ['chart-2', undefined],
+        ['chart-2', 'chart-1'],
+      ],
+      [
+        ['red', 'chart-1', undefined],
+        ['chart-1', 'chart-1', 'chart-2'],
+      ],
+      [
+        ['chart-4', 'chart-4', null],
+        ['chart-4', 'chart-4', 'chart-1'],
+      ],
+    ])('gives the stored colours %j the colours %j', (stored, expected) => {
+      const indicators = stored.map((color, index) => ({ ...SMA, id: `i${index + 1}`, color }));
+      expect(parseChartSettings({ indicators }).indicators.map(({ color }) => color)).toEqual(
+        expected,
+      );
+    });
+
     it('drops unknown fields of an indicator', () => {
       const stored = { ...SMA, extra: 1, spec: { ...SMA.spec } };
       expect(parseChartSettings({ indicators: [stored] }).indicators).toEqual([SMA]);
@@ -116,33 +140,39 @@ describe('market utils', () => {
       expect(nextIndicatorColor([SMA, BOLLINGER])).toBe('chart-3');
     });
 
-    it('repeats the colours in order when all are taken', () => {
-      const colors = ['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5', 'chart-6'] as const;
-      const all = colors.map((color, index) => ({ ...SMA, id: `i${index + 1}`, color }));
-      expect(nextIndicatorColor(all)).toBe('chart-1');
-      expect(nextIndicatorColor([...all, { ...SMA, id: 'i7' }])).toBe('chart-2');
+    // TS §11.7: the first free colour; when all are in use, the first one.
+    it.each([
+      [[], 'chart-1'],
+      [['chart-2'], 'chart-1'],
+      [['chart-1', 'chart-2'], 'chart-3'],
+      [['chart-1', 'chart-1', 'chart-3'], 'chart-2'],
+      [['chart-6', 'chart-5', 'chart-4', 'chart-3', 'chart-2'], 'chart-1'],
+      [['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5', 'chart-6'], 'chart-1'],
+    ] as const)('gives a new indicator next to %j the colour %s', (colors, expected) => {
+      const indicators = colors.map((color, index) => ({ ...SMA, id: `i${index + 1}`, color }));
+      expect(nextIndicatorColor(indicators)).toBe(expected);
     });
   });
 
   describe('withChartIndicator', () => {
-    it('adds an indicator with the next id and colour', () => {
-      expect(withChartIndicator([SMA], null, { kind: 'ema', period: 9 })).toEqual([
+    it('adds an indicator with the next id and its colour, also one already in use', () => {
+      expect(withChartIndicator([SMA], null, { kind: 'ema', period: 9 }, 'chart-1')).toEqual([
         SMA,
-        { id: 'i2', spec: { kind: 'ema', period: 9 }, color: 'chart-2' },
+        { id: 'i2', spec: { kind: 'ema', period: 9 }, color: 'chart-1' },
       ]);
     });
 
-    it('changes the parameters of an indicator and keeps its id and colour', () => {
+    it('changes the parameters and the colour of an indicator and keeps its id', () => {
       const spec = { kind: 'bollinger' as const, period: 30, multiplier: 2.5 };
-      expect(withChartIndicator([SMA, BOLLINGER], 'i3', spec)).toEqual([
+      expect(withChartIndicator([SMA, BOLLINGER], 'i3', spec, 'chart-5')).toEqual([
         SMA,
-        { ...BOLLINGER, spec },
+        { ...BOLLINGER, spec, color: 'chart-5' },
       ]);
     });
 
     it('adds no seventh indicator', () => {
       const six = Array.from({ length: 6 }, (_, index) => ({ ...SMA, id: `i${index + 1}` }));
-      expect(withChartIndicator(six, null, SMA.spec)).toBe(six);
+      expect(withChartIndicator(six, null, SMA.spec, 'chart-1')).toBe(six);
     });
   });
 });

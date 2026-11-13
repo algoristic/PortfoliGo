@@ -6,6 +6,8 @@ import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import {
   applyLiveCandle,
+  isChartResolutionAllowed,
+  keptChartResolution,
   liveCandleStep,
   prependCandles,
 } from '@app/market/domain/chart-view-logic';
@@ -77,6 +79,7 @@ export const quotesAdapter: EntityAdapter<SeriesQuote> = createEntityAdapter<Ser
 
 export const initialChartState: InstrumentChartState = {
   ...DEFAULT_CHART_SETTINGS,
+  resolution: null,
   day: null,
   generation: 0,
   candles: [],
@@ -136,16 +139,19 @@ function withSubscriptions(state: MarketState, subscriptions: QuoteSubscriptions
 }
 
 /**
- * A new start block of the chart: the next generation without the loaded candles; period, chart
- * type and indicators stay. `loading` shows the placeholder until the block arrives.
+ * A new start block of the chart: the next generation without the loaded candles; period,
+ * resolution, chart type and indicators stay. `loading` shows the placeholder until the block
+ * arrives. A new period keeps the chosen resolution only while it is allowed (TS §11.7).
  */
 function newChart(
   chart: InstrumentChartState,
-  changes: Partial<Pick<InstrumentChartState, 'range' | 'day' | 'loading'>>,
+  changes: Partial<Pick<InstrumentChartState, 'range' | 'resolution' | 'day' | 'loading'>>,
 ): InstrumentChartState {
+  const range = changes.range ?? chart.range;
   return {
     ...initialChartState,
-    range: chart.range,
+    range,
+    resolution: keptChartResolution(range, chart.resolution),
     chartType: chart.chartType,
     indicators: chart.indicators,
     generation: chart.generation + 1,
@@ -314,21 +320,30 @@ const reducer = createReducer(
       ? state
       : { ...state, chart: newChart(state.chart, { range, day: null }) },
   ),
+  on(MarketActions.clickedChartResolution, (state, { resolution }) =>
+    resolution === state.chart.resolution ||
+    (resolution !== null && !isChartResolutionAllowed(state.chart.range, resolution))
+      ? state
+      : { ...state, chart: newChart(state.chart, { resolution }) },
+  ),
   on(MarketActions.clickedChartType, (state, { chartType }) => ({
     ...state,
     chart: { ...state.chart, chartType },
   })),
-  // Read when the game is entered, before any chart loads.
+  // Read when the game is entered, before any chart loads; the resolution starts with „Auto“.
   on(
     MarketActions.loadedChartSettings,
     (state, { settings: { range, chartType, indicators } }) => ({
       ...state,
-      chart: { ...state.chart, range, chartType, indicators },
+      chart: { ...state.chart, range, resolution: null, chartType, indicators },
     }),
   ),
-  on(MarketActions.submittedChartIndicator, (state, { id, spec }) => ({
+  on(MarketActions.submittedChartIndicator, (state, { id, spec, color }) => ({
     ...state,
-    chart: { ...state.chart, indicators: withChartIndicator(state.chart.indicators, id, spec) },
+    chart: {
+      ...state.chart,
+      indicators: withChartIndicator(state.chart.indicators, id, spec, color),
+    },
   })),
   on(MarketActions.clickedRemoveChartIndicator, (state, { id }) => ({
     ...state,

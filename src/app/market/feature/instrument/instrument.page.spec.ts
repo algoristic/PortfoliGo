@@ -17,7 +17,15 @@ import { NewPlayer } from '@app/players/domain/models/player.model';
 import { EXCHANGES } from '@app/world/domain/taxonomy';
 
 import { installChartPlatform } from '../../../../testing/chart-platform';
-import { byTestId, click, queryByTestId, select, textOf, typeText } from '../../../../testing/dom';
+import {
+  byTestId,
+  click,
+  queryByTestId,
+  select,
+  textOf,
+  typeText,
+  wheel,
+} from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
 import { parseCompactEuros, parseEuros, parseGermanNumber } from '../../../../testing/parse';
 import { installViewport } from '../../../../testing/viewport';
@@ -249,6 +257,69 @@ describe('InstrumentPage', () => {
     );
   });
 
+  // AP 5.8 acceptance: period and resolution combine, forbidden combinations can't be chosen, and
+  // scrolling loads older candles in the chosen resolution.
+  it('loads the chosen resolution, older candles in it and only allowed combinations', async () => {
+    await openInstrument();
+    const resolution = byTestId<HTMLSelectElement>(page, 'market.instrument.chart.resolution');
+
+    function options(): string[] {
+      return [...resolution.options].map(
+        (option) => `${option.value}${option.disabled ? ' (gesperrt)' : ''}`,
+      );
+    }
+
+    expect(resolution.value).toBe('auto');
+    expect(textOf(resolution.options[0])).toBe('Auto (1 Min.)');
+    expect(options()).toEqual(['auto', '1m', '5m', '15m', '1h', '1d (gesperrt)', '1w (gesperrt)']);
+
+    // 5-minute candles of Friday 29.03.2030, then Thursday in front of them after scrolling.
+    await act(() => select(resolution, '5m'));
+    const perDay = Math.ceil(CLOSE / 5) - Math.floor(OPEN / 5);
+    expect(chart()).toEqual({
+      count: perDay,
+      lastTick: tick(2030, 3, 29, Math.floor((CLOSE - 1) / 5) * 5),
+    });
+    expect(subscriptions('subscribe')).toContainEqual({
+      series: [],
+      charts: [{ series: 0, interval: '5m' }],
+    });
+    const canvas = byTestId(page, 'market.instrument.chart').querySelector('canvas');
+    expect(canvas).not.toBeNull();
+    await act(() => wheel(canvas as HTMLCanvasElement, 100));
+    await run(300);
+    expect(chart()).toEqual({
+      count: 2 * perDay,
+      lastTick: tick(2030, 3, 29, Math.floor((CLOSE - 1) / 5) * 5),
+    });
+
+    // 5T keeps 5 minutes; 1M doesn't allow them and falls back to „Auto“ (hourly candles).
+    await act(() => click(byTestId(page, 'market.instrument.chart.range.5d')));
+    expect(resolution.value).toBe('5m');
+    expect(chart().count).toBe(5 * perDay);
+    await act(() => click(byTestId(page, 'market.instrument.chart.range.1m')));
+    expect(resolution.value).toBe('auto');
+    expect(textOf(resolution.options[0])).toBe('Auto (1 Std.)');
+    expect(options()).toEqual([
+      'auto',
+      '1m (gesperrt)',
+      '5m (gesperrt)',
+      '15m (gesperrt)',
+      '1h',
+      '1d',
+      '1w',
+    ]);
+
+    // Weekly candles of the month: the weeks from Monday 04.03. to Monday 25.03.2030.
+    await act(() => select(resolution, '1w'));
+    expect(chart()).toEqual({ count: 4, lastTick: tick(2030, 3, 25) });
+
+    // Max offers only „Auto“.
+    await act(() => click(byTestId(page, 'market.instrument.chart.range.max')));
+    expect(resolution.value).toBe('auto');
+    expect(options().filter((option) => !option.endsWith('(gesperrt)'))).toEqual(['auto']);
+  });
+
   it('updates the newest candle while the game runs', async () => {
     // The clock controls with the jump button need a wide header.
     const restoreViewport = installViewport(1024);
@@ -341,6 +412,57 @@ describe('InstrumentPage', () => {
     await act(() => click(byTestId(page, 'market.instrument.indicator.i2.remove')));
     expect(queryByTestId(page, 'market.instrument.indicator.i2')).toBeNull();
     expect(overlayPoints()).toBe(`i1:${candles - 49}`);
+  });
+
+  // AP 5.8 acceptance: the chosen colour draws the indicator, Bollinger bands are filled, and the
+  // colour stays after a reload.
+  it('draws indicators in the chosen colour and keeps it for the next visit', async () => {
+    await openInstrument();
+
+    function chartAttribute(name: string): string {
+      return byTestId(page, 'market.instrument.chart').getAttribute(name) ?? '';
+    }
+
+    function checkedColor(): string | undefined {
+      return [
+        ...page.querySelectorAll<HTMLInputElement>(
+          '[data-testid^="market.instrument.indicator-form.color."]',
+        ),
+      ].find((radio) => radio.checked)?.value;
+    }
+
+    // A new indicator starts with the first free colour; Bollinger in violet with a filled band.
+    await act(() => click(byTestId(page, 'market.instrument.indicator.add')));
+    expect(checkedColor()).toBe('chart-1');
+    select(byTestId(page, 'market.instrument.indicator-form.kind'), 'bollinger');
+    await act(() => click(byTestId(page, 'market.instrument.indicator-form.color.chart-4')));
+    await act(() => click(byTestId(page, 'market.instrument.indicator-form.submit')));
+    expect(chartAttribute('data-overlay-colors')).toBe(
+      'i1.middle:chart-4 i1.upper:chart-4 i1.lower:chart-4',
+    );
+    expect(chartAttribute('data-overlay-fills')).toBe('i1.upper');
+
+    // Another indicator gets blue, the first free colour, and may take violet as well.
+    await act(() => click(byTestId(page, 'market.instrument.indicator.add')));
+    expect(checkedColor()).toBe('chart-1');
+    await act(() => click(byTestId(page, 'market.instrument.indicator-form.color.chart-4')));
+    await act(() => click(byTestId(page, 'market.instrument.indicator-form.submit')));
+    expect(chartAttribute('data-overlay-colors')).toContain('i2:chart-4');
+
+    // Changing the colour of the Bollinger bands.
+    await act(() => click(byTestId(page, 'market.instrument.indicator.i1.edit')));
+    expect(checkedColor()).toBe('chart-4');
+    await act(() => click(byTestId(page, 'market.instrument.indicator-form.color.chart-2')));
+    await act(() => click(byTestId(page, 'market.instrument.indicator-form.submit')));
+    const colors = 'i1.middle:chart-2 i1.upper:chart-2 i1.lower:chart-2 i2:chart-4';
+    expect(chartAttribute('data-overlay-colors')).toBe(colors);
+
+    // A new visit of the game reads the colours from pgo.ui.chart.
+    await harness.navigateByUrl('/players');
+    await run(200);
+    await openInstrument();
+    expect(chartAttribute('data-overlay-colors')).toBe(colors);
+    expect(chartAttribute('data-overlay-fills')).toBe('i1.upper');
   });
 
   // AP 4.5 acceptance (US-MK-03, US-MK-05): every detail of a share, live and highlighted, and

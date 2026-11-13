@@ -24,6 +24,24 @@
     }
   </div>
 
+  <label class="flex items-center gap-2 text-sm">
+    <span class="text-fg-muted" i18n="@@uiMarket-chartToolbar-resolution">Auflösung</span>
+    <select
+      #resolutionSelect
+      class="h-8 rounded-md border border-border bg-bg px-2 text-fg"
+      data-testid="market.instrument.chart.resolution"
+      (change)="onSelectResolution(resolutionSelect.value)">
+      @for (option of resolutionOptions(); track option.value) {
+        <option
+          [value]="option.value"
+          [disabled]="!option.allowed"
+          [selected]="option.value === resolutionValue()">
+          {{ option.label }}
+        </option>
+      }
+    </select>
+  </label>
+
   <div
     class="flex flex-wrap gap-1"
     role="group"

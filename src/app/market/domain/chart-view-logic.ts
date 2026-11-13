@@ -1,9 +1,15 @@
 import { dayIndex, dayStartTick } from '@app/clock/domain/calendar-logic';
-import { Tick, TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
+import { Tick, TICKS_PER_DAY, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
 
-import { earliestMarketDay, isIntraday, MAX_CANDLE_LIMIT } from './candle-window';
+import { intradayMinutes } from './candle-logic';
+import {
+  earliestMarketDay,
+  isIntraday,
+  MAX_CANDLE_LIMIT,
+  MAX_INTRADAY_DAYS,
+} from './candle-window';
 import { isMarketDay } from './market-calendar';
-import { Candle, CandleResolution } from './models/candle.model';
+import { Candle, CANDLE_RESOLUTIONS, CandleResolution } from './models/candle.model';
 import {
   ChartBlock,
   ChartBlockRequest,
@@ -16,7 +22,7 @@ import { marketDayOnOrBefore, monthsBackDay } from './performance-logic';
 // Views of the price chart (US-CH-01, TS §11.7): the resolution and the blocks per period, the day
 // navigation of 1T and the rule for live candles of the chart subscription (TS §8.4).
 
-/** Resolution per period (TS §11.7). */
+/** Automatic resolution per period (TS §11.7), used while the user chose none („Auto“). */
 export const CHART_RANGE_INTERVALS: Readonly<Record<ChartRange, CandleResolution>> = {
   '1d': '1m',
   '5d': '15m',
@@ -26,6 +32,72 @@ export const CHART_RANGE_INTERVALS: Readonly<Record<ChartRange, CandleResolution
   '5y': '1w',
   max: '1w',
 };
+
+/**
+ * Most market days of a period for the choice of the resolution (TS §11.7): a calendar month has at
+ * most 23 market days; `max` grows with the game and has no bound.
+ */
+const MARKET_DAYS_PER_MONTH = 23;
+export const CHART_RANGE_MARKET_DAYS: Readonly<Record<ChartRange, number>> = {
+  '1d': 1,
+  '5d': 5,
+  '1m': MARKET_DAYS_PER_MONTH,
+  '6m': 6 * MARKET_DAYS_PER_MONTH,
+  '1y': 12 * MARKET_DAYS_PER_MONTH,
+  '5y': 60 * MARKET_DAYS_PER_MONTH,
+  max: Number.POSITIVE_INFINITY,
+};
+
+/** Market days of a week candle. */
+const MARKET_DAYS_PER_WEEK = 5;
+
+/** Candles per market day, with a whole day of trading for intraday resolutions. */
+function candlesPerMarketDay(resolution: CandleResolution): number {
+  if (resolution === '1d') {
+    return 1;
+  }
+  if (resolution === '1w') {
+    return 1 / MARKET_DAYS_PER_WEEK;
+  }
+  return TICKS_PER_DAY / (intradayMinutes(resolution) * TICKS_PER_MINUTE);
+}
+
+/**
+ * Whether the user may choose `resolution` for `range` (TS §11.7): the period holds more than one
+ * candle and fits into one answer of the candle query (TS §8.2) – at most `MAX_CANDLE_LIMIT`
+ * candles, counted with a whole day of trading, and intraday at most `MAX_INTRADAY_DAYS` market
+ * days. „Auto“ is always allowed.
+ */
+export function isChartResolutionAllowed(range: ChartRange, resolution: CandleResolution): boolean {
+  const days = CHART_RANGE_MARKET_DAYS[range];
+  const candles = days * candlesPerMarketDay(resolution);
+  return (
+    candles > 1 &&
+    candles <= MAX_CANDLE_LIMIT &&
+    (!isIntraday(resolution) || days <= MAX_INTRADAY_DAYS)
+  );
+}
+
+/** The resolutions the user may choose for `range`, finest first. */
+export function chartResolutions(range: ChartRange): CandleResolution[] {
+  return CANDLE_RESOLUTIONS.filter((resolution) => isChartResolutionAllowed(range, resolution));
+}
+
+/** The chosen resolution after a change of the period: kept while allowed, otherwise „Auto“. */
+export function keptChartResolution(
+  range: ChartRange,
+  resolution: CandleResolution | null,
+): CandleResolution | null {
+  return resolution !== null && isChartResolutionAllowed(range, resolution) ? resolution : null;
+}
+
+/** The resolution the chart loads: the chosen one, or the automatic one of the period. */
+export function chartInterval(
+  range: ChartRange,
+  resolution: CandleResolution | null,
+): CandleResolution {
+  return resolution ?? CHART_RANGE_INTERVALS[range];
+}
 
 /** Periods measured in market days; the others in calendar months, `max` from the epoch. */
 const RANGE_MARKET_DAYS: Partial<Record<ChartRange, number>> = { '1d': 1, '5d': 5 };
@@ -48,7 +120,7 @@ export function chartBlockStartDay(range: ChartRange, lastDay: number): number |
 }
 
 /**
- * The first block of a chart. A chosen day (1T) is that whole day. Live, the block ends now; 1T and
+ * The first block of a chart in `interval`. A chosen day (1T) is that whole day. Live, the block ends now; 1T and
  * 5T reach one market day further back, because before the open today has no candles yet –
  * `trimChartBlock` then keeps the last 1 or 5 days that have candles.
  */
@@ -56,8 +128,8 @@ export function chartStartRequest(
   range: ChartRange,
   day: number | null,
   now: Tick,
+  interval: CandleResolution = CHART_RANGE_INTERVALS[range],
 ): ChartBlockRequest {
-  const interval = CHART_RANGE_INTERVALS[range];
   if (day !== null) {
     const from = dayStartTick(day);
     return { interval, from, to: from + TICKS_PER_DAY - 1, limit: MAX_CANDLE_LIMIT };
@@ -105,8 +177,11 @@ export function trimChartBlock(
  * The next older block before the oldest loaded candle (scrolling, TS §11.7): one more period of
  * the same length. Intraday blocks end with the day before, so they always hold whole days.
  */
-export function olderChartRequest(range: ChartRange, oldestTick: Tick): ChartBlockRequest {
-  const interval = CHART_RANGE_INTERVALS[range];
+export function olderChartRequest(
+  range: ChartRange,
+  oldestTick: Tick,
+  interval: CandleResolution = CHART_RANGE_INTERVALS[range],
+): ChartBlockRequest {
   const to = isIntraday(interval) ? dayStartTick(dayIndex(oldestTick)) - 1 : oldestTick - 1;
   const firstDay = chartBlockStartDay(range, dayIndex(to));
   return firstDay === null

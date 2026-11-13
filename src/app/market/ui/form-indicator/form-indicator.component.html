@@ -63,6 +63,18 @@
     </div>
   }
 
+  <div class="flex flex-col gap-1">
+    <span class="text-fg-muted" aria-hidden="true" i18n="@@uiMarket-formIndicator-color"
+      >Farbe</span
+    >
+    <app-chart-color-picker
+      class="flex h-8 items-center"
+      label="Farbe"
+      i18n-label="@@uiMarket-formIndicator-colorGroup"
+      testId="market.instrument.indicator-form.color"
+      [formField]="indicatorForm.color"></app-chart-color-picker>
+  </div>
+
   <div class="flex items-center gap-2 self-end">
     <button
       appButton

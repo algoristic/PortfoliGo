@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 import { DEFAULT_INDICATOR_SPECS } from '@app/analysis/domain/indicator-logic';
 import { IndicatorSpec } from '@app/analysis/domain/models/indicator.model';
+import { ChartColor } from '@app/charts/ui/models/chart-color.model';
 import { PriceChartComponent } from '@app/charts/ui/price-chart/price-chart.component';
 import {
   PriceChartCrosshair,
@@ -17,18 +18,21 @@ import { CandleReadoutComponent } from '@app/market/ui/candle-readout/candle-rea
 import { ChartIndicatorsComponent } from '@app/market/ui/chart-indicators/chart-indicators.component';
 import { ChartToolbarComponent } from '@app/market/ui/chart-toolbar/chart-toolbar.component';
 import { FormIndicatorComponent } from '@app/market/ui/form-indicator/form-indicator.component';
+import { SubmittedIndicator } from '@app/market/ui/form-indicator/form-indicator.model';
 import { ChartIndicatorReadout } from '@app/market/ui/models/chart-indicator.model';
 
 import { MarketFacade } from '../state/market.facade';
 import { MAX_CHART_INDICATORS } from '../state/market.model';
+import { nextIndicatorColor } from '../state/market.utils';
 
 /** The indicator being added (`id` `null`) or changed. */
 interface IndicatorEdit {
   id: string | null;
   spec: IndicatorSpec;
+  color: ChartColor;
 }
 
-/** Overlay ids of the Bollinger lines; the bands are dashed. */
+/** Overlay ids of the Bollinger lines; the bands are dashed and the area between them filled. */
 const BOLLINGER_LINES = ['middle', 'upper', 'lower'] as const;
 
 /**
@@ -68,14 +72,19 @@ export class InstrumentChartComponent {
     const lines = this.#indicatorLines();
     return (this.chart()?.indicators ?? []).flatMap(({ id, spec, color }) => {
       const indicatorLines = lines.get(id) ?? [];
-      return spec.kind === 'bollinger'
-        ? indicatorLines.map((points, index) => ({
-            id: `${id}.${BOLLINGER_LINES[index]}`,
-            points,
-            color,
-            lineStyle: index === 0 ? ('solid' as const) : ('dashed' as const),
-          }))
-        : indicatorLines.map((points) => ({ id, points, color }));
+      if (spec.kind !== 'bollinger') {
+        return indicatorLines.map((points) => ({ id, points, color }));
+      }
+      const [middle, upper, lower] = indicatorLines;
+      return indicatorLines.map((points, index): PriceChartOverlay => {
+        const overlay: PriceChartOverlay = {
+          id: `${id}.${BOLLINGER_LINES[index]}`,
+          points,
+          color,
+          lineStyle: points === middle ? 'solid' : 'dashed',
+        };
+        return points === upper && lower !== undefined ? { ...overlay, fillTo: lower } : overlay;
+      });
     });
   });
   /** Indicator values under the crosshair, otherwise at the newest candle. */
@@ -106,13 +115,14 @@ export class InstrumentChartComponent {
   }
 
   onAddIndicator(): void {
-    this.editing.set({ id: null, spec: DEFAULT_INDICATOR_SPECS.sma });
+    const color = nextIndicatorColor(this.chart()?.indicators ?? []);
+    this.editing.set({ id: null, spec: DEFAULT_INDICATOR_SPECS.sma, color });
   }
 
   onEditIndicator(id: string): void {
     const indicator = this.chart()?.indicators.find((other) => other.id === id);
     if (indicator !== undefined) {
-      this.editing.set({ id, spec: indicator.spec });
+      this.editing.set({ id, spec: indicator.spec, color: indicator.color });
     }
   }
 
@@ -123,9 +133,9 @@ export class InstrumentChartComponent {
     this.facade.removeChartIndicator(id);
   }
 
-  onSubmitIndicator(spec: IndicatorSpec, id: string | null): void {
+  onSubmitIndicator({ spec, color }: SubmittedIndicator, id: string | null): void {
     this.editing.set(null);
-    this.facade.submitChartIndicator(id, spec);
+    this.facade.submitChartIndicator(id, spec, color);
   }
 
   onCancelIndicator(): void {

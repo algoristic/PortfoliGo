@@ -33,6 +33,7 @@ import { priceDecimals } from '@app/shared/domain/price-step-logic';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
 import { formatNumber } from '@app/shared/util/format';
 
+import { BandFillPrimitive } from './band-fill.primitive';
 import { PRICE_CHART_LIBRARY, PriceChartLibrary } from './price-chart.config';
 import {
   PriceChartColors,
@@ -62,6 +63,8 @@ const USER_MOVE_EVENTS = ['wheel', 'pointerdown', 'touchstart'] as const;
 /** Opacity of the area fill below the line (hex alpha appended to the token colour). */
 const AREA_TOP_ALPHA = '66';
 const AREA_BOTTOM_ALPHA = '00';
+/** Opacity of the fill between two overlay lines; the candles above it stay readable. */
+const BAND_FILL_ALPHA = '1f';
 
 interface ChartHandle {
   library: PriceChartLibrary;
@@ -71,6 +74,7 @@ interface ChartHandle {
 interface OverlaySeries {
   series: ISeriesApi<'Line'>;
   overlay: PriceChartOverlay;
+  band?: BandFillPrimitive;
 }
 
 function samePoint(a: PriceChartOverlayPoint, b: PriceChartOverlayPoint): boolean {
@@ -100,6 +104,8 @@ function overlayPoint(point: PriceChartOverlayPoint): LineData {
     '[attr.data-candle-count]': 'candles().length',
     '[attr.data-last-tick]': 'lastTick()',
     '[attr.data-overlay-points]': 'overlayPoints()',
+    '[attr.data-overlay-colors]': 'overlayColors()',
+    '[attr.data-overlay-fills]': 'overlayFills()',
   },
 })
 export class PriceChartComponent {
@@ -131,6 +137,19 @@ export class PriceChartComponent {
   overlayPoints = computed(() =>
     this.overlays()
       .map((overlay) => `${overlay.id}:${overlay.points.length}`)
+      .join(' '),
+  );
+  /** `id:colour` per overlay, for tests. */
+  overlayColors = computed(() =>
+    this.overlays()
+      .map((overlay) => `${overlay.id}:${overlay.color}`)
+      .join(' '),
+  );
+  /** Ids of the overlays with a filled band, for tests. */
+  overlayFills = computed(() =>
+    this.overlays()
+      .filter((overlay) => overlay.fillTo !== undefined)
+      .map((overlay) => overlay.id)
       .join(' '),
   );
 
@@ -309,10 +328,13 @@ export class PriceChartComponent {
           crosshairMarkerVisible: false,
         });
         series.setData(overlay.points.map(overlayPoint));
-        this.#overlaySeries.set(overlay.id, { series, overlay });
+        const entry: OverlaySeries = { series, overlay };
+        this.#renderBand(entry, overlay, color);
+        this.#overlaySeries.set(overlay.id, entry);
         continue;
       }
       current.series.applyOptions({ color, lineStyle });
+      this.#renderBand(current, overlay, color);
       if (current.overlay.points !== overlay.points) {
         const updates = incrementalUpdates(current.overlay.points, overlay.points, samePoint);
         if (updates === null) {
@@ -323,6 +345,23 @@ export class PriceChartComponent {
       }
       current.overlay = overlay;
     }
+  }
+
+  /** Attaches, updates or detaches the fill between an overlay and its `fillTo` line. */
+  #renderBand(entry: OverlaySeries, overlay: PriceChartOverlay, color: string): void {
+    const { fillTo } = overlay;
+    if (fillTo === undefined) {
+      if (entry.band !== undefined) {
+        entry.series.detachPrimitive(entry.band);
+        entry.band = undefined;
+      }
+      return;
+    }
+    if (entry.band === undefined) {
+      entry.band = new BandFillPrimitive();
+      entry.series.attachPrimitive(entry.band);
+    }
+    entry.band.setData(overlay.points, fillTo, color + BAND_FILL_ALPHA);
   }
 
   #reportCrosshair(event: MouseEventParams<Time>): void {

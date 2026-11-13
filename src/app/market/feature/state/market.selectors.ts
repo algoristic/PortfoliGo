@@ -4,7 +4,7 @@ import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { dayIndex, dayStartTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
 import { selectExchanges, selectTick } from '@app/clock/feature/state/clock.selectors';
 import {
-  CHART_RANGE_INTERVALS,
+  chartInterval,
   nextChartDay,
   previousChartDay,
   shownChartDay,
@@ -150,7 +150,7 @@ export const selectChartSettings = createSelector(
 
 /** The chart subscription of the instrument page: live candles only while the block reaches now. */
 export const selectChartSubscription = createSelector(selectChart, (chart): ChartSubscription => ({
-  interval: CHART_RANGE_INTERVALS[chart.range],
+  interval: chartInterval(chart.range, chart.resolution),
   live: chart.day === null,
 }));
 
@@ -165,7 +165,8 @@ export const selectChartView = createSelector(
     const shownDay = shownChartDay(chart.day, chart.candles, now);
     return {
       range: chart.range,
-      interval: CHART_RANGE_INTERVALS[chart.range],
+      resolution: chart.resolution,
+      interval: chartInterval(chart.range, chart.resolution),
       chartType: chart.chartType,
       indicators: chart.indicators,
       candles: chart.candles,
