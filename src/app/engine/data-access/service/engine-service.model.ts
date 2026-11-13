@@ -8,7 +8,10 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
 import { BackgroundMode, StartConditions } from '@app/engine/domain/models/game-state.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
+import { MarketMovers } from '@app/engine/domain/models/market-movers.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import { Instrument, InstrumentDetails } from '@app/market/domain/models/instrument.model';
+import { ScreenerCriteria, ScreenerRow } from '@app/market/domain/models/screener.model';
 import { AbsenceReport } from '@app/notifications/domain/models/absence-report.model';
 import {
   AutoPauseCode,
@@ -84,6 +87,14 @@ export interface NotificationsQuery {
 
 export type NotificationsRequest = Omit<NotificationsQuery, 'kind'>;
 
+/** The screener (TS §8.2, US-MK-02): search, filters and sorting over all series. */
+export interface ScreenerQuery extends ScreenerCriteria {
+  kind: 'screener';
+}
+
+/** Longest search text of the screener; longer ones are `invalid-command`. */
+export const MAX_SCREENER_SEARCH_LENGTH = 100;
+
 /**
  * Queries (TS §8.2); they write nothing and don't hold the clock. `closingPreview` shows what
  * closing an account now would book (TS §7.4); `monthlyValues` the household months (US-EK-03).
@@ -96,7 +107,11 @@ export type EngineQuery =
   | StatementQuery
   | NotificationsQuery
   /** The last absence report since loading the player (US-BN-03), `null` without one. */
-  | { kind: 'absenceReport' };
+  | { kind: 'absenceReport' }
+  /** Master data of all series (AP 4.1); it doesn't change during a game. */
+  | { kind: 'instruments' }
+  | { kind: 'instrumentDetails'; id: string }
+  | ScreenerQuery;
 export type EngineQueryKind = EngineQuery['kind'];
 export const ENGINE_QUERY_KINDS = [
   'exchanges',
@@ -106,6 +121,9 @@ export const ENGINE_QUERY_KINDS = [
   'statement',
   'notifications',
   'absenceReport',
+  'instruments',
+  'instrumentDetails',
+  'screener',
 ] as const satisfies readonly EngineQueryKind[];
 
 /** Own transfer (US-BK-04): whole cents ≥ 1, purpose up to `MAX_PURPOSE_LENGTH` characters. */
@@ -114,6 +132,12 @@ export interface TransferPayload {
   toAccountId: AccountId;
   amount: Cents;
   purpose: string;
+}
+
+/** Subscriptions (TS §8.4): series for `quotes`, and optionally the topic `movers`. */
+export interface SubscriptionPayload {
+  series: number[];
+  movers?: boolean;
 }
 
 /** Commands UI → worker (TS §8.2). */
@@ -126,8 +150,9 @@ export interface EngineCommandPayloads {
   setVisibility: { visible: boolean };
   jumpTo: { target: JumpTarget };
   cancelJump: EmptyPayload;
-  subscribe: { series: number[] };
-  unsubscribe: { series: number[] };
+  /** Quotes of `series`; `movers: true` adds the `movers` event (TS §8.4). */
+  subscribe: SubscriptionPayload;
+  unsubscribe: SubscriptionPayload;
   query: { query: EngineQuery };
   setBackgroundMode: { mode: BackgroundMode };
   openAccount: { bankId: string; kind: OpenableAccountKind };
@@ -209,6 +234,15 @@ export interface NotificationsResult {
   tick: Tick;
 }
 
+/**
+ * The screener's matches up to `tick` (the query limit): all of them, sorted, `total` their number.
+ */
+export interface ScreenerResult {
+  total: number;
+  rows: ScreenerRow[];
+  tick: Tick;
+}
+
 export type EngineQueryResult =
   | { kind: 'exchanges'; exchanges: ExchangeInfo[] }
   /** Banks of the world with their conditions (bank comparison, account cards). */
@@ -217,7 +251,10 @@ export type EngineQueryResult =
   | ({ kind: 'monthlyValues' } & MonthlyValuesResult)
   | ({ kind: 'statement' } & StatementResult)
   | ({ kind: 'notifications' } & NotificationsResult)
-  | { kind: 'absenceReport'; report: AbsenceReport | null };
+  | { kind: 'absenceReport'; report: AbsenceReport | null }
+  | { kind: 'instruments'; instruments: Instrument[] }
+  | { kind: 'instrumentDetails'; details: InstrumentDetails }
+  | ({ kind: 'screener' } & ScreenerResult);
 
 /** The result of a query of kind `K`. */
 export type EngineQueryResultOf<K extends EngineQueryKind> = Extract<
@@ -279,6 +316,8 @@ export const ENGINE_ERRORS = [
   /** The stored game has another `simVersion` or `schemaVersion` (TS §15); it is not loaded. */
   'player-outdated',
   'internal-error',
+  /** `instrumentDetails` with an ID that is no series of the world. */
+  'unknown-instrument',
   /** The engine rejected a bank command or query (TS §7.4); see `BANK_COMMAND_ERRORS`. */
   ...BANK_COMMAND_ERRORS,
   /** The engine rejected a notification command (TS §8.2); see `NOTIFICATION_COMMAND_ERRORS`. */
@@ -317,6 +356,11 @@ export interface AutoPauseCause {
 export interface QuotesPayload {
   tick: Tick;
   quotes: SeriesQuote[];
+}
+
+/** Gainers, losers and sector indices of the day (TS §8.3), while `movers` is subscribed. */
+export interface MoversPayload extends MarketMovers {
+  tick: Tick;
 }
 
 /**
@@ -394,6 +438,7 @@ export interface WarningPayload {
 export interface EngineEventPayloads {
   clock: ClockPayload;
   quotes: QuotesPayload;
+  movers: MoversPayload;
   projection: ProjectionPayload;
   notification: NotificationPayload;
   /** Absence report after a catch-up or a hidden period (US-BN-03). */
@@ -407,6 +452,7 @@ export interface EngineEventPayloads {
 export const ENGINE_EVENT_TYPES = [
   'clock',
   'quotes',
+  'movers',
   'projection',
   'notification',
   'report',

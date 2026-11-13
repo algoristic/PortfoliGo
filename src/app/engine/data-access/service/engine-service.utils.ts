@@ -3,6 +3,8 @@ import { TRANSACTION_TYPES } from '@app/banking/domain/models/ledger.model';
 import { MAX_STATEMENT_LIMIT } from '@app/banking/domain/models/statement.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
 import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
+import { INSTRUMENT_KINDS } from '@app/market/domain/models/instrument.model';
+import { SCREENER_SORT_KEYS, SORT_DIRECTIONS } from '@app/market/domain/models/screener.model';
 import {
   AUTO_PAUSE_CODES,
   NOTIFICATION_CATEGORIES,
@@ -10,6 +12,12 @@ import {
 } from '@app/notifications/domain/models/notification.model';
 import { MAX_NOTIFICATION_LIMIT } from '@app/notifications/domain/notification-page-logic';
 import { MAX_STORED_NOTIFICATIONS } from '@app/notifications/domain/read-state-logic';
+import {
+  REGION_IDS,
+  SECTOR_IDS,
+  SIZE_CLASSES,
+  STYLES,
+} from '@app/world/domain/models/taxonomy.model';
 
 import {
   ENGINE_COMMAND_TYPES,
@@ -20,6 +28,7 @@ import {
   ENGINE_WARNINGS,
   EngineCommandMessage,
   EngineEventMessage,
+  MAX_SCREENER_SEARCH_LENGTH,
   PROGRESS_KINDS,
   PROGRESS_STATES,
 } from './engine-service.model';
@@ -90,9 +99,17 @@ function hasFields(value: unknown, checks: Readonly<Record<string, Check>>): boo
   return isFields(value) && Object.entries(checks).every(([key, check]) => check(value[key]));
 }
 
+function isListOf(check: Check): Check {
+  return (value) => Array.isArray(value) && value.every(check);
+}
+
 const isSpeedId = isOneOf(SPEED_IDS);
 const isBackgroundMode = isOneOf(BACKGROUND_MODES);
-const isSeriesList: Check = (value) => Array.isArray(value) && value.every(isCount);
+const isSeriesList: Check = isListOf(isCount);
+
+function isSubscription(payload: unknown): boolean {
+  return hasFields(payload, { series: isSeriesList, movers: isOptional(isBoolean) });
+}
 
 function isStartConditions(value: unknown): boolean {
   return hasFields(value, { startCapital: isCount, netIncome: isCount, livingCosts: isCount });
@@ -149,6 +166,28 @@ function isMarkReadPayload(value: unknown): boolean {
   );
 }
 
+function isScreenerQuery(value: Fields): boolean {
+  return hasFields(value, {
+    search: isOptional((search) => isString(search) && search.length <= MAX_SCREENER_SEARCH_LENGTH),
+    assetClasses: isOptional(isListOf(isOneOf(INSTRUMENT_KINDS))),
+    regions: isOptional(isListOf(isOneOf(REGION_IDS))),
+    countries: isOptional(isListOf(isNonEmptyString)),
+    sectors: isOptional(isListOf(isOneOf(SECTOR_IDS))),
+    industries: isOptional(isListOf(isNonEmptyString)),
+    sizes: isOptional(isListOf(isOneOf(SIZE_CLASSES))),
+    styles: isOptional(isListOf(isOneOf(STYLES))),
+    dividendYield: isOptional((range) =>
+      hasFields(range, { min: isOptional(isFiniteNumber), max: isOptional(isFiniteNumber) }),
+    ),
+    sort: isOptional((sort) =>
+      hasFields(sort, {
+        key: isOneOf(SCREENER_SORT_KEYS),
+        direction: isOneOf(SORT_DIRECTIONS),
+      }),
+    ),
+  });
+}
+
 function isQuery(value: unknown): boolean {
   if (!isFields(value) || !isOneOf(ENGINE_QUERY_KINDS)(value['kind'])) {
     return false;
@@ -160,6 +199,10 @@ function isQuery(value: unknown): boolean {
       return isStatementQuery(value);
     case 'notifications':
       return isNotificationsQuery(value);
+    case 'instrumentDetails':
+      return isNonEmptyString(value['id']);
+    case 'screener':
+      return isScreenerQuery(value);
     default:
       return true;
   }
@@ -180,8 +223,8 @@ const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = 
   setVisibility: (payload) => hasFields(payload, { visible: isBoolean }),
   jumpTo: (payload) => hasFields(payload, { target: isJumpTarget }),
   cancelJump: isFields,
-  subscribe: (payload) => hasFields(payload, { series: isSeriesList }),
-  unsubscribe: (payload) => hasFields(payload, { series: isSeriesList }),
+  subscribe: isSubscription,
+  unsubscribe: isSubscription,
   query: (payload) => hasFields(payload, { query: isQuery }),
   setBackgroundMode: (payload) => hasFields(payload, { mode: isBackgroundMode }),
   openAccount: (payload) =>
@@ -343,6 +386,15 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
     hasFields(payload, {
       tick: isCount,
       quotes: (quotes) => Array.isArray(quotes) && quotes.every(isQuote),
+    }),
+  movers: (payload) =>
+    hasFields(payload, {
+      tick: isCount,
+      gainers: isListOf(isQuote),
+      losers: isListOf(isQuote),
+      sectors: isListOf((sector) =>
+        hasFields(sector, { sectorId: isOneOf(SECTOR_IDS), quote: isQuote }),
+      ),
     }),
   projection: (payload) =>
     hasFields(payload, {

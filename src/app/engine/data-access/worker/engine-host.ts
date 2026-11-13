@@ -11,12 +11,16 @@ import { ClockPacer } from '@app/engine/domain/clock-pacing-logic';
 import { GameEngine } from '@app/engine/domain/game-engine';
 import { createGameWorld } from '@app/engine/domain/game-world';
 import { jumpTargetTick } from '@app/engine/domain/jump-target-logic';
+import { marketMovers, screenInstruments } from '@app/engine/domain/market-screen';
 import { ClockSettings } from '@app/engine/domain/models/engine-clock.model';
 import { GameCommand, OpenedAccount } from '@app/engine/domain/models/engine-command.model';
 import { replayCommands } from '@app/engine/domain/replay';
 import { seriesQuote } from '@app/engine/domain/series-quote';
 import { Throttle } from '@app/engine/domain/throttle-logic';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
+import { DailyCloses } from '@app/market/domain/daily-closes';
+import { instrumentCatalog, instrumentDetails } from '@app/market/domain/instrument-catalog';
+import { Instrument } from '@app/market/domain/models/instrument.model';
 import { indexSeries, seriesCount } from '@app/market/domain/series';
 import {
   closeAbsence,
@@ -83,6 +87,7 @@ import {
   ProgressKind,
   ProgressPayload,
   ReplyPayload,
+  ScreenerQuery,
   StatementQuery,
 } from '../service/engine-service.model';
 import {
@@ -167,6 +172,13 @@ interface LoadedGame {
   report: AbsenceReport | null;
   /** The notification whose auto-pause holds the game (TS §3.6), until `resume`. */
   autoPause?: AutoPauseCause;
+  market?: MarketData;
+}
+
+/** Master data and the cache of daily closes for the market queries (AP 4.1), made on first use. */
+interface MarketData {
+  catalog: Instrument[];
+  closes: DailyCloses;
 }
 
 /** What a snapshot writes, taken in one go (`#snapshotData`). */
@@ -203,6 +215,7 @@ export class EngineHost {
   readonly #config: EngineHostConfig;
   readonly #clockThrottle: Throttle;
   readonly #quotesThrottle: Throttle;
+  readonly #moversThrottle: Throttle;
   readonly #projectionThrottle: Throttle;
   readonly #notificationThrottle: Throttle;
   readonly #subscriptions = new Set<number>();
@@ -229,13 +242,20 @@ export class EngineHost {
       }
       return null;
     },
-    subscribe: ({ series }) => {
+    subscribe: ({ series, movers }) => {
       series.forEach((s) => this.#subscriptions.add(s));
       this.#quotesStale = true;
+      if (movers === true) {
+        this.#moversSubscribed = true;
+        this.#moversStale = true;
+      }
       return null;
     },
-    unsubscribe: ({ series }) => {
+    unsubscribe: ({ series, movers }) => {
       series.forEach((s) => this.#subscriptions.delete(s));
+      if (movers === true) {
+        this.#moversSubscribed = false;
+      }
       return null;
     },
     query: ({ query }) => this.#query(this.#requireGame(), query),
@@ -326,6 +346,10 @@ export class EngineHost {
   #lastClock: ClockPayload | null = null;
   #lastQuotesTick: number | null = null;
   #quotesStale = false;
+  /** The topic `movers` (TS §8.4): one subscription, the service counts its subscribers. */
+  #moversSubscribed = false;
+  #moversStale = false;
+  #lastMoversTick: number | null = null;
   /** A game command or a load ran: its projection goes out before the reply, unthrottled. */
   #projectionDue = false;
 
@@ -335,6 +359,7 @@ export class EngineHost {
     this.#config = { ...DEFAULT_ENGINE_HOST_CONFIG, ...options.config };
     this.#clockThrottle = new Throttle(this.#config.clockPerSecond);
     this.#quotesThrottle = new Throttle(this.#config.quotesPerSecond);
+    this.#moversThrottle = new Throttle(this.#config.moversPerSecond);
     this.#projectionThrottle = new Throttle(this.#config.projectionPerSecond);
     this.#notificationThrottle = new Throttle(this.#config.notificationPerSecond);
   }
@@ -1229,6 +1254,17 @@ export class EngineHost {
       this.#lastQuotesTick = tick;
       this.#quotesStale = false;
     }
+    if (
+      this.#moversSubscribed &&
+      (this.#moversStale || tick !== this.#lastMoversTick) &&
+      this.#moversThrottle.isDue(now)
+    ) {
+      const { world, context } = game.engine.world;
+      this.#post('movers', { tick, ...marketMovers(world, context, game.engine.prices, tick) });
+      this.#moversThrottle.sent(now);
+      this.#lastMoversTick = tick;
+      this.#moversStale = false;
+    }
     const forced = this.#projectionDue;
     this.#projectionDue = false;
     const notifications = this.#notificationsProjection(game);
@@ -1308,7 +1344,50 @@ export class EngineHost {
         return this.#notifications(game, query);
       case 'absenceReport':
         return { kind: 'absenceReport', report: game.report };
+      case 'instruments':
+        return {
+          kind: 'instruments',
+          instruments: this.#marketData(game).catalog.map((instrument) => ({ ...instrument })),
+        };
+      case 'instrumentDetails': {
+        const details = instrumentDetails(engine.world.world, query.id);
+        if (details === null) {
+          throw new CommandFailure('unknown-instrument');
+        }
+        return { kind: 'instrumentDetails', details };
+      }
+      case 'screener':
+        return this.#screener(game, query);
     }
+  }
+
+  /**
+   * The screener (TS §8.2) at the current tick, the query limit: closes and dividends come from the
+   * cache of daily closes, which moves on with the market days.
+   */
+  #screener(game: LoadedGame, query: ScreenerQuery): EngineQueryResult {
+    const { engine } = game;
+    const tick = engine.tick;
+    const { catalog, closes } = this.#marketData(game);
+    const { kind: _kind, ...criteria } = query;
+    const result = screenInstruments(
+      { context: engine.world.context, catalog, prices: engine.prices, closes },
+      criteria,
+      tick,
+    );
+    return { kind: 'screener', ...result, tick };
+  }
+
+  #marketData(game: LoadedGame): MarketData {
+    if (game.market === undefined) {
+      const { world, context } = game.engine.world;
+      const { candles } = game;
+      game.market = {
+        catalog: instrumentCatalog(world, context),
+        closes: new DailyCloses(context, candles.history, candles.tables),
+      };
+    }
+    return game.market;
   }
 
   /**

@@ -7,6 +7,7 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { BackgroundMode } from '@app/engine/domain/models/game-state.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import { ScreenerCriteria } from '@app/market/domain/models/screener.model';
 import { AutoPauseCode } from '@app/notifications/domain/models/notification.model';
 
 import { ENGINE_WORKER_FACTORY, MAX_WORKER_FAILURES } from './engine-service.config';
@@ -24,6 +25,7 @@ import {
   EngineReplies,
   EngineWorkerPort,
   LoadPlayerPayload,
+  MoversPayload,
   NotificationsRequest,
   StatementRequest,
   TransferPayload,
@@ -68,6 +70,8 @@ export class EngineService implements OnDestroy {
   readonly #fatal = new Subject<EngineFatal>();
   /** Subscribers per series (TS §8.4). */
   readonly #quoteCounts = new Map<number, number>();
+  /** Subscribers of the topic `movers`. */
+  #moversCount = 0;
   #worker?: EngineWorkerPort;
   #nextId = 1;
   #lastLoad?: LoadPlayerPayload;
@@ -180,6 +184,27 @@ export class EngineService implements OnDestroy {
     return this.#query({ kind: 'absenceReport' });
   }
 
+  /**
+   * Master data of all series (TS §8.2, AP 4.1): shares, price and total return indices, ETFs. It
+   * doesn't change during a game, so one query after `loadPlayer` is enough.
+   */
+  instruments(): Observable<EngineQueryResultOf<'instruments'>> {
+    return this.#query({ kind: 'instruments' });
+  }
+
+  /** Static details of one series; fails with `unknown-instrument` for an unknown ID. */
+  instrumentDetails(id: string): Observable<EngineQueryResultOf<'instrumentDetails'>> {
+    return this.#query({ kind: 'instrumentDetails', id });
+  }
+
+  /**
+   * The screener up to the current tick (TS §8.2, US-MK-02): all matches with their figures and
+   * a one-month sparkline, sorted.
+   */
+  screener(criteria: ScreenerCriteria): Observable<EngineQueryResultOf<'screener'>> {
+    return this.#query({ ...criteria, kind: 'screener' });
+  }
+
   /** Switches the auto-pause of a notification code (TS §12, US-ZT-06). */
   setAutoPause(code: AutoPauseCode, enabled: boolean): Observable<EngineReplies['setAutoPause']> {
     return this.#request('setAutoPause', { code, enabled });
@@ -259,6 +284,27 @@ export class EngineService implements OnDestroy {
         });
         if (removed.length > 0) {
           this.#notify('unsubscribe', { series: removed });
+        }
+      };
+    });
+  }
+
+  /**
+   * Gainers, losers and sector indices of the day (TS §8.3, §8.4), at most four times per second.
+   * The worker gets one subscription however many views watch, and its end with the last one.
+   */
+  movers(): Observable<MoversPayload> {
+    return new Observable<MoversPayload>((subscriber) => {
+      this.#moversCount++;
+      if (this.#moversCount === 1) {
+        this.#notify('subscribe', { series: [], movers: true });
+      }
+      const subscription = this.#payloads('movers').subscribe(subscriber);
+      return () => {
+        subscription.unsubscribe();
+        this.#moversCount--;
+        if (this.#moversCount === 0) {
+          this.#notify('unsubscribe', { series: [], movers: true });
         }
       };
     });
@@ -405,8 +451,8 @@ export class EngineService implements OnDestroy {
       });
     }
     const series = [...this.#quoteCounts.keys()];
-    if (series.length > 0) {
-      this.#notify('subscribe', { series });
+    if (series.length > 0 || this.#moversCount > 0) {
+      this.#notify('subscribe', this.#moversCount > 0 ? { series, movers: true } : { series });
     }
   }
 }

@@ -5,11 +5,19 @@ import { TRANSACTION_TYPES } from '@app/banking/domain/models/ledger.model';
 import { MAX_STATEMENT_LIMIT } from '@app/banking/domain/models/statement.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
 import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
+import { INSTRUMENT_KINDS } from '@app/market/domain/models/instrument.model';
+import { SCREENER_SORT_KEYS, SORT_DIRECTIONS } from '@app/market/domain/models/screener.model';
 import {
   AUTO_PAUSE_CODES,
   NOTIFICATION_CATEGORIES,
 } from '@app/notifications/domain/models/notification.model';
 import { MAX_NOTIFICATION_LIMIT } from '@app/notifications/domain/notification-page-logic';
+import {
+  REGION_IDS,
+  SECTOR_IDS,
+  SIZE_CLASSES,
+  STYLES,
+} from '@app/world/domain/models/taxonomy.model';
 
 import {
   ENGINE_ERRORS,
@@ -47,6 +55,32 @@ const arbStatementQuery = fc.record(
     limit: fc.integer({ min: 0, max: MAX_STATEMENT_LIMIT }),
   },
   { requiredKeys: ['kind', 'accountId', 'offset', 'limit'] },
+);
+
+const arbScreenerQuery = fc.record(
+  {
+    kind: fc.constant('screener' as const),
+    search: fc.string({ maxLength: 100 }),
+    assetClasses: fc.subarray([...INSTRUMENT_KINDS]),
+    regions: fc.subarray([...REGION_IDS]),
+    countries: fc.array(fc.string({ minLength: 1, maxLength: 2 }), { maxLength: 3 }),
+    sectors: fc.subarray([...SECTOR_IDS]),
+    industries: fc.array(arbId, { maxLength: 3 }),
+    sizes: fc.subarray([...SIZE_CLASSES]),
+    styles: fc.subarray([...STYLES]),
+    dividendYield: fc.record(
+      {
+        min: fc.double({ min: 0, max: 1, noNaN: true }),
+        max: fc.double({ min: 0, max: 1, noNaN: true }),
+      },
+      { requiredKeys: [] },
+    ),
+    sort: fc.record({
+      key: fc.constantFrom(...SCREENER_SORT_KEYS),
+      direction: fc.constantFrom(...SORT_DIRECTIONS),
+    }),
+  },
+  { requiredKeys: ['kind'] },
 );
 
 const arbMonthlyValues = fc.record({
@@ -147,8 +181,14 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
     }),
   ),
   envelope('cancelJump', fc.constant({})),
-  envelope('subscribe', fc.record({ series: fc.array(arbCount) })),
-  envelope('unsubscribe', fc.record({ series: fc.array(arbCount) })),
+  envelope(
+    'subscribe',
+    fc.record({ series: fc.array(arbCount), movers: fc.boolean() }, { requiredKeys: ['series'] }),
+  ),
+  envelope(
+    'unsubscribe',
+    fc.record({ series: fc.array(arbCount), movers: fc.boolean() }, { requiredKeys: ['series'] }),
+  ),
   envelope(
     'query',
     fc.record({
@@ -168,6 +208,9 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
           { requiredKeys: ['kind', 'offset', 'limit'] },
         ),
         fc.constant({ kind: 'absenceReport' as const }),
+        fc.constant({ kind: 'instruments' as const }),
+        fc.record({ kind: fc.constant('instrumentDetails' as const), id: arbId }),
+        arbScreenerQuery,
       ),
     }),
   ),
@@ -267,6 +310,17 @@ const arbEvent: fc.Arbitrary<EngineEventMessage> = fc.oneof(
     ),
   ),
   envelope('quotes', fc.record({ tick: arbCount, quotes: fc.array(arbQuote, { maxLength: 4 }) })),
+  envelope(
+    'movers',
+    fc.record({
+      tick: arbCount,
+      gainers: fc.array(arbQuote, { maxLength: 3 }),
+      losers: fc.array(arbQuote, { maxLength: 3 }),
+      sectors: fc.array(fc.record({ sectorId: fc.constantFrom(...SECTOR_IDS), quote: arbQuote }), {
+        maxLength: 3,
+      }),
+    }),
+  ),
   envelope(
     'projection',
     fc.record(
@@ -603,6 +657,35 @@ describe('engine protocol guards', () => {
         'an unknown notification category',
         command('query', { query: { kind: 'notifications', category: 'x', offset: 0, limit: 1 } }),
       ],
+      ['movers switched by a string', command('subscribe', { series: [], movers: 'yes' })],
+      ['details without an ID', command('query', { query: { kind: 'instrumentDetails' } })],
+      [
+        'details of an empty ID',
+        command('query', { query: { kind: 'instrumentDetails', id: '' } }),
+      ],
+      [
+        'an unknown asset class',
+        command('query', { query: { kind: 'screener', assetClasses: ['bond'] } }),
+      ],
+      [
+        'a sector that is not a list',
+        command('query', { query: { kind: 'screener', sectors: 'energy' } }),
+      ],
+      ['an unknown size', command('query', { query: { kind: 'screener', sizes: ['huge'] } })],
+      ['an unknown style', command('query', { query: { kind: 'screener', styles: ['momentum'] } })],
+      ['an empty country code', command('query', { query: { kind: 'screener', countries: [''] } })],
+      [
+        'an infinite yield bound',
+        command('query', { query: { kind: 'screener', dividendYield: { max: Infinity } } }),
+      ],
+      [
+        'a sort without direction',
+        command('query', { query: { kind: 'screener', sort: { key: 'name' } } }),
+      ],
+      [
+        'a search longer than 100 characters',
+        command('query', { query: { kind: 'screener', search: 'x'.repeat(101) } }),
+      ],
     ])('rejects a command with %s', (_label, message) => {
       expect(isEngineCommandMessage(message)).toBe(false);
     });
@@ -650,6 +733,31 @@ describe('engine protocol guards', () => {
         }),
       ],
       ['the absence report', command('query', { query: { kind: 'absenceReport' } })],
+      ['the movers', command('subscribe', { series: [], movers: true })],
+      ['the instruments', command('query', { query: { kind: 'instruments' } })],
+      [
+        'the details of a share',
+        command('query', { query: { kind: 'instrumentDetails', id: 'cmp-001' } }),
+      ],
+      ['a screener without criteria', command('query', { query: { kind: 'screener' } })],
+      [
+        'a screener with every criterion',
+        command('query', {
+          query: {
+            kind: 'screener',
+            search: 'x'.repeat(100),
+            assetClasses: ['stock', 'etf'],
+            regions: ['europe'],
+            countries: ['DE'],
+            sectors: [],
+            industries: ['software'],
+            sizes: ['small'],
+            styles: ['growth'],
+            dividendYield: { min: 0.01 },
+            sort: { key: 'y5', direction: 'desc' },
+          },
+        }),
+      ],
     ])('accepts a command with %s', (_label, message) => {
       expect(isEngineCommandMessage(message)).toBe(true);
     });
@@ -755,6 +863,16 @@ describe('engine protocol guards', () => {
       ['a clock with a string tick', event('clock', { ...CLOCK, tick: '1' })],
       ['a clock with paused as a string', event('clock', { ...CLOCK, paused: 'no' })],
       ['a quote with a string bid', event('quotes', { tick: 1, quotes: [{ ...QUOTE, bid: '1' }] })],
+      [
+        'movers with an unknown sector',
+        event('movers', {
+          tick: 1,
+          gainers: [],
+          losers: [],
+          sectors: [{ sectorId: 'space', quote: QUOTE }],
+        }),
+      ],
+      ['movers without losers', event('movers', { tick: 1, gainers: [QUOTE], sectors: [] })],
       [
         'a negative progress',
         event('progress', { kind: 'jump', state: 'running', done: -1, total: 5 }),

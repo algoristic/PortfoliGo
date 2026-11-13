@@ -171,6 +171,8 @@ export interface EngineHostConfig {
   /** Rate limits of the events (TS §8.4). */
   clockPerSecond: number;
   quotesPerSecond: number;
+  /** Rate limit of the `movers` event (TS §8.4). */
+  moversPerSecond: number;
   /** Projections after commands and loading go out at once and count towards the limit. */
   projectionPerSecond: number;
   /** Interval of the progress events of batch runs and the candle job (TS §3.7). */
@@ -210,6 +212,7 @@ export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
   passBudgetMs: 8,
   clockPerSecond: 10,
   quotesPerSecond: 4,
+  moversPerSecond: 4,
   projectionPerSecond: 4,
   progressIntervalMs: 100,
   clockSaveIntervalMs: 5_000,

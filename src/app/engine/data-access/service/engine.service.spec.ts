@@ -329,6 +329,59 @@ describe('EngineService', () => {
     });
   });
 
+  describe('market', () => {
+    // The model's prices, so that the screener's daily closes and the quotes agree.
+    beforeEach(() => setup({ prices: undefined }));
+
+    it('answers the instruments, their details and the screener', async () => {
+      const { tick } = await firstValueFrom(service.loadPlayer(PLAYER));
+      const { instruments } = await firstValueFrom(service.instruments());
+      const stock = instruments[0];
+      expect(stock.kind).toBe('stock');
+      const { details } = await firstValueFrom(service.instrumentDetails(stock.id));
+      expect(details).toMatchObject({ kind: 'stock', id: stock.id });
+      const failure = await firstValueFrom(service.instrumentDetails('cmp-999')).catch(
+        (e: EngineCommandError) => e.code,
+      );
+      expect(failure).toBe('unknown-instrument');
+      const result = await firstValueFrom(
+        service.screener({ search: stock.ticker, assetClasses: ['stock'] }),
+      );
+      expect(result.tick).toBe(tick);
+      expect(result.rows.map(({ id }) => id)).toContain(stock.id);
+      expect(received('query').at(-1)?.payload).toEqual({
+        query: { kind: 'screener', search: stock.ticker, assetClasses: ['stock'] },
+      });
+    });
+
+    it('subscribes the movers once for all subscribers and resends them after a restart', async () => {
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      const ticks: number[] = [];
+      const a = service.movers().subscribe(({ tick }) => ticks.push(tick));
+      const b = service.movers().subscribe();
+      await engine.idle();
+      expect(received('subscribe').map(({ payload }) => payload)).toEqual([
+        { series: [], movers: true },
+      ]);
+      expect(ticks).toEqual([GAME_START]);
+
+      engine.crash('boom');
+      await engine.idle();
+      expect(received('subscribe', 1).map(({ payload }) => payload)).toEqual([
+        { series: [], movers: true },
+      ]);
+
+      a.unsubscribe();
+      await engine.idle();
+      expect(received('unsubscribe', 1)).toEqual([]);
+      b.unsubscribe();
+      await engine.idle();
+      expect(received('unsubscribe', 1).map(({ payload }) => payload)).toEqual([
+        { series: [], movers: true },
+      ]);
+    });
+  });
+
   describe('worker failures', () => {
     let fatal: EngineFatal[];
     let subscription: Subscription | undefined;
