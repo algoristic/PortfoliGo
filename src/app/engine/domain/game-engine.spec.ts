@@ -13,6 +13,7 @@ import { createGameWorld } from './game-world';
 import { GameCommand } from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
 import { GameSnapshot } from './models/game-state.model';
+import { TaskSpec } from './models/scheduled-task.model';
 import { replayCommands } from './replay';
 import { scheduleTask } from './scheduler';
 import { MiniGame, miniGame } from './testing/mini-game';
@@ -485,11 +486,13 @@ describe('GameEngine', () => {
       expect(() => GameEngine.restore(mini.world, foreign)).toThrow(/does not belong/);
     });
 
-    it('never runs a reserved task silently', () => {
+    it('never runs an unknown task silently', () => {
       const snapshot = engine.snapshot();
-      scheduleTask(snapshot.scheduler, snapshot.tick + 1, { kind: 'order-expiry' });
+      scheduleTask(snapshot.scheduler, snapshot.tick + 1, {
+        kind: 'savings-plan',
+      } as unknown as TaskSpec);
       const restored = GameEngine.restore(mini.world, snapshot, { monthStarts: mini.monthStarts });
-      expect(() => restored.step()).toThrow(/order-expiry/);
+      expect(() => restored.step()).toThrow(/savings-plan/);
     });
   });
 

@@ -1,7 +1,11 @@
 import fc from 'fast-check';
 
 import { journalBalances } from '@app/banking/domain/ledger-logic';
-import { AccountId, OPENABLE_ACCOUNT_KINDS } from '@app/banking/domain/models/account.model';
+import {
+  AccountId,
+  DepotId,
+  OPENABLE_ACCOUNT_KINDS,
+} from '@app/banking/domain/models/account.model';
 import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
 import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
@@ -10,13 +14,21 @@ import {
   AUTO_PAUSE_CODES,
   GameNotification,
 } from '@app/notifications/domain/models/notification.model';
+import {
+  ORDER_SIDES,
+  ORDER_TYPES,
+  OrderSpec,
+  OrderValidity,
+} from '@app/trading/domain/models/order.model';
+import { Position } from '@app/trading/domain/models/position.model';
+import { isActive, reservedAmount } from '@app/trading/domain/order-reservation-logic';
 import { miniWorld } from '@app/world/domain/testing/mini-world';
 
 import { GameEngine } from './game-engine';
 import { createGameWorld } from './game-world';
 import { CommandResult, GameCommand } from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
-import { BACKGROUND_MODES, GameSnapshot } from './models/game-state.model';
+import { BACKGROUND_MODES, GameSnapshot, GameState } from './models/game-state.model';
 import { GameWorld } from './models/game-world.model';
 import { replayCommands } from './replay';
 import { startBankingGame, withBooks, withTestBanks } from './testing/banking-game';
@@ -31,8 +43,10 @@ import { TEST_SEEDS } from '../../../testing/seeds';
 // salary and living costs, account fees, overdraft interest beyond the limit, monthly savings
 // interest with tax, quarterly savings interest and debit interest on a clearing account. The
 // commands are random bank commands (AP 3.3), background modes, the notification commands (AP 3.6)
-// and watchlist updates (AP 4.4); many of them are rejected, which must be just as deterministic. The
-// notifications of the runs (overdrafts, interest, month ends) are part of both properties.
+// and watchlist updates (AP 4.4) and order commands (AP 5.1: placing, changing and cancelling in two
+// depots, one of them holding shares); many of them are rejected, which must be just as
+// deterministic. The notifications of the runs (overdrafts, interest, month ends, orders) are part
+// of both properties, and the positions always equal the start positions plus the unit postings.
 
 /** End of the runs: four months after the start, across three month starts and a quarter. */
 const END_TICK = dateTimeToTick({ year: 2030, month: 8, day: 1 }) - 1;
@@ -53,6 +67,60 @@ type WithoutStamp<T> = T extends unknown ? Omit<T, 'id' | 'tick'> : never;
 /** Watchlists from a few instruments of the world and an unknown ID, often with a repeated ID. */
 const arbWatchlist = (instruments: readonly string[]): fc.Arbitrary<string[]> =>
   fc.array(fc.constantFrom(...instruments, 'unknown'), { maxLength: 4 });
+
+const arbDepotId = (): fc.Arbitrary<DepotId> =>
+  fc.constantFrom<DepotId>('dep-5', 'dep-7', 'dep-7', 'dep-7', 'dep-9');
+
+const arbOrderId = (): fc.Arbitrary<string> =>
+  fc.integer({ min: 1, max: 6 }).map((n) => `ord-${n}`);
+
+/** Prices around those of the mini world, so that limits and stops are sometimes reached. */
+const arbPrice = (): fc.Arbitrary<number> =>
+  fc.integer({ min: 100, max: 40_000 }).map((cents) => cents / 100);
+
+/** Mostly short validities, so that the runs do not check orders for months. */
+const arbValidity = (): fc.Arbitrary<OrderValidity> =>
+  fc.oneof(
+    { weight: 4, arbitrary: fc.constant<OrderValidity>({ kind: 'day' }) },
+    { weight: 1, arbitrary: fc.constant<OrderValidity>({ kind: 'gtc' }) },
+    {
+      weight: 1,
+      arbitrary: fc
+        .integer({ min: 1, max: 20 })
+        .map((day): OrderValidity => ({ kind: 'date', date: { year: 2030, month: 5, day } })),
+    },
+  );
+
+const arbOrderSpec = (instruments: readonly string[]): fc.Arbitrary<OrderSpec> =>
+  fc
+    .record({
+      depotId: arbDepotId(),
+      instrumentId: fc.constantFrom(...instruments),
+      side: fc.constantFrom(...ORDER_SIDES),
+      type: fc.constantFrom(...ORDER_TYPES),
+      size: fc.oneof(
+        fc
+          .integer({ min: 1, max: 20 })
+          .map((shares) => ({ kind: 'quantity' as const, quantity: shares * 1_000_000 })),
+        fc
+          .integer({ min: 1, max: 20 })
+          .map((shares) => ({ kind: 'quantity' as const, quantity: shares * 1_000_000 })),
+        fc
+          .integer({ min: 1, max: 3_000_000 })
+          .map((quantity) => ({ kind: 'quantity' as const, quantity })),
+        fc
+          .integer({ min: 100, max: 500_000 })
+          .map((amount) => ({ kind: 'amount' as const, amount })),
+      ),
+      limit: arbPrice(),
+      stop: arbPrice(),
+      validity: arbValidity(),
+    })
+    .map((spec) => ({
+      ...spec,
+      limit: spec.type === 'limit' || spec.type === 'stop-limit' ? spec.limit : null,
+      stop: spec.type === 'stop' || spec.type === 'stop-limit' ? spec.stop : null,
+    }));
 
 const arbCommandBody = (instruments: readonly string[]): fc.Arbitrary<WithoutStamp<GameCommand>> =>
   fc.oneof(
@@ -95,6 +163,20 @@ const arbCommandBody = (instruments: readonly string[]): fc.Arbitrary<WithoutSta
       { requiredKeys: ['type', 'accountId'] },
     ),
     fc.record({ type: fc.constant('updateWatchlist' as const), ids: arbWatchlist(instruments) }),
+    fc.record({ type: fc.constant('placeOrder' as const), order: arbOrderSpec(instruments) }),
+    fc.record({ type: fc.constant('placeOrder' as const), order: arbOrderSpec(instruments) }),
+    fc.record({ type: fc.constant('placeOrder' as const), order: arbOrderSpec(instruments) }),
+    fc.record({ type: fc.constant('placeOrder' as const), order: arbOrderSpec(instruments) }),
+    fc.record({ type: fc.constant('placeOrder' as const), order: arbOrderSpec(instruments) }),
+    fc.record({
+      type: fc.constant('changeOrder' as const),
+      orderId: arbOrderId(),
+      change: fc.record(
+        { limit: arbPrice(), stop: arbPrice(), validity: arbValidity() },
+        { requiredKeys: [] },
+      ),
+    }),
+    fc.record({ type: fc.constant('cancelOrder' as const), orderId: arbOrderId() }),
   );
 
 /**
@@ -134,17 +216,23 @@ describe('GameEngine properties', () => {
     const { seedKey, world: mini } = miniWorld(TEST_SEEDS.mini);
     const engine = startBankingGame(createGameWorld(seedKey, mini), MINI_START_CONDITIONS);
     world = withTestBanks(engine.world);
-    start = withBooks(engine.snapshot(), {
+    const { companies, indices, etfs } = mini;
+    instruments = [companies[0].id, `${indices[0].id}-tr`, etfs[0].id, companies[1].id];
+    const books = withBooks(engine.snapshot(), {
       accounts: [
         { kind: 'savings', bankId: 'b1', balance: 30_000_000 },
         { kind: 'savings', bankId: 'b2', balance: 1_000_000 },
         { kind: 'clearing', bankId: 'b3', balance: -200_000 },
+        { kind: 'clearing', bankId: 'b3', balance: 2_000_000 },
       ],
       balances: { 'acc-1': -600_000 },
-    });
+    }) as GameState;
+    books.player.positions = [
+      { depotId: 'dep-7', instrumentId: companies[0].id, quantity: 15_500_000 },
+      { depotId: 'dep-7', instrumentId: etfs[0].id, quantity: 8_000_000 },
+    ];
+    start = books;
     monthStarts = engine.monthStartsAfter(-1);
-    const { companies, indices, etfs } = mini;
-    instruments = [companies[0].id, `${indices[0].id}-tr`, etfs[0].id, companies[1].id];
   });
 
   function restoreStart(): GameEngine {
@@ -182,6 +270,42 @@ describe('GameEngine properties', () => {
     expect(snapshot.player.balances).toEqual(expected);
   }
 
+  /**
+   * The positions of the start plus the unit postings of the journal (TS §7.2), and the order
+   * book: active orders hold the reservations, closed ones nothing.
+   */
+  function expectPositionsAndOrders(
+    snapshot: ReturnType<GameEngine['snapshot']>,
+    journal: readonly Transaction[],
+  ): void {
+    const sums = new Map<string, Position>();
+    for (const position of [
+      ...start.player.positions,
+      ...journal.flatMap(({ units }) => units ?? []),
+    ]) {
+      const key = `${position.depotId}/${position.instrumentId}`;
+      const sum = sums.get(key) ?? { ...position, quantity: 0 };
+      sums.set(key, { ...sum, quantity: sum.quantity + position.quantity });
+    }
+    const expected = [...sums.values()].filter(({ quantity }) => quantity !== 0);
+    const sort = (positions: readonly Position[]): Position[] =>
+      [...positions].sort((a, b) =>
+        `${a.depotId}/${a.instrumentId}`.localeCompare(`${b.depotId}/${b.instrumentId}`),
+      );
+    expect(sort(snapshot.player.positions)).toEqual(sort(expected));
+    const { orders, orderHistory } = snapshot.player;
+    expect(orders.every(({ status }) => isActive(status))).toBe(true);
+    expect(orderHistory.every(({ status, reserved }) => !isActive(status) && reserved === 0)).toBe(
+      true,
+    );
+    for (const depot of snapshot.player.depots) {
+      const own = orders.filter((order) => order.depotId === depot.id && order.side === 'buy');
+      expect(reservedAmount(orders, depot.id)).toBe(
+        own.reduce((sum, { reserved }) => sum + reserved, 0),
+      );
+    }
+  }
+
   it('runs through every kind of household transaction', () => {
     const { journal, events } = referenceRun([]);
     const types = new Set(journal.map(({ type }) => type));
@@ -198,6 +322,7 @@ describe('GameEngine properties', () => {
       event.type === 'interest-credited' ? [event.accountId] : [],
     );
     expect(credited.filter((id) => id === 'acc-3')).toHaveLength(1);
+    expect(journal.some(({ units }) => units !== undefined)).toBe(false);
     const codes = new Set(referenceRun([]).notifications.map(({ code }) => code));
     expect([...codes].sort()).toEqual([
       'interest-credited',
@@ -257,6 +382,7 @@ describe('GameEngine properties', () => {
           expect(journal).toEqual(reference.journal);
           expect(notifications).toEqual(reference.notifications);
           expectBalancesOfJournal(reference.snapshot, reference.journal);
+          expectPositionsAndOrders(reference.snapshot, reference.journal);
         },
       ),
       { numRuns: 15 },
@@ -312,6 +438,7 @@ describe('GameEngine properties', () => {
           expect([...before, ...journalAfter]).toEqual(reference.journal);
           expect([...notifiedBefore, ...notifiedAfter]).toEqual(reference.notifications);
           expectBalancesOfJournal(live.snapshot(), reference.journal);
+          expectPositionsAndOrders(live.snapshot(), reference.journal);
         },
       ),
       { numRuns: 15 },

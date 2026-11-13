@@ -12,6 +12,8 @@ import { MarketState } from '@app/market/domain/models/market-state.model';
 import { NotificationState } from '@app/notifications/domain/models/notification.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { TaxYear } from '@app/taxes/domain/models/tax.model';
+import { Order } from '@app/trading/domain/models/order.model';
+import { Position } from '@app/trading/domain/models/position.model';
 
 import { SchedulerState } from './scheduled-task.model';
 
@@ -26,7 +28,7 @@ export interface StartConditions {
   livingCosts: Cents;
 }
 
-/** Player state (TS §7.2, §7.4); trading fields follow in M5. */
+/** Player state (TS §7.2, §7.4, §7.5). */
 export interface PlayerState {
   start: StartConditions;
   /** Bank of the first current account, fixed when the game starts (TS §5.7). */
@@ -59,6 +61,14 @@ export interface PlayerState {
   notifications: NotificationState;
   /** Instrument IDs of the watchlist in the player's order (US-MK-04), at most `MAX_WATCHLIST_LENGTH`. */
   watchlist: string[];
+  /** Active orders (open or triggered) in placement order (TS §7.5). */
+  orders: Order[];
+  /** Closed orders, oldest first, at most `ORDER_HISTORY_LENGTH` (US-HD-04). */
+  orderHistory: Order[];
+  /** Last value of the order counter (`ord-<n>`). */
+  orderSequence: number;
+  /** Shares per depot and instrument, only those above 0, in order of their first purchase. */
+  positions: Position[];
 }
 
 /** Dynamic state of a game (TS §8.1). Everything in it is plain, structured-cloneable data. */

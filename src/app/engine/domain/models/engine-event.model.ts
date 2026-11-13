@@ -1,7 +1,8 @@
-import { AccountId } from '@app/banking/domain/models/account.model';
+import { AccountId, DepotId } from '@app/banking/domain/models/account.model';
 import { AccountEventCode } from '@app/banking/domain/models/household.model';
 import { Tick } from '@app/clock/domain/models/time.model';
-import { Cents } from '@app/shared/domain/models/money.model';
+import { Cents, MicroUnits } from '@app/shared/domain/models/money.model';
+import { OrderRejection, OrderSide } from '@app/trading/domain/models/order.model';
 
 import { BackgroundMode } from './game-state.model';
 
@@ -46,6 +47,35 @@ export type EngineEvent =
       accountId: AccountId;
       amount: Cents;
       tax: Cents;
-    };
+    }
+  | OrderEvent;
+
+/** What every order event says about its order (TS §7.5). */
+interface OrderEventBase {
+  tick: Tick;
+  orderId: string;
+  depotId: DepotId;
+  instrumentId: string;
+  side: OrderSide;
+}
+
+/**
+ * Events of the order system (TS §7.5, §12): a stop was reached (the order executes in the same
+ * tick or waits for its limit), an execution with its shares, price and debit or credit, a
+ * rejection at execution and the end of the validity. Cancellations answer a command and have no
+ * event.
+ */
+export type OrderEvent =
+  | (OrderEventBase & { type: 'order-triggered' })
+  | (OrderEventBase & {
+      type: 'order-executed';
+      quantity: MicroUnits;
+      /** Execution price in euros (ask for purchases, bid for sales). */
+      price: number;
+      /** Debit of a purchase or credit of a sale, costs included (TS §7.5). */
+      total: Cents;
+    })
+  | (OrderEventBase & { type: 'order-rejected'; reason: OrderRejection })
+  | (OrderEventBase & { type: 'order-expired' });
 
 export type EngineEventType = EngineEvent['type'];

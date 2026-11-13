@@ -1,7 +1,8 @@
-import { AccountId } from '@app/banking/domain/models/account.model';
+import { AccountId, DepotId } from '@app/banking/domain/models/account.model';
 import { MonthlyValues } from '@app/banking/domain/models/household.model';
 import { Tick } from '@app/clock/domain/models/time.model';
-import { Cents } from '@app/shared/domain/models/money.model';
+import { Cents, MicroUnits } from '@app/shared/domain/models/money.model';
+import { OrderRejection, OrderSide } from '@app/trading/domain/models/order.model';
 
 /** Categories of the notification centre (PS US-BN-01, TS §12). */
 export const NOTIFICATION_CATEGORIES = [
@@ -25,7 +26,10 @@ export type NotificationSeverity = (typeof NOTIFICATION_SEVERITIES)[number];
 export const NOTIFICATION_SOURCES = ['engine', 'host', 'ui'] as const;
 export type NotificationSource = (typeof NOTIFICATION_SOURCES)[number];
 
-/** Codes of TS §12. The engine creates the account, earnings and system codes since AP 3.6. */
+/**
+ * Codes of TS §12. The engine creates the account, earnings and system codes since AP 3.6, the
+ * order codes since AP 5.1.
+ */
 export const NOTIFICATION_CODES = [
   'account-uncovered',
   'overdraft-limit-exceeded',
@@ -130,15 +134,35 @@ export interface YearClosedParams {
   taxWithheld: Cents;
 }
 
+/** The order of an order notification (TS §7.5). */
+export interface OrderParams {
+  orderId: string;
+  depotId: DepotId;
+  instrumentId: string;
+  side: OrderSide;
+}
+
+/** `order-executed`: shares, execution price in euros and the debit or credit with costs. */
+export interface OrderExecutedParams extends OrderParams {
+  quantity: MicroUnits;
+  price: number;
+  total: Cents;
+}
+
+/** `order-rejected`: why the order could not execute (`ORDER_REJECTIONS`). */
+export interface OrderRejectedParams extends OrderParams {
+  reason: OrderRejection;
+}
+
 /** Parameters of codes the engine does not create yet; their APs define them. */
 export type PendingParams = Readonly<Record<string, string | number | null>>;
 
 export interface NotificationParams {
   'account-uncovered': AccountCoverageParams;
   'overdraft-limit-exceeded': AccountCoverageParams;
-  'order-executed': PendingParams;
-  'order-rejected': PendingParams;
-  'order-expired': PendingParams;
+  'order-executed': OrderExecutedParams;
+  'order-rejected': OrderRejectedParams;
+  'order-expired': OrderParams;
   'savings-plan-executed': PendingParams;
   'savings-plan-failed': PendingParams;
   'dividend-received': PendingParams;

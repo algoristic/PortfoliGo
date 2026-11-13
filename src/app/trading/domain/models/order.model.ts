@@ -79,6 +79,12 @@ export interface OrderExecution extends OrderFill {
   tick: Tick;
 }
 
+/**
+ * Closed orders the engine keeps for the order book (US-HD-04), newest last; older ones remain in
+ * the journal (executions) and the notifications.
+ */
+export const ORDER_HISTORY_LENGTH = 500;
+
 export interface Order extends OrderSpec {
   id: string;
   status: OrderStatus;

@@ -47,7 +47,10 @@ export class NotificationSystem {
     return buffer;
   }
 
-  /** Notifications of an engine event (TS §12): account coverage, credit interest and refunds. */
+  /**
+   * Notifications of an engine event (TS §12): account coverage, credit interest and refunds,
+   * executed, rejected and expired orders (a triggered stop notifies nothing).
+   */
   fromEvent(event: EngineEvent): void {
     switch (event.type) {
       case 'account-uncovered':
@@ -62,6 +65,30 @@ export class NotificationSystem {
         if (tax < 0) {
           this.#notify(event.tick, { code: 'tax-refund', params: { accountId, amount: -tax } });
         }
+        break;
+      }
+      case 'order-executed': {
+        const { orderId, depotId, instrumentId, side, quantity, price, total } = event;
+        this.#notify(event.tick, {
+          code: 'order-executed',
+          params: { orderId, depotId, instrumentId, side, quantity, price, total },
+        });
+        break;
+      }
+      case 'order-rejected': {
+        const { orderId, depotId, instrumentId, side, reason } = event;
+        this.#notify(event.tick, {
+          code: 'order-rejected',
+          params: { orderId, depotId, instrumentId, side, reason },
+        });
+        break;
+      }
+      case 'order-expired': {
+        const { orderId, depotId, instrumentId, side } = event;
+        this.#notify(event.tick, {
+          code: 'order-expired',
+          params: { orderId, depotId, instrumentId, side },
+        });
         break;
       }
       default:

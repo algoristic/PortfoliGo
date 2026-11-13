@@ -58,6 +58,23 @@ export function orderDecision(order: DecidableOrder, quote: BidAsk): OrderDecisi
 }
 
 /**
+ * Whether the mid price alone rules out an execution in this tick (TS §7.5), so that the engine
+ * need not derive bid and ask: an order that only waits for its limit (a limit order, or a
+ * triggered stop-limit order) cannot execute while the mid is beyond the limit, because the bid
+ * never lies above the mid and the ask never below it. Market and untriggered stop orders always
+ * need the quote.
+ */
+export function midRulesOutExecution(order: DecidableOrder, mid: number): boolean {
+  const waitsForLimit =
+    order.type === 'limit' || (order.type === 'stop-limit' && order.status === 'triggered');
+  if (!waitsForLimit) {
+    return false;
+  }
+  const limit = limitOf(order);
+  return order.side === 'buy' ? mid > limit : mid < limit;
+}
+
+/**
  * Shares an order by amount buys at `price` (TS §7.5, US-HD-01): Stück = (Betrag − Kosten) / Brief,
  * rounded down to the bank's grid (whole shares, or millionths with `fractionalShares`). Since the
  * costs depend on the market value, the result is the largest quantity on the grid whose exact

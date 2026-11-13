@@ -2,7 +2,11 @@ import { nextBankRunTick } from '@app/banking/domain/bank-run-logic';
 import { findHomeBank } from '@app/banking/domain/home-bank-logic';
 import { startInflows } from '@app/banking/domain/inflow-logic';
 import { OPENING_BALANCE_ACCOUNT } from '@app/banking/domain/ledger-logic';
-import { AccountId, OPENABLE_ACCOUNT_KINDS } from '@app/banking/domain/models/account.model';
+import {
+  AccountId,
+  DepotId,
+  OPENABLE_ACCOUNT_KINDS,
+} from '@app/banking/domain/models/account.model';
 import { ClosedMonth } from '@app/banking/domain/models/household.model';
 import { Transaction, TransactionDraft } from '@app/banking/domain/models/ledger.model';
 import { emptyMonthlyValues } from '@app/banking/domain/monthly-values-logic';
@@ -47,6 +51,7 @@ import { GameWorld } from './models/game-world.model';
 import { PricePort } from './models/price-port.model';
 import { ExDividend, ScheduledTask } from './models/scheduled-task.model';
 import { NotificationSystem } from './notification-system';
+import { copyOrder, OrderSystem } from './order-system';
 import { copyScheduler, createScheduler, peekTask, popTask, scheduleTask } from './scheduler';
 
 /** Creates the price port over the engine's market; the history and the state grow in place. */
@@ -74,8 +79,8 @@ export const priceSourcePort: PricePortFactory = (world, history, market) =>
 
 /**
  * The pure, deterministic engine (TS §2.2, §8.1). It knows no clock: the host calls `runUntil`
- * with its target tick and a `shouldYield` callback. Ticks without due tasks change nothing and
- * are skipped; per-tick systems (open orders) arrive in M5. Create it with `start` or `restore`.
+ * with its target tick and a `shouldYield` callback. Ticks without due tasks and without an active
+ * order at an open exchange change nothing and are skipped. Create it with `start` or `restore`.
  */
 export class GameEngine {
   readonly world: GameWorld;
@@ -87,10 +92,15 @@ export class GameEngine {
   readonly #banking: BankingSystem;
   readonly #bankCommands: BankCommands;
   readonly #notifications: NotificationSystem;
+  readonly #orders: OrderSystem;
   #events: EngineEvent[] = [];
   #journal: Transaction[] = [];
   /** Accounts whose projection changed since the last `drainChangedAccounts` (TS §8.4). */
   #changedAccounts = new Set<AccountId>();
+  /** Orders placed, changed or closed since the last `drainChangedOrders`. */
+  #changedOrders = new Set<string>();
+  /** Depots whose positions changed since the last `drainChangedDepots`. */
+  #changedDepots = new Set<DepotId>();
   /** IDs of all instruments of the world, made on the first `updateWatchlist`. */
   #instrumentIds: ReadonlySet<string> | null = null;
 
@@ -115,6 +125,20 @@ export class GameEngine {
       changed,
     });
     this.#bankCommands = new BankCommands(world, state.player, this.#banking, changed);
+    this.#orders = new OrderSystem(world, state.player, this.prices, {
+      book: (draft) => this.#banking.book(draft),
+      emit: (event) => this.#emit(event),
+      scheduleExpiry: (tick, orderId) => {
+        scheduleTask(this.#state.scheduler, tick, { kind: 'order-expiry', orderId });
+      },
+      changedAccount: changed,
+      changedOrder: (id) => {
+        this.#changedOrders.add(id);
+      },
+      changedDepot: (id) => {
+        this.#changedDepots.add(id);
+      },
+    });
   }
 
   /**
@@ -168,6 +192,10 @@ export class GameEngine {
         closedMonths: [],
         notifications: { nextSeq: 1, readUpTo: 0, readSeqs: [], autoPause: {} },
         watchlist: [],
+        orders: [],
+        orderHistory: [],
+        orderSequence: 0,
+        positions: [],
       },
       scheduler,
       commandIds: [],
@@ -234,13 +262,16 @@ export class GameEngine {
   }
 
   /**
-   * Processes the ticks up to `targetTick`. Checks `shouldYield` after every tick with due tasks
-   * and returns `false` when it stopped early; the result never depends on where it stops.
+   * Processes the ticks up to `targetTick`. Checks `shouldYield` after every processed tick (due
+   * tasks or active orders at an open exchange) and returns `false` when it stopped early; the
+   * result never depends on where it stops.
    */
   runUntil(targetTick: Tick, shouldYield: () => boolean = () => false): boolean {
     while (this.#state.tick < targetTick) {
-      const due = peekTask(this.#state.scheduler)?.tick ?? targetTick;
-      const next = Math.max(due, this.#state.tick + 1);
+      const following = this.#state.tick + 1;
+      const next = this.#orders.needsTick(following)
+        ? following
+        : Math.max(peekTask(this.#state.scheduler)?.tick ?? targetTick, following);
       if (next > targetTick) {
         this.#setTick(targetTick);
         return true;
@@ -297,6 +328,20 @@ export class GameEngine {
     return changed;
   }
 
+  /** IDs of the orders placed, changed or closed since the last call, in order of first change. */
+  drainChangedOrders(): string[] {
+    const changed = [...this.#changedOrders];
+    this.#changedOrders = new Set();
+    return changed;
+  }
+
+  /** IDs of the depots whose positions changed since the last call (executions). */
+  drainChangedDepots(): DepotId[] {
+    const changed = [...this.#changedDepots];
+    this.#changedDepots = new Set();
+    return changed;
+  }
+
   /** What closing the account now would book, without booking (TS §7.4). */
   closingPreview(accountId: string): ClosingPreviewResult {
     return this.#bankCommands.closingPreview(accountId, this.#state.tick);
@@ -345,6 +390,12 @@ export class GameEngine {
         return this.#notifications.markRead(command);
       case 'updateWatchlist':
         return this.#updateWatchlist(command.ids);
+      case 'placeOrder':
+        return this.#orders.place(command.order, this.#state.tick);
+      case 'changeOrder':
+        return this.#orders.change(command.orderId, command.change, this.#state.tick);
+      case 'cancelOrder':
+        return this.#orders.cancel(command.orderId, this.#state.tick);
       default:
         return { ok: false, error: 'invalid-command' };
     }
@@ -382,7 +433,10 @@ export class GameEngine {
     }
   }
 
-  /** Runs all tasks due at or before `tick` in the order of the scheduler (TS §3.8). */
+  /**
+   * Runs all tasks due at or before `tick` in the order of the scheduler, then checks the active
+   * orders (TS §3.8, steps 1 and 2).
+   */
   #processTick(tick: Tick): void {
     this.#setTick(tick);
     const { scheduler } = this.#state;
@@ -391,6 +445,7 @@ export class GameEngine {
       this.#run(task, tick);
       task = peekTask(scheduler);
     }
+    this.#orders.trade(tick);
   }
 
   #run(task: ScheduledTask, tick: Tick): void {
@@ -423,6 +478,9 @@ export class GameEngine {
         });
         break;
       }
+      case 'order-expiry':
+        this.#orders.expire(task.orderId, tick);
+        break;
       case 'month-end': {
         const { year, month } = tickToDateTime(tick - TICKS_PER_MINUTE);
         this.#banking.closeMonth(tick);
@@ -442,8 +500,11 @@ export class GameEngine {
         scheduleTask(this.#state.scheduler, startOfNextYear(tick), { kind: 'year-end' });
         break;
       }
-      default:
-        throw new Error(`GameEngine: no system for task ${task.kind}`);
+      default: {
+        // Only a corrupted snapshot holds other kinds.
+        const { kind } = task as ScheduledTask;
+        throw new Error(`GameEngine: no system for task ${kind}`);
+      }
     }
   }
 
@@ -545,6 +606,10 @@ function copyPlayer(player: Readonly<PlayerState>): PlayerState {
       autoPause: { ...player.notifications.autoPause },
     },
     watchlist: player.watchlist.slice(),
+    orders: player.orders.map(copyOrder),
+    orderHistory: player.orderHistory.map(copyOrder),
+    orderSequence: player.orderSequence,
+    positions: player.positions.map((position) => ({ ...position })),
   };
 }
 

@@ -4,7 +4,17 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { Cents, MICRO_UNITS_PER_UNIT, MicroUnits } from '@app/shared/domain/models/money.model';
 import { BidAsk } from '@app/shared/domain/models/quote.model';
 
-import { Order, OrderChange, OrderCommandError, OrderSpec, OrderType } from './models/order.model';
+import {
+  Order,
+  ORDER_SIDES,
+  ORDER_TYPES,
+  OrderChange,
+  OrderCommandError,
+  OrderSide,
+  OrderSpec,
+  OrderType,
+  OrderValidity,
+} from './models/order.model';
 import { orderReservation } from './order-reservation-logic';
 import { validityError } from './order-validity-logic';
 
@@ -123,6 +133,73 @@ export function changedReservation(
     return order.reserved;
   }
   return orderReservation(changedSpec(order, change), ask, conditions);
+}
+
+/**
+ * Whether a command payload has the shape of an `OrderSpec` (TS §8.5): the engine answers
+ * `invalid-command` otherwise. Values are left to `orderPlacementError`, so any number passes here.
+ */
+export function isOrderSpec(value: unknown): value is OrderSpec {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const { depotId, instrumentId, side, type, size, limit, stop, validity } = value;
+  return (
+    typeof depotId === 'string' &&
+    typeof instrumentId === 'string' &&
+    ORDER_SIDES.includes(side as OrderSide) &&
+    ORDER_TYPES.includes(type as OrderType) &&
+    isOrderSize(size) &&
+    isPriceOrNull(limit) &&
+    isPriceOrNull(stop) &&
+    isOrderValidity(validity)
+  );
+}
+
+/** Whether a command payload has the shape of an `OrderChange`; missing fields stay as they are. */
+export function isOrderChange(value: unknown): value is OrderChange {
+  if (!isRecord(value)) {
+    return false;
+  }
+  const { limit, stop, validity } = value;
+  return (
+    (limit === undefined || typeof limit === 'number') &&
+    (stop === undefined || typeof stop === 'number') &&
+    (validity === undefined || isOrderValidity(validity))
+  );
+}
+
+function isOrderSize(value: unknown): boolean {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return value['kind'] === 'quantity'
+    ? typeof value['quantity'] === 'number'
+    : value['kind'] === 'amount' && typeof value['amount'] === 'number';
+}
+
+function isOrderValidity(value: unknown): value is OrderValidity {
+  if (!isRecord(value)) {
+    return false;
+  }
+  if (value['kind'] !== 'date') {
+    return value['kind'] === 'day' || value['kind'] === 'gtc';
+  }
+  const date = value['date'];
+  return (
+    isRecord(date) &&
+    typeof date['year'] === 'number' &&
+    typeof date['month'] === 'number' &&
+    typeof date['day'] === 'number'
+  );
+}
+
+function isPriceOrNull(value: unknown): boolean {
+  return value === null || typeof value === 'number';
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
 }
 
 function changedSpec(order: Order, change: OrderChange): Order {

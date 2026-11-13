@@ -62,6 +62,14 @@ export function availableAmount({ balance, limit }: CoverageState): Cents {
 }
 
 /**
+ * Available amount for transfers, standing orders and savings plans (TS §7.4, §7.5): the available
+ * amount minus the reservations of the active buy orders of a clearing account; never negative.
+ */
+export function availableAfterReservations(state: CoverageState, reserved: Cents): Cents {
+  return Math.max(0, availableAmount(state) - reserved);
+}
+
+/**
  * Events of a change of balance or limit (TS §7.4): `account-uncovered` when the balance turns
  * negative, `overdraft-limit-exceeded` when it falls below −limit (current accounts only), each
  * only if it did not hold before.

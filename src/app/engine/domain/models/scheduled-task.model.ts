@@ -1,9 +1,6 @@
 import { Cents } from '@app/shared/domain/models/money.model';
 
-/**
- * Kinds of scheduled tasks in their fixed order within one tick (TS §3.8, §8.1). Order expiry is
- * reserved for M5; its rank is fixed already.
- */
+/** Kinds of scheduled tasks in their fixed order within one tick (TS §3.8, §8.1). */
 export const TASK_ORDER = [
   'day-change',
   'bank-run',
@@ -24,13 +21,16 @@ export interface ExDividend {
   paymentDay: number;
 }
 
-/** Order expiry is reserved for M5; the engine does not schedule it yet. */
+/**
+ * Order expiry runs at the order's `expiresAt`; it expires the order only if it is still active
+ * and still expires then (a change of the validity schedules a new task, TS §7.5).
+ */
 export type TaskSpec =
   | { kind: 'day-change' }
   | { kind: 'bank-run' }
   | { kind: 'session-open'; exchange: number; dividends: readonly ExDividend[] }
   | { kind: 'session-close'; exchange: number }
-  | { kind: 'order-expiry' }
+  | { kind: 'order-expiry'; orderId: string }
   | { kind: 'month-end' }
   | { kind: 'year-end' };
 

@@ -46,7 +46,7 @@ import { Transaction, TransactionDraft } from '@app/banking/domain/models/ledger
 import { addToMonthlyValues, emptyMonthlyValues } from '@app/banking/domain/monthly-values-logic';
 import {
   accountEvents,
-  availableAmount,
+  availableAfterReservations,
   overdraftLimits,
 } from '@app/banking/domain/overdraft-logic';
 import { Tick, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
@@ -54,6 +54,7 @@ import { Cents } from '@app/shared/domain/models/money.model';
 import { SeedKey } from '@app/simulation/util/seed';
 import { TaxYear } from '@app/taxes/domain/models/tax.model';
 import { assessTaxableIncome, closeTaxYear, taxTransactionType } from '@app/taxes/domain/tax-logic';
+import { reservedAmount } from '@app/trading/domain/order-reservation-logic';
 
 import { EngineEvent } from './models/engine-event.model';
 import { PlayerState } from './models/game-state.model';
@@ -325,9 +326,15 @@ export class BankingSystem {
     return { balance: this.#player.balances.get(id) ?? 0, limit: this.#limitOf(this.#account(id)) };
   }
 
-  /** Amount for own transfers (TS §7.4): balance plus free limit. */
+  /**
+   * Amount for own transfers (TS §7.4): balance plus free limit, for a clearing account minus the
+   * reservations of the active buy orders of its depot (TS §7.5).
+   */
   available(id: AccountId): Cents {
-    return availableAmount(this.coverage(id));
+    const account = this.#account(id);
+    const reserved =
+      account.kind === 'clearing' ? reservedAmount(this.#player.orders, account.depotId) : 0;
+    return availableAfterReservations(this.coverage(id), reserved);
   }
 
   /**

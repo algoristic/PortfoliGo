@@ -5,7 +5,12 @@ import { GAME_START_TICK } from '@app/clock/domain/calendar-logic';
 import { closeInflowMonth, openInflows, recordInflows, startInflows } from './inflow-logic';
 import { Account, AccountId, CurrentAccount } from './models/account.model';
 import { AccountEventCode, AccountInflows, CoverageState } from './models/household.model';
-import { accountEvents, availableAmount, overdraftLimits } from './overdraft-logic';
+import {
+  accountEvents,
+  availableAfterReservations,
+  availableAmount,
+  overdraftLimits,
+} from './overdraft-logic';
 
 import { arbCents } from '../../../testing/arbitraries';
 
@@ -213,6 +218,19 @@ describe('overdraft-logic', () => {
           expect(available).toBe(Math.max(0, balance + (limit ?? 0)));
         }),
       );
+    });
+  });
+
+  describe('availableAfterReservations', () => {
+    // TS §7.4: reservations of open buy orders reduce the available amount of a clearing account
+    it.each<[string, CoverageState, number, number]>([
+      ['without reservations', { balance: 200_000, limit: null }, 0, 200_000],
+      ['with reservations', { balance: 200_000, limit: null }, 150_300, 49_700],
+      ['when the reservations take everything', { balance: 100_000, limit: null }, 100_000, 0],
+      ['when the reservations exceed the balance', { balance: 100_000, limit: null }, 120_000, 0],
+      ['for a negative balance', { balance: -1_479, limit: null }, 10_000, 0],
+    ])('offers the free amount %s', (_case, state, reserved, available) => {
+      expect(availableAfterReservations(state, reserved)).toBe(available);
     });
   });
 

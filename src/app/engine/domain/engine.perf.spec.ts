@@ -9,6 +9,7 @@ import { GameEngine } from './game-engine';
 import { createGameWorld } from './game-world';
 import { GameSnapshot } from './models/game-state.model';
 import { GameWorld } from './models/game-world.model';
+import { withBooks } from './testing/banking-game';
 import { MINI_START_CONDITIONS } from './testing/mini-game';
 
 import { BUDGETS_MS, expectWithinBudget, medianMs } from '../../../testing/perf';
@@ -16,6 +17,10 @@ import { BUDGETS_MS, expectWithinBudget, medianMs } from '../../../testing/perf'
 // Budget of TS §14.3: the engine at 1 game week per second below 15 % of a core, i.e. one game
 // year live within 15 % of 52.18 s. Live, the host runs one frame of ticks (16 ms at 1 w/s) per
 // call and writes the daily candles with high and low at every session close (TS §6.8).
+// With open orders, the engine checks every minute of their sessions (TS §3.8). Twenty limit orders
+// on shares of several exchanges that never execute (good till cancelled) stay open for the whole
+// year. Orders on ETFs cost the minute curves of their index constituents on every trading day
+// (about 21 ms, about 6 s per year in batch mode, AP 5.1); they are not part of this budget yet.
 
 const FRAMES_PER_SECOND = 60;
 const TICKS_PER_FRAME = Math.ceil(TICKS_PER_WEEK / FRAMES_PER_SECOND);
@@ -25,6 +30,8 @@ describe('engine performance', () => {
   let world: GameWorld;
   let start: GameSnapshot;
   let monthStarts: readonly FactorStateEntry[];
+  /** `start` with a depot `dep-3` and twenty open orders placed at the start tick. */
+  let withOrders: GameSnapshot;
 
   beforeAll(() => {
     const seedKey = deriveSeedKey('perf-engine');
@@ -32,6 +39,30 @@ describe('engine performance', () => {
     const engine = GameEngine.start(world, MINI_START_CONDITIONS);
     start = engine.snapshot();
     monthStarts = engine.monthStartsAfter(-1);
+    const books = withBooks(start, {
+      accounts: [{ kind: 'clearing', bankId: world.world.banks[0].id, balance: 10_000_000 }],
+    });
+    const trading = GameEngine.restore(world, books, { monthStarts });
+    const ids = world.world.companies.slice(0, 20).map(({ id }) => id);
+    ids.forEach((instrumentId, n) => {
+      const result = trading.applyCommand({
+        id: `order-${n}`,
+        tick: trading.tick,
+        type: 'placeOrder',
+        order: {
+          depotId: 'dep-3',
+          instrumentId,
+          side: 'buy',
+          type: 'limit',
+          size: { kind: 'quantity', quantity: 10_000_000 },
+          limit: 0.5,
+          stop: null,
+          validity: { kind: 'gtc' },
+        },
+      });
+      expect(result.ok).toBe(true);
+    });
+    withOrders = trading.snapshot();
   });
 
   it('runs one game year live with daily candles within the budget', () => {
@@ -69,6 +100,22 @@ describe('engine performance', () => {
       'engine: one game year live with daily candles',
       ms,
       BUDGETS_MS.gameYearLive,
+    );
+  });
+
+  it('runs one game year in batch mode with twenty open share orders within the catch-up budget', () => {
+    let open = 0;
+    const ms = medianMs(() => {
+      const engine = GameEngine.restore(world, withOrders, { monthStarts });
+      engine.runUntil(END_TICK);
+      engine.drainEvents();
+      open = engine.player.orders.length;
+    }, 3);
+    expect(open).toBe(20);
+    expectWithinBudget(
+      'engine: one game year in batch mode with 20 open share orders',
+      ms,
+      BUDGETS_MS.catchUpYear,
     );
   });
 

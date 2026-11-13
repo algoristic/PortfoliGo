@@ -6,6 +6,8 @@ import {
   changedReservation,
   freeFunds,
   isAtPriceFloor,
+  isOrderChange,
+  isOrderSpec,
   OrderChangeContext,
   orderChangeError,
   OrderPlacementContext,
@@ -261,6 +263,96 @@ describe('order-command-logic', () => {
       [0.0099, true],
     ])('tells whether %d € is at the floor of 0,01 €', (price, expected) => {
       expect(isAtPriceFloor(price, 0.01)).toBe(expected);
+    });
+  });
+  describe('isOrderSpec', () => {
+    it.each<[string, unknown]>([
+      ['a market order by quantity', BUY_MARKET],
+      [
+        'a stop-limit sale until a date',
+        {
+          ...BUY_MARKET,
+          side: 'sell',
+          type: 'stop-limit',
+          limit: 95,
+          stop: 96,
+          validity: { kind: 'date', date: { year: 2030, month: 5, day: 15 } },
+        },
+      ],
+      [
+        'an order by amount, good till cancelled',
+        {
+          ...BUY_MARKET,
+          size: { kind: 'amount', amount: 100_000 },
+          validity: { kind: 'gtc' },
+        },
+      ],
+      [
+        'invalid numbers, left to the rules',
+        {
+          ...BUY_MARKET,
+          size: { kind: 'quantity', quantity: Number.NaN },
+          limit: -1,
+        },
+      ],
+    ])('accepts %s', (_case, value) => {
+      expect(isOrderSpec(value)).toBe(true);
+    });
+
+    it.each<[string, unknown]>([
+      ['null', null],
+      ['a string', 'order'],
+      ['a missing depot', { ...BUY_MARKET, depotId: undefined }],
+      ['a numeric instrument', { ...BUY_MARKET, instrumentId: 7 }],
+      ['an unknown side', { ...BUY_MARKET, side: 'short' }],
+      ['an unknown type', { ...BUY_MARKET, type: 'trailing-stop' }],
+      ['a missing size', { ...BUY_MARKET, size: null }],
+      ['an unknown size kind', { ...BUY_MARKET, size: { kind: 'value', value: 1 } }],
+      ['a quantity as text', { ...BUY_MARKET, size: { kind: 'quantity', quantity: '10' } }],
+      ['an amount without number', { ...BUY_MARKET, size: { kind: 'amount' } }],
+      ['a limit as text', { ...BUY_MARKET, limit: '100' }],
+      ['a missing stop', { ...BUY_MARKET, stop: undefined }],
+      ['a missing validity', { ...BUY_MARKET, validity: undefined }],
+      ['an unknown validity', { ...BUY_MARKET, validity: { kind: 'week' } }],
+      ['a date validity without date', { ...BUY_MARKET, validity: { kind: 'date' } }],
+      ['a date as text', { ...BUY_MARKET, validity: { kind: 'date', date: '2030-05-15' } }],
+      [
+        'a date without day',
+        {
+          ...BUY_MARKET,
+          validity: { kind: 'date', date: { year: 2030, month: 5 } },
+        },
+      ],
+      [
+        'a date without month',
+        {
+          ...BUY_MARKET,
+          validity: { kind: 'date', date: { year: 2030, day: 5 } },
+        },
+      ],
+      [
+        'a date without year',
+        {
+          ...BUY_MARKET,
+          validity: { kind: 'date', date: { month: 5, day: 5 } },
+        },
+      ],
+    ])('rejects %s', (_case, value) => {
+      expect(isOrderSpec(value)).toBe(false);
+    });
+  });
+
+  describe('isOrderChange', () => {
+    it.each<[string, unknown, boolean]>([
+      ['nothing', {}, true],
+      ['a limit', { limit: 100 }, true],
+      ['a stop and a validity', { stop: 90, validity: { kind: 'day' } }, true],
+      ['null', null, false],
+      ['a limit as text', { limit: '100' }, false],
+      ['a stop of null', { stop: null }, false],
+      ['an unknown validity', { validity: { kind: 'week' } }, false],
+    ])('checks %s', (_case, value, expected) => {
+      expect(isOrderChange(value)).toBe(expected);
     });
   });
 });

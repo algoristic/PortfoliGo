@@ -17,6 +17,7 @@ import { BankConditions } from '@app/banking/domain/models/bank-conditions.model
 import { TransactionDraft } from '@app/banking/domain/models/ledger.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { Cents } from '@app/shared/domain/models/money.model';
+import { hasPositions } from '@app/trading/domain/position-logic';
 
 import { BankingSystem, openAccount, openDepot } from './banking-system';
 import {
@@ -189,11 +190,18 @@ export class BankCommands {
   }
 
   /**
-   * Whether the depot of a clearing account holds no positions, open orders or savings plans; true
-   * for other accounts. Depots get contents in M5; until then they are empty.
+   * Whether the depot of a clearing account holds no positions and no active orders (savings plans
+   * follow with AP 5.6); true for other accounts.
    */
-  #depotIsEmpty(_account: Account): boolean {
-    return true;
+  #depotIsEmpty(account: Account): boolean {
+    if (account.kind !== 'clearing') {
+      return true;
+    }
+    const { positions, orders } = this.#player;
+    return (
+      !hasPositions(positions, account.depotId) &&
+      !orders.some((order) => order.depotId === account.depotId)
+    );
   }
 }
 

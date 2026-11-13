@@ -7,6 +7,11 @@ import {
   NOTIFICATION_COMMAND_ERRORS,
 } from '@app/notifications/domain/models/notification.model';
 import { Cents } from '@app/shared/domain/models/money.model';
+import {
+  ORDER_COMMAND_ERRORS,
+  OrderChange,
+  OrderSpec,
+} from '@app/trading/domain/models/order.model';
 
 import { BackgroundMode } from './game-state.model';
 
@@ -72,6 +77,25 @@ export interface UpdateWatchlistCommand extends CommandBase {
   ids: string[];
 }
 
+/** Places an order (US-HD-01–03, TS §7.5); the result carries its ID. */
+export interface PlaceOrderCommand extends CommandBase {
+  type: 'placeOrder';
+  order: OrderSpec;
+}
+
+/** Changes limit, stop or validity of an active order (US-HD-04). */
+export interface ChangeOrderCommand extends CommandBase {
+  type: 'changeOrder';
+  orderId: string;
+  change: OrderChange;
+}
+
+/** Cancels an active order (US-HD-04). */
+export interface CancelOrderCommand extends CommandBase {
+  type: 'cancelOrder';
+  orderId: string;
+}
+
 export type GameCommand =
   | SetBackgroundModeCommand
   | SetAutoPauseCommand
@@ -80,7 +104,10 @@ export type GameCommand =
   | OpenAccountCommand
   | CloseAccountCommand
   | SetSalaryAccountCommand
-  | TransferCommand;
+  | TransferCommand
+  | PlaceOrderCommand
+  | ChangeOrderCommand
+  | CancelOrderCommand;
 
 export const COMMAND_ERRORS = [
   'tick-mismatch',
@@ -88,6 +115,7 @@ export const COMMAND_ERRORS = [
   ...BANK_COMMAND_ERRORS,
   ...NOTIFICATION_COMMAND_ERRORS,
   ...WATCHLIST_COMMAND_ERRORS,
+  ...ORDER_COMMAND_ERRORS,
 ] as const;
 export type CommandError = (typeof COMMAND_ERRORS)[number];
 
@@ -97,5 +125,6 @@ export interface OpenedAccount {
   depotId: DepotId | null;
 }
 
+/** `opened` answers `openAccount`, `orderId` answers `placeOrder`. */
 export type CommandResult =
-  { ok: true; opened?: OpenedAccount } | { ok: false; error: CommandError };
+  { ok: true; opened?: OpenedAccount; orderId?: string } | { ok: false; error: CommandError };

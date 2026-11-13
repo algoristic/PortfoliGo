@@ -8,6 +8,7 @@ import {
   DecidableOrder,
   executionError,
   executionTransaction,
+  midRulesOutExecution,
   orderDecision,
   orderFill,
 } from './order-execution-logic';
@@ -56,6 +57,67 @@ const QUOTE = { bid: 99.9, ask: 100.1 };
 const GAP_OPENING = { bid: 90, ask: 90.1 };
 
 describe('order-execution-logic', () => {
+  describe('midRulesOutExecution', () => {
+    it.each<[string, DecidableOrder, number, boolean]>([
+      ['a buy limit 100 at mid 100,01', decidable('buy', 'limit', { limit: 100 }), 100.01, true],
+      ['a buy limit 100 at mid 100', decidable('buy', 'limit', { limit: 100 }), 100, false],
+      ['a sell limit 100 at mid 99,99', decidable('sell', 'limit', { limit: 100 }), 99.99, true],
+      ['a sell limit 100 at mid 100', decidable('sell', 'limit', { limit: 100 }), 100, false],
+      [
+        'a triggered buy stop-limit 99 / 100 at mid 101',
+        decidable('buy', 'stop-limit', { stop: 99, limit: 100 }, 'triggered'),
+        101,
+        true,
+      ],
+      [
+        'a triggered sell stop-limit 101 / 100 at mid 99',
+        decidable('sell', 'stop-limit', { stop: 101, limit: 100 }, 'triggered'),
+        99,
+        true,
+      ],
+      [
+        'an open buy stop-limit 101 / 100 at mid 101',
+        decidable('buy', 'stop-limit', { stop: 101, limit: 100 }),
+        101,
+        false,
+      ],
+      ['a buy stop 101 at mid 50', decidable('buy', 'stop', { stop: 101 }), 50, false],
+      ['a market sale at mid 50', decidable('sell', 'market'), 50, false],
+    ])('tells for %s: %s', (_case, order, mid, expected) => {
+      expect(midRulesOutExecution(order, mid)).toBe(expected);
+    });
+
+    it('rules out only what orderDecision decides as nothing for any bid ≤ mid ≤ ask', () => {
+      fc.assert(
+        fc.property(
+          fc.constantFrom<OrderSide>('buy', 'sell'),
+          fc.constantFrom<OrderType>('market', 'limit', 'stop', 'stop-limit'),
+          fc.constantFrom<'open' | 'triggered'>('open', 'triggered'),
+          fc.integer({ min: 9_000, max: 11_000 }),
+          fc.integer({ min: 9_000, max: 11_000 }),
+          fc.integer({ min: 0, max: 200 }),
+          fc.integer({ min: 0, max: 200 }),
+          fc.integer({ min: 9_000, max: 11_000 }),
+          (side, type, status, limit, stop, below, above, mid) => {
+            const order = decidable(
+              side,
+              type,
+              {
+                limit: type === 'limit' || type === 'stop-limit' ? limit / 100 : undefined,
+                stop: type === 'stop' || type === 'stop-limit' ? stop / 100 : undefined,
+              },
+              type === 'stop' || type === 'stop-limit' ? status : 'open',
+            );
+            const quote = { bid: (mid - below) / 100, ask: (mid + above) / 100 };
+            if (midRulesOutExecution(order, mid / 100)) {
+              expect(orderDecision(order, quote)).toEqual({ kind: 'none' });
+            }
+          },
+        ),
+      );
+    });
+  });
+
   describe('orderDecision', () => {
     // TS §7.5: table of order types, quote bid 99,90 € / ask 100,10 €
     it.each<[string, DecidableOrder, { bid: number; ask: number }, OrderDecision]>([

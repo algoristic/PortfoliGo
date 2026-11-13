@@ -79,6 +79,8 @@ const config = {
     'src/app/trading/domain/order-execution-logic.ts',
     'src/app/trading/domain/order-reservation-logic.ts',
     'src/app/trading/domain/order-command-logic.ts',
+    'src/app/trading/domain/position-logic.ts',
+    'src/app/engine/domain/order-system.ts',
     'src/app/players/domain/player-logic.ts',
     'src/app/notifications/domain/auto-pause-logic.ts',
     'src/app/notifications/domain/read-state-logic.ts',

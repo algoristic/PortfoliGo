@@ -1,6 +1,7 @@
 import { AccountId } from '@app/banking/domain/models/account.model';
-import { availableAmount } from '@app/banking/domain/overdraft-logic';
+import { availableAfterReservations } from '@app/banking/domain/overdraft-logic';
 import { Cents } from '@app/shared/domain/models/money.model';
+import { reservedAmount } from '@app/trading/domain/order-reservation-logic';
 
 import { AccountView } from './models/account-view.model';
 import { PlayerState } from './models/game-state.model';
@@ -35,7 +36,12 @@ export function accountViews(
       closedAt: account.closedAt,
       balance,
       overdraftLimit,
-      available: open ? availableAmount({ balance, limit: overdraftLimit }) : 0,
+      available: open
+        ? availableAfterReservations(
+            { balance, limit: overdraftLimit },
+            account.kind === 'clearing' ? reservedAmount(player.orders, account.depotId) : 0,
+          )
+        : 0,
       salaryAccount: account.id === player.salaryAccountId,
     });
   }

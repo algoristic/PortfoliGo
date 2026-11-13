@@ -28,6 +28,7 @@ import {
   NotificationEntry,
 } from '@app/notifications/domain/models/notification.model';
 import { Cents } from '@app/shared/domain/models/money.model';
+import { ORDER_COMMAND_ERRORS } from '@app/trading/domain/models/order.model';
 import { Bank } from '@app/world/domain/models/bank.model';
 import { RegionId } from '@app/world/domain/models/taxonomy.model';
 
@@ -394,6 +395,8 @@ export const ENGINE_ERRORS = [
    * is no series of the world.
    */
   ...WATCHLIST_COMMAND_ERRORS,
+  /** The engine rejected an order command (TS §7.5); see `ORDER_COMMAND_ERRORS`. */
+  ...ORDER_COMMAND_ERRORS,
 ] as const;
 export type EngineErrorCode = (typeof ENGINE_ERRORS)[number];
 
