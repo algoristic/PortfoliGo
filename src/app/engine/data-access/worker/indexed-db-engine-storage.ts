@@ -1,11 +1,18 @@
 import { IDBPDatabase, IDBPTransaction } from 'idb';
 
+import { isPlayerAccount } from '@app/banking/domain/ledger-logic';
+import { AccountId } from '@app/banking/domain/models/account.model';
+import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
-import { JOURNAL_STORES, WorkerStoreName } from '@app/persistence/data-access/schema/idb-schema';
+import {
+  JOURNAL_STORES,
+  TRANSACTIONS_BY_ACCOUNT_INDEX,
+  WorkerStoreName,
+} from '@app/persistence/data-access/schema/idb-schema';
 import { openPortfoligoDb } from '@app/persistence/data-access/schema/open-database';
 import {
   deletePlayerRecords,
@@ -29,6 +36,7 @@ import {
   MarketStateRecord,
   RuntimeRecord,
   SnapshotRecord,
+  TransactionRecord,
 } from './indexed-db-engine-storage.model';
 
 type WriteTransaction = IDBPTransaction<unknown, WorkerStoreName[], 'readwrite'>;
@@ -48,6 +56,26 @@ async function putMonthStarts(
   for (const state of entries) {
     await store.put({ playerId, day: state.day, state } satisfies MarketStateRecord);
   }
+}
+
+async function putTransactions(
+  transaction: WriteTransaction,
+  playerId: string,
+  transactions: readonly Transaction[],
+): Promise<void> {
+  const store = transaction.objectStore('transactions');
+  for (const booked of transactions) {
+    const accounts = new Set(booked.postings.map((posting) => posting.account));
+    const accountIds = [...accounts]
+      .filter(isPlayerAccount)
+      .map((id): [string, AccountId] => [playerId, id]);
+    await store.put({ ...booked, playerId, accountIds } satisfies TransactionRecord);
+  }
+}
+
+function fromTransactionRecord(record: TransactionRecord): Transaction {
+  const { playerId: _playerId, accountIds: _accountIds, ...transaction } = record;
+  return transaction;
 }
 
 /**
@@ -94,10 +122,11 @@ export class IndexedDbEngineStorage implements EngineStorage {
     snapshot: GameSnapshot,
     options: SaveSnapshotOptions = {},
   ): Promise<void> {
-    const { monthStarts = [], clock } = options;
+    const { monthStarts = [], clock, transactions = [] } = options;
     return this.#write(
-      ['snapshots', 'commands', 'marketStates', 'runtime'],
+      ['snapshots', 'commands', 'marketStates', 'runtime', 'transactions'],
       async (transaction) => {
+        await putTransactions(transaction, playerId, transactions);
         const snapshots = transaction.objectStore('snapshots');
         await snapshots.put({
           playerId,
@@ -126,6 +155,26 @@ export class IndexedDbEngineStorage implements EngineStorage {
       },
       'strict',
     );
+  }
+
+  saveTransactions(playerId: string, transactions: readonly Transaction[]): Promise<void> {
+    return this.#write(['transactions'], (transaction) =>
+      putTransactions(transaction, playerId, transactions),
+    );
+  }
+
+  async loadTransactions(playerId: string, accountId?: AccountId): Promise<Transaction[]> {
+    const database = await this.#db();
+    const records = (
+      accountId === undefined
+        ? await database.getAll('transactions', playerKeyRange(playerId))
+        : await database.getAllFromIndex(
+            'transactions',
+            TRANSACTIONS_BY_ACCOUNT_INDEX,
+            IDBKeyRange.only([playerId, accountId]),
+          )
+    ) as TransactionRecord[];
+    return records.map(fromTransactionRecord);
   }
 
   saveMonthStarts(playerId: string, entries: readonly FactorStateEntry[]): Promise<void> {

@@ -1,3 +1,5 @@
+import { AccountId } from '@app/banking/domain/models/account.model';
+import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { CandleResolution } from '@app/market/domain/models/candle.model';
@@ -49,4 +51,14 @@ export interface JournalRecord {
   playerId: string;
   /** Tick of the last change; records after the snapshot tick are discarded on restore. */
   tick: Tick;
+}
+
+/**
+ * `transactions`, key `[playerId, seq]`. The multiEntry index `byAccount` runs over `accountIds`, one
+ * `[playerId, accountId]` per player account the transaction books on, so a statement reads one
+ * account of one player in journal order.
+ */
+export interface TransactionRecord extends Transaction {
+  playerId: string;
+  accountIds: Array<[string, AccountId]>;
 }

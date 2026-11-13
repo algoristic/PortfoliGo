@@ -1,6 +1,8 @@
 import { IDBFactory } from 'fake-indexeddb';
 import fc from 'fast-check';
 
+import { journalBalances } from '@app/banking/domain/ledger-logic';
+import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { GameEngine } from '@app/engine/domain/game-engine';
 import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { BACKGROUND_MODES, GameSnapshot } from '@app/engine/domain/models/game-state.model';
@@ -36,7 +38,14 @@ const APRIL_2030_MARKET_DAYS = 22;
 /** What decides the game: tick, player, scheduler, applied command IDs and the market checksum. */
 function stateKey(state: GameSnapshot): string {
   const { tick: at, player, scheduler, commandIds, market } = state;
-  return JSON.stringify({ at, player, scheduler, commandIds, market: marketChecksum(market) });
+  const balances = [...player.balances];
+  return JSON.stringify({
+    at,
+    player: { ...player, balances },
+    scheduler,
+    commandIds,
+    market: marketChecksum(market),
+  });
 }
 
 /** A new tab: a new host on a new connection to the same database. */
@@ -72,9 +81,27 @@ describe('EngineHost persistence', () => {
 
   /** The uninterrupted run: the game from its start with `commands` at their ticks, up to `to`. */
   function uninterrupted(commands: readonly GameCommand[], to: number): GameSnapshot {
+    return uninterruptedRun(commands, to).snapshot;
+  }
+
+  function uninterruptedRun(
+    commands: readonly GameCommand[],
+    to: number,
+  ): { snapshot: GameSnapshot; journal: Transaction[] } {
     const engine = GameEngine.restore(mini.world, mini.start, { monthStarts: mini.monthStarts });
     replayCommands(engine, commands, to);
-    return engine.snapshot();
+    return {
+      snapshot: engine.snapshot(),
+      journal: [...mini.journal, ...engine.drainTransactions()],
+    };
+  }
+
+  /** The stored journal, and its sums equal the balances in the newest snapshot (TS §7.2). */
+  async function storedJournal(): Promise<Transaction[]> {
+    const journal = await new IndexedDbEngineStorage().loadTransactions(PLAYER.playerId);
+    const { snapshot } = await storedState();
+    expect(snapshot?.state.player.balances).toEqual(journalBalances(journal));
+    return journal;
   }
 
   describe('reload', () => {
@@ -112,6 +139,34 @@ describe('EngineHost persistence', () => {
       expect(state.monthStarts.map((entry) => entry.day)).toEqual(
         mini.monthStarts.map((entry) => entry.day),
       );
+    });
+
+    // TS §7.2: the start capital of `MINI_PLAYER` (10.000,00 €) on the salary account `acc-1`
+    it('stores the opening balance with the first snapshot and keeps the journal on reload', async () => {
+      const first = reload();
+      await first.send('loadPlayer', PLAYER);
+      const journal = await storedJournal();
+      expect(journal).toMatchObject([
+        {
+          seq: 1,
+          tick: GAME_START,
+          type: 'opening-balance',
+          postings: [
+            { account: 'acc-1', amount: 1_000_000, balanceAfter: 1_000_000 },
+            { account: 'external:opening-balance', amount: -1_000_000, balanceAfter: null },
+          ],
+        },
+      ]);
+      await first.send('setSpeed', { speed: '1d' });
+      await first.send('resume', {});
+      await advance(first, 3_000);
+      await first.send('unloadPlayer', {});
+
+      const second = reload({ startMs: first.timeline.now() });
+      await second.send('loadPlayer', PLAYER);
+      await second.send('unloadPlayer', {});
+      expect(await storedJournal()).toEqual(journal);
+      expect(await new IndexedDbEngineStorage().loadTransactions('p1', 'acc-1')).toEqual(journal);
     });
 
     it('replays a command after the last snapshot at its original tick after a crash', async () => {
@@ -159,15 +214,16 @@ describe('EngineHost persistence', () => {
       await advance(first, 5_000);
       first.host.dispose();
       const database = await openPortfoligoDb();
+      // Behind the opening balance (seq 1): one record at the snapshot tick, one after it.
       await database.put('transactions', {
         playerId: 'p1',
-        seq: 0,
+        seq: 2,
         tick: GAME_START,
         accountIds: [],
       });
       await database.put('transactions', {
         playerId: 'p1',
-        seq: 1,
+        seq: 3,
         tick: GAME_START + 1,
         accountIds: [],
       });
@@ -176,7 +232,7 @@ describe('EngineHost persistence', () => {
       const second = reload({ startMs: first.timeline.now() });
       await second.send('loadPlayer', PLAYER);
       const check = await openPortfoligoDb();
-      expect((await check.getAll('transactions')).map((record) => record.seq)).toEqual([0]);
+      expect((await check.getAll('transactions')).map((record) => record.seq)).toEqual([1, 2]);
       check.close();
       // Monday's and Tuesday's sessions closed live: complete candles of the first series.
       const [seriesId] = seriesIds(mini.world.context);
@@ -626,7 +682,9 @@ describe('EngineHost persistence', () => {
             // The log keeps the commands from the newest snapshot on; older ones are in it.
             const logged = (command: GameCommand): string => `${command.id}@${command.tick}`;
             expect(confirmed.map(logged)).toEqual(expect.arrayContaining(commands.map(logged)));
-            expect(stateKey(restored)).toBe(stateKey(uninterrupted(confirmed, restored.tick)));
+            const reference = uninterruptedRun(confirmed, restored.tick);
+            expect(stateKey(restored)).toBe(stateKey(reference.snapshot));
+            expect(await storedJournal()).toEqual(reference.journal);
           },
         ),
         { numRuns: 12 },

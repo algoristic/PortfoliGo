@@ -87,6 +87,55 @@ describe('GameEngine', () => {
       expect(() => GameEngine.start(world, mini.start.player.start)).toThrow(/no branch bank/);
     });
 
+    // TS §7.2: the start capital is booked against `external:opening-balance` on the current
+    // account of the home bank; accounts are numbered from the counter (`acc-1`, `0000000001`)
+    it('opens the salary account at the home bank with the start capital', () => {
+      const start = at({ year: 2030, month: 4, day: 1 });
+      const { player } = mini.start;
+      expect(player.accounts).toEqual([
+        {
+          id: 'acc-1',
+          kind: 'current',
+          bankId: player.homeBankId,
+          number: '0000000001',
+          openedAt: start,
+          closedAt: null,
+        },
+      ]);
+      expect(player.depots).toEqual([]);
+      expect(player.salaryAccountId).toBe('acc-1');
+      expect(player.balances).toEqual(new Map([['acc-1', 1_000_000]]));
+      expect(mini.journal).toEqual([
+        {
+          seq: 1,
+          tick: start,
+          type: 'opening-balance',
+          postings: [
+            { account: 'acc-1', amount: 1_000_000, balanceAfter: 1_000_000 },
+            { account: 'external:opening-balance', amount: -1_000_000, balanceAfter: null },
+          ],
+        },
+      ]);
+      expect(player).toMatchObject({ accountSequence: 1, nextTransactionSeq: 2 });
+    });
+
+    it('books no opening balance for a start capital of 0', () => {
+      const started = GameEngine.start(mini.world, {
+        ...mini.start.player.start,
+        startCapital: 0,
+      });
+      expect(started.drainTransactions()).toEqual([]);
+      expect(started.player.balances).toEqual(new Map([['acc-1', 0]]));
+      expect(started.player.nextTransactionSeq).toBe(1);
+    });
+
+    it('does not restore transactions that were not drained', () => {
+      const restored = GameEngine.restore(mini.world, mini.start, {
+        monthStarts: mini.monthStarts,
+      });
+      expect(restored.drainTransactions()).toEqual([]);
+    });
+
     it('opens Asia-Pacific first, at 01:00 on the first game day', () => {
       engine.runUntil(at({ year: 2030, month: 4, day: 1 }, 1));
       const opened = engine.drainEvents().filter((event) => event.type === 'session-opened');

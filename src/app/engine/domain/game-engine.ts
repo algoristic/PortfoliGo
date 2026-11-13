@@ -1,4 +1,8 @@
+import { accountId, accountNumber } from '@app/banking/domain/account-logic';
 import { findHomeBank } from '@app/banking/domain/home-bank-logic';
+import { bookTransaction, OPENING_BALANCE_ACCOUNT } from '@app/banking/domain/ledger-logic';
+import { Account, AccountKind } from '@app/banking/domain/models/account.model';
+import { Transaction, TransactionDraft } from '@app/banking/domain/models/ledger.model';
 import {
   dayIndex,
   dayStartTick,
@@ -72,6 +76,7 @@ export class GameEngine {
   /** Reused buffer of the day step; not part of the state. */
   readonly #marketDay: MarketDay;
   #events: EngineEvent[] = [];
+  #journal: Transaction[] = [];
 
   constructor(
     world: GameWorld,
@@ -88,7 +93,9 @@ export class GameEngine {
 
   /**
    * New game: prehistory from the epoch (TS §6.8), then the first tick `GAME_START_TICK`
-   * (Monday, 01.04.2030, 00:00) is processed. Its events wait in the buffer.
+   * (Monday, 01.04.2030, 00:00) is processed. A current account at the home bank becomes the
+   * salary account and receives the start capital (TS §7.2). Events and the opening transaction
+   * wait in the buffers.
    */
   static start(
     world: GameWorld,
@@ -107,21 +114,42 @@ export class GameEngine {
     scheduleTask(scheduler, GAME_START_TICK, { kind: 'day-change' });
     scheduleTask(scheduler, startOfNextMonth(GAME_START_TICK), { kind: 'month-end' });
     scheduleTask(scheduler, startOfNextYear(GAME_START_TICK), { kind: 'year-end' });
+    const books: AccountBooks = { accounts: [], balances: new Map(), accountSequence: 0 };
+    const salaryAccount = openAccount(books, 'current', homeBank.id, GAME_START_TICK);
     const state: GameState = {
       tick: GAME_START_TICK - TICKS_PER_MINUTE,
       market,
-      player: { start: { ...start }, homeBankId: homeBank.id, backgroundMode: 'realtime' },
+      player: {
+        start: { ...start },
+        homeBankId: homeBank.id,
+        backgroundMode: 'realtime',
+        ...books,
+        depots: [],
+        salaryAccountId: salaryAccount.id,
+        nextTransactionSeq: 1,
+      },
       scheduler,
       commandIds: [],
     };
     const engine = new GameEngine(world, state, history, options);
     engine.step();
+    if (start.startCapital !== 0) {
+      engine.#book({
+        tick: engine.tick,
+        type: 'opening-balance',
+        postings: [
+          { account: salaryAccount.id, amount: start.startCapital },
+          { account: OPENING_BALANCE_ACCOUNT, amount: -start.startCapital },
+        ],
+      });
+    }
     return engine;
   }
 
   /**
    * Continues a game from a snapshot (TS §9.2). Snapshot, restore and running on equal an
-   * uninterrupted run; events that were not drained before the snapshot are not restored.
+   * uninterrupted run; events and transactions that were not drained before the snapshot are not
+   * restored.
    */
   static restore(
     world: GameWorld,
@@ -191,6 +219,16 @@ export class GameEngine {
     return events;
   }
 
+  /**
+   * Returns the transactions booked since the last call in journal order and empties the buffer
+   * (TS §7.2, §9.2); the host stores them.
+   */
+  drainTransactions(): Transaction[] {
+    const journal = this.#journal;
+    this.#journal = [];
+    return journal;
+  }
+
   /** Copy of the state that shares nothing mutable with the engine (structured-cloneable). */
   snapshot(): GameSnapshot {
     return copyState(this.#state);
@@ -217,6 +255,15 @@ export class GameEngine {
       default:
         return { ok: false, error: 'invalid-command' };
     }
+  }
+
+  /** Books a transaction on the player's balances and buffers it for the journal (TS §7.2). */
+  #book(draft: TransactionDraft): Transaction {
+    const { player } = this.#state;
+    const transaction = bookTransaction(player.balances, player.nextTransactionSeq, draft);
+    player.nextTransactionSeq++;
+    this.#journal.push(transaction);
+    return transaction;
   }
 
   #setTick(tick: Tick): void {
@@ -334,17 +381,51 @@ export class GameEngine {
   }
 }
 
+type AccountBooks = Pick<PlayerState, 'accounts' | 'balances' | 'accountSequence'>;
+
+/** Opens an account with the next number of the shared counter and a balance of 0 (TS §7.2). */
+function openAccount(
+  books: AccountBooks,
+  kind: Exclude<AccountKind, 'clearing'>,
+  bankId: string,
+  tick: Tick,
+): Account {
+  const sequence = books.accountSequence + 1;
+  const account: Account = {
+    id: accountId(sequence),
+    kind,
+    bankId,
+    number: accountNumber(sequence),
+    openedAt: tick,
+    closedAt: null,
+  };
+  books.accountSequence = sequence;
+  books.accounts.push(account);
+  books.balances.set(account.id, 0);
+  return account;
+}
+
 function copyState(state: Readonly<GameState>): GameState {
   return {
     tick: state.tick,
     market: snapshotMarket(state.market),
-    player: {
-      start: { ...state.player.start },
-      homeBankId: state.player.homeBankId,
-      backgroundMode: state.player.backgroundMode,
-    },
+    player: copyPlayer(state.player),
     scheduler: copyScheduler(state.scheduler),
     commandIds: state.commandIds.slice(),
+  };
+}
+
+function copyPlayer(player: Readonly<PlayerState>): PlayerState {
+  return {
+    start: { ...player.start },
+    homeBankId: player.homeBankId,
+    backgroundMode: player.backgroundMode,
+    accounts: player.accounts.map((account) => ({ ...account })),
+    depots: player.depots.map((depot) => ({ ...depot })),
+    balances: new Map(player.balances),
+    salaryAccountId: player.salaryAccountId,
+    accountSequence: player.accountSequence,
+    nextTransactionSeq: player.nextTransactionSeq,
   };
 }
 

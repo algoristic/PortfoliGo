@@ -1,3 +1,5 @@
+import { Account, AccountId, Depot } from '@app/banking/domain/models/account.model';
+import { Balances } from '@app/banking/domain/models/ledger.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { MarketState } from '@app/market/domain/models/market-state.model';
 import { Cents } from '@app/shared/domain/models/money.model';
@@ -15,12 +17,23 @@ export interface StartConditions {
   livingCosts: Cents;
 }
 
-/** Player state; minimal until banking and trading arrive (M3). */
+/** Player state (TS §7.2); household and trading fields follow in M3 and M5. */
 export interface PlayerState {
   start: StartConditions;
-  /** Bank of the salary account, fixed when the game starts (TS §5.7). */
+  /** Bank of the first current account, fixed when the game starts (TS §5.7). */
   homeBankId: string;
   backgroundMode: BackgroundMode;
+  /** Accounts and depots in the order they were opened; closed ones stay. */
+  accounts: Account[];
+  depots: Depot[];
+  /** Balances of all accounts, cached from the journal (TS §7.2). */
+  balances: Balances;
+  /** Current account the salary is paid into. */
+  salaryAccountId: AccountId;
+  /** Last value of the counter that accounts and depots share (`accountId`, `depotId`). */
+  accountSequence: number;
+  /** Running number of the next transaction. */
+  nextTransactionSeq: number;
 }
 
 /** Dynamic state of a game (TS §8.1). Everything in it is plain, structured-cloneable data. */

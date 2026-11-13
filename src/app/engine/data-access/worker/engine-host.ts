@@ -1,3 +1,4 @@
+import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { dayIndex } from '@app/clock/domain/calendar-logic';
 import { Tick, TICKS_PER_DAY, TradingHours } from '@app/clock/domain/models/time.model';
 import { liveHighLow, WorkShare } from '@app/engine/domain/background-share-logic';
@@ -27,6 +28,7 @@ import {
   EngineHostOptions,
   EngineHostPorts,
   GeneratedWorld,
+  SaveSnapshotOptions,
   StoredClock,
   StoredPlayerState,
 } from './engine-host.model';
@@ -92,6 +94,13 @@ interface LoadedGame {
   backfillRunning: boolean;
   backfillProgressMs: number;
   backfillShare: WorkShare;
+  /**
+   * Booked transactions not yet confirmed as stored, in journal order. Every write of transactions
+   * and every snapshot writes all of them, so a stored snapshot never lacks one up to its tick.
+   */
+  unsavedTransactions: Transaction[];
+  transactionsWrittenMs: number;
+  transactionWriteRunning: boolean;
   /** Day of the newest month start entry in the database. */
   savedMonthDay: number;
   /** Last (attempted) writes of the clock state and of a snapshot. */
@@ -101,6 +110,13 @@ interface LoadedGame {
   snapshotTick: Tick;
   /** A game command was applied since the last snapshot. */
   changedSinceSnapshot: boolean;
+}
+
+/** What a snapshot writes, taken in one go (`#snapshotData`). */
+interface SnapshotData {
+  state: ReturnType<GameEngine['snapshot']>;
+  options: Required<SaveSnapshotOptions>;
+  monthDay: number;
 }
 
 type Handlers = {
@@ -333,6 +349,9 @@ export class EngineHost {
       backfillRunning: false,
       backfillProgressMs: now,
       backfillShare: new WorkShare(this.#config.backfillShare, this.#config.passBudgetMs, now),
+      unsavedTransactions: [],
+      transactionsWrittenMs: now,
+      transactionWriteRunning: false,
       savedMonthDay: stored.monthStarts.at(-1)?.day ?? -1,
       clockSavedMs: now,
       clockSavedTick: engine.tick,
@@ -351,7 +370,7 @@ export class EngineHost {
     // The first snapshot of a new player, or the replayed state: the next restore starts here.
     const written = this.#snapshotData(game);
     await storageCall(() => storage.saveSnapshot(game.playerId, written.state, written.options));
-    this.#snapshotWritten(game, written.monthDay);
+    this.#snapshotWritten(game, written);
     this.#progress({ kind: 'init', state: 'done', done: 1, total: 1 });
 
     const target =
@@ -552,6 +571,12 @@ export class EngineHost {
       if (this.#ports.now() - game.candlesWrittenMs >= this.#config.candleWriteIntervalMs) {
         this.#writeCandles(game);
       }
+      if (
+        this.#ports.now() - game.transactionsWrittenMs >=
+        this.#config.transactionWriteIntervalMs
+      ) {
+        this.#writeTransactions(game);
+      }
       this.#flush();
       this.#schedule(game.batch !== undefined ? 0 : this.#config.loopIntervalMs);
     });
@@ -625,12 +650,13 @@ export class EngineHost {
   }
 
   /**
-   * Engine events of the last steps. M2 forwards none of them to the UI; notifications and the
-   * absence report follow in M3. `session-closed` buffers the daily candles (TS §6.8): with high
-   * and low when `highLow` (live up to `liveHighLowMaxSpeed`), else open and close only, and the
-   * background job adds the rest.
+   * Engine events and transactions of the last steps. The transactions wait for the next write
+   * (TS §9.2). No event goes to the UI yet; notifications and the absence report follow in M3.
+   * `session-closed` buffers the daily candles (TS §6.8): with high and low when `highLow` (live up
+   * to `liveHighLowMaxSpeed`), else open and close only, and the background job adds the rest.
    */
   #drainEngineEvents(game: LoadedGame, highLow: boolean): void {
+    game.unsavedTransactions.push(...game.engine.drainTransactions());
     for (const event of game.engine.drainEvents()) {
       if (event.type === 'session-closed') {
         const closed = game.candles.closed(event.series, event.day, game.engine.tick, highLow);
@@ -684,7 +710,7 @@ export class EngineHost {
     this.#writeCandles(game);
     return this.#write(
       () => this.#ports.storage.saveSnapshot(game.playerId, written.state, written.options),
-      () => this.#snapshotWritten(game, written.monthDay),
+      () => this.#snapshotWritten(game, written),
     );
   }
 
@@ -692,11 +718,7 @@ export class EngineHost {
    * What a snapshot writes. Events still in the engine's buffer are handled first, because a
    * restore does not bring them back (`GameEngine.restore`).
    */
-  #snapshotData(game: LoadedGame): {
-    state: ReturnType<GameEngine['snapshot']>;
-    options: { monthStarts: ReturnType<GameEngine['monthStartsAfter']>; clock: StoredClock };
-    monthDay: number;
-  } {
+  #snapshotData(game: LoadedGame): SnapshotData {
     this.#drainEngineEvents(game, this.#liveHighLow(game));
     const state = game.engine.snapshot();
     const monthStarts = game.engine.monthStartsAfter(game.savedMonthDay);
@@ -709,13 +731,41 @@ export class EngineHost {
     game.clockSavedTick = clock.tick;
     return {
       state,
-      options: { monthStarts, clock },
+      options: { monthStarts, clock, transactions: game.unsavedTransactions.slice() },
       monthDay: monthStarts.at(-1)?.day ?? game.savedMonthDay,
     };
   }
 
-  #snapshotWritten(game: LoadedGame, monthDay: number): void {
-    game.savedMonthDay = Math.max(game.savedMonthDay, monthDay);
+  #snapshotWritten(game: LoadedGame, written: SnapshotData): void {
+    game.savedMonthDay = Math.max(game.savedMonthDay, written.monthDay);
+    this.#transactionsSaved(game, written.options.transactions);
+  }
+
+  /**
+   * Writes the transactions not yet stored (TS §9.2), one write at a time. A failed write keeps
+   * them for the next one or the next snapshot.
+   */
+  #writeTransactions(game: LoadedGame): void {
+    if (game.unsavedTransactions.length === 0 || game.transactionWriteRunning) {
+      return;
+    }
+    const transactions = game.unsavedTransactions.slice();
+    game.transactionWriteRunning = true;
+    game.transactionsWrittenMs = this.#ports.now();
+    void this.#write(
+      () => this.#ports.storage.saveTransactions(game.playerId, transactions),
+      () => this.#transactionsSaved(game, transactions),
+      () => {
+        game.transactionWriteRunning = false;
+      },
+    );
+  }
+
+  #transactionsSaved(game: LoadedGame, saved: readonly Transaction[]): void {
+    const last = saved.at(-1);
+    if (last !== undefined) {
+      game.unsavedTransactions = game.unsavedTransactions.filter(({ seq }) => seq > last.seq);
+    }
   }
 
   /**

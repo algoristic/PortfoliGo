@@ -1,3 +1,5 @@
+import { AccountId } from '@app/banking/domain/models/account.model';
+import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { PricePortFactory } from '@app/engine/domain/game-engine';
@@ -46,6 +48,11 @@ export interface SaveSnapshotOptions {
   monthStarts?: readonly FactorStateEntry[];
   /** Clock state written in the same transaction. */
   clock?: StoredClock;
+  /**
+   * Journal transactions written in the same transaction: those not yet stored, so that a stored
+   * snapshot never lacks a transaction up to its tick (TS §9.2).
+   */
+  transactions?: readonly Transaction[];
 }
 
 /**
@@ -94,6 +101,10 @@ export interface EngineStorage {
     snapshot: GameSnapshot,
     options?: SaveSnapshotOptions,
   ): Promise<void>;
+  /** Journal transactions (TS §7.2, §9.2); a stored running number is overwritten. */
+  saveTransactions(playerId: string, transactions: readonly Transaction[]): Promise<void>;
+  /** Stored transactions of the player, or of one of its accounts, by running number. */
+  loadTransactions(playerId: string, accountId?: AccountId): Promise<Transaction[]>;
   /** Market states at month starts (E-08); existing days are overwritten. */
   saveMonthStarts(playerId: string, entries: readonly FactorStateEntry[]): Promise<void>;
   /** Merges daily candles into their year buckets in one transaction (see `DailyCandlePatch`). */
@@ -156,6 +167,11 @@ export interface EngineHostConfig {
    */
   candleWriteIntervalMs: number;
   /**
+   * Real time after which booked transactions are written at the latest (TS §9.2); snapshots write
+   * the ones not yet stored as well.
+   */
+  transactionWriteIntervalMs: number;
+  /**
    * Upper limit of the candle job's computing time as a share of the wall clock (TS §6.8). 10 %: at
    * 1 w/s, the engine without minute curves plus the job stay below the 15 % of a core of TS §14.3,
    * and the job still adds high and low faster than 1 w/s closes days (5 market days per second at
@@ -178,6 +194,7 @@ export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
   clockSaveIntervalMs: 5_000,
   snapshotIntervalMs: 30_000,
   candleWriteIntervalMs: 5_000,
+  transactionWriteIntervalMs: 1_000,
   backfillShare: 0.1,
   liveHighLowMaxSpeed: '1d',
 };

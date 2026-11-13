@@ -1,3 +1,5 @@
+import { AccountId } from '@app/banking/domain/models/account.model';
+import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
@@ -26,11 +28,13 @@ interface PlayerRecords {
   snapshots: StoredSnapshot[];
   monthStarts: Map<number, FactorStateEntry>;
   candles: Map<string, DailyCandleBucket>;
+  /** Journal transactions by running number. */
+  transactions: Map<number, Transaction>;
 }
 
 /**
  * Storage in memory (lost on reload) with the semantics of `IndexedDbEngineStorage`, for tests that
- * don't need a database. It keeps no journal, so `discardAfter` has nothing to discard.
+ * don't need a database. Of the journal it keeps the transactions.
  */
 export class InMemoryEngineStorage implements EngineStorage {
   readonly commands: StoredCommand[] = [];
@@ -64,6 +68,7 @@ export class InMemoryEngineStorage implements EngineStorage {
     snapshots.sort((a, b) => a.tick - b.tick);
     records.snapshots = snapshots.slice(-SNAPSHOTS_KEPT);
     this.#putMonthStarts(records, options.monthStarts ?? []);
+    this.#putTransactions(records, options.transactions ?? []);
     if (options.clock !== undefined) {
       this.clocks.set(playerId, { ...options.clock });
     }
@@ -72,6 +77,21 @@ export class InMemoryEngineStorage implements EngineStorage {
       (entry) => entry.playerId !== playerId || entry.command.tick >= oldestKeptTick,
     );
     this.commands.splice(0, this.commands.length, ...kept);
+  }
+
+  async saveTransactions(playerId: string, transactions: readonly Transaction[]): Promise<void> {
+    this.#putTransactions(this.#records(playerId), transactions);
+  }
+
+  async loadTransactions(playerId: string, accountId?: AccountId): Promise<Transaction[]> {
+    return Array.from(this.#players.get(playerId)?.transactions.values() ?? [])
+      .filter(
+        (transaction) =>
+          accountId === undefined ||
+          transaction.postings.some((posting) => posting.account === accountId),
+      )
+      .sort((a, b) => a.seq - b.seq)
+      .map((transaction) => structuredClone(transaction));
   }
 
   async saveMonthStarts(playerId: string, entries: readonly FactorStateEntry[]): Promise<void> {
@@ -132,8 +152,13 @@ export class InMemoryEngineStorage implements EngineStorage {
     return state;
   }
 
-  async discardAfter(_playerId: string, _tick: Tick): Promise<void> {
-    // No journal in memory.
+  async discardAfter(playerId: string, tick: Tick): Promise<void> {
+    const transactions = this.#players.get(playerId)?.transactions;
+    for (const [seq, transaction] of transactions ?? []) {
+      if (transaction.tick > tick) {
+        transactions?.delete(seq);
+      }
+    }
   }
 
   async deletePlayer(playerId: string): Promise<void> {
@@ -146,10 +171,21 @@ export class InMemoryEngineStorage implements EngineStorage {
   #records(playerId: string): PlayerRecords {
     let records = this.#players.get(playerId);
     if (records === undefined) {
-      records = { snapshots: [], monthStarts: new Map(), candles: new Map() };
+      records = {
+        snapshots: [],
+        monthStarts: new Map(),
+        candles: new Map(),
+        transactions: new Map(),
+      };
       this.#players.set(playerId, records);
     }
     return records;
+  }
+
+  #putTransactions(records: PlayerRecords, transactions: readonly Transaction[]): void {
+    for (const transaction of transactions) {
+      records.transactions.set(transaction.seq, structuredClone(transaction));
+    }
   }
 
   #putMonthStarts(records: PlayerRecords, entries: readonly FactorStateEntry[]): void {

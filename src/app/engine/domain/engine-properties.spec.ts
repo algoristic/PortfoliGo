@@ -1,5 +1,7 @@
 import fc from 'fast-check';
 
+import { journalBalances } from '@app/banking/domain/ledger-logic';
+import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
 import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
 
@@ -14,6 +16,7 @@ import { TEST_SEEDS } from '../../../testing/seeds';
 
 // Determinism contract of the engine (TS §4.5 rule 5, §4.6) as properties on the mini world:
 // any split of the ticks equals one run; snapshot, restore and replay equal an uninterrupted run.
+// Both include the journal, and the cached balances always equal the sums of the journal (TS §7.2).
 
 /** End of the runs: three months after the start, across two month starts. */
 const END_TICK = dateTimeToTick({ year: 2030, month: 7, day: 1 }) - 1;
@@ -37,6 +40,7 @@ const arbCommands = (): fc.Arbitrary<GameCommand[]> =>
 interface Reference {
   snapshot: ReturnType<GameEngine['snapshot']>;
   events: EngineEvent[];
+  journal: Transaction[];
 }
 
 describe('GameEngine properties', () => {
@@ -54,7 +58,18 @@ describe('GameEngine properties', () => {
   function referenceRun(commands: readonly GameCommand[]): Reference {
     const engine = restoreStart();
     replayCommands(engine, commands, END_TICK);
-    return { snapshot: engine.snapshot(), events: engine.drainEvents() };
+    return {
+      snapshot: engine.snapshot(),
+      events: engine.drainEvents(),
+      journal: engine.drainTransactions(),
+    };
+  }
+
+  function expectBalancesOfJournal(
+    snapshot: ReturnType<GameEngine['snapshot']>,
+    journal: readonly Transaction[],
+  ): void {
+    expect(snapshot.player.balances).toEqual(journalBalances([...mini.journal, ...journal]));
   }
 
   it('ends in the same state with the same events for any split of the ticks', () => {
@@ -68,6 +83,7 @@ describe('GameEngine properties', () => {
         const reference = referenceRun(commands);
         const engine = restoreStart();
         const events: EngineEvent[] = [];
+        const journal: Transaction[] = [];
         const targets = [
           ...segments,
           ...commands.map((command) => ({ tick: command.tick, mode: 'runUntil', yieldEvery: 1 })),
@@ -83,6 +99,7 @@ describe('GameEngine properties', () => {
             let calls = 0;
             while (!engine.runUntil(tick, () => ++calls % yieldEvery === 0)) {
               events.push(...engine.drainEvents());
+              journal.push(...engine.drainTransactions());
             }
           } else {
             engine.runUntil(tick);
@@ -91,10 +108,13 @@ describe('GameEngine properties', () => {
             expect(engine.applyCommand(commands[next++])).toEqual({ ok: true });
           }
           events.push(...engine.drainEvents());
+          journal.push(...engine.drainTransactions());
         }
         expect(next).toBe(commands.length);
         expect(engine.snapshot()).toEqual(reference.snapshot);
         expect(events).toEqual(reference.events);
+        expect(journal).toEqual(reference.journal);
+        expectBalancesOfJournal(reference.snapshot, reference.journal);
       }),
       { numRuns: 15 },
     );
@@ -121,10 +141,12 @@ describe('GameEngine properties', () => {
             live.applyCommand(commands[next++]);
           }
           live.drainEvents();
+          const before = live.drainTransactions();
           const snapshot = live.snapshot();
           const storedMonthStarts = live.monthStartsAfter(-1);
           replayCommands(live, commands.slice(next), END_TICK);
           const after = live.drainEvents();
+          const journalAfter = live.drainTransactions();
 
           const entries = {
             none: [],
@@ -137,8 +159,12 @@ describe('GameEngine properties', () => {
 
           expect(restored.snapshot()).toEqual(live.snapshot());
           expect(restored.drainEvents()).toEqual(after);
+          expect(restored.drainTransactions()).toEqual(journalAfter);
           expect(restored.monthStartsAfter(-1)).toEqual(live.monthStartsAfter(-1));
-          expect(referenceRun(commands).snapshot).toEqual(live.snapshot());
+          const reference = referenceRun(commands);
+          expect(reference.snapshot).toEqual(live.snapshot());
+          expect([...before, ...journalAfter]).toEqual(reference.journal);
+          expectBalancesOfJournal(live.snapshot(), reference.journal);
         },
       ),
       { numRuns: 15 },

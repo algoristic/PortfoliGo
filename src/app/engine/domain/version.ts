@@ -4,5 +4,8 @@
 /** World and market generation: raise it whenever a golden master changes. */
 export const SIM_VERSION = 1;
 
-/** Structure of the stored game state (snapshots, month starts): raise it on every change. */
-export const SCHEMA_VERSION = 1;
+/**
+ * Structure of the stored game state (snapshots, month starts, journal): raise it on every change.
+ * 2: accounts, balances and the journal (AP 3.1).
+ */
+export const SCHEMA_VERSION = 2;

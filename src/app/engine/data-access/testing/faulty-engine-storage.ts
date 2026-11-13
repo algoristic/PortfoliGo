@@ -1,3 +1,5 @@
+import { AccountId } from '@app/banking/domain/models/account.model';
+import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
@@ -66,6 +68,14 @@ export class FaultyEngineStorage implements EngineStorage {
     options?: SaveSnapshotOptions,
   ): Promise<void> {
     return this.#write(() => this.inner.saveSnapshot(playerId, snapshot, options));
+  }
+
+  saveTransactions(playerId: string, transactions: readonly Transaction[]): Promise<void> {
+    return this.#write(() => this.inner.saveTransactions(playerId, transactions));
+  }
+
+  loadTransactions(playerId: string, accountId?: AccountId): Promise<Transaction[]> {
+    return this.inner.loadTransactions(playerId, accountId);
   }
 
   saveMonthStarts(playerId: string, entries: readonly FactorStateEntry[]): Promise<void> {

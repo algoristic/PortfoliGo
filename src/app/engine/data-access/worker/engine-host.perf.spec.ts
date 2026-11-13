@@ -30,6 +30,8 @@ function overlay(base: EngineStorage): EngineStorage {
     appendCommand: (...args) => writes.appendCommand(...args),
     saveClock: (...args) => writes.saveClock(...args),
     saveSnapshot: (...args) => writes.saveSnapshot(...args),
+    saveTransactions: (...args) => writes.saveTransactions(...args),
+    loadTransactions: (...args) => writes.loadTransactions(...args),
     saveMonthStarts: (...args) => writes.saveMonthStarts(...args),
     saveDailyCandles: (...args) => writes.saveDailyCandles(...args),
     loadDailyCandles: (...args) => writes.loadDailyCandles(...args),

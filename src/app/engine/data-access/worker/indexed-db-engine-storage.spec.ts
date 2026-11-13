@@ -2,6 +2,8 @@ import 'fake-indexeddb/auto';
 import { IDBFactory } from 'fake-indexeddb';
 import { IDBPDatabase, openDB } from 'idb';
 
+import { AccountId } from '@app/banking/domain/models/account.model';
+import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { miniGame, MiniGame } from '@app/engine/domain/testing/mini-game';
@@ -34,6 +36,32 @@ function command(id: string, tick: number): GameCommand {
   return { id, type: 'setBackgroundMode', tick, mode: 'pause' };
 }
 
+/** A salary of 1 € on `account` (balance after it as if every earlier one went there). */
+function salary(seq: number, tick: number, account: AccountId): Transaction {
+  return {
+    seq,
+    tick,
+    type: 'salary',
+    postings: [
+      { account, amount: 100, balanceAfter: 100 * seq },
+      { account: 'external:employer', amount: -100, balanceAfter: null },
+    ],
+    params: { month: 4 },
+  };
+}
+
+function transfer(seq: number, tick: number, from: AccountId, to: AccountId): Transaction {
+  return {
+    seq,
+    tick,
+    type: 'transfer',
+    postings: [
+      { account: from, amount: -50, balanceAfter: 50 },
+      { account: to, amount: 50, balanceAfter: 50 },
+    ],
+  };
+}
+
 /** Type of a value independent of its realm (jsdom globals vs. Node's `structuredClone`). */
 function typeName(value: unknown): string {
   return Object.prototype.toString.call(value).slice(8, -1);
@@ -62,6 +90,35 @@ function describeStorageContract(name: string, create: () => EngineStorage): voi
 
     it('loads nothing for an unknown player', async () => {
       expect(await storage.loadPlayerState('p1')).toEqual({ monthStarts: [], commands: [] });
+      expect(await storage.loadTransactions('p1')).toEqual([]);
+    });
+
+    it('stores transactions with a snapshot and on their own and reads them by player and account', async () => {
+      const first = salary(1, base, 'acc-1');
+      const second = transfer(2, base + 10, 'acc-1', 'acc-2');
+      const third = salary(3, base + 20, 'acc-2');
+      await storage.saveSnapshot('p1', game.start, { transactions: [first] });
+      await storage.saveTransactions('p1', [second, third]);
+      // Written again (a snapshot after a periodic write): overwritten, not doubled.
+      await storage.saveTransactions('p1', [third]);
+      await storage.saveTransactions('p10', [salary(1, base, 'acc-2')]);
+
+      expect(await storage.loadTransactions('p1')).toEqual([first, second, third]);
+      expect(await storage.loadTransactions('p1', 'acc-1')).toEqual([first, second]);
+      expect(await storage.loadTransactions('p1', 'acc-2')).toEqual([second, third]);
+      expect(await storage.loadTransactions('p1', 'acc-3')).toEqual([]);
+      expect(await storage.loadTransactions('p10', 'acc-2')).toEqual([salary(1, base, 'acc-2')]);
+    });
+
+    it('discards the transactions after a tick', async () => {
+      const journal = [salary(1, base, 'acc-1'), salary(2, base + 10, 'acc-1')];
+      await storage.saveTransactions('p1', [...journal, salary(3, base + 11, 'acc-1')]);
+      await storage.saveTransactions('p2', [salary(1, base + 11, 'acc-1')]);
+
+      await storage.discardAfter('p1', base + 10);
+
+      expect(await storage.loadTransactions('p1')).toEqual(journal);
+      expect(await storage.loadTransactions('p2')).toHaveLength(1);
     });
 
     it('loads clock, snapshot, month starts and commands as they were saved', async () => {
@@ -153,12 +210,15 @@ function describeStorageContract(name: string, create: () => EngineStorage): voi
         await storage.saveDailyCandles(playerId, [
           { seriesId: 'A', day: day(2031, 1, 1), open: 1, high: 1, low: 1, close: 1 },
         ]);
+        await storage.saveTransactions(playerId, [salary(1, base, 'acc-1')]);
       }
       const before = await storage.loadPlayerState('p10');
 
       await storage.deletePlayer('p1');
 
       expect(await storage.loadPlayerState('p1')).toEqual({ monthStarts: [], commands: [] });
+      expect(await storage.loadTransactions('p1')).toEqual([]);
+      expect(await storage.loadTransactions('p10')).toEqual([salary(1, base, 'acc-1')]);
       expect(await storage.loadDailyCandles('p1', 'A', 2031, 2031)).toEqual([]);
       expect(await storage.loadPlayerState('p10')).toEqual(before);
       expect(await storage.loadDailyCandles('p10', 'A', 2031, 2031)).toHaveLength(1);
@@ -235,6 +295,17 @@ describe('IndexedDbEngineStorage', () => {
         200, 300, 400,
       ]);
       expect((await database.getAll('commands')).map(({ command: { id } }) => id)).toEqual(['c2']);
+    });
+
+    it('writes the transactions only together with the snapshot', async () => {
+      const game = miniGame();
+      const notCloneable = { ...game.start, commandIds: [() => 0] as unknown as string[] };
+
+      await expect(
+        storage.saveSnapshot('p1', notCloneable, { transactions: [salary(1, 0, 'acc-1')] }),
+      ).rejects.toThrow();
+
+      expect(await storage.loadTransactions('p1')).toEqual([]);
     });
   });
 

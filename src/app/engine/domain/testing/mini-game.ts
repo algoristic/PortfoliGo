@@ -1,3 +1,4 @@
+import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
 import { miniWorld } from '@app/world/domain/testing/mini-world';
 
@@ -18,6 +19,8 @@ export interface MiniGame {
   start: GameSnapshot;
   /** Month start entries of the prehistory and the first tick. */
   monthStarts: readonly FactorStateEntry[];
+  /** Transactions booked at the start (the opening balance). */
+  journal: readonly Transaction[];
 }
 
 /** A new game on the mini world (`world/domain/testing/mini-world.ts`); call it in `beforeAll`. */
@@ -25,5 +28,10 @@ export function miniGame(seed = 'mini-1'): MiniGame {
   const { seedKey, world } = miniWorld(seed);
   const gameWorld = createGameWorld(seedKey, world);
   const engine = GameEngine.start(gameWorld, MINI_START_CONDITIONS);
-  return { world: gameWorld, start: engine.snapshot(), monthStarts: engine.monthStartsAfter(-1) };
+  return {
+    world: gameWorld,
+    start: engine.snapshot(),
+    monthStarts: engine.monthStartsAfter(-1),
+    journal: engine.drainTransactions(),
+  };
 }
