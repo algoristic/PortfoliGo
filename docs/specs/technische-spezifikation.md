@@ -1391,6 +1391,133 @@ stateDiagram-v2
 - **Bewertung (entschieden 13.11.2026):** zum Geldkurs ohne Aufschlag des Handelsplatzes (§7.9).
 - **Kaufsperre an der Kursuntergrenze (E-22, entschieden 12.11.2026):** Kauforders für Instrumente an der Kursuntergrenze werden abgelehnt (§6.4); umgesetzt mit der Orderlogik der Engine (AP 5.1).
 
+**Umsetzung (AP 5.1a, `trading/domain/…`):** Reine, framework-freie Regeln; die Engine (AP 5.1b) ruft sie auf. Modelle in `models/order.model.ts`: `ORDER_SIDES`, `ORDER_TYPES` (`market`, `limit`, `stop`, `stop-limit`), Gültigkeit `day` / `date` (mit Datum) / `gtc`, `ORDER_STATUSES` (aktiv sind `open` und `triggered`), Größe als Stück (`MicroUnits`) oder Betrag (`Cents`, nur Kauf), Order mit `placedAt`, `expiresAt`, `reserved`, `triggeredAt`, `execution`, `closedAt`, `rejection`; Codes `ORDER_COMMAND_ERRORS`, davon bei Ausführung `ORDER_REJECTIONS`.
+
+- **Gültigkeit** (`order-validity-logic.ts`): `orderExpiry` liefert den ersten Tick, ab dem die Order nicht mehr gilt; die Engine lässt sie vor der Prüfung des Ticks ablaufen (`isOrderExpired`: Tick ≥ `expiresAt`). „Bis Tagesende“ ist der erste Handelsschluss nach dem Erteilen (in der Schlussminute ist die Börse schon geschlossen). „Bis Datum“ endet um 24:00 des Datums (00:00 des Folgetags) – gleichwertig zum Handelsschluss an diesem Tag, weil keine Sitzung über Mitternacht geht, und auch für Wochenenden und Börsen ohne Sitzung an dem Tag eindeutig. „Bis auf Widerruf“ endet wie „bis Datum“ mit demselben Datum ein Jahr später (29.02. → 28.02.); ein Datum ist vom Tag des Erteilens bis zu diesem Datum zulässig. Beim Ändern zählt die Gültigkeit ab dem Tick der Änderung.
+- **Prüfung je Tick** (`orderDecision`): aus Geld und Brief des Ticks nach der Tabelle oben; ein erreichter Stop wirkt im selben Tick (Stop → Market, Stop-Limit → Limit). Ergebnis: nichts, ausgelöst (Stop-Limit wartet auf sein Limit) oder Ausführung zum Kurs. Die Engine ruft sie nur bei offener Börse auf; die Kurslücke steckt im ersten Kurs der Sitzung.
+- **Kosten** (`orderFill`): Kurswert = Stück × Kurs, einmal kaufmännisch auf Cent gerundet (`marketValue`, §7.1); Orderentgelt `fee(orderFee, Kurswert)` plus `exchangeFee` (zusammen `orderCost`, §7.3, dieselbe Funktion wie in der Kostenvorschau). Kauf: Belastung = Kurswert + Kosten; Verkauf: Gutschrift = Kurswert − Kosten.
+- **Betragsorders** (`amountOrderQuantity`): die größte Stückzahl im Raster der Bank (ganze Stück, mit `fractionalShares` Millionstel), deren exakter Kurswert (ungerundet) plus die Kosten auf den gebuchten Kurswert den Betrag nicht übersteigt – also Stück = (Betrag − Kosten) / Brief, abgerundet, mit den Kosten der tatsächlichen Ausführung. Die Belastung übersteigt den Betrag damit nie. Verfahren: binäre Suche über die Zahl der Rasterschritte mit der Invariante „unten passt, oben nicht“; so passt das Ergebnis und ein Schritt mehr nicht, auch bei nicht monotonen Stufenmodellen. Passt kein Schritt, wird die Order bei Ausführung abgelehnt (`amount-too-small`).
+- **Reservierung** (`orderReservation`, `reservedAmount`): geschätzter Kurswert plus Kosten darauf. Market zum aktuellen Brief, Stop zum höheren von Brief und Stop, beide mit 5 % Puffer auf den Kurswert (`RESERVATION_BUFFER`, Puffer kaufmännisch auf Cent); Limit und Stop-Limit zum Limit; Betragsorders reservieren den Betrag, Verkäufe nichts. `reservedAmount` summiert die aktiven Kauforders eines Depots (= seines Verrechnungskontos). Ändert sich Limit oder Stop, wird neu reserviert, bei einer neuen Gültigkeit nicht (`changedReservation`).
+- **Freie Mittel und Stücke:** `freeFunds` = verfügbarer Betrag des Verrechnungskontos (ohne Rahmen, also max(0, Saldo)) − Reservierungen; `freeQuantity` = Bestand − Stück in aktiven Verkaufsorders.
+- **Erteilen** (`orderPlacementError`), Prüfreihenfolge: handelbar (Indizes nicht) → Größe (Stück positive ganze Millionstel, Betrag positive ganze Cent, Betrag nur beim Kauf, ganze Stück beim Kauf ohne `fractionalShares`) → Limit und Stop (genau die der Orderart, endlich und positiv) → Gültigkeit → Verkauf: freie Stück → Kauf: Kursuntergrenze (E-22, `isAtPriceFloor`: Mittelkurs ≤ Untergrenze), negatives Verrechnungskonto, Reservierung ≤ freie Mittel. Unbekannte und geschlossene Depots, unbekannte Instrumente und Orders prüft die Engine (Codes `unknown-depot`, `depot-closed`, `unknown-instrument`, `unknown-order`).
+- **Ändern** (`orderChangeError`, US-HD-04): nur aktive Orders; nur Limit und Stop, die die Orderart hat; den Stop einer ausgelösten Stop-Limit-Order nicht mehr (`stop-triggered`); ein Kauf muss den Zuwachs seiner Reservierung aus den freien Mitteln decken.
+- **Ausführung** (`executionError`): Kauf an der Kursuntergrenze → `price-floor`; Betragsorder ohne Stück → `amount-too-small`; Belastung > verfügbarer Betrag − Reservierungen der anderen Orders (die eigene wird frei) → `insufficient-funds`; Verkauf über dem Bestand → `insufficient-quantity`.
+- **Buchung** (`executionTransaction`): Typ `buy` bzw. `sell`; Verrechnungskonto −Belastung bzw. +Gutschrift, `external:market` ±Kurswert, `external:bank:<id>:fees` +Orderentgelt + Börsenentgelt in einer Buchung (die Bank stellt das Börsenentgelt als Fremdkosten in Rechnung; so zählen beide in den Monatswerten als Gebühren, §7.4, US-PF-07; entfällt bei 0); Stückbuchung ±Stück im Depot; Referenzen `orderId`, `instrumentId`; Textparameter Stück, Kurs, Kurswert, Orderentgelt, Börsenentgelt.
+
+Gültigkeit (Europa 09:00–17:30, Nordamerika 15:30–22:00, Asien-Pazifik 01:00–07:00):
+
+| Erteilt              | Gültigkeit        | Börse         | Endet (`expiresAt`)  | Bemerkung                        |
+| -------------------- | ----------------- | ------------- | -------------------- | -------------------------------- |
+| Mo 01.04.2030, 10:00 | Tagesende         | Europa        | Mo 01.04.2030, 17:30 | in der Handelszeit               |
+| Mo 08:00             | Tagesende         | Europa        | Mo 17:30             | vor der Sitzung                  |
+| Mo 17:29             | Tagesende         | Europa        | Mo 17:30             | letzte Minute                    |
+| Mo 17:30             | Tagesende         | Europa        | Di 02.04.2030, 17:30 | Schlussminute: schon geschlossen |
+| Mo 23:00             | Tagesende         | Europa        | Di 17:30             |                                  |
+| Fr 05.04.2030, 18:00 | Tagesende         | Europa        | Mo 08.04.2030, 17:30 |                                  |
+| Sa 06.04.2030, 10:00 | Tagesende         | Europa        | Mo 08.04.2030, 17:30 |                                  |
+| Mo 23:00             | Tagesende         | Nordamerika   | Di 22:00             |                                  |
+| Mo 00:30             | Tagesende         | Asien-Pazifik | Mo 07:00             |                                  |
+| Mo 23:00             | Tagesende         | Asien-Pazifik | Di 07:00             |                                  |
+| Mo 01.04.2030, 10:00 | bis 15.05.2030    | beliebig      | Do 16.05.2030, 00:00 |                                  |
+| Mo 01.04.2030, 10:00 | bis 01.04.2030    | beliebig      | Di 02.04.2030, 00:00 | heute                            |
+| Mo 01.04.2030, 10:00 | bis Sa 06.04.2030 | beliebig      | So 07.04.2030, 00:00 |                                  |
+| Mo 01.04.2030, 10:00 | bis auf Widerruf  | beliebig      | 02.04.2031, 00:00    | gleich „bis 01.04.2031“          |
+| So 29.02.2032, 12:00 | bis auf Widerruf  | beliebig      | 01.03.2033, 00:00    | letzter Tag 28.02.2033           |
+
+Abgelehnt beim Erteilen am Mo 01.04.2030, 10:00: bis 31.03.2030 und bis 31.02.2030 (`invalid-validity`), bis 02.04.2031 (`validity-too-long`); am 29.02.2032 bis 01.03.2033 (`validity-too-long`).
+
+Prüfung je Tick, Geld 99,90 € / Brief 100,10 € (Kurslücke: Eröffnung mit Geld 90,00 € / Brief 90,10 €):
+
+| Order                                       | Zustand   | Ergebnis                                          |
+| ------------------------------------------- | --------- | ------------------------------------------------- |
+| Kauf Market                                 | offen     | Ausführung zu 100,10 €                            |
+| Verkauf Market                              | offen     | Ausführung zu 99,90 €                             |
+| Kauf Limit 100,10                           | offen     | Ausführung zu 100,10 €                            |
+| Kauf Limit 100,00                           | offen     | nichts                                            |
+| Verkauf Limit 99,90                         | offen     | Ausführung zu 99,90 €                             |
+| Verkauf Limit 100,00                        | offen     | nichts                                            |
+| Kauf Stop 100,10                            | offen     | ausgelöst, Ausführung zu 100,10 €                 |
+| Kauf Stop 100,50                            | offen     | nichts                                            |
+| Verkauf Stop 99,90                          | offen     | ausgelöst, Ausführung zu 99,90 €                  |
+| Verkauf Stop 99,00                          | offen     | nichts                                            |
+| Kauf Stop-Limit 100,00 / 100,05             | offen     | ausgelöst                                         |
+| Kauf Stop-Limit 100,00 / 100,20             | offen     | ausgelöst, Ausführung zu 100,10 €                 |
+| Kauf Stop-Limit 101,00 / 102,00             | offen     | nichts                                            |
+| Kauf Stop-Limit 101,00 / 100,20             | ausgelöst | Ausführung zu 100,10 €                            |
+| Kauf Stop-Limit 99,00 / 100,00              | ausgelöst | nichts                                            |
+| Verkauf Stop-Limit 100,00 / 99,50           | offen     | ausgelöst, Ausführung zu 99,90 €                  |
+| Verkauf Stop-Limit 100,00 / 99,95           | offen     | ausgelöst                                         |
+| Verkauf Stop-Limit 100,00 / 99,95           | ausgelöst | nichts                                            |
+| Verkauf Stop 95,00, Kurslücke               | offen     | ausgelöst, Ausführung zu 90,00 € (unter dem Stop) |
+| Verkauf Stop-Limit 95,00 / 94,00, Kurslücke | offen     | ausgelöst, keine Ausführung                       |
+
+Kosten und Buchung mit der Filialbank F (Orderentgelt 0,25 %, mind. 10 €, max. 60 €, Börsenentgelt 3,00 €, ohne Bruchstücke):
+
+| Ausführung             | Kurswert   | Orderentgelt | Belastung / Gutschrift | Bemerkung                            |
+| ---------------------- | ---------- | ------------ | ---------------------- | ------------------------------------ |
+| Kauf 10 zu 100,00 €    | 1.000,00 € | 10,00 €      | −1.013,00 €            | 2,50 € unter `min`                   |
+| Verkauf 10 zu 99,90 €  | 999,00 €   | 10,00 €      | +986,00 €              |                                      |
+| Kauf 100 zu 50,00 €    | 5.000,00 € | 12,50 €      | −5.015,50 €            |                                      |
+| Verkauf 0,5 zu 3,335 € | 1,67 €     | 10,00 €      | −11,33 €               | 1,6675 € gerundet; Kosten > Kurswert |
+
+Kauf 10 zu 100,00 € bei F auf das Verrechnungskonto `acc-3` (Depot `dep-2`): `acc-3` −1.013,00 €, `external:market` +1.000,00 €, `external:bank:<F>:fees` +13,00 € (Orderentgelt 10,00 € + Börsenentgelt 3,00 €), Stückbuchung `dep-2` +10 Stück. Verkauf von 2,5 Stück zu 40,00 € beim Neobroker N (0,90 € pauschal, ohne Börsenentgelt): Verrechnungskonto +99,10 €, `external:market` −100,00 €, Entgelte +0,90 €, Stückbuchung −2,5 Stück.
+
+Betragsorders (N mit Bruchstücken; Direktbank D 4,90 € + 0,25 %, max. 69,90 €, mit Bruchstücken):
+
+| Betrag      | Brief    | Bank                      | Stück     | Kurswert   | Kosten  | Belastung  | Bemerkung                                                           |
+| ----------- | -------- | ------------------------- | --------- | ---------- | ------- | ---------- | ------------------------------------------------------------------- |
+| 1.000,00 €  | 33,33 €  | N                         | 29,975997 | 999,10 €   | 0,90 €  | 1.000,00 € | 999,10 / 33,33 = 29,97599759…                                       |
+| 1.000,00 €  | 33,33 €  | N ohne Bruchstücke        | 29        | 966,57 €   | 0,90 €  | 967,47 €   |                                                                     |
+| 1.000,00 €  | 50,00 €  | D                         | 19,8524   | 992,62 €   | 7,38 €  | 1.000,00 € | Startwert (1.000 − 7,40) / 50 = 19,852 läge 0,02 € unter dem Betrag |
+| 10.000,00 € | 100,10 € | F                         | 99        | 9.909,90 € | 27,77 € | 9.937,67 € | 100 Stück kosten schon 10.010,00 €                                  |
+| 5,00 €      | 100,00 € | 4,90 € pauschal           | 0         |            |         |            | abgelehnt (`amount-too-small`)                                      |
+| 5,00 €      | 100,00 € | 4,90 € pauschal, Bruchst. | 0,001     | 0,10 €     | 4,90 €  | 5,00 €     | 0,001001 Stück: exakter Kurswert 0,1001 € > 0,10 €                  |
+
+Reservierung bei F, Brief 100,10 €:
+
+| Kauforder                     | Geschätzter Kurswert        | Kosten  | Reservierung |
+| ----------------------------- | --------------------------- | ------- | ------------ |
+| Market 10 Stück               | 1.001,00 € + 50,05 €        | 13,00 € | 1.064,05 €   |
+| Market 100 Stück              | 10.010,00 € + 500,50 €      | 29,28 € | 10.539,78 €  |
+| Market 3 Stück, Brief 33,33 € | 99,99 € + 5,00 € (4,9995 €) | 13,00 € | 117,99 €     |
+| Stop 105,00 (über dem Brief)  | 1.050,00 € + 52,50 €        | 13,00 € | 1.115,50 €   |
+| Stop 95,00 (unter dem Brief)  | wie Market                  | 13,00 € | 1.064,05 €   |
+| Limit 99,00, 10 Stück         | 990,00 €                    | 13,00 € | 1.003,00 €   |
+| Limit 50,00, 100 Stück        | 5.000,00 €                  | 15,50 € | 5.015,50 €   |
+| Stop-Limit 101,00 / 102,00    | 1.020,00 €                  | 13,00 € | 1.033,00 €   |
+| Betrag 1.000,00 €             |                             |         | 1.000,00 €   |
+| Verkauf                       |                             |         | 0,00 €       |
+
+Summen (Depot `dep-1`): aktive Kauforders mit 100,00 € (offen) und 200,00 € (ausgelöst) reservieren 300,00 €; ausgeführte und stornierte Kauforders, Verkaufsorders und Orders anderer Depots zählen nicht. Bestand 10 Stück, aktive Verkaufsorders über 2 und 1,5 Stück (stornierte, abgelaufene, Kauforders, andere Instrumente und Depots zählen nicht): frei 6,5 Stück.
+
+Prüfung beim Erteilen (Mo 01.04.2030, 10:00; F; Geld 99,90 € / Brief 100,10 €; Verrechnungskonto 2.000,00 €, Reservierungen 500,00 €, also 1.500,00 € frei; 5 freie Stück). Ausgangsorder: Kauf Market 10 Stück, Tagesende – angenommen (Reservierung 1.064,05 €).
+
+| Abweichung                                                               | Code                                     |
+| ------------------------------------------------------------------------ | ---------------------------------------- |
+| Index (kein Geld/Brief)                                                  | `instrument-not-tradable`                |
+| 0 Stück, −1 Stück, ½ Millionstel                                         | `invalid-quantity`                       |
+| Kauf 1,5 Stück                                                           | `fractional-not-allowed`                 |
+| Kauf 1,5 Stück mit `fractionalShares`                                    | angenommen                               |
+| Verkauf 1,5 Stück bzw. 5 Stück                                           | angenommen                               |
+| Verkauf 5,000001 Stück                                                   | `insufficient-quantity`                  |
+| Verkauf an der Kursuntergrenze, Konto negativ                            | angenommen                               |
+| Verkauf mit Betrag                                                       | `amount-only-for-buy`                    |
+| Betrag 0 bzw. 10,005 €                                                   | `invalid-amount`                         |
+| Betrag 1.500,00 € / 1.500,01 €                                           | angenommen / `insufficient-funds`        |
+| Limit fehlt, 0, −1, unendlich; Market mit Limit; Stop mit Limit          | `invalid-limit`                          |
+| Stop fehlt oder 0; Market mit Stop; Limit mit Stop; Stop-Limit ohne Stop | `invalid-stop`                           |
+| Stop-Limit 101,00 / 102,00                                               | angenommen                               |
+| bis 31.03.2030 / bis 02.04.2031                                          | `invalid-validity` / `validity-too-long` |
+| Kauf an der Kursuntergrenze                                              | `price-floor`                            |
+| Verrechnungskonto −0,01 €                                                | `clearing-account-negative`              |
+| Verrechnungskonto 0, Betrag 0,01 €                                       | `insufficient-funds`                     |
+| Market 14 Stück (Reservierung 1.484,47 €)                                | angenommen                               |
+| Market 15 Stück (Reservierung 1.589,58 €)                                | `insufficient-funds`                     |
+
+Ändern einer Kauforder Limit 99,00, 10 Stück (Reservierung 1.003,00 €; Verrechnungskonto 2.000,00 €, alle Reservierungen 1.503,00 €, also 497,00 € frei): Limit 100,00 (+10,00 €) und 148,00 (+490,00 €) angenommen, 149,00 (+500,00 €) `insufficient-funds`; Limit 0 `invalid-limit`; ein Stop `invalid-stop`; Gültigkeit gestern `invalid-validity`; ausgeführte oder stornierte Order `order-not-active`. Stop-Limit 101,00 / 102,00: Stop ändern offen angenommen, ausgelöst `stop-triggered`; Limit ändern auch ausgelöst angenommen. Eine Verkaufsorder reserviert nichts und ändert ihr Limit unabhängig von den freien Mitteln.
+
+Ausführung eines Kaufs von 10 Stück zu 100,00 € bei F (Belastung 1.013,00 €, eigene Reservierung 1.003,00 €, andere 500,00 €): Verrechnungskonto 1.513,00 € angenommen, 1.512,99 € `insufficient-funds`, negativ `insufficient-funds`; an der Kursuntergrenze `price-floor`. Verkauf von 10 Stück bei 9,5 Stück Bestand `insufficient-quantity`.
+
 ### 7.6 Positionen und Lots
 
 - Eine Position je Depot und Instrument besteht aus Lots: `{ buyTick, quantity: MicroUnits, cost: Cents }`. `cost` sind die gesamten Anschaffungskosten des Lots inklusive Kaufnebenkosten – als ganze Cent, nicht als Gleitkommapreis je Stück.
