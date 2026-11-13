@@ -498,6 +498,28 @@ describe('order-execution-logic', () => {
       ]);
     });
 
+    it('keeps the cost basis and realized gain of a sale in its parameters (TS §7.6)', () => {
+      const fill = orderFill(
+        { side: 'sell', size: { kind: 'quantity', quantity: 2_500_000 } },
+        40,
+        NEO,
+      );
+      const sale = { costBasis: 10_500, realizedGain: -590 };
+      const order2 = { ...order, side: 'sell' as const };
+      expect(executionTransaction(order2, fill, accounts, 1_234, sale).params).toEqual({
+        quantity: 2_500_000,
+        price: 40,
+        marketValue: 10_000,
+        orderFee: 90,
+        exchangeFee: 0,
+        costBasis: 10_500,
+        realizedGain: -590,
+      });
+      expect(executionTransaction(order2, fill, accounts, 1_234).params).not.toHaveProperty(
+        'costBasis',
+      );
+    });
+
     it('books the exchange fee as a bank fee when the order fee is 0', () => {
       const conditions = depot({ kind: 'free' }, 200, false);
       const fill = orderFill(

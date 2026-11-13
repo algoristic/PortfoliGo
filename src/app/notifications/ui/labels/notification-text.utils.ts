@@ -120,6 +120,34 @@ export function notificationText(
         text: $localize`:@@uiNotifications-notificationText-yearClosed:Steuerpflichtige Kapitalerträge ${formatCents(taxableIncome)}:income:, einbehaltene Steuer ${formatCents(taxWithheld)}:tax:.`,
       };
     }
+    case 'dividend-received': {
+      const { kind, accountId, instrumentId, quantity, amount, tax } = notification.params;
+      const name = instrument(instrumentId);
+      const target = account(accountId);
+      const shares = formatQuantity(quantity);
+      const gross = formatCents(amount);
+      const heading =
+        kind === 'dividend'
+          ? title
+          : $localize`:@@uiNotifications-notificationText-fundDistributionTitle:Ausschüttung erhalten`;
+      const credited =
+        kind === 'dividend'
+          ? $localize`:@@uiNotifications-notificationText-dividend:Dividende von ${gross}:amount: für ${shares}:quantity: Stück ${name}:instrument: auf ${target}:account: gutgeschrieben`
+          : $localize`:@@uiNotifications-notificationText-fundDistribution:Ausschüttung von ${gross}:amount: für ${shares}:quantity: Stück ${name}:instrument: auf ${target}:account: gutgeschrieben`;
+      if (tax > 0) {
+        return {
+          title: heading,
+          text: $localize`:@@uiNotifications-notificationText-distributionWithTax:${credited}:credited:, davon ${formatCents(tax)}:tax: Steuer einbehalten.`,
+        };
+      }
+      if (tax < 0) {
+        return {
+          title: heading,
+          text: $localize`:@@uiNotifications-notificationText-distributionWithRefund:${credited}:credited:, dazu ${formatCents(-tax)}:tax: Steuer erstattet.`,
+        };
+      }
+      return { title: heading, text: `${credited}.` };
+    }
     case 'order-executed': {
       const { instrumentId, side, quantity, price, total } = notification.params;
       const name = instrument(instrumentId);

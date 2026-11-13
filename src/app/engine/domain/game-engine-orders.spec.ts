@@ -102,12 +102,15 @@ function shares(quantity: MicroUnits): Pick<OrderSpec, 'size'> {
 interface Setup {
   bank?: string;
   balance?: Cents;
-  positions?: readonly Position[];
+  /** Positions at the start, each as one lot bought at tick 0 for `cost` (default 0). */
+  positions?: readonly HeldPosition[];
   /** Prices per series from the given ticks on. */
   prices: Readonly<Record<number, readonly TestPrice[]>>;
   /** Tick to run to before the scenario starts; Monday 10:00 by default. */
   until?: Tick;
 }
+
+type HeldPosition = Pick<Position, 'depotId' | 'instrumentId' | 'quantity'> & { cost?: Cents };
 
 type WithoutStamp<T> = T extends unknown ? Omit<T, 'id' | 'tick'> : never;
 
@@ -146,7 +149,14 @@ describe('GameEngine orders', () => {
     const state = withBooks(start, {
       accounts: [{ kind: 'clearing', bankId: bank, balance }],
     }) as GameState;
-    state.player.positions = positions.map((position) => ({ ...position }));
+    state.player.positions = positions.map(({ depotId, instrumentId, quantity, cost = 0 }) => ({
+      depotId,
+      instrumentId,
+      quantity,
+      lots: [{ buyTick: 0, quantity, cost }],
+      realizedGain: 0,
+      distributions: 0,
+    }));
     const series: TestPrice[][] = [];
     for (const [key, entries] of Object.entries(prices)) {
       series[Number(key)] = [...entries];
@@ -234,8 +244,16 @@ describe('GameEngine orders', () => {
         },
       });
       expect(balance(engine)).toBe(500_000 - 101_300);
+      // TS §7.6: the lot costs the debit, costs included.
       expect(engine.player.positions).toEqual([
-        { depotId: DEPOT, instrumentId: STOCK_ID, quantity: 10 * SHARE },
+        {
+          depotId: DEPOT,
+          instrumentId: STOCK_ID,
+          quantity: 10 * SHARE,
+          lots: [{ buyTick: tick, quantity: 10 * SHARE, cost: 101_300 }],
+          realizedGain: 0,
+          distributions: 0,
+        },
       ]);
       expect(engine.drainTransactions().map(postings)).toEqual([
         {
@@ -496,7 +514,10 @@ describe('GameEngine orders', () => {
       expect(order(engine, 'ord-1').execution).toMatchObject({ quantity, total });
       expect(balance(engine)).toBe(2_000_000 - total);
       expect(engine.player.positions).toEqual([
-        { depotId: DEPOT, instrumentId: STOCK_ID, quantity },
+        expect.objectContaining({
+          quantity,
+          lots: [{ buyTick: engine.tick, quantity, cost: total }],
+        }),
       ]);
     });
 
@@ -515,15 +536,20 @@ describe('GameEngine orders', () => {
   describe('US-HD-02: selling', () => {
     it('sells at the bid and credits the proceeds after costs', () => {
       // TS §7.5: 10 × 99,90 = 999,00 € − 10,00 € − 3,00 € = 986,00 €.
+      // Bought for 1.013,00 € (TS §7.5): realized 986,00 − 1.013,00 = −27,00 € (TS §7.6).
       const engine = setup({
-        positions: [{ depotId: DEPOT, instrumentId: STOCK_ID, quantity: 10 * SHARE }],
+        positions: [
+          { depotId: DEPOT, instrumentId: STOCK_ID, quantity: 10 * SHARE, cost: 101_300 },
+        ],
         prices: { [STOCK]: [{ tick: 0, price: 100 }] },
       });
       expect(place(engine, { side: 'sell' }).ok).toBe(true);
       expect(order(engine, 'ord-1').execution).toMatchObject({ price: 99.9, total: 98_600 });
       expect(balance(engine)).toBe(500_000 + 98_600);
       expect(engine.player.positions).toEqual([]);
-      expect(engine.drainTransactions().map(postings)).toEqual([
+      const journal = engine.drainTransactions();
+      expect(journal[0].params).toMatchObject({ costBasis: 101_300, realizedGain: -2_700 });
+      expect(journal.map(postings)).toEqual([
         {
           type: 'sell',
           postings: [

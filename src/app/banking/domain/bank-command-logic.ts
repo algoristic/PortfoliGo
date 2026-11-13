@@ -117,17 +117,19 @@ export function closingBlockers(state: ClosingState): ClosingBlocker[] {
 }
 
 /**
- * The target of the remainder (TS §7.4): required when a balance remains; when given, it must be
- * another open account of the player.
+ * The target of the remainder (TS §7.4): required when a balance remains or payouts are still to be
+ * credited to the account (a depot closed between ex-date and payment date, AP 5.2); when given,
+ * it must be another open account of the player.
  */
 export function closingTargetError(
   accounts: readonly Account[],
   closingId: AccountId,
   targetAccountId: string | undefined,
   remainder: Cents,
+  pendingDistributions: Cents = 0,
 ): BankCommandError | null {
   if (targetAccountId === undefined) {
-    return remainder > 0 ? 'target-required' : null;
+    return remainder > 0 || pendingDistributions > 0 ? 'target-required' : null;
   }
   const valid =
     targetAccountId !== closingId && openAccountIdError(accounts, targetAccountId) === null;

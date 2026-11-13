@@ -14,6 +14,7 @@ import {
   NOTIFICATION_CATEGORIES,
 } from '@app/notifications/domain/models/notification.model';
 import { MAX_NOTIFICATION_LIMIT } from '@app/notifications/domain/notification-page-logic';
+import { DISTRIBUTION_KINDS } from '@app/portfolio/domain/models/distribution.model';
 import {
   ORDER_REJECTIONS,
   ORDER_SIDES,
@@ -234,7 +235,19 @@ const arbNotification = fc
     }),
     fc.record({ code: fc.constant('order-expired' as const), params: arbOrderParams }),
     fc.record({
-      code: fc.constantFrom('dividend-received' as const, 'storage-quota-exceeded' as const),
+      code: fc.constant('dividend-received' as const),
+      params: fc.record({
+        kind: fc.constantFrom(...DISTRIBUTION_KINDS),
+        accountId: arbAccountId,
+        depotId: arbDepotId,
+        instrumentId: arbId,
+        quantity: arbCount,
+        amount: arbCents,
+        tax: arbCents,
+      }),
+    }),
+    fc.record({
+      code: fc.constant('storage-quota-exceeded' as const),
       params: fc.dictionary(
         fc.string({ maxLength: 6 }),
         fc.oneof(fc.string(), arbCents, fc.constant(null)),
@@ -477,7 +490,18 @@ const arbEvent: fc.Arbitrary<EngineEventMessage> = fc.oneof(
             fc.record({
               depotId: arbDepotId,
               positions: fc.array(
-                fc.record({ instrumentId: arbId, quantity: arbCount, free: arbCents }),
+                fc.record({
+                  instrumentId: arbId,
+                  quantity: arbCount,
+                  free: arbCents,
+                  cost: arbCents,
+                  lots: fc.array(
+                    fc.record({ buyTick: arbCount, quantity: arbCount, cost: arbCents }),
+                    { maxLength: 2 },
+                  ),
+                  realizedGain: arbCents,
+                  distributions: arbCents,
+                }),
                 { maxLength: 3 },
               ),
             }),
@@ -1220,7 +1244,44 @@ describe('engine protocol guards', () => {
           trading: {
             orders: [],
             depots: [
-              { depotId: 'dep-3', positions: [{ instrumentId: 'x', quantity: 0.5, free: 0 }] },
+              {
+                depotId: 'dep-3',
+                positions: [
+                  {
+                    instrumentId: 'x',
+                    quantity: 0.5,
+                    free: 0,
+                    cost: 0,
+                    lots: [],
+                    realizedGain: 0,
+                    distributions: 0,
+                  },
+                ],
+              },
+            ],
+          },
+        }),
+      ],
+      [
+        'a lot with half a cent',
+        projection({
+          trading: {
+            orders: [],
+            depots: [
+              {
+                depotId: 'dep-3',
+                positions: [
+                  {
+                    instrumentId: 'x',
+                    quantity: 1,
+                    free: 0,
+                    cost: 0.5,
+                    lots: [{ buyTick: 1, quantity: 1, cost: 0.5 }],
+                    realizedGain: 0,
+                    distributions: 0,
+                  },
+                ],
+              },
             ],
           },
         }),
@@ -1236,6 +1297,21 @@ describe('engine protocol guards', () => {
       [
         'nested parameters of a pending code',
         notification({ code: 'order-executed', params: { a: {} } }),
+      ],
+      [
+        'a payout of an unknown kind',
+        notification({
+          code: 'dividend-received',
+          params: {
+            kind: 'bonus',
+            accountId: 'acc-2',
+            depotId: 'dep-3',
+            instrumentId: 'stk-0001',
+            quantity: 1,
+            amount: 85,
+            tax: 0,
+          },
+        }),
       ],
       [
         'a closed month without values',
@@ -1310,7 +1386,20 @@ describe('engine protocol guards', () => {
               },
             ],
             depots: [
-              { depotId: 'dep-3', positions: [{ instrumentId: 'cmp-001', quantity: 1, free: 1 }] },
+              {
+                depotId: 'dep-3',
+                positions: [
+                  {
+                    instrumentId: 'cmp-001',
+                    quantity: 1,
+                    free: 1,
+                    cost: 10_190,
+                    lots: [{ buyTick: 3, quantity: 1, cost: 10_190 }],
+                    realizedGain: -12,
+                    distributions: 85,
+                  },
+                ],
+              },
               { depotId: 'dep-5', positions: [] },
             ],
           },

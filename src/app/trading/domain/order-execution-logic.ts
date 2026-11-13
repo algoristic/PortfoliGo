@@ -11,6 +11,7 @@ import { BidAsk } from '@app/shared/domain/models/quote.model';
 import { eurosToCentsDown, marketValue } from '@app/shared/domain/money-logic';
 
 import { Order, OrderDecision, OrderFill, OrderRejection } from './models/order.model';
+import { PositionSale } from './models/position.model';
 
 /** What decides an active order's fate in a tick. */
 export type DecidableOrder = Pick<Order, 'side' | 'type' | 'limit' | 'stop' | 'status'>;
@@ -172,13 +173,16 @@ export interface ExecutionAccounts {
 /**
  * Booking of an execution (TS §7.2): `buy` or `sell` on the clearing account against the market
  * (market value) and the bank's fee account (order fee plus exchange fee, one posting, left out
- * at 0), with the shares as unit posting on the depot; `params` keep both fees apart.
+ * at 0), with the shares as unit posting on the depot; `params` keep both fees apart. A sale also
+ * carries its acquisition cost and realized gain (`costBasis`, `realizedGain`, TS §7.6), so that
+ * the journal keeps them after the position is gone.
  */
 export function executionTransaction(
   order: Pick<Order, 'id' | 'depotId' | 'instrumentId' | 'side'>,
   fill: OrderFill,
   accounts: ExecutionAccounts,
   tick: Tick,
+  sale?: PositionSale,
 ): TransactionDraft {
   const sign = order.side === 'buy' ? 1 : -1;
   const postings: PostingDraft[] = [
@@ -204,6 +208,7 @@ export function executionTransaction(
       marketValue: fill.marketValue,
       orderFee: fill.orderFee,
       exchangeFee: fill.exchangeFee,
+      ...(sale === undefined ? {} : { costBasis: sale.costBasis, realizedGain: sale.realizedGain }),
     },
   };
 }

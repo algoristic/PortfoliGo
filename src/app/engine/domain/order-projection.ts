@@ -1,4 +1,5 @@
 import { DepotId } from '@app/banking/domain/models/account.model';
+import { lotTotals } from '@app/portfolio/domain/lot-logic';
 import { Order } from '@app/trading/domain/models/order.model';
 import { freeQuantity } from '@app/trading/domain/order-reservation-logic';
 
@@ -63,10 +64,14 @@ function depotHoldings(player: Readonly<PlayerState>, depotId: DepotId): DepotHo
     depotId,
     positions: player.positions
       .filter((position) => position.depotId === depotId)
-      .map(({ instrumentId, quantity }) => ({
+      .map(({ instrumentId, quantity, lots, realizedGain, distributions }) => ({
         instrumentId,
         quantity,
         free: freeQuantity(quantity, player.orders, depotId, instrumentId),
+        cost: lotTotals(lots).cost,
+        lots: lots.map((lot) => ({ ...lot })),
+        realizedGain,
+        distributions,
       })),
   };
 }

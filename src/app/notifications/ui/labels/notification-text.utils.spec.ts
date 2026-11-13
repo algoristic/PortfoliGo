@@ -17,6 +17,13 @@ const ORDER = {
   side: 'buy',
 } as const;
 
+const PAYOUT = {
+  kind: 'dividend',
+  accountId: 'acc-1',
+  depotId: 'dep-3',
+  instrumentId: 'stk-0001',
+} as const;
+
 const APRIL: MonthlyValues = {
   income: 250_000,
   livingCosts: 180_000,
@@ -115,8 +122,8 @@ describe('notificationText', () => {
     ],
     [
       'a code whose parameters follow with its AP',
-      { code: 'dividend-received', params: {} },
-      'Dividende erhalten',
+      { code: 'savings-plan-executed', params: {} },
+      'Sparplan ausgeführt',
       '',
     ],
   ])('words %s', (_case, partial, title, text) => {
@@ -179,6 +186,42 @@ describe('notificationText', () => {
       },
       'Order abgelehnt',
       'Verkaufsorder für Nordwerk AG abgelehnt: Im Depot liegen nicht genug freie Stücke.',
+    ],
+    [
+      'a dividend (AP 5.2)',
+      {
+        code: 'dividend-received',
+        params: { ...PAYOUT, quantity: 10_000_000, amount: 850, tax: 0 },
+      },
+      'Dividende erhalten',
+      'Dividende von 8,50 € für 10 Stück Nordwerk AG auf Girokonto 0000000001 · Hansebank gutgeschrieben.',
+    ],
+    [
+      'a fund distribution for a fraction',
+      {
+        code: 'dividend-received',
+        params: { ...PAYOUT, kind: 'fund-distribution', quantity: 2_500_000, amount: 61, tax: 0 },
+      },
+      'Ausschüttung erhalten',
+      'Ausschüttung von 0,61 € für 2,5 Stück Nordwerk AG auf Girokonto 0000000001 · Hansebank gutgeschrieben.',
+    ],
+    [
+      'a dividend with tax (from AP 5.3)',
+      {
+        code: 'dividend-received',
+        params: { ...PAYOUT, quantity: 10_000_000, amount: 850, tax: 224 },
+      },
+      'Dividende erhalten',
+      'Dividende von 8,50 € für 10 Stück Nordwerk AG auf Girokonto 0000000001 · Hansebank gutgeschrieben, davon 2,24 € Steuer einbehalten.',
+    ],
+    [
+      'a dividend with a refund',
+      {
+        code: 'dividend-received',
+        params: { ...PAYOUT, quantity: 10_000_000, amount: 850, tax: -100 },
+      },
+      'Dividende erhalten',
+      'Dividende von 8,50 € für 10 Stück Nordwerk AG auf Girokonto 0000000001 · Hansebank gutgeschrieben, dazu 1,00 € Steuer erstattet.',
     ],
     [
       'an expired purchase',

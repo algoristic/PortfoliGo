@@ -2,6 +2,7 @@ import { Account, AccountId, Depot } from '@app/banking/domain/models/account.mo
 import {
   AccountInflows,
   ClosedMonth,
+  CustodyAccrual,
   InterestAccrual,
   MonthlyValues,
   OverdraftLimit,
@@ -10,6 +11,7 @@ import { Balances } from '@app/banking/domain/models/ledger.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { MarketState } from '@app/market/domain/models/market-state.model';
 import { NotificationState } from '@app/notifications/domain/models/notification.model';
+import { PendingDistribution } from '@app/portfolio/domain/models/distribution.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { TaxYear } from '@app/taxes/domain/models/tax.model';
 import { Order } from '@app/trading/domain/models/order.model';
@@ -67,8 +69,15 @@ export interface PlayerState {
   orderHistory: Order[];
   /** Last value of the order counter (`ord-<n>`). */
   orderSequence: number;
-  /** Shares per depot and instrument, only those above 0, in order of their first purchase. */
+  /**
+   * Shares per depot and instrument with their lots (TS §7.6), only those above 0, in order of
+   * their first purchase.
+   */
   positions: Position[];
+  /** Payouts earned at ex-dates and not yet credited, in ex-date order (TS §6.5, §7.4). */
+  pendingDistributions: PendingDistribution[];
+  /** Depot values for the custody fee per depot in depot order (TS §7.3, §7.4). */
+  custody: CustodyAccrual[];
 }
 
 /** Dynamic state of a game (TS §8.1). Everything in it is plain, structured-cloneable data. */

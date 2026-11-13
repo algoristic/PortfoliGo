@@ -14,13 +14,13 @@ import {
   AUTO_PAUSE_CODES,
   GameNotification,
 } from '@app/notifications/domain/models/notification.model';
+import { lotTotals } from '@app/portfolio/domain/lot-logic';
 import {
   ORDER_SIDES,
   ORDER_TYPES,
   OrderSpec,
   OrderValidity,
 } from '@app/trading/domain/models/order.model';
-import { Position } from '@app/trading/domain/models/position.model';
 import { isActive, reservedAmount } from '@app/trading/domain/order-reservation-logic';
 import { miniWorld } from '@app/world/domain/testing/mini-world';
 
@@ -41,12 +41,14 @@ import { TEST_SEEDS } from '../../../testing/seeds';
 // Both include the journal, and the cached balances always equal the sums of the journal (TS §7.2).
 // The player has accounts at the test banks that book every kind of household transaction (TS §7.4):
 // salary and living costs, account fees, overdraft interest beyond the limit, monthly savings
-// interest with tax, quarterly savings interest and debit interest on a clearing account. The
+// interest with tax, quarterly savings interest and debit interest on a clearing account, and a
+// depot that earns a dividend and a fund distribution and pays a custody fee (AP 5.2). The
 // commands are random bank commands (AP 3.3), background modes, the notification commands (AP 3.6)
 // and watchlist updates (AP 4.4) and order commands (AP 5.1: placing, changing and cancelling in two
 // depots, one of them holding shares); many of them are rejected, which must be just as
 // deterministic. The notifications of the runs (overdrafts, interest, month ends, orders) are part
-// of both properties, and the positions always equal the start positions plus the unit postings.
+// of both properties, and the positions always equal the start positions plus the unit postings,
+// with lots whose costs follow the purchases and sales to the cent (TS §7.6).
 
 /** End of the runs: four months after the start, across three month starts and a quarter. */
 const END_TICK = dateTimeToTick({ year: 2030, month: 8, day: 1 }) - 1;
@@ -215,9 +217,26 @@ describe('GameEngine properties', () => {
   beforeAll(() => {
     const { seedKey, world: mini } = miniWorld(TEST_SEEDS.mini);
     const engine = startBankingGame(createGameWorld(seedKey, mini), MINI_START_CONDITIONS);
-    world = withTestBanks(engine.world);
+    // The broker b3 charges a custody fee here, so that the quarter end of 01.07. charges it.
+    const banks = withTestBanks(engine.world).world.banks.map((bank) =>
+      bank.id === 'b3'
+        ? {
+            ...bank,
+            conditions: {
+              ...bank.conditions,
+              depot: {
+                ...bank.conditions.depot,
+                custodyFee: { kind: 'percent-pa' as const, rate: 0.002, min: 1_000 },
+              },
+            },
+          }
+        : bank,
+    );
+    world = { ...engine.world, world: { ...engine.world.world, banks } };
     const { companies, indices, etfs } = mini;
-    instruments = [companies[0].id, `${indices[0].id}-tr`, etfs[0].id, companies[1].id];
+    // The positions get dividends of `stk-0003` (ex 28.05.2030) and a distribution of the
+    // distributing `etf-0004` (ex 14.05.2030) within the runs.
+    instruments = [companies[2].id, `${indices[0].id}-tr`, etfs[3].id, companies[1].id];
     const books = withBooks(engine.snapshot(), {
       accounts: [
         { kind: 'savings', bankId: 'b1', balance: 30_000_000 },
@@ -228,8 +247,25 @@ describe('GameEngine properties', () => {
       balances: { 'acc-1': -600_000 },
     }) as GameState;
     books.player.positions = [
-      { depotId: 'dep-7', instrumentId: companies[0].id, quantity: 15_500_000 },
-      { depotId: 'dep-7', instrumentId: etfs[0].id, quantity: 8_000_000 },
+      {
+        depotId: 'dep-7',
+        instrumentId: companies[2].id,
+        quantity: 15_500_000,
+        lots: [
+          { buyTick: 0, quantity: 10_000_000, cost: 123_456 },
+          { buyTick: 1, quantity: 5_500_000, cost: 77_777 },
+        ],
+        realizedGain: 0,
+        distributions: 0,
+      },
+      {
+        depotId: 'dep-7',
+        instrumentId: etfs[3].id,
+        quantity: 8_000_000,
+        lots: [{ buyTick: 0, quantity: 8_000_000, cost: 40_001 }],
+        realizedGain: 0,
+        distributions: 0,
+      },
     ];
     start = books;
     monthStarts = engine.monthStartsAfter(-1);
@@ -271,28 +307,48 @@ describe('GameEngine properties', () => {
   }
 
   /**
-   * The positions of the start plus the unit postings of the journal (TS §7.2), and the order
-   * book: active orders hold the reservations, closed ones nothing.
+   * The positions of the start plus the unit postings of the journal (TS §7.2), their lots and
+   * acquisition costs: every position holds the shares of its lots, and per depot and instrument
+   * the lots cost what the start lots cost plus the purchases' debits minus the costs of the sales
+   * (`costBasis`), to the cent (TS §7.6). Then the order book: active orders hold the reservations,
+   * closed ones nothing.
    */
   function expectPositionsAndOrders(
     snapshot: ReturnType<GameEngine['snapshot']>,
     journal: readonly Transaction[],
   ): void {
-    const sums = new Map<string, Position>();
-    for (const position of [
-      ...start.player.positions,
-      ...journal.flatMap(({ units }) => units ?? []),
-    ]) {
-      const key = `${position.depotId}/${position.instrumentId}`;
-      const sum = sums.get(key) ?? { ...position, quantity: 0 };
-      sums.set(key, { ...sum, quantity: sum.quantity + position.quantity });
+    const quantities = new Map<string, number>();
+    const costs = new Map<string, number>();
+    const add = (map: Map<string, number>, key: string, value: number): void => {
+      map.set(key, (map.get(key) ?? 0) + value);
+    };
+    const keyOf = (position: { depotId: string; instrumentId: string }): string =>
+      `${position.depotId}/${position.instrumentId}`;
+    for (const position of start.player.positions) {
+      add(quantities, keyOf(position), position.quantity);
+      add(costs, keyOf(position), lotTotals(position.lots).cost);
     }
-    const expected = [...sums.values()].filter(({ quantity }) => quantity !== 0);
-    const sort = (positions: readonly Position[]): Position[] =>
-      [...positions].sort((a, b) =>
-        `${a.depotId}/${a.instrumentId}`.localeCompare(`${b.depotId}/${b.instrumentId}`),
-      );
-    expect(sort(snapshot.player.positions)).toEqual(sort(expected));
+    for (const transaction of journal) {
+      for (const units of transaction.units ?? []) {
+        add(quantities, keyOf(units), units.quantity);
+        const clearing = transaction.postings[0].amount;
+        add(
+          costs,
+          keyOf(units),
+          transaction.type === 'buy' ? -clearing : -Number(transaction.params?.['costBasis']),
+        );
+      }
+    }
+    const held = snapshot.player.positions;
+    expect(held.every(({ quantity, lots }) => lotTotals(lots).quantity === quantity)).toBe(true);
+    expect(held.every(({ quantity }) => quantity > 0)).toBe(true);
+    const actual = new Map(held.map((position) => [keyOf(position), position]));
+    for (const [key, quantity] of quantities) {
+      expect(actual.get(key)?.quantity ?? 0).toBe(quantity);
+      // A position sold completely has given up exactly its costs.
+      expect(lotTotals(actual.get(key)?.lots ?? []).cost).toBe(costs.get(key));
+    }
+    expect(held.every((position) => quantities.has(keyOf(position)))).toBe(true);
     const { orders, orderHistory } = snapshot.player;
     expect(orders.every(({ status }) => isActive(status))).toBe(true);
     expect(orderHistory.every(({ status, reserved }) => !isActive(status) && reserved === 0)).toBe(
@@ -312,7 +368,10 @@ describe('GameEngine properties', () => {
     expect([...types].sort()).toEqual([
       'account-fee',
       'credit-interest',
+      'custody-fee',
       'debit-interest',
+      'dividend',
+      'fund-distribution',
       'living-costs',
       'overdraft-interest',
       'salary',
@@ -325,6 +384,7 @@ describe('GameEngine properties', () => {
     expect(journal.some(({ units }) => units !== undefined)).toBe(false);
     const codes = new Set(referenceRun([]).notifications.map(({ code }) => code));
     expect([...codes].sort()).toEqual([
+      'dividend-received',
       'interest-credited',
       'month-closed',
       'overdraft-limit-exceeded',

@@ -111,6 +111,42 @@ describe('EngineHost orders', () => {
     expect(tradingParts(harness)).toHaveLength(1);
   });
 
+  describe('AP 5.2: positions in the projection and the net worth (TS §7.9, §8.4)', () => {
+    it('values the shares at the bid and sends the net worth while the prices move', async () => {
+      const harness = new HostHarness({ config: FINE });
+      await withDepot(harness);
+      await jumpTo(harness, OPEN);
+      await harness.send('pause', {});
+      const at = harness.clock.tick;
+      await harness.send('placeOrder', { order: MARKET_BUY });
+      await harness.send('subscribe', { series: [0] });
+      await advance(harness, 300);
+      const quote = harness.quotes.quotes.find(({ series }) => series === 0);
+      expect(harness.quotes.tick).toBe(at);
+      const latest = projections(harness).at(-1) as ProjectionPayload;
+      const balances = ['acc-1', CLEARING].map(
+        (id) =>
+          projections(harness)
+            .flatMap(({ accounts }) => accounts)
+            .filter((view) => view.id === id)
+            .at(-1)?.balance ?? 0,
+      );
+      // One share at the exchange's bid without a bank's mark-up, in cents.
+      const value = Math.round((quote?.bid ?? 0) * 100);
+      expect(value).toBeGreaterThan(0);
+      expect(latest.tick).toBe(at);
+      expect(latest.netWorth).toBe(balances[0] + balances[1] + value);
+
+      // Running on, projections without changed accounts carry the new net worth.
+      const from = projections(harness).length;
+      await harness.send('setSpeed', { speed: '1min' });
+      await harness.send('resume', {});
+      await advance(harness, 2_000);
+      const later = projections(harness).slice(from);
+      expect(later.some(({ tick, accounts }) => tick > at && accounts.length === 0)).toBe(true);
+    });
+  });
+
   describe('US-HD-01–04: placeOrder, changeOrder, cancelOrder', () => {
     it('answers with the order ID and sends the order and its reservation before the reply', async () => {
       const harness = new HostHarness({ config: FINE });
@@ -237,8 +273,15 @@ describe('EngineHost orders', () => {
       expect(part.orders).toEqual([
         expect.objectContaining({ id: 'ord-1', status: 'executed', closedAt: at, reserved: 0 }),
       ]);
+      // TS §7.6: one lot that costs the debit with costs; nothing realized or paid out yet.
+      const executedAt = part.orders[0].execution;
+      const lot = { buyTick: at, quantity: ONE, cost: executedAt?.total ?? 0 };
+      const held = { instrumentId: SHARE.id, quantity: ONE, cost: lot.cost, lots: [lot] };
       expect(part.depots).toEqual([
-        { depotId: DEPOT, positions: [{ instrumentId: SHARE.id, quantity: ONE, free: ONE }] },
+        {
+          depotId: DEPOT,
+          positions: [{ ...held, free: ONE, realizedGain: 0, distributions: 0 }],
+        },
       ]);
       const [executed] = notified(harness).filter(({ code }) => code === 'order-executed');
       expect(executed).toMatchObject({
@@ -254,7 +297,10 @@ describe('EngineHost orders', () => {
         order: { ...WAITING_BUY, side: 'sell', limit: 1_000_000 },
       });
       expect(tradingParts(harness).at(-1)?.depots).toEqual([
-        { depotId: DEPOT, positions: [{ instrumentId: SHARE.id, quantity: ONE, free: 0 }] },
+        {
+          depotId: DEPOT,
+          positions: [{ ...held, free: 0, realizedGain: 0, distributions: 0 }],
+        },
       ]);
     });
 

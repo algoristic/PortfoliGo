@@ -34,10 +34,13 @@ import { PriceSource } from '@app/market/domain/price-source';
 import { etfSeries, seriesIds } from '@app/market/domain/series';
 import { watchlistError } from '@app/market/domain/watchlist-logic';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
+import { Cents } from '@app/shared/domain/models/money.model';
 import { openTaxYear } from '@app/taxes/domain/tax-logic';
+import { copyPosition } from '@app/trading/domain/position-logic';
 
 import { BankCommands, ClosingPreviewResult } from './bank-commands';
 import { AccountBooks, BankingSystem, openAccount } from './banking-system';
+import { DistributionSystem } from './distribution-system';
 import { CommandResult, GameCommand } from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
 import {
@@ -53,6 +56,7 @@ import { ExDividend, ScheduledTask } from './models/scheduled-task.model';
 import { NotificationSystem } from './notification-system';
 import { copyOrder, OrderSystem } from './order-system';
 import { copyScheduler, createScheduler, peekTask, popTask, scheduleTask } from './scheduler';
+import { Valuation } from './valuation';
 
 /** Creates the price port over the engine's market; the history and the state grow in place. */
 export type PricePortFactory = (
@@ -93,6 +97,8 @@ export class GameEngine {
   readonly #bankCommands: BankCommands;
   readonly #notifications: NotificationSystem;
   readonly #orders: OrderSystem;
+  readonly #distributions: DistributionSystem;
+  readonly #valuation: Valuation;
   #events: EngineEvent[] = [];
   #journal: Transaction[] = [];
   /** Accounts whose projection changed since the last `drainChangedAccounts` (TS §8.4). */
@@ -124,7 +130,27 @@ export class GameEngine {
       emit: (event) => this.#emit(event),
       changed,
     });
-    this.#bankCommands = new BankCommands(world, state.player, this.#banking, changed);
+    const taxCapitalIncome = (): Cents => this.#taxCapitalIncome();
+    const changedDepot = (id: DepotId): void => {
+      this.#changedDepots.add(id);
+    };
+    this.#distributions = new DistributionSystem(world, state.player, {
+      book: (draft) => this.#banking.book(draft),
+      emit: (event) => this.#emit(event),
+      schedulePayment: (tick) => {
+        scheduleTask(this.#state.scheduler, tick, { kind: 'distribution-payment' });
+      },
+      changedDepot,
+      taxCapitalIncome,
+    });
+    this.#bankCommands = new BankCommands(
+      world,
+      state.player,
+      this.#banking,
+      this.#distributions,
+      changed,
+    );
+    this.#valuation = new Valuation(world, this.prices);
     this.#orders = new OrderSystem(world, state.player, this.prices, {
       book: (draft) => this.#banking.book(draft),
       emit: (event) => this.#emit(event),
@@ -135,9 +161,8 @@ export class GameEngine {
       changedOrder: (id) => {
         this.#changedOrders.add(id);
       },
-      changedDepot: (id) => {
-        this.#changedDepots.add(id);
-      },
+      changedDepot,
+      taxCapitalIncome,
     });
   }
 
@@ -196,6 +221,8 @@ export class GameEngine {
         orderHistory: [],
         orderSequence: 0,
         positions: [],
+        pendingDistributions: [],
+        custody: [],
       },
       scheduler,
       commandIds: [],
@@ -342,6 +369,14 @@ export class GameEngine {
     return changed;
   }
 
+  /**
+   * Value of all positions now (TS §7.9): shares × bid without a bank's venue mark-up. Part of the
+   * net worth; the host computes it only when it sends a projection.
+   */
+  securitiesValue(): Cents {
+    return this.#valuation.holdingsValue(this.#state.player.positions, this.#state.tick);
+  }
+
   /** What closing the account now would book, without booking (TS §7.4). */
   closingPreview(accountId: string): ClosingPreviewResult {
     return this.#bankCommands.closingPreview(accountId, this.#state.tick);
@@ -426,6 +461,15 @@ export class GameEngine {
     return this.#banking.book(draft);
   }
 
+  /**
+   * Tax on capital income (a sale's realized gain, a payout) booked after it on `accountId`,
+   * returning the tax (refunds negative). AP 5.3 books it here with the tax state of TS §7.7; until
+   * then capital income other than credit interest is untaxed.
+   */
+  #taxCapitalIncome(): Cents {
+    return 0;
+  }
+
   #setTick(tick: Tick): void {
     if (tick !== this.#state.tick) {
       this.#state.tick = tick;
@@ -465,8 +509,12 @@ export class GameEngine {
         for (const { series, cents, paymentDay: payment } of task.dividends) {
           this.#events.push({ type: 'ex-dividend', tick, series, cents, paymentDay: payment });
         }
+        this.#distributions.exDate(tick, task.dividends);
         break;
       }
+      case 'distribution-payment':
+        this.#distributions.pay(tick);
+        break;
       case 'session-close': {
         const exchange = this.world.exchanges[task.exchange];
         this.#events.push({
@@ -522,6 +570,15 @@ export class GameEngine {
       this.#marketDay,
     );
     this.#banking.accrueInterest();
+    const { positions } = this.#state.player;
+    const endOfDay = tick - TICKS_PER_MINUTE;
+    this.#banking.accrueCustody((depot) =>
+      this.#valuation.holdingsValue(
+        positions.filter((position) => position.depotId === depot.id),
+        endOfDay,
+        tick,
+      ),
+    );
     scheduleTask(this.#state.scheduler, dayStartTick(day + 1), { kind: 'day-change' });
   }
 
@@ -609,7 +666,9 @@ function copyPlayer(player: Readonly<PlayerState>): PlayerState {
     orders: player.orders.map(copyOrder),
     orderHistory: player.orderHistory.map(copyOrder),
     orderSequence: player.orderSequence,
-    positions: player.positions.map((position) => ({ ...position })),
+    positions: player.positions.map(copyPosition),
+    pendingDistributions: player.pendingDistributions.map((distribution) => ({ ...distribution })),
+    custody: player.custody.map((accrual) => ({ ...accrual })),
   };
 }
 

@@ -6,7 +6,15 @@ import {
   monthKey,
   monthOf,
   previousMonth,
+  startsQuarter,
 } from '@app/banking/domain/bank-run-logic';
+import {
+  accrueCustodyDay,
+  closeCustodyQuarter,
+  closingCustodyFees,
+  openCustodyAccrual,
+  quarterCustodyFee,
+} from '@app/banking/domain/custody-fee-logic';
 import { closeInflowMonth, openInflows, recordInflows } from '@app/banking/domain/inflow-logic';
 import {
   bookedInterest,
@@ -40,6 +48,8 @@ import {
   BankRunPlan,
   CalendarMonth,
   CoverageState,
+  CustodyAccrual,
+  CustodyFeeCharge,
   InterestAccrual,
 } from '@app/banking/domain/models/household.model';
 import { Transaction, TransactionDraft } from '@app/banking/domain/models/ledger.model';
@@ -67,7 +77,7 @@ export type AccountBooks = Pick<
 >;
 
 /** The part of the player state that opening a depot changes. */
-export type DepotBooks = AccountBooks & Pick<PlayerState, 'depots'>;
+export type DepotBooks = AccountBooks & Pick<PlayerState, 'depots' | 'custody'>;
 
 /** Where the banking system delivers its results; the engine buffers them. */
 export interface BankingPorts {
@@ -150,6 +160,7 @@ export function openDepot(
   books.accountSequence = sequence + 1;
   registerAccount(books, account);
   books.depots.push(depot);
+  books.custody.push(openCustodyAccrual(depot.id));
   return { account, depot };
 }
 
@@ -238,6 +249,18 @@ export class BankingSystem {
     }
   }
 
+  /**
+   * End-of-day values of the day that just ended for the custody fee (TS §7.3, §7.4): called at the
+   * day change for every open depot, with `valueOf` giving the depot's value then.
+   */
+  accrueCustody(valueOf: (depot: Readonly<Depot>) => Cents): void {
+    for (const depot of this.#player.depots) {
+      if (depot.closedAt === null) {
+        accrueCustodyDay(this.#custody(depot.id), valueOf(depot));
+      }
+    }
+  }
+
   /** The bank run at 06:00 (TS §7.4, E-19): the steps of `bankRunPlan` in their order. */
   runBank(tick: Tick): void {
     const plan = bankRunPlan(tick);
@@ -257,6 +280,9 @@ export class BankingSystem {
           break;
         case 'account-fee':
           this.#chargeAccountFees(tick, plan.settledMonth);
+          break;
+        case 'custody-fee':
+          this.#chargeCustodyFees(tick, plan.settledMonth);
           break;
         case 'overdraft-interest':
           this.#chargeDebitInterest(tick, 'current', plan.settledMonth);
@@ -314,6 +340,11 @@ export class BankingSystem {
       accrual.credit = 0;
       accrual.debit = 0;
     }
+    if (startsQuarter(monthOf(tick))) {
+      for (const accrual of player.custody) {
+        closeCustodyQuarter(accrual);
+      }
+    }
   }
 
   /** Year end at 00:00 of 1 January (TS §7.7). */
@@ -369,6 +400,12 @@ export class BankingSystem {
         charges.push(this.#feeDraft(tick, account, charge.amount, charge.month));
       }
     }
+    if (account.kind === 'clearing') {
+      const custody = this.#bankConditions(account.bankId).depot.custodyFee;
+      for (const charge of closingCustodyFees(custody, this.#custody(account.depotId), month)) {
+        charges.push(this.#custodyDraft(tick, account, charge));
+      }
+    }
     if (debit < 0) {
       charges.push(this.#debitDraft(tick, account, debit, month));
     }
@@ -395,6 +432,10 @@ export class BankingSystem {
     accrual.debit = 0;
     accrual.pendingCredit = 0;
     accrual.pendingDebit = 0;
+    const account = this.#account(id);
+    if (account.kind === 'clearing') {
+      Object.assign(this.#custody(account.depotId), openCustodyAccrual(account.depotId));
+    }
     for (const draft of settlement.credits) {
       this.book(draft);
     }
@@ -551,6 +592,44 @@ export class BankingSystem {
   }
 
   /**
+   * Custody fees of the past quarter on the clearing accounts of the open depots (TS §7.3, §7.4),
+   * also into the red (E-17). Closed depots were charged when they closed.
+   */
+  #chargeCustodyFees(tick: Tick, settledMonth: CalendarMonth): void {
+    for (const depot of this.#player.depots) {
+      const accrual = this.#custody(depot.id);
+      const { pendingValueSum, pendingDays } = accrual;
+      accrual.pendingValueSum = 0;
+      accrual.pendingDays = 0;
+      if (depot.closedAt !== null) {
+        continue;
+      }
+      const custody = this.#bankConditions(depot.bankId).depot.custodyFee;
+      const charge = quarterCustodyFee(custody, settledMonth, pendingValueSum, pendingDays);
+      if (charge.amount > 0) {
+        this.book(this.#custodyDraft(tick, this.#account(depot.clearingAccountId), charge));
+      }
+    }
+  }
+
+  #custodyDraft(tick: Tick, account: Account, charge: CustodyFeeCharge): TransactionDraft {
+    return {
+      tick,
+      type: 'custody-fee',
+      postings: [
+        { account: account.id, amount: -charge.amount },
+        { account: bankFeesAccount(account.bankId), amount: charge.amount },
+      ],
+      params: {
+        from: monthKey(charge.from),
+        to: monthKey(charge.to),
+        days: charge.days,
+        averageValue: charge.averageValue,
+      },
+    };
+  }
+
+  /**
    * Overdraft interest (current accounts) or debit interest (clearing accounts) of the month; closed
    * accounts were settled when they closed.
    */
@@ -629,6 +708,15 @@ export class BankingSystem {
       throw new RangeError(`BankingSystem: no inflows for ${id}`);
     }
     return inflows;
+  }
+
+  #custody(depotId: string): CustodyAccrual {
+    for (const accrual of this.#player.custody) {
+      if (accrual.depotId === depotId) {
+        return accrual;
+      }
+    }
+    throw new RangeError(`BankingSystem: no custody accrual for ${depotId}`);
   }
 
   #accrual(id: AccountId): InterestAccrual {

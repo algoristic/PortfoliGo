@@ -3,6 +3,7 @@ import { Cents } from '@app/shared/domain/models/money.model';
 /** Kinds of scheduled tasks in their fixed order within one tick (TS §3.8, §8.1). */
 export const TASK_ORDER = [
   'day-change',
+  'distribution-payment',
   'bank-run',
   'session-open',
   'session-close',
@@ -22,11 +23,13 @@ export interface ExDividend {
 }
 
 /**
- * Order expiry runs at the order's `expiresAt`; it expires the order only if it is still active
+ * Distribution payments run at 06:00 of a payment date, before the bank run, and credit every
+ * pending payout due by then (TS §3.8, §7.4). Order expiry runs at the order's `expiresAt`; it expires the order only if it is still active
  * and still expires then (a change of the validity schedules a new task, TS §7.5).
  */
 export type TaskSpec =
   | { kind: 'day-change' }
+  | { kind: 'distribution-payment' }
   | { kind: 'bank-run' }
   | { kind: 'session-open'; exchange: number; dividends: readonly ExDividend[] }
   | { kind: 'session-close'; exchange: number }

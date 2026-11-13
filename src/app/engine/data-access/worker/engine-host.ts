@@ -171,6 +171,11 @@ interface LoadedGame {
   changedOrders: Set<string>;
   changedDepots: Set<DepotId>;
   projectionFull: boolean;
+  /**
+   * Tick of the net worth in the last projection: with positions it changes with the prices, so a
+   * new tick sends a projection (throttled like the others) even without other changes.
+   */
+  valuedTick: Tick;
   /** Notifications not yet confirmed as stored, like `unsavedTransactions` (TS §9.2). */
   unsavedNotifications: GameNotification[];
   notificationsWrittenMs: number;
@@ -595,6 +600,7 @@ export class EngineHost {
       changedOrders: new Set(),
       changedDepots: new Set(),
       projectionFull: true,
+      valuedTick: -1,
       unsavedNotifications: [],
       notificationsWrittenMs: now,
       notificationWriteRunning: false,
@@ -1018,7 +1024,7 @@ export class EngineHost {
     if (game.absence === undefined) {
       game.absence = openAbsence(
         game.engine.tick,
-        netWorth(game.engine.player),
+        netWorth(game.engine.player, game.engine.securitiesValue()),
         this.#indexLevels(game),
       );
     }
@@ -1038,7 +1044,7 @@ export class EngineHost {
     const report = closeAbsence(
       absence,
       tick,
-      netWorth(game.engine.player),
+      netWorth(game.engine.player, game.engine.securitiesValue()),
       this.#indexLevels(game),
     );
     if (report !== null) {
@@ -1386,7 +1392,8 @@ export class EngineHost {
         game.changedOrders.size > 0 ||
         game.changedDepots.size > 0 ||
         notificationsChanged ||
-        watchlistChanged) &&
+        watchlistChanged ||
+        (game.engine.player.positions.length > 0 && tick !== game.valuedTick)) &&
       (forced || this.#projectionThrottle.isDue(now))
     ) {
       this.#postProjection(
@@ -1466,13 +1473,14 @@ export class EngineHost {
       tick: game.engine.tick,
       full,
       accounts: accountViews(player, full ? undefined : [...game.changedAccounts]),
-      netWorth: netWorth(player),
+      netWorth: netWorth(player, game.engine.securitiesValue()),
       ...(part === undefined ? {} : { notifications: part }),
       ...(watchlist === undefined ? {} : { watchlist }),
       ...(trading === undefined ? {} : { trading }),
     });
     game.watchlistSent = player.watchlist;
     game.projectionFull = false;
+    game.valuedTick = game.engine.tick;
     game.changedAccounts.clear();
     game.changedOrders.clear();
     game.changedDepots.clear();
@@ -1740,7 +1748,13 @@ export class EngineHost {
     const now = this.#ports.now();
     const lastSeenAt =
       game.batch?.kind === 'catch-up' ? catchUpSeenAt(now, tick, game.batch.to) : now;
-    return { tick, speed, paused, lastSeenAt, netWorth: netWorth(game.engine.player) };
+    return {
+      tick,
+      speed,
+      paused,
+      lastSeenAt,
+      netWorth: netWorth(game.engine.player, game.engine.securitiesValue()),
+    };
   }
 
   /**

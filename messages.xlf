@@ -266,14 +266,14 @@
         <source>Bitte wähle das Konto, auf das das Restguthaben geht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/dialog-close-account/dialog-close-account.component.ts</context>
-          <context context-type="linenumber">61</context>
+          <context context-type="linenumber">63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-dialogCloseAccount-heading" datatype="html">
         <source>Konto schließen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/dialog-close-account/dialog-close-account.component.ts</context>
-          <context context-type="linenumber">78</context>
+          <context context-type="linenumber">80</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-dialogOpenAccount-bank" datatype="html">
@@ -7711,46 +7711,81 @@
           <context context-type="linenumber">120</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiNotifications-notificationText-fundDistributionTitle" datatype="html">
+        <source>Ausschüttung erhalten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
+          <context context-type="linenumber">132</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationText-dividend" datatype="html">
+        <source>Dividende von <x id="amount" equiv-text="gross"/> für <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> auf <x id="account" equiv-text="target"/> gutgeschrieben</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
+          <context context-type="linenumber">135</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationText-fundDistribution" datatype="html">
+        <source>Ausschüttung von <x id="amount" equiv-text="gross"/> für <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> auf <x id="account" equiv-text="target"/> gutgeschrieben</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
+          <context context-type="linenumber">136</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationText-distributionWithTax" datatype="html">
+        <source><x id="credited" equiv-text="credited"/>, davon <x id="tax" equiv-text="formatCents(tax)"/> Steuer einbehalten.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
+          <context context-type="linenumber">140</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiNotifications-notificationText-distributionWithRefund" datatype="html">
+        <source><x id="credited" equiv-text="credited"/>, dazu <x id="tax" equiv-text="formatCents(-tax)"/> Steuer erstattet.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
+          <context context-type="linenumber">146</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedBuy" datatype="html">
         <source>Kauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, belastet <x id="total" equiv-text="amount"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">133</context>
+          <context context-type="linenumber">161</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedSell" datatype="html">
         <source>Verkauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, gutgeschrieben <x id="total" equiv-text="amount"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">134</context>
+          <context context-type="linenumber">162</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderRejectedBuy" datatype="html">
         <source>Kauforder für <x id="instrument" equiv-text="name"/> abgelehnt: <x id="reason" equiv-text="why"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">145</context>
+          <context context-type="linenumber">173</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderRejectedSell" datatype="html">
         <source>Verkaufsorder für <x id="instrument" equiv-text="name"/> abgelehnt: <x id="reason" equiv-text="why"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">146</context>
+          <context context-type="linenumber">174</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExpiredBuy" datatype="html">
         <source>Die Kauforder für <x id="instrument" equiv-text="name"/> ist verfallen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">156</context>
+          <context context-type="linenumber">184</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExpiredSell" datatype="html">
         <source>Die Verkaufsorder für <x id="instrument" equiv-text="name"/> ist verfallen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">157</context>
+          <context context-type="linenumber">185</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationFilter-category" datatype="html">

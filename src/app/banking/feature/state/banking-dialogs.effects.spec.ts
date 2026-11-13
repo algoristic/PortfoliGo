@@ -49,7 +49,12 @@ function entry(id: AccountId, kind: AccountKind, salaryAccount = false): Account
 const GIRO = entry('acc-1', 'current', true);
 const SAVINGS = entry('acc-2', 'savings');
 const SECOND_GIRO = entry('acc-3', 'current');
-const PREVIEW: ClosingPreview = { bookings: [], remainder: 100_000, blockers: [] };
+const PREVIEW: ClosingPreview = {
+  bookings: [],
+  remainder: 100_000,
+  pendingDistributions: 0,
+  blockers: [],
+};
 
 describe('BankingDialogEffects', () => {
   let effects: BankingDialogEffects;

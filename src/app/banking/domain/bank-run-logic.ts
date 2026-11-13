@@ -39,18 +39,28 @@ export function isInterestPayoutDue(payout: InterestPayout, month: CalendarMonth
 /**
  * What the bank run of the tick's day books (TS §7.4, E-19): the salary on the last bank working
  * day of the month; limits, credit interest, living costs, account fees and debit interest on the
- * first. The plan depends only on the day, not on the time of `tick`.
+ * first, and in January, April, July and October the custody fee of the past quarter. The plan depends only on the day, not on the time of `tick`.
  */
 export function bankRunPlan(tick: Tick): BankRunPlan {
   const month = monthOf(tick);
   const dayStart = startOfDay(tick);
   const isFirst = dayStart === firstBankWorkingDay(month.year, month.month);
   const isLast = dayStart === lastBankWorkingDay(month.year, month.month);
+  const quarterly = isFirst && startsQuarter(month);
   return {
-    steps: BANK_RUN_STEPS.filter((step) => (step === 'salary' ? isLast : isFirst)),
+    steps: BANK_RUN_STEPS.filter((step) => {
+      switch (step) {
+        case 'salary':
+          return isLast;
+        case 'custody-fee':
+          return quarterly;
+        default:
+          return isFirst;
+      }
+    }),
     month,
     settledMonth: previousMonth(month),
-    quarterlyPayout: isFirst && startsQuarter(month),
+    quarterlyPayout: quarterly,
   };
 }
 
@@ -63,6 +73,7 @@ export function nextBankRunTick(tick: Tick): Tick {
   return runTick;
 }
 
-function startsQuarter({ month }: CalendarMonth): boolean {
+/** Whether the month is the first of a quarter (January, April, July, October). */
+export function startsQuarter({ month }: CalendarMonth): boolean {
   return (month - 1) % MONTHS_PER_QUARTER === 0;
 }

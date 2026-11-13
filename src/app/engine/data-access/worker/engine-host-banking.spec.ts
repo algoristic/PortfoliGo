@@ -350,6 +350,7 @@ describe('EngineHost banking', () => {
           preview: {
             bookings: [{ type: 'account-fee', amount: -fee, params: { month: '2030-04' } }],
             remainder: -fee,
+            pendingDistributions: 0,
             blockers: ['negative-balance'],
           },
         },

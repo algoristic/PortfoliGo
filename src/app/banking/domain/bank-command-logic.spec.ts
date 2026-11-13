@@ -189,5 +189,18 @@ describe('bank-command-logic', () => {
     ])('closing acc-2 to %s with remainder %d → %s', (target, remainder, expected) => {
       expect(closingTargetError(ACCOUNTS, 'acc-2', target, remainder)).toBe(expected);
     });
+
+    // TS §7.4 (AP 5.2): payouts still due on the account need a target even without remainder
+    it.each([
+      [undefined, 0, 1, 'target-required'],
+      [undefined, 0, 0, null],
+      ['acc-1', 0, 1, null],
+      ['acc-2', 0, 1, 'invalid-target'],
+    ])(
+      'closing acc-2 to %s with remainder %d and pending payouts %d → %s',
+      (target, remainder, pending, expected) => {
+        expect(closingTargetError(ACCOUNTS, 'acc-2', target, remainder, pending)).toBe(expected);
+      },
+    );
   });
 });

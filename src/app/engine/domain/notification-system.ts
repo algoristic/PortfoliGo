@@ -48,8 +48,8 @@ export class NotificationSystem {
   }
 
   /**
-   * Notifications of an engine event (TS §12): account coverage, credit interest and refunds,
-   * executed, rejected and expired orders (a triggered stop notifies nothing).
+   * Notifications of an engine event (TS §12): account coverage, credit interest, dividends and
+   * fund distributions and refunds with them, executed, rejected and expired orders (a triggered stop notifies nothing).
    */
   fromEvent(event: EngineEvent): void {
     switch (event.type) {
@@ -62,6 +62,17 @@ export class NotificationSystem {
       case 'interest-credited': {
         const { accountId, amount, tax } = event;
         this.#notify(event.tick, { code: 'interest-credited', params: { accountId, amount, tax } });
+        if (tax < 0) {
+          this.#notify(event.tick, { code: 'tax-refund', params: { accountId, amount: -tax } });
+        }
+        break;
+      }
+      case 'distribution-paid': {
+        const { kind, accountId, depotId, instrumentId, quantity, amount, tax } = event;
+        this.#notify(event.tick, {
+          code: 'dividend-received',
+          params: { kind, accountId, depotId, instrumentId, quantity, amount, tax },
+        });
         if (tax < 0) {
           this.#notify(event.tick, { code: 'tax-refund', params: { accountId, amount: -tax } });
         }

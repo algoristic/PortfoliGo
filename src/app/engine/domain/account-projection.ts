@@ -48,9 +48,12 @@ export function accountViews(
   return views;
 }
 
-/** Net worth (TS §7.9): the sum of the account balances; positions follow with M5. */
-export function netWorth(player: Readonly<PlayerState>): Cents {
-  let sum = 0;
+/**
+ * Net worth (TS §7.9): the sum of the account balances plus the value of the positions
+ * (`GameEngine.securitiesValue`, shares × bid without venue mark-up).
+ */
+export function netWorth(player: Readonly<PlayerState>, securities: Cents = 0): Cents {
+  let sum = securities;
   for (const balance of player.balances.values()) {
     sum += balance;
   }

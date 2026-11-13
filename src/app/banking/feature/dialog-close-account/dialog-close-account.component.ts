@@ -44,7 +44,9 @@ export class DialogCloseAccountComponent {
     message: bankCommandErrorMessage(blocker),
   }));
   blocked = this.blockers.length > 0;
-  needsTarget = !this.blocked && this.data.preview.remainder > 0;
+  needsTarget =
+    !this.blocked &&
+    (this.data.preview.remainder > 0 || this.data.preview.pendingDistributions > 0);
   targetOptions = this.data.targets.map((account) => ({
     id: account.id,
     label: accountTitle(account, account.bank?.name),

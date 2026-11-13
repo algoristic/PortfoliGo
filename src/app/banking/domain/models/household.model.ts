@@ -1,7 +1,7 @@
 import { CalendarDate } from '@app/clock/domain/models/time.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 
-import { AccountId } from './account.model';
+import { AccountId, DepotId } from './account.model';
 
 export type CalendarMonth = Pick<CalendarDate, 'year' | 'month'>;
 
@@ -15,6 +15,7 @@ export const BANK_RUN_STEPS = [
   'credit-interest',
   'living-costs',
   'account-fee',
+  'custody-fee',
   'overdraft-interest',
   'debit-interest',
 ] as const;
@@ -98,4 +99,28 @@ export interface InterestAccrual {
   debit: number;
   pendingCredit: number;
   pendingDebit: number;
+}
+
+/**
+ * Depot values for the custody fee (TS §7.3, §7.4): the sum of the end-of-day values and the
+ * number of calendar days the depot was open, for the running quarter and for the past quarter
+ * until the bank run of the quarter's first bank working day charges it.
+ */
+export interface CustodyAccrual {
+  depotId: DepotId;
+  valueSum: Cents;
+  days: number;
+  pendingValueSum: Cents;
+  pendingDays: number;
+}
+
+/** The custody fee of a quarter or a part of it (TS §7.3). */
+export interface CustodyFeeCharge {
+  /** First and last month of the quarter. */
+  from: CalendarMonth;
+  to: CalendarMonth;
+  /** Calendar days the depot was open in it, and their average end-of-day value. */
+  days: number;
+  averageValue: Cents;
+  amount: Cents;
 }

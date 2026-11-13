@@ -14,6 +14,7 @@ import {
 } from '@app/notifications/domain/models/notification.model';
 import { MAX_NOTIFICATION_LIMIT } from '@app/notifications/domain/notification-page-logic';
 import { MAX_STORED_NOTIFICATIONS } from '@app/notifications/domain/read-state-logic';
+import { DISTRIBUTION_KINDS } from '@app/portfolio/domain/models/distribution.model';
 import {
   ORDER_REJECTIONS,
   ORDER_SIDES,
@@ -370,7 +371,17 @@ function isTradingProjection(value: unknown): boolean {
       hasFields(depot, {
         depotId: isDepotId,
         positions: isListOf((position) =>
-          hasFields(position, { instrumentId: isNonEmptyString, quantity: isCount, free: isCents }),
+          hasFields(position, {
+            instrumentId: isNonEmptyString,
+            quantity: isCount,
+            free: isCents,
+            cost: isCents,
+            lots: isListOf((lot) =>
+              hasFields(lot, { buyTick: isCount, quantity: isCount, cost: isCents }),
+            ),
+            realizedGain: isCents,
+            distributions: isCents,
+          }),
         ),
       }),
     ),
@@ -418,6 +429,16 @@ const NOTIFICATION_PARAMS: Readonly<Partial<Record<string, Check>>> = {
   'order-rejected': (params) =>
     isOrderParams(params) && hasFields(params, { reason: isOneOf(ORDER_REJECTIONS) }),
   'order-expired': isOrderParams,
+  'dividend-received': (params) =>
+    hasFields(params, {
+      kind: isOneOf(DISTRIBUTION_KINDS),
+      accountId: isAccountId,
+      depotId: isDepotId,
+      instrumentId: isNonEmptyString,
+      quantity: isCount,
+      amount: isCents,
+      tax: isCents,
+    }),
 };
 
 const isFlatParams: Check = (params) =>

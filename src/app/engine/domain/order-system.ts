@@ -5,6 +5,7 @@ import { isWeekend, minuteOfDay } from '@app/clock/domain/calendar-logic';
 import { Tick, TradingHours } from '@app/clock/domain/models/time.model';
 import { isTradingTime } from '@app/clock/domain/trading-hours-logic';
 import { etfSeries, seriesIds } from '@app/market/domain/series';
+import { Cents } from '@app/shared/domain/models/money.model';
 import { Quote } from '@app/shared/domain/models/quote.model';
 import {
   Order,
@@ -35,7 +36,7 @@ import {
   reservedAmount,
 } from '@app/trading/domain/order-reservation-logic';
 import { isOrderExpired, orderExpiry } from '@app/trading/domain/order-validity-logic';
-import { bookUnits, holdingOf } from '@app/trading/domain/position-logic';
+import { bookPurchase, bookSale, holdingOf, saleOf } from '@app/trading/domain/position-logic';
 
 import { CommandResult } from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
@@ -56,6 +57,12 @@ export interface OrderPorts {
   changedOrder(id: string): void;
   /** A depot whose positions changed. */
   changedDepot(id: DepotId): void;
+  /**
+   * Hook for the tax on a sale's realized gain (losses negative), called right after the booking of
+   * the sale on its clearing account (TS §7.7); returns the tax booked (refunds negative). AP 5.3
+   * books the tax here; until then it books nothing and returns 0.
+   */
+  taxCapitalIncome(tick: Tick, accountId: AccountId, income: Cents): Cents;
 }
 
 /**
@@ -299,15 +306,30 @@ export class OrderSystem {
       this.#reject(order, rejection, tick);
       return true;
     }
-    const transaction = this.#ports.book(
+    const { positions } = this.#player;
+    const sale =
+      order.side === 'sell'
+        ? saleOf(positions, depot.id, order.instrumentId, fill.quantity, fill.total)
+        : undefined;
+    this.#ports.book(
       executionTransaction(
         order,
         fill,
         { clearingAccountId: depot.clearingAccountId, bankId: depot.bankId },
         tick,
+        sale,
       ),
     );
-    bookUnits(this.#player.positions, transaction.units ?? []);
+    if (sale === undefined) {
+      bookPurchase(positions, depot.id, order.instrumentId, {
+        buyTick: tick,
+        quantity: fill.quantity,
+        cost: fill.total,
+      });
+    } else {
+      bookSale(positions, depot.id, order.instrumentId, fill.quantity, fill.total);
+      this.#ports.taxCapitalIncome(tick, depot.clearingAccountId, sale.realizedGain);
+    }
     this.#ports.changedDepot(depot.id);
     order.execution = { ...fill, tick };
     this.#close(order, 'executed', tick);

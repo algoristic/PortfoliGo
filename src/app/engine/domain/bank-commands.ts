@@ -20,6 +20,7 @@ import { Cents } from '@app/shared/domain/models/money.model';
 import { hasPositions } from '@app/trading/domain/position-logic';
 
 import { BankingSystem, openAccount, openDepot } from './banking-system';
+import { DistributionSystem } from './distribution-system';
 import {
   CloseAccountCommand,
   CommandResult,
@@ -43,17 +44,20 @@ export class BankCommands {
   readonly #conditions: ReadonlyMap<string, BankConditions>;
   readonly #player: PlayerState;
   readonly #banking: BankingSystem;
+  readonly #distributions: DistributionSystem;
   readonly #changed: (id: AccountId) => void;
 
   constructor(
     world: GameWorld,
     player: PlayerState,
     banking: BankingSystem,
+    distributions: DistributionSystem,
     changed: (id: AccountId) => void,
   ) {
     this.#conditions = new Map(world.world.banks.map((bank) => [bank.id, bank.conditions]));
     this.#player = player;
     this.#banking = banking;
+    this.#distributions = distributions;
     this.#changed = changed;
   }
 
@@ -76,7 +80,8 @@ export class BankCommands {
 
   /**
    * Closes an account (TS §7.4, US-BK-03): the bank settles it, a remainder goes to the target
-   * account, and a clearing account closes with its depot. Atomic: if the balance after the
+   * account, and a clearing account closes with its depot; payouts still to be credited to the
+   * account go to the target on their payment date. Atomic: if the balance after the
    * settlement would be negative, or anything else blocks, nothing is booked.
    */
   closeAccount({ accountId, targetAccountId }: CloseAccountCommand, tick: Tick): CommandResult {
@@ -87,7 +92,13 @@ export class BankCommands {
     const { account, preview } = checked;
     const error =
       preview.blockers[0] ??
-      closingTargetError(this.#player.accounts, account.id, targetAccountId, preview.remainder);
+      closingTargetError(
+        this.#player.accounts,
+        account.id,
+        targetAccountId,
+        preview.remainder,
+        preview.pendingDistributions,
+      );
     if (error !== null) {
       return { ok: false, error };
     }
@@ -102,6 +113,9 @@ export class BankCommands {
         ],
         refs: { closedAccountId: account.id },
       });
+    }
+    if (preview.pendingDistributions > 0) {
+      this.#distributions.redirect(account.id, targetAccountId as AccountId);
     }
     account.closedAt = tick;
     for (const depot of this.#player.depots) {
@@ -180,6 +194,7 @@ export class BankCommands {
         closingBooking(draft, account.id),
       ),
       remainder: settlement.balance,
+      pendingDistributions: this.#distributions.pendingFor(account.id),
       blockers: closingBlockers({
         isSalaryAccount: account.id === this.#player.salaryAccountId,
         depotEmpty: this.#depotIsEmpty(account),

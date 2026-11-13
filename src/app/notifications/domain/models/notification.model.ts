@@ -1,6 +1,7 @@
 import { AccountId, DepotId } from '@app/banking/domain/models/account.model';
 import { MonthlyValues } from '@app/banking/domain/models/household.model';
 import { Tick } from '@app/clock/domain/models/time.model';
+import { DistributionKind } from '@app/portfolio/domain/models/distribution.model';
 import { Cents, MicroUnits } from '@app/shared/domain/models/money.model';
 import { OrderRejection, OrderSide } from '@app/trading/domain/models/order.model';
 
@@ -28,7 +29,7 @@ export type NotificationSource = (typeof NOTIFICATION_SOURCES)[number];
 
 /**
  * Codes of TS §12. The engine creates the account, earnings and system codes since AP 3.6, the
- * order codes since AP 5.1.
+ * order codes since AP 5.1, `dividend-received` since AP 5.2.
  */
 export const NOTIFICATION_CODES = [
   'account-uncovered',
@@ -154,6 +155,21 @@ export interface OrderRejectedParams extends OrderParams {
   reason: OrderRejection;
 }
 
+/**
+ * `dividend-received`: a dividend or fund distribution credited on its payment date (TS §6.5),
+ * gross, with the tax booked right after it (refunds negative; 0 until AP 5.3).
+ */
+export interface DividendReceivedParams {
+  kind: DistributionKind;
+  accountId: AccountId;
+  depotId: DepotId;
+  instrumentId: string;
+  /** Shares at the ex-date. */
+  quantity: MicroUnits;
+  amount: Cents;
+  tax: Cents;
+}
+
 /** Parameters of codes the engine does not create yet; their APs define them. */
 export type PendingParams = Readonly<Record<string, string | number | null>>;
 
@@ -165,7 +181,7 @@ export interface NotificationParams {
   'order-expired': OrderParams;
   'savings-plan-executed': PendingParams;
   'savings-plan-failed': PendingParams;
-  'dividend-received': PendingParams;
+  'dividend-received': DividendReceivedParams;
   'interest-credited': InterestCreditedParams;
   'tax-refund': TaxRefundParams;
   'month-closed': MonthClosedParams;

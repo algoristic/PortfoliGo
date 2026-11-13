@@ -7,7 +7,7 @@ import { generateWorld } from '@app/world/domain/world-generator';
 
 import { GameEngine } from './game-engine';
 import { createGameWorld } from './game-world';
-import { GameSnapshot } from './models/game-state.model';
+import { GameSnapshot, GameState } from './models/game-state.model';
 import { GameWorld } from './models/game-world.model';
 import { withBooks } from './testing/banking-game';
 import { MINI_START_CONDITIONS } from './testing/mini-game';
@@ -143,6 +143,39 @@ describe('engine performance', () => {
     expect(open).toBe(20);
     expectWithinBudget(
       'engine: one game year in batch mode with 10 open ETF and 10 share orders',
+      ms,
+      BUDGETS_MS.catchUpYear,
+    );
+  });
+
+  it('runs one game year in batch mode with twenty share and ten ETF positions within the catch-up budget', () => {
+    // AP 5.2: every day values the depot for the custody fee; the ex-dates pay the holdings.
+    const held = withBooks(start, {
+      accounts: [{ kind: 'clearing', bankId: world.world.banks[0].id, balance: 0 }],
+    }) as GameState;
+    held.player.positions = [
+      ...world.world.companies.slice(0, 20).map(({ id }) => id),
+      ...world.world.etfs.slice(0, 10).map(({ id }) => id),
+    ].map((instrumentId) => ({
+      depotId: 'dep-3',
+      instrumentId,
+      quantity: 10_000_000,
+      lots: [{ buyTick: 0, quantity: 10_000_000, cost: 100_000 }],
+      realizedGain: 0,
+      distributions: 0,
+    }));
+    let payouts = 0;
+    const ms = medianMs(() => {
+      const engine = GameEngine.restore(world, held, { monthStarts });
+      engine.runUntil(END_TICK);
+      engine.drainEvents();
+      payouts = engine
+        .drainTransactions()
+        .filter(({ type }) => type === 'dividend' || type === 'fund-distribution').length;
+    }, 3);
+    expect(payouts).toBeGreaterThan(0);
+    expectWithinBudget(
+      'engine: one game year in batch mode with 20 share and 10 ETF positions',
       ms,
       BUDGETS_MS.catchUpYear,
     );

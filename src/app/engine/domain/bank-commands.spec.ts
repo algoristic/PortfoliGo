@@ -392,6 +392,7 @@ describe('BankCommands', () => {
             { type: 'account-fee', amount: -33, params: { month: '2030-06' } },
           ],
           remainder: balance(engine, 'acc-3') - 990 - 33,
+          pendingDistributions: 0,
           blockers: [],
         },
       });
@@ -433,6 +434,7 @@ describe('BankCommands', () => {
         preview: {
           bookings: [{ type: 'account-fee', amount: -319, params: { month: '2030-05' } }],
           remainder: -316,
+          pendingDistributions: 0,
           blockers: ['negative-balance'],
         },
       });

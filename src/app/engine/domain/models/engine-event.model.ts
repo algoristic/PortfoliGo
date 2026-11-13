@@ -1,6 +1,7 @@
 import { AccountId, DepotId } from '@app/banking/domain/models/account.model';
 import { AccountEventCode } from '@app/banking/domain/models/household.model';
 import { Tick } from '@app/clock/domain/models/time.model';
+import { DistributionKind } from '@app/portfolio/domain/models/distribution.model';
 import { Cents, MicroUnits } from '@app/shared/domain/models/money.model';
 import { OrderRejection, OrderSide } from '@app/trading/domain/models/order.model';
 
@@ -45,6 +46,21 @@ export type EngineEvent =
       type: 'interest-credited';
       tick: Tick;
       accountId: AccountId;
+      amount: Cents;
+      tax: Cents;
+    }
+  | {
+      /**
+       * A dividend or fund distribution was credited on its payment date (TS §6.5, §7.4); `tax` is
+       * the tax booked right after it (refunds negative; 0 until AP 5.3).
+       */
+      type: 'distribution-paid';
+      tick: Tick;
+      kind: DistributionKind;
+      accountId: AccountId;
+      depotId: DepotId;
+      instrumentId: string;
+      quantity: MicroUnits;
       amount: Cents;
       tax: Cents;
     }

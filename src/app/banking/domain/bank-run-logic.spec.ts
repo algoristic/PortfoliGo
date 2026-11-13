@@ -10,6 +10,7 @@ import {
   monthOf,
   nextBankRunTick,
   previousMonth,
+  startsQuarter,
 } from './bank-run-logic';
 import { BankRunStep } from './models/household.model';
 
@@ -24,6 +25,17 @@ const FIRST_DAY: BankRunStep[] = [
   'debit-interest',
 ];
 
+/** First bank working day of January, April, July and October: also the custody fee (AP 5.2). */
+const FIRST_OF_QUARTER: BankRunStep[] = [
+  'overdraft-limits',
+  'credit-interest',
+  'living-costs',
+  'account-fee',
+  'custody-fee',
+  'overdraft-interest',
+  'debit-interest',
+];
+
 function at(day: string, time = '06:00'): number {
   const [d, m, y] = day.split('.').map(Number);
   const [hour, minute] = time.split(':').map(Number);
@@ -34,7 +46,7 @@ describe('bank-run-logic', () => {
   describe('bankRunPlan', () => {
     // TS §7.4: bank run dates, first and last bank working days around weekends
     it.each<[string, BankRunStep[], boolean]>([
-      ['01.04.2030', FIRST_DAY, true],
+      ['01.04.2030', FIRST_OF_QUARTER, true],
       ['30.04.2030', ['salary'], false],
       ['15.05.2030', [], false],
       ['31.05.2030', ['salary'], false],
@@ -46,8 +58,8 @@ describe('bank-run-logic', () => {
       ['30.06.2030', [], false],
       ['30.08.2030', ['salary'], false],
       ['31.08.2030', [], false],
-      ['01.10.2030', FIRST_DAY, true],
-      ['01.01.2031', FIRST_DAY, true],
+      ['01.10.2030', FIRST_OF_QUARTER, true],
+      ['01.01.2031', FIRST_OF_QUARTER, true],
       ['01.02.2031', [], false],
       ['03.02.2031', FIRST_DAY, false],
     ])('plans the run of %s', (day, steps, quarterly) => {
@@ -84,7 +96,10 @@ describe('bank-run-logic', () => {
               runs.push({ day, steps });
             }
           }
-          expect(runs.map(({ steps }) => steps)).toEqual([FIRST_DAY, ['salary']]);
+          expect(runs.map(({ steps }) => steps)).toEqual([
+            (month - 1) % 3 === 0 ? FIRST_OF_QUARTER : FIRST_DAY,
+            ['salary'],
+          ]);
           expect(runs[0].day).toBeLessThanOrEqual(2);
           expect(runs[1].day).toBeGreaterThanOrEqual(days - 3);
         }),
@@ -133,6 +148,7 @@ describe('bank-run-logic', () => {
     ])('pays quarterly interest in month %d: %s', (month, due) => {
       expect(isInterestPayoutDue('quarterly', { year: 2030, month })).toBe(due);
       expect(isInterestPayoutDue('monthly', { year: 2030, month })).toBe(true);
+      expect(startsQuarter({ year: 2030, month })).toBe(due);
     });
   });
 

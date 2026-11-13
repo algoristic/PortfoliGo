@@ -52,7 +52,7 @@ flowchart LR
 | M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Daueraufträge, Sparpläne, Steuern, Depot, Dashboard mit Benchmark   | 10  |
 | M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen                                     | 6   |
 
-**Empfohlene Reihenfolge:** M3 und M4 sind abgeschlossen (M4 mit AP 4.5). M5 läuft: AP 5.1 (in drei Teilen), AP 5.8 und AP 5.9 sind fertig; als Nächstes folgt AP 5.2. M5 braucht M3 und M4. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
+**Empfohlene Reihenfolge:** M3 und M4 sind abgeschlossen (M4 mit AP 4.5). M5 läuft: AP 5.1 (in drei Teilen), AP 5.2, AP 5.8 und AP 5.9 sind fertig; als Nächstes folgt AP 5.3. M5 braucht M3 und M4. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
 
 ## 2. Arbeitsweise in Sessions
 
@@ -158,7 +158,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 5.1a | Orderregeln als reine Funktionen                 | fertig | 3.3, 1.6b       |
 | 5.1b | Orders in der Engine                             | fertig | 5.1a            |
 | 5.1c | Orders im Protokoll, Projektion, Texte           | fertig | 5.1b            |
-| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1c            |
+| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | fertig | 5.1c            |
 | 5.3  | Steuern                                          | offen  | 5.2             |
 | 5.4  | Order-Ticket und Orderbuch                       | offen  | 5.3, 4.5, 3.6   |
 | 5.5  | Depot, Positionen und Steuerübersicht (UI)       | offen  | 5.4             |
@@ -322,7 +322,7 @@ flowchart TD
   AP3_5 --> AP6_6
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_1,AP5_8,AP5_9 done
+  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_1,AP5_2,AP5_8,AP5_9 done
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6
@@ -715,6 +715,8 @@ AP 5.1 wurde nach §2.5 geteilt (13.11.2026) und ist mit allen drei Teilen ferti
 - **Geklärt (13.11.2026):** Ein Depot darf zwischen Ex-Tag und Zahltag geschlossen werden; die Dividende bzw. Ausschüttung geht am Zahltag auf das beim Schließen gewählte Zielkonto (TS §7.4). Depotgebühr bei angebrochenen Quartalen (Festlegung ohne PO-Entscheidung, TS §7.3): anteilig nach Kalendertagen wie die Kontoführung, der Durchschnitt läuft über die Tage, an denen das Depot offen war; beim Schließen wird die anteilige Gebühr mit der Abrechnung gebucht. Die Details legt AP 5.2 fest.
 - **Referenzen:** US-PF-06, US-BK-08; TS §6.5, §7.4, §7.6
 - **Abhängig von:** AP 5.1c
+
+AP 5.2 ist fertig (13.11.2026): Lots nach FIFO in `portfolio/domain` mit Beispieltabellen in TS §7.6, Ausschüttungen am Ex-Tag und Zahltag (`DistributionSystem`), Depotgebühr aus Tageswerten mit Beispieltabelle in TS §7.3, Gesamtvermögen mit Positionswerten und die erweiterte Projektion (TS §8.3, §8.4). Die Steuer auf Verkäufe und Ausschüttungen hängt AP 5.3 an den Haken `taxCapitalIncome` der Engine.
 
 #### AP 5.3 – Steuern
 

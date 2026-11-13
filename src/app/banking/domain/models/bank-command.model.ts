@@ -56,5 +56,10 @@ export interface ClosingPreview {
   bookings: ClosingBooking[];
   /** Balance after the settlement: transferred to the target account when positive. */
   remainder: Cents;
+  /**
+   * Dividends and fund distributions earned before and credited after now (TS §7.4): they go to
+   * the target account on their payment date, so closing needs a target even without remainder.
+   */
+  pendingDistributions: Cents;
   blockers: ClosingBlocker[];
 }
