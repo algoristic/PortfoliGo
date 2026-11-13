@@ -119,56 +119,56 @@ E-21 bis E-28 und die Ergänzungen stammen aus der kritischen Prüfung vom 11.11
 
 Status: **offen**, **in Arbeit**, **fertig**.
 
-| AP   | Titel                                            | Status | Abhängig von   |
-| ---- | ------------------------------------------------ | ------ | -------------- |
-| 0.1  | Aufräumen und Baseline                           | fertig | –              |
-| 0.2  | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig | 0.1            |
-| 0.3  | App-Bootstrap und Infrastruktur                  | fertig | 0.1            |
-| 0.4  | App-Shell und UI-Grundkomponenten                | fertig | 0.2, 0.3       |
-| 0.5  | Testkonzept und Testinfrastruktur                | fertig | 0.4, 1.8a      |
-| 1.1  | Deterministischer Zufall und Mathematik          | fertig | 0.1            |
-| 1.2  | Spielkalender und Zeitmodell                     | fertig | 0.1            |
-| 1.3  | Weltgenerierung: Taxonomie, Unternehmen, Banken  | fertig | 1.1            |
-| 1.4  | Marktmodell: Tagesschritt und Vorlauf            | fertig | 1.2, 1.3       |
-| 1.5  | Brücken, Minutenkurse und Kerzen                 | fertig | 1.4            |
-| 1.6a | Dividenden und Indizes                           | fertig | 1.5            |
-| 1.6b | ETFs, indikative Werte, Geld- und Briefkurse     | fertig | 1.6a           |
-| 1.7  | Simulations-Labor: Welt, Simulation, Chart-Spike | fertig | 1.6b, 0.4      |
-| 1.8a | Simulations-Labor: Statistik                     | fertig | 1.7            |
-| 1.8b | Labor: Intraday, Langzeit, Selbsttest            | fertig | 1.8a           |
-| 1.9a | Marktmodell: Änderungen vor der Kalibrierung     | fertig | 1.8b           |
-| 1.9b | Marktmodell: Ergänzungen aus der Kalibrierung    | fertig | 1.9a           |
-| 1.9c | Kalibrierung des Marktmodells                    | fertig | 1.9b           |
-| 2.1  | GameEngine und Terminplaner                      | fertig | 1.6b           |
-| 2.2  | Worker-Host, Protokoll und EngineService         | fertig | 2.1, 0.3       |
-| 2.3  | Persistenz im Worker und Wiederherstellung       | fertig | 2.2            |
-| 2.4  | Spielerverwaltung                                | fertig | 2.3, 0.4       |
-| 2.5  | Spielsitzung und Uhr                             | fertig | 2.4            |
-| 2.6  | Einstellungen: Grundlage                         | fertig | 2.5            |
-| 3.1  | Hauptbuch und Kontenmodell                       | fertig | 2.4            |
-| 3.2  | Haushalt und periodische Buchungen               | fertig | 3.1            |
-| 3.3  | Bankkommandos und Banking-Slice                  | fertig | 3.2, 2.5       |
-| 3.4  | Kontenübersicht und Kontoauszug                  | offen  | 3.3            |
-| 3.5  | Bankenvergleich, Dialoge und Monatsübersicht     | offen  | 3.4            |
-| 3.6  | Benachrichtigungen                               | offen  | 3.3, 2.6       |
-| 4.1  | Marktdaten-Feed und Market-Slice                 | offen  | 2.5            |
-| 4.2  | Chart-Komponenten                                | offen  | 4.1, 1.7       |
-| 4.3  | Indikatoren                                      | offen  | 4.2            |
-| 4.4  | Marktübersicht, Screener und Watchlist           | offen  | 4.2            |
-| 4.5  | Instrument-Detailseite                           | offen  | 4.3, 4.4, 1.8a |
-| 5.1  | Depot und Orderausführung                        | offen  | 3.3, 1.6b      |
-| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1            |
-| 5.3  | Steuern                                          | offen  | 5.2            |
-| 5.4  | Order-Ticket und Orderbuch                       | offen  | 5.3, 4.5, 3.6  |
-| 5.5  | Depot, Positionen und Steuerübersicht (UI)       | offen  | 5.4            |
-| 5.6  | Sparpläne                                        | offen  | 5.5            |
-| 5.7  | Dashboard und Performance                        | offen  | 5.5            |
-| 6.1  | Export und Import                                | offen  | 5.6, 5.7       |
-| 6.2  | Einstellungen                                    | offen  | 6.1, 3.6, 2.6  |
-| 6.3  | PWA und Browser-Benachrichtigungen               | offen  | 6.2            |
-| 6.4  | Performance und Robustheit                       | offen  | 6.1, 1.9c      |
-| 6.5  | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3            |
-| 6.6  | Release 1.0                                      | offen  | 6.4, 6.5, 3.5  |
+| AP   | Titel                                            | Status    | Abhängig von   |
+| ---- | ------------------------------------------------ | --------- | -------------- |
+| 0.1  | Aufräumen und Baseline                           | fertig    | –              |
+| 0.2  | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig    | 0.1            |
+| 0.3  | App-Bootstrap und Infrastruktur                  | fertig    | 0.1            |
+| 0.4  | App-Shell und UI-Grundkomponenten                | fertig    | 0.2, 0.3       |
+| 0.5  | Testkonzept und Testinfrastruktur                | fertig    | 0.4, 1.8a      |
+| 1.1  | Deterministischer Zufall und Mathematik          | fertig    | 0.1            |
+| 1.2  | Spielkalender und Zeitmodell                     | fertig    | 0.1            |
+| 1.3  | Weltgenerierung: Taxonomie, Unternehmen, Banken  | fertig    | 1.1            |
+| 1.4  | Marktmodell: Tagesschritt und Vorlauf            | fertig    | 1.2, 1.3       |
+| 1.5  | Brücken, Minutenkurse und Kerzen                 | fertig    | 1.4            |
+| 1.6a | Dividenden und Indizes                           | fertig    | 1.5            |
+| 1.6b | ETFs, indikative Werte, Geld- und Briefkurse     | fertig    | 1.6a           |
+| 1.7  | Simulations-Labor: Welt, Simulation, Chart-Spike | fertig    | 1.6b, 0.4      |
+| 1.8a | Simulations-Labor: Statistik                     | fertig    | 1.7            |
+| 1.8b | Labor: Intraday, Langzeit, Selbsttest            | fertig    | 1.8a           |
+| 1.9a | Marktmodell: Änderungen vor der Kalibrierung     | fertig    | 1.8b           |
+| 1.9b | Marktmodell: Ergänzungen aus der Kalibrierung    | fertig    | 1.9a           |
+| 1.9c | Kalibrierung des Marktmodells                    | fertig    | 1.9b           |
+| 2.1  | GameEngine und Terminplaner                      | fertig    | 1.6b           |
+| 2.2  | Worker-Host, Protokoll und EngineService         | fertig    | 2.1, 0.3       |
+| 2.3  | Persistenz im Worker und Wiederherstellung       | fertig    | 2.2            |
+| 2.4  | Spielerverwaltung                                | fertig    | 2.3, 0.4       |
+| 2.5  | Spielsitzung und Uhr                             | fertig    | 2.4            |
+| 2.6  | Einstellungen: Grundlage                         | fertig    | 2.5            |
+| 3.1  | Hauptbuch und Kontenmodell                       | fertig    | 2.4            |
+| 3.2  | Haushalt und periodische Buchungen               | fertig    | 3.1            |
+| 3.3  | Bankkommandos und Banking-Slice                  | fertig    | 3.2, 2.5       |
+| 3.4  | Kontenübersicht und Kontoauszug                  | in Arbeit | 3.3            |
+| 3.5  | Bankenvergleich, Dialoge und Monatsübersicht     | offen     | 3.4            |
+| 3.6  | Benachrichtigungen                               | offen     | 3.3, 2.6       |
+| 4.1  | Marktdaten-Feed und Market-Slice                 | offen     | 2.5            |
+| 4.2  | Chart-Komponenten                                | offen     | 4.1, 1.7       |
+| 4.3  | Indikatoren                                      | offen     | 4.2            |
+| 4.4  | Marktübersicht, Screener und Watchlist           | offen     | 4.2            |
+| 4.5  | Instrument-Detailseite                           | offen     | 4.3, 4.4, 1.8a |
+| 5.1  | Depot und Orderausführung                        | offen     | 3.3, 1.6b      |
+| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | offen     | 5.1            |
+| 5.3  | Steuern                                          | offen     | 5.2            |
+| 5.4  | Order-Ticket und Orderbuch                       | offen     | 5.3, 4.5, 3.6  |
+| 5.5  | Depot, Positionen und Steuerübersicht (UI)       | offen     | 5.4            |
+| 5.6  | Sparpläne                                        | offen     | 5.5            |
+| 5.7  | Dashboard und Performance                        | offen     | 5.5            |
+| 6.1  | Export und Import                                | offen     | 5.6, 5.7       |
+| 6.2  | Einstellungen                                    | offen     | 6.1, 3.6, 2.6  |
+| 6.3  | PWA und Browser-Benachrichtigungen               | offen     | 6.2            |
+| 6.4  | Performance und Robustheit                       | offen     | 6.1, 1.9c      |
+| 6.5  | Barrierefreiheit, Hilfen und Hinweise            | offen     | 6.3            |
+| 6.6  | Release 1.0                                      | offen     | 6.4, 6.5, 3.5  |
 
 ### Abhängigkeitsgraph
 
@@ -311,6 +311,7 @@ flowchart TD
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
   class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3 done
+  class AP3_4 active
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6

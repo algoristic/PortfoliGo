@@ -1,4 +1,6 @@
 import { ACCOUNT_KINDS, OPENABLE_ACCOUNT_KINDS } from '@app/banking/domain/models/account.model';
+import { TRANSACTION_TYPES } from '@app/banking/domain/models/ledger.model';
+import { MAX_STATEMENT_LIMIT } from '@app/banking/domain/models/statement.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
 import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
 
@@ -104,11 +106,30 @@ function isJumpTarget(value: unknown): boolean {
   }
 }
 
+function isStatementQuery(value: Fields): boolean {
+  return hasFields(value, {
+    accountId: isAccountId,
+    from: isOptional(isCount),
+    to: isOptional(isCount),
+    types: isOptional((types) => Array.isArray(types) && types.every(isOneOf(TRANSACTION_TYPES))),
+    search: isOptional(isString),
+    offset: isCount,
+    limit: (limit) => isCount(limit) && limit <= MAX_STATEMENT_LIMIT,
+  });
+}
+
 function isQuery(value: unknown): boolean {
   if (!isFields(value) || !isOneOf(ENGINE_QUERY_KINDS)(value['kind'])) {
     return false;
   }
-  return value['kind'] !== 'closingPreview' || isAccountId(value['accountId']);
+  switch (value['kind']) {
+    case 'closingPreview':
+      return isAccountId(value['accountId']);
+    case 'statement':
+      return isStatementQuery(value);
+    default:
+      return true;
+  }
 }
 
 const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = {

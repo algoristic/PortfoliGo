@@ -110,6 +110,21 @@ function describeStorageContract(name: string, create: () => EngineStorage): voi
       expect(await storage.loadTransactions('p10', 'acc-2')).toEqual([salary(1, base, 'acc-2')]);
     });
 
+    it('reads an account in running-number order, whatever the order of the writes', async () => {
+      // The statement (AP 3.4) relies on journal order; `acc-1` must not pick up `acc-10`.
+      const late = [salary(10, base + 90, 'acc-1'), salary(12, base + 95, 'acc-10')];
+      const early = [salary(2, base + 5, 'acc-1'), transfer(9, base + 80, 'acc-10', 'acc-1')];
+      await storage.saveTransactions('p1', late);
+      await storage.saveTransactions('p1', early);
+
+      expect((await storage.loadTransactions('p1', 'acc-1')).map(({ seq }) => seq)).toEqual([
+        2, 9, 10,
+      ]);
+      expect((await storage.loadTransactions('p1', 'acc-10')).map(({ seq }) => seq)).toEqual([
+        9, 12,
+      ]);
+    });
+
     it('discards the transactions after a tick', async () => {
       const journal = [salary(1, base, 'acc-1'), salary(2, base + 10, 'acc-1')];
       await storage.saveTransactions('p1', [...journal, salary(3, base + 11, 'acc-1')]);

@@ -23,6 +23,7 @@ import {
   EngineReplies,
   EngineWorkerPort,
   LoadPlayerPayload,
+  StatementRequest,
   TransferPayload,
 } from './engine-service.model';
 import { isEngineEventMessage } from './engine-service.utils';
@@ -147,6 +148,14 @@ export class EngineService implements OnDestroy {
   /** The closed household months and the running one (US-EK-03). */
   monthlyValues(): Observable<EngineQueryResultOf<'monthlyValues'>> {
     return this.#query({ kind: 'monthlyValues' });
+  }
+
+  /**
+   * One page of an account's statement up to the current tick (TS §7.2, §8.2); closed accounts
+   * included, `unknown-account` for others.
+   */
+  statement(request: StatementRequest): Observable<EngineQueryResultOf<'statement'>> {
+    return this.#query({ kind: 'statement', ...request });
   }
 
   setBackgroundMode(mode: BackgroundMode): Observable<EngineReplies['setBackgroundMode']> {

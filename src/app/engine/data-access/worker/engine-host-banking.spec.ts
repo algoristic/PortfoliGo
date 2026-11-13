@@ -1,3 +1,5 @@
+import { AccountId } from '@app/banking/domain/models/account.model';
+import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
 import { openPortfoligoDb } from '@app/persistence/data-access/schema/open-database';
 import { Bank } from '@app/world/domain/models/bank.model';
@@ -5,10 +7,16 @@ import { Bank } from '@app/world/domain/models/bank.model';
 import { InMemoryEngineStorage } from './in-memory-engine-storage';
 import { IndexedDbEngineStorage } from './indexed-db-engine-storage';
 
-import { ProjectionPayload, ReplyPayload } from '../service/engine-service.model';
+import {
+  ProjectionPayload,
+  ReplyPayload,
+  StatementRequest,
+  StatementResult,
+} from '../service/engine-service.model';
 import {
   advance,
   FINE,
+  flushMicrotasks,
   GAME_START,
   HostHarness,
   MINI_PLAYER as PLAYER,
@@ -24,6 +32,10 @@ import { generateMiniWorld } from '../testing/in-process-engine-worker';
 const { world } = generateMiniWorld(PLAYER.seed);
 const HOME = world.banks.find(({ type }) => type === 'branch') as Bank;
 const BROKER = world.banks.find(({ conditions }) => conditions.currentAccount === null) as Bank;
+/** A bank other than the home bank with savings accounts. */
+const SAVINGS_BANK = world.banks.find(
+  ({ id, conditions }) => id !== HOME.id && conditions.savingsAccount !== null,
+) as Bank;
 /** TS §7.4: the home bank starts with factor × net income, in whole euros. */
 const START_LIMIT =
   Math.floor(
@@ -58,6 +70,38 @@ function order(harness: HostHarness): { projection: number; reply: number } {
 
 function ids(accounts: readonly AccountView[]): string[] {
   return accounts.map(({ id }) => id);
+}
+
+/** Storage whose reads of an account's transactions wait until `release` is called. */
+class GatedStorage extends InMemoryEngineStorage {
+  #gate: Promise<void> = Promise.resolve();
+  release: () => void = () => undefined;
+
+  close(): void {
+    this.#gate = new Promise((resolve) => (this.release = resolve));
+  }
+
+  override async loadTransactions(playerId: string, accountId?: AccountId): Promise<Transaction[]> {
+    await this.#gate;
+    return super.loadTransactions(playerId, accountId);
+  }
+}
+
+async function statement(
+  harness: HostHarness,
+  request: Partial<StatementRequest> = {},
+): Promise<StatementResult> {
+  const reply = await harness.send('query', {
+    query: { kind: 'statement', accountId: 'acc-1', offset: 0, limit: 50, ...request },
+  });
+  if (!reply.ok) {
+    throw new Error(`statement failed: ${reply.error}`);
+  }
+  return reply.data as StatementResult;
+}
+
+function seqs(result: StatementResult): number[] {
+  return result.entries.map(({ seq }) => seq);
 }
 
 function maxInAnySecond(times: readonly number[]): number {
@@ -357,6 +401,176 @@ describe('EngineHost banking', () => {
           current: { month: { year: 2030, month: 5 }, values: empty },
         },
       });
+    });
+  });
+
+  describe('statement', () => {
+    /** Opening balance (1), a savings account elsewhere and two transfers (2, 3) at the game start. */
+    async function withTransfers(harness: HostHarness): Promise<void> {
+      await harness.send('loadPlayer', PLAYER);
+      await harness.send('openAccount', { bankId: SAVINGS_BANK.id, kind: 'savings' });
+      await harness.send('transfer', {
+        fromAccountId: 'acc-1',
+        toAccountId: 'acc-2',
+        amount: 250_000,
+        purpose: 'Notgroschen',
+      });
+      await harness.send('transfer', {
+        fromAccountId: 'acc-2',
+        toAccountId: 'acc-1',
+        amount: 12_345,
+        purpose: 'Urlaub',
+      });
+    }
+
+    it('pages, filters and searches the statement of an account', async () => {
+      const harness = new HostHarness();
+      await withTransfers(harness);
+
+      const all = await statement(harness);
+      expect(all).toEqual({
+        kind: 'statement',
+        total: 3,
+        tick: GAME_START,
+        entries: [
+          {
+            seq: 3,
+            tick: GAME_START,
+            type: 'transfer',
+            amount: 12_345,
+            balanceAfter: 762_345,
+            counterparties: [
+              {
+                kind: 'own',
+                accountId: 'acc-2',
+                accountKind: 'savings',
+                bankId: SAVINGS_BANK.id,
+                number: '0000000002',
+              },
+            ],
+            params: { purpose: 'Urlaub' },
+            refs: {},
+          },
+          expect.objectContaining({ seq: 2, amount: -250_000, balanceAfter: 750_000 }),
+          expect.objectContaining({
+            seq: 1,
+            type: 'opening-balance',
+            amount: PLAYER.start.startCapital,
+            balanceAfter: PLAYER.start.startCapital,
+            counterparties: [
+              { kind: 'external', account: 'external:opening-balance', bankId: null },
+            ],
+          }),
+        ],
+      });
+      expect(await statement(harness, { offset: 1, limit: 1 })).toMatchObject({
+        total: 3,
+        entries: [{ seq: 2 }],
+      });
+      expect(seqs(await statement(harness, { types: ['opening-balance'] }))).toEqual([1]);
+      expect(seqs(await statement(harness, { from: GAME_START + 1 }))).toEqual([]);
+      expect(seqs(await statement(harness, { search: 'notGROSCHEN' }))).toEqual([2]);
+      expect(seqs(await statement(harness, { search: SAVINGS_BANK.name.toUpperCase() }))).toEqual([
+        3, 2,
+      ]);
+      expect(seqs(await statement(harness, { search: '123,45' }))).toEqual([3]);
+      expect(seqs(await statement(harness, { search: '−2.500' }))).toEqual([2]);
+      expect(seqs(await statement(harness, { accountId: 'acc-2', search: '0000000001' }))).toEqual([
+        3, 2,
+      ]);
+    });
+
+    it('includes the transactions not yet written, each once after the write', async () => {
+      const harness = new HostHarness();
+      await withTransfers(harness);
+      expect(
+        (await harness.storage.loadTransactions(PLAYER.playerId, 'acc-1')).map(({ seq }) => seq),
+      ).toEqual([1]);
+      expect(seqs(await statement(harness))).toEqual([3, 2, 1]);
+
+      await advance(harness, 2_000);
+      expect(
+        (await harness.storage.loadTransactions(PLAYER.playerId, 'acc-1')).map(({ seq }) => seq),
+      ).toEqual([1, 2, 3]);
+      expect(await statement(harness)).toMatchObject({ total: 3 });
+      expect(seqs(await statement(harness))).toEqual([3, 2, 1]);
+    });
+
+    it('answers only up to the current tick, whatever the store holds', async () => {
+      const harness = new HostHarness();
+      await harness.send('loadPlayer', PLAYER);
+      // As after a restore: a stored transaction after the current tick (TS §8.2, §9.2).
+      await harness.storage.saveTransactions(PLAYER.playerId, [
+        {
+          seq: 7,
+          tick: GAME_START + 60,
+          type: 'salary',
+          postings: [
+            { account: 'acc-1', amount: 100, balanceAfter: PLAYER.start.startCapital + 100 },
+            { account: 'external:employer', amount: -100, balanceAfter: null },
+          ],
+        },
+      ]);
+      expect(await statement(harness, { to: GAME_START + 120 })).toMatchObject({
+        total: 1,
+        tick: GAME_START,
+        entries: [{ seq: 1 }],
+      });
+      expect(seqs(await statement(harness, { from: GAME_START + 1 }))).toEqual([]);
+    });
+
+    it('keeps the statement of a closed account readable', async () => {
+      const harness = new HostHarness();
+      await withTransfers(harness);
+      expect(
+        await harness.send('closeAccount', { accountId: 'acc-2', targetAccountId: 'acc-1' }),
+      ).toMatchObject({ ok: true });
+      const closed = await statement(harness, { accountId: 'acc-2' });
+      expect(closed.entries[0]).toMatchObject({
+        amount: -(250_000 - 12_345),
+        balanceAfter: 0,
+        counterparties: [{ kind: 'own', accountId: 'acc-1' }],
+      });
+      expect(closed.entries.slice(1).map(({ seq, amount }) => [seq, amount])).toEqual([
+        [3, -12_345],
+        [2, 250_000],
+      ]);
+    });
+
+    it('rejects unknown accounts and pages above the limit', async () => {
+      const harness = new HostHarness();
+      await harness.send('loadPlayer', PLAYER);
+      expect(
+        await harness.send('query', {
+          query: { kind: 'statement', accountId: 'acc-9', offset: 0, limit: 10 },
+        }),
+      ).toMatchObject({ ok: false, error: 'unknown-account' });
+      expect(
+        await harness.send('query', {
+          query: { kind: 'statement', accountId: 'acc-1', offset: 0, limit: 201 },
+        }),
+      ).toMatchObject({ ok: false, error: 'invalid-command' });
+    });
+
+    it('does not hold the clock while it reads the store', async () => {
+      const storage = new GatedStorage();
+      const harness = new HostHarness({ config: FINE }, { storage });
+      await harness.send('loadPlayer', PLAYER);
+      await harness.send('setSpeed', { speed: '1h' });
+      await harness.send('resume', {});
+
+      storage.close();
+      const reply = harness.send('query', {
+        query: { kind: 'statement', accountId: 'acc-1', offset: 0, limit: 10 },
+      });
+      await flushMicrotasks();
+      await advance(harness, 2_000);
+      const during = harness.clock.tick;
+      storage.release();
+      const result = await reply;
+      expect(result).toMatchObject({ ok: true, data: { total: 1 } });
+      // The answer holds the tick at which the query started; the clock went on meanwhile.
+      expect((result.ok && (result.data as StatementResult).tick) || 0).toBeLessThan(during);
     });
   });
 

@@ -19,6 +19,8 @@ export const BUDGETS_MS = {
   /** Catch-up after loading (TS §3.7): 30 days and one game year. */
   catchUp30Days: 1_000,
   catchUpYear: 5_000,
+  /** One statement page in the worker over 10,000 transactions of an account (AP 3.4). */
+  statementPage: 50,
 } as const;
 
 /** Median wall time of `runs` calls after `warmUp` calls. */

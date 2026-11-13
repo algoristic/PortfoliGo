@@ -181,6 +181,23 @@ describe('EngineService', () => {
       expect(values.closedMonths).toEqual([]);
       expect(values.current.month).toEqual({ year: 2030, month: 4 });
     });
+
+    it('answers a statement page', async () => {
+      const { tick } = await firstValueFrom(service.loadPlayer(PLAYER));
+      const result = await firstValueFrom(
+        service.statement({ accountId: 'acc-1', offset: 0, limit: 10 }),
+      );
+      expect(result).toMatchObject({
+        kind: 'statement',
+        total: 1,
+        tick,
+        entries: [{ seq: 1, type: 'opening-balance', amount: PLAYER.start.startCapital }],
+      });
+      const failure = await firstValueFrom(
+        service.statement({ accountId: 'acc-7', offset: 0, limit: 10 }),
+      ).catch((e: EngineCommandError) => e.code);
+      expect(failure).toBe('unknown-account');
+    });
   });
 
   describe('jumps', () => {

@@ -1,6 +1,8 @@
 import { AccountId, DepotId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
 import { BANK_COMMAND_ERRORS, ClosingPreview } from '@app/banking/domain/models/bank-command.model';
 import { ClosedMonth } from '@app/banking/domain/models/household.model';
+import { TransactionType } from '@app/banking/domain/models/ledger.model';
+import { StatementEntry } from '@app/banking/domain/models/statement.model';
 import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
@@ -43,6 +45,25 @@ export interface LoadPlayerPayload {
 }
 
 /**
+ * One page of an account's statement (TS §7.2, §8.2, US-BK-06), newest first. Ticks are
+ * inclusive; `types` missing or empty means all; `search` looks at the purpose, bank names, numbers
+ * of own counter accounts and amounts. `limit` is at most `MAX_STATEMENT_LIMIT`.
+ */
+export interface StatementQuery {
+  kind: 'statement';
+  accountId: AccountId;
+  from?: Tick;
+  to?: Tick;
+  types?: TransactionType[];
+  search?: string;
+  offset: number;
+  limit: number;
+}
+
+/** A statement query without its kind, as `EngineService.statement` takes it. */
+export type StatementRequest = Omit<StatementQuery, 'kind'>;
+
+/**
  * Queries (TS §8.2); they write nothing and don't hold the clock. `closingPreview` shows what
  * closing an account now would book (TS §7.4); `monthlyValues` the household months (US-EK-03).
  */
@@ -50,13 +71,15 @@ export type EngineQuery =
   | { kind: 'exchanges' }
   | { kind: 'banks' }
   | { kind: 'closingPreview'; accountId: AccountId }
-  | { kind: 'monthlyValues' };
+  | { kind: 'monthlyValues' }
+  | StatementQuery;
 export type EngineQueryKind = EngineQuery['kind'];
 export const ENGINE_QUERY_KINDS = [
   'exchanges',
   'banks',
   'closingPreview',
   'monthlyValues',
+  'statement',
 ] as const satisfies readonly EngineQueryKind[];
 
 /** Own transfer (US-BK-04): whole cents ≥ 1, purpose up to `MAX_PURPOSE_LENGTH` characters. */
@@ -132,12 +155,23 @@ export interface MonthlyValuesResult {
   current: ClosedMonth;
 }
 
+/**
+ * A statement page: the matches up to `tick` (the query limit, TS §8.2), `total` of them, and the
+ * entries of the page.
+ */
+export interface StatementResult {
+  total: number;
+  entries: StatementEntry[];
+  tick: Tick;
+}
+
 export type EngineQueryResult =
   | { kind: 'exchanges'; exchanges: ExchangeInfo[] }
   /** Banks of the world with their conditions (bank comparison, account cards). */
   | { kind: 'banks'; banks: Bank[] }
   | { kind: 'closingPreview'; preview: ClosingPreview }
-  | ({ kind: 'monthlyValues' } & MonthlyValuesResult);
+  | ({ kind: 'monthlyValues' } & MonthlyValuesResult)
+  | ({ kind: 'statement' } & StatementResult);
 
 /** The result of a query of kind `K`. */
 export type EngineQueryResultOf<K extends EngineQueryKind> = Extract<

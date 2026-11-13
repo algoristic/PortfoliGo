@@ -1,6 +1,7 @@
 import { monthOf } from '@app/banking/domain/bank-run-logic';
 import { AccountId } from '@app/banking/domain/models/account.model';
 import { Transaction } from '@app/banking/domain/models/ledger.model';
+import { mergeJournal, statementPage } from '@app/banking/domain/statement-logic';
 import { dayIndex } from '@app/clock/domain/calendar-logic';
 import { Tick, TICKS_PER_DAY, TradingHours } from '@app/clock/domain/models/time.model';
 import { accountViews, netWorth } from '@app/engine/domain/account-projection';
@@ -53,6 +54,7 @@ import {
   ProgressKind,
   ProgressPayload,
   ReplyPayload,
+  StatementQuery,
 } from '../service/engine-service.model';
 import {
   isEngineCommandMessage,
@@ -1020,8 +1022,8 @@ export class EngineHost {
     game.changedAccounts.clear();
   }
 
-  /** Queries (TS §8.2) answer from the engine's state; they write nothing. */
-  #query(game: LoadedGame, query: EngineQuery): EngineQueryResult {
+  /** Queries (TS §8.2) answer from the engine's state and the journal; they write nothing. */
+  #query(game: LoadedGame, query: EngineQuery): EngineQueryResult | Promise<EngineQueryResult> {
     const { engine } = game;
     switch (query.kind) {
       case 'exchanges':
@@ -1041,7 +1043,40 @@ export class EngineHost {
           closedMonths: engine.player.closedMonths.map((closed) => ({ ...closed })),
           current: { month: monthOf(engine.tick), values: { ...engine.player.monthlyValues } },
         };
+      case 'statement':
+        return this.#statement(game, query);
     }
+  }
+
+  /**
+   * A statement page (TS §7.2, §8.2) from the stored transactions of the account and those not yet
+   * stored, up to the current tick: after a restore the store may still hold later ones. The clock
+   * runs on while the store is read; the limit and the unsaved transactions are taken before, so a
+   * write finishing meanwhile neither adds a later transaction nor loses one.
+   */
+  async #statement(game: LoadedGame, query: StatementQuery): Promise<EngineQueryResult> {
+    const { engine } = game;
+    const { accountId, from, to, types, search, offset, limit } = query;
+    if (!engine.player.accounts.some(({ id }) => id === accountId)) {
+      throw new CommandFailure('unknown-account');
+    }
+    const tick = engine.tick;
+    const unsaved = game.unsavedTransactions.slice();
+    const accounts = engine.player.accounts.map((account) => ({ ...account }));
+    const bankNames = new Map(engine.world.world.banks.map(({ id, name }) => [id, name]));
+    let stored: Transaction[];
+    try {
+      stored = await this.#ports.storage.loadTransactions(game.playerId, accountId);
+    } catch (error) {
+      throw new CommandFailure('storage-failed', errorMessage(error));
+    }
+    const page = statementPage(
+      mergeJournal(stored, unsaved),
+      { accountId, accounts, bankNames },
+      { from, to: Math.min(to ?? tick, tick), types, search },
+      { offset, limit },
+    );
+    return { kind: 'statement', ...page, tick };
   }
 
   #clockPayload(game: LoadedGame): ClockPayload {

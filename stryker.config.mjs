@@ -54,6 +54,7 @@ const config = {
     'src/app/banking/domain/overdraft-logic.ts',
     'src/app/banking/domain/monthly-values-logic.ts',
     'src/app/banking/domain/bank-command-logic.ts',
+    'src/app/banking/domain/statement-logic.ts',
     'src/app/taxes/domain/tax-logic.ts',
     'src/app/players/domain/player-logic.ts',
   ],

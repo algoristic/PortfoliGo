@@ -1,6 +1,8 @@
 import fc from 'fast-check';
 
 import { ACCOUNT_KINDS, OPENABLE_ACCOUNT_KINDS } from '@app/banking/domain/models/account.model';
+import { TRANSACTION_TYPES } from '@app/banking/domain/models/ledger.model';
+import { MAX_STATEMENT_LIMIT } from '@app/banking/domain/models/statement.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
 import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
 
@@ -27,6 +29,20 @@ const arbPrice = fc.double({ min: 0.01, max: 1e6, noNaN: true });
 const arbCents = fc.integer({ min: -1e12, max: 1e12 });
 const arbAccountId = fc.integer({ min: 1, max: 1e9 }).map((n) => `acc-${n}`);
 const arbDepotId = fc.integer({ min: 1, max: 1e9 }).map((n) => `dep-${n}`);
+
+const arbStatementQuery = fc.record(
+  {
+    kind: fc.constant('statement' as const),
+    accountId: arbAccountId,
+    from: arbCount,
+    to: arbCount,
+    types: fc.subarray([...TRANSACTION_TYPES]),
+    search: fc.string(),
+    offset: arbCount,
+    limit: fc.integer({ min: 0, max: MAX_STATEMENT_LIMIT }),
+  },
+  { requiredKeys: ['kind', 'accountId', 'offset', 'limit'] },
+);
 
 function envelope<T extends string, P>(type: T, payload: fc.Arbitrary<P>) {
   return fc.record({
@@ -76,6 +92,7 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
         fc.constant({ kind: 'banks' as const }),
         fc.constant({ kind: 'monthlyValues' as const }),
         fc.record({ kind: fc.constant('closingPreview' as const), accountId: arbAccountId }),
+        arbStatementQuery,
       ),
     }),
   ),
@@ -233,6 +250,7 @@ const ACCOUNT = {
   available: 0,
   salaryAccount: false,
 };
+const STATEMENT = { kind: 'statement', accountId: 'acc-1', offset: 0, limit: 50 };
 const projection = (fields: Record<string, unknown>): unknown =>
   event('projection', { tick: 1, full: false, accounts: [ACCOUNT], netWorth: 0, ...fields });
 const QUOTE = {
@@ -295,6 +313,21 @@ describe('engine protocol guards', () => {
           (message, key, value, inPayload) => {
             expect(() =>
               isEngineCommandMessage(corrupt(message, key, value, inPayload)),
+            ).not.toThrow();
+          },
+        ),
+      );
+    });
+
+    it('never throws on a valid statement query with one field replaced', () => {
+      fc.assert(
+        fc.property(
+          arbStatementQuery,
+          fc.constantFrom('accountId', 'from', 'to', 'types', 'search', 'offset', 'limit'),
+          fc.anything(),
+          (query, key, value) => {
+            expect(() =>
+              isEngineCommandMessage(command('query', { query: { ...query, [key]: value } })),
             ).not.toThrow();
           },
         ),
@@ -364,6 +397,21 @@ describe('engine protocol guards', () => {
         'a closing preview without an account',
         command('query', { query: { kind: 'closingPreview' } }),
       ],
+      [
+        'a statement without a page',
+        command('query', { query: { ...STATEMENT, limit: undefined } }),
+      ],
+      [
+        'a statement page above the limit',
+        command('query', { query: { ...STATEMENT, limit: 201 } }),
+      ],
+      ['a negative statement offset', command('query', { query: { ...STATEMENT, offset: -1 } })],
+      ['a statement of a depot', command('query', { query: { ...STATEMENT, accountId: 'dep-2' } })],
+      ['a fractional start', command('query', { query: { ...STATEMENT, from: 0.5 } })],
+      ['an end given as a string', command('query', { query: { ...STATEMENT, to: '9' } })],
+      ['an unknown booking type', command('query', { query: { ...STATEMENT, types: ['gift'] } })],
+      ['types that are not a list', command('query', { query: { ...STATEMENT, types: 'salary' } })],
+      ['a search that is not a string', command('query', { query: { ...STATEMENT, search: 12 } })],
     ])('rejects a command with %s', (_label, message) => {
       expect(isEngineCommandMessage(message)).toBe(false);
     });
@@ -383,6 +431,21 @@ describe('engine protocol guards', () => {
         command('query', { query: { kind: 'closingPreview', accountId: 'acc-2' } }),
       ],
       ['the monthly values', command('query', { query: { kind: 'monthlyValues' } })],
+      ['a statement page', command('query', { query: STATEMENT })],
+      [
+        'a filtered statement page',
+        command('query', {
+          query: {
+            ...STATEMENT,
+            from: 0,
+            to: 5_389_920,
+            types: ['salary', 'transfer'],
+            search: '1.250',
+            limit: 200,
+          },
+        }),
+      ],
+      ['an empty type list', command('query', { query: { ...STATEMENT, types: [] } })],
     ])('accepts a command with %s', (_label, message) => {
       expect(isEngineCommandMessage(message)).toBe(true);
     });
