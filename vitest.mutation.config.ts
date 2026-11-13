@@ -41,6 +41,13 @@ const RULE_SPECS = [
   'src/app/banking/domain/ledger-logic.spec.ts',
   'src/app/banking/domain/fee-logic.spec.ts',
   'src/app/banking/domain/interest-logic.spec.ts',
+  'src/app/banking/domain/bank-run-logic.spec.ts',
+  'src/app/banking/domain/living-costs-logic.spec.ts',
+  'src/app/banking/domain/account-fee-logic.spec.ts',
+  'src/app/banking/domain/inflow-logic.spec.ts',
+  'src/app/banking/domain/overdraft-logic.spec.ts',
+  'src/app/banking/domain/monthly-values-logic.spec.ts',
+  'src/app/taxes/domain/tax-logic.spec.ts',
   'src/app/players/domain/player-logic.spec.ts',
 ];
 

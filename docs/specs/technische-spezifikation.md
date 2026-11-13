@@ -1081,6 +1081,122 @@ Bei −8.000,00 € entfallen 5.000 € auf den Dispo (11 %) und 3.000 € auf d
 - Entschieden (12.11.2026): Die Lebenshaltungskosten dürfen das Einkommen übersteigen; das Formular zeigt dann einen Hinweis am Feld (US-SP-01). Hausbank wird beim Anlegen eines Spielers die erste Filialbank in Weltreihenfolge (§5.7, AP 2.4).
 - **Offene Regel (AP 5.2):** Darf ein Depot zwischen Ex-Tag und Zahltag geschlossen werden, und wohin geht dann die Dividende?
 
+**Regeln als reine Funktionen (AP 3.2, `banking/domain`):** Die Engine (Banking-System) ruft sie im Bank-Lauf, am Monatsabschluss und beim Kontoabschluss auf.
+
+_Termine_ (`bank-run-logic.ts`): `bankRunPlan(tick)` nennt die Schritte des Bank-Laufs eines Tages, `nextBankRunTick(tick)` den nächsten Bank-Lauf mit Schritten (06:00, `BANK_RUN_TIME_OF_DAY`). Am letzten Bankarbeitstag des Monats ist nur das Gehalt fällig, am ersten Bankarbeitstag alle übrigen Schritte. Die Reihenfolge (`BANK_RUN_STEPS`) folgt „erst Gutschriften, dann Lastschriften“ (§3.8):
+
+1. **Rahmen anpassen** (`overdraft-limits`, keine Buchung): zuerst, damit die Lastschriften des neuen Monats auf den neuen Rahmen treffen.
+2. **Gehalt** (`salary`) für den laufenden Monat.
+3. **Habenzinsen** (`credit-interest`) für den Vormonat: Verrechnungskonten und Tagesgeld mit `payout: 'monthly'`; im Januar, April, Juli und Oktober auch Tagesgeld mit `payout: 'quarterly'` für das Vorquartal (`isInterestPayoutDue`). Je Konto folgt direkt auf die Zinsgutschrift die Steuerbuchung (`tax` oder `tax-refund`, §7.7) auf demselben Konto.
+4. **Lebenshaltung** (`living-costs`) für den laufenden Monat.
+5. **Kontoführung** (`account-fee`) der offenen Girokonten für den Vormonat.
+6. **Dispozinsen** (`overdraft-interest`, Girokonten) und 7. **Sollzinsen** (`debit-interest`, Verrechnungskonten) für den Vormonat.
+
+Innerhalb eines Schritts gilt die Eröffnungsreihenfolge der Konten. Monatswerte, Steuer und Lebenshaltung gehören zum Monat bzw. Jahr der Buchung: Die Zinsen für Dezember, gebucht am ersten Bankarbeitstag im Januar, zählen steuerlich zum neuen Jahr (Zuflussprinzip).
+
+| Tag                                   | Schritte                                                                                                                                |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Mo 01.04.2030 (erster BAT)            | Rahmen, Habenzinsen März (monatlich) und 1. Quartal (quartalsweise), Lebenshaltung April, Kontoführung März, Dispo- und Sollzinsen März |
+| Di 30.04.2030 (letzter BAT)           | Gehalt April                                                                                                                            |
+| Mi 15.05.2030                         | –                                                                                                                                       |
+| Fr 31.05.2030 (letzter BAT)           | Gehalt Mai                                                                                                                              |
+| Sa 01.06.2030, So 02.06.2030          | – (Wochenende)                                                                                                                          |
+| Mo 03.06.2030 (erster BAT)            | Rahmen, Habenzinsen Mai (nur monatlich), Lebenshaltung Juni, Kontoführung Mai, Dispo- und Sollzinsen Mai                                |
+| Fr 28.06.2030 (29./30.06. Wochenende) | Gehalt Juni                                                                                                                             |
+| Fr 30.08.2030 (31.08. Samstag)        | Gehalt August                                                                                                                           |
+| Mi 01.01.2031 (erster BAT)            | wie am ersten BAT, Habenzinsen Dezember 2030 und 4. Quartal 2030                                                                        |
+| Mo 03.02.2031 (01.02. Samstag)        | wie am ersten BAT, Habenzinsen nur monatlich                                                                                            |
+
+`nextBankRunTick`: ab 15.05.2030 10:00 → 31.05.2030 06:00; ab 01.04.2030 06:00 → 01.04.2030 06:00; ab 01.04.2030 06:01 → 30.04.2030 06:00; ab 31.05.2030 07:00 → 03.06.2030 06:00.
+
+_Lebenshaltung_ (`living-costs-logic.ts`): Basis × (1 + ε), kaufmännisch auf Cent (`applyRate`). ε ist der erste Wert `normal(rng, 0, 0,05)` aus dem Strom `life/living-costs/<monat>` mit `<monat>` als `JJJJ-MM` (z. B. `life/living-costs/2030-04`, `monthKey`), auf ±0,15 begrenzt (Werte darüber werden auf die Grenze gesetzt, nicht neu gezogen: 0,2 → 0,15, −0,3 → −0,15, 0,05 → 0,05). Der Strom hängt nur von Seed und Monat ab; Entscheidungen des Spielers verschieben ihn nicht. Basis 0 ergibt 0.
+
+_Geldeingänge_ (`inflow-logic.ts`): Die Engine führt je Girokonto einen Eintrag `AccountInflows` (auch nach dem Schließen, solange er im Fenster wirkt): Gehalt der letzten drei vollen Monate (`salaryWindow`, ältester zuerst), Gehalt im laufenden Monat, Geldeingang von außen im Vormonat und im laufenden Monat. `recordInflows` zählt Gutschriften der Typen `salary` und `opening-balance` auf Spielerkonten, `closeInflowMonth` schiebt am Monatsabschluss (00:00 des Folgemonats) das Fenster weiter. Neue Girokonten beginnen mit `openInflows` (alles 0); das Startkonto der Hausbank mit `startInflows(acc, Nettoeinkommen)`, als hätte es in den drei Vormonaten das Nettoeinkommen erhalten.
+
+_Kontoführung_ (`account-fee-logic.ts`): `monthlyAccountFee(konditionen, konto, monat, geldeingang)` für Girokonten:
+
+- Befreit, wenn der Geldeingang von außen im Monat ≥ `feeWaiver.minMonthlyDeposits` ist. Die Schwelle gilt auch im Teilmonat voll (nicht anteilig).
+- Sonst `monthlyFee` × offene Tage ÷ Tage des Monats, kaufmännisch auf Cent. Eröffnungs- und Schließtag zählen beide mit; ein Konto, das am selben Tag eröffnet und geschlossen wird, hat einen Tag.
+- `closingAccountFees(konditionen, konto, schließTick, geldeingänge)` liefert beim Kontoabschluss die noch offenen Gebühren: den Vormonat, solange der Bank-Lauf des ersten Bankarbeitstags (06:00) im Schließmonat noch nicht gelaufen ist, und den Schließmonat anteilig bis zum Schließtag; jeweils befreit, wenn der Geldeingang des Monats die Schwelle schon erreicht hat. Geschlossene Konten zahlen danach keine Kontoführung mehr.
+
+Beispiele mit 9,90 € im Monat und Befreiung ab 700 € (eröffnet „vorher“ = vor dem Monat):
+
+| Monat (Tage)                                  | Eröffnet   | Geschlossen | Geldeingang | Offene Tage | Gebühr  | Bemerkung                       |
+| --------------------------------------------- | ---------- | ----------- | ----------- | ----------- | ------- | ------------------------------- |
+| April 2030 (30)                               | vorher     | –           | 0,00 €      | 30          | 9,90 €  |                                 |
+| April 2030                                    | vorher     | –           | 699,99 €    | 30          | 9,90 €  | Schwelle knapp verfehlt         |
+| April 2030                                    | vorher     | –           | 700,00 €    | 30          | 0,00 €  | Schwelle erreicht               |
+| April 2030                                    | 15.04.2030 | –           | 0,00 €      | 16          | 5,28 €  |                                 |
+| April 2030                                    | 15.04.2030 | –           | 2.500,00 €  | 16          | 0,00 €  | Schwelle gilt im Teilmonat voll |
+| Mai 2030 (31)                                 | vorher     | 10.05.2030  | 500,00 €    | 10          | 3,19 €  | 3,1935… €                       |
+| Mai 2030                                      | 10.05.2030 | 10.05.2030  | 0,00 €      | 1           | 0,32 €  | 0,3193… €                       |
+| Juni 2030                                     | 01.07.2030 | –           | 0,00 €      | 0           | 0,00 €  | noch nicht eröffnet             |
+| Februar 2031 (28)                             | vorher     | –           | 0,00 €      | 28          | 9,90 €  |                                 |
+| April 2030, Filialbank 12,00 € ohne Befreiung | vorher     | –           | 2.500,00 €  | 30          | 12,00 € | keine `feeWaiver`               |
+
+Kontoabschluss (9,90 €, Befreiung ab 700 €, Konto seit 2029; Geldeingang Mai 0 €, Juni 0 €, außer wo genannt):
+
+| Geschlossen                                   | Gebühren                       | Bemerkung                               |
+| --------------------------------------------- | ------------------------------ | --------------------------------------- |
+| Sa 01.06.2030, 10:00                          | Mai 9,90 €, Juni 0,33 € (1/30) | Bank-Lauf Juni erst am Mo 03.06.        |
+| Mo 03.06.2030, 05:59                          | Mai 9,90 €, Juni 0,99 € (3/30) | vor dem Bank-Lauf                       |
+| Mo 03.06.2030, 06:00                          | Juni 0,99 €                    | Mai hat der Bank-Lauf schon abgerechnet |
+| Mo 03.06.2030, 05:59, Geldeingang Mai 2.500 € | Juni 0,99 €                    | Mai befreit                             |
+| Do 20.06.2030, Geldeingang Juni 700 €         | –                              | Juni befreit                            |
+
+_Dispo-Rahmen_ (`overdraft-logic.ts`): `overdraftLimits(konten, eingänge, gehaltskonto, faktorJeBank)` liefert am ersten Bankarbeitstag den Rahmen jedes offenen Girokontos. Rahmen der Bank = `limitIncomeFactor` × Summe der Gehaltseingänge im Fenster auf ihren Girokonten (geschlossene eingeschlossen) ÷ 3, erst kaufmännisch auf Cent, dann auf volle Euro abgerundet. Er liegt auf dem offenen Girokonto der Bank mit der größten Gehaltssumme im Fenster; bei Gleichstand auf dem Gehaltskonto, sonst auf dem mit der kleineren Kontonummer. Alle anderen Girokonten haben Limit 0. Die Engine führt die Limits im Zustand und setzt sie nur im Bank-Lauf neu. Beispiele mit Faktor 2 und 2.500,00 € Nettoeinkommen (Hausbank `b1` mit Startkonto `acc-1`):
+
+| Fall                                                      | Stichtag (Fenster)     | Fenster je Konto                           | Rahmen                                        |
+| --------------------------------------------------------- | ---------------------- | ------------------------------------------ | --------------------------------------------- |
+| Start                                                     | 01.04.2030 (Jan.–März) | `acc-1` 3 × 2.500 €                        | `acc-1` 5.000 €                               |
+| Gehaltskonto ab April `acc-2` bei `b2`                    | 01.05.2030 (Feb.–Apr.) | `acc-1` 5.000 €, `acc-2` 2.500 €           | `acc-1` 3.333 € (3.333,33 €), `acc-2` 1.666 € |
+|                                                           | 03.06.2030 (März–Mai)  | `acc-1` 2.500 €, `acc-2` 5.000 €           | `acc-1` 1.666 €, `acc-2` 3.333 €              |
+|                                                           | 01.07.2030 (Apr.–Juni) | `acc-1` 0 €, `acc-2` 7.500 €               | `acc-1` 0 €, `acc-2` 5.000 €                  |
+| zweites Girokonto `acc-3` bei `b1`, Gehaltskonto ab Mai   | 03.06.2030 (März–Mai)  | `acc-1` 5.000 €, `acc-3` 2.500 €           | `acc-1` 5.000 €, `acc-3` 0 €                  |
+|                                                           | 01.07.2030 (Apr.–Juni) | `acc-1` 2.500 €, `acc-3` 5.000 €           | `acc-1` 0 €, `acc-3` 5.000 €                  |
+| Gleichstand, Gehaltskonto `acc-3`                         | –                      | `acc-1` 2.500 €, `acc-3` 2.500 €           | `acc-1` 0 €, `acc-3` 3.333 €                  |
+| Gleichstand, Gehaltskonto bei einer anderen Bank          | –                      | `acc-1` 2.500 €, `acc-3` 2.500 €           | `acc-1` 3.333 €, `acc-3` 0 €                  |
+| `acc-1` mit Gehalt geschlossen, `acc-3` ohne Gehalt offen | –                      | `acc-1` 7.500 € (geschlossen), `acc-3` 0 € | `acc-3` 5.000 €                               |
+| Nettoeinkommen 2.345,67 €                                 | 01.04.2030             | `acc-1` 3 × 2.345,67 €                     | `acc-1` 4.691 € (4.691,34 €)                  |
+| Nettoeinkommen 0 €                                        | 01.04.2030             | `acc-1` 0 €                                | `acc-1` 0 €                                   |
+
+_Verfügbarer Betrag_ (`availableAmount`, US-BK-04): Girokonto Guthaben + Limit, sonst Guthaben; nie negativ. Girokonto 1.000 € bei Limit 5.000 € → 6.000 €; −2.000 € → 3.000 €; −6.000 € → 0 €; Girokonto ohne Rahmen 300 € → 300 €; Tagesgeld 3.000 € → 3.000 €; Verrechnungskonto −14,79 € → 0 €.
+
+_Ereignisse_ (`accountEvents(vorher, nachher)` mit Saldo und Limit; Konten ohne Dispo haben Limit `null`): `account-uncovered`, wenn der Saldo negativ wird (vorher ≥ 0); `overdraft-limit-exceeded` nur bei Girokonten, wenn der Saldo unter −Limit liegt und vorher nicht darunter lag. Die Engine prüft nach jeder Buchung und nach jeder Limitänderung.
+
+| Konto       | Limit vorher → nachher | Saldo vorher → nachher | Ereignisse                                      |
+| ----------- | ---------------------- | ---------------------- | ----------------------------------------------- |
+| Girokonto   | 5.000 €                | 100 € → −50 €          | `account-uncovered`                             |
+| Girokonto   | 5.000 €                | 0 € → −0,01 €          | `account-uncovered`                             |
+| Girokonto   | 5.000 €                | −50 € → −100 €         | –                                               |
+| Girokonto   | 5.000 €                | −4.000 € → −5.000 €    | – (genau am Limit)                              |
+| Girokonto   | 5.000 €                | −4.000 € → −5.000,01 € | `overdraft-limit-exceeded`                      |
+| Girokonto   | 5.000 €                | 100 € → −6.000 €       | `account-uncovered`, `overdraft-limit-exceeded` |
+| Girokonto   | 5.000 €                | −6.000 € → −7.000 €    | – (schon überschritten)                         |
+| Girokonto   | 5.000 €                | −6.000 € → −4.000 €    | –                                               |
+| Girokonto   | 5.000 € → 1.666 €      | −3.000 € → −3.000 €    | `overdraft-limit-exceeded` (gekürzter Rahmen)   |
+| Girokonto   | 5.000 € → 3.333 €      | −6.000 € → −6.000 €    | – (schon überschritten)                         |
+| Girokonto   | 0 €                    | 10 € → −10 €           | `account-uncovered`, `overdraft-limit-exceeded` |
+| Verrechnung | –                      | 5 € → −3 €             | `account-uncovered`                             |
+| Verrechnung | –                      | −3 € → −5 €            | –                                               |
+
+_Monatswerte_ (`monthly-values-logic.ts`): `addToMonthlyValues(werte, transaktion)` ordnet jede Buchung auf einem Gegenkonto ein: `external:employer` → Einkommen, `external:living-costs` → Lebenshaltung, `external:bank:<id>:fees` → Gebühren (ab M5 auch Order- und Depotgebühren), `external:bank:<id>:interest` → Habenzinsen, wenn die Bank zahlt, sonst Soll- und Dispozinsen, `external:tax-office` → Steuern (Erstattungen negativ), `external:issuer:<id>` → Dividenden und Ausschüttungen (brutto). `external:opening-balance`, `external:market` und Buchungen zwischen eigenen Konten zählen nicht; Überweisungen fallen damit heraus. Alle Werte sind Beträge (Ausgaben positiv), nur die Steuern netto können negativ sein. Einnahmen = Einkommen + Habenzinsen + Dividenden, Ausgaben = Lebenshaltung + Gebühren + Soll-/Dispozinsen + Steuern; `savingsRate` = (Einnahmen − Ausgaben) ÷ Einnahmen, `null` bei Einnahmen ≤ 0.
+
+Beispiel April 2030 mit dem Journal aus §7.2 (Nr. 1–6) und zusätzlich Dispozinsen 0,52 € (`acc-1` −0,52 €, `external:bank:b1:interest` +0,52 €):
+
+| Wert              | Betrag     | Herkunft                         |
+| ----------------- | ---------- | -------------------------------- |
+| Einkommen         | 2.500,00 € | Nr. 6                            |
+| Lebenshaltung     | 1.843,27 € | Nr. 2                            |
+| Gebühren          | 9,90 €     | Nr. 4                            |
+| Habenzinsen       | 5,48 €     | Nr. 5                            |
+| Soll-/Dispozinsen | 0,52 €     |                                  |
+| Steuern           | 0,00 €     |                                  |
+| Dividenden        | 0,00 €     |                                  |
+| Sparquote         | 26,01 %    | (2.505,48 − 1.853,69) ÷ 2.505,48 |
+
+Startkapital (Nr. 1) und Überweisung (Nr. 3) zählen nicht. Weitere Sparquoten: Einkommen 1.000 €, Lebenshaltung 1.500 € → −50 %; ohne Einnahmen (nur Lebenshaltung) → `null`; Einkommen 2.000 €, Steuererstattung 100 € → 105 %.
+
 ### 7.5 Orders
 
 ```mermaid
@@ -1149,6 +1265,30 @@ year end: net_y < 0 → lossCarryForward_y = net_y; der Sparerpauschbetrag verf�
 - Gebucht wird auf dem Konto des auslösenden Ereignisses (z. B. dem Verrechnungskonto des Depots).
 - **Vereinfachungen:** ein Verlusttopf für alle Erträge, bankübergreifend, kein Solidaritätszuschlag und keine Kirchensteuer, keine Teilfreistellung oder Vorabpauschale, keine Quellensteuer. Ausbau in Stufe 2.
 - **Reihenfolge der Umsetzung:** Habenzinsen werden schon in AP 3.2 gebucht (§7.4). Der Kern dieses Abschnitts – Jahreszustand und Berechnung in `taxes/domain` – entsteht deshalb dort. AP 5.3 ergänzt Verkäufe, Dividenden, den Verlustvortrag über den Jahreswechsel und die Projektion.
+
+**Umsetzung (AP 3.2, `taxes/domain/tax-logic.ts`):** Die Engine führt einen Jahreszustand `TaxYear`: Jahr, Verlustvortrag aus dem Vorjahr (≤ 0), Summe der steuerpflichtigen Erträge des Jahres und bisher einbehaltene Steuer (Einbehalte − Erstattungen, stets `due_y`). `assessTaxableIncome(zustand, betrag)` verarbeitet ein Ereignis (Verluste negativ) und liefert den neuen Zustand und `delta`; `taxTransactionType(delta)` nennt den Buchungstyp (`null` bei 0, dann wird nichts gebucht). `closeTaxYear` (Jahresabschluss, 00:00 des 1. Januar) eröffnet das Folgejahr mit `min(0, net_y)` als Verlustvortrag. Konstanten `CAPITAL_INCOME_TAX_RATE` (0,25) und `SAVER_ALLOWANCE` (1.000 €). In M3 sind Habenzinsen die einzigen Ereignisse. Soll- und Dispozinsen sind nicht abzugsfähig und erreichen die Steuer nie. Ein Einbehalt ist nie größer als der auslösende Ertrag, eine Erstattung nie größer als der auslösende Verlust.
+
+Beispiel 2030 (Verlustvortrag 0):
+
+| Nr. | Ereignis                       | `net_y`    | `due_y` | `delta`                 | Bemerkung                                       |
+| --- | ------------------------------ | ---------- | ------- | ----------------------- | ----------------------------------------------- |
+| 1   | Habenzinsen 400,00 €           | 400,00 €   | 0,00 €  | 0,00 €                  | unter dem Pauschbetrag                          |
+| 2   | Habenzinsen 500,00 €           | 900,00 €   | 0,00 €  | 0,00 €                  |                                                 |
+| 3   | Habenzinsen 300,00 €           | 1.200,00 € | 50,00 € | 50,00 € (`tax`)         | überschreitet den Pauschbetrag um 200 €         |
+| 4   | Habenzinsen 16,99 €            | 1.216,99 € | 54,25 € | 4,25 € (`tax`)          | 54,2475 € gerundet                              |
+| 5   | Verlust 1.000,00 € (ab AP 5.3) | 216,99 €   | 0,00 €  | −54,25 € (`tax-refund`) | Erstattung                                      |
+| 6   | Jahreswechsel                  |            |         |                         | Verlustvortrag 2031: 0 €; Pauschbetrag verfällt |
+
+Rundung: `net_y` 1.000,02 € → `due_y` 0,01 € (0,005 € vom Nullpunkt weg). Verlustvortrag über den Jahreswechsel:
+
+| Nr. | Ereignis                     | Verlustvortrag | `net_y`     | `due_y`  | `delta`          |
+| --- | ---------------------------- | -------------- | ----------- | -------- | ---------------- |
+| 1   | 2030: Verlust 3.000,00 €     | 0,00 €         | −3.000,00 € | 0,00 €   | 0,00 €           |
+| 2   | 2030: Habenzinsen 500,00 €   | 0,00 €         | −2.500,00 € | 0,00 €   | 0,00 €           |
+| 3   | Jahreswechsel → 2031         | −2.500,00 €    | −2.500,00 € |          |                  |
+| 4   | 2031: Habenzinsen 3.000,00 € | −2.500,00 €    | 500,00 €    | 0,00 €   | 0,00 €           |
+| 5   | 2031: Habenzinsen 1.000,00 € | −2.500,00 €    | 1.500,00 €  | 125,00 € | 125,00 € (`tax`) |
+| 6   | Jahreswechsel → 2032         | 0,00 €         |             |          |                  |
 
 ### 7.8 Sparpläne
 

@@ -88,3 +88,7 @@ export const arbFeeModel = (): fc.Arbitrary<FeeModel> =>
         };
       }),
   );
+
+/** Any calendar month of the calendar (2020–2100). */
+export const arbCalendarMonth = (): fc.Arbitrary<{ year: number; month: number }> =>
+  fc.record({ year: fc.integer({ min: 2020, max: 2100 }), month: fc.integer({ min: 1, max: 12 }) });
