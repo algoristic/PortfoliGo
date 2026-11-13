@@ -28,6 +28,7 @@ import {
   ScreenerRange,
   ScreenerRowView,
 } from '@app/market/ui/models/screener-view.model';
+import { WatchlistRowView } from '@app/market/ui/models/watchlist-view.model';
 
 import {
   ChartSettings,
@@ -44,6 +45,11 @@ export function normalizeSeries(series: readonly number[]): number[] {
 
 export function sameSeries(a: readonly number[], b: readonly number[]): boolean {
   return a.length === b.length && a.every((series, index) => series === b[index]);
+}
+
+/** Two watchlists with the same IDs in the same order. */
+export function sameIds(a: readonly string[], b: readonly string[]): boolean {
+  return a.length === b.length && a.every((id, index) => id === b[index]);
 }
 
 /** Every series that at least one subscription watches. */
@@ -316,4 +322,37 @@ export function moversViewModel(
       level: heatLevel(quote.changeRatio),
     })),
   };
+}
+
+/**
+ * The rows of the watchlist in its order: price and change from the live quote, else from the
+ * screener figures; IDs whose instrument is unknown are left out.
+ */
+export function watchlistRowViews(
+  ids: readonly string[],
+  instruments: Readonly<Record<string, Instrument | undefined>>,
+  quotes: Readonly<Record<number, SeriesQuote | undefined>>,
+  rows: readonly ScreenerRow[],
+): WatchlistRowView[] {
+  const rowsById = new Map(rows.map((row) => [row.id, row]));
+  return ids.flatMap((id) => {
+    const instrument = instruments[id];
+    if (instrument === undefined) {
+      return [];
+    }
+    const quote = quotes[instrument.series];
+    const row = rowsById.get(id);
+    return [
+      {
+        id,
+        series: instrument.series,
+        name: instrument.name,
+        ticker: instrument.ticker,
+        kind: instrument.kind,
+        last: quote?.last ?? row?.last ?? null,
+        changeRatio: quote?.changeRatio ?? row?.changeRatio ?? null,
+        sparkline: row?.sparkline ?? [],
+      },
+    ];
+  });
 }

@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Action } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { firstValueFrom, of, Subject, Subscription, throwError } from 'rxjs';
+import { firstValueFrom, of, Subject, Subscription, take, throwError, toArray } from 'rxjs';
 import type { Mocked } from 'vitest';
 
 import { selectTick } from '@app/clock/feature/state/clock.selectors';
@@ -37,6 +37,7 @@ import {
   QuoteSubscriptions,
   SCREENER_SEARCH_DEBOUNCE_MS,
   SCREENER_SUBSCRIPTION,
+  WATCHLIST_SUBSCRIPTION,
 } from './market.model';
 import { initialChartState, initialScreenerState } from './market.reducer';
 import {
@@ -53,6 +54,10 @@ import {
   selectScreener,
   selectScreenerCriteria,
   selectScreenerWindowSeries,
+  selectWatchlistIds,
+  selectWatchlistKnown,
+  selectWatchlistRowsMissing,
+  selectWatchlistSeries,
 } from './market.selectors';
 
 /** The worker boundary: records the commands and lets the test send events. */
@@ -173,6 +178,10 @@ describe('MarketEffects', () => {
             { selector: selectScreenerWindowSeries, value: [] },
             { selector: selectMarketDay, value: 3_744 },
             { selector: selectOverviewSparklines, value: {} },
+            { selector: selectWatchlistIds, value: [] },
+            { selector: selectWatchlistKnown, value: false },
+            { selector: selectWatchlistSeries, value: [] },
+            { selector: selectWatchlistRowsMissing, value: false },
           ],
         }),
       ],
@@ -815,6 +824,124 @@ describe('MarketEffects', () => {
           live: { candle: candle(NOW, 12) },
         }),
         MarketActions.detectedOverviewSparklineGap({ series: 20 }),
+      ]);
+    });
+  });
+
+  describe('changeWatchlist$', () => {
+    function setWatchlist(ids: string[], known = true): void {
+      store.overrideSelector(selectWatchlistIds, ids);
+      store.overrideSelector(selectWatchlistKnown, known);
+      store.refreshState();
+    }
+
+    it('requests the complete new list built on the shown one', async () => {
+      setWatchlist(['a', 'b', 'c']);
+      const result = firstValueFrom(effects.changeWatchlist$.pipe(take(4), toArray()));
+      actions$.next(MarketActions.clickedAddToWatchlist({ id: 'd' }));
+      actions$.next(MarketActions.clickedRemoveFromWatchlist({ id: 'b' }));
+      actions$.next(MarketActions.droppedWatchlistItem({ from: 0, to: 2 }));
+      actions$.next(MarketActions.movedWatchlistItem({ from: 2, to: 1 }));
+      expect(await result).toEqual([
+        MarketActions.requestedWatchlist({ ids: ['a', 'b', 'c', 'd'] }),
+        MarketActions.requestedWatchlist({ ids: ['a', 'c'] }),
+        MarketActions.requestedWatchlist({ ids: ['b', 'c', 'a'] }),
+        MarketActions.requestedWatchlist({ ids: ['a', 'c', 'b'] }),
+      ]);
+    });
+
+    it('requests nothing before the list is known or when nothing changes', () => {
+      const requested = vi.fn();
+      subscription = effects.changeWatchlist$.subscribe(requested);
+      setWatchlist([], false);
+      actions$.next(MarketActions.clickedAddToWatchlist({ id: 'a' }));
+      setWatchlist(['a', 'b']);
+      actions$.next(MarketActions.clickedAddToWatchlist({ id: 'a' }));
+      actions$.next(MarketActions.clickedRemoveFromWatchlist({ id: 'x' }));
+      actions$.next(MarketActions.movedWatchlistItem({ from: 1, to: 1 }));
+      actions$.next(MarketActions.movedWatchlistItem({ from: 1, to: 2 }));
+      expect(requested).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateWatchlist$', () => {
+    it('sends quick requests one after the other in their order', () => {
+      const replies = [new Subject<{ tick: number }>(), new Subject<{ tick: number }>()];
+      const update = vi
+        .spyOn(engine, 'updateWatchlist')
+        .mockReturnValueOnce(replies[0])
+        .mockReturnValueOnce(replies[1]);
+      const results: Action[] = [];
+      subscription = effects.updateWatchlist$.subscribe((action) => results.push(action));
+      actions$.next(MarketActions.requestedWatchlist({ ids: ['a'] }));
+      actions$.next(MarketActions.requestedWatchlist({ ids: ['a', 'b'] }));
+      expect(update.mock.calls).toEqual([[['a']]]);
+
+      replies[0].next({ tick: 1 });
+      replies[0].complete();
+      expect(update.mock.calls).toEqual([[['a']], [['a', 'b']]]);
+      replies[1].next({ tick: 2 });
+      replies[1].complete();
+      expect(results).toEqual([
+        MarketActions.updateWatchlistSuccess({ ids: ['a'] }),
+        MarketActions.updateWatchlistSuccess({ ids: ['a', 'b'] }),
+      ]);
+    });
+
+    it('dispatches updateWatchlistFailure with the list when the engine rejects it', async () => {
+      const error = new EngineCommandError('busy');
+      vi.spyOn(engine, 'updateWatchlist').mockReturnValue(throwError(() => error));
+      const result = firstValueFrom(effects.updateWatchlist$);
+      actions$.next(MarketActions.requestedWatchlist({ ids: ['a'] }));
+      expect(await result).toEqual(MarketActions.updateWatchlistFailure({ ids: ['a'], error }));
+    });
+  });
+
+  describe('showWatchlistFailure$', () => {
+    // TS §8.2: the codes of `updateWatchlist`, plus a running jump and a failed write
+    it.each([
+      ['unknown-instrument', 'Dieses Wertpapier gibt es nicht. Die Watchlist bleibt unverändert.'],
+      ['duplicate-instrument', 'Dieses Wertpapier steht schon auf der Watchlist.'],
+      ['watchlist-too-long', 'Die Watchlist ist voll. Sie fasst höchstens 50 Wertpapiere.'],
+      [
+        'busy',
+        'Die Watchlist lässt sich gerade nicht ändern, weil die Spielzeit noch berechnet wird.',
+      ],
+      [
+        'storage-failed',
+        'Die Änderung der Watchlist konnte nicht gespeichert werden und wurde zurückgenommen.',
+      ],
+      [
+        'worker-failed',
+        'Die Watchlist konnte nicht geändert werden. Die Änderung wurde zurückgenommen.',
+      ],
+    ] as const)('explains %s', (code, text) => {
+      subscription = effects.showWatchlistFailure$.subscribe();
+      actions$.next(
+        MarketActions.updateWatchlistFailure({ ids: [], error: new EngineCommandError(code) }),
+      );
+      expect(toasts.error).toHaveBeenCalledWith(text);
+    });
+  });
+
+  describe('enterWatchlistPage$', () => {
+    it('watches the series of the list once the instruments are known, follows it and ends', () => {
+      const results: Action[] = [];
+      subscription = effects.enterWatchlistPage$.subscribe((action) => results.push(action));
+      store.overrideSelector(selectWatchlistSeries, [4, 2]);
+      store.refreshState();
+      actions$.next(MarketActions.enterWatchlistPage());
+      expect(results).toEqual([]);
+      store.overrideSelector(selectInstrumentsLoaded, true);
+      store.refreshState();
+      store.overrideSelector(selectWatchlistSeries, [2]);
+      store.refreshState();
+      actions$.next(MarketActions.leaveWatchlistPage());
+      store.overrideSelector(selectWatchlistSeries, [1]);
+      store.refreshState();
+      expect(results).toEqual([
+        MarketActions.quotesSubscriptionChanged({ key: WATCHLIST_SUBSCRIPTION, series: [4, 2] }),
+        MarketActions.quotesSubscriptionChanged({ key: WATCHLIST_SUBSCRIPTION, series: [2] }),
       ]);
     });
   });

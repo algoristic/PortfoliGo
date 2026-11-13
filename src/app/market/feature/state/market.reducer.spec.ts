@@ -1,3 +1,5 @@
+import * as BankingActions from '@app/banking/feature/state/banking.actions';
+import { ProjectionPayload } from '@app/engine/data-access/service/engine-service.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { Candle } from '@app/market/domain/models/candle.model';
@@ -510,6 +512,98 @@ describe('marketReducer', () => {
         MarketActions.leaveMarketsPage(),
       );
       expect(state.overviewSparklines).toEqual({});
+    });
+  });
+
+  describe('watchlist', () => {
+    function projected(ids?: string[]): ReturnType<typeof BankingActions.receivedProjection> {
+      const projection: ProjectionPayload = {
+        tick: 1,
+        full: false,
+        accounts: [],
+        netWorth: 0,
+        ...(ids === undefined ? {} : { watchlist: { ids } }),
+      };
+      return BankingActions.receivedProjection({ projection });
+    }
+
+    function row(id: string): ScreenerRow {
+      return {
+        id,
+        series: 0,
+        last: 10,
+        changeRatio: 0,
+        performance: { m1: null, m6: null, y1: null, y5: null },
+        dividendYield: null,
+        sparkline: [9, 10],
+      };
+    }
+
+    it('takes the list of a projection and ignores projections without it', () => {
+      const state = reduce(projected(['a', 'b']), projected());
+      expect(state.watchlist.ids).toEqual(['a', 'b']);
+      expect(state.watchlist.requested).toBeNull();
+    });
+
+    it('keeps a request until a projection carries the same list', () => {
+      const requested = reduce(
+        projected(['a']),
+        MarketActions.requestedWatchlist({ ids: ['a', 'b'] }),
+      );
+      expect(requested.watchlist).toMatchObject({ ids: ['a'], requested: ['a', 'b'] });
+      const confirmed = marketReducer(requested, projected(['a', 'b']));
+      expect(confirmed.watchlist).toMatchObject({ ids: ['a', 'b'], requested: null });
+    });
+
+    it('keeps the newest request while the projection confirms an older one', () => {
+      const state = reduce(
+        projected([]),
+        MarketActions.requestedWatchlist({ ids: ['a'] }),
+        MarketActions.requestedWatchlist({ ids: ['a', 'b'] }),
+        projected(['a']),
+      );
+      expect(state.watchlist).toMatchObject({ ids: ['a'], requested: ['a', 'b'] });
+    });
+
+    it('falls back to the confirmed list when the newest request fails', () => {
+      const error = new Error('busy');
+      const state = reduce(
+        projected(['a']),
+        MarketActions.requestedWatchlist({ ids: ['a', 'b'] }),
+        MarketActions.updateWatchlistFailure({ ids: ['a', 'b'], error }),
+      );
+      expect(state.watchlist).toMatchObject({ ids: ['a'], requested: null });
+    });
+
+    it('keeps a newer request when an older one fails', () => {
+      const error = new Error('busy');
+      const state = reduce(
+        projected(['a']),
+        MarketActions.requestedWatchlist({ ids: ['a', 'b'] }),
+        MarketActions.requestedWatchlist({ ids: ['b', 'a'] }),
+        MarketActions.updateWatchlistFailure({ ids: ['a', 'b'], error }),
+      );
+      expect(state.watchlist.requested).toEqual(['b', 'a']);
+    });
+
+    it('keeps the screener rows of the watchlist only and drops them when the tab is left', () => {
+      const loaded = reduce(
+        projected(['a']),
+        MarketActions.requestedWatchlist({ ids: ['a', 'c'] }),
+        MarketActions.enterWatchlistPage(),
+        MarketActions.retrievedWatchlistRows({ rows: [row('a'), row('b'), row('c')] }),
+      );
+      expect(loaded.watchlist.rows.map(({ id }) => id)).toEqual(['a', 'c']);
+      const left = marketReducer(loaded, MarketActions.leaveWatchlistPage());
+      expect(left.watchlist.rows).toEqual([]);
+    });
+
+    it('forgets the list of the previous player', () => {
+      const state = reduce(
+        projected(['a']),
+        SessionActions.enterGame({ profile: { id: 'p-b' } as PlayerProfile }),
+      );
+      expect(state.watchlist).toEqual({ ids: null, requested: null, rows: [] });
     });
   });
 });

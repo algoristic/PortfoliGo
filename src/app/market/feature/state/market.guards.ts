@@ -36,6 +36,24 @@ export function leaveScreenerPage(): CanDeactivateFn<unknown> {
   };
 }
 
+/**
+ * Starts the watchlist tab (US-MK-04): the quotes of its instruments, following changes of the
+ * list, and the screener figures for the sparklines.
+ */
+export function enterWatchlistPage(): CanActivateFn {
+  return () => {
+    inject(MarketFacade).enterWatchlistPage();
+    return true;
+  };
+}
+
+export function leaveWatchlistPage(): CanDeactivateFn<unknown> {
+  return () => {
+    inject(MarketFacade).leaveWatchlistPage();
+    return true;
+  };
+}
+
 /** Starts the quote subscription of the instrument in the route parameter `instrumentId`. */
 export function enterInstrumentPage(): CanActivateFn {
   return () => {

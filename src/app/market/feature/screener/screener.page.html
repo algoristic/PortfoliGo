@@ -1,5 +1,6 @@
 @let screener = facade.screener$ | async;
 @let rows = facade.screenerRows$ | async;
+@let watchlist = facade.watchlistMembership$ | async;
 
 @if (screener) {
   <div class="flex flex-col gap-4">
@@ -30,8 +31,10 @@
           [sort]="screener.filter.sort"
           [performancePeriod]="screener.performancePeriod"
           [resetKey]="screener.generation"
+          [watchlist]="watchlist"
           (clickedSort)="onSort($event)"
-          (changedRange)="onRange($event)"></app-screener-list>
+          (changedRange)="onRange($event)"
+          (toggledWatchlist)="onToggleWatchlist($event)"></app-screener-list>
       }
     </app-panel>
   </div>

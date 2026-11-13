@@ -1,20 +1,34 @@
 @let instrument = facade.routeInstrument$ | async;
+@let watchlist = facade.routeInstrumentWatchlist$ | async;
 
-<h1 class="text-xl font-semibold" data-testid="market.instrument.name">
-  @if (instrument) {
-    {{ instrument.name }}
-  } @else {
-    <ng-container i18n="@@featureMarket-instrumentPage-title">Instrument</ng-container>
-  }
-</h1>
-@if (instrument) {
-  <p class="text-sm text-fg-muted" data-testid="market.instrument.ticker">
-    {{ instrument.ticker }}
-    @if (instrument.isin) {
-      · {{ instrument.isin }}
+<div class="flex items-start gap-2">
+  <div class="min-w-0 flex-1">
+    <h1 class="text-xl font-semibold" data-testid="market.instrument.name">
+      @if (instrument) {
+        {{ instrument.name }}
+      } @else {
+        <ng-container i18n="@@featureMarket-instrumentPage-title">Instrument</ng-container>
+      }
+    </h1>
+    @if (instrument) {
+      <p class="text-sm text-fg-muted" data-testid="market.instrument.ticker">
+        {{ instrument.ticker }}
+        @if (instrument.isin) {
+          · {{ instrument.isin }}
+        }
+      </p>
     }
-  </p>
-}
+  </div>
+  @if (instrument && watchlist) {
+    <app-watchlist-toggle
+      testId="market.instrument.watchlist"
+      [name]="instrument.name"
+      [watched]="watchlist.watched"
+      [full]="watchlist.full"
+      [disabled]="!watchlist.known"
+      (toggledWatchlist)="onToggleWatchlist(instrument.id, $event)"></app-watchlist-toggle>
+  }
+</div>
 
 <app-panel class="mt-4">
   <app-instrument-chart></app-instrument-chart>

@@ -4255,7 +4255,7 @@
         <source>Instrument</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
-          <context context-type="linenumber">7,11</context>
+          <context context-type="linenumber">10,13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketOverviewPage-indices" datatype="html">
@@ -4297,28 +4297,28 @@
         <source>Märkte</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/market.routes.ts</context>
-          <context context-type="linenumber">27</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketRoutes-screenerTitle" datatype="html">
         <source>Screener</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/market.routes.ts</context>
-          <context context-type="linenumber">36</context>
+          <context context-type="linenumber">38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketRoutes-watchlistTitle" datatype="html">
         <source>Watchlist</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/market.routes.ts</context>
-          <context context-type="linenumber">45</context>
+          <context context-type="linenumber">47</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketRoutes-instrumentTitle" datatype="html">
         <source>Instrument</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/market.routes.ts</context>
-          <context context-type="linenumber">54</context>
+          <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketsPage-title" datatype="html">
@@ -4353,49 +4353,112 @@
         <source> Die Trefferliste konnte nicht geladen werden. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/screener/screener.page.html</context>
-          <context context-type="linenumber">24,27</context>
+          <context context-type="linenumber">25,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketEffects-loadWatchlistRowsFailure" datatype="html">
+        <source>Die Kursverläufe der Watchlist konnten nicht geladen werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
+          <context context-type="linenumber">459</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketEffects-loadInstrumentsFailure" datatype="html">
         <source>Die Wertpapiere konnten nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">513</context>
+          <context context-type="linenumber">650</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketEffects-loadScreenerFailure" datatype="html">
         <source>Die Trefferliste konnte nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">526</context>
+          <context context-type="linenumber">663</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketEffects-loadChartCandlesFailure" datatype="html">
         <source>Der Kursverlauf konnte nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">539</context>
+          <context context-type="linenumber">676</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketEffects-saveChartSettingsFailure" datatype="html">
         <source>Die Chart-Einstellungen gelten nur bis zum Neuladen, weil sie auf diesem Gerät nicht gespeichert werden konnten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">552</context>
+          <context context-type="linenumber">689</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featureMarket-watchlistPage-emptyHeading" datatype="html">
-        <source>Watchlist folgt</source>
+      <trans-unit id="featureMarket-watchlistErrors-unknownInstrument" datatype="html">
+        <source>Dieses Wertpapier gibt es nicht. Die Watchlist bleibt unverändert.</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/market/feature/watchlist/watchlist.page.html</context>
-          <context context-type="linenumber">4,5</context>
+          <context context-type="sourcefile">src/app/market/feature/state/watchlist-errors.utils.ts</context>
+          <context context-type="linenumber">12</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featureMarket-watchlistPage-emptyText" datatype="html">
-        <source>Diese Ansicht entsteht im weiteren Verlauf von AP 4.4.</source>
+      <trans-unit id="featureMarket-watchlistErrors-duplicateInstrument" datatype="html">
+        <source>Dieses Wertpapier steht schon auf der Watchlist.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/state/watchlist-errors.utils.ts</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-watchlistErrors-watchlistTooLong" datatype="html">
+        <source>Die Watchlist ist voll. Sie fasst höchstens <x id="maxLength" equiv-text="MAX_WATCHLIST_LENGTH"/> Wertpapiere.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/state/watchlist-errors.utils.ts</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-watchlistErrors-busy" datatype="html">
+        <source>Die Watchlist lässt sich gerade nicht ändern, weil die Spielzeit noch berechnet wird.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/state/watchlist-errors.utils.ts</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-watchlistErrors-storageFailed" datatype="html">
+        <source>Die Änderung der Watchlist konnte nicht gespeichert werden und wurde zurückgenommen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/state/watchlist-errors.utils.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-watchlistErrors-failure" datatype="html">
+        <source>Die Watchlist konnte nicht geändert werden. Die Änderung wurde zurückgenommen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/state/watchlist-errors.utils.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-watchlistPage-emptyListHeading" datatype="html">
+        <source>Deine Watchlist ist leer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/watchlist/watchlist.page.html</context>
-          <context context-type="linenumber">6,7</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-watchlistPage-emptyListText" datatype="html">
+        <source>Markiere Wertpapiere im Screener oder auf ihrer Seite mit dem Stern, um ihre Kurse hier zu verfolgen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/watchlist/watchlist.page.html</context>
+          <context context-type="linenumber">16,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-watchlistPage-openScreener" datatype="html">
+        <source>Zum Screener</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/watchlist/watchlist.page.html</context>
+          <context context-type="linenumber">24,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-watchlistPage-moved" datatype="html">
+        <source><x id="name" equiv-text="row.name"/> steht jetzt auf Platz <x id="position" equiv-text="to + 1"/> von <x id="count" equiv-text="rows.length"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/watchlist/watchlist.page.ts</context>
+          <context context-type="linenumber">56</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-candleReadout-openTitle" datatype="html">
@@ -5305,119 +5368,175 @@
         <source>1M</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">68</context>
+          <context context-type="linenumber">75</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-m1Long" datatype="html">
         <source>Performance 1 Monat</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">69</context>
+          <context context-type="linenumber">76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-m6" datatype="html">
         <source>6M</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">73</context>
+          <context context-type="linenumber">80</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-m6Long" datatype="html">
         <source>Performance 6 Monate</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">74</context>
+          <context context-type="linenumber">81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-y1" datatype="html">
         <source>1J</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">78</context>
+          <context context-type="linenumber">85</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-y1Long" datatype="html">
         <source>Performance 1 Jahr</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">79</context>
+          <context context-type="linenumber">86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-y5" datatype="html">
         <source>5J</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">83</context>
+          <context context-type="linenumber">90</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-y5Long" datatype="html">
         <source>Performance 5 Jahre</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">84</context>
+          <context context-type="linenumber">91</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-label" datatype="html">
         <source>Trefferliste</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">109</context>
+          <context context-type="linenumber">118</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-name" datatype="html">
         <source>Name</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">110</context>
+          <context context-type="linenumber">119</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-price" datatype="html">
         <source>Kurs</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">111</context>
+          <context context-type="linenumber">120</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-change" datatype="html">
         <source>Veränderung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">112</context>
+          <context context-type="linenumber">121</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-trend" datatype="html">
         <source>Verlauf 1M</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">113</context>
+          <context context-type="linenumber">122</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-performance" datatype="html">
         <source>Performance</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">114</context>
+          <context context-type="linenumber">123</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-yield" datatype="html">
         <source>Dividendenrendite</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">115</context>
+          <context context-type="linenumber">124</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-yieldShort" datatype="html">
         <source>Div.-Rendite</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">116</context>
+          <context context-type="linenumber">125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-screenerList-watchlist" datatype="html">
+        <source>Watchlist</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
+          <context context-type="linenumber">126</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-screenerList-empty" datatype="html">
         <source>Keine Treffer. Ändere die Suche oder setze die Filter zurück.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/screener-list/screener-list.component.ts</context>
-          <context context-type="linenumber">117</context>
+          <context context-type="linenumber">127</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-watchlistList-moveUp" datatype="html">
+        <source>Nach oben: <x id="name" equiv-text="row.name"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/watchlist-list/watchlist-list.component.ts</context>
+          <context context-type="linenumber">65</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-watchlistList-moveDown" datatype="html">
+        <source>Nach unten: <x id="name" equiv-text="row.name"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/watchlist-list/watchlist-list.component.ts</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-watchlistList-remove" datatype="html">
+        <source>Von der Watchlist entfernen: <x id="name" equiv-text="row.name"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/watchlist-list/watchlist-list.component.ts</context>
+          <context context-type="linenumber">67</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-watchlistList-label" datatype="html">
+        <source>Watchlist</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/watchlist-list/watchlist-list.component.ts</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-watchlistList-drag" datatype="html">
+        <source>Zum Verschieben ziehen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/watchlist-list/watchlist-list.component.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-watchlistToggle-full" datatype="html">
+        <source>Auf der Watchlist: <x id="name" equiv-text="this.name()"/> – die Watchlist ist voll (höchstens <x id="maxLength" equiv-text="MAX_WATCHLIST_LENGTH"/> Wertpapiere)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/watchlist-toggle/watchlist-toggle.component.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-watchlistToggle-label" datatype="html">
+        <source>Auf der Watchlist: <x id="name" equiv-text="this.name()"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/watchlist-toggle/watchlist-toggle.component.ts</context>
+          <context context-type="linenumber">34</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-dialogAbsenceReport-continue" datatype="html">

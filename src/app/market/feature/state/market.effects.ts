@@ -52,6 +52,11 @@ import {
   overviewSparklineRequest,
   overviewSparklineStep,
 } from '@app/market/domain/overview-sparkline-logic';
+import {
+  addToWatchlist,
+  moveWatchlistItem,
+  removeFromWatchlist,
+} from '@app/market/domain/watchlist-logic';
 import { LocalStorageService } from '@app/persistence/data-access/local-storage/local-storage.service';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
@@ -66,6 +71,7 @@ import {
   SCREENER_SCROLL_THROTTLE_MS,
   SCREENER_SEARCH_DEBOUNCE_MS,
   SCREENER_SUBSCRIPTION,
+  WATCHLIST_SUBSCRIPTION,
 } from './market.model';
 import {
   selectChart,
@@ -81,8 +87,13 @@ import {
   selectScreener,
   selectScreenerCriteria,
   selectScreenerWindowSeries,
+  selectWatchlistIds,
+  selectWatchlistKnown,
+  selectWatchlistRowsMissing,
+  selectWatchlistSeries,
 } from './market.selectors';
 import { latestQuotes, parseChartSettings, sameSeries } from './market.utils';
+import { watchlistFailureMessage } from './watchlist-errors.utils';
 
 @Injectable()
 export class MarketEffects {
@@ -324,6 +335,132 @@ export class MarketEffects {
       ofType(MarketActions.leaveScreenerPage),
       map(() => MarketActions.quotesSubscriptionEnded({ key: SCREENER_SUBSCRIPTION })),
     ),
+  );
+
+  /**
+   * A change of the watchlist (US-MK-04) becomes the complete new list, computed from the shown one
+   * (the newest request until it is confirmed), so quick changes build on each other. Nothing
+   * changes before the list arrived with the projection, and a change that changes nothing (a
+   * full list, a move to the same place) sends nothing.
+   */
+  changeWatchlist$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(
+        MarketActions.clickedAddToWatchlist,
+        MarketActions.clickedRemoveFromWatchlist,
+        MarketActions.droppedWatchlistItem,
+        MarketActions.movedWatchlistItem,
+      ),
+      concatLatestFrom(() => [
+        this.#store.pipe(select(selectWatchlistIds)),
+        this.#store.pipe(select(selectWatchlistKnown)),
+      ]),
+      filter(([, , known]) => known),
+      map(([action, ids]) => ({ ids, next: nextWatchlist(ids, action) })),
+      filter(({ ids, next }) => next !== ids),
+      map(({ next }) => MarketActions.requestedWatchlist({ ids: next })),
+    ),
+  );
+
+  /**
+   * Sends the requested lists one after the other (`updateWatchlist` replaces the whole list), so a
+   * later request never overtakes an earlier one; the projection confirms them.
+   */
+  updateWatchlist$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(MarketActions.requestedWatchlist),
+      concatMap(({ ids }) =>
+        this.#engine.updateWatchlist(ids).pipe(
+          map(() => MarketActions.updateWatchlistSuccess({ ids })),
+          catchError((error: unknown) => of(MarketActions.updateWatchlistFailure({ ids, error }))),
+        ),
+      ),
+    ),
+  );
+
+  showWatchlistFailure$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(MarketActions.updateWatchlistFailure),
+        tap(({ error }) => this.#toastService.error(watchlistFailureMessage(error))),
+      ),
+    { dispatch: false },
+  );
+
+  /**
+   * The watchlist tab watches the quotes of its instruments once the master data is there and
+   * follows every change of the list (the series order doesn't matter).
+   */
+  enterWatchlistPage$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(MarketActions.enterWatchlistPage),
+      switchMap(() =>
+        this.#whenInstrumentsLoaded().pipe(
+          switchMap(() => this.#store.pipe(select(selectWatchlistSeries))),
+          map((series) =>
+            MarketActions.quotesSubscriptionChanged({ key: WATCHLIST_SUBSCRIPTION, series }),
+          ),
+          takeUntil(this.#actions$.pipe(ofType(MarketActions.leaveWatchlistPage))),
+        ),
+      ),
+    ),
+  );
+
+  leaveWatchlistPage$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(MarketActions.leaveWatchlistPage),
+      map(() => MarketActions.quotesSubscriptionEnded({ key: WATCHLIST_SUBSCRIPTION })),
+    ),
+  );
+
+  /**
+   * The screener figures of the watchlist (the one-month sparkline) once the player is loaded: the
+   * screener query without filters, again on a new market day and when an instrument without
+   * figures appears on the list. The slice keeps the rows of the watchlist only.
+   */
+  loadWatchlistRows$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(MarketActions.enterWatchlistPage),
+      switchMap(() =>
+        this.#store.pipe(
+          select(selectPhase),
+          filter((phase) => phase === 'loaded'),
+          take(1),
+          switchMap(() =>
+            merge(
+              of(null),
+              this.#store.pipe(select(selectMarketDay), distinctUntilChanged(), skip(1)),
+              this.#store.pipe(
+                select(selectWatchlistRowsMissing),
+                distinctUntilChanged(),
+                skip(1),
+                filter(Boolean),
+              ),
+            ),
+          ),
+          switchMap(() =>
+            this.#engine.screener({}).pipe(
+              map(({ rows }) => MarketActions.retrievedWatchlistRows({ rows })),
+              catchError((error: unknown) => of(MarketActions.loadWatchlistRowsFailure({ error }))),
+            ),
+          ),
+          takeUntil(this.#actions$.pipe(ofType(MarketActions.leaveWatchlistPage))),
+        ),
+      ),
+    ),
+  );
+
+  showWatchlistRowsFailure$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(MarketActions.loadWatchlistRowsFailure),
+        tap(() =>
+          this.#toastService.error(
+            $localize`:@@featureMarket-marketEffects-loadWatchlistRowsFailure:Die Kursverläufe der Watchlist konnten nicht geladen werden.`,
+          ),
+        ),
+      ),
+    { dispatch: false },
   );
 
   /** The instrument page watches the quote of the instrument of its route, once it is known. */
@@ -666,6 +803,24 @@ export class MarketEffects {
       const done = this.#pendingTasks.add();
       return timer(QUOTES_BUNDLE_WINDOW_MS).pipe(finalize(done));
     });
+  }
+}
+
+type WatchlistChange = ReturnType<
+  | typeof MarketActions.clickedAddToWatchlist
+  | typeof MarketActions.clickedRemoveFromWatchlist
+  | typeof MarketActions.droppedWatchlistItem
+  | typeof MarketActions.movedWatchlistItem
+>;
+
+function nextWatchlist(ids: readonly string[], action: WatchlistChange): readonly string[] {
+  switch (action.type) {
+    case MarketActions.clickedAddToWatchlist.type:
+      return addToWatchlist(ids, action.id);
+    case MarketActions.clickedRemoveFromWatchlist.type:
+      return removeFromWatchlist(ids, action.id);
+    default:
+      return moveWatchlistItem(ids, action.from, action.to);
   }
 }
 

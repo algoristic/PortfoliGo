@@ -18,6 +18,8 @@ export const MARKETS_PAGE_SUBSCRIPTION = 'markets-page';
 export const INSTRUMENT_PAGE_SUBSCRIPTION = 'instrument-page';
 /** The visible rows of the screener (plus `SCREENER_ROW_BUFFER` before and after). */
 export const SCREENER_SUBSCRIPTION = 'screener';
+/** The instruments of the watchlist tab. */
+export const WATCHLIST_SUBSCRIPTION = 'watchlist';
 
 /** The search of the screener queries this long after the last keystroke. */
 export const SCREENER_SEARCH_DEBOUNCE_MS = 300;
@@ -141,4 +143,17 @@ export interface ScreenerView {
   total: number | null;
   /** The period of the performance column. */
   performancePeriod: PerformancePeriod;
+}
+
+/**
+ * The player's watchlist (US-MK-04, TS §11.3): the confirmed list of the last projection, the list
+ * requested from the engine and not yet confirmed (shown instead), and the screener figures of
+ * its instruments for the sparklines while the watchlist tab is open.
+ */
+export interface WatchlistState {
+  /** `null` before the first projection with the watchlist. */
+  ids: readonly string[] | null;
+  /** The newest list sent with `updateWatchlist` until a projection confirms it or it fails. */
+  requested: readonly string[] | null;
+  rows: readonly ScreenerRow[];
 }

@@ -1,0 +1,96 @@
+@let _views = views();
+
+<ol
+  class="flex flex-col"
+  cdkDropList
+  cdkDropListLockAxis="y"
+  data-testid="market.watchlist.list"
+  [attr.aria-label]="label"
+  (cdkDropListDropped)="onDrop($event)">
+  @for (row of _views; track row.id; let index = $index, first = $first, last = $last) {
+    <li
+      class="flex h-14 items-center gap-1 border-b border-border bg-surface px-1 md:gap-3"
+      cdkDrag
+      data-testid="market.watchlist.row"
+      [attr.data-instrument-id]="row.id">
+      <span
+        class="flex size-8 shrink-0 cursor-grab touch-none items-center justify-center text-fg-muted"
+        cdkDragHandle
+        aria-hidden="true"
+        data-testid="market.watchlist.row.handle"
+        [attr.title]="dragLabel">
+        <i appIcon="grip-vertical"></i>
+      </span>
+      <div class="min-w-0 flex-1">
+        <a
+          class="block truncate text-sm font-medium hover:underline"
+          data-testid="market.watchlist.row.name"
+          [routerLink]="['..', row.id]"
+          >{{ row.name }}</a
+        >
+        <p class="truncate text-xs text-fg-muted" data-testid="market.watchlist.row.ticker">
+          {{ row.ticker }}
+        </p>
+      </div>
+      <div class="flex shrink-0 flex-col items-end md:flex-row md:items-center md:gap-3">
+        <span
+          class="px-0.5 text-sm tabular-nums md:w-28 md:text-right"
+          data-testid="market.watchlist.row.price"
+          [appValueFlash]="row.last"
+          [enabled]="flashEnabled()">
+          @if (row.isIndex) {
+            {{ row.last | formatNumber: 2 }}
+          } @else {
+            {{ row.last | formatPrice }}
+          }
+        </span>
+        <span
+          class="text-xs md:w-24 md:text-right md:text-sm"
+          data-testid="market.watchlist.row.change">
+          @if (row.changeRatio !== null) {
+            <app-price-change [value]="row.changeRatio"></app-price-change>
+          }
+        </span>
+      </div>
+      <div class="hidden w-24 sm:block">
+        @if (row.sparkline.length > 0) {
+          <app-sparkline
+            class="h-8 w-24"
+            data-testid="market.watchlist.row.sparkline"
+            [values]="row.sparkline"></app-sparkline>
+        }
+      </div>
+      <div class="flex shrink-0 items-center">
+        <button
+          type="button"
+          appIconButton
+          size="sm"
+          data-testid="market.watchlist.row.up"
+          [label]="row.upLabel"
+          [attr.aria-disabled]="first || null"
+          (click)="onMove(row.id, index, 'up')">
+          <i appIcon="arrow-up"></i>
+        </button>
+        <button
+          type="button"
+          appIconButton
+          size="sm"
+          data-testid="market.watchlist.row.down"
+          [label]="row.downLabel"
+          [attr.aria-disabled]="last || null"
+          (click)="onMove(row.id, index, 'down')">
+          <i appIcon="arrow-down"></i>
+        </button>
+        <button
+          type="button"
+          appIconButton
+          size="sm"
+          data-testid="market.watchlist.row.remove"
+          [label]="row.removeLabel"
+          (click)="onRemove(row.id)">
+          <i appIcon="x-lg"></i>
+        </button>
+      </div>
+    </li>
+  }
+</ol>

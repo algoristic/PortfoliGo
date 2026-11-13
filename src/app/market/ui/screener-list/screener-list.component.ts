@@ -17,6 +17,8 @@ import { AriaSort, ScreenerPeriodLabel, ScreenerSortButton } from './screener-li
 
 import { instrumentKindLabel } from '../labels/taxonomy-labels';
 import { ScreenerRange, ScreenerRowView } from '../models/screener-view.model';
+import { WatchlistMembership, WatchlistToggle } from '../models/watchlist-view.model';
+import { WatchlistToggleComponent } from '../watchlist-toggle/watchlist-toggle.component';
 
 /** Height of a row in px: `h-14` in the template, the item size of the virtual scrolling. */
 const ROW_HEIGHT_PX = 56;
@@ -26,7 +28,8 @@ const FALLBACK_VISIBLE_ROWS = 20;
 /**
  * Matches of the screener (US-MK-02) with virtual scrolling: name, ticker and kind, price and
  * change (live for the watched rows, flashing on change), the sparkline of one month, the
- * performance of the sorted period (one year otherwise) and the dividend yield. The head sorts;
+ * performance of the sorted period (one year otherwise), the dividend yield and, with `watchlist`,
+ * a star that puts the instrument on the watchlist (US-MK-04). The head sorts;
  * on phones a row shows name, price and change, the rest from `md`.
  */
 @Component({
@@ -42,6 +45,7 @@ const FALLBACK_VISIBLE_ROWS = 20;
     FormatSignedPercentPipe,
     PriceChangeComponent,
     ValueFlashDirective,
+    WatchlistToggleComponent,
   ],
   templateUrl: './screener-list.component.html',
   host: { class: 'block' },
@@ -54,11 +58,14 @@ export class ScreenerListComponent {
   /** The list scrolls to the top when this changes (a new query). */
   resetKey = input<unknown>();
   flashEnabled = input(true);
+  /** The star of every row; without it the list shows none. */
+  watchlist = input<WatchlistMembership | null>(null);
 
   rowHeight = ROW_HEIGHT_PX;
 
   clickedSort = output<ScreenerSortKey>();
   changedRange = output<ScreenerRange>();
+  toggledWatchlist = output<WatchlistToggle>();
 
   viewport = viewChild(CdkVirtualScrollViewport);
 
@@ -98,13 +105,15 @@ export class ScreenerListComponent {
   performanceShort = computed(
     () => this.periods.find(({ period }) => period === this.performancePeriod())?.short ?? '',
   );
-  views = computed(() =>
-    this.rows().map((row) => ({
+  views = computed(() => {
+    const watched = this.watchlist()?.ids;
+    return this.rows().map((row) => ({
       ...row,
       kindLabel: instrumentKindLabel(row.kind),
       isIndex: row.kind === 'index',
-    })),
-  );
+      watched: watched?.has(row.id) ?? false,
+    }));
+  });
 
   label = $localize`:@@uiMarket-screenerList-label:Trefferliste`;
   nameLabel = $localize`:@@uiMarket-screenerList-name:Name`;
@@ -114,6 +123,7 @@ export class ScreenerListComponent {
   performanceLabel = $localize`:@@uiMarket-screenerList-performance:Performance`;
   yieldLabel = $localize`:@@uiMarket-screenerList-yield:Dividendenrendite`;
   yieldShortLabel = $localize`:@@uiMarket-screenerList-yieldShort:Div.-Rendite`;
+  watchlistLabel = $localize`:@@uiMarket-screenerList-watchlist:Watchlist`;
   emptyText = $localize`:@@uiMarket-screenerList-empty:Keine Treffer. Ändere die Suche oder setze die Filter zurück.`;
 
   #scrollToTop = effect(() => {
@@ -127,6 +137,10 @@ export class ScreenerListComponent {
 
   onSort(key: ScreenerSortKey): void {
     this.clickedSort.emit(key);
+  }
+
+  onToggleWatchlist(id: string, watched: boolean): void {
+    this.toggledWatchlist.emit({ id, watched });
   }
 
   onScrolledIndex(first: number): void {

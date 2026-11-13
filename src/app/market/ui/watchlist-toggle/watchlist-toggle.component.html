@@ -1,0 +1,15 @@
+<button
+  type="button"
+  appIconButton
+  [size]="size()"
+  [label]="label()"
+  [attr.aria-pressed]="watched()"
+  [attr.aria-disabled]="blocked() || null"
+  [attr.data-testid]="testId()"
+  (click)="onClick()">
+  @if (watched()) {
+    <i class="text-accent" appIcon="star-fill"></i>
+  } @else {
+    <i appIcon="star"></i>
+  }
+</button>

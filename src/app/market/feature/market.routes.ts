@@ -4,9 +4,11 @@ import {
   enterInstrumentPage,
   enterMarketsPage,
   enterScreenerPage,
+  enterWatchlistPage,
   leaveInstrumentPage,
   leaveMarketsPage,
   leaveScreenerPage,
+  leaveWatchlistPage,
 } from './state/market.guards';
 
 /**
@@ -43,6 +45,8 @@ export const marketRoutes: Routes = [
       {
         path: 'watchlist',
         title: $localize`:@@featureMarket-marketRoutes-watchlistTitle:Watchlist`,
+        canActivate: [enterWatchlistPage()],
+        canDeactivate: [leaveWatchlistPage()],
         loadComponent: async () => {
           return (await import('./watchlist/watchlist.page')).WatchlistPage;
         },

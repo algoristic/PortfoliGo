@@ -1,9 +1,28 @@
+@let rows = facade.watchlistRows$ | async;
+@let known = facade.watchlistKnown$ | async;
+
 <app-panel>
-  <app-empty-state
-    icon="eye"
-    heading="Watchlist folgt"
-    i18n-heading="@@featureMarket-watchlistPage-emptyHeading"
-    text="Diese Ansicht entsteht im weiteren Verlauf von AP 4.4."
-    i18n-text="@@featureMarket-watchlistPage-emptyText"
-    data-testid="market.watchlist.placeholder"></app-empty-state>
+  @if (rows && rows.length > 0) {
+    <app-watchlist-list
+      [rows]="rows"
+      (droppedItem)="onDrop($event, rows)"
+      (movedItem)="onMove($event, rows)"
+      (clickedRemove)="onRemove($event)"></app-watchlist-list>
+  } @else if (known) {
+    <app-empty-state
+      icon="star"
+      heading="Deine Watchlist ist leer"
+      i18n-heading="@@featureMarket-watchlistPage-emptyListHeading"
+      text="Markiere Wertpapiere im Screener oder auf ihrer Seite mit dem Stern, um ihre Kurse hier zu verfolgen."
+      i18n-text="@@featureMarket-watchlistPage-emptyListText"
+      data-testid="market.watchlist.empty">
+      <a
+        appButton
+        routerLink="../screener"
+        data-testid="market.watchlist.open-screener"
+        i18n="@@featureMarket-watchlistPage-openScreener"
+        >Zum Screener</a
+      >
+    </app-empty-state>
+  }
 </app-panel>

@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 
 import { ScreenerSortKey, YieldRange } from '@app/market/domain/models/screener.model';
 import { ScreenerRange } from '@app/market/ui/models/screener-view.model';
+import { WatchlistToggle } from '@app/market/ui/models/watchlist-view.model';
 import { ScreenerFilterComponent } from '@app/market/ui/screener-filter/screener-filter.component';
 import { ScreenerFilterSelection } from '@app/market/ui/screener-filter/screener-filter.model';
 import { ScreenerListComponent } from '@app/market/ui/screener-list/screener-list.component';
@@ -45,5 +46,13 @@ export class ScreenerPage {
 
   onRange(range: ScreenerRange): void {
     this.facade.scrollScreener(range);
+  }
+
+  onToggleWatchlist({ id, watched }: WatchlistToggle): void {
+    if (watched) {
+      this.facade.addToWatchlist(id);
+    } else {
+      this.facade.removeFromWatchlist(id);
+    }
   }
 }

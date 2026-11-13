@@ -112,7 +112,50 @@ test.describe('markets', () => {
     await expect(page.getByTestId('market.instrument.name')).toHaveText(name ?? '');
   });
 
-  test('fits the overview and the screener into 360 px', async ({ page }) => {
+  test('fills the watchlist, reorders it by dragging and keeps it after a reload', async ({
+    page,
+  }) => {
+    const game = await createPlayer(page, 'Anna');
+    await expectGameReady(page);
+    await page.goto(`${game}/markets/watchlist`);
+    await expectGameReady(page);
+    await expect(page.getByTestId('market.watchlist.empty')).toBeVisible();
+    await expectAccessible(page);
+
+    await page.getByTestId('market.watchlist.open-screener').click();
+    await expect(page).toHaveURL(/\/markets\/screener$/);
+    const rows = page.getByTestId('market.screener.row');
+    await expect(rows.first()).toBeVisible();
+    const ids: string[] = [];
+    for (let index = 0; index < 3; index++) {
+      const row = rows.nth(index);
+      ids.push((await row.getAttribute('data-instrument-id')) ?? '');
+      await row.getByTestId('market.screener.row.watchlist').click();
+      await expect(row.getByTestId('market.screener.row.watchlist')).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+    }
+
+    await page.getByTestId('market.nav.watchlist').click();
+    const watchlist = page.getByTestId('market.watchlist.row');
+    await expect(watchlist).toHaveCount(3);
+    expect(await watchlistIds(page)).toEqual(ids);
+    await expect(page.getByTestId('market.watchlist.row.price').first()).not.toHaveText('–');
+    await expectAccessible(page);
+
+    // Drag the first row by its grip below the last one.
+    await dragRow(page, 0, 2);
+    const reordered = [ids[1], ids[2], ids[0]];
+    await expect.poll(() => watchlistIds(page)).toEqual(reordered);
+
+    await page.reload();
+    await expectGameReady(page);
+    await expect(watchlist).toHaveCount(3);
+    expect(await watchlistIds(page)).toEqual(reordered);
+  });
+
+  test('fits the overview, the screener and the watchlist into 360 px', async ({ page }) => {
     // TS §11.4: nothing scrolls horizontally at 360 px.
     await page.setViewportSize({ width: 360, height: 740 });
     const game = await createPlayer(page, 'Anna');
@@ -125,8 +168,35 @@ test.describe('markets', () => {
     await expect(page.getByTestId('market.screener.row').first()).toBeVisible();
     await expectNoHorizontalScroll(page);
     await expectAccessible(page);
+    await page.getByTestId('market.screener.row.watchlist').first().click();
+    await page.getByTestId('market.nav.watchlist').click();
+    await expect(page.getByTestId('market.watchlist.row')).toHaveCount(1);
+    await expectNoHorizontalScroll(page);
+    await expectAccessible(page);
   });
 });
+
+async function watchlistIds(page: Page): Promise<string[]> {
+  return page
+    .getByTestId('market.watchlist.row')
+    .evaluateAll((rows) => rows.map((row) => row.getAttribute('data-instrument-id') ?? ''));
+}
+
+/** Drags a watchlist row by its grip onto the position of another row, in small steps like a hand. */
+async function dragRow(page: Page, from: number, to: number): Promise<void> {
+  const handle = page.getByTestId('market.watchlist.row.handle').nth(from);
+  const target = page.getByTestId('market.watchlist.row').nth(to);
+  const start = await handle.boundingBox();
+  const end = await target.boundingBox();
+  if (start === null || end === null) {
+    throw new Error('The watchlist rows are not visible');
+  }
+  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2 + 10, { steps: 5 });
+  await page.mouse.move(start.x + start.width / 2, end.y + end.height * 0.75, { steps: 20 });
+  await page.mouse.up();
+}
 
 async function readCount(page: Page): Promise<number> {
   const text = (await page.getByTestId('market.screener.total.count').textContent()) ?? '';

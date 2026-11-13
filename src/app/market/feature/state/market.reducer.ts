@@ -1,6 +1,7 @@
 import { createEntityAdapter, EntityAdapter, EntityState } from '@ngrx/entity';
 import { Action, createReducer, on } from '@ngrx/store';
 
+import * as BankingActions from '@app/banking/feature/state/banking.actions';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import {
@@ -10,6 +11,7 @@ import {
 } from '@app/market/domain/chart-view-logic';
 import { ChartRange } from '@app/market/domain/models/chart.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
+import { ScreenerRow } from '@app/market/domain/models/screener.model';
 import {
   overviewSparklineCandles,
   overviewSparklineStep,
@@ -26,12 +28,14 @@ import {
   QuoteSubscriptions,
   SCREENER_INITIAL_ROWS,
   ScreenerState,
+  WatchlistState,
 } from './market.model';
 import {
   DEFAULT_CHART_SETTINGS,
   DEFAULT_SCREENER_FILTER,
   nextScreenerSort,
   normalizeSeries,
+  sameIds,
   sameSeries,
   subscribedSeries,
   withChartIndicator,
@@ -42,7 +46,7 @@ export const MARKET_FEATURE_KEY = 'market';
 /**
  * Market data of the loaded player (TS §11.3): master data of all series, the quotes of the
  * subscribed series, the movers while a view watches them and the chart of the instrument page
- * (AP 4.2), the sparklines of the overview indices and the screener (AP 4.4).
+ * (AP 4.2), the sparklines of the overview indices, the screener and the watchlist (AP 4.4).
  */
 export interface MarketState {
   instruments: EntityState<Instrument>;
@@ -58,6 +62,7 @@ export interface MarketState {
   /** Only while the markets page is open. */
   overviewSparklines: OverviewSparklines;
   screener: ScreenerState;
+  watchlist: WatchlistState;
   error?: unknown;
 }
 
@@ -86,6 +91,8 @@ export const initialScreenerState: ScreenerState = {
   range: { start: 0, end: SCREENER_INITIAL_ROWS },
 };
 
+export const initialWatchlistState: WatchlistState = { ids: null, requested: null, rows: [] };
+
 export const initialMarketState: MarketState = {
   instruments: instrumentsAdapter.getInitialState(),
   instrumentsLoaded: false,
@@ -96,6 +103,7 @@ export const initialMarketState: MarketState = {
   chart: initialChartState,
   overviewSparklines: {},
   screener: initialScreenerState,
+  watchlist: initialWatchlistState,
 };
 
 const COUNTRY_REGIONS = new Map(COUNTRIES.map((country) => [country.id, country.regionId]));
@@ -487,6 +495,58 @@ const overviewReducer = createReducer(
   ),
 );
 
+/** Keeps the screener figures of the instruments still on the watchlist (shown or confirmed). */
+function withWatchlistRows(
+  watchlist: WatchlistState,
+  rows: readonly ScreenerRow[],
+): WatchlistState {
+  const wanted = new Set([...(watchlist.requested ?? []), ...(watchlist.ids ?? [])]);
+  return { ...watchlist, rows: rows.filter((row) => wanted.has(row.id)) };
+}
+
+const watchlistReducer = createReducer(
+  initialMarketState,
+  // A projection confirms the requested list once it carries it; a later request stays shown.
+  on(BankingActions.receivedProjection, (state, { projection }) => {
+    const part = projection.watchlist;
+    if (part === undefined) {
+      return state;
+    }
+    const { requested } = state.watchlist;
+    return {
+      ...state,
+      watchlist: {
+        ...state.watchlist,
+        ids: part.ids,
+        requested: requested !== null && sameIds(requested, part.ids) ? null : requested,
+      },
+    };
+  }),
+  on(MarketActions.requestedWatchlist, (state, { ids }) => ({
+    ...state,
+    watchlist: { ...state.watchlist, requested: ids },
+  })),
+  // The newest request failed: the confirmed list shows again. An older one that failed leaves the
+  // newer request shown; it brings its own confirmation or failure.
+  on(MarketActions.updateWatchlistFailure, (state, { ids }) =>
+    state.watchlist.requested !== null && sameIds(state.watchlist.requested, ids)
+      ? { ...state, watchlist: { ...state.watchlist, requested: null } }
+      : state,
+  ),
+  on(MarketActions.enterWatchlistPage, MarketActions.leaveWatchlistPage, (state) =>
+    state.watchlist.rows.length === 0
+      ? state
+      : { ...state, watchlist: { ...state.watchlist, rows: [] } },
+  ),
+  on(MarketActions.retrievedWatchlistRows, (state, { rows }) => ({
+    ...state,
+    watchlist: withWatchlistRows(state.watchlist, rows),
+  })),
+);
+
 export function marketReducer(state: MarketState | undefined, action: Action): MarketState {
-  return overviewReducer(screenerReducer(reducer(state, action), action), action);
+  return watchlistReducer(
+    overviewReducer(screenerReducer(reducer(state, action), action), action),
+    action,
+  );
 }

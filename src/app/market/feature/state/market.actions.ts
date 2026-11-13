@@ -10,7 +10,7 @@ import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import { Candle } from '@app/market/domain/models/candle.model';
 import { ChartRange, LiveCandle } from '@app/market/domain/models/chart.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
-import { ScreenerSortKey, YieldRange } from '@app/market/domain/models/screener.model';
+import { ScreenerRow, ScreenerSortKey, YieldRange } from '@app/market/domain/models/screener.model';
 import { ScreenerFilterDimension, ScreenerRange } from '@app/market/ui/models/screener-view.model';
 
 import { ChartSettings } from './market.model';
@@ -19,6 +19,8 @@ export const enterMarketsPage = createAction('[Market/Page] Enter markets page')
 export const leaveMarketsPage = createAction('[Market/Page] Leave markets page');
 export const enterScreenerPage = createAction('[Market/Page] Enter screener page');
 export const leaveScreenerPage = createAction('[Market/Page] Leave screener page');
+export const enterWatchlistPage = createAction('[Market/Page] Enter watchlist page');
+export const leaveWatchlistPage = createAction('[Market/Page] Leave watchlist page');
 export const enterInstrumentPage = createAction('[Market/Page] Enter instrument page');
 export const leaveInstrumentPage = createAction('[Market/Page] Leave instrument page');
 /**
@@ -184,4 +186,46 @@ export const retrievedScreener = createAction(
 export const loadScreenerFailure = createAction(
   '[Market/API] Load screener failure',
   props<{ generation: number; error: unknown }>(),
+);
+
+/** An instrument goes to the end of the watchlist (US-MK-04). */
+export const clickedAddToWatchlist = createAction(
+  '[Market/Page] Clicked add to watchlist',
+  props<{ id: string }>(),
+);
+export const clickedRemoveFromWatchlist = createAction(
+  '[Market/Page] Clicked remove from watchlist',
+  props<{ id: string }>(),
+);
+/** A row dragged with the pointer from list position `from` to `to`. */
+export const droppedWatchlistItem = createAction(
+  '[Market/Page] Dropped watchlist item',
+  props<{ from: number; to: number }>(),
+);
+/** A row moved with the keyboard alternative (buttons up and down). */
+export const movedWatchlistItem = createAction(
+  '[Market/Page] Moved watchlist item',
+  props<{ from: number; to: number }>(),
+);
+/** The new list sent to the engine; shown until a projection confirms it or it fails. */
+export const requestedWatchlist = createAction(
+  '[Market/Page] Requested watchlist',
+  props<{ ids: readonly string[] }>(),
+);
+export const updateWatchlistSuccess = createAction(
+  '[Market/API] Update watchlist success',
+  props<{ ids: readonly string[] }>(),
+);
+export const updateWatchlistFailure = createAction(
+  '[Market/API] Update watchlist failure',
+  props<{ ids: readonly string[]; error: unknown }>(),
+);
+/** The screener rows of all series; the slice keeps those of the watchlist (sparklines). */
+export const retrievedWatchlistRows = createAction(
+  '[Market/API] Retrieved watchlist rows',
+  props<{ rows: ScreenerRow[] }>(),
+);
+export const loadWatchlistRowsFailure = createAction(
+  '[Market/API] Load watchlist rows failure',
+  props<{ error: unknown }>(),
 );

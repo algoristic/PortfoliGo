@@ -24,3 +24,37 @@ export function watchlistError(
   }
   return null;
 }
+
+/**
+ * The watchlist with `id` appended at the end (US-MK-04). The same list when `id` is already on it
+ * or the list is full.
+ */
+export function addToWatchlist(ids: readonly string[], id: string): readonly string[] {
+  return ids.includes(id) || ids.length >= MAX_WATCHLIST_LENGTH ? ids : [...ids, id];
+}
+
+/** The watchlist without `id`; the same list when `id` is not on it. */
+export function removeFromWatchlist(ids: readonly string[], id: string): readonly string[] {
+  return ids.includes(id) ? ids.filter((other) => other !== id) : ids;
+}
+
+/**
+ * The watchlist with the entry at `from` moved to `to` (both list positions, as drag and drop
+ * reports them); the others keep their order. The same list when nothing moves or a position lies
+ * outside the list.
+ */
+export function moveWatchlistItem(
+  ids: readonly string[],
+  from: number,
+  to: number,
+): readonly string[] {
+  const inside = (index: number): boolean =>
+    Number.isInteger(index) && index >= 0 && index < ids.length;
+  if (from === to || !inside(from) || !inside(to)) {
+    return ids;
+  }
+  const moved = [...ids];
+  const [id] = moved.splice(from, 1);
+  moved.splice(to, 0, id);
+  return moved;
+}

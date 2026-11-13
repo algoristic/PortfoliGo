@@ -29,6 +29,12 @@ export class MarketFacade {
   moversView$ = this.#store.pipe(select(MarketSelectors.selectMoversView));
   screener$ = this.#store.pipe(select(MarketSelectors.selectScreenerView));
   screenerRows$ = this.#store.pipe(select(MarketSelectors.selectScreenerRows));
+  watchlistRows$ = this.#store.pipe(select(MarketSelectors.selectWatchlistRows));
+  watchlistKnown$ = this.#store.pipe(select(MarketSelectors.selectWatchlistKnown));
+  watchlistMembership$ = this.#store.pipe(select(MarketSelectors.selectWatchlistMembership));
+  routeInstrumentWatchlist$ = this.#store.pipe(
+    select(MarketSelectors.selectRouteInstrumentWatchlist),
+  );
 
   instrumentQuote$(id: string): Observable<InstrumentQuote | null> {
     return this.#store.pipe(select(MarketSelectors.selectInstrumentQuote(id)));
@@ -48,6 +54,14 @@ export class MarketFacade {
 
   leaveScreenerPage(): void {
     this.#store.dispatch(MarketActions.leaveScreenerPage());
+  }
+
+  enterWatchlistPage(): void {
+    this.#store.dispatch(MarketActions.enterWatchlistPage());
+  }
+
+  leaveWatchlistPage(): void {
+    this.#store.dispatch(MarketActions.leaveWatchlistPage());
   }
 
   enterInstrumentPage(): void {
@@ -129,5 +143,23 @@ export class MarketFacade {
   /** The rows the screener list renders (the visible rows subscribe their quotes). */
   scrollScreener(range: ScreenerRange): void {
     this.#store.dispatch(MarketActions.scrolledScreener({ range }));
+  }
+
+  addToWatchlist(id: string): void {
+    this.#store.dispatch(MarketActions.clickedAddToWatchlist({ id }));
+  }
+
+  removeFromWatchlist(id: string): void {
+    this.#store.dispatch(MarketActions.clickedRemoveFromWatchlist({ id }));
+  }
+
+  /** A row dragged with the pointer from list position `from` to `to`. */
+  dropWatchlistItem(from: number, to: number): void {
+    this.#store.dispatch(MarketActions.droppedWatchlistItem({ from, to }));
+  }
+
+  /** A row moved with the keyboard alternative. */
+  moveWatchlistItem(from: number, to: number): void {
+    this.#store.dispatch(MarketActions.movedWatchlistItem({ from, to }));
   }
 }

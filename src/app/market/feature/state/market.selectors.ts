@@ -10,12 +10,14 @@ import {
   shownChartDay,
 } from '@app/market/domain/chart-view-logic';
 import { Instrument, INSTRUMENT_KINDS } from '@app/market/domain/models/instrument.model';
+import { MAX_WATCHLIST_LENGTH } from '@app/market/domain/models/watchlist.model';
 import { marketDayOnOrBefore } from '@app/market/domain/performance-logic';
 import {
   MarketMoversViewModel,
   OverviewIndexView,
 } from '@app/market/ui/models/overview-view.model';
 import { ScreenerRowView } from '@app/market/ui/models/screener-view.model';
+import { WatchlistMembership, WatchlistRowView } from '@app/market/ui/models/watchlist-view.model';
 
 import {
   ChartSettings,
@@ -39,6 +41,7 @@ import {
   screenerCriteria,
   screenerRowViews,
   screenerWindowSeries,
+  watchlistRowViews,
 } from './market.utils';
 
 const selectState = createFeatureSelector<MarketState>(MARKET_FEATURE_KEY);
@@ -241,4 +244,66 @@ export const selectScreenerWindowSeries = createSelector(
   selectScreenerRowsState,
   selectScreenerRange,
   (rows, range) => screenerWindowSeries(rows, range),
+);
+
+export const selectWatchlist = createSelector(selectState, (state) => state.watchlist);
+
+/** The watchlist as shown: the requested list until it is confirmed, else the confirmed one. */
+export const selectWatchlistIds = createSelector(
+  selectWatchlist,
+  (watchlist): readonly string[] => watchlist.requested ?? watchlist.ids ?? [],
+);
+
+/** The list arrived with the projection; changes before would replace an unknown list. */
+export const selectWatchlistKnown = createSelector(
+  selectWatchlist,
+  (watchlist) => watchlist.ids !== null,
+);
+
+export const selectWatchlistMembership = createSelector(
+  selectWatchlistIds,
+  selectWatchlistKnown,
+  (ids, known): WatchlistMembership => ({
+    ids: new Set(ids),
+    full: ids.length >= MAX_WATCHLIST_LENGTH,
+    known,
+  }),
+);
+
+/** The series whose quotes the watchlist tab watches, in list order. */
+export const selectWatchlistSeries = createSelector(
+  selectWatchlistIds,
+  selectInstrumentEntities,
+  (ids, instruments): number[] =>
+    ids.flatMap((id) => {
+      const instrument = instruments[id];
+      return instrument === undefined ? [] : [instrument.series];
+    }),
+);
+
+/** An instrument of the shown list has no screener figures yet (it was added since the query). */
+export const selectWatchlistRowsMissing = createSelector(
+  selectWatchlistIds,
+  selectWatchlist,
+  (ids, { rows }) => {
+    const known = new Set(rows.map((row) => row.id));
+    return ids.some((id) => !known.has(id));
+  },
+);
+
+export const selectWatchlistRows = createSelector(
+  selectWatchlistIds,
+  selectInstrumentEntities,
+  selectQuoteEntities,
+  selectWatchlist,
+  (ids, instruments, quotes, { rows }): WatchlistRowView[] =>
+    watchlistRowViews(ids, instruments, quotes, rows),
+);
+
+/** The star of the instrument page: whether its instrument is on the watchlist. */
+export const selectRouteInstrumentWatchlist = createSelector(
+  selectRouteInstrument,
+  selectWatchlistMembership,
+  (instrument, { ids, full, known }) =>
+    instrument === null ? null : { watched: ids.has(instrument.id), full, known },
 );

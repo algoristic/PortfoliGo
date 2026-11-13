@@ -2,7 +2,7 @@ import { Candle } from '@app/market/domain/models/candle.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
 import { ScreenerRow } from '@app/market/domain/models/screener.model';
 
-import { initialChartState } from './market.reducer';
+import { initialChartState, initialWatchlistState } from './market.reducer';
 import {
   selectChartView,
   selectInstrumentQuote,
@@ -13,6 +13,9 @@ import {
   selectRouteInstrument,
   selectScreenerRows,
   selectScreenerWindowSeries,
+  selectWatchlistIds,
+  selectWatchlistMembership,
+  selectWatchlistRows,
 } from './market.selectors';
 
 const STOCK = { id: 'cmp-0001', series: 0, kind: 'stock' } as Instrument;
@@ -243,6 +246,69 @@ describe('selectChartView', () => {
         { sectorId: 'technology', instrumentId: SECTOR.id, changeRatio: -0.012, level: -3 },
       ]);
       expect(selectMoversView.projector(null, new Map())).toBeNull();
+    });
+  });
+});
+
+describe('watchlist selectors', () => {
+  describe('selectWatchlistIds', () => {
+    it('shows the requested list before the confirmed one and nothing before the projection', () => {
+      expect(selectWatchlistIds.projector(initialWatchlistState)).toEqual([]);
+      expect(selectWatchlistIds.projector({ ...initialWatchlistState, ids: ['a'] })).toEqual(['a']);
+      expect(
+        selectWatchlistIds.projector({ ...initialWatchlistState, ids: ['a'], requested: ['b'] }),
+      ).toEqual(['b']);
+    });
+  });
+
+  describe('selectWatchlistMembership', () => {
+    it('is full at 50 instruments (TS §8.2)', () => {
+      const ids = (count: number): string[] => Array.from({ length: count }, (_v, n) => `c${n}`);
+      expect(selectWatchlistMembership.projector(ids(49), true).full).toBe(false);
+      expect(selectWatchlistMembership.projector(ids(50), true).full).toBe(true);
+    });
+  });
+
+  describe('selectWatchlistRows', () => {
+    const row: ScreenerRow = {
+      id: ETF.id,
+      series: ETF.series,
+      last: 50,
+      changeRatio: 0.02,
+      performance: { m1: null, m6: null, y1: null, y5: null },
+      dividendYield: 0,
+      sparkline: [48, 49, 50],
+    };
+    const quote = {
+      series: STOCK.series,
+      last: 12,
+      bid: null,
+      ask: null,
+      previousClose: 10,
+      change: 2,
+      changeRatio: 0.2,
+    };
+
+    it('keeps the list order, prefers live quotes and skips unknown instruments', () => {
+      const rows = selectWatchlistRows.projector(
+        [ETF.id, 'gone', STOCK.id],
+        { [ETF.id]: { ...ETF, name: 'Welt ETF', ticker: 'WETF' } as Instrument, [STOCK.id]: STOCK },
+        { [STOCK.series]: quote },
+        { ...initialWatchlistState, rows: [row] },
+      );
+      expect(rows.map(({ id }) => id)).toEqual([ETF.id, STOCK.id]);
+      expect(rows[0]).toMatchObject({ last: 50, changeRatio: 0.02, sparkline: [48, 49, 50] });
+      expect(rows[1]).toMatchObject({ last: 12, changeRatio: 0.2, sparkline: [] });
+    });
+
+    it('has no price before a quote or the screener figures arrived', () => {
+      const [only] = selectWatchlistRows.projector(
+        [STOCK.id],
+        { [STOCK.id]: STOCK },
+        {},
+        initialWatchlistState,
+      );
+      expect(only).toMatchObject({ last: null, changeRatio: null });
     });
   });
 });

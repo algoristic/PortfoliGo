@@ -3,6 +3,7 @@
 @let _nameSort = nameSort();
 @let _changeSort = changeSort();
 @let _yieldSort = yieldSort();
+@let _watchlist = watchlist();
 
 <div
   class="flex flex-col"
@@ -79,6 +80,11 @@
           <i [appIcon]="_yieldSort.icon" [class.text-fg]="_yieldSort.active"></i>
         </button>
       </div>
+      @if (_watchlist) {
+        <div class="w-8 shrink-0" role="columnheader">
+          <span class="sr-only">{{ watchlistLabel }}</span>
+        </div>
+      }
     </div>
   </div>
 
@@ -154,6 +160,18 @@
       <div class="hidden w-28 text-right text-sm tabular-nums md:block" role="cell">
         <span data-testid="market.screener.row.yield">{{ row.dividendYield | formatPercent }}</span>
       </div>
+      @if (_watchlist) {
+        <div class="relative z-10 w-8 shrink-0" role="cell">
+          <app-watchlist-toggle
+            size="sm"
+            testId="market.screener.row.watchlist"
+            [name]="row.name"
+            [watched]="row.watched"
+            [full]="_watchlist.full"
+            [disabled]="!_watchlist.known"
+            (toggledWatchlist)="onToggleWatchlist(row.id, $event)"></app-watchlist-toggle>
+        </div>
+      }
     </div>
   </cdk-virtual-scroll-viewport>
 </div>
