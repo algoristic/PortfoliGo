@@ -12,7 +12,9 @@
     @if (!compact()) {
       <div class="flex items-center gap-2 text-sm">
         <span class="text-fg-muted">{{ netWorthLabel }}</span>
-        <span class="font-semibold tabular-nums" data-testid="shell.header.net-worth">–</span>
+        <span class="font-semibold tabular-nums" data-testid="shell.header.net-worth">{{
+          netWorth() | formatCents
+        }}</span>
       </div>
     }
 

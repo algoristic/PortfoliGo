@@ -34,6 +34,10 @@
           <dd class="tabular-nums" [attr.data-testid]="'players.list.' + player.id + '.last-seen'">
             {{ player.lastSeenAt | formatDateTime }}
           </dd>
+          <dt class="text-fg-muted" i18n="@@uiPlayers-playerList-netWorth">Vermögen</dt>
+          <dd class="tabular-nums" [attr.data-testid]="'players.list.' + player.id + '.net-worth'">
+            {{ player.netWorth | formatCents }}
+          </dd>
         </dl>
         @if (player.outdated) {
           <p

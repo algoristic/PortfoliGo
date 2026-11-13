@@ -12,3 +12,8 @@ export function parseGermanNumber(text: string): number {
   const value = Number(digits);
   return isPercent ? value / 100 : value;
 }
+
+/** Parses an amount in euros as the UI shows it, e.g. `'10.000,00 €'` or `'−3,20 €'`. */
+export function parseEuros(text: string): number {
+  return parseGermanNumber(text.replace(/€\s*$/, ''));
+}

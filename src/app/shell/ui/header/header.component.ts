@@ -2,15 +2,18 @@ import { Menu, MenuItem, MenuTrigger } from '@angular/aria/menu';
 import { Component, computed, input, output } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
+import { Cents } from '@app/shared/domain/models/money.model';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { IconButtonDirective } from '@app/shared/ui/icon-button/icon-button.directive';
 import { MenuItemDirective } from '@app/shared/ui/menu/menu-item.directive';
 import { MenuDirective } from '@app/shared/ui/menu/menu.directive';
+import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 
 import { PlayerMenuAction } from './header.model';
 
 /**
- * Header of the game area; net worth and search are placeholders until AP 4.4. The shell projects
+ * Header of the game area with the net worth from `md` on (TS §11.4); the search is a placeholder
+ * until AP 4.4. The shell projects
  * the clock bar (`headerBar`, second row) and on phones the market status (`headerStatus`, next
  * to the brand).
  */
@@ -25,6 +28,7 @@ import { PlayerMenuAction } from './header.model';
     IconDirective,
     MenuDirective,
     MenuItemDirective,
+    FormatCentsPipe,
   ],
   templateUrl: './header.component.html',
   host: { class: 'block' },
@@ -32,6 +36,8 @@ import { PlayerMenuAction } from './header.model';
 export class HeaderComponent {
   compact = input(false);
   activePath = input<string | null>();
+  /** `null` until the first projection of the loaded player. */
+  netWorth = input<Cents | null>();
 
   selectedPlayerMenuAction = output<PlayerMenuAction>();
 

@@ -6,6 +6,7 @@ import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { IconButtonDirective } from '@app/shared/ui/icon-button/icon-button.directive';
+import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { FormatDateTimePipe } from '@app/shared/ui/pipes/format-date-time/format-date-time.pipe';
 
 import { PlayerListRow } from './player-list.model';
@@ -23,6 +24,7 @@ const ROW_CLASSES =
     IconButtonDirective,
     FormatGameTimePipe,
     FormatDateTimePipe,
+    FormatCentsPipe,
   ],
   templateUrl: './player-list.component.html',
   host: { class: 'block' },

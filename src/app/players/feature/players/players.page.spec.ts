@@ -10,6 +10,7 @@ import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-playe
 
 import { byTestId, click, queryByTestId, textOf, typeText } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
+import { parseEuros } from '../../../../testing/parse';
 import {
   FakeBroadcastHub,
   providePlayersTestPorts,
@@ -35,7 +36,7 @@ interface StoredPlayer {
   createdAt?: number;
   simVersion?: number;
   /** Clock and snapshot as the worker writes them once it loaded the player. */
-  runtime?: { tick: number; lastSeenAt: number; schemaVersion?: number };
+  runtime?: { tick: number; lastSeenAt: number; schemaVersion?: number; netWorth?: number };
 }
 
 async function storePlayer(database: IDBPDatabase, player: StoredPlayer): Promise<void> {
@@ -49,13 +50,14 @@ async function storePlayer(database: IDBPDatabase, player: StoredPlayer): Promis
     createdAt: player.createdAt ?? Date.UTC(2026, 9, 1),
   });
   if (player.runtime !== undefined) {
-    const { tick, lastSeenAt, schemaVersion } = player.runtime;
+    const { tick, lastSeenAt, schemaVersion, netWorth } = player.runtime;
     await database.put('runtime', {
       playerId: player.id,
       tick,
       speed: '1h',
       paused: true,
       lastSeenAt,
+      ...(netWorth === undefined ? {} : { netWorth }),
     });
     await database.put('snapshots', {
       playerId: player.id,
@@ -121,7 +123,7 @@ describe('PlayersPage', () => {
       await storePlayer(database, {
         id: ANNA,
         name: 'Anna',
-        runtime: { tick: ANNA_TICK, lastSeenAt: ANNA_LAST_SEEN },
+        runtime: { tick: ANNA_TICK, lastSeenAt: ANNA_LAST_SEEN, netWorth: 1_234_567 },
       });
       await storePlayer(database, { id: BEN, name: 'Ben' });
       localStorage.setItem('pgo.lastPlayerId', JSON.stringify({ v: 1, data: ANNA }));
@@ -136,10 +138,12 @@ describe('PlayersPage', () => {
         'Mi., 03.04.2030, 09:30',
       );
       expect(textOf(byTestId(page, 'players.list.p-anna.last-seen'))).toBe('12.11.2026, 14:30');
+      expect(parseEuros(textOf(byTestId(page, 'players.list.p-anna.net-worth')))).toBe(12_345.67);
       expect(queryByTestId(page, 'players.list.p-anna.last-played')).not.toBeNull();
       // Never loaded by the worker: no game time and no last use yet.
       expect(textOf(byTestId(page, 'players.list.p-ben.game-time'))).toBe('–');
       expect(textOf(byTestId(page, 'players.list.p-ben.last-seen'))).toBe('–');
+      expect(textOf(byTestId(page, 'players.list.p-ben.net-worth'))).toBe('–');
       expect(queryByTestId(page, 'players.list.p-ben.last-played')).toBeNull();
       expect(queryByTestId(page, 'players.list.p-anna.outdated')).toBeNull();
       expect(byTestId(page, 'players.list.p-ben.open').getAttribute('aria-label')).toBe(

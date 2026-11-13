@@ -5,6 +5,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { map } from 'rxjs';
 
+import { BankingFacade } from '@app/banking/feature/state/banking.facade';
 import { ClockFacade } from '@app/clock/feature/state/clock.facade';
 import { ClockControlsComponent } from '@app/clock/ui/clock-controls/clock-controls.component';
 import { MarketStatusComponent } from '@app/clock/ui/market-status/market-status.component';
@@ -40,6 +41,7 @@ export class ShellPage {
   shellFacade = inject(ShellFacade);
   sessionFacade = inject(SessionFacade);
   clockFacade = inject(ClockFacade);
+  bankingFacade = inject(BankingFacade);
   readonly #breakpointObserver = inject(BreakpointObserver);
   readonly #injector = inject(Injector);
   readonly #router = inject(Router);

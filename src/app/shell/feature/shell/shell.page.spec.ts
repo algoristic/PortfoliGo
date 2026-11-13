@@ -18,6 +18,7 @@ import { EXCHANGES } from '@app/world/domain/taxonomy';
 
 import { byTestId, click, press, queryByTestId, textOf, typeText } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
+import { parseEuros } from '../../../../testing/parse';
 import { installViewport } from '../../../../testing/viewport';
 
 const MS_PER_MINUTE = 60_000;
@@ -655,6 +656,47 @@ describe('ShellPage', () => {
       expect(textOf(byTestId(page, 'shell.header.paused'))).toBe('Pausiert');
       expect(byTestId<HTMLButtonElement>(page, 'shell.header.toggle-pause').disabled).toBe(false);
       expect(document.activeElement).toBe(byTestId(page, 'shell.header.toggle-pause'));
+    });
+  });
+
+  describe('net worth', () => {
+    let restoreViewport: () => void;
+
+    beforeEach(() => {
+      restoreViewport = installViewport(1024);
+    });
+
+    afterEach(() => restoreViewport());
+
+    function netWorth(): number {
+      return parseEuros(textOf(byTestId(page, 'shell.header.net-worth')));
+    }
+
+    it('shows the start capital after loading and less by the living costs after the bank run', async () => {
+      await openGame();
+      // US-SP-01: the start capital of 10.000 € is booked on the home bank's current account.
+      expect(netWorth()).toBe(10_000);
+
+      // TS §7.4: the bank run at 06:00 of the first bank working day debits the living costs of
+      // April, base 1.800 € with a deviation of at most ±15 %.
+      await act(() => click(byTestId(page, 'shell.header.speed')));
+      await act(() => click(byTestId(page, 'shell.header.speed.1h')));
+      await act(() => click(byTestId(page, 'shell.header.toggle-pause')));
+      await run(7_000);
+      await act(() => click(byTestId(page, 'shell.header.toggle-pause')));
+      await run(200);
+      expect(clock()).toMatch(/^Mo\., 01\.04\.2030, 0[6-9]:\d\d$/);
+      const livingCosts = 10_000 - netWorth();
+      expect(livingCosts).toBeGreaterThanOrEqual(1_800 * 0.85);
+      expect(livingCosts).toBeLessThanOrEqual(1_800 * 1.15);
+    });
+
+    it('shows the net worth of a loaded player in the player list', async () => {
+      const playerId = await openGame();
+      await act(() => click(byTestId(page, 'shell.header.player-menu')));
+      await act(() => click(byTestId(page, 'shell.header.player-menu.switch-player')));
+      expect(url()).toBe('/players');
+      expect(parseEuros(textOf(byTestId(page, `players.list.${playerId}.net-worth`)))).toBe(10_000);
     });
   });
 
