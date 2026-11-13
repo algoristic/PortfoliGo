@@ -13,6 +13,8 @@ import {
 
 import { SpeedId, SPEEDS } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
+import { AutoPauseCode } from '@app/notifications/domain/models/notification.model';
+import { notificationCodeLabel } from '@app/notifications/ui/labels/notification-labels';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { focusIfLost } from '@app/shared/ui/focus/focus-if-lost';
@@ -27,7 +29,8 @@ import { ClockMenuAction, SpeedOption } from './clock-controls.model';
 import { FormatGameTimePipe } from '../pipes/format-game-time/format-game-time.pipe';
 
 /**
- * Game time with pause, speed, load and jump (PS US-ZT-01–03, US-ZT-05). The clock shows the
+ * Game time with pause, speed, load and jump (PS US-ZT-01–03, US-ZT-05) and the reason of an
+ * auto-pause (US-ZT-06; on phones only the icon, the text for screen readers). The clock shows the
  * minute of the last `clock` event; seconds are not shown, so real time needs no interpolation.
  */
 @Component({
@@ -55,6 +58,8 @@ export class ClockControlsComponent {
   tick = input<Tick | null>(null);
   speed = input<SpeedId | null>(null);
   paused = input<boolean | null>(null);
+  /** Code of the notification an auto-pause stopped at, while it holds the game (TS §3.6). */
+  autoPauseCode = input<AutoPauseCode | null>(null);
   overloaded = input(false);
   jumping = input(false);
   jumpTargetTick = input<Tick | null>(null);
@@ -83,6 +88,17 @@ export class ClockControlsComponent {
     const speed = this.speed();
     return speed === null ? '–' : speedLabel(speed);
   });
+  pausedLabel = computed(() => {
+    const code = this.autoPauseCode();
+    return code === null
+      ? this.pausedText
+      : $localize`:@@uiClock-clockControls-autoPaused:Pausiert: ${notificationCodeLabel(code)}:reason:`;
+  });
+  pausedIcon = computed(() =>
+    this.autoPauseCode() === null ? 'pause-fill' : 'exclamation-triangle-fill',
+  );
+  /** The reason as a tooltip too, because phones show only the icon. */
+  pausedTitle = computed(() => (this.autoPauseCode() === null ? null : this.pausedLabel()));
   jumpPercent = computed(() => {
     const ratio = this.jumpRatio();
     return ratio === null ? null : Math.round(ratio * 100);
@@ -102,6 +118,7 @@ export class ClockControlsComponent {
   );
 
   clockLabel = $localize`:@@uiClock-clockControls-clockLabel:Spielzeit`;
+  pausedText = $localize`:@@uiClock-clockControls-paused:Pausiert`;
   pauseShortcutLabel = $localize`:@@uiClock-clockControls-pause:Pause (Leertaste)`;
   resumeShortcutLabel = $localize`:@@uiClock-clockControls-resume:Weiter (Leertaste)`;
   fasterShortcutLabel = $localize`:@@uiClock-clockControls-faster:Schneller (+)`;

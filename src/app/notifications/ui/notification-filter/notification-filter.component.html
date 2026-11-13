@@ -1,0 +1,33 @@
+@let _category = category();
+
+<div class="flex flex-wrap items-end justify-between gap-3">
+  <div class="flex flex-col gap-1">
+    <label
+      class="text-sm font-medium"
+      for="notifications-center-category"
+      i18n="@@uiNotifications-notificationFilter-category"
+      >Kategorie</label
+    >
+    <select
+      id="notifications-center-category"
+      class="h-10 rounded-md border border-border bg-surface px-2 text-sm text-fg"
+      data-testid="notifications.center.category"
+      (change)="onSelectCategory($event)">
+      <option value="" [selected]="_category === null">{{ allLabel }}</option>
+      @for (option of categoryOptions; track option.id) {
+        <option [value]="option.id" [selected]="option.id === _category">{{ option.label }}</option>
+      }
+    </select>
+  </div>
+  <button
+    appButton
+    type="button"
+    data-testid="notifications.center.mark-all-read"
+    [disabled]="!hasUnread()"
+    (click)="onMarkAllRead()">
+    <i appIcon="check2-all"></i>
+    <ng-container i18n="@@uiNotifications-notificationFilter-markAllRead"
+      >Alle als gelesen markieren</ng-container
+    >
+  </button>
+</div>

@@ -45,9 +45,9 @@
 } @else {
   <div class="ml-1 flex min-w-0 items-center gap-1 md:ml-3">
     @if (_paused) {
-      <app-badge tone="warning" data-testid="shell.header.paused">
-        <i appIcon="pause-fill"></i>
-        <span [class.sr-only]="_compact" i18n="@@uiClock-clockControls-paused">Pausiert</span>
+      <app-badge tone="warning" data-testid="shell.header.paused" [attr.title]="pausedTitle()">
+        <i [appIcon]="pausedIcon()"></i>
+        <span [class.sr-only]="_compact">{{ pausedLabel() }}</span>
       </app-badge>
     }
     @if (overloaded() && !_paused) {

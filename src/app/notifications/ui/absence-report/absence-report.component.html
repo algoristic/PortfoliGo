@@ -1,0 +1,191 @@
+@let _report = report();
+@let _warnings = warnings();
+@let _indices = indices();
+
+<div class="flex flex-col gap-5">
+  <section aria-labelledby="absence-report-period">
+    <h3
+      id="absence-report-period"
+      class="text-xs font-medium tracking-wide text-fg-muted uppercase"
+      i18n="@@uiNotifications-absenceReport-period">
+      Zeitraum
+    </h3>
+    <p class="mt-1 tabular-nums">
+      <span data-testid="notifications.absence-report.from">{{
+        _report.from | formatGameTime
+      }}</span>
+      –
+      <span data-testid="notifications.absence-report.to">{{ _report.to | formatGameTime }}</span>
+    </p>
+    <p class="mt-1 text-fg-muted" data-testid="notifications.absence-report.counts">
+      <ng-container i18n="@@uiNotifications-absenceReport-counts"
+        >{_report.bookings, plural,
+          =0 {Keine Buchungen}
+          =1 {1 Buchung}
+          other {{{ _report.bookings }} Buchungen}
+
+        },
+        {_report.notifications, plural,
+          =0 {keine Benachrichtigungen}
+          =1 {1 Benachrichtigung}
+          other {{{ _report.notifications }} Benachrichtigungen}
+        }</ng-container
+      >
+    </p>
+  </section>
+
+  <section aria-labelledby="absence-report-net-worth">
+    <h3
+      id="absence-report-net-worth"
+      class="text-xs font-medium tracking-wide text-fg-muted uppercase"
+      i18n="@@uiNotifications-absenceReport-netWorth">
+      Gesamtvermögen
+    </h3>
+    <p class="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      <span class="tabular-nums">
+        <span data-testid="notifications.absence-report.net-worth-before">{{
+          _report.netWorthBefore | formatCents
+        }}</span>
+        <i appIcon="arrow-right" class="mx-1 text-fg-muted"></i>
+        <span class="font-semibold" data-testid="notifications.absence-report.net-worth-after">{{
+          _report.netWorthAfter | formatCents
+        }}</span>
+      </span>
+      <app-price-change
+        mode="cents"
+        data-testid="notifications.absence-report.net-worth-change"
+        [value]="netWorthChange()"></app-price-change>
+    </p>
+  </section>
+
+  <div class="grid gap-4 sm:grid-cols-2">
+    @for (group of flowGroups(); track group.id) {
+      <section [attr.data-testid]="'notifications.absence-report.' + group.id">
+        <h3 class="text-xs font-medium tracking-wide text-fg-muted uppercase">{{ group.label }}</h3>
+        <dl class="mt-1 grid grid-cols-[1fr_auto] gap-x-3 gap-y-1">
+          @for (line of group.flows; track line.id) {
+            <dt>{{ line.label }}</dt>
+            <dd
+              class="text-right tabular-nums"
+              [attr.data-testid]="'notifications.absence-report.flow.' + line.id">
+              {{ line.amount | formatCents }}
+            </dd>
+          }
+        </dl>
+      </section>
+    }
+  </div>
+
+  <section aria-labelledby="absence-report-warnings">
+    <h3
+      id="absence-report-warnings"
+      class="text-xs font-medium tracking-wide text-fg-muted uppercase"
+      data-testid="notifications.absence-report.warning-count">
+      <ng-container i18n="@@uiNotifications-absenceReport-warningCount"
+        >Warnungen ({{ _report.warningCount }})</ng-container
+      >
+    </h3>
+    @if (_warnings.length === 0) {
+      <p class="mt-1 text-fg-muted" i18n="@@uiNotifications-absenceReport-noWarnings">
+        Keine Warnungen.
+      </p>
+    } @else {
+      <ul class="mt-1 flex flex-col gap-2">
+        @for (warning of _warnings; track warning.seq) {
+          <li class="flex gap-2" data-testid="notifications.absence-report.warning">
+            <i
+              class="mt-0.5"
+              [appIcon]="severityIcons[warning.severity].icon"
+              [class]="severityIcons[warning.severity].color"></i>
+            <div class="flex min-w-0 flex-col">
+              <span class="font-medium" data-testid="notifications.absence-report.warning-title">{{
+                warning.title
+              }}</span>
+              @if (warning.text) {
+                <span>{{ warning.text }}</span>
+              }
+              <span class="text-xs text-fg-muted tabular-nums"
+                >{{ warning.tick | formatGameTime }} · {{ warning.severityLabel }}</span
+              >
+            </div>
+          </li>
+        }
+      </ul>
+      @if (hiddenWarnings() > 0) {
+        <p class="mt-2 text-fg-muted" i18n="@@uiNotifications-absenceReport-moreWarnings">
+          Die neuesten {{ _warnings.length }} von {{ _report.warningCount }}; alle stehen im
+          Benachrichtigungszentrum.
+        </p>
+      }
+    }
+  </section>
+
+  @if (_indices.length > 0) {
+    <section aria-labelledby="absence-report-indices">
+      <h3
+        id="absence-report-indices"
+        class="text-xs font-medium tracking-wide text-fg-muted uppercase">
+        {{ indicesLabel }}
+      </h3>
+      <div
+        class="mt-1 overflow-x-auto rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        role="region"
+        tabindex="0"
+        [attr.aria-label]="indicesLabel">
+        <table class="w-full border-collapse">
+          <caption class="sr-only">{{ indicesLabel }}</caption>
+          <thead>
+            <tr class="border-b border-border text-fg-muted">
+              <th
+                scope="col"
+                class="py-1 pr-3 text-left font-medium"
+                i18n="@@uiNotifications-absenceReport-index">
+                Index
+              </th>
+              <th
+                scope="col"
+                class="px-3 py-1 text-right font-medium max-sm:hidden"
+                i18n="@@uiNotifications-absenceReport-indexStart">
+                Beginn
+              </th>
+              <th
+                scope="col"
+                class="px-3 py-1 text-right font-medium"
+                i18n="@@uiNotifications-absenceReport-indexEnd">
+                Ende
+              </th>
+              <th
+                scope="col"
+                class="py-1 pl-3 text-right font-medium"
+                i18n="@@uiNotifications-absenceReport-indexChange">
+                Veränderung
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (index of _indices; track index.id) {
+              <tr
+                class="border-b border-border last:border-b-0"
+                [attr.data-testid]="'notifications.absence-report.index.' + index.id">
+                <th scope="row" class="py-1 pr-3 text-left font-normal">{{ index.name }}</th>
+                <td class="px-3 py-1 text-right tabular-nums max-sm:hidden">{{
+                  index.start | formatNumber: 2
+                }}</td>
+                <td class="px-3 py-1 text-right tabular-nums">{{ index.end | formatNumber: 2 }}</td>
+                <td class="py-1 pl-3 text-right whitespace-nowrap">
+                  @if (index.change !== null) {
+                    <app-price-change
+                      data-testid="notifications.absence-report.index-change"
+                      [value]="index.change"></app-price-change>
+                  } @else {
+                    –
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+</div>

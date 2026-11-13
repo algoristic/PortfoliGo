@@ -20,6 +20,7 @@ export class ClockFacade {
   effectiveSpeed$ = this.#store.pipe(select(ClockSelectors.selectEffectiveSpeed));
   overloaded$ = this.#store.pipe(select(ClockSelectors.selectOverloaded));
   jumping$ = this.#store.pipe(select(ClockSelectors.selectJumping));
+  autoPause$ = this.#store.pipe(select(ClockSelectors.selectAutoPause));
   jumpTargetTick$ = this.#store.pipe(select(ClockSelectors.selectJumpTargetTick));
   canFaster$ = this.#store.pipe(select(ClockSelectors.selectCanFaster));
   canSlower$ = this.#store.pipe(select(ClockSelectors.selectCanSlower));

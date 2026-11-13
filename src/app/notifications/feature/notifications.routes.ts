@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+import { enterNotificationsPage, leaveNotificationsPage } from './state/notifications.guards';
+
 export const notificationsRoutes: Routes = [
   {
     path: '',
@@ -7,5 +9,7 @@ export const notificationsRoutes: Routes = [
     loadComponent: async () => {
       return (await import('./notifications/notifications.page')).NotificationsPage;
     },
+    canActivate: [enterNotificationsPage()],
+    canDeactivate: [leaveNotificationsPage()],
   },
 ];

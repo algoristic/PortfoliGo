@@ -14,6 +14,8 @@
 @let jumpRatio = sessionFacade.jumpRatio$ | async;
 @let shortcutsEnabled = clockFacade.shortcutsEnabled$ | async;
 @let netWorth = bankingFacade.netWorth$ | async;
+@let unread = notificationsFacade.unread$ | async;
+@let autoPause = clockFacade.autoPause$ | async;
 @let isBlocked = sessionStatus !== 'ready';
 
 <!-- While the overlay covers the game, the game area is inert (TS §11.10). -->
@@ -32,6 +34,7 @@
       [compact]="!isDesktop()"
       [activePath]="activeNavPath"
       [netWorth]="netWorth"
+      [unreadCount]="unread"
       (selectedPlayerMenuAction)="onSelectPlayerMenuAction($event)">
       @if (!isDesktop()) {
         <app-market-status
@@ -46,6 +49,7 @@
         [tick]="tick"
         [speed]="speed"
         [paused]="paused"
+        [autoPauseCode]="autoPause?.code ?? null"
         [overloaded]="overloaded ?? false"
         [jumping]="jumping ?? false"
         [jumpTargetTick]="jumpTargetTick"

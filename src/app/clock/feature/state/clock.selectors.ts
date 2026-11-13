@@ -24,6 +24,8 @@ export const selectEffectiveSpeed = createSelector(
 );
 export const selectOverloaded = createSelector(selectClock, (clock) => clock?.overloaded ?? false);
 export const selectJumping = createSelector(selectClock, (clock) => clock?.jumping ?? false);
+/** The notification an auto-pause stopped at, while it holds the game (TS §3.6, §12). */
+export const selectAutoPause = createSelector(selectClock, (clock) => clock?.autoPause ?? null);
 /** The player's background mode (TS §3.6), the one last sent until the engine reports it. */
 export const selectBackgroundMode = createSelector(
   selectClock,

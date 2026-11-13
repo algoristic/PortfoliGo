@@ -37,9 +37,18 @@
       <a
         appIconButton
         routerLink="notifications"
+        class="relative"
         data-testid="shell.header.notifications"
-        [label]="notificationsLabel">
+        [label]="bellLabel()">
         <i appIcon="bell"></i>
+        @if (unreadBadge(); as badge) {
+          <span
+            aria-hidden="true"
+            class="absolute top-0.5 right-0.5 min-w-4 rounded-full bg-accent px-1 text-center text-xs leading-4 font-semibold text-bg tabular-nums"
+            data-testid="shell.header.notifications.unread"
+            >{{ badge }}</span
+          >
+        }
       </a>
 
       <div class="relative">

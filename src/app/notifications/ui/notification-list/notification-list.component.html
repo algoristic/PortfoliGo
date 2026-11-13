@@ -1,0 +1,52 @@
+<ol class="flex flex-col divide-y divide-border" [attr.aria-label]="listLabel">
+  @for (row of rows(); track row.seq) {
+    <li
+      class="group flex items-start gap-3 border-l-4 border-transparent py-3 pr-1 pl-3 data-unread:border-accent"
+      [attr.data-unread]="row.read ? null : ''"
+      [attr.data-testid]="'notifications.center.entry.' + row.seq">
+      <i
+        class="mt-0.5 text-base"
+        [appIcon]="severityIcons[row.severity].icon"
+        [class]="severityIcons[row.severity].color"></i>
+      <div class="flex min-w-0 flex-1 flex-col gap-1">
+        <div class="flex flex-wrap items-baseline gap-x-2">
+          @if (!row.read) {
+            <span class="sr-only">{{ unreadLabel }}:</span>
+          }
+          <span
+            class="text-sm group-data-unread:font-semibold"
+            data-testid="notifications.center.entry.title"
+            >{{ row.title }}</span
+          >
+        </div>
+        @if (row.text) {
+          <p class="text-sm text-fg" data-testid="notifications.center.entry.text">
+            {{ row.text }}
+          </p>
+        }
+        <div class="flex flex-wrap items-center gap-2 text-xs text-fg-muted">
+          <span class="tabular-nums" data-testid="notifications.center.entry.time">{{
+            row.tick | formatGameTime
+          }}</span>
+          <app-badge data-testid="notifications.center.entry.category">{{
+            row.categoryLabel
+          }}</app-badge>
+          <app-badge [tone]="row.severityTone" data-testid="notifications.center.entry.severity">{{
+            row.severityLabel
+          }}</app-badge>
+        </div>
+      </div>
+      @if (!row.read) {
+        <button
+          appIconButton
+          type="button"
+          size="sm"
+          [label]="row.markReadLabel"
+          [attr.data-testid]="'notifications.center.entry.' + row.seq + '.mark-read'"
+          (click)="onMarkRead(row.seq)">
+          <i appIcon="check2"></i>
+        </button>
+      }
+    </li>
+  }
+</ol>

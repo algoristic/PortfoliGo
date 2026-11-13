@@ -10,6 +10,7 @@ import { ClockFacade } from '@app/clock/feature/state/clock.facade';
 import { ClockControlsComponent } from '@app/clock/ui/clock-controls/clock-controls.component';
 import { MarketStatusComponent } from '@app/clock/ui/market-status/market-status.component';
 import { SessionFacade } from '@app/engine/feature/state/session.facade';
+import { NotificationsFacade } from '@app/notifications/feature/state/notifications.facade';
 import { focusIfLost } from '@app/shared/ui/focus/focus-if-lost';
 import { NavItem } from '@app/shared/ui/nav-link/nav-item.model';
 
@@ -42,6 +43,7 @@ export class ShellPage {
   sessionFacade = inject(SessionFacade);
   clockFacade = inject(ClockFacade);
   bankingFacade = inject(BankingFacade);
+  notificationsFacade = inject(NotificationsFacade);
   readonly #breakpointObserver = inject(BreakpointObserver);
   readonly #injector = inject(Injector);
   readonly #router = inject(Router);
