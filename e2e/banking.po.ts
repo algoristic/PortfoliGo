@@ -37,3 +37,17 @@ export async function openStatement(page: Page, accountId: string): Promise<void
   await getAccountCard(page, accountId).getByTestId('banking.accounts.card.statement').click();
   await expect(page).toHaveURL(new RegExp(`/accounts/${accountId}$`));
 }
+
+// Bank comparison and dialogs (AP 3.5).
+
+export const getBankRows = (page: Page): Locator => page.getByTestId('banking.banks.row');
+export const getSortButton = (page: Page, key: string): Locator =>
+  page.getByTestId(`banking.banks.sort.${key}`);
+
+/** Opens a savings account at the bank of the salary account through the dialog. */
+export async function openSavingsAccount(page: Page): Promise<void> {
+  await page.getByTestId('banking.accounts.open-account').click();
+  await page.getByTestId('banking.open-account-dialog.kind.savings').check();
+  await page.getByTestId('banking.open-account-dialog.submit').click();
+  await expect(getAccountCard(page, 'acc-2')).toBeVisible();
+}

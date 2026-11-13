@@ -31,7 +31,8 @@ function isBankCommandError(code: string): code is BankCommandError {
   return (BANK_COMMAND_ERRORS as readonly string[]).includes(code);
 }
 
-function bankCommandErrorMessage(code: BankCommandError): string {
+/** Text of an engine code of the bank rules, e.g. a reason that keeps an account from closing. */
+export function bankCommandErrorMessage(code: BankCommandError): string {
   switch (code) {
     case 'unknown-bank':
       return $localize`:@@featureBanking-bankingErrors-unknownBank:Diese Bank gibt es nicht.`;

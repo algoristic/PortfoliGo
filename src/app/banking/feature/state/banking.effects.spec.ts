@@ -22,9 +22,13 @@ import { Bank } from '@app/world/domain/models/bank.model';
 
 import { bankCommandFailureMessage } from './banking-errors.utils';
 import * as BankingActions from './banking.actions';
-import { BankingEffects, STATEMENT_SEARCH_DEBOUNCE_MS } from './banking.effects';
+import {
+  BankingEffects,
+  MONTHLY_VALUES_THROTTLE_MS,
+  STATEMENT_SEARCH_DEBOUNCE_MS,
+} from './banking.effects';
 import { BANK_COMMANDS, StatementState } from './banking.model';
-import { selectStatement, selectStatementAccountId } from './banking.selectors';
+import { selectNetWorth, selectStatement, selectStatementAccountId } from './banking.selectors';
 import { initialStatementState } from './banking.utils';
 
 function projection(tick: number, full: boolean, netWorth: number): ProjectionPayload {
@@ -51,6 +55,7 @@ describe('BankingEffects', () => {
       | 'setSalaryAccount'
       | 'transfer'
       | 'statement'
+      | 'monthlyValues'
       | 'projection$'
     >
   >;
@@ -67,6 +72,7 @@ describe('BankingEffects', () => {
       setSalaryAccount: vi.fn(),
       transfer: vi.fn(),
       statement: vi.fn(),
+      monthlyValues: vi.fn(),
       projection$: projection$.asObservable(),
     };
     toasts = { success: vi.fn(), error: vi.fn() };
@@ -450,6 +456,82 @@ describe('BankingEffects', () => {
       );
       subscription.unsubscribe();
       expect(toasts.error).toHaveBeenCalledTimes(times);
+    });
+  });
+
+  describe('loadMonthlyValues$', () => {
+    /** Tick of a game time in UTC (TS §3.2), independent of the calendar functions. */
+    const tickAt = (month: number, day: number, hour = 0): number =>
+      (Date.UTC(2030, month - 1, day, hour) - Date.UTC(2020, 0, 1)) / 60_000;
+    const values = {
+      income: 250_000,
+      livingCosts: 180_000,
+      fees: 0,
+      creditInterest: 0,
+      debitInterest: 0,
+      taxes: 0,
+      dividends: 0,
+    };
+    const result = {
+      kind: 'monthlyValues' as const,
+      closedMonths: [],
+      current: { month: { year: 2030, month: 4 }, values },
+    };
+    const retrieved = BankingActions.retrievedMonthlyValues({
+      monthlyValues: { closedMonths: [], current: result.current },
+    });
+
+    beforeEach(() => {
+      engine.monthlyValues.mockReturnValue(of(result));
+      store.overrideSelector(selectPhase, 'loading');
+      store.overrideSelector(selectNetWorth, 1_000_000);
+      store.overrideSelector(selectTick, tickAt(4, 1, 0));
+    });
+
+    it('loads once the player is loaded', async () => {
+      const loaded = firstValueFrom(effects.loadMonthlyValues$);
+      actions$.next(BankingActions.enterAccountsPage());
+      expect(engine.monthlyValues).not.toHaveBeenCalled();
+      store.overrideSelector(selectPhase, 'loaded');
+      store.refreshState();
+      expect(await loaded).toEqual(retrieved);
+    });
+
+    it('loads again, throttled, when the net worth changes and when a month ends', async () => {
+      store.overrideSelector(selectPhase, 'loaded');
+      const loads = firstValueFrom(effects.loadMonthlyValues$.pipe(take(3), toArray()));
+      actions$.next(BankingActions.enterAccountsPage());
+      store.overrideSelector(selectNetWorth, 900_000);
+      store.refreshState();
+      // Another tick of the same month is no trigger; the first of the next month is.
+      store.overrideSelector(selectTick, tickAt(4, 30, 23));
+      store.refreshState();
+      expect(engine.monthlyValues).toHaveBeenCalledTimes(1);
+      await new Promise((resolve) => setTimeout(resolve, MONTHLY_VALUES_THROTTLE_MS + 50));
+      expect(engine.monthlyValues).toHaveBeenCalledTimes(2);
+      store.overrideSelector(selectTick, tickAt(5, 1, 0));
+      store.refreshState();
+      expect(await loads).toEqual([retrieved, retrieved, retrieved]);
+    });
+
+    it('stops when the page is left', () => {
+      store.overrideSelector(selectPhase, 'loaded');
+      const subscription = effects.loadMonthlyValues$.subscribe();
+      actions$.next(BankingActions.enterAccountsPage());
+      actions$.next(BankingActions.leaveAccountsPage());
+      store.overrideSelector(selectNetWorth, 900_000);
+      store.refreshState();
+      subscription.unsubscribe();
+      expect(engine.monthlyValues).toHaveBeenCalledTimes(1);
+    });
+
+    it('dispatches the failure of the query', async () => {
+      const error = new EngineCommandError('player-not-loaded');
+      engine.monthlyValues.mockReturnValue(throwError(() => error));
+      store.overrideSelector(selectPhase, 'loaded');
+      const failed = firstValueFrom(effects.loadMonthlyValues$);
+      actions$.next(BankingActions.enterAccountsPage());
+      expect(await failed).toEqual(BankingActions.loadMonthlyValuesFailure({ error }));
     });
   });
 });

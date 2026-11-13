@@ -15,6 +15,7 @@ import { AccountKindLabelPipe } from '../pipes/account-kind-label/account-kind-l
 /**
  * An account in the overview (US-BK-02, AP 3.4): bank, kind and number, balance, for current
  * accounts the overdraft limit and the available amount, and the link to its statement.
+ * `[accountActions]` takes the actions of the account (AP 3.5).
  */
 @Component({
   selector: 'app-account-card',

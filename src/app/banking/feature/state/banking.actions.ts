@@ -1,16 +1,58 @@
 import { createAction, props } from '@ngrx/store';
 
+import { BankComparisonKey } from '@app/banking/domain/bank-comparison-logic';
 import { AccountId, DepotId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
 import { TransactionType } from '@app/banking/domain/models/ledger.model';
 import { StatementEntry, StatementPeriod } from '@app/banking/domain/models/statement.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import {
+  MonthlyValuesResult,
   ProjectionPayload,
   TransferPayload,
 } from '@app/engine/data-access/service/engine-service.model';
 import { Bank } from '@app/world/domain/models/bank.model';
 
 import { StatementRange } from './banking.model';
+
+/** Opens the dialog „Konto eröffnen“, with the bank preselected when given (bank comparison). */
+export const clickedOpenAccount = createAction(
+  '[Banking/Page] Clicked open account',
+  props<{ bankId?: string }>(),
+);
+/** Opens the transfer dialog, from `fromAccountId` when given. */
+export const clickedTransfer = createAction(
+  '[Banking/Page] Clicked transfer',
+  props<{ fromAccountId?: AccountId }>(),
+);
+/** Loads the closing preview of the account and opens the dialog „Konto schließen“. */
+export const clickedCloseAccount = createAction(
+  '[Banking/Page] Clicked close account',
+  props<{ accountId: AccountId }>(),
+);
+/** Opens the dialog „Gehaltskonto wechseln“, with the account preselected when given. */
+export const clickedSalaryAccount = createAction(
+  '[Banking/Page] Clicked salary account',
+  props<{ accountId?: AccountId }>(),
+);
+export const loadClosingPreviewFailure = createAction(
+  '[Banking/API] Load closing preview failure',
+  props<{ error: unknown }>(),
+);
+export const selectedBankSort = createAction(
+  '[Banking/Page] Selected bank sort',
+  props<{ key: BankComparisonKey }>(),
+);
+
+export const enterAccountsPage = createAction('[Banking/Page] Enter accounts page');
+export const leaveAccountsPage = createAction('[Banking/Page] Leave accounts page');
+export const retrievedMonthlyValues = createAction(
+  '[Banking/API] Retrieved monthly values',
+  props<{ monthlyValues: MonthlyValuesResult }>(),
+);
+export const loadMonthlyValuesFailure = createAction(
+  '[Banking/API] Load monthly values failure',
+  props<{ error: unknown }>(),
+);
 
 export const submittedOpenAccount = createAction(
   '[Banking/Page] Submitted open account',

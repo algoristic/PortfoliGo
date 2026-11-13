@@ -1,0 +1,54 @@
+<form [formRoot]="salaryAccountForm">
+  <app-dialog [heading]="heading" testId="banking.salary-account-dialog" (clickedClose)="decline()">
+    <fieldset class="flex flex-col gap-2" aria-describedby="banking-salary-account-hint">
+      <legend class="mb-2 font-medium" i18n="@@featureBanking-dialogSalaryAccount-legend"
+        >Auf welches Girokonto soll dein Gehalt gehen?</legend
+      >
+      @for (option of accountOptions; track option.id) {
+        <label
+          class="flex cursor-pointer items-center gap-3 rounded-md border border-border p-3 has-checked:border-accent">
+          <input
+            type="radio"
+            [value]="option.id"
+            [attr.cdkFocusInitial]="option.id === data.accountId ? '' : null"
+            [attr.data-testid]="'banking.salary-account-dialog.account.' + option.id"
+            [formField]="salaryAccountForm.accountId" />
+          <span class="min-w-0 flex-1">{{ option.label }}</span>
+          @if (option.salaryAccount) {
+            <app-badge tone="accent" i18n="@@featureBanking-dialogSalaryAccount-current"
+              >bisher</app-badge
+            >
+          }
+        </label>
+      }
+    </fieldset>
+    <p
+      id="banking-salary-account-hint"
+      class="mt-4 text-fg-muted"
+      data-testid="banking.salary-account-dialog.hint"
+      i18n="@@featureBanking-dialogSalaryAccount-hint">
+      Gehalt und Lebenshaltungskosten laufen ab dem nächsten Bank-Lauf über das neue Konto. Der
+      Dispo-Rahmen richtet sich nach dem Gehaltseingang der letzten drei Monate: Bei der neuen Bank
+      wächst er über drei Monate, bei der bisherigen schrumpft er.
+    </p>
+
+    <ng-container dialogActions>
+      <button
+        appButton
+        type="button"
+        data-testid="banking.salary-account-dialog.decline"
+        i18n="@@featureBanking-dialogSalaryAccount-decline"
+        (click)="decline()">
+        Abbrechen
+      </button>
+      <button
+        appButton
+        type="submit"
+        variant="primary"
+        data-testid="banking.salary-account-dialog.submit"
+        i18n="@@featureBanking-dialogSalaryAccount-submit">
+        Als Gehaltskonto festlegen
+      </button>
+    </ng-container>
+  </app-dialog>
+</form>

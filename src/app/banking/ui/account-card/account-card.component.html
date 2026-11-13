@@ -61,7 +61,8 @@
     </p>
   }
 
-  <div class="mt-auto flex justify-end">
+  <div class="mt-auto flex flex-wrap items-center justify-end gap-1">
+    <ng-content select="[accountActions]" />
     <a
       appButton
       variant="ghost"

@@ -1,0 +1,37 @@
+@if (canTransfer()) {
+  <button
+    appButton
+    type="button"
+    variant="ghost"
+    size="sm"
+    [attr.aria-label]="transferLabel()"
+    [attr.data-testid]="testId() + '.transfer'"
+    (click)="onTransfer()">
+    <i appIcon="arrow-left-right"></i>
+    <span i18n="@@uiBanking-accountActions-transfer">Überweisen</span>
+  </button>
+}
+@if (showSalaryAccount()) {
+  <button
+    appButton
+    type="button"
+    variant="ghost"
+    size="sm"
+    [attr.aria-label]="salaryAccountLabel()"
+    [attr.data-testid]="testId() + '.salary-account'"
+    (click)="onSalaryAccount()">
+    <i appIcon="briefcase"></i>
+    <span i18n="@@uiBanking-accountActions-salaryAccount">Als Gehaltskonto</span>
+  </button>
+}
+<button
+  appButton
+  type="button"
+  variant="ghost"
+  size="sm"
+  [attr.aria-label]="closeLabel()"
+  [attr.data-testid]="testId() + '.close'"
+  (click)="onClose()">
+  <i appIcon="x-circle"></i>
+  <span i18n="@@uiBanking-accountActions-close">Schließen</span>
+</button>

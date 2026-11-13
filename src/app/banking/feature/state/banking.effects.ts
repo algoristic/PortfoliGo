@@ -3,10 +3,12 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
 import { Action, select, Store } from '@ngrx/store';
 import {
+  asyncScheduler,
   catchError,
   concat,
   debounceTime,
   defer,
+  distinctUntilChanged,
   filter,
   finalize,
   last,
@@ -15,14 +17,17 @@ import {
   mergeMap,
   Observable,
   of,
+  skip,
   switchMap,
   take,
   takeUntil,
   tap,
+  throttleTime,
 } from 'rxjs';
 
 import { AccountId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
 import { statementPeriodRange } from '@app/banking/domain/statement-period-logic';
+import { tickToDateTime } from '@app/clock/domain/calendar-logic';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { selectTick } from '@app/clock/feature/state/clock.selectors';
 import {
@@ -39,11 +44,13 @@ import { formatCents } from '@app/shared/util/format';
 import { bankCommandFailureMessage } from './banking-errors.utils';
 import * as BankingActions from './banking.actions';
 import { StatementState, StatementWindowRequest } from './banking.model';
-import { selectStatement, selectStatementAccountId } from './banking.selectors';
+import { selectNetWorth, selectStatement, selectStatementAccountId } from './banking.selectors';
 import { statementWindowRequest } from './banking.utils';
 
 /** Typing pauses this long before the search reaches the worker. */
 export const STATEMENT_SEARCH_DEBOUNCE_MS = 300;
+/** At most one load of the monthly overview in this time, the last trigger included. */
+export const MONTHLY_VALUES_THROTTLE_MS = 500;
 
 interface StatementLoad {
   generation: number;
@@ -69,6 +76,11 @@ export class BankingEffects {
   /** Ends what a loaded player started: leaving the game or entering another one. */
   readonly #ended$ = this.#actions$.pipe(
     ofType(SessionActions.leaveGame, SessionActions.enterGame),
+  );
+
+  /** Ends the monthly overview: leaving the accounts page or the game, or entering another player. */
+  readonly #accountsLeft$ = this.#actions$.pipe(
+    ofType(BankingActions.leaveAccountsPage, SessionActions.leaveGame, SessionActions.enterGame),
   );
 
   /**
@@ -192,6 +204,53 @@ export class BankingEffects {
         ),
       ),
     ),
+  );
+
+  /**
+   * The monthly overview of the accounts page (US-EK-03, TS §11.3): once the player is loaded, then
+   * again when a month ends or a projection changes the net worth (bookings), throttled to one load
+   * per `MONTHLY_VALUES_THROTTLE_MS` including the last trigger. Leaving the page ends it.
+   */
+  loadMonthlyValues$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(BankingActions.enterAccountsPage),
+      switchMap(() =>
+        this.#store.pipe(
+          select(selectPhase),
+          filter((phase) => phase === 'loaded'),
+          take(1),
+          switchMap(() => this.#monthlyValuesTriggers()),
+          throttleTime(MONTHLY_VALUES_THROTTLE_MS, asyncScheduler, {
+            leading: true,
+            trailing: true,
+          }),
+          switchMap(() =>
+            this.#engine.monthlyValues().pipe(
+              map(({ closedMonths, current }) =>
+                BankingActions.retrievedMonthlyValues({ monthlyValues: { closedMonths, current } }),
+              ),
+              catchError((error: unknown) =>
+                of(BankingActions.loadMonthlyValuesFailure({ error })),
+              ),
+            ),
+          ),
+          takeUntil(this.#accountsLeft$),
+        ),
+      ),
+    ),
+  );
+
+  showMonthlyValuesFailure$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(BankingActions.loadMonthlyValuesFailure),
+        tap(() =>
+          this.#toastService.error(
+            $localize`:@@featureBanking-bankingEffects-loadMonthlyValuesFailure:Die Monatsübersicht konnte nicht geladen werden.`,
+          ),
+        ),
+      ),
+    { dispatch: false },
   );
 
   /** An unknown account shows on the page itself; other failures as a toast. */
@@ -325,6 +384,24 @@ export class BankingEffects {
         }),
       );
     });
+  }
+
+  /** The first load, then every change of the net worth and every new month of the game time. */
+  #monthlyValuesTriggers(): Observable<unknown> {
+    return merge(
+      of(null),
+      this.#store.pipe(select(selectNetWorth), distinctUntilChanged(), skip(1)),
+      this.#store.pipe(
+        select(selectTick),
+        filter((tick): tick is Tick => tick !== null),
+        map((tick) => {
+          const { year, month } = tickToDateTime(tick);
+          return year * 12 + month;
+        }),
+        distinctUntilChanged(),
+        skip(1),
+      ),
+    );
   }
 
   /** `true`: a new query or new bookings; `false`: the rendered rows may need another window. */

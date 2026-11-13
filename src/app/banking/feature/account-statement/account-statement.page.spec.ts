@@ -188,6 +188,31 @@ describe('AccountStatementPage', () => {
     expect(document.body.querySelector('[data-testid^="toast."]')).toBeNull();
   });
 
+  it('closes the shown account from its head and returns to the accounts', async () => {
+    await open('accounts/acc-1');
+    // The salary account offers neither the switch nor a transfer without a second account.
+    expect(queryByTestId(page, 'banking.statement.account.salary-account')).toBeNull();
+    expect(queryByTestId(page, 'banking.statement.account.transfer')).toBeNull();
+
+    await open('accounts');
+    await transferToSavings(0, () => '');
+    await open('accounts/acc-2');
+    expect(queryByTestId(page, 'banking.statement.account.transfer')).not.toBeNull();
+    click(byTestId(page, 'banking.statement.account.close'));
+    await settle(harness.fixture);
+    // Nothing remains on an empty account, so there is no target to choose.
+    expect(textOf(byTestId(document.body, 'banking.close-account-dialog.remainder'))).toBe(
+      '0,00 €',
+    );
+    expect(queryByTestId(document.body, 'banking.close-account-dialog.target')).toBeNull();
+    click(byTestId(document.body, 'banking.close-account-dialog.submit'));
+    await run(100);
+    expect(TestBed.inject(Router).url).toBe(`/game/${playerId}/accounts`);
+    expect(textOf(byTestId(page, 'banking.accounts.closed.toggle'))).toBe(
+      'Geschlossene Konten (1)',
+    );
+  });
+
   /** Waits for the debounced search, then for its query. */
   async function searchSettled(): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, STATEMENT_SEARCH_DEBOUNCE_MS + 50));

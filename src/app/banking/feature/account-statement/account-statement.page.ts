@@ -1,15 +1,21 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, effect, ElementRef, inject, Injector, viewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { map } from 'rxjs';
+
+import { AccountId } from '@app/banking/domain/models/account.model';
 
 import { TransactionType } from '@app/banking/domain/models/ledger.model';
 import { StatementPeriod } from '@app/banking/domain/models/statement.model';
+import { AccountActionsComponent } from '@app/banking/ui/account-actions/account-actions.component';
 import { AccountHeaderComponent } from '@app/banking/ui/account-header/account-header.component';
 import { StatementFilterComponent } from '@app/banking/ui/statement-filter/statement-filter.component';
 import { StatementListComponent } from '@app/banking/ui/statement-list/statement-list.component';
 import { StatementListRange } from '@app/banking/ui/statement-list/statement-list.model';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
+import { focusIfLost } from '@app/shared/ui/focus/focus-if-lost';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { PanelComponent } from '@app/shared/ui/panel/panel.component';
 import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
@@ -26,6 +32,7 @@ import { BankingFacade } from '../state/banking.facade';
   imports: [
     CommonModule,
     RouterLink,
+    AccountActionsComponent,
     AccountHeaderComponent,
     StatementFilterComponent,
     StatementListComponent,
@@ -41,6 +48,39 @@ import { BankingFacade } from '../state/banking.facade';
 })
 export class AccountStatementPage {
   bankingFacade = inject(BankingFacade);
+  readonly #injector = inject(Injector);
+
+  backLink = viewChild<ElementRef<HTMLElement>>('backLink');
+
+  /** The salary badge: switching removes the focused „Als Gehaltskonto“ button. */
+  #salaryAccount = toSignal(
+    this.bankingFacade.statementAccount$.pipe(map((account) => account?.salaryAccount ?? null)),
+    { initialValue: null },
+  );
+
+  constructor() {
+    // The focus goes to the link back instead of falling back to `<body>` (TS §11.10).
+    let previous: boolean | null = null;
+    effect(() => {
+      const salaryAccount = this.#salaryAccount();
+      if (previous !== null && salaryAccount !== previous) {
+        focusIfLost(this.#injector, () => this.backLink()?.nativeElement);
+      }
+      previous = salaryAccount;
+    });
+  }
+
+  onTransfer(fromAccountId: AccountId): void {
+    this.bankingFacade.clickTransfer(fromAccountId);
+  }
+
+  onSalaryAccount(accountId: AccountId): void {
+    this.bankingFacade.clickSalaryAccount(accountId);
+  }
+
+  onCloseAccount(accountId: AccountId): void {
+    this.bankingFacade.clickCloseAccount(accountId);
+  }
 
   onSelectPeriod(period: StatementPeriod): void {
     this.bankingFacade.selectStatementPeriod(period);

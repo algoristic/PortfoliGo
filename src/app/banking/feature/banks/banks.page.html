@@ -1,10 +1,29 @@
-<h1 class="text-xl font-semibold" i18n="@@featureBanking-banksPage-title">Bankenvergleich</h1>
+@let comparison = bankingFacade.bankComparison$ | async;
 
-<app-panel class="mt-4">
-  <app-empty-state
-    icon="building"
-    heading="Noch keine Inhalte"
-    i18n-heading="@@featureBanking-banksPage-emptyHeading"
-    text="Diese Ansicht entsteht in AP 3.5."
-    i18n-text="@@featureBanking-banksPage-emptyText"></app-empty-state>
-</app-panel>
+<a appButton variant="ghost" size="sm" routerLink="../accounts" data-testid="banking.banks.back">
+  <i appIcon="arrow-left"></i>
+  <span i18n="@@featureBanking-banksPage-back">Konten</span>
+</a>
+
+<h1 class="mt-2 text-xl font-semibold" i18n="@@featureBanking-banksPage-title">Bankenvergleich</h1>
+<p class="mt-1 text-sm text-fg-muted" i18n="@@featureBanking-banksPage-intro">
+  Konten und Depots eröffnest du sofort und kostenlos, bei jeder Bank beliebig viele. Sortiere nach
+  einem Kostenmerkmal über die Spaltenköpfe.
+</p>
+
+<div class="mt-4">
+  @if (comparison) {
+    <app-bank-table
+      [banks]="comparison.banks"
+      [sort]="comparison.sort"
+      (selectedSort)="onSort($event)"
+      (clickedOpenAccount)="onOpenAccount($event)"></app-bank-table>
+    <p class="mt-2 text-xs text-fg-muted" i18n="@@featureBanking-banksPage-note">
+      Order 1.000 € und 5.000 €: Orderentgelt und Börsenentgelt einer Beispielorder mit diesem
+      Kurswert. Die Depotgebühr wird nach einem Depotwert von 10.000 € sortiert, die Kontoführung
+      nach der Gebühr bei erfüllter Bedingung.
+    </p>
+  } @else {
+    <app-skeleton class="h-64" [block]="true"></app-skeleton>
+  }
+</div>

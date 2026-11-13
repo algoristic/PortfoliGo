@@ -1,0 +1,99 @@
+@let _bankId = openAccountForm.bankId();
+@let _kind = openAccountForm.kind();
+@let bank = selectedBank();
+@let kind = selectedKind();
+
+<form [formRoot]="openAccountForm">
+  <app-dialog [heading]="heading" testId="banking.open-account-dialog" (clickedClose)="decline()">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <label
+          class="font-medium"
+          for="banking-open-account-bank"
+          i18n="@@featureBanking-dialogOpenAccount-bank"
+          >Bank</label
+        >
+        <select
+          id="banking-open-account-bank"
+          class="h-10 rounded-md border border-border bg-surface px-2 text-fg aria-invalid:border-down"
+          cdkFocusInitial
+          aria-describedby="banking-open-account-bank-errors"
+          data-testid="banking.open-account-dialog.bank"
+          [attr.aria-invalid]="_bankId.touched() && _bankId.invalid()"
+          [formField]="openAccountForm.bankId">
+          @for (option of bankOptions; track option.id) {
+            <option [value]="option.id">{{ option.label }}</option>
+          }
+        </select>
+        <p id="banking-open-account-bank-errors" class="text-down">
+          @if (_bankId.touched() && _bankId.invalid()) {
+            @for (error of _bankId.errors(); track error.kind) {
+              <span>{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+
+      <fieldset class="flex flex-col gap-2" aria-describedby="banking-open-account-kind-errors">
+        <legend class="mb-1 font-medium" i18n="@@featureBanking-dialogOpenAccount-kind"
+          >Kontoart</legend
+        >
+        @for (option of kindOptions(); track option.kind) {
+          <label
+            class="flex cursor-pointer items-center gap-3 rounded-md border border-border p-3 has-checked:border-accent">
+            <input
+              type="radio"
+              [value]="option.kind"
+              [attr.data-testid]="'banking.open-account-dialog.kind.' + option.kind"
+              [formField]="openAccountForm.kind" />
+            <span>{{ option.label }}</span>
+          </label>
+        }
+        <p id="banking-open-account-kind-errors" class="text-down">
+          @if (_kind.touched() && _kind.invalid()) {
+            @for (error of _kind.errors(); track error.kind) {
+              <span data-testid="banking.open-account-dialog.kind-error">{{ error.message }}</span>
+            }
+          }
+        </p>
+      </fieldset>
+
+      @if (bank && kind) {
+        <section class="flex flex-col gap-2" aria-labelledby="banking-open-account-conditions">
+          <h3
+            id="banking-open-account-conditions"
+            class="font-medium"
+            i18n="@@featureBanking-dialogOpenAccount-conditions"
+            >Konditionen</h3
+          >
+          <app-account-conditions
+            testId="banking.open-account-dialog.conditions"
+            [conditions]="bank.conditions"
+            [kind]="kind"></app-account-conditions>
+          <p class="text-fg-muted" i18n="@@featureBanking-dialogOpenAccount-free">
+            Die Eröffnung ist sofort und kostenlos.
+          </p>
+        </section>
+      }
+    </div>
+
+    <ng-container dialogActions>
+      <button
+        appButton
+        type="button"
+        data-testid="banking.open-account-dialog.decline"
+        i18n="@@featureBanking-dialogOpenAccount-decline"
+        (click)="decline()">
+        Abbrechen
+      </button>
+      <button
+        appButton
+        type="submit"
+        variant="primary"
+        data-testid="banking.open-account-dialog.submit"
+        i18n="@@featureBanking-dialogOpenAccount-submit">
+        Eröffnen
+      </button>
+    </ng-container>
+  </app-dialog>
+</form>

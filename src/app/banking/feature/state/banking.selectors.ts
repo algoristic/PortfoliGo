@@ -1,6 +1,7 @@
 import { getRouterSelectors } from '@ngrx/router-store';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
+import { sortBanks } from '@app/banking/domain/bank-comparison-logic';
 import { ACCOUNT_KINDS, AccountId } from '@app/banking/domain/models/account.model';
 import { isEngineCommandError } from '@app/engine/feature/state/session.utils';
 import { Bank } from '@app/world/domain/models/bank.model';
@@ -10,6 +11,8 @@ import {
   AccountOverview,
   AccountTotals,
   BankCommand,
+  BankComparison,
+  MonthlyOverviewRow,
   StatementWindow,
 } from './banking.model';
 import { accountsAdapter, BANKING_FEATURE_KEY, BankingState } from './banking.reducer';
@@ -23,6 +26,9 @@ export const selectAccountViews = createSelector(selectState, selectAll);
 export const selectBanks = createSelector(selectState, (state) => state.banks);
 export const selectNetWorth = createSelector(selectState, (state) => state.netWorth);
 export const selectPending = createSelector(selectState, (state) => state.pending);
+
+export const selectBankSort = createSelector(selectState, (state) => state.bankSort);
+export const selectMonthlyValues = createSelector(selectState, (state) => state.monthlyValues);
 
 export const selectIsPending = (command: BankCommand) =>
   createSelector(selectPending, (pending) => pending[command] > 0);
@@ -98,6 +104,35 @@ function compareOpenAccounts(a: AccountEntry, b: AccountEntry): number {
 function bankName(account: AccountEntry): string {
   return account.bank?.name ?? account.bankId;
 }
+
+/** The banks of the comparison (US-BK-01): sorted by the chosen feature, else in world order. */
+export const selectBankComparison = createSelector(
+  selectBanks,
+  selectBankSort,
+  (banks, sort): BankComparison | null =>
+    banks === null ? null : { banks: sort === null ? banks : sortBanks(banks, sort), sort },
+);
+
+/** Open current accounts: the choice of the salary account (US-BK-05). */
+export const selectOpenCurrentAccounts = createSelector(selectAccountOverview, ({ open }) =>
+  open.filter((account) => account.kind === 'current'),
+);
+
+/** The monthly overview (US-EK-03): the running month first, then the closed months newest first. */
+export const selectMonthlyOverview = createSelector(
+  selectMonthlyValues,
+  (monthlyValues): MonthlyOverviewRow[] | null => {
+    if (monthlyValues === null) {
+      return null;
+    }
+    const closed = monthlyValues.closedMonths.map(({ month, values }): MonthlyOverviewRow => ({
+      month,
+      values,
+      running: false,
+    }));
+    return [{ ...monthlyValues.current, running: true }, ...closed.reverse()];
+  },
+);
 
 const { selectRouteParam } = getRouterSelectors();
 

@@ -1,0 +1,53 @@
+<div
+  class="relative overflow-x-auto rounded-lg border border-border bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+  role="region"
+  tabindex="0"
+  data-testid="banking.monthly.table"
+  [attr.aria-label]="label">
+  <table class="w-full border-collapse text-sm">
+    <caption class="sr-only">{{ label }}</caption>
+    <thead>
+      <tr class="border-b border-border align-bottom">
+        <th scope="col" class="sticky left-0 z-10 bg-surface px-3 py-2 text-left font-medium">
+          <span i18n="@@uiBanking-monthlyOverview-month">Monat</span>
+        </th>
+        @for (column of columns; track column.id) {
+          <th scope="col" class="px-3 py-2 text-right font-medium">{{ column.label }}</th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.id) {
+        <tr
+          class="border-b border-border last:border-b-0"
+          [attr.data-testid]="'banking.monthly.row.' + row.id">
+          <th
+            scope="row"
+            class="sticky left-0 z-10 bg-surface px-3 py-2 text-left font-normal whitespace-nowrap">
+            <span data-testid="banking.monthly.row.month">{{ row.label }}</span>
+            @if (row.running) {
+              <app-badge
+                class="ml-2"
+                data-testid="banking.monthly.row.running"
+                i18n="@@uiBanking-monthlyOverview-running"
+                >laufend</app-badge
+              >
+            }
+          </th>
+          @for (cell of row.cells; track cell.id) {
+            <td
+              class="px-3 py-2 text-right whitespace-nowrap tabular-nums"
+              [attr.data-testid]="'banking.monthly.row.' + cell.id">
+              {{ cell.value }}
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+<p class="mt-2 text-xs text-fg-muted" i18n="@@uiBanking-monthlyOverview-note">
+  Ausgaben als Beträge, Steuern abzüglich Erstattungen. Erträge sind Dividenden und Ausschüttungen.
+  Die Sparquote ist der Anteil der Einnahmen (Einkommen, Habenzinsen, Erträge), der nach allen
+  Ausgaben bleibt.
+</p>

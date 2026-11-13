@@ -1,6 +1,8 @@
 import { createEntityAdapter, EntityAdapter, EntityState } from '@ngrx/entity';
 import { Action, createReducer, on } from '@ngrx/store';
 
+import { BankSort, nextBankSort } from '@app/banking/domain/bank-comparison-logic';
+import { MonthlyValuesResult } from '@app/engine/data-access/service/engine-service.model';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { Cents } from '@app/shared/domain/models/money.model';
@@ -29,6 +31,10 @@ export interface BankingState extends EntityState<AccountView> {
   pending: PendingBankCommands;
   /** The statement page that is open (TS §11.3); only its loaded window. */
   statement: StatementState;
+  /** Sort of the bank comparison; `null`: world order. */
+  bankSort: BankSort | null;
+  /** Monthly values while the accounts page is open (US-EK-03); `null` until loaded. */
+  monthlyValues: MonthlyValuesResult | null;
   error?: unknown;
 }
 
@@ -46,6 +52,8 @@ export const initialBankingState: BankingState = accountsAdapter.getInitialState
   netWorth: null,
   pending: noPendingCommands,
   statement: initialStatementState,
+  bankSort: null,
+  monthlyValues: null,
 });
 
 function changePending(state: BankingState, command: BankCommand, delta: 1 | -1): BankingState {
@@ -112,6 +120,18 @@ const reducer = createReducer(
   on(BankingActions.transferFailure, (state, { error }) => ({
     ...changePending(state, 'transfer', -1),
     error,
+  })),
+  on(BankingActions.selectedBankSort, (state, { key }) => ({
+    ...state,
+    bankSort: nextBankSort(state.bankSort, key),
+  })),
+  on(BankingActions.enterAccountsPage, BankingActions.leaveAccountsPage, (state) => ({
+    ...state,
+    monthlyValues: null,
+  })),
+  on(BankingActions.retrievedMonthlyValues, (state, { monthlyValues }) => ({
+    ...state,
+    monthlyValues,
   })),
   on(BankingActions.enterAccountStatementPage, (state) => ({
     ...state,

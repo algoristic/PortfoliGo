@@ -1,4 +1,6 @@
+import { BankSort } from '@app/banking/domain/bank-comparison-logic';
 import { AccountKind } from '@app/banking/domain/models/account.model';
+import { CalendarMonth, MonthlyValues } from '@app/banking/domain/models/household.model';
 import { TransactionType } from '@app/banking/domain/models/ledger.model';
 import { StatementEntry, StatementPeriod } from '@app/banking/domain/models/statement.model';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
@@ -75,4 +77,17 @@ export interface StatementWindowRequest {
 export interface AccountOverview {
   open: AccountEntry[];
   closed: AccountEntry[];
+}
+
+/** The banks of the comparison in display order and the sort; `sort` `null`: world order. */
+export interface BankComparison {
+  banks: Bank[];
+  sort: BankSort | null;
+}
+
+/** A month of the monthly overview (US-EK-03); `running` for the current month. */
+export interface MonthlyOverviewRow {
+  month: CalendarMonth;
+  values: MonthlyValues;
+  running: boolean;
 }

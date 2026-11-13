@@ -1,52 +1,104 @@
 @let overview = bankingFacade.accountOverview$ | async;
 @let totals = bankingFacade.accountTotals$ | async;
 @let netWorth = bankingFacade.netWorth$ | async;
+@let banks = bankingFacade.banks$ | async;
+@let monthlyOverview = bankingFacade.monthlyOverview$ | async;
+@let canTransfer = (overview?.open.length ?? 0) > 1;
 
 <div class="flex flex-wrap items-center justify-between gap-3">
   <h1 class="text-xl font-semibold" i18n="@@featureBanking-accountsPage-title">Konten</h1>
+  <div class="flex flex-wrap gap-2">
+    <button
+      #openAccountButton
+      appButton
+      type="button"
+      variant="primary"
+      data-testid="banking.accounts.open-account"
+      [disabled]="!banks"
+      (click)="onOpenAccount()">
+      <i appIcon="plus-lg"></i>
+      <span i18n="@@featureBanking-accountsPage-openAccount">Konto eröffnen</span>
+    </button>
+    @if (canTransfer) {
+      <button
+        appButton
+        type="button"
+        data-testid="banking.accounts.transfer"
+        (click)="onTransfer()">
+        <i appIcon="arrow-left-right"></i>
+        <span i18n="@@featureBanking-accountsPage-transfer">Überweisen</span>
+      </button>
+    }
+    <a appButton routerLink="../banks" data-testid="banking.accounts.banks">
+      <i appIcon="bank"></i>
+      <span i18n="@@featureBanking-accountsPage-banks">Bankenvergleich</span>
+    </a>
+  </div>
 </div>
 
-@if (netWorth === null || !overview || !totals) {
-  <app-skeleton class="mt-4 h-32" [block]="true"></app-skeleton>
-} @else {
-  <app-account-totals
-    class="mt-4"
-    data-testid="banking.accounts.totals"
-    [byKind]="totals.byKind"
-    [total]="totals.total"></app-account-totals>
+<app-tabs class="mt-4" testId="banking.accounts.tabs" [tabs]="tabs" [label]="tabsLabel">
+  <ng-template appTabPanel="accounts">
+    @if (netWorth === null || !overview || !totals) {
+      <app-skeleton class="h-32" [block]="true"></app-skeleton>
+    } @else {
+      <app-account-totals
+        data-testid="banking.accounts.totals"
+        [byKind]="totals.byKind"
+        [total]="totals.total"></app-account-totals>
 
-  <section class="mt-6" aria-labelledby="banking-accounts-open">
-    <h2
-      id="banking-accounts-open"
-      class="text-lg font-semibold"
-      i18n="@@featureBanking-accountsPage-openHeading"
-      >Offene Konten</h2
-    >
-    <ul class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-      @for (account of overview.open; track account.id) {
-        <li>
-          <app-account-card [account]="account" [bank]="account.bank"></app-account-card>
-        </li>
-      }
-    </ul>
-  </section>
-
-  @if (overview.closed.length > 0) {
-    <details class="group mt-6" data-testid="banking.accounts.closed">
-      <summary
-        class="cursor-pointer rounded-md text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-        data-testid="banking.accounts.closed.toggle">
-        <ng-container i18n="@@featureBanking-accountsPage-closedHeading"
-          >Geschlossene Konten ({{ overview.closed.length }})</ng-container
+      <section class="mt-6" aria-labelledby="banking-accounts-open">
+        <h2
+          id="banking-accounts-open"
+          class="text-lg font-semibold"
+          i18n="@@featureBanking-accountsPage-openHeading"
+          >Offene Konten</h2
         >
-      </summary>
-      <ul class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        @for (account of overview.closed; track account.id) {
-          <li>
-            <app-account-card [account]="account" [bank]="account.bank"></app-account-card>
-          </li>
-        }
-      </ul>
-    </details>
-  }
-}
+        <ul class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          @for (account of overview.open; track account.id) {
+            <li>
+              <app-account-card [account]="account" [bank]="account.bank">
+                <app-account-actions
+                  accountActions
+                  testId="banking.accounts.card"
+                  [account]="account"
+                  [canTransfer]="canTransfer"
+                  (clickedTransfer)="onTransfer(account.id)"
+                  (clickedSalaryAccount)="onSalaryAccount(account.id)"
+                  (clickedClose)="onCloseAccount(account.id)"></app-account-actions>
+              </app-account-card>
+            </li>
+          }
+        </ul>
+      </section>
+
+      @if (overview.closed.length > 0) {
+        <details class="group mt-6" data-testid="banking.accounts.closed">
+          <summary
+            class="cursor-pointer rounded-md text-lg font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            data-testid="banking.accounts.closed.toggle">
+            <ng-container i18n="@@featureBanking-accountsPage-closedHeading"
+              >Geschlossene Konten ({{ overview.closed.length }})</ng-container
+            >
+          </summary>
+          <ul class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            @for (account of overview.closed; track account.id) {
+              <li>
+                <app-account-card [account]="account" [bank]="account.bank"></app-account-card>
+              </li>
+            }
+          </ul>
+        </details>
+      }
+    }
+  </ng-template>
+
+  <ng-template appTabPanel="months">
+    @if (monthlyOverview) {
+      <app-monthly-overview
+        data-testid="banking.monthly"
+        [months]="monthlyOverview"></app-monthly-overview>
+    } @else {
+      <app-skeleton class="h-32" [block]="true"></app-skeleton>
+    }
+  </ng-template>
+</app-tabs>

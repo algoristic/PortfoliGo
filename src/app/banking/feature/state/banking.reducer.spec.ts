@@ -190,4 +190,49 @@ describe('bankingReducer', () => {
       expect(bankingReducer(state, page(1)).statement.error).toBeUndefined();
     });
   });
+
+  describe('bank comparison', () => {
+    it('sorts by a feature, reverses on a second click and starts another at its default', () => {
+      const sorted = reduce(BankingActions.selectedBankSort({ key: 'accountFee' }));
+      expect(sorted.bankSort).toEqual({ key: 'accountFee', direction: 'ascending' });
+      const reversed = bankingReducer(
+        sorted,
+        BankingActions.selectedBankSort({ key: 'accountFee' }),
+      );
+      expect(reversed.bankSort).toEqual({ key: 'accountFee', direction: 'descending' });
+      const other = bankingReducer(
+        reversed,
+        BankingActions.selectedBankSort({ key: 'savingsRate' }),
+      );
+      expect(other.bankSort).toEqual({ key: 'savingsRate', direction: 'descending' });
+    });
+  });
+
+  describe('monthly values', () => {
+    const monthlyValues = {
+      closedMonths: [],
+      current: {
+        month: { year: 2030, month: 4 },
+        values: {
+          income: 250_000,
+          livingCosts: 0,
+          fees: 0,
+          creditInterest: 0,
+          debitInterest: 0,
+          taxes: 0,
+          dividends: 0,
+        },
+      },
+    };
+
+    it('holds the monthly values only while the accounts page is open', () => {
+      const loaded = reduce(
+        BankingActions.enterAccountsPage(),
+        BankingActions.retrievedMonthlyValues({ monthlyValues }),
+      );
+      expect(loaded.monthlyValues).toEqual(monthlyValues);
+      expect(bankingReducer(loaded, BankingActions.leaveAccountsPage()).monthlyValues).toBeNull();
+      expect(bankingReducer(loaded, BankingActions.enterAccountsPage()).monthlyValues).toBeNull();
+    });
+  });
 });

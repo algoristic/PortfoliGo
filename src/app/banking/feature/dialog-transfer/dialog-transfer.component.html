@@ -1,0 +1,147 @@
+@let _from = transferForm.fromAccountId();
+@let _to = transferForm.toAccountId();
+@let _amount = transferForm.amount();
+@let _purpose = transferForm.purpose();
+
+<form [formRoot]="transferForm">
+  <app-dialog [heading]="heading" testId="banking.transfer-dialog" (clickedClose)="decline()">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <label
+          class="font-medium"
+          for="banking-transfer-from"
+          i18n="@@featureBanking-dialogTransfer-from"
+          >Von</label
+        >
+        <select
+          id="banking-transfer-from"
+          class="h-10 rounded-md border border-border bg-surface px-2 text-fg aria-invalid:border-down"
+          cdkFocusInitial
+          aria-describedby="banking-transfer-available banking-transfer-from-errors"
+          data-testid="banking.transfer-dialog.from"
+          [attr.aria-invalid]="_from.touched() && _from.invalid()"
+          [formField]="transferForm.fromAccountId">
+          @for (option of accountOptions; track option.id) {
+            <option [value]="option.id">{{ option.label }}</option>
+          }
+        </select>
+        <p
+          id="banking-transfer-available"
+          class="text-fg-muted tabular-nums"
+          data-testid="banking.transfer-dialog.available">
+          <ng-container i18n="@@featureBanking-dialogTransfer-available"
+            >Verfügbar: {{ available() | formatCents }}</ng-container
+          >
+        </p>
+        <p id="banking-transfer-from-errors" class="text-down">
+          @if (_from.touched() && _from.invalid()) {
+            @for (error of _from.errors(); track error.kind) {
+              <span>{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label
+          class="font-medium"
+          for="banking-transfer-to"
+          i18n="@@featureBanking-dialogTransfer-to"
+          >An</label
+        >
+        <select
+          id="banking-transfer-to"
+          class="h-10 rounded-md border border-border bg-surface px-2 text-fg aria-invalid:border-down"
+          aria-describedby="banking-transfer-to-errors"
+          data-testid="banking.transfer-dialog.to"
+          [attr.aria-invalid]="_to.touched() && _to.invalid()"
+          [formField]="transferForm.toAccountId">
+          <option value="" i18n="@@featureBanking-dialogTransfer-toNone">Konto wählen</option>
+          @for (option of accountOptions; track option.id) {
+            <option [value]="option.id">{{ option.label }}</option>
+          }
+        </select>
+        <p id="banking-transfer-to-errors" class="text-down">
+          @if (_to.touched() && _to.invalid()) {
+            @for (error of _to.errors(); track error.kind) {
+              <span data-testid="banking.transfer-dialog.to-error">{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label
+          class="font-medium"
+          for="banking-transfer-amount"
+          i18n="@@featureBanking-dialogTransfer-amount"
+          >Betrag</label
+        >
+        <app-amount-input
+          inputId="banking-transfer-amount"
+          describedBy="banking-transfer-amount-errors"
+          testId="banking.transfer-dialog.amount"
+          [formField]="transferForm.amount"></app-amount-input>
+        <p id="banking-transfer-amount-errors" class="text-down">
+          @if (_amount.touched() && _amount.invalid()) {
+            @for (error of _amount.errors(); track error.kind) {
+              <span data-testid="banking.transfer-dialog.amount-error">{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label
+          class="font-medium"
+          for="banking-transfer-purpose"
+          i18n="@@featureBanking-dialogTransfer-purpose"
+          >Verwendungszweck (optional)</label
+        >
+        <input
+          id="banking-transfer-purpose"
+          class="h-10 rounded-md border border-border bg-surface px-3 text-fg aria-invalid:border-down"
+          autocomplete="off"
+          aria-describedby="banking-transfer-purpose-hint banking-transfer-purpose-errors"
+          data-testid="banking.transfer-dialog.purpose"
+          [attr.aria-invalid]="_purpose.touched() && _purpose.invalid()"
+          [formField]="transferForm.purpose" />
+        <p id="banking-transfer-purpose-hint" class="text-fg-muted tabular-nums">
+          <ng-container i18n="@@featureBanking-dialogTransfer-purposeLength"
+            >{{ purposeLength() }} von {{ maxPurposeLength }} Zeichen</ng-container
+          >
+        </p>
+        <p id="banking-transfer-purpose-errors" class="text-down">
+          @if (_purpose.touched() && _purpose.invalid()) {
+            @for (error of _purpose.errors(); track error.kind) {
+              <span data-testid="banking.transfer-dialog.purpose-error">{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+
+      <p class="text-fg-muted" i18n="@@featureBanking-dialogTransfer-free">
+        Die Überweisung ist sofort ausgeführt und kostenlos.
+      </p>
+    </div>
+
+    <ng-container dialogActions>
+      <button
+        appButton
+        type="button"
+        data-testid="banking.transfer-dialog.decline"
+        i18n="@@featureBanking-dialogTransfer-decline"
+        (click)="decline()">
+        Abbrechen
+      </button>
+      <button
+        appButton
+        type="submit"
+        variant="primary"
+        data-testid="banking.transfer-dialog.submit"
+        i18n="@@featureBanking-dialogTransfer-submit">
+        Überweisen
+      </button>
+    </ng-container>
+  </app-dialog>
+</form>

@@ -69,9 +69,13 @@ export function press(element: Element, key: string): void {
   );
 }
 
-/** Chooses the option with `value` like the user does and reports it with a `change` event. */
+/**
+ * Chooses the option with `value` like the user does and reports it like browsers do: an `input`
+ * event (Signal Forms listen to it), then a `change` event.
+ */
 export function select(element: HTMLSelectElement, value: string): void {
   element.value = value;
+  element.dispatchEvent(new Event('input', { bubbles: true }));
   element.dispatchEvent(new Event('change', { bubbles: true }));
 }
 

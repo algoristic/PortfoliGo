@@ -10,7 +10,10 @@ import {
   selectAccounts,
   selectAccountsOfBank,
   selectAccountTotals,
+  selectBankComparison,
+  selectMonthlyOverview,
   selectOpenAccounts,
+  selectOpenCurrentAccounts,
   selectSalaryAccount,
   selectStatementNotFound,
   selectTargetAccounts,
@@ -145,6 +148,85 @@ describe('banking selectors', () => {
       [undefined, false],
     ])('is %s for %s', (error, notFound) => {
       expect(selectStatementNotFound.projector({ ...initialStatementState, error })).toBe(notFound);
+    });
+  });
+
+  describe('selectOpenCurrentAccounts', () => {
+    it('offers the open current accounts in display order', () => {
+      const overview = selectAccountOverview.projector([...OPEN, CLOSED]);
+      expect(selectOpenCurrentAccounts.projector(overview)).toEqual([GIRO, OVERDRAWN]);
+    });
+  });
+
+  describe('selectBankComparison', () => {
+    const cheap = {
+      id: 'b-cheap',
+      name: 'Zeta',
+      type: 'direct',
+      conditions: {
+        currentAccount: {
+          monthlyFee: 100,
+          overdraft: { limitIncomeFactor: 2, rate: 0.08, toleratedSurcharge: 0.04 },
+        },
+        savingsAccount: null,
+        depot: {},
+      },
+    } as Bank;
+    const dear = {
+      ...cheap,
+      id: 'b-dear',
+      name: 'Alpha',
+      conditions: {
+        ...cheap.conditions,
+        currentAccount: {
+          monthlyFee: 900,
+          overdraft: { limitIncomeFactor: 2, rate: 0.12, toleratedSurcharge: 0.04 },
+        },
+      },
+    } as Bank;
+
+    it('keeps the world order without a sort and sorts by the chosen feature', () => {
+      expect(selectBankComparison.projector([dear, cheap], null)).toEqual({
+        banks: [dear, cheap],
+        sort: null,
+      });
+      const sort = { key: 'accountFee', direction: 'ascending' } as const;
+      expect(selectBankComparison.projector([dear, cheap], sort)?.banks).toEqual([cheap, dear]);
+    });
+
+    it('is null while the banks are not loaded', () => {
+      expect(selectBankComparison.projector(null, null)).toBeNull();
+    });
+  });
+
+  describe('selectMonthlyOverview', () => {
+    const values = {
+      income: 0,
+      livingCosts: 0,
+      fees: 0,
+      creditInterest: 0,
+      debitInterest: 0,
+      taxes: 0,
+      dividends: 0,
+    };
+
+    it('puts the running month first, then the closed months newest first', () => {
+      const rows = selectMonthlyOverview.projector({
+        closedMonths: [
+          { month: { year: 2030, month: 4 }, values },
+          { month: { year: 2030, month: 5 }, values },
+        ],
+        current: { month: { year: 2030, month: 6 }, values },
+      });
+      expect(rows?.map(({ month, running }) => [month.month, running])).toEqual([
+        [6, true],
+        [5, false],
+        [4, false],
+      ]);
+    });
+
+    it('is null while the values are not loaded', () => {
+      expect(selectMonthlyOverview.projector(null)).toBeNull();
     });
   });
 });

@@ -1,0 +1,123 @@
+@let _target = closeAccountForm.targetAccountId();
+
+<form [formRoot]="closeAccountForm">
+  <app-dialog [heading]="heading" testId="banking.close-account-dialog" (clickedClose)="decline()">
+    <div class="flex flex-col gap-4">
+      <p class="font-medium" data-testid="banking.close-account-dialog.account">
+        {{ accountTitle }}
+      </p>
+
+      <section class="flex flex-col gap-2" aria-labelledby="banking-close-account-settlement">
+        <h3
+          id="banking-close-account-settlement"
+          class="font-medium"
+          i18n="@@featureBanking-dialogCloseAccount-settlement"
+          >Abrechnung bis heute</h3
+        >
+        <dl class="flex flex-col gap-1">
+          <div class="flex justify-between gap-4">
+            <dt class="text-fg-muted" i18n="@@featureBanking-dialogCloseAccount-balance"
+              >Aktueller Saldo</dt
+            >
+            <dd class="tabular-nums" data-testid="banking.close-account-dialog.balance">
+              {{ data.account.balance | formatCents }}
+            </dd>
+          </div>
+          @for (booking of bookings; track booking.id) {
+            <div
+              class="flex justify-between gap-4"
+              data-testid="banking.close-account-dialog.booking">
+              <dt class="text-fg-muted">{{ booking.label }}</dt>
+              <dd class="tabular-nums" [class]="booking.amountClass">{{ booking.amount }}</dd>
+            </div>
+          } @empty {
+            <div class="text-fg-muted" data-testid="banking.close-account-dialog.no-bookings">
+              <dt class="sr-only" i18n="@@featureBanking-dialogCloseAccount-bookings">Buchungen</dt>
+              <dd i18n="@@featureBanking-dialogCloseAccount-noBookings"
+                >Keine Zinsen oder Gebühren offen.</dd
+              >
+            </div>
+          }
+          <div class="flex justify-between gap-4 border-t border-border pt-1 font-semibold">
+            <dt i18n="@@featureBanking-dialogCloseAccount-remainder">Restbetrag</dt>
+            <dd class="tabular-nums" data-testid="banking.close-account-dialog.remainder">
+              {{ data.preview.remainder | formatCents }}
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      @if (blocked) {
+        <div
+          class="flex flex-col gap-1 rounded-md border border-warning p-3"
+          role="note"
+          data-testid="banking.close-account-dialog.blockers">
+          <p class="font-medium text-warning" i18n="@@featureBanking-dialogCloseAccount-blocked">
+            Das Konto lässt sich noch nicht schließen:
+          </p>
+          <ul class="list-disc pl-5">
+            @for (blocker of blockers; track blocker.id) {
+              <li [attr.data-testid]="'banking.close-account-dialog.blocker.' + blocker.id">
+                {{ blocker.message }}
+              </li>
+            }
+          </ul>
+        </div>
+      } @else if (needsTarget) {
+        <div class="flex flex-col gap-1">
+          <label
+            class="font-medium"
+            for="banking-close-account-target"
+            i18n="@@featureBanking-dialogCloseAccount-target"
+            >Restguthaben überweisen auf</label
+          >
+          <select
+            id="banking-close-account-target"
+            class="h-10 rounded-md border border-border bg-surface px-2 text-fg aria-invalid:border-down"
+            cdkFocusInitial
+            aria-describedby="banking-close-account-target-errors"
+            data-testid="banking.close-account-dialog.target"
+            [attr.aria-invalid]="_target.touched() && _target.invalid()"
+            [formField]="closeAccountForm.targetAccountId">
+            <option value="" i18n="@@featureBanking-dialogCloseAccount-targetNone">
+              Konto wählen
+            </option>
+            @for (option of targetOptions; track option.id) {
+              <option [value]="option.id">{{ option.label }}</option>
+            }
+          </select>
+          <p id="banking-close-account-target-errors" class="text-down">
+            @if (_target.touched() && _target.invalid()) {
+              @for (error of _target.errors(); track error.kind) {
+                <span data-testid="banking.close-account-dialog.target-error">{{
+                  error.message
+                }}</span>
+              }
+            }
+          </p>
+        </div>
+      }
+    </div>
+
+    <ng-container dialogActions>
+      <button
+        appButton
+        type="button"
+        data-testid="banking.close-account-dialog.decline"
+        i18n="@@featureBanking-dialogCloseAccount-decline"
+        [attr.cdkFocusInitial]="needsTarget ? null : ''"
+        (click)="decline()">
+        Abbrechen
+      </button>
+      <button
+        appButton
+        type="submit"
+        variant="danger"
+        data-testid="banking.close-account-dialog.submit"
+        i18n="@@featureBanking-dialogCloseAccount-submit"
+        [disabled]="blocked">
+        Konto schließen
+      </button>
+    </ng-container>
+  </app-dialog>
+</form>

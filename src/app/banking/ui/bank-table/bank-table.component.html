@@ -1,0 +1,75 @@
+<div
+  class="relative overflow-x-auto rounded-lg border border-border bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+  role="region"
+  tabindex="0"
+  data-testid="banking.banks.table"
+  [attr.aria-label]="label">
+  <table class="w-full border-collapse text-left text-sm">
+    <caption class="sr-only">{{ label }}</caption>
+    <thead>
+      <tr class="border-b border-border align-bottom">
+        <th scope="col" class="sticky left-0 z-10 bg-surface px-3 py-2 font-medium">
+          <span i18n="@@uiBanking-bankTable-bank">Bank</span>
+        </th>
+        @for (column of columns(); track column.id) {
+          @if (column.sortKey === null) {
+            <th scope="col" class="px-3 py-2 font-medium" [class]="column.cellClass">
+              {{ column.label }}
+            </th>
+          } @else {
+            <th scope="col" class="px-1 py-1 font-medium" [attr.aria-sort]="column.ariaSort">
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 rounded-md px-2 py-1 text-left whitespace-nowrap hover:bg-surface-raised"
+                [attr.data-testid]="'banking.banks.sort.' + column.sortKey"
+                (click)="onSort(column.sortKey)">
+                {{ column.label }}
+                <i [class]="column.sortIconClass" [appIcon]="column.sortIcon"></i>
+              </button>
+            </th>
+          }
+        }
+        <th scope="col" class="px-3 py-2 font-medium">
+          <span class="sr-only" i18n="@@uiBanking-bankTable-actions">Aktionen</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.id) {
+        <tr
+          class="border-b border-border align-top last:border-b-0"
+          data-testid="banking.banks.row"
+          [attr.data-bank-id]="row.id">
+          <th scope="row" class="sticky left-0 z-10 bg-surface px-3 py-2 font-normal">
+            <span class="block font-semibold" data-testid="banking.banks.row.name">{{
+              row.name
+            }}</span>
+            <span class="block text-xs text-fg-muted" data-testid="banking.banks.row.type">{{
+              row.type
+            }}</span>
+          </th>
+          @for (cell of row.cells; track cell.id) {
+            <td
+              class="px-3 py-2"
+              [class]="cell.cellClass"
+              [attr.data-testid]="'banking.banks.row.' + cell.id">
+              {{ cell.value }}
+            </td>
+          }
+          <td class="px-3 py-2">
+            <button
+              appButton
+              type="button"
+              size="sm"
+              data-testid="banking.banks.row.open-account"
+              [attr.aria-label]="row.openAccountLabel"
+              (click)="onOpenAccount(row.id)">
+              <i appIcon="plus-lg"></i>
+              <span i18n="@@uiBanking-bankTable-openAccount">Konto eröffnen</span>
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

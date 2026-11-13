@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
+import { BankComparisonKey } from '@app/banking/domain/bank-comparison-logic';
 import { AccountId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
 import { TransactionType } from '@app/banking/domain/models/ledger.model';
 import { StatementPeriod } from '@app/banking/domain/models/statement.model';
@@ -30,6 +31,8 @@ export class BankingFacade {
   statementWindow$ = this.#store.pipe(select(BankingSelectors.selectStatementWindow));
   statementLoading$ = this.#store.pipe(select(BankingSelectors.selectStatementLoading));
   statementNotFound$ = this.#store.pipe(select(BankingSelectors.selectStatementNotFound));
+  bankComparison$ = this.#store.pipe(select(BankingSelectors.selectBankComparison));
+  monthlyOverview$ = this.#store.pipe(select(BankingSelectors.selectMonthlyOverview));
 
   account$(accountId: AccountId): Observable<AccountEntry | null> {
     return this.#store.pipe(select(BankingSelectors.selectAccount(accountId)));
@@ -45,6 +48,38 @@ export class BankingFacade {
 
   isPending$(command: BankCommand): Observable<boolean> {
     return this.#store.pipe(select(BankingSelectors.selectIsPending(command)));
+  }
+
+  clickOpenAccount(bankId?: string): void {
+    this.#store.dispatch(BankingActions.clickedOpenAccount(bankId === undefined ? {} : { bankId }));
+  }
+
+  clickTransfer(fromAccountId?: AccountId): void {
+    this.#store.dispatch(
+      BankingActions.clickedTransfer(fromAccountId === undefined ? {} : { fromAccountId }),
+    );
+  }
+
+  clickCloseAccount(accountId: AccountId): void {
+    this.#store.dispatch(BankingActions.clickedCloseAccount({ accountId }));
+  }
+
+  clickSalaryAccount(accountId?: AccountId): void {
+    this.#store.dispatch(
+      BankingActions.clickedSalaryAccount(accountId === undefined ? {} : { accountId }),
+    );
+  }
+
+  sortBanks(key: BankComparisonKey): void {
+    this.#store.dispatch(BankingActions.selectedBankSort({ key }));
+  }
+
+  enterAccountsPage(): void {
+    this.#store.dispatch(BankingActions.enterAccountsPage());
+  }
+
+  leaveAccountsPage(): void {
+    this.#store.dispatch(BankingActions.leaveAccountsPage());
   }
 
   openAccount(bankId: string, kind: OpenableAccountKind): void {

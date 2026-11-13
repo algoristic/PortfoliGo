@@ -4,8 +4,16 @@
 @let filterActive = bankingFacade.statementFilterActive$ | async;
 @let statementWindow = bankingFacade.statementWindow$ | async;
 @let banks = bankingFacade.banks$ | async;
+@let openAccounts = bankingFacade.openAccounts$ | async;
+@let canTransfer = (openAccounts?.length ?? 0) > 1;
 
-<a appButton variant="ghost" size="sm" routerLink=".." data-testid="banking.statement.back">
+<a
+  #backLink
+  appButton
+  variant="ghost"
+  size="sm"
+  routerLink=".."
+  data-testid="banking.statement.back">
   <i appIcon="arrow-left"></i>
   <span i18n="@@featureBanking-accountStatementPage-back">Alle Konten</span>
 </a>
@@ -30,7 +38,18 @@
   </app-panel>
 } @else {
   @if (account) {
-    <app-account-header class="mt-4" [account]="account" [bank]="account.bank"></app-account-header>
+    <app-account-header class="mt-4" [account]="account" [bank]="account.bank">
+      @if (account.closedAt === null) {
+        <app-account-actions
+          accountActions
+          testId="banking.statement.account"
+          [account]="account"
+          [canTransfer]="canTransfer"
+          (clickedTransfer)="onTransfer(account.id)"
+          (clickedSalaryAccount)="onSalaryAccount(account.id)"
+          (clickedClose)="onCloseAccount(account.id)"></app-account-actions>
+      }
+    </app-account-header>
   } @else {
     <app-skeleton class="mt-4" [lines]="2"></app-skeleton>
   }
