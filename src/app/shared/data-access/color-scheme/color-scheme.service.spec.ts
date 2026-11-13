@@ -29,33 +29,56 @@ describe('ColorSchemeService', () => {
     return TestBed.inject(ColorSchemeService);
   }
 
+  function isDark(): boolean {
+    return document.documentElement.classList.contains('dark');
+  }
+
+  function changeSystem(prefersDark: boolean): void {
+    listeners.forEach((l) => l({ matches: prefersDark } as MediaQueryListEvent));
+  }
+
   afterEach(() => {
     TestBed.inject(DOCUMENT).documentElement.classList.remove('dark');
     vi.restoreAllMocks();
   });
 
-  describe('init', () => {
-    it('sets the dark class when the system prefers dark', () => {
-      setUp(true).init();
-      expect(matchMedia).toHaveBeenCalledWith(PREFERS_DARK_QUERY);
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
+  describe('apply', () => {
+    it('sets the dark class for dark and removes it for light, whatever the system prefers', () => {
+      const service = setUp(false);
+      service.apply('dark');
+      expect(isDark()).toBe(true);
+
+      service.apply('light');
+      expect(isDark()).toBe(false);
+      expect(listeners).toHaveLength(0);
     });
 
-    it('leaves the dark class unset when the system prefers light', () => {
-      setUp(false).init();
-      expect(document.documentElement.classList.contains('dark')).toBe(false);
+    it('follows the system preference with system', () => {
+      setUp(true).apply('system');
+      expect(matchMedia).toHaveBeenCalledWith(PREFERS_DARK_QUERY);
+      expect(isDark()).toBe(true);
     });
 
     it('toggles the dark class when the system preference changes', () => {
-      setUp(false).init();
-      listeners.forEach((l) => l({ matches: true } as MediaQueryListEvent));
-      expect(document.documentElement.classList.contains('dark')).toBe(true);
-      listeners.forEach((l) => l({ matches: false } as MediaQueryListEvent));
-      expect(document.documentElement.classList.contains('dark')).toBe(false);
+      setUp(false).apply('system');
+      expect(isDark()).toBe(false);
+      changeSystem(true);
+      expect(isDark()).toBe(true);
+      changeSystem(false);
+      expect(isDark()).toBe(false);
+    });
+
+    it('stops following the system when a fixed scheme is applied', () => {
+      const service = setUp(false);
+      service.apply('system');
+      service.apply('dark');
+      expect(listeners).toHaveLength(0);
+      changeSystem(false);
+      expect(isDark()).toBe(true);
     });
 
     it('removes the change listener when the injector is destroyed', () => {
-      setUp(false).init();
+      setUp(false).apply('system');
       expect(listeners).toHaveLength(1);
       TestBed.resetTestingModule();
       expect(listeners).toHaveLength(0);

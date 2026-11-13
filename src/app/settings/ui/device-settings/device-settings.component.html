@@ -1,0 +1,64 @@
+<fieldset>
+  <legend class="mb-2 font-medium" i18n="@@uiSettings-deviceSettings-colorSchemeLegend">
+    Erscheinungsbild
+  </legend>
+  <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
+    @for (option of colorSchemeOptions(); track option.id) {
+      <label
+        class="flex cursor-pointer items-center gap-3 rounded-md border border-border p-3 has-checked:border-accent has-checked:bg-surface-raised">
+        <input
+          type="radio"
+          name="color-scheme"
+          [value]="option.id"
+          [checked]="option.checked"
+          [attr.data-testid]="'settings.device.color-scheme.' + option.id"
+          (change)="onSelectColorScheme(option.id)" />
+        <span class="flex flex-col">
+          <span class="font-medium">{{ option.label }}</span>
+          @if (option.hint) {
+            <span class="text-sm text-fg-muted">{{ option.hint }}</span>
+          }
+        </span>
+      </label>
+    }
+  </div>
+</fieldset>
+
+<div class="mt-6 border-t border-border pt-4">
+  <label class="flex cursor-pointer items-center justify-between gap-4">
+    <span class="font-medium" i18n="@@uiSettings-deviceSettings-shortcutsLabel">Tastenkürzel</span>
+    <span class="relative inline-flex shrink-0">
+      <input
+        type="checkbox"
+        role="switch"
+        class="peer absolute inset-0 z-10 m-0 size-full cursor-pointer appearance-none opacity-0"
+        aria-describedby="settings-device-shortcuts-hint"
+        data-testid="settings.device.shortcuts"
+        [checked]="shortcutsEnabled() ?? true"
+        (change)="onToggleShortcuts($event)" />
+      <span
+        aria-hidden="true"
+        class="h-6 w-11 rounded-full bg-border transition-colors peer-checked:bg-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent motion-reduce:transition-none"></span>
+      <span
+        aria-hidden="true"
+        class="absolute top-1 left-1 size-4 rounded-full bg-fg transition-transform peer-checked:translate-x-5 peer-checked:bg-surface motion-reduce:transition-none"></span>
+    </span>
+  </label>
+  <div id="settings-device-shortcuts-hint" class="mt-2 text-sm text-fg-muted">
+    <p i18n="@@uiSettings-deviceSettings-shortcutsHint">
+      Steuern die Spielzeit ohne Maus. Sie greifen nicht, solange ein Eingabefeld oder Bedienelement
+      den Fokus hat.
+    </p>
+    <dl class="mt-2 grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1">
+      @for (shortcut of shortcuts; track shortcut.key) {
+        <dt>
+          <kbd
+            class="rounded-sm border border-border bg-surface-raised px-1.5 py-0.5 font-sans text-xs text-fg"
+            >{{ shortcut.key }}</kbd
+          >
+        </dt>
+        <dd>{{ shortcut.label }}</dd>
+      }
+    </dl>
+  </div>
+</div>

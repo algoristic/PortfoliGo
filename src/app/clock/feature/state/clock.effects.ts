@@ -6,6 +6,7 @@ import { select, Store } from '@ngrx/store';
 import {
   catchError,
   concat,
+  concatMap,
   exhaustMap,
   filter,
   fromEvent,
@@ -180,6 +181,18 @@ export class ClockEffects {
     ),
   );
 
+  setBackgroundMode$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(ClockActions.selectedBackgroundMode),
+      concatMap(({ mode }) =>
+        this.#engine.setBackgroundMode(mode).pipe(
+          ignoreElements(),
+          catchError((error: unknown) => of(ClockActions.setBackgroundModeFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
   /**
    * Shortcuts of PS US-ZT-02 (TS §11.10) while the game is ready: not while loading, catching up or
    * jumping, not when switched off in the settings and not while a control has the focus.
@@ -216,6 +229,15 @@ export class ClockEffects {
       this.#actions$.pipe(
         ofType(ClockActions.clockCommandFailure, ClockActions.jumpToFailure),
         tap(({ error }) => this.#toastService.error(failureMessage(error))),
+      ),
+    { dispatch: false },
+  );
+
+  showBackgroundModeFailure$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(ClockActions.setBackgroundModeFailure),
+        tap(({ error }) => this.#toastService.error(backgroundModeFailureMessage(error))),
       ),
     { dispatch: false },
   );
@@ -269,4 +291,11 @@ function failureMessage(error: unknown): string {
     return $localize`:@@featureClock-clockEffects-invalidJumpTarget:Zu diesem Zeitpunkt kann nicht vorgespult werden.`;
   }
   return $localize`:@@featureClock-clockEffects-commandFailure:Die Spielzeit konnte nicht gesteuert werden.`;
+}
+
+function backgroundModeFailureMessage(error: unknown): string {
+  if (isEngineCommandError(error, 'busy')) {
+    return failureMessage(error);
+  }
+  return $localize`:@@featureClock-clockEffects-backgroundModeFailure:Das Verhalten im Hintergrund konnte nicht geändert werden.`;
 }

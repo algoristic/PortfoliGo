@@ -24,6 +24,12 @@ export const selectEffectiveSpeed = createSelector(
 );
 export const selectOverloaded = createSelector(selectClock, (clock) => clock?.overloaded ?? false);
 export const selectJumping = createSelector(selectClock, (clock) => clock?.jumping ?? false);
+/** The player's background mode (TS §3.6), the one last sent until the engine reports it. */
+export const selectBackgroundMode = createSelector(
+  selectClock,
+  selectState,
+  (clock, state) => state.requestedBackgroundMode ?? clock?.backgroundMode ?? null,
+);
 export const selectJumpTargetTick = createSelector(selectState, (state) => state.jumpTargetTick);
 
 /** What the clock controls go on from: the clock event with the speed last sent (`requestedSpeed`). */

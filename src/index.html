@@ -14,6 +14,31 @@
     <!-- add to homescreen for ios -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+    <!--
+      Sets the `dark` class before Angular starts, so a stored appearance doesn't flicker (TS §11.5).
+      Reads `pgo.settings` version 1 like `parseSettings` (`settings/domain/settings-logic.ts`,
+      `SETTINGS_VERSION`): `data.appearance.colorScheme` is "light", "system" or anything else (dark,
+      the default of E-06). The settings slice takes over with the `ColorSchemeService`.
+    -->
+    <script>
+      (function () {
+        var scheme = 'dark';
+        try {
+          var entry = JSON.parse(localStorage.getItem('pgo.settings'));
+          if (entry && entry.v === 1) {
+            scheme = entry.data.appearance.colorScheme;
+          }
+        } catch (error) {}
+        var dark =
+          scheme === 'light'
+            ? false
+            : scheme === 'system' && window.matchMedia
+              ? window.matchMedia('(prefers-color-scheme: dark)').matches
+              : true;
+        document.documentElement.classList.toggle('dark', dark);
+      })();
+    </script>
   </head>
 
   <body>

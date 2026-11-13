@@ -1,10 +1,27 @@
+@let colorScheme = settingsFacade.colorScheme$ | async;
+@let shortcutsEnabled = settingsFacade.shortcutsEnabled$ | async;
+@let backgroundMode = clockFacade.backgroundMode$ | async;
+
 <h1 class="text-xl font-semibold" i18n="@@featureSettings-settingsPage-title">Einstellungen</h1>
 
-<app-panel class="mt-4">
-  <app-empty-state
-    icon="gear"
-    heading="Noch keine Inhalte"
-    i18n-heading="@@featureSettings-settingsPage-emptyHeading"
-    text="Diese Ansicht entsteht in AP 2.6."
-    i18n-text="@@featureSettings-settingsPage-emptyText"></app-empty-state>
-</app-panel>
+<div class="mt-4 flex max-w-3xl flex-col gap-4">
+  <app-panel
+    heading="Dieses Gerät"
+    i18n-heading="@@featureSettings-settingsPage-deviceHeading"
+    data-testid="settings.device">
+    <app-device-settings
+      [colorScheme]="colorScheme"
+      [shortcutsEnabled]="shortcutsEnabled"
+      (selectedColorScheme)="onSelectColorScheme($event)"
+      (toggledShortcuts)="onToggleShortcuts($event)"></app-device-settings>
+  </app-panel>
+
+  <app-panel
+    heading="Spieler"
+    i18n-heading="@@featureSettings-settingsPage-playerHeading"
+    data-testid="settings.player">
+    <app-player-settings
+      [backgroundMode]="backgroundMode"
+      (selectedBackgroundMode)="onSelectBackgroundMode($event)"></app-player-settings>
+  </app-panel>
+</div>

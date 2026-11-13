@@ -1,12 +1,15 @@
 import { registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
-import { EnvironmentProviders, LOCALE_ID, Provider } from '@angular/core';
+import { EnvironmentProviders, inject, LOCALE_ID, Provider } from '@angular/core';
 import { provideEffects } from '@ngrx/effects';
 import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { provideStore } from '@ngrx/store';
 
+import { CLOCK_SHORTCUTS_ENABLED } from '@app/clock/feature/state/clock.config';
 import { provideEngineService } from '@app/engine/data-access/service/engine-service.providers';
 import { providePlayersState } from '@app/players/feature/state/players.providers';
+import { SettingsFacade } from '@app/settings/feature/state/settings.facade';
+import { provideSettingsState } from '@app/settings/feature/state/settings.providers';
 import { provideColorSchemeService } from '@app/shared/data-access/color-scheme/color-scheme-service.providers';
 import { provideToastService } from '@app/shared/ui/toast/toast-service.providers';
 import { providePageTitleStrategy } from '@app/shell/feature/page-title/page-title.providers';
@@ -28,5 +31,10 @@ export function provideAppCore(): Array<Provider | EnvironmentProviders> {
     provideToastService(),
     provideEngineService(),
     providePlayersState(),
+    provideSettingsState(),
+    {
+      provide: CLOCK_SHORTCUTS_ENABLED,
+      useFactory: () => inject(SettingsFacade).shortcutsEnabled$,
+    },
   ];
 }

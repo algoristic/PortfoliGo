@@ -14,6 +14,7 @@ import { ToastService } from '@app/shared/ui/toast/toast.service';
 import * as ClockActions from './clock.actions';
 import { ClockEffects } from './clock.effects';
 import { CLOCK_FEATURE_KEY, clockReducer, ClockState, initialClockState } from './clock.reducer';
+import { selectBackgroundMode } from './clock.selectors';
 
 const selectClockState = createFeatureSelector<ClockState>(CLOCK_FEATURE_KEY);
 
@@ -35,7 +36,9 @@ describe('ClockEffects', () => {
   let actions$: Subject<Action>;
   let clock$: Subject<ClockPayload>;
   let store: MockStore;
-  let engine: Mocked<Pick<EngineService, 'pause' | 'resume' | 'setSpeed' | 'query' | 'clock$'>>;
+  let engine: Mocked<
+    Pick<EngineService, 'pause' | 'resume' | 'setSpeed' | 'setBackgroundMode' | 'query' | 'clock$'>
+  >;
   let toasts: Mocked<Pick<ToastService, 'error'>>;
 
   beforeEach(() => {
@@ -45,6 +48,7 @@ describe('ClockEffects', () => {
       pause: vi.fn(() => of(null)),
       resume: vi.fn(() => of(null)),
       setSpeed: vi.fn(() => of(null)),
+      setBackgroundMode: vi.fn(),
       query: vi.fn(),
       clock$: clock$.asObservable(),
     };
@@ -196,6 +200,59 @@ describe('ClockEffects', () => {
     ])('shows a toast for %s', (error, text) => {
       const subscription = effects.showFailure$.subscribe();
       actions$.next(ClockActions.clockCommandFailure({ error }));
+      subscription.unsubscribe();
+      expect(toasts.error).toHaveBeenCalledWith(text);
+    });
+  });
+
+  describe('setBackgroundMode$', () => {
+    it('shows the mode last sent until a clock event reports it, and the old one after a failure', () => {
+      const state = (): ClockState => store.selectSignal(selectClockState)();
+      const reduce = (action: Action): void =>
+        store.setState({ [CLOCK_FEATURE_KEY]: clockReducer(state(), action) });
+      const subscription = effects.setBackgroundMode$.subscribe(reduce);
+      const pending = new Subject<{ tick: number }>();
+      engine.setBackgroundMode.mockReturnValue(pending);
+      setClock(clockAt(1));
+
+      const selected = ClockActions.selectedBackgroundMode({ mode: 'pause' });
+      reduce(selected);
+      actions$.next(selected);
+      expect(engine.setBackgroundMode).toHaveBeenCalledWith('pause');
+      expect(store.selectSignal(selectBackgroundMode)()).toBe('pause');
+      // A clock event sent before the engine applied the command still has the old mode.
+      reduce(ClockActions.receivedClock({ clock: clockAt(2) }));
+      expect(store.selectSignal(selectBackgroundMode)()).toBe('pause');
+      reduce(ClockActions.receivedClock({ clock: { ...clockAt(3), backgroundMode: 'pause' } }));
+      pending.next({ tick: 3 });
+      pending.complete();
+      expect(state().requestedBackgroundMode).toBeNull();
+      expect(store.selectSignal(selectBackgroundMode)()).toBe('pause');
+
+      const error = new EngineCommandError('storage-failed');
+      engine.setBackgroundMode.mockReturnValue(throwError(() => error));
+      const back = ClockActions.selectedBackgroundMode({ mode: 'realtime' });
+      reduce(back);
+      actions$.next(back);
+      subscription.unsubscribe();
+      expect(state().error).toBe(error);
+      expect(store.selectSignal(selectBackgroundMode)()).toBe('pause');
+    });
+  });
+
+  describe('showBackgroundModeFailure$', () => {
+    it.each([
+      [
+        new EngineCommandError('busy'),
+        'Das geht gerade nicht, weil die Spielzeit noch berechnet wird.',
+      ],
+      [
+        new EngineCommandError('storage-failed'),
+        'Das Verhalten im Hintergrund konnte nicht geändert werden.',
+      ],
+    ])('shows a toast for %s', (error, text) => {
+      const subscription = effects.showBackgroundModeFailure$.subscribe();
+      actions$.next(ClockActions.setBackgroundModeFailure({ error }));
       subscription.unsubscribe();
       expect(toasts.error).toHaveBeenCalledWith(text);
     });

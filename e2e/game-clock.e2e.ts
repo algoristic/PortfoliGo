@@ -14,6 +14,7 @@ import {
   settleAnimations,
 } from './game.po';
 import { createPlayer } from './players.po';
+import { storeColorScheme } from './settings.po';
 
 // The clock bar with the real engine worker (AP 2.5, with the system tests of AP 2.2). Expected
 // times come from the calendar; the clock is controlled only through the product (TS §14.1).
@@ -102,6 +103,7 @@ test.describe('accessibility of the clock bar', () => {
     test(`has no serious findings in the exchange list and the jump dialog (${colorScheme})`, async ({
       page,
     }) => {
+      await storeColorScheme(page, colorScheme);
       await page.emulateMedia({ colorScheme });
       await createPlayer(page, 'Anna');
       await expectGameReady(page);
