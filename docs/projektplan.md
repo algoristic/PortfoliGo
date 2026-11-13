@@ -49,7 +49,7 @@ flowchart LR
 | M2          | 1     | Spielschleife mit Spielern, Uhr und Persistenz     | Spieler anlegen, Zeit in jeder Geschwindigkeit laufen lassen, schließen, nachberechnen | 6   |
 | M3          | 1     | Geldflüsse: Einkommen, Kosten, Gebühren, Zinsen    | Kontoauszüge füllen sich; Konten eröffnen, Geld überweisen, Warnungen                  | 6   |
 | M4          | 1     | Märkte im Trading-Look                             | Marktübersicht, Screener, Watchlist, Instrumentseite mit Live-Chart und Indikatoren    | 5   |
-| M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Sparpläne, Steuern, Depot, Dashboard mit Benchmark                  | 7   |
+| M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Sparpläne, Steuern, Depot, Dashboard mit Benchmark                  | 9   |
 | M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen                                     | 6   |
 
 **Empfohlene Reihenfolge:** M3 und M4 sind abgeschlossen (M4 mit AP 4.5). Als Nächstes folgt M5 mit AP 5.1 (abhängig von AP 3.3 und AP 1.6b); M5 braucht M3 und M4. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
@@ -164,6 +164,8 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 5.5  | Depot, Positionen und Steuerübersicht (UI)       | offen  | 5.4            |
 | 5.6  | Sparpläne                                        | offen  | 5.5            |
 | 5.7  | Dashboard und Performance                        | offen  | 5.5            |
+| 5.8  | Chart: wählbare Auflösung und Indikatorfarben    | offen  | 4.5            |
+| 5.9  | Kopfzeile: stabiles Layout der Uhr               | offen  | 2.5            |
 | 6.1  | Export und Import                                | offen  | 5.6, 5.7       |
 | 6.2  | Einstellungen                                    | offen  | 6.1, 3.6, 2.6  |
 | 6.3  | PWA und Browser-Benachrichtigungen               | offen  | 6.2            |
@@ -234,6 +236,8 @@ flowchart TD
     AP5_5["5.5 Depot, Positionen und Steuerübersicht (UI)"]
     AP5_6["5.6 Sparpläne"]
     AP5_7["5.7 Dashboard und Performance"]
+    AP5_8["5.8 Chart: wählbare Auflösung und Indikatorfarben"]
+    AP5_9["5.9 Kopfzeile: stabiles Layout der Uhr"]
   end
   subgraph M6["M6 – Export, PWA und Release 1.0"]
     direction TB
@@ -297,6 +301,8 @@ flowchart TD
   AP5_4 --> AP5_5
   AP5_5 --> AP5_6
   AP5_5 --> AP5_7
+  AP4_5 --> AP5_8
+  AP2_5 --> AP5_9
   AP5_6 --> AP6_1
   AP5_7 --> AP6_1
   AP6_1 --> AP6_2
@@ -683,7 +689,7 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 ### M5 – Handel, Depot und Steuern
 
 **Ziel:** Das Kernspiel ist komplett.
-**Ergebnis:** Kaufen, verkaufen, Sparpläne, Steuern, Depot und Dashboard mit Benchmark – der Funktionsumfang des MVP.
+**Ergebnis:** Kaufen, verkaufen, Sparpläne, Steuern, Depot und Dashboard mit Benchmark – der Funktionsumfang des MVP. Dazu kommen Nachbesserungen an Chart und Kopfzeile (AP 5.8, AP 5.9). Sie hängen von keinem anderen M5-AP ab und können jederzeit umgesetzt werden.
 
 #### AP 5.1 – Depot und Orderausführung
 
@@ -736,6 +742,38 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 - **Vor der Umsetzung klären:** externe Flüsse in der Rendite am Tagesanfang statt am Tagesende ansetzen und „Veränderung heute“ ohne Zuflüsse rechnen (TS §7.9); „Demnächst“ aus Terminplaner und Kalender statt aus einer Vorausrechnung (E-05, TS §8.1); zweite Vergleichsgröße (E-28).
 - **Referenzen:** US-PF-01, US-PF-04, US-PF-05, US-PF-07, US-MK-06; TS §7.9, §8.1; E-05, E-28
 - **Abhängig von:** AP 5.5
+
+#### AP 5.8 – Chart: wählbare Auflösung und Indikatorfarben
+
+- **Umfang:** Nachbesserungen am Chart der Instrumentseite. Thematisch gehören sie zu M4, laut PO-Entscheidung vom 13.11.2026 werden sie in M5 umgesetzt.
+  - **Auflösung:** Neben dem Zeitraum wählt der Anwender die Kerzen-Auflösung (`1m`, `5m`, `15m`, `1h`, `1d`, `1w`). Standard bleibt die automatische Zuordnung je Zeitraum (`CHART_RANGE_INTERVALS`, TS §11.7). Angeboten werden je Zeitraum nur Auflösungen, die die Grenzen der Kerzenabfrage einhalten (`MAX_INTRADAY_DAYS`, `MAX_CANDLE_LIMIT`; TS §8.2). Nachladen beim Scrollen und Live-Kerzen laufen in der gewählten Auflösung.
+  - **Indikatorfarben:** Im Indikator-Formular wählt der Anwender eine Farbe aus der Chart-Palette (`--pgo-chart-1` … `-6`). Bei SMA, EMA und SMMA ist das die Linienfarbe. Bei Bollinger gilt sie für Mittellinie und Bänder; die Fläche zwischen den Bändern wird transparent gefüllt, in einer aus der Linienfarbe abgeleiteten Farbe. Die Farbe wird mit dem Indikator in `pgo.ui.chart` gespeichert; ein neuer Indikator bekommt weiterhin die erste freie Farbe.
+  - PS US-CH-01 („die Auflösung passt sich an“) und US-CH-02 sowie TS §6.8 und §11.7 an das neue Verhalten anpassen.
+- **Abnahme:**
+  - Zeitraum und Auflösung sind kombinierbar; unzulässige Kombinationen lassen sich nicht wählen.
+  - Die Farbauswahl ist per Tastatur bedienbar und zugänglich benannt.
+  - Die Bollinger-Fläche ist im hellen und im dunklen Theme lesbar, Kerzen und Linien darunter bleiben erkennbar.
+  - Seitentest: Auflösung wählen, der Chart zeigt Kerzen dieser Auflösung und lädt beim Scrollen ältere; Farbe eines Indikators ändern, sie bleibt nach dem Neuladen erhalten.
+- **Vor der Umsetzung klären:**
+  - Bleibt die gewählte Auflösung beim Wechsel des Zeitraums erhalten, solange sie zulässig ist, oder fällt sie auf „Auto“ zurück? Wird sie in `pgo.ui.chart` gespeichert?
+  - Dürfen zwei Indikatoren dieselbe Farbe haben? Heute gilt höchstens ein Indikator je Chart-Farbe (TS §11.7).
+- **Hinweis:** Der Wrapper `charts/ui/price-chart` zeichnet bisher nur Linien-Overlays, die Bollinger-Bänder gestrichelt. Für die Fläche zwischen zwei Linien braucht er eine Erweiterung, z. B. ein Series-Primitive von lightweight-charts.
+- **Referenzen:** US-CH-01, US-CH-02; TS §6.8, §8.2, §11.7
+- **Abhängig von:** AP 4.5
+
+#### AP 5.9 – Kopfzeile: stabiles Layout der Uhr
+
+- **Umfang:** Layoutfehler der Uhr in der Kopfzeile (`clock/ui/clock-controls`). Thematisch gehören sie zu AP 2.5, laut PO-Entscheidung vom 13.11.2026 werden sie in M5 umgesetzt.
+  - **Spielzeit:** Im Schnelldurchlauf springt das Layout, weil die Wochentagskürzel unterschiedlich breit sind („Mi“, „Do“); die Ziffern sind schon `tabular-nums`. Die Anzeige bekommt eine feste Breite, sodass die Elemente danach stillstehen.
+  - **Pause:** Beim Pausieren erscheint der Chip „Pausiert“ vor dem Pause-Knopf und schiebt ihn zur Seite; wer sofort weiterlaufen lassen will, muss die Maus nachführen. Der Knopf bleibt beim Wechsel zwischen Laufen und Pause an derselben Stelle. Das gilt auch für den Chip „ausgelastet“ und für eine Auto-Pause mit Grund („Pausiert: Dispo überschritten“), deren Text unterschiedlich lang ist.
+  - Die Beschreibung der Uhrleiste in TS §11.4 nachziehen.
+- **Abnahme:**
+  - Position und Breite des Pause-Knopfs und der Elemente rechts der Uhrzeit ändern sich weder über alle sieben Wochentage noch beim Wechsel zwischen Laufen und Pause.
+  - Das gilt in der Desktop- und in der kompakten Ansicht (360 px).
+  - Pausieren und Fortsetzen gelingen mit zwei Klicks an derselben Stelle.
+  - Systemtest, weil nur ein echter Browser das Layout zeigt: Er vergleicht die Bounding-Boxes.
+- **Referenzen:** US-ZT-01, US-ZT-03; TS §11.4
+- **Abhängig von:** AP 2.5
 
 ### M6 – Export, PWA und Release 1.0
 
@@ -801,6 +839,7 @@ Stories der Stufe 1 (PS §7) und die Arbeitspakete, die sie umsetzen. AP 6.6 pr�
 | ------------------------------------------ | -------------------------------------------------------------------------- |
 | US-SP-01–03                                | AP 2.4; Seed in den Einstellungen: AP 6.2                                  |
 | US-ZT-01–05                                | AP 2.5 (US-ZT-05 Soll); Schalter für Tastenkürzel und Hintergrund: AP 2.6  |
+| US-ZT-01, US-ZT-03 (Layout der Uhr)        | AP 5.9                                                                     |
 | US-ZT-06 (Soll)                            | AP 3.6                                                                     |
 | US-EK-01, US-EK-02                         | AP 3.2                                                                     |
 | US-EK-03                                   | AP 3.5                                                                     |
@@ -818,8 +857,8 @@ Stories der Stufe 1 (PS §7) und die Arbeitspakete, die sie umsetzen. AP 6.6 pr�
 | US-PF-07 (Soll)                            | AP 5.7                                                                     |
 | US-ST-01–03                                | AP 3.2 (Steuerkern, Zinsen), AP 5.3                                        |
 | US-ST-04                                   | AP 5.5                                                                     |
-| US-CH-01                                   | AP 4.2                                                                     |
-| US-CH-02                                   | AP 4.3                                                                     |
+| US-CH-01                                   | AP 4.2; wählbare Auflösung: AP 5.8                                         |
+| US-CH-02                                   | AP 4.3; Indikatorfarben: AP 5.8                                            |
 | US-BN-01–03                                | AP 3.6                                                                     |
 | US-BN-04 (Soll)                            | AP 6.3                                                                     |
 | US-EX-01, US-EX-02, US-EX-03 (Soll)        | AP 6.1; Speicherstatus: AP 6.3                                             |
