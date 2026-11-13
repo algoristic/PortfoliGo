@@ -73,14 +73,14 @@ Es gibt kein „Game Over" und kein festes Spielziel. Motivation entsteht aus de
 1. Der Anwender legt einen Spieler an: Name, Seed, Startkapital, monatliches Nettoeinkommen und die monatlichen Lebenshaltungskosten (E-14).
 2. Aus dem Seed entsteht die Welt: Börsen, Unternehmen, Indizes, ETFs und Banken, dazu eine Kurshistorie von gut zehn Jahren, damit Charts vom ersten Spieltag an aussagekräftig sind. Jeder vergangene Tag lässt sich minutengenau abrufen, sodass auch Intraday-Charts Daten zeigen.
 3. Das Startkapital liegt auf einem Girokonto bei einer Hausbank. Die Hausbank ist eine Filialbank mit eher teuren Konditionen – ein Anreiz, Banken zu vergleichen.
-4. Das Spiel beginnt pausiert am Spielstartdatum Montag, 01.04.2030, 00:00 Uhr (E-02), damit sich der Anwender orientieren kann. Weil es ein Monatserster ist, beginnt das Spiel mit einem vollständigen Monat: **(Vorschlag, E-19)** Am Morgen werden die Lebenshaltungskosten fällig, am Monatsende kommt das erste Gehalt.
+4. Das Spiel beginnt pausiert am Spielstartdatum Montag, 01.04.2030, 00:00 Uhr (E-02), damit sich der Anwender orientieren kann. Weil es ein Monatserster ist, beginnt das Spiel mit einem vollständigen Monat (E-19): Am Morgen werden die Lebenshaltungskosten fällig, am Monatsende kommt das erste Gehalt.
 
 ### 4.3 Zeit
 
 - Die Spielzeit läuft in Ticks. Ein Tick entspricht einer Spielminute (E-02).
 - Der Anwender wählt die Geschwindigkeit – Echtzeit (1 s/s), 1 min/s, 10 min/s, 1 h/s, 2 h/s, 4 h/s, 1 d/s oder 1 w/s – und kann sie jederzeit ändern oder die Zeit anhalten.
 - Ist die App geschlossen, läuft die Zeit in Echtzeit weiter. Beim nächsten Öffnen wird die verstrichene Zeit nachberechnet. Dasselbe gilt, solange die App nicht sichtbar ist (z. B. Hintergrund-Tab); pro Spieler lässt sich stattdessen „im Hintergrund pausieren" einstellen. War das Spiel pausiert, bleibt es pausiert (E-02).
-- Börsen haben Handelszeiten. Orders lassen sich jederzeit erteilen und werden während der Handelszeit ausgeführt (E-18). Nachts und am Wochenende stehen Aktienkurse still. **(Vorschlag, E-19)** Banken buchen nur an Bankarbeitstagen.
+- Börsen haben Handelszeiten. Orders lassen sich jederzeit erteilen und werden während der Handelszeit ausgeführt (E-18). Nachts und am Wochenende stehen Aktienkurse still. Banken buchen nur an Bankarbeitstagen (E-19).
 
 ### 4.4 Die simulierte Welt
 
@@ -244,13 +244,13 @@ Als Anwender möchte ich, dass das Spiel bei wichtigen Ereignissen anhält, dami
 **US-EK-01 – Monatliches Einkommen** · Stufe 1 · M
 Als Anwender möchte ich jeden Monat mein Gehalt erhalten, damit ich sparen und investieren kann.
 
-- Das Nettoeinkommen wird **(Vorschlag, E-19)** am letzten Bankarbeitstag des Monats auf dem Gehaltskonto gutgeschrieben.
+- Das Nettoeinkommen wird am letzten Bankarbeitstag des Monats auf dem Gehaltskonto gutgeschrieben (E-19).
 - Die Buchung erscheint im Kontoauszug, z. B. „Gehalt April 2030".
 
 **US-EK-02 – Lebenshaltungskosten** · Stufe 1 · M
 Als Anwender möchte ich, dass monatlich realistisch schwankende Lebenshaltungskosten anfallen, damit mein Budget nicht trivial planbar ist.
 
-- **(Vorschlag, E-19)** Am ersten Bankarbeitstag des Monats wird der Basisbetrag abgebucht, verändert um eine Schwankung von typischerweise ±5 % (maximal ±15 %).
+- Am ersten Bankarbeitstag des Monats (E-19) wird der Basisbetrag abgebucht, verändert um eine Schwankung von typischerweise ±5 % (maximal ±15 %).
 - Die Schwankung ist durch den Seed festgelegt: gleicher Seed, gleiche Beträge.
 
 **US-EK-03 – Monatsübersicht** · Stufe 1 · M
@@ -271,7 +271,7 @@ Als Anwender möchte ich die Banken der Welt mit ihren Konditionen vergleichen, 
 **US-BK-02 – Konto oder Depot eröffnen** · Stufe 1 · M
 Als Anwender möchte ich bei jeder Bank Konten und Depots eröffnen, damit ich mein Geld dort anlegen kann, wo es sich lohnt.
 
-- Kontotypen je nach Angebot der Bank: Girokonto, Tagesgeldkonto, Depot (immer mit Verrechnungskonto).
+- Kontotypen je nach Angebot der Bank: Girokonto, Tagesgeldkonto, Depot (immer mit Verrechnungskonto). Je Bank und Kontoart lassen sich beliebig viele Konten eröffnen; jedes Konto hat eine Kontonummer, an der es sich in der Übersicht unterscheiden lässt.
 - Die Eröffnung erfolgt sofort (E-17); das neue Konto erscheint in der Kontenübersicht.
 
 **US-BK-03 – Konto schließen** · Stufe 1 · M
@@ -286,13 +286,14 @@ Als Anwender möchte ich Geld zwischen meinen Konten bewegen, damit ich es dorth
 
 - Überweisungen zwischen eigenen Konten (Girokonto, Tagesgeld, Verrechnungskonto) mit Betrag und Verwendungszweck.
 - Ausführung sofort und kostenlos (Echtzeitüberweisung, E-17).
-- Überwiesen werden kann höchstens der verfügbare Betrag (Guthaben plus Dispo, falls vorhanden).
+- Überwiesen werden kann höchstens der verfügbare Betrag (Guthaben plus freier Dispo, falls vorhanden); eine eigene Überweisung führt nie in die geduldete Überziehung.
 
 **US-BK-05 – Gehaltskonto festlegen** · Stufe 1 · M
 Als Anwender möchte ich bestimmen, welches Girokonto mein Gehaltskonto ist, damit ich von günstigeren Konditionen profitiere.
 
 - Genau ein Girokonto ist Gehaltskonto; Einkommen und Lebenshaltungskosten laufen darüber.
-- Bedingungen wie „kostenlos ab 700 € Geldeingang pro Monat" werden anhand der tatsächlichen Eingänge geprüft.
+- Bedingungen wie „kostenlos ab 700 € Geldeingang pro Monat" werden anhand der tatsächlichen Eingänge geprüft. Als Geldeingang zählen nur Gutschriften von außen (Gehalt, Startkapital), nicht eigene Überweisungen, Zinsen oder Steuererstattungen.
+- Der Dispo-Rahmen einer Bank richtet sich nach dem Gehaltseingang bei ihr (US-BK-07); nach einem Wechsel des Gehaltskontos wächst er bei der neuen Bank über drei Monate und schrumpft bei der alten.
 
 **US-BK-06 – Kontoauszug** · Stufe 1 · M
 Als Anwender möchte ich alle Buchungen eines Kontos sehen, damit ich jede Bewegung nachvollziehen kann.
@@ -304,16 +305,17 @@ Als Anwender möchte ich alle Buchungen eines Kontos sehen, damit ich jede Beweg
 **US-BK-07 – Überziehung und Dispo** · Stufe 1 · M
 Als Anwender möchte ich gewarnt werden, wenn ein Konto nicht gedeckt ist, damit ich rechtzeitig reagieren kann.
 
-- Girokonten haben einen Dispositionskredit (Limit, Zinssatz). Lastschriften werden auch bei fehlender Deckung ausgeführt; das Konto ist dann überzogen. Oberhalb des Limits gilt ein erhöhter Zins (geduldete Überziehung, E-17).
-- Bei fehlender Deckung und bei Überziehung erhält der Anwender eine Warnung (US-BN-02).
+- Jede Bank gewährt einen Dispositionskredit nach dem regelmäßigen Geldeingang bei ihr: Der Rahmen beträgt ein Vielfaches (je Bank) des durchschnittlichen monatlichen Gehaltseingangs der letzten drei vollen Kalendermonate und wird am ersten Bankarbeitstag jedes Monats angepasst. Er liegt auf dem Girokonto dieser Bank mit den meisten Gehaltseingängen; weitere Girokonten derselben Bank haben keinen Rahmen. Die Hausbank gewährt vom Spielstart an den vollen Rahmen (E-17).
+- Lastschriften werden auch bei fehlender Deckung ausgeführt; das Konto ist dann überzogen. Oberhalb des Limits gilt für den Teil darüber ein erhöhter Zins (geduldete Überziehung ohne Obergrenze, E-17). Sinkt der Rahmen (z. B. nach einem Wechsel des Gehaltskontos), kann ein Konto dadurch in die geduldete Überziehung geraten.
+- Bei fehlender Deckung und bei Überziehung erhält der Anwender eine Warnung (US-BN-02); eine Überschreitung des Limits ist kritisch und pausiert das Spiel standardmäßig.
 - Dispozinsen werden monatlich berechnet und belastet.
 - Verrechnungskonten erlauben keine Überziehung durch Käufe: Kauforders ohne Deckung werden abgelehnt. Gebühren und Zinsen der Bank werden trotzdem belastet. Rutscht ein Verrechnungskonto dadurch ins Minus, fallen Sollzinsen an, der Anwender wird gewarnt und neue Käufe sind gesperrt, bis das Konto ausgeglichen ist.
 
 **US-BK-08 – Zinsen und Gebühren** · Stufe 1 · M
 Als Anwender möchte ich, dass Zinsen und Gebühren gemäß den Konditionen gebucht werden, damit sich die Wahl der Bank spürbar auswirkt.
 
-- Habenzinsen werden taggenau berechnet und je nach Bank monatlich oder quartalsweise gutgeschrieben; die Abgeltungsteuer wird einbehalten (US-ST-01).
-- Kontoführungs- und Depotgebühren werden periodisch belastet und im Kontoauszug ausgewiesen.
+- Habenzinsen werden taggenau berechnet und auf Tagesgeldkonten je nach Bank monatlich oder quartalsweise, auf Verrechnungskonten monatlich gutgeschrieben; die Abgeltungsteuer wird einbehalten (US-ST-01).
+- Kontoführungs- und Depotgebühren werden periodisch belastet und im Kontoauszug ausgewiesen. Im Eröffnungs- und im Schließmonat fällt die Kontoführung anteilig nach Kalendertagen an.
 
 ### 7.5 Märkte und Instrumente (MK)
 
@@ -447,20 +449,20 @@ Als Anwender möchte ich, dass Kapitalerträge wie in Deutschland besteuert werd
 
 - 25 % auf realisierte Kursgewinne, Dividenden und Zinsen; die Bank behält die Steuer direkt ein.
 - Kursgewinne werden nach FIFO ermittelt; Kauf- und Verkaufskosten mindern den Gewinn.
-- **(Vorschlag, E-11)** Solidaritätszuschlag und Kirchensteuer werden nicht abgebildet.
+- Solidaritätszuschlag und Kirchensteuer werden nicht abgebildet (E-11).
 
 **US-ST-02 – Sparerpauschbetrag** · Stufe 1 · M
 Als Anwender möchte ich, dass mein Sparerpauschbetrag automatisch angerechnet wird, damit kleine Erträge steuerfrei bleiben.
 
 - 1.000 € pro Kalenderjahr bleiben steuerfrei.
-- **(Vorschlag, E-11)** Der Betrag gilt bankübergreifend; Freistellungsaufträge je Bank folgen in Stufe 2.
+- Der Betrag gilt bankübergreifend (E-11); Freistellungsaufträge je Bank folgen in Stufe 2.
 
 **US-ST-03 – Verlustverrechnung** · Stufe 1 · M
 Als Anwender möchte ich, dass Verluste mit Gewinnen verrechnet werden, damit ich nur auf meinen Nettogewinn Steuern zahle.
 
 - Realisierte Verluste werden mit Gewinnen desselben Jahres verrechnet; bereits gezahlte Steuer wird erstattet.
 - Nicht verrechnete Verluste werden ins Folgejahr vorgetragen.
-- **(Vorschlag, E-11)** Ein gemeinsamer Verlusttopf für alle Erträge; getrennte Töpfe für Aktien folgen in Stufe 2.
+- Ein gemeinsamer Verlusttopf für alle Erträge (E-11); getrennte Töpfe für Aktien folgen in Stufe 2.
 
 **US-ST-04 – Steuerübersicht** · Stufe 1 · M
 Als Anwender möchte ich eine jährliche Steuerübersicht sehen, damit ich meine Steuerlast verstehe.

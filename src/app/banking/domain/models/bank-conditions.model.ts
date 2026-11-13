@@ -12,9 +12,12 @@ export type FeeModel =
 
 export interface CurrentAccountConditions {
   monthlyFee: Cents;
-  /** The monthly fee is waived when the deposits of the previous month reach this amount. */
+  /** The monthly fee is waived when the external deposits of the previous month reach this amount. */
   feeWaiver?: { minMonthlyDeposits: Cents };
-  /** Limit = factor × net income; above the limit the rate rises by `toleratedSurcharge`. */
+  /**
+   * Limit per bank = factor × average monthly salary deposits at the bank (TS §7.4); above the
+   * limit the rate rises by `toleratedSurcharge`.
+   */
   overdraft: { limitIncomeFactor: number; rate: number; toleratedSurcharge: number };
 }
 

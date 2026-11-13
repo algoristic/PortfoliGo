@@ -141,7 +141,7 @@ type Tick = number; // ganze Spielminuten seit der Epoche 01.01.2020, 00:00 Uhr 
 ```
 
 - **Epoche** 01.01.2020, 00:00 Uhr. **Spielstart (E-02):** Montag, 01.04.2030, 00:00 Uhr = Tick 5.389.920 (`GAME_START_TICK`).
-- Der Start an einem Monatsersten sorgt für einen vollständigen ersten Monat: Der Bank-Lauf um 06:00 Uhr bucht die Lebenshaltung, das erste Gehalt folgt am Monatsende (Buchungstermine nach E-19, noch Vorschlag).
+- Der Start an einem Monatsersten sorgt für einen vollständigen ersten Monat: Der Bank-Lauf um 06:00 Uhr bucht die Lebenshaltung, das erste Gehalt folgt am Monatsende (Buchungstermine nach E-19).
 - Die gut zehn Jahre vor dem Start sind Vorlauf. Er entsteht mit demselben Modell wie das Spiel und ist ebenso minutengenau abrufbar (§6.8).
 - Der Kalender ist für alle Spieler gleich. Nur so ergibt derselbe Seed dieselbe Welt, und fiktive Zukunftsdaten werden nicht mit echten Kursverläufen verwechselt.
 - Eine Spielzeitzone ohne Sommerzeit (angelehnt an MEZ). Umrechnungen nutzen ausschließlich UTC-Arithmetik (`Date.UTC`, `getUTC*`), nie die lokale Zeitzone.
@@ -350,7 +350,7 @@ Gleichverteilung (32 oder 53 Bit; ganzzahlig ohne Modulo-Verzerrung), Normalvert
 
 `Math.exp`, `Math.log`, `Math.pow`, `Math.sin` usw. sind laut ECMAScript implementierungsabhängig; V8, SpiderMonkey und JavaScriptCore können im letzten Bit abweichen. Über viele Ticks und an Schwellen (Limit erreicht? Rundung auf Cent?) würde das browserübergreifend zu anderen Ergebnissen führen.
 
-Deshalb nutzt Simulationscode nur IEEE-754-exakte Operationen (`+ − × ÷`, `Math.sqrt`, `Math.floor`, `Math.round`, `Math.abs`, `Math.min`, `Math.max`) und eigene Implementierungen `detExp` und `detLog` (Portierung von fdlibm 5.3 `e_exp.c` und `e_log.c`, Genauigkeit ≤ 1 ulp, bitidentisch auf allen Engines). Potenzen werden über `detExp(b × detLog(a))` oder Multiplikation gebildet, nicht mit `**`. Die UI darf `Math.*` frei verwenden. Eine ESLint-Regel für `simulation`, `world`, `market` und `clock` (`domain`, `util`) sowie `shared/domain` (Geld und Preisraster, die der Markt nutzt), jeweils ohne Specs, verbietet die nicht exakten `Math`-Funktionen, `**`, `Math.random`, `Date.now`, `new Date`, `performance.now` und `crypto`. Seit AP 2.1 gilt sie auch für `engine/domain`; auf die `domain`-Ordner von `banking`, `trading`, `portfolio` und `taxes` (ab AP 3.1) wird sie ausgedehnt, sobald diese entstehen: Auch der Spielerzustand muss überall gleich gerechnet werden, sonst weicht ein Replay vom Journal ab.
+Deshalb nutzt Simulationscode nur IEEE-754-exakte Operationen (`+ − × ÷`, `Math.sqrt`, `Math.floor`, `Math.round`, `Math.abs`, `Math.min`, `Math.max`) und eigene Implementierungen `detExp` und `detLog` (Portierung von fdlibm 5.3 `e_exp.c` und `e_log.c`, Genauigkeit ≤ 1 ulp, bitidentisch auf allen Engines). Potenzen werden über `detExp(b × detLog(a))` oder Multiplikation gebildet, nicht mit `**`. Die UI darf `Math.*` frei verwenden. Eine ESLint-Regel für `simulation`, `world`, `market` und `clock` (`domain`, `util`) sowie `shared/domain` (Geld und Preisraster, die der Markt nutzt), jeweils ohne Specs, verbietet die nicht exakten `Math`-Funktionen, `**`, `Math.random`, `Date.now`, `new Date`, `performance.now` und `crypto`. Seit AP 2.1 gilt sie auch für `engine/domain`, seit AP 3.1 für die `domain`-Ordner von `banking`, `trading`, `portfolio` und `taxes` (die Regel greift für jeden dieser Ordner, sobald er entsteht): Auch der Spielerzustand muss überall gleich gerechnet werden, sonst weicht ein Replay vom Journal ab.
 
 ### 4.5 Regeln für Simulationscode
 
@@ -895,6 +895,39 @@ Alle Geldbewegungen folgen der doppelten Buchführung:
 - **Transaktionstypen** (`as const`): `opening-balance`, `salary`, `living-costs`, `account-fee`, `custody-fee`, `overdraft-interest`, `debit-interest`, `credit-interest`, `transfer`, `buy`, `sell`, `dividend`, `fund-distribution`, `tax`, `tax-refund`.
 - Das Startkapital wird bei der Initialisierung als `opening-balance` gegen `external:opening-balance` auf das Girokonto der Hausbank gebucht (Hausbank: erste Filialbank in Weltreihenfolge, §5.7).
 
+**Kontenmodell** (`banking/domain/models/account.model.ts`, AP 3.1):
+
+- **Kontoarten** (`ACCOUNT_KINDS`): `current` (Girokonto), `savings` (Tagesgeld), `clearing` (Verrechnungskonto). Je Bank und Kontoart sind beliebig viele Konten möglich (entschieden 13.11.2026).
+- Ein **Konto** hat ID, Art, Bank, Kontonummer, Eröffnungs-Tick und Schließ-Tick (`null`, solange es offen ist); ein Verrechnungskonto verweist auf sein Depot. Ein **Depot** hat ID, Bank, Verrechnungskonto, Depotnummer, Eröffnungs- und Schließ-Tick. Geschlossene Konten und Depots bleiben mit ihrem Journal erhalten.
+- **IDs und Nummern** vergibt die Engine aus einem Zähler je Spieler, den Konten und Depots teilen: Zählerstand n ergibt `acc-<n>` bzw. `dep-<n>` und die Konto- bzw. Depotnummer n, zehnstellig mit führenden Nullen (`0000000007`). Die Nummer unterscheidet gleichartige Konten derselben Bank in der UI.
+
+**Buchen** (`banking/domain/ledger-logic.ts`, AP 3.1):
+
+- Die Engine führt die Salden der Spielerkonten. `bookTransaction` prüft eine Transaktion, wendet sie auf die Salden an und gibt sie mit laufender Nummer zurück. Jede Buchung auf ein Spielerkonto trägt den Saldo danach (`balanceAfter`; bei Gegenkonten `null`). So zeigt der Kontoauszug seitenweise (AP 3.4) den laufenden Saldo, ohne das Journal zu summieren. Bucht eine Transaktion zweimal auf dasselbe Konto, gilt `balanceAfter` je Buchung in ihrer Reihenfolge.
+- **Prüfung:** mindestens zwei Buchungen, jeder Betrag ganze Cent (sichere Ganzzahl), Summe 0, jedes Spielerkonto ist in den Salden geführt. Eine Verletzung ist ein Programmierfehler der Engine und wirft einen Fehler; die Salden bleiben dann unverändert. Fachliche Ablehnungen (Deckung, geschlossenes Konto) prüft das aufrufende System vorher.
+- `journalBalances` summiert die Salden aus einem Journal (Prüfung gegen den Snapshot, §9.2).
+- **Textparameter** sind Codes und Zahlen (§8.6), z. B. der Monat einer Gehaltsbuchung. Der Verwendungszweck einer Überweisung ist Eingabe des Anwenders und wird als Datum gespeichert, nicht übersetzt.
+
+Buchungsbeispiele (`acc-1` Girokonto der Hausbank `b1`, `acc-2` Tagesgeld bei `b2`):
+
+| Nr. | Typ               | Buchungen                                                     | Saldo danach                           |
+| --- | ----------------- | ------------------------------------------------------------- | -------------------------------------- |
+| 1   | `opening-balance` | `acc-1` +10.000,00 €, `external:opening-balance` −10.000,00 € | `acc-1` 10.000,00 €                    |
+| 2   | `living-costs`    | `acc-1` −1.843,27 €, `external:living-costs` +1.843,27 €      | `acc-1` 8.156,73 €                     |
+| 3   | `transfer`        | `acc-1` −3.000,00 €, `acc-2` +3.000,00 €                      | `acc-1` 5.156,73 €, `acc-2` 3.000,00 € |
+| 4   | `account-fee`     | `acc-1` −9,90 €, `external:bank:b1:fees` +9,90 €              | `acc-1` 5.146,83 €                     |
+| 5   | `credit-interest` | `acc-2` +5,48 €, `external:bank:b2:interest` −5,48 €          | `acc-2` 3.005,48 €                     |
+| 6   | `salary`          | `acc-1` +2.500,00 €, `external:employer` −2.500,00 €          | `acc-1` 7.646,83 €                     |
+
+Das Journal 1–6 ergibt die Salden `acc-1` 7.646,83 € und `acc-2` 3.005,48 €. Abgelehnt werden (bei Salden wie nach Nr. 6):
+
+| Buchungen                                    | Grund                      |
+| -------------------------------------------- | -------------------------- |
+| `acc-1` +1,00 €                              | nur eine Buchung           |
+| `acc-1` −1,00 €, `external:market` +0,99 €   | Summe −1 Cent              |
+| `acc-1` −0,005 €, `external:market` +0,005 € | kein ganzer Cent           |
+| `acc-9` +1,00 €, `external:employer` −1,00 € | `acc-9` wird nicht geführt |
+
 Beispiel Kauf von 10 Stück zu 100 € mit 5,90 € Orderentgelt:
 
 | Konto                   | Betrag      |
@@ -921,8 +954,8 @@ type FeeModel =
 
 interface CurrentAccountConditions {
   monthlyFee: Cents;
-  feeWaiver?: { minMonthlyDeposits: Cents }; // z. B. kostenlos ab 700 € Geldeingang
-  overdraft: { limitIncomeFactor: number; rate: number; toleratedSurcharge: number };
+  feeWaiver?: { minMonthlyDeposits: Cents }; // z. B. kostenlos ab 700 € Geldeingang von außen
+  overdraft: { limitIncomeFactor: number; rate: number; toleratedSurcharge: number }; // Rahmen §7.4
 }
 
 interface SavingsAccountConditions {
@@ -948,32 +981,99 @@ interface DepotConditions {
 
 Die Typen liegen in `banking/domain/models/bank-conditions.model.ts`; `BankConditions` fasst Girokonto und Tagesgeld (bei Brokern jeweils `null`) sowie das Depot einer Bank zusammen, die Weltgenerierung erzeugt sie (§5.7). Gebühren werden von genau einer Funktion je Modell berechnet. Die Kostenvorschau in der UI ruft dieselbe Funktion auf wie die Ausführung in der Engine.
 
+**Gebühren** (`banking/domain/fee-logic.ts`, AP 3.1): `fee(model, volume)` berechnet die Gebühr für ein Volumen in Cent (≥ 0, z. B. den Kurswert einer Order):
+
+- `free`: 0. `flat`: `amount`, unabhängig vom Volumen.
+- `percent`: `rate` × Volumen, kaufmännisch auf Cent gerundet (`applyRate`), dann auf `min`/`max` begrenzt. `flat-plus-percent`: `amount` + `rate` × Volumen (gerundet), dann begrenzt. Begrenzt wird erst nach unten, dann nach oben; liegt `min` über `max`, gilt `max`.
+- `tiered` (Semantik festgelegt in AP 3.1): Die Stufen stehen aufsteigend nach `upToVolume`. Es gilt die erste Stufe, deren `upToVolume` das Volumen erreicht (Grenze einschließlich) oder `null` ist (ohne Obergrenze). Ihr Modell rechnet mit dem **ganzen** Volumen (Staffelpreis, keine Progression je Stufe). Liegt das Volumen über allen Stufen und keine hat `null`, gilt die letzte. Die Standardwelt erzeugt `tiered` derzeit nicht.
+
+| Modell                                           | Volumen     | Gebühr  | Bemerkung                                      |
+| ------------------------------------------------ | ----------- | ------- | ---------------------------------------------- |
+| `free`                                           | 10.000,00 € | 0,00 €  |                                                |
+| `flat` 4,90 €                                    | 0,00 €      | 4,90 €  |                                                |
+| `flat` 4,90 €                                    | 50.000,00 € | 4,90 €  |                                                |
+| `percent` 1,5 %                                  | 123,45 €    | 1,85 €  | 1,85175 € gerundet                             |
+| `percent` 0,25 %                                 | 1.002,00 €  | 2,51 €  | 2,505 € gerundet, halbe Cent vom Nullpunkt weg |
+| `percent` 0,25 %, min 10 €, max 60 €             | 2.000,00 €  | 10,00 € | 5,00 € unter `min`                             |
+| `percent` 0,25 %, min 10 €, max 60 €             | 4.000,00 €  | 10,00 € | genau `min`                                    |
+| `percent` 0,25 %, min 10 €, max 60 €             | 10.000,00 € | 25,00 € |                                                |
+| `percent` 0,25 %, min 10 €, max 60 €             | 30.000,00 € | 60,00 € | 75,00 € über `max`                             |
+| `percent` 1 %, min 10 €, max 5 €                 | 2.000,00 €  | 5,00 €  | `min` über `max`: `max` gilt                   |
+| `flat-plus-percent` 4,90 € + 0,25 %, max 69,90 € | 1.000,00 €  | 7,40 €  |                                                |
+| `flat-plus-percent` 4,90 € + 0,25 %, max 69,90 € | 30.000,00 € | 69,90 € | 79,90 € über `max`                             |
+| `flat-plus-percent` 1,00 € + 0,1 %, min 5 €      | 1.000,00 €  | 5,00 €  | 2,00 € unter `min`                             |
+
+Stufenmodell A: bis 1.000 € `flat` 1,50 €, bis 5.000 € `flat` 4,90 €, darüber (`null`) `percent` 0,1 % min 5 €. Stufenmodell B: bis 1.000 € `flat` 1,00 €, bis 5.000 € `flat` 3,00 € (ohne `null`-Stufe).
+
+| Modell | Volumen     | Gebühr  | Bemerkung                       |
+| ------ | ----------- | ------- | ------------------------------- |
+| A      | 500,00 €    | 1,50 €  |                                 |
+| A      | 1.000,00 €  | 1,50 €  | Grenze gehört zur Stufe         |
+| A      | 1.000,01 €  | 4,90 €  |                                 |
+| A      | 5.000,00 €  | 4,90 €  |                                 |
+| A      | 6.000,00 €  | 6,00 €  | 0,1 % des ganzen Volumens       |
+| A      | 20.000,00 € | 20,00 € |                                 |
+| B      | 10.000,00 € | 3,00 €  | über allen Stufen: letzte Stufe |
+
+**Depotgebühr** (`custodyFee(fee, averageValue, yearShare)`): Der Jahreswert ist bei `none` 0, bei `percent-pa` `rate` × durchschnittlicher Depotwert, begrenzt auf `min`/`max` (Jahreswerte), bei `flat-pa` `amount`. Die Gebühr eines Zeitraums ist Jahreswert × Jahresanteil (Quartal ¼), einmal kaufmännisch gerundet. Welcher Jahresanteil für angebrochene Quartale gilt und wann gebucht wird, legt AP 5.2 fest.
+
+| Depotgebühr                             | Ø Depotwert  | Jahresanteil | Gebühr  | Bemerkung                   |
+| --------------------------------------- | ------------ | ------------ | ------- | --------------------------- |
+| `none`                                  | 40.000,00 €  | ¼            | 0,00 €  |                             |
+| `percent-pa` 0,2 %, min 30 €, max 150 € | 40.000,00 €  | ¼            | 20,00 € | Jahreswert 80 €             |
+| `percent-pa` 0,2 %, min 30 €, max 150 € | 10.000,00 €  | ¼            | 7,50 €  | Jahreswert 20 € unter `min` |
+| `percent-pa` 0,2 %, min 30 €, max 150 € | 100.000,00 € | ¼            | 37,50 € | Jahreswert 200 € über `max` |
+| `percent-pa` 0,2 %, min 30 €, max 150 € | 40.000,00 €  | 30/91        | 26,37 € | 26,3736… € gerundet         |
+| `flat-pa` 50 €                          | beliebig     | ¼            | 12,50 € |                             |
+| `flat-pa` 50 €                          | beliebig     | 1            | 50,00 € |                             |
+
+**Zinsen** (`banking/domain/interest-logic.ts`, AP 3.1): taggenau nach act/365. Der Tageszins ist Tagessaldo × Satz ÷ 365 in Cent, ungerundet, auch im Schaltjahr; ein volles Schaltjahr bringt deshalb 366/365 des Jahreszinses. Habenzinsen sind positiv, Soll- und Dispozinsen negativ. Die Engine summiert die Tageszinsen in Tagesreihenfolge und rundet erst beim Buchen kaufmännisch auf Cent (`bookedInterest`).
+
+- **Verrechnungskonto:** positive Tagessalden zu `clearingAccountRate`, negative zu `clearingAccountDebitRate`. Tagesgeld: `rate` auf positive Salden.
+- **Girokonto (Dispo):** Girokonten haben keinen Habenzins. Ein negativer Saldo wird bis zum Limit (Dispo-Rahmen des Kontos, §7.4) zu `rate` verzinst, der Teil darüber zu `rate + toleratedSurcharge` (geduldete Überziehung). Ohne Rahmen (Limit 0) gilt der erhöhte Satz auf den ganzen negativen Saldo. An der Limitgrenze ist der Tageszins stetig.
+
+| Saldo       | Satz                                      | Tage             | Zinsen (ungerundet, Cent) | Gebucht  |
+| ----------- | ----------------------------------------- | ---------------- | ------------------------- | -------- |
+| 10.000,00 € | Haben 2 %                                 | 1                | 54,794521                 |          |
+| 10.000,00 € | Haben 2 %                                 | 31               | 1.698,630137              | 16,99 €  |
+| 10.000,00 € | Haben 2 %                                 | 365              | 20.000                    | 200,00 € |
+| 10.000,00 € | Haben 2 %                                 | 366 (Schaltjahr) | 20.054,794521             | 200,55 € |
+| 5.000,00 €  | Verrechnungskonto Haben 1,5 %             | 30               | 616,438356                | 6,16 €   |
+| −2.000,00 € | Verrechnungskonto Soll 9 %                | 30               | −1.479,452055             | −14,79 € |
+| 1.000,00 €  | Dispo 11 % + 4 Pp., Limit 5.000 €         | 1                | 0                         |          |
+| −3.000,00 € | Dispo 11 % + 4 Pp., Limit 5.000 €         | 1                | −90,410959                |          |
+| −5.000,00 € | Dispo 11 % + 4 Pp., Limit 5.000 €         | 1                | −150,684932               |          |
+| −8.000,00 € | Dispo 11 % + 4 Pp., Limit 5.000 €         | 1                | −273,972603               |          |
+| −8.000,00 € | Dispo 11 % + 4 Pp., Limit 5.000 €         | 30               | −8.219,178082             | −82,19 € |
+| −1.000,00 € | Dispo 11 % + 4 Pp., ohne Rahmen (Limit 0) | 1                | −41,095890                |          |
+
+Bei −8.000,00 € entfallen 5.000 € auf den Dispo (11 %) und 3.000 € auf die geduldete Überziehung (15 %).
+
 ### 7.4 Haushalt, periodische Buchungen und Kontoabschluss
 
-| Vorgang       | Zeitpunkt (Bank-Lauf 06:00, E-19)                       | Konto                  | Regel                                                                                  |
-| ------------- | ------------------------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------- |
-| Gehalt        | letzter Bankarbeitstag des Monats                       | Gehaltskonto           | Nettoeinkommen                                                                         |
-| Lebenshaltung | erster Bankarbeitstag des Monats                        | Gehaltskonto           | Basis × (1 + ε), ε ~ N(0; 0,05), begrenzt auf ±0,15; Strom `life/living-costs/<monat>` |
-| Kontoführung  | erster Bankarbeitstag (für den Vormonat)                | jeweiliges Konto       | Konditionen inkl. Befreiung (z. B. Geldeingang im Vormonat ≥ 700 €)                    |
-| Depotgebühr   | erster Bankarbeitstag des Quartals (für das Vorquartal) | Verrechnungskonto      | % p. a. auf den durchschnittlichen Depotwert (Tageswerte) oder pauschal                |
-| Dispozinsen   | monatlich                                               | Girokonto              | taggenau auf negative Tagessalden (act/365)                                            |
-| Sollzinsen    | monatlich                                               | Verrechnungskonto      | taggenau auf negative Tagessalden                                                      |
-| Habenzinsen   | monatlich oder quartalsweise                            | Tagesgeld, Verrechnung | taggenau; Steuer wird einbehalten                                                      |
-| Dividende     | Zahltag                                                 | Verrechnungskonto      | Stück am Ex-Vortag × Dividende, abzüglich Steuer                                       |
-| Sparplan      | Ausführungstag, Handelsbeginn                           | Verrechnungskonto      | §7.8                                                                                   |
+| Vorgang       | Zeitpunkt (Bank-Lauf 06:00, E-19)                                                   | Konto                  | Regel                                                                                                                                         |
+| ------------- | ----------------------------------------------------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Gehalt        | letzter Bankarbeitstag des Monats                                                   | Gehaltskonto           | Nettoeinkommen                                                                                                                                |
+| Lebenshaltung | erster Bankarbeitstag des Monats                                                    | Gehaltskonto           | Basis × (1 + ε), ε ~ N(0; 0,05), begrenzt auf ±0,15; Strom `life/living-costs/<monat>`                                                        |
+| Kontoführung  | erster Bankarbeitstag (für den Vormonat)                                            | jeweiliges Konto       | Konditionen inkl. Befreiung (z. B. Geldeingang von außen im Vormonat ≥ 700 €); im Eröffnungs- und im Schließmonat anteilig nach Kalendertagen |
+| Depotgebühr   | erster Bankarbeitstag des Quartals (für das Vorquartal)                             | Verrechnungskonto      | % p. a. auf den durchschnittlichen Depotwert (Tageswerte) oder pauschal                                                                       |
+| Dispozinsen   | monatlich                                                                           | Girokonto              | taggenau auf negative Tagessalden (act/365)                                                                                                   |
+| Sollzinsen    | monatlich                                                                           | Verrechnungskonto      | taggenau auf negative Tagessalden                                                                                                             |
+| Habenzinsen   | Tagesgeld nach `payout` (monatlich oder quartalsweise), Verrechnungskonto monatlich | Tagesgeld, Verrechnung | taggenau; Steuer wird einbehalten                                                                                                             |
+| Dividende     | Zahltag                                                                             | Verrechnungskonto      | Stück am Ex-Vortag × Dividende, abzüglich Steuer                                                                                              |
+| Sparplan      | Ausführungstag, Handelsbeginn                                                       | Verrechnungskonto      | §7.8                                                                                                                                          |
 
-- **Dispo (E-17):** Limit = 2 × Nettoeinkommen, Zinssatz je Bank. Darüber geduldete Überziehung mit 3–5 Prozentpunkten Aufschlag. Ereignisse: `account-uncovered` (Saldo wird negativ) und `overdraft-limit-exceeded`.
+- **Dispo je Bank nach Gehaltseingang (E-17, entschieden 13.11.2026):** Jede Bank gibt je Kunde einen Gesamtrahmen = `limitIncomeFactor` × durchschnittlicher Gehaltseingang bei ihr in den letzten drei vollen Kalendermonaten (Summe der Gehaltsbuchungen auf ihre Girokonten ÷ 3). Er wird am ersten Bankarbeitstag jedes Monats angepasst und liegt auf dem Girokonto dieser Bank mit den meisten Gehaltseingängen im Fenster; weitere Girokonten derselben Bank haben keinen Rahmen (Limit 0). Die Hausbank startet mit vollem Rahmen, als hätte sie drei Monate Gehalt gesehen. Nach einem Wechsel des Gehaltskontos wächst der Rahmen der neuen Bank über drei Monate, der der alten schrumpft. Hintergrund: Bei derselben Bank lässt sich ein Dispo real nicht durch ein zweites Konto verdoppeln, verschiedene Banken vergeben ihn unabhängig nach dem regelmäßigen Geldeingang bei ihnen.
+- **Geduldete Überziehung:** keine Obergrenze. Der Zinssatz `rate` gilt bis zum Limit, der Aufschlag `toleratedSurcharge` (3–5 Prozentpunkte) nur auf den Teil des negativen Saldos über dem Limit (§7.3). Ein gekürzter Rahmen kann ein Konto in die geduldete Überziehung bringen; dann wird gewarnt. Ereignisse: `account-uncovered` (Saldo wird negativ) und `overdraft-limit-exceeded` (Saldo unter −Limit; kritisch, Auto-Pause standardmäßig an, §12).
 - **Verrechnungskonten:** Kauforders ohne Deckung werden abgelehnt. Von der Bank veranlasste Belastungen (Gebühren, Zinsen) werden immer gebucht; ein Verrechnungskonto kann dadurch negativ werden. Dann fällt Sollzins an, der Anwender wird gewarnt (`account-uncovered`) und neue Kauforders sind gesperrt, bis das Konto ausgeglichen ist. Steuern können kein Konto ins Minus treiben, weil ein Einbehalt nie größer ist als die auslösende Gutschrift (rund 25 % davon; durch die Rundung auf Cent höchstens 1 Cent mehr).
-- **Überweisungen und Kontoeröffnungen (E-17):** sofort und kostenlos (Echtzeitüberweisung).
+- **Überweisungen und Kontoeröffnungen (E-17):** sofort und kostenlos (Echtzeitüberweisung). Eigene Überweisungen gehen höchstens bis zum verfügbaren Betrag (Guthaben plus freier Dispo), führen also nie in die geduldete Überziehung. Je Bank und Kontoart sind beliebig viele Konten möglich (§7.2).
 - **Kontoabschluss:** Beim Schließen werden zuerst aufgelaufene Zinsen und anteilige Gebühren bis zum Schließtag gebucht. Ein Restguthaben geht per Überweisung auf ein gewähltes eigenes Konto; ein negativer Saldo muss vorher ausgeglichen werden. Depots müssen leer sein und dürfen keine offenen Orders oder Sparpläne haben.
 - **Monatswerte:** Die Engine summiert je Monat Einkommen, Lebenshaltung, Gebühren, Zinsen, Steuern und Erträge (Grundlage der Monatsübersicht, US-EK-03).
-- **Offene Regeln (zu klären in AP 3.2 und AP 3.3):**
-  - Zählen eigene Überweisungen als Geldeingang für die Gebührenbefreiung? Wenn ja, lässt sie sich mit zwei Überweisungen im Monat erfüllen; Vorschlag: nur Zahlungen von außen.
-  - Fällt im Eröffnungsmonat eine anteilige Gebühr an, wie beim Schließen?
-  - Die geduldete Überziehung hat keine Obergrenze. Soll sie eine bekommen? Entschieden (12.11.2026): Die Lebenshaltungskosten dürfen das Einkommen übersteigen; das Formular zeigt dann einen Hinweis am Feld (US-SP-01).
-  - Darf ein Depot zwischen Ex-Tag und Zahltag geschlossen werden, und wohin geht dann die Dividende (AP 5.2)?
-  - Habenzinsen auf Verrechnungskonten (bei Neobrokern 1–2,5 %): `DepotConditions` kennt keinen Auszahlungsrhythmus, anders als `SavingsAccountConditions.payout`. Vorschlag: monatlich (AP 3.1/3.2).
-  - Entschieden (12.11.2026): Hausbank wird beim Anlegen eines Spielers die erste Filialbank in Weltreihenfolge (§5.7, AP 2.4).
+- **Geldeingang für die Gebührenbefreiung (entschieden 13.11.2026):** Es zählen nur Gutschriften von außen (Gehalt, Startkapital); eigene Überweisungen, Zinsen und Steuererstattungen zählen nicht. Sonst ließe sich die Bedingung mit zwei Überweisungen im Monat erfüllen.
+- **Kontoführung bei Eröffnung und Schließung (entschieden 13.11.2026):** Im Eröffnungs- und im Schließmonat wird die Kontoführung anteilig nach Kalendertagen berechnet.
+- **Habenzinsen auf Verrechnungskonten (entschieden 13.11.2026):** bei allen Banken monatlich gutgeschrieben; `DepotConditions` bekommt kein Feld für den Rhythmus, die Welt bleibt unverändert.
+- Entschieden (12.11.2026): Die Lebenshaltungskosten dürfen das Einkommen übersteigen; das Formular zeigt dann einen Hinweis am Feld (US-SP-01). Hausbank wird beim Anlegen eines Spielers die erste Filialbank in Weltreihenfolge (§5.7, AP 2.4).
+- **Offene Regel (AP 5.2):** Darf ein Depot zwischen Ex-Tag und Zahltag geschlossen werden, und wohin geht dann die Dividende?
 
 ### 7.5 Orders
 
@@ -1817,15 +1917,15 @@ Status: **Vorschlag** = von Claude vorgeschlagen, Bestätigung durch den Product
 | E-08 | Persistenz                           | Snapshots, Kommando-Log (write-ahead, mit Uhrzustand) und Journal in IndexedDB; die Welt wird neu erzeugt, Intraday-Kurse bei Bedarf berechnet; Tageskerzen je Spieler gespeichert, aber reproduzierbar (§6.8, §9). Ergänzungen: Marktzustände zu Monatsbeginn mitspeichern (eigener Store, DB-Version 4, §6.8), Write-ahead nur für Spielkommandos, Kommando-Log älter als der älteste Snapshot löschen (§8.2, §8.5), Uhr spätestens nach einem Spieltag sichern, Tick des letzten `clock`-Ereignisses bei `pagehide` als Untergrenze (§9.2); Tageskerzen je Seed geprüft und verworfen (§9.1) | entschieden (12.11.2026)                       |
 | E-09 | Zahlen                               | Geld in Cent, Stück in Millionstel (beides ganzzahlig), Kurse als Gleitkomma mit Preisraster (§7.1, §6.7)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | entschieden (10.11.2026)                       |
 | E-10 | Export                               | base64(JSON) mit Spieler- und Marktzustand (Stand: Beginn des Export-Tags), ohne Kerzen; Import sofort spielbar, Kurshistorie im Hintergrund, Prüfsummenvergleich (§10). Ergänzungen: gzip schon in Formatversion 1, ohne `commands`, Import startet pausiert (§10.1, §10.3)                                                                                                                                                                                                                                                                                                                    | Vorschlag                                      |
-| E-11 | Steuern                              | 25 % pauschal, Sparerpauschbetrag 1.000 €, ein Verlusttopf, bankübergreifend, ohne Soli und Kirchensteuer (§7.7); der Steuerkern entsteht wegen der Zinsen schon in AP 3.2                                                                                                                                                                                                                                                                                                                                                                                                                      | Vorschlag                                      |
+| E-11 | Steuern                              | 25 % pauschal, Sparerpauschbetrag 1.000 €, ein Verlusttopf, bankübergreifend, ohne Soli und Kirchensteuer (§7.7); der Steuerkern entsteht wegen der Zinsen schon in AP 3.2                                                                                                                                                                                                                                                                                                                                                                                                                      | entschieden (13.11.2026)                       |
 | E-12 | Umfang Stufe 1                       | Aktien und ETFs (plus Indizes); übrige Assetklassen ab Stufe 2/3; Inflation mit dem Zinsumfeld in Stufe 2                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | entschieden (10.11.2026)                       |
 | E-13 | Welt                                 | Reale Regionen und Länder; fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen (§5)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | entschieden (10.11.2026)                       |
 | E-14 | Spielerstart                         | Lebenshaltungskosten als Parameter bei der Erstellung; Hausbank ist eine Filialbank, die erste vom Typ `branch` in Weltreihenfolge (§5.7); Start pausiert; Vorgaben 10.000 € / 2.500 € / 1.800 €, Grenzen und Voreinstellungen in PS US-SP-01                                                                                                                                                                                                                                                                                                                                                   | entschieden (12.11.2026)                       |
 | E-15 | Routing                              | Hash-Routing bleibt; Routenpfade englisch (§11.4)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | entschieden (10.11.2026)                       |
 | E-16 | Angular Aria                         | `@angular/aria` neben dem CDK zugelassen, für Tabs und Menüs, später Listbox/Combobox (§11.6)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | entschieden (10.11.2026)                       |
-| E-17 | Banking                              | Kontoeröffnung und Überweisungen sofort und kostenlos; Dispo mit geduldeter Überziehung; Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (§7.4)                                                                                                                                                                                                                                                                                                                                                                                                                                     | entschieden (10.11.2026)                       |
+| E-17 | Banking                              | Kontoeröffnung und Überweisungen sofort und kostenlos; Dispo mit geduldeter Überziehung; Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (§7.4). Ergänzt 13.11.2026: Dispo-Rahmen je Bank = `limitIncomeFactor` × durchschnittlicher Gehaltseingang bei ihr in den letzten drei vollen Monaten, auf ihrem Girokonto mit den meisten Gehaltseingängen; geduldete Überziehung ohne Obergrenze, Aufschlag nur auf den Teil über dem Limit; eigene Überweisungen höchstens bis zum verfügbaren Betrag; beliebig viele Konten je Bank und Kontoart                                       | entschieden (10.11.2026, ergänzt 13.11.2026)   |
 | E-18 | Handelszeiten                        | Börsen mit Handelszeiten je Region; Orders jederzeit erteilbar, Ausführung in der Handelszeit (§3.3)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | entschieden (11.11.2026)                       |
-| E-19 | Buchungstermine                      | Bank-Lauf 06:00 an Bankarbeitstagen; Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag des Monats; Kontoführung monatlich, Depotgebühr quartalsweise (§7.4)                                                                                                                                                                                                                                                                                                                                                                                                                             | Vorschlag                                      |
+| E-19 | Buchungstermine                      | Bank-Lauf 06:00 an Bankarbeitstagen; Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag des Monats; Kontoführung monatlich, Depotgebühr quartalsweise (§7.4)                                                                                                                                                                                                                                                                                                                                                                                                                             | entschieden (13.11.2026)                       |
 | E-20 | Kursberechnung                       | Brückenmodell: Tagesschritt mit Stützpunkten für alle Instrumente, Minutenkurse als Brownsche Brücken bei Bedarf, exakte Indizes, Abfragen nur bis zum aktuellen Tick (§3.2, §6.1, §6.6)                                                                                                                                                                                                                                                                                                                                                                                                        | entschieden (10.11.2026)                       |
 | E-21 | Sparpläne                            | Abbuchungskonto: Der Sparplan zieht den Betrag bei der Ausführung von einem gewählten eigenen Konto aufs Verrechnungskonto (§7.8, US-HD-05). Alternative: Daueraufträge (US-BK-10) in Stufe 1                                                                                                                                                                                                                                                                                                                                                                                                   | Vorschlag                                      |
 | E-22 | Langzeitverhalten                    | Langzeit-Kennzahlen mit Grenzen als Kalibrierungsziel (§6.9); schwache Rückkehr von `U_i` zu seinem erwarteten Pfad, Rückkehr des Niveaus der Unterfaktoren, abklingendes Alpha (ohne neuen Zustand); Kaufsperre an der Kursuntergrenze (§6.2, §6.4, §7.5)                                                                                                                                                                                                                                                                                                                                      | entschieden (12.11.2026, AP 1.9a)              |

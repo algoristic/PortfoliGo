@@ -37,6 +37,10 @@ const RULE_SPECS = [
   'src/app/engine/data-access/service/engine-service.utils.spec.ts',
   'src/app/shared/util/amount-input.spec.ts',
   'src/app/banking/domain/home-bank-logic.spec.ts',
+  'src/app/banking/domain/account-logic.spec.ts',
+  'src/app/banking/domain/ledger-logic.spec.ts',
+  'src/app/banking/domain/fee-logic.spec.ts',
+  'src/app/banking/domain/interest-logic.spec.ts',
   'src/app/players/domain/player-logic.spec.ts',
 ];
 
