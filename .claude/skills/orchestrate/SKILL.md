@@ -67,7 +67,8 @@ stillschweigend anpassen. Arbeite am Rest weiter und führe den Punkt im Bericht
 
 1. **Ausgangszustand:** `git status` und `git log --oneline -5`. Gibt es bereits uncommittete Änderungen,
    frag in der Klärungsrunde, wie damit umzugehen ist; committe sie nie ungefragt mit.
-2. **Aufgabe verstehen:** Lies die relevanten CLAUDE.md-Regeln, Spezifikationen und den betroffenen Code.
+2. **Aufgabe verstehen:** Lies die relevanten CLAUDE.md-Regeln, die Rules der betroffenen Bereiche
+   (`.claude/rules/`), Spezifikationen und den betroffenen Code.
    Für breite Suchen darfst du `Explore`-Agents einsetzen. Ist die Aufgabe ein Arbeitspaket aus
    `docs/projektplan.md`, gilt projektplan §2.3/§2.4: Abhängigkeiten erledigt? Entscheidungen, die noch
    „Vorschlag“ sind? Welche Tests verlangt das AP (CLAUDE.md §10 „Planning tests in an AP“)?
@@ -160,9 +161,9 @@ Nach jeder Teilaufgabe, bevor du committest:
 
 ## Phase 3: Abschließen
 
-1. **Definition of Done:** Bei APs projektplan §2.4 vollständig abarbeiten (Status und Änderungsprotokoll
-   in `docs/projektplan.md`, Spezifikation bei Abweichungen nachziehen, i18n, Mutation-Config bei neuem
-   Regelcode, Perf-Budgets). Bei UI-Änderungen die Browser-Prüfung aus der CLAUDE.md (Playwright-MCP gegen
+1. **Definition of Done:** Bei APs projektplan §2.4 vollständig abarbeiten (Status in `docs/projektplan.md`,
+   neuer Eintrag oben in `docs/aenderungsprotokoll.md`, Ist-Stand in `.claude/rules/<bereich>.md`,
+   Spezifikation bei Abweichungen nachziehen, i18n, Mutation-Config bei neuem Regelcode, Perf-Budgets). Bei UI-Änderungen die Browser-Prüfung aus der CLAUDE.md (Playwright-MCP gegen
    den Dev-Server) durchführen oder von genau einem Agent durchführen lassen. Den Dev-Server mit dem Befehl
    aus `.claude/launch.json` im Hintergrund starten und danach stoppen, den Browser schließen.
 2. **Gesamtprüfung:** erst wenn kein Agent mehr Dateien ändert: `npm run verify` mit `run_in_background`
