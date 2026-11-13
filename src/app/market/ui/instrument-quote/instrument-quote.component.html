@@ -1,0 +1,123 @@
+@let _head = head();
+
+<div class="flex items-start gap-2">
+  <div class="min-w-0 flex-1">
+    <h1 class="text-xl font-semibold break-words" data-testid="market.instrument.name">
+      {{ _head.name }}
+    </h1>
+    <p class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-fg-muted">
+      <span data-testid="market.instrument.ticker">{{ _head.ticker }}</span>
+      @if (_head.isin) {
+        <span aria-hidden="true">·</span>
+        <span data-testid="market.instrument.isin">{{ _head.isin }}</span>
+      }
+      @if (_head.exchangeName) {
+        <span aria-hidden="true">·</span>
+        <span data-testid="market.instrument.exchange">{{ _head.exchangeName }}</span>
+      }
+      <app-badge data-testid="market.instrument.kind">{{ kindLabel() }}</app-badge>
+    </p>
+  </div>
+  <ng-content />
+</div>
+
+<div class="mt-4 flex flex-wrap items-end gap-x-8 gap-y-4">
+  <div class="flex flex-col">
+    <span class="text-xs font-medium text-fg-muted">{{ isIndex() ? levelLabel : lastLabel }}</span>
+    <span
+      class="px-0.5 text-3xl font-semibold tabular-nums"
+      data-testid="market.instrument.last"
+      [appValueFlash]="_head.last"
+      [enabled]="flashEnabled()">
+      @if (isIndex()) {
+        {{ _head.last | formatNumber: 2 }}
+      } @else {
+        {{ _head.last | formatPrice }}
+      }
+    </span>
+    <span class="flex flex-wrap items-baseline gap-x-2 text-sm">
+      <span class="sr-only">{{ changeLabel }}</span>
+      <span class="tabular-nums" data-testid="market.instrument.change" [class]="changeClass()">
+        @if (isIndex()) {
+          {{ _head.change | formatSignedNumber: 2 }}
+        } @else {
+          {{ _head.change | formatSignedPrice: _head.priceDecimals }}
+        }
+      </span>
+      @if (_head.changeRatio !== null) {
+        <app-price-change
+          data-testid="market.instrument.change-percent"
+          [value]="_head.changeRatio"></app-price-change>
+      }
+    </span>
+  </div>
+
+  @if (!isIndex()) {
+    <dl class="grid grid-cols-3 gap-x-6 gap-y-1 text-sm">
+      <dt class="text-xs font-medium text-fg-muted" i18n="@@uiMarket-instrumentQuote-bid">Geld</dt>
+      <dt class="text-xs font-medium text-fg-muted" i18n="@@uiMarket-instrumentQuote-ask">Brief</dt>
+      <dt class="text-xs font-medium text-fg-muted" i18n="@@uiMarket-instrumentQuote-spread">
+        Spread
+      </dt>
+      <dd class="font-medium tabular-nums" data-testid="market.instrument.bid">
+        {{ _head.bid | formatFixedPrice: _head.priceDecimals }}
+      </dd>
+      <dd class="font-medium tabular-nums" data-testid="market.instrument.ask">
+        {{ _head.ask | formatFixedPrice: _head.priceDecimals }}
+      </dd>
+      <dd class="tabular-nums">
+        <span data-testid="market.instrument.spread">{{
+          _head.spread | formatFixedPrice: _head.priceDecimals
+        }}</span>
+        <span class="text-fg-muted" data-testid="market.instrument.spread-percent">
+          ({{ _head.spreadRatio | formatPercent: 2 }})</span
+        >
+      </dd>
+    </dl>
+  }
+
+  @if (_head.kind === 'etf') {
+    <div class="flex flex-col text-sm">
+      <span class="text-xs font-medium text-fg-muted">
+        <abbr
+          title="Indikativer Nettoinventarwert"
+          i18n-title="@@uiMarket-instrumentQuote-inavTitle"
+          i18n="@@uiMarket-instrumentQuote-inav"
+          >iNAV</abbr
+        >
+      </span>
+      <span class="font-medium tabular-nums" data-testid="market.instrument.inav">{{
+        _head.indicativeValue | formatPrice
+      }}</span>
+      @if (_head.indicativeTick !== null) {
+        <span class="text-xs text-fg-muted" data-testid="market.instrument.inav-tick">
+          <ng-container i18n="@@uiMarket-instrumentQuote-inavAsOf">Stand</ng-container>
+          {{ _head.indicativeTick | formatGameWeekdayTime }}
+        </span>
+      }
+    </div>
+  }
+
+  @if (statusText(); as text) {
+    <p class="flex items-center gap-2 text-sm" data-testid="market.instrument.status">
+      @if (closed()) {
+        <i appIcon="circle" class="text-xs text-fg-muted"></i>
+      } @else {
+        <i appIcon="circle-fill" class="text-xs text-up"></i>
+      }
+      <span>{{ text }}</span>
+    </p>
+  }
+</div>
+
+@if (closed()) {
+  <p
+    class="mt-3 flex items-center gap-2 rounded-md border border-border bg-surface-raised px-3 py-2 text-sm"
+    role="status"
+    data-testid="market.instrument.closed">
+    <i appIcon="moon"></i>
+    <span i18n="@@uiMarket-instrumentQuote-closedNote"
+      >Börse geschlossen – der Kurs steht still, bis die Börse wieder öffnet.</span
+    >
+  </p>
+}

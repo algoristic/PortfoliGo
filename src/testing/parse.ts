@@ -17,3 +17,24 @@ export function parseGermanNumber(text: string): number {
 export function parseEuros(text: string): number {
   return parseGermanNumber(text.replace(/€\s*$/, ''));
 }
+
+const COMPACT_FACTORS: Readonly<Record<string, number>> = {
+  '': 1,
+  'Tsd.': 1e3,
+  'Mio.': 1e6,
+  'Mrd.': 1e9,
+  'Bio.': 1e12,
+};
+
+/**
+ * Parses a compact amount in euros as the UI shows it, e.g. `'1,2 Mrd. €'` → 1.2e9, together with
+ * the factor of its unit, so that a test can compare at the displayed precision.
+ */
+export function parseCompactEuros(text: string): { value: number; factor: number } {
+  const match = /^([-−+]?[\d.,]+)\s*(Tsd\.|Mio\.|Mrd\.|Bio\.)?\s*€$/.exec(text.trim());
+  if (match === null) {
+    throw new Error(`not a compact amount: ${text}`);
+  }
+  const factor = COMPACT_FACTORS[match[2] ?? ''];
+  return { value: parseGermanNumber(match[1]) * factor, factor };
+}

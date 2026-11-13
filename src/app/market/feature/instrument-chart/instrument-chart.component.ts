@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -39,6 +40,7 @@ const BOLLINGER_LINES = ['middle', 'upper', 'lower'] as const;
 @Component({
   selector: 'app-instrument-chart',
   imports: [
+    CommonModule,
     CandleReadoutComponent,
     ChartIndicatorsComponent,
     ChartToolbarComponent,

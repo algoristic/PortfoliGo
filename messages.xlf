@@ -4234,28 +4234,84 @@
         <source> Der Kursverlauf konnte nicht geladen werden. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument-chart/instrument-chart.component.html</context>
-          <context context-type="linenumber">57,61</context>
+          <context context-type="linenumber">61,65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentChart-loadingOlder" datatype="html">
         <source> Lade ältere Kerzen … </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument-chart/instrument-chart.component.html</context>
-          <context context-type="linenumber">66,70</context>
+          <context context-type="linenumber">70,74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentChart-chartLabel" datatype="html">
         <source>Kursverlauf</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument-chart/instrument-chart.component.ts</context>
-          <context context-type="linenumber">96</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentPage-backToMarkets" datatype="html">
+        <source>Zu den Märkten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
+          <context context-type="linenumber">16,21</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentPage-title" datatype="html">
         <source>Instrument</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
-          <context context-type="linenumber">10,13</context>
+          <context context-type="linenumber">34,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentPage-failed" datatype="html">
+        <source> Einige Angaben konnten nicht geladen werden. Sie erscheinen beim nächsten Besuch der Seite. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.html</context>
+          <context context-type="linenumber">45,49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentPage-figures" datatype="html">
+        <source>Kennzahlen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentPage-profile" datatype="html">
+        <source>Profil</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.ts</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentPage-composition" datatype="html">
+        <source>Zusammensetzung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentPage-dividends" datatype="html">
+        <source>Dividenden</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentPage-notFound" datatype="html">
+        <source>Wertpapier nicht gefunden</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-instrumentPage-notFoundText" datatype="html">
+        <source>Zu dieser Adresse gibt es in dieser Welt kein Wertpapier.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/instrument/instrument.page.ts</context>
+          <context context-type="linenumber">52</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketOverviewPage-indices" datatype="html">
@@ -4360,35 +4416,42 @@
         <source>Die Kursverläufe der Watchlist konnten nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">459</context>
+          <context context-type="linenumber">463</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketEffects-loadInstrumentDetailFailure" datatype="html">
+        <source>Die Angaben zum Wertpapier konnten nicht vollständig geladen werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
+          <context context-type="linenumber">670</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketEffects-loadInstrumentsFailure" datatype="html">
         <source>Die Wertpapiere konnten nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">650</context>
+          <context context-type="linenumber">720</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketEffects-loadScreenerFailure" datatype="html">
         <source>Die Trefferliste konnte nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">663</context>
+          <context context-type="linenumber">733</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketEffects-loadChartCandlesFailure" datatype="html">
         <source>Der Kursverlauf konnte nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">676</context>
+          <context context-type="linenumber">746</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketEffects-saveChartSettingsFailure" datatype="html">
         <source>Die Chart-Einstellungen gelten nur bis zum Neuladen, weil sie auf diesem Gerät nicht gespeichert werden konnten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">689</context>
+          <context context-type="linenumber">759</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-watchlistErrors-unknownInstrument" datatype="html">
@@ -4472,56 +4535,56 @@
         <source>E</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
-          <context context-type="linenumber">18,19</context>
+          <context context-type="linenumber">18,20</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-candleReadout-highTitle" datatype="html">
         <source>Hoch</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
-          <context context-type="linenumber">24</context>
+          <context context-type="linenumber">28</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-candleReadout-high" datatype="html">
         <source>H</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
-          <context context-type="linenumber">27,28</context>
+          <context context-type="linenumber">31,33</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-candleReadout-lowTitle" datatype="html">
         <source>Tief</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
-          <context context-type="linenumber">33</context>
+          <context context-type="linenumber">41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-candleReadout-low" datatype="html">
         <source>T</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
-          <context context-type="linenumber">36,37</context>
+          <context context-type="linenumber">44,46</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-candleReadout-closeTitle" datatype="html">
         <source>Schluss</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
-          <context context-type="linenumber">42</context>
+          <context context-type="linenumber">54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-candleReadout-close" datatype="html">
         <source>S</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
-          <context context-type="linenumber">45,46</context>
+          <context context-type="linenumber">57,59</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-candleReadout-empty" datatype="html">
         <source>Keine Kerzen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
-          <context context-type="linenumber">49,52</context>
+          <context context-type="linenumber">65,68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-chartIndicators-list" datatype="html">
@@ -4535,21 +4598,21 @@
         <source>Indikator</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/chart-indicators/chart-indicators.component.html</context>
-          <context context-type="linenumber">57,60</context>
+          <context context-type="linenumber">61,64</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-chartIndicators-edit" datatype="html">
         <source><x id="LABEL" equiv-text="label"/> ändern</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/chart-indicators/chart-indicators.component.ts</context>
-          <context context-type="linenumber">51</context>
+          <context context-type="linenumber">54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-chartIndicators-remove" datatype="html">
         <source><x id="LABEL" equiv-text="label"/> entfernen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/chart-indicators/chart-indicators.component.ts</context>
-          <context context-type="linenumber">52</context>
+          <context context-type="linenumber">55</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-chartToolbar-rangeGroup" datatype="html">
@@ -4664,6 +4727,125 @@
           <context context-type="linenumber">60</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-next" datatype="html">
+        <source> Nächster Termin </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.html</context>
+          <context context-type="linenumber">17,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-exDay" datatype="html">
+        <source>Ex-Tag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.html</context>
+          <context context-type="linenumber">23,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-paymentDay" datatype="html">
+        <source>Zahltag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.html</context>
+          <context context-type="linenumber">24,25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-amount" datatype="html">
+        <source>Betrag je Stück</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.html</context>
+          <context context-type="linenumber">26,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-etfAmount" datatype="html">
+        <source>Betrag wird am Ex-Tag festgelegt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.html</context>
+          <context context-type="linenumber">43,46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-notAnnounced" datatype="html">
+        <source>noch nicht angekündigt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.html</context>
+          <context context-type="linenumber">49,54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-noNext" datatype="html">
+        <source> Es steht noch kein Termin fest. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.html</context>
+          <context context-type="linenumber">59,63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-history" datatype="html">
+        <source> Zahlungen der letzten fünf Jahre </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.html</context>
+          <context context-type="linenumber">64,66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-historyExDay" datatype="html">
+        <source> Ex-Tag </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.html</context>
+          <context context-type="linenumber">79,82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-historyPaymentDay" datatype="html">
+        <source> Zahltag </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.html</context>
+          <context context-type="linenumber">85,88</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-historyAmount" datatype="html">
+        <source> Betrag je Stück </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.html</context>
+          <context context-type="linenumber">91,94</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-noHistory" datatype="html">
+        <source> In den letzten fünf Jahren gab es keine Zahlung. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.html</context>
+          <context context-type="linenumber">119,123</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-historyLabel" datatype="html">
+        <source>Dividendenhistorie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-accumulating" datatype="html">
+        <source>Thesaurierender ETF</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.ts</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-accumulatingText" datatype="html">
+        <source>Der Fonds schüttet nicht aus, sondern legt seine Erträge wieder an.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.ts</context>
+          <context context-type="linenumber">25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-none" datatype="html">
+        <source>Keine Dividenden</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.ts</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-dividendOverview-noneText" datatype="html">
+        <source>In den letzten fünf Jahren gab es keine Ausschüttung, und es steht kein Termin fest.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/dividend-overview/dividend-overview.component.ts</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiMarket-formIndicator-kind" datatype="html">
         <source>Indikator</source>
         <context-group purpose="location">
@@ -4727,6 +4909,69 @@
           <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiMarket-indexComposition-top" datatype="html">
+        <source>Größte Positionen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/index-composition/index-composition.component.html</context>
+          <context context-type="linenumber">3,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indexComposition-topCaption" datatype="html">
+        <source> Größte Positionen mit ihrem Gewicht im Index </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/index-composition/index-composition.component.html</context>
+          <context context-type="linenumber">6,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indexComposition-name" datatype="html">
+        <source> Wertpapier </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/index-composition/index-composition.component.html</context>
+          <context context-type="linenumber">11,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indexComposition-weight" datatype="html">
+        <source> Gewicht </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/index-composition/index-composition.component.html</context>
+          <context context-type="linenumber">14,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indexComposition-count" datatype="html">
+        <source>Werte im Index:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/index-composition/index-composition.component.html</context>
+          <context context-type="linenumber">42,43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indexComposition-regions" datatype="html">
+        <source>Regionen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/index-composition/index-composition.component.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indexComposition-sectors" datatype="html">
+        <source>Sektoren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/index-composition/index-composition.component.ts</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indexComposition-other" datatype="html">
+        <source>Übrige</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/index-composition/index-composition.component.ts</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indexComposition-donutLabel" datatype="html">
+        <source>Aufteilung nach <x id="heading" equiv-text="heading"/>, Anteile in der Liste daneben</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/index-composition/index-composition.component.ts</context>
+          <context context-type="linenumber">78</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiMarket-indexOverview-sparklineLabel" datatype="html">
         <source>Tagesverlauf <x id="name" equiv-text="instrument.name"/></source>
         <context-group purpose="location">
@@ -4739,6 +4984,1119 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/index-overview/index-overview.component.ts</context>
           <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-helpSummary" datatype="html">
+        <source> So werden die Kennzahlen berechnet </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.html</context>
+          <context context-type="linenumber">39,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-fundVolumeHelp" datatype="html">
+        <source> Verwaltetes Vermögen des Fonds laut Stammdaten. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.html</context>
+          <context context-type="linenumber">46,49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-marketCapHelp" datatype="html">
+        <source> Anzahl der Aktien mal letzter Kurs; für Indizes nicht angegeben. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.html</context>
+          <context context-type="linenumber">50,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-dividendYieldHelp" datatype="html">
+        <source> Dividenden mit Ex-Tag in den letzten zwölf Monaten geteilt durch den letzten Kurs. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.html</context>
+          <context context-type="linenumber">57,61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-volatilityHelp" datatype="html">
+        <source> Schwankung der täglichen Renditen der letzten 252 Handelstage, auf ein Jahr hochgerechnet. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.html</context>
+          <context context-type="linenumber">63,67</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-betaHelp" datatype="html">
+        <source> Wie stark der Kurs im selben Zeitraum mit dem Weltindex mitgeht: 1 wie der Index, über 1 stärker, unter 1 schwächer. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.html</context>
+          <context context-type="linenumber">69,74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-performance" datatype="html">
+        <source> Performance </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.html</context>
+          <context context-type="linenumber">75,77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-performanceHelp" datatype="html">
+        <source> Kursveränderung gegenüber dem Schlusskurs vor einem Monat, einem Jahr und fünf Jahren, ohne Dividenden. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.html</context>
+          <context context-type="linenumber">78,83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-marketCap" datatype="html">
+        <source>Marktkapitalisierung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.ts</context>
+          <context context-type="linenumber">35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-fundVolume" datatype="html">
+        <source>Fondsvolumen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-dividendYield" datatype="html">
+        <source>Dividendenrendite</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-volatility" datatype="html">
+        <source>Volatilität (1 Jahr)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-beta" datatype="html">
+        <source>Beta (Weltindex)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-m1" datatype="html">
+        <source>Performance 1 Monat</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.ts</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-y1" datatype="html">
+        <source>Performance 1 Jahr</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentFigures-y5" datatype="html">
+        <source>Performance 5 Jahre</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-figures/instrument-figures.component.ts</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-employees" datatype="html">
+        <source>Mitarbeiter</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
+          <context context-type="linenumber">21,23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-freeFloat" datatype="html">
+        <source>Streubesitz</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
+          <context context-type="linenumber">29,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-index" datatype="html">
+        <source>Abgebildeter Index</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
+          <context context-type="linenumber">39,40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-terTitle" datatype="html">
+        <source>Laufende Kosten pro Jahr (Total Expense Ratio)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
+          <context context-type="linenumber">56,57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-ter" datatype="html">
+        <source>TER</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
+          <context context-type="linenumber">59,62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-fundVolume" datatype="html">
+        <source>Fondsvolumen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
+          <context context-type="linenumber">67,69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-constituents" datatype="html">
+        <source>Zahl der Werte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
+          <context context-type="linenumber">78,81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-cap" datatype="html">
+        <source>Höchstgewicht je Wert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
+          <context context-type="linenumber">87,88</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-noCap" datatype="html">
+        <source>keine Kappung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
+          <context context-type="linenumber">90,92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-indices" datatype="html">
+        <source> Indexzugehörigkeit </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
+          <context context-type="linenumber">115,117</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-noIndices" datatype="html">
+        <source> Die Aktie gehört zu keinem Index. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
+          <context context-type="linenumber">133,137</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-sector" datatype="html">
+        <source>Sektor</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
+          <context context-type="linenumber">124</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-industry" datatype="html">
+        <source>Branche</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
+          <context context-type="linenumber">125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-country" datatype="html">
+        <source>Land</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
+          <context context-type="linenumber">126</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-size" datatype="html">
+        <source>Größe</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
+          <context context-type="linenumber">127</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-style" datatype="html">
+        <source>Stil</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
+          <context context-type="linenumber">128</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-riskClass" datatype="html">
+        <source>Risikoklasse</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
+          <context context-type="linenumber">129</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-founded" datatype="html">
+        <source>Gegründet</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
+          <context context-type="linenumber">130</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-distribution" datatype="html">
+        <source>Ertragsverwendung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
+          <context context-type="linenumber">131</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-replication" datatype="html">
+        <source>Replikation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
+          <context context-type="linenumber">132</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-issuer" datatype="html">
+        <source>Emittent</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
+          <context context-type="linenumber">133</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentProfile-variant" datatype="html">
+        <source>Art</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
+          <context context-type="linenumber">134</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentQuote-bid" datatype="html">
+        <source>Geld</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.html</context>
+          <context context-type="linenumber">57,58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentQuote-ask" datatype="html">
+        <source>Brief</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.html</context>
+          <context context-type="linenumber">58,59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentQuote-spread" datatype="html">
+        <source> Spread </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.html</context>
+          <context context-type="linenumber">60,62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentQuote-inavTitle" datatype="html">
+        <source>Indikativer Nettoinventarwert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.html</context>
+          <context context-type="linenumber">83,84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentQuote-inav" datatype="html">
+        <source>iNAV</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.html</context>
+          <context context-type="linenumber">86,89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentQuote-inavAsOf" datatype="html">
+        <source>Stand</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.html</context>
+          <context context-type="linenumber">94,95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentQuote-closedNote" datatype="html">
+        <source>Börse geschlossen – der Kurs steht still, bis die Börse wieder öffnet.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.html</context>
+          <context context-type="linenumber">120,124</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentQuote-open" datatype="html">
+        <source>Geöffnet</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.ts</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentQuote-closed" datatype="html">
+        <source>Geschlossen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentQuote-last" datatype="html">
+        <source>Letzter Kurs</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.ts</context>
+          <context context-type="linenumber">73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentQuote-level" datatype="html">
+        <source>Stand</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.ts</context>
+          <context context-type="linenumber">74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentQuote-change" datatype="html">
+        <source>Veränderung zum Vortag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.ts</context>
+          <context context-type="linenumber">75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusMemoryChips" datatype="html">
+        <source>Speicherchips</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusProcessors" datatype="html">
+        <source>Prozessoren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusSensors" datatype="html">
+        <source>Sensoren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusPowerElectronics" datatype="html">
+        <source>Leistungselektronik</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusEnterpriseSoftware" datatype="html">
+        <source>Unternehmenssoftware</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusSecuritySoftware" datatype="html">
+        <source>Sicherheitssoftware</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusCloudPlatforms" datatype="html">
+        <source>Cloud-Plattformen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusDesignSoftware" datatype="html">
+        <source>Konstruktionssoftware</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusItConsulting" datatype="html">
+        <source>IT-Beratung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusOutsourcing" datatype="html">
+        <source>IT-Outsourcing</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusDataCenters" datatype="html">
+        <source>Rechenzentren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusConsumerElectronics" datatype="html">
+        <source>Unterhaltungselektronik</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusNetworkEquipment" datatype="html">
+        <source>Netzwerktechnik</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusStorageSystems" datatype="html">
+        <source>Speichersysteme</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusOncology" datatype="html">
+        <source>Onkologie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusVaccines" datatype="html">
+        <source>Impfstoffe</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusGenerics" datatype="html">
+        <source>Generika</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusCardiology" datatype="html">
+        <source>Kardiologie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusGeneTherapy" datatype="html">
+        <source>Gentherapie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusAntibodies" datatype="html">
+        <source>Antikörper</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusRareDiseases" datatype="html">
+        <source>Seltene Erkrankungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusImplants" datatype="html">
+        <source>Implantate</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusDiagnostics" datatype="html">
+        <source>Diagnostik</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">65</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusImaging" datatype="html">
+        <source>Bildgebung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">67</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusSurgicalRobots" datatype="html">
+        <source>Operationsroboter</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusRetailBanking" datatype="html">
+        <source>Privatkundengeschäft</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusInvestmentBanking" datatype="html">
+        <source>Investmentbanking</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusMortgages" datatype="html">
+        <source>Baufinanzierung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusLifeInsurance" datatype="html">
+        <source>Lebensversicherung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusPropertyInsurance" datatype="html">
+        <source>Sachversicherung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">79</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusReinsurance" datatype="html">
+        <source>Rückversicherung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusFundManagement" datatype="html">
+        <source>Fondsverwaltung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusPrivateEquity" datatype="html">
+        <source>Private Equity</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusWealthManagement" datatype="html">
+        <source>Vermögensberatung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusExploration" datatype="html">
+        <source>Exploration und Förderung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusRefining" datatype="html">
+        <source>Raffinerie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusPipelines" datatype="html">
+        <source>Pipelines</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">93</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusSolarParks" datatype="html">
+        <source>Solarparks</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusWindTurbines" datatype="html">
+        <source>Windkraftanlagen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusHydrogen" datatype="html">
+        <source>Wasserstoff</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">99</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusEnergyStorage" datatype="html">
+        <source>Energiespeicher</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">101</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusPowerGeneration" datatype="html">
+        <source>Stromerzeugung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">103</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusPowerGrids" datatype="html">
+        <source>Stromnetze</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">105</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusDistrictHeating" datatype="html">
+        <source>Fernwärme</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">107</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusWaterSupply" datatype="html">
+        <source>Wasserversorgung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">109</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusGasNetworks" datatype="html">
+        <source>Gasnetze</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusWasteManagement" datatype="html">
+        <source>Entsorgung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">113</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusAircraftParts" datatype="html">
+        <source>Flugzeugteile</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">115</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusSatellites" datatype="html">
+        <source>Satelliten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">117</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusDefenceSystems" datatype="html">
+        <source>Verteidigungssysteme</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">119</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusAutomation" datatype="html">
+        <source>Automatisierung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">121</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusIndustrialPumps" datatype="html">
+        <source>Industriepumpen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">123</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusMachineTools" datatype="html">
+        <source>Werkzeugmaschinen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusRobotics" datatype="html">
+        <source>Robotik</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">127</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusParcelDelivery" datatype="html">
+        <source>Paketdienste</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">129</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusContainerShipping" datatype="html">
+        <source>Containerschifffahrt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">131</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusRailFreight" datatype="html">
+        <source>Schienengüterverkehr</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">133</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusInfrastructure" datatype="html">
+        <source>Infrastrukturbau</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">135</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusBuildingMaterials" datatype="html">
+        <source>Baustoffe</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">137</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusCivilEngineering" datatype="html">
+        <source>Tiefbau</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">139</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusSpecialtyChemicals" datatype="html">
+        <source>Spezialchemie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">141</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusPlastics" datatype="html">
+        <source>Kunststoffe</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">143</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusFertilisers" datatype="html">
+        <source>Düngemittel</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">145</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusCopper" datatype="html">
+        <source>Kupfer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">147</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusIronOre" datatype="html">
+        <source>Eisenerz</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">149</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusSteel" datatype="html">
+        <source>Stahl</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">151</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusLithium" datatype="html">
+        <source>Lithium</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">153</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusCars" datatype="html">
+        <source>Personenwagen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">155</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusElectricVehicles" datatype="html">
+        <source>Elektrofahrzeuge</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">157</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusAutoParts" datatype="html">
+        <source>Autozulieferteile</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">159</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusTrucks" datatype="html">
+        <source>Nutzfahrzeuge</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">161</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusDepartmentStores" datatype="html">
+        <source>Warenhäuser</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">163</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusOnlineRetail" datatype="html">
+        <source>Onlinehandel</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">165</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusFashionRetail" datatype="html">
+        <source>Modehandel</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">167</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusAirlines" datatype="html">
+        <source>Luftverkehr</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">169</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusHotels" datatype="html">
+        <source>Hotellerie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">171</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusCruises" datatype="html">
+        <source>Kreuzfahrten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">173</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusThemeParks" datatype="html">
+        <source>Freizeitparks</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">175</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusJewellery" datatype="html">
+        <source>Schmuck</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">177</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusFashion" datatype="html">
+        <source>Mode</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">179</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusWatches" datatype="html">
+        <source>Uhren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">181</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusPackagedFood" datatype="html">
+        <source>Markenlebensmittel</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">183</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusBeer" datatype="html">
+        <source>Bier</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">185</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusSoftDrinks" datatype="html">
+        <source>Erfrischungsgetränke</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">187</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusDairy" datatype="html">
+        <source>Molkereiprodukte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">189</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusDetergents" datatype="html">
+        <source>Waschmittel</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">191</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusCosmetics" datatype="html">
+        <source>Kosmetik</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">193</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusPersonalCare" datatype="html">
+        <source>Körperpflege</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">195</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusMobileNetworks" datatype="html">
+        <source>Mobilfunk</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">197</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusFibreNetworks" datatype="html">
+        <source>Glasfasernetze</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">199</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusSatelliteCommunication" datatype="html">
+        <source>Satellitenkommunikation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">201</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusStreaming" datatype="html">
+        <source>Streaming</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">203</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusVideoGames" datatype="html">
+        <source>Videospiele</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">205</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusPublishing" datatype="html">
+        <source>Verlagswesen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">207</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusBroadcasting" datatype="html">
+        <source>Rundfunk</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">209</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusSearch" datatype="html">
+        <source>Suchmaschinen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">211</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusSocialNetworks" datatype="html">
+        <source>Soziale Netzwerke</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">213</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusMarketplaces" datatype="html">
+        <source>Online-Marktplätze</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">215</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusOnlineAdvertising" datatype="html">
+        <source>Onlinewerbung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">217</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusApartments" datatype="html">
+        <source>Mietwohnungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">219</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusStudentHousing" datatype="html">
+        <source>Studentenwohnheime</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">221</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusSeniorLiving" datatype="html">
+        <source>Seniorenwohnen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">223</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusOfficeBuildings" datatype="html">
+        <source>Büroimmobilien</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">225</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusShoppingCentres" datatype="html">
+        <source>Einkaufszentren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">227</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-focusWarehouses" datatype="html">
+        <source>Logistikimmobilien</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">229</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-marketLeader" datatype="html">
+        <source>Marktführer im Bereich <x id="focus" equiv-text="focus"/> und einer der größten Anbieter der Branche <x id="industry" equiv-text="industry"/>. Gegründet <x id="year" equiv-text="year"/>, Heimatmarkt: <x id="country" equiv-text="country"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">243</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-challenger" datatype="html">
+        <source>Herausforderer im Bereich <x id="focus" equiv-text="focus"/>, der den etablierten Anbietern der Branche <x id="industry" equiv-text="industry"/> Marktanteile abnimmt. Gegründet <x id="year" equiv-text="year"/>, Heimatmarkt: <x id="country" equiv-text="country"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">245</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-specialist" datatype="html">
+        <source>Spezialist im Bereich <x id="focus" equiv-text="focus"/> mit einer klaren Nische in der Branche <x id="industry" equiv-text="industry"/>. Gegründet <x id="year" equiv-text="year"/>, Heimatmarkt: <x id="country" equiv-text="country"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">247</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-companyProfileText-familyOwned" datatype="html">
+        <source>Familiengeführtes Unternehmen im Bereich <x id="focus" equiv-text="focus"/> aus der Branche <x id="industry" equiv-text="industry"/>; die Gründerfamilie prägt die Strategie bis heute. Gegründet <x id="year" equiv-text="year"/>, Heimatmarkt: <x id="country" equiv-text="country"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/company-profile-text.ts</context>
+          <context context-type="linenumber">249</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-indicatorLabels-sma" datatype="html">
@@ -4767,6 +6125,76 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/labels/indicator-labels.ts</context>
           <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentLabels-riskClass" datatype="html">
+        <source><x id="riskClass" equiv-text="riskClass"/> von 5</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/instrument-labels.ts</context>
+          <context context-type="linenumber">9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentLabels-variantPrice" datatype="html">
+        <source>Kursindex</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/instrument-labels.ts</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentLabels-variantTotalReturn" datatype="html">
+        <source>Performanceindex (Dividenden reinvestiert)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/instrument-labels.ts</context>
+          <context context-type="linenumber">17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentLabels-accumulating" datatype="html">
+        <source>Thesaurierend</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/instrument-labels.ts</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentLabels-distributingQuarterly" datatype="html">
+        <source>Ausschüttend, vierteljährlich</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/instrument-labels.ts</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentLabels-distributingAnnual" datatype="html">
+        <source>Ausschüttend, jährlich</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/instrument-labels.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentLabels-distributing" datatype="html">
+        <source>Ausschüttend</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/instrument-labels.ts</context>
+          <context context-type="linenumber">35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentLabels-replicationFull" datatype="html">
+        <source>Physisch, vollständig</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/instrument-labels.ts</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentLabels-replicationSampling" datatype="html">
+        <source>Physisch, optimiert (Sampling)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/instrument-labels.ts</context>
+          <context context-type="linenumber">44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-instrumentLabels-replicationSynthetic" datatype="html">
+        <source>Synthetisch (Swap)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/instrument-labels.ts</context>
+          <context context-type="linenumber">46</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-taxonomyLabels-kindStock" datatype="html">

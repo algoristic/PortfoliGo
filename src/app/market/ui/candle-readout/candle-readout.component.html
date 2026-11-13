@@ -16,8 +16,12 @@
         i18n="@@uiMarket-candleReadout-open"
         >E</abbr
       >
-      {{ _candle.open | formatPrice }}</span
-    >
+      @if (isIndex()) {
+        {{ _candle.open | formatNumber: 2 }}
+      } @else {
+        {{ _candle.open | formatPrice }}
+      }
+    </span>
     <span
       ><abbr
         title="Hoch"
@@ -25,8 +29,12 @@
         i18n="@@uiMarket-candleReadout-high"
         >H</abbr
       >
-      {{ _candle.high | formatPrice }}</span
-    >
+      @if (isIndex()) {
+        {{ _candle.high | formatNumber: 2 }}
+      } @else {
+        {{ _candle.high | formatPrice }}
+      }
+    </span>
     <span
       ><abbr
         title="Tief"
@@ -34,8 +42,12 @@
         i18n="@@uiMarket-candleReadout-low"
         >T</abbr
       >
-      {{ _candle.low | formatPrice }}</span
-    >
+      @if (isIndex()) {
+        {{ _candle.low | formatNumber: 2 }}
+      } @else {
+        {{ _candle.low | formatPrice }}
+      }
+    </span>
     <span data-testid="market.instrument.chart.readout.close"
       ><abbr
         title="Schluss"
@@ -43,8 +55,12 @@
         i18n="@@uiMarket-candleReadout-close"
         >S</abbr
       >
-      {{ _candle.close | formatPrice }}</span
-    >
+      @if (isIndex()) {
+        {{ _candle.close | formatNumber: 2 }}
+      } @else {
+        {{ _candle.close | formatPrice }}
+      }
+    </span>
   } @else {
     <span i18n="@@uiMarket-candleReadout-empty">Keine Kerzen</span>
   }

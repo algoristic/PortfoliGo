@@ -18,7 +18,11 @@
               @if (!$first) {
                 ·
               }
-              {{ value | formatPrice }}
+              @if (isIndex()) {
+                {{ value | formatNumber: 2 }}
+              } @else {
+                {{ value | formatPrice }}
+              }
             }
           } @else {
             –

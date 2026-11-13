@@ -1,6 +1,7 @@
 import {
   formatCents,
   formatCompact,
+  formatCompactEuros,
   formatDateTime,
   formatNumber,
   formatOptional,
@@ -8,6 +9,7 @@ import {
   formatPrice,
   formatSignedCents,
   formatSignedPercent,
+  formatSignedPrice,
   MISSING_VALUE,
 } from './format';
 
@@ -64,6 +66,36 @@ describe('format', () => {
     it('omits the sign for zero', () => {
       expect(formatSignedCents(0)).toBe(`0,00${NBSP}€`);
       expect(formatSignedCents(-0)).toBe(`0,00${NBSP}€`);
+    });
+  });
+
+  describe('formatSignedPrice', () => {
+    // PS §10.4: the decimal places follow the price, so a change keeps those of its price.
+    it('adds a sign and keeps the given decimal places', () => {
+      expect(formatSignedPrice(0.125, 3)).toBe(`+0,125${NBSP}€`);
+      expect(formatSignedPrice(-1.2)).toBe(`${MINUS}1,20${NBSP}€`);
+      expect(formatSignedPrice(-1234.5)).toBe(`${MINUS}1.234,50${NBSP}€`);
+      expect(formatSignedPrice(0.0005, 4)).toBe(`+0,0005${NBSP}€`);
+    });
+
+    it('omits the sign when the change rounds to zero', () => {
+      expect(formatSignedPrice(0)).toBe(`0,00${NBSP}€`);
+      expect(formatSignedPrice(-0.001)).toBe(`0,00${NBSP}€`);
+    });
+  });
+
+  describe('formatCompactEuros', () => {
+    // PS §10.4: compact amounts in overviews, e.g. `1,2 Mio. €`.
+    it('abbreviates millions, billions and trillions with at most one decimal place', () => {
+      expect(formatCompactEuros(1_234_000_000)).toBe(`1,2${NBSP}Mrd.${NBSP}€`);
+      expect(formatCompactEuros(850_000_000)).toBe(`850${NBSP}Mio.${NBSP}€`);
+      expect(formatCompactEuros(1_250_000)).toBe(`1,3${NBSP}Mio.${NBSP}€`);
+      expect(formatCompactEuros(2_500_000_000_000)).toBe(`2,5${NBSP}Bio.${NBSP}€`);
+    });
+
+    it('keeps smaller amounts in full and uses the typographic minus', () => {
+      expect(formatCompactEuros(12_345)).toBe(`12.345${NBSP}€`);
+      expect(formatCompactEuros(-3_000_000_000)).toBe(`${MINUS}3${NBSP}Mrd.${NBSP}€`);
     });
   });
 

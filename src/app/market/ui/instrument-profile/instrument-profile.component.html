@@ -1,0 +1,136 @@
+@let _profile = profile();
+
+@if (description(); as text) {
+  <p class="mb-4 text-sm" data-testid="market.instrument.profile.description">{{ text }}</p>
+}
+
+<dl class="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+  @for (fact of facts(); track fact.key) {
+    <div class="flex justify-between gap-3 border-b border-border pb-1">
+      <dt class="text-fg-muted">{{ fact.label }}</dt>
+      <dd
+        class="text-right font-medium"
+        [attr.data-testid]="'market.instrument.profile.' + fact.key">
+        {{ fact.text }}
+      </dd>
+    </div>
+  }
+  @switch (_profile.kind) {
+    @case ('stock') {
+      <div class="flex justify-between gap-3 border-b border-border pb-1">
+        <dt class="text-fg-muted" i18n="@@uiMarket-instrumentProfile-employees">Mitarbeiter</dt>
+        <dd
+          class="text-right font-medium tabular-nums"
+          data-testid="market.instrument.profile.employees">
+          {{ _profile.employees | formatNumber }}
+        </dd>
+      </div>
+      <div class="flex justify-between gap-3 border-b border-border pb-1">
+        <dt class="text-fg-muted" i18n="@@uiMarket-instrumentProfile-freeFloat">Streubesitz</dt>
+        <dd
+          class="text-right font-medium tabular-nums"
+          data-testid="market.instrument.profile.free-float">
+          {{ _profile.freeFloat | formatPercent: 0 }}
+        </dd>
+      </div>
+    }
+    @case ('etf') {
+      <div class="flex justify-between gap-3 border-b border-border pb-1">
+        <dt class="text-fg-muted" i18n="@@uiMarket-instrumentProfile-index">Abgebildeter Index</dt>
+        <dd class="min-w-0 text-right font-medium">
+          @if (_profile.index; as index) {
+            <a
+              class="hover:underline"
+              data-testid="market.instrument.profile.index"
+              [routerLink]="['..', index.id]"
+              >{{ index.name }}</a
+            >
+          } @else {
+            –
+          }
+        </dd>
+      </div>
+      <div class="flex justify-between gap-3 border-b border-border pb-1">
+        <dt class="text-fg-muted">
+          <abbr
+            title="Laufende Kosten pro Jahr (Total Expense Ratio)"
+            i18n-title="@@uiMarket-instrumentProfile-terTitle"
+            i18n="@@uiMarket-instrumentProfile-ter"
+            >TER</abbr
+          >
+        </dt>
+        <dd class="text-right font-medium tabular-nums" data-testid="market.instrument.profile.ter">
+          {{ _profile.ter | formatPercent: 2 }}
+        </dd>
+      </div>
+      <div class="flex justify-between gap-3 border-b border-border pb-1">
+        <dt class="text-fg-muted" i18n="@@uiMarket-instrumentProfile-fundVolume">Fondsvolumen</dt>
+        <dd
+          class="text-right font-medium tabular-nums"
+          data-testid="market.instrument.profile.fund-volume">
+          {{ _profile.fundVolume | formatCompactEuros }}
+        </dd>
+      </div>
+    }
+    @case ('index') {
+      <div class="flex justify-between gap-3 border-b border-border pb-1">
+        <dt class="text-fg-muted" i18n="@@uiMarket-instrumentProfile-constituents"
+          >Zahl der Werte</dt
+        >
+        <dd
+          class="text-right font-medium tabular-nums"
+          data-testid="market.instrument.profile.constituents">
+          {{ _profile.constituentCount | formatNumber }}
+        </dd>
+      </div>
+      <div class="flex justify-between gap-3 border-b border-border pb-1">
+        <dt class="text-fg-muted" i18n="@@uiMarket-instrumentProfile-cap">Höchstgewicht je Wert</dt>
+        <dd class="text-right font-medium tabular-nums" data-testid="market.instrument.profile.cap">
+          @if (_profile.capWeight === null) {
+            <ng-container i18n="@@uiMarket-instrumentProfile-noCap">keine Kappung</ng-container>
+          } @else {
+            {{ _profile.capWeight | formatPercent: 0 }}
+          }
+        </dd>
+      </div>
+      @if (_profile.sibling; as sibling) {
+        <div class="flex justify-between gap-3 border-b border-border pb-1">
+          <dt class="text-fg-muted">{{ siblingLabel() }}</dt>
+          <dd class="min-w-0 text-right font-medium">
+            <a
+              class="hover:underline"
+              data-testid="market.instrument.profile.sibling"
+              [routerLink]="['..', sibling.id]"
+              >{{ sibling.name }}</a
+            >
+          </dd>
+        </div>
+      }
+    }
+  }
+</dl>
+
+@if (_profile.kind === 'stock') {
+  <h3 class="mt-4 mb-2 text-sm font-semibold" i18n="@@uiMarket-instrumentProfile-indices">
+    Indexzugehörigkeit
+  </h3>
+  @if (_profile.indices.length > 0) {
+    <ul class="flex flex-wrap gap-2" data-testid="market.instrument.profile.indices">
+      @for (index of _profile.indices; track index.id) {
+        <li>
+          <a
+            class="inline-block rounded-full border border-border px-2 py-0.5 text-xs hover:border-accent hover:text-accent"
+            data-testid="market.instrument.profile.indices.item"
+            [attr.data-instrument-id]="index.id"
+            [routerLink]="['..', index.id]"
+            >{{ index.name }}</a
+          >
+        </li>
+      }
+    </ul>
+  } @else {
+    <p class="text-sm text-fg-muted" i18n="@@uiMarket-instrumentProfile-noIndices">
+      Die Aktie gehört zu keinem Index.
+    </p>
+  }
+}

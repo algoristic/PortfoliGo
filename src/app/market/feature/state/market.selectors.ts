@@ -2,7 +2,7 @@ import { getRouterSelectors } from '@ngrx/router-store';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 import { dayIndex, dayStartTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
-import { selectTick } from '@app/clock/feature/state/clock.selectors';
+import { selectExchanges, selectTick } from '@app/clock/feature/state/clock.selectors';
 import {
   CHART_RANGE_INTERVALS,
   nextChartDay,
@@ -12,6 +12,7 @@ import {
 import { Instrument, INSTRUMENT_KINDS } from '@app/market/domain/models/instrument.model';
 import { MAX_WATCHLIST_LENGTH } from '@app/market/domain/models/watchlist.model';
 import { marketDayOnOrBefore } from '@app/market/domain/performance-logic';
+import { InstrumentHeadView } from '@app/market/ui/models/instrument-view.model';
 import {
   MarketMoversViewModel,
   OverviewIndexView,
@@ -19,10 +20,12 @@ import {
 import { ScreenerRowView } from '@app/market/ui/models/screener-view.model';
 import { WatchlistMembership, WatchlistRowView } from '@app/market/ui/models/watchlist-view.model';
 
+import { instrumentDetailView, instrumentHeadView } from './instrument-view.utils';
 import {
   ChartSettings,
   ChartSubscription,
   InstrumentChartView,
+  InstrumentDetailView,
   InstrumentQuote,
   InstrumentsByKind,
   ScreenerView,
@@ -306,4 +309,39 @@ export const selectRouteInstrumentWatchlist = createSelector(
   selectWatchlistMembership,
   (instrument, { ids, full, known }) =>
     instrument === null ? null : { watched: ids.has(instrument.id), full, known },
+);
+
+export const selectInstrumentDetail = createSelector(
+  selectState,
+  (state) => state.instrumentDetail,
+);
+
+/**
+ * The previous close of the shown instrument: it changes when a new session of the instrument
+ * opens (then today's ex-dates join the dividend history, TS §6.5); `null` before the first quote.
+ */
+export const selectRouteInstrumentSession = createSelector(
+  selectRouteInstrumentQuote,
+  (shown) => shown?.quote?.previousClose ?? null,
+);
+
+/** The price head of the instrument page with the live quote and the trading status. */
+export const selectInstrumentHead = createSelector(
+  selectRouteInstrumentQuote,
+  selectExchanges,
+  selectTick,
+  selectInstrumentDetail,
+  (shown, exchanges, tick, detail): InstrumentHeadView | null =>
+    shown === null
+      ? null
+      : instrumentHeadView(shown.instrument, shown.quote, exchanges, tick, detail),
+);
+
+/** Figures, profile, composition and dividends of the instrument page; no clock dependency. */
+export const selectInstrumentDetailView = createSelector(
+  selectRouteInstrument,
+  selectInstrumentDetail,
+  selectInstrumentEntities,
+  (instrument, detail, entities): InstrumentDetailView =>
+    instrumentDetailView(instrument, detail, entities),
 );

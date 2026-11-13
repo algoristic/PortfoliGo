@@ -1,35 +1,99 @@
-@let instrument = facade.routeInstrument$ | async;
+@let head = facade.instrumentHead$ | async;
+@let detail = facade.instrumentDetail$ | async;
 @let watchlist = facade.routeInstrumentWatchlist$ | async;
 
-<div class="flex items-start gap-2">
-  <div class="min-w-0 flex-1">
-    <h1 class="text-xl font-semibold" data-testid="market.instrument.name">
-      @if (instrument) {
-        {{ instrument.name }}
-      } @else {
-        <ng-container i18n="@@featureMarket-instrumentPage-title">Instrument</ng-container>
+@if (detail?.notFound) {
+  <app-empty-state
+    icon="search"
+    data-testid="market.instrument.not-found"
+    [heading]="notFoundHeading"
+    [text]="notFoundText">
+    <a
+      appButton
+      routerLink=".."
+      data-testid="market.instrument.not-found.back"
+      i18n="@@featureMarket-instrumentPage-backToMarkets"
+      >Zu den Märkten</a
+    >
+  </app-empty-state>
+} @else {
+  @if (head) {
+    <app-instrument-quote [head]="head">
+      @if (watchlist) {
+        <app-watchlist-toggle
+          testId="market.instrument.watchlist"
+          [name]="head.name"
+          [watched]="watchlist.watched"
+          [full]="watchlist.full"
+          [disabled]="!watchlist.known"
+          (toggledWatchlist)="onToggleWatchlist(head.id, $event)"></app-watchlist-toggle>
       }
+    </app-instrument-quote>
+  } @else {
+    <h1 class="text-xl font-semibold" data-testid="market.instrument.name">
+      <ng-container i18n="@@featureMarket-instrumentPage-title">Instrument</ng-container>
     </h1>
-    @if (instrument) {
-      <p class="text-sm text-fg-muted" data-testid="market.instrument.ticker">
-        {{ instrument.ticker }}
-        @if (instrument.isin) {
-          · {{ instrument.isin }}
+    <app-skeleton class="mt-2 w-64" [lines]="2"></app-skeleton>
+  }
+
+  @if (detail?.failed) {
+    <p
+      class="mt-3 rounded-md border border-warning px-3 py-2 text-sm text-warning"
+      role="status"
+      data-testid="market.instrument.failed"
+      i18n="@@featureMarket-instrumentPage-failed">
+      Einige Angaben konnten nicht geladen werden. Sie erscheinen beim nächsten Besuch der Seite.
+    </p>
+  }
+
+  <div class="mt-4 grid grid-cols-1 items-start gap-4 lg:grid-cols-3">
+    <app-panel class="min-w-0 lg:col-span-2">
+      <app-instrument-chart></app-instrument-chart>
+    </app-panel>
+
+    <app-panel class="min-w-0" data-testid="market.instrument.figures" [heading]="figuresHeading">
+      @if (detail?.figures; as figures) {
+        <app-instrument-figures [figures]="figures"></app-instrument-figures>
+      } @else {
+        <app-skeleton [lines]="6"></app-skeleton>
+      }
+    </app-panel>
+
+    <app-panel
+      class="min-w-0 lg:col-span-2"
+      data-testid="market.instrument.profile"
+      [heading]="profileHeading">
+      @if (detail?.profile; as profile) {
+        <app-instrument-profile [profile]="profile"></app-instrument-profile>
+      } @else {
+        <app-skeleton [lines]="5"></app-skeleton>
+      }
+    </app-panel>
+
+    @if (detail && detail.dividends !== undefined) {
+      <app-panel
+        class="min-w-0"
+        data-testid="market.instrument.dividends"
+        [heading]="dividendsHeading">
+        @if (detail.dividends; as dividends) {
+          <app-dividend-overview [dividends]="dividends"></app-dividend-overview>
+        } @else {
+          <app-skeleton [lines]="4"></app-skeleton>
         }
-      </p>
+      </app-panel>
+    }
+
+    @if (detail && detail.composition !== undefined) {
+      <app-panel
+        class="min-w-0 lg:col-span-2"
+        data-testid="market.instrument.composition"
+        [heading]="compositionHeading">
+        @if (detail.composition; as composition) {
+          <app-index-composition [composition]="composition"></app-index-composition>
+        } @else {
+          <app-skeleton [lines]="6"></app-skeleton>
+        }
+      </app-panel>
     }
   </div>
-  @if (instrument && watchlist) {
-    <app-watchlist-toggle
-      testId="market.instrument.watchlist"
-      [name]="instrument.name"
-      [watched]="watchlist.watched"
-      [full]="watchlist.full"
-      [disabled]="!watchlist.known"
-      (toggledWatchlist)="onToggleWatchlist(instrument.id, $event)"></app-watchlist-toggle>
-  }
-</div>
-
-<app-panel class="mt-4">
-  <app-instrument-chart></app-instrument-chart>
-</app-panel>
+}

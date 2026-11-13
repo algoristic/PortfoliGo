@@ -2,6 +2,7 @@ import { createAction, props } from '@ngrx/store';
 
 import { IndicatorSpec } from '@app/analysis/domain/models/indicator.model';
 import { PriceChartType } from '@app/charts/ui/price-chart/price-chart.model';
+import { Tick } from '@app/clock/domain/models/time.model';
 import {
   MoversPayload,
   ScreenerResult,
@@ -9,7 +10,12 @@ import {
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import { Candle } from '@app/market/domain/models/candle.model';
 import { ChartRange, LiveCandle } from '@app/market/domain/models/chart.model';
-import { Instrument } from '@app/market/domain/models/instrument.model';
+import {
+  IndexComposition,
+  InstrumentDividends,
+  InstrumentFigures,
+} from '@app/market/domain/models/instrument-figures.model';
+import { Instrument, InstrumentDetails } from '@app/market/domain/models/instrument.model';
 import { ScreenerRow, ScreenerSortKey, YieldRange } from '@app/market/domain/models/screener.model';
 import { ScreenerFilterDimension, ScreenerRange } from '@app/market/ui/models/screener-view.model';
 
@@ -228,4 +234,28 @@ export const retrievedWatchlistRows = createAction(
 export const loadWatchlistRowsFailure = createAction(
   '[Market/API] Load watchlist rows failure',
   props<{ error: unknown }>(),
+);
+
+/** Static details of the instrument of the page (US-MK-03). */
+export const retrievedInstrumentDetails = createAction(
+  '[Market/API] Retrieved instrument details',
+  props<{ generation: number; details: InstrumentDetails }>(),
+);
+/** Key figures at `tick`; loaded again on a new market day. */
+export const retrievedInstrumentFigures = createAction(
+  '[Market/API] Retrieved instrument figures',
+  props<{ generation: number; figures: InstrumentFigures; tick: Tick }>(),
+);
+export const retrievedInstrumentDividends = createAction(
+  '[Market/API] Retrieved instrument dividends',
+  props<{ generation: number; dividends: InstrumentDividends }>(),
+);
+export const retrievedInstrumentComposition = createAction(
+  '[Market/API] Retrieved instrument composition',
+  props<{ generation: number; composition: IndexComposition | null }>(),
+);
+/** A query of the instrument page failed; `unknown-instrument` means the route has no instrument. */
+export const loadInstrumentDetailFailure = createAction(
+  '[Market/API] Load instrument detail failure',
+  props<{ generation: number; error: unknown }>(),
 );

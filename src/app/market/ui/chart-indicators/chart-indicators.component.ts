@@ -7,6 +7,7 @@ import {
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { IconButtonDirective } from '@app/shared/ui/icon-button/icon-button.directive';
+import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
 import { FormatPricePipe } from '@app/shared/ui/pipes/format-price/format-price.pipe';
 
 import { indicatorLabel } from '../labels/indicator-labels';
@@ -28,13 +29,15 @@ interface IndicatorRow {
  */
 @Component({
   selector: 'app-chart-indicators',
-  imports: [ButtonDirective, FormatPricePipe, IconButtonDirective, IconDirective],
+  imports: [ButtonDirective, FormatNumberPipe, FormatPricePipe, IconButtonDirective, IconDirective],
   templateUrl: './chart-indicators.component.html',
   host: { class: 'block' },
 })
 export class ChartIndicatorsComponent {
   indicators = input.required<readonly ChartIndicatorReadout[]>();
   canAdd = input.required<boolean>();
+  /** Values of index indicators are points, not euros. */
+  isIndex = input(false);
 
   clickedAdd = output<void>();
   clickedEdit = output<string>();

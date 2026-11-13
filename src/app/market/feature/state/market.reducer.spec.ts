@@ -1,8 +1,15 @@
 import * as BankingActions from '@app/banking/feature/state/banking.actions';
 import { ProjectionPayload } from '@app/engine/data-access/service/engine-service.model';
+import { EngineCommandError } from '@app/engine/data-access/service/engine.service';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { Candle } from '@app/market/domain/models/candle.model';
+import {
+  IndexComposition,
+  InstrumentDividends,
+  InstrumentFigures,
+} from '@app/market/domain/models/instrument-figures.model';
+import { InstrumentDetails } from '@app/market/domain/models/instrument.model';
 import { ScreenerRow } from '@app/market/domain/models/screener.model';
 import { PlayerProfile } from '@app/players/domain/models/player.model';
 
@@ -604,6 +611,83 @@ describe('marketReducer', () => {
         SessionActions.enterGame({ profile: { id: 'p-b' } as PlayerProfile }),
       );
       expect(state.watchlist).toEqual({ ids: null, requested: null, rows: [] });
+    });
+  });
+
+  describe('instrument detail', () => {
+    const DETAILS = { kind: 'index', id: 'idx-0001', capWeight: null, baseValue: 1000 } as const;
+    const FIGURES = { id: 'idx-0001', series: 3, last: 1000 } as InstrumentFigures;
+    const DIVIDENDS: InstrumentDividends = { history: [], next: null };
+    const COMPOSITION = { indexId: 'idx-0001', constituentCount: 3 } as IndexComposition;
+
+    function generation(state: MarketState): number {
+      return state.instrumentDetail.generation;
+    }
+
+    it('starts every visit empty with a new generation and keeps the answers of it', () => {
+      const first = reduce(MarketActions.enterInstrumentPage());
+      const g = generation(first);
+      const state = [
+        MarketActions.retrievedInstrumentDetails({
+          generation: g,
+          details: DETAILS as InstrumentDetails,
+        }),
+        MarketActions.retrievedInstrumentFigures({ generation: g, figures: FIGURES, tick: 42 }),
+        MarketActions.retrievedInstrumentDividends({ generation: g, dividends: DIVIDENDS }),
+        MarketActions.retrievedInstrumentComposition({ generation: g, composition: COMPOSITION }),
+      ].reduce(marketReducer, first);
+      expect(state.instrumentDetail).toEqual({
+        generation: g,
+        details: DETAILS,
+        figures: FIGURES,
+        figuresTick: 42,
+        dividends: DIVIDENDS,
+        composition: COMPOSITION,
+        notFound: false,
+      });
+
+      const left = marketReducer(state, MarketActions.leaveInstrumentPage());
+      expect(left.instrumentDetail.figures).toBeNull();
+      expect(left.instrumentDetail.details).toBeNull();
+      expect(generation(left)).toBeGreaterThan(g);
+    });
+
+    it('drops answers of an earlier visit (another instrument)', () => {
+      const first = reduce(MarketActions.enterInstrumentPage());
+      const old = generation(first);
+      const second = [
+        MarketActions.leaveInstrumentPage(),
+        MarketActions.enterInstrumentPage(),
+      ].reduce(marketReducer, first);
+      const late = [
+        MarketActions.retrievedInstrumentFigures({ generation: old, figures: FIGURES, tick: 1 }),
+        MarketActions.retrievedInstrumentDetails({
+          generation: old,
+          details: DETAILS as InstrumentDetails,
+        }),
+        MarketActions.loadInstrumentDetailFailure({ generation: old, error: new Error('x') }),
+      ].reduce(marketReducer, second);
+      expect(late).toBe(second);
+    });
+
+    it('marks the instrument as not found for unknown-instrument only', () => {
+      const entered = reduce(MarketActions.enterInstrumentPage());
+      const g = generation(entered);
+      const failed = marketReducer(
+        entered,
+        MarketActions.loadInstrumentDetailFailure({ generation: g, error: new Error('x') }),
+      );
+      expect(failed.instrumentDetail.notFound).toBe(false);
+      expect(failed.instrumentDetail.error).toEqual(new Error('x'));
+
+      const unknown = marketReducer(
+        failed,
+        MarketActions.loadInstrumentDetailFailure({
+          generation: g,
+          error: new EngineCommandError('unknown-instrument'),
+        }),
+      );
+      expect(unknown.instrumentDetail.notFound).toBe(true);
     });
   });
 });

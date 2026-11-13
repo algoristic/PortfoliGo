@@ -1,0 +1,83 @@
+@let _figures = figures();
+
+<div class="grid grid-cols-2 gap-2">
+  <app-stat-tile
+    data-testid="market.instrument.figures.size"
+    [label]="sizeLabel()"
+    [value]="_figures.size | formatCompactEuros"></app-stat-tile>
+  <app-stat-tile
+    data-testid="market.instrument.figures.dividend-yield"
+    [label]="dividendYieldLabel"
+    [value]="_figures.dividendYield | formatPercent: 2"></app-stat-tile>
+  <app-stat-tile
+    data-testid="market.instrument.figures.volatility"
+    [label]="volatilityLabel"
+    [value]="_figures.volatility | formatPercent: 1"></app-stat-tile>
+  <app-stat-tile
+    data-testid="market.instrument.figures.beta"
+    [label]="betaLabel"
+    [value]="_figures.beta | formatNumber: 2"></app-stat-tile>
+  <app-stat-tile
+    data-testid="market.instrument.figures.m1"
+    [label]="m1Label"
+    [value]="_figures.performance.m1 | formatSignedPercent: 2"></app-stat-tile>
+  <app-stat-tile
+    data-testid="market.instrument.figures.y1"
+    [label]="y1Label"
+    [value]="_figures.performance.y1 | formatSignedPercent: 2"></app-stat-tile>
+  <app-stat-tile
+    class="col-span-2"
+    data-testid="market.instrument.figures.y5"
+    [label]="y5Label"
+    [value]="_figures.performance.y5 | formatSignedPercent: 2"></app-stat-tile>
+</div>
+
+<details class="mt-3 text-sm" data-testid="market.instrument.figures.help">
+  <summary
+    class="cursor-pointer text-fg-muted hover:text-fg"
+    i18n="@@uiMarket-instrumentFigures-helpSummary">
+    So werden die Kennzahlen berechnet
+  </summary>
+  <dl class="mt-2 flex flex-col gap-2 text-fg-muted">
+    <div>
+      <dt class="font-medium text-fg">{{ sizeLabel() }}</dt>
+      @if (_figures.kind === 'etf') {
+        <dd i18n="@@uiMarket-instrumentFigures-fundVolumeHelp">
+          Verwaltetes Vermögen des Fonds laut Stammdaten.
+        </dd>
+      } @else {
+        <dd i18n="@@uiMarket-instrumentFigures-marketCapHelp">
+          Anzahl der Aktien mal letzter Kurs; für Indizes nicht angegeben.
+        </dd>
+      }
+    </div>
+    <div>
+      <dt class="font-medium text-fg">{{ dividendYieldLabel }}</dt>
+      <dd i18n="@@uiMarket-instrumentFigures-dividendYieldHelp">
+        Dividenden mit Ex-Tag in den letzten zwölf Monaten geteilt durch den letzten Kurs.
+      </dd>
+    </div>
+    <div>
+      <dt class="font-medium text-fg">{{ volatilityLabel }}</dt>
+      <dd i18n="@@uiMarket-instrumentFigures-volatilityHelp">
+        Schwankung der täglichen Renditen der letzten 252 Handelstage, auf ein Jahr hochgerechnet.
+      </dd>
+    </div>
+    <div>
+      <dt class="font-medium text-fg">{{ betaLabel }}</dt>
+      <dd i18n="@@uiMarket-instrumentFigures-betaHelp">
+        Wie stark der Kurs im selben Zeitraum mit dem Weltindex mitgeht: 1 wie der Index, über 1
+        stärker, unter 1 schwächer.
+      </dd>
+    </div>
+    <div>
+      <dt class="font-medium text-fg" i18n="@@uiMarket-instrumentFigures-performance">
+        Performance
+      </dt>
+      <dd i18n="@@uiMarket-instrumentFigures-performanceHelp">
+        Kursveränderung gegenüber dem Schlusskurs vor einem Monat, einem Jahr und fünf Jahren, ohne
+        Dividenden.
+      </dd>
+    </div>
+  </dl>
+</details>

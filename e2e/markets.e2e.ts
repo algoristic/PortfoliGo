@@ -3,6 +3,7 @@ import { Page } from '@playwright/test';
 import { expect, expectAccessible, test } from './fixtures';
 import { expectGameReady } from './game.po';
 import { createPlayer } from './players.po';
+import { storeColorScheme } from './settings.po';
 
 // Live chart of the instrument page with the real worker (AP 4.2, US-CH-01): lightweight-charts
 // loads lazily on the page and is removed when the page is left. Expected texts come from the
@@ -11,6 +12,8 @@ import { createPlayer } from './players.po';
 
 /** The first share of every world (`stk-0001`, series 0). */
 const INSTRUMENT = 'stk-0001';
+/** The first ETF of every world. */
+const ETF = 'etf-0001';
 
 test.describe('markets', () => {
   test('shows the live chart of an instrument and removes it when left', async ({ page }) => {
@@ -172,6 +175,76 @@ test.describe('markets', () => {
     await page.getByTestId('market.nav.watchlist').click();
     await expect(page.getByTestId('market.watchlist.row')).toHaveCount(1);
     await expectNoHorizontalScroll(page);
+    await expectAccessible(page);
+  });
+
+  // AP 4.5 (US-MK-03): the details of a share and an ETF with the real worker, in both colour
+  // schemes. The game starts on Mon 01.04.2030 at 00:00, before any exchange opens.
+  for (const colorScheme of ['dark', 'light'] as const) {
+    test(`shows the details of a share and an ETF (${colorScheme})`, async ({ page }) => {
+      await storeColorScheme(page, colorScheme);
+      await page.emulateMedia({ colorScheme });
+      const game = await createPlayer(page, 'Anna');
+      await expectGameReady(page);
+
+      await page.goto(`${game}/markets/${INSTRUMENT}`);
+      await expectGameReady(page);
+      await expect(page.getByTestId('market.instrument.kind')).toHaveText('Aktie');
+      await expect(page.getByTestId('market.instrument.bid')).toContainText('€');
+      await expect(page.getByTestId('market.instrument.spread-percent')).toContainText('%)');
+      await expect(page.getByTestId('market.instrument.status')).toContainText(
+        'Geschlossen · öffnet',
+      );
+      await expect(page.getByTestId('market.instrument.closed')).toBeVisible();
+      await expect(page.getByTestId('market.instrument.figures.volatility')).toContainText('%');
+      await expect(page.getByTestId('market.instrument.profile.description')).not.toBeEmpty();
+      await expect(
+        page.getByTestId('market.instrument.profile.indices.item').first(),
+      ).toBeVisible();
+      await expect(page.getByTestId('market.instrument.dividends')).toBeVisible();
+      await expect(
+        page.getByTestId('market.instrument.chart').locator('canvas').first(),
+      ).toBeVisible();
+      await expectAccessible(page);
+
+      await page.goto(`${game}/markets/${ETF}`);
+      await expectGameReady(page);
+      await expect(page.getByTestId('market.instrument.kind')).toHaveText('ETF');
+      await expect(page.getByTestId('market.instrument.inav-tick')).toHaveText('Stand Mo., 00:00');
+      await expect(page.getByTestId('market.instrument.profile.ter')).toContainText('%');
+      await expect(page.getByTestId('market.instrument.profile.issuer')).not.toBeEmpty();
+      await expect(page.getByTestId('market.instrument.profile.index')).toBeVisible();
+      // The first figures of an ETF take longest (TS §14.3: about 0.4 s cold).
+      await expect(page.getByTestId('market.instrument.figures.size')).toContainText('€');
+      await expect(page.getByTestId('market.instrument.composition.top.row')).toHaveCount(10);
+      await expect(
+        page.getByTestId('market.instrument.composition.regions.item').first(),
+      ).toBeVisible();
+      await expectAccessible(page);
+
+      // The tracked index opens in place, without bid and ask.
+      await page.getByTestId('market.instrument.profile.index').click();
+      await expect(page.getByTestId('market.instrument.kind')).toHaveText('Index');
+      await expect(page.getByTestId('market.instrument.bid')).toHaveCount(0);
+      await expect(page.getByTestId('market.instrument.composition.top.row')).toHaveCount(10);
+    });
+  }
+
+  test('fits the instrument page into 360 px', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 740 });
+    const game = await createPlayer(page, 'Anna');
+    await expectGameReady(page);
+    for (const id of [INSTRUMENT, ETF]) {
+      await page.goto(`${game}/markets/${id}`);
+      await expectGameReady(page);
+      await expect(page.getByTestId('market.instrument.figures.y5')).toContainText('%');
+      await expect(
+        page
+          .getByTestId('market.instrument.profile.description')
+          .or(page.getByTestId('market.instrument.composition.top.row').first()),
+      ).toBeVisible();
+      await expectNoHorizontalScroll(page);
+    }
     await expectAccessible(page);
   });
 });

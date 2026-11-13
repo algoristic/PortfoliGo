@@ -1,0 +1,122 @@
+@let _dividends = dividends();
+
+@if (_dividends.kind === 'accumulating') {
+  <app-empty-state
+    icon="arrow-repeat"
+    data-testid="market.instrument.dividends.accumulating"
+    [heading]="accumulatingHeading"
+    [text]="accumulatingText"></app-empty-state>
+} @else if (_dividends.next === null && _dividends.history.length === 0) {
+  <app-empty-state
+    icon="cash-coin"
+    data-testid="market.instrument.dividends.none"
+    [heading]="noneHeading"
+    [text]="noneText"></app-empty-state>
+} @else {
+  <h3 class="mb-2 text-sm font-semibold" i18n="@@uiMarket-dividendOverview-next">
+    Nächster Termin
+  </h3>
+  @if (_dividends.next; as next) {
+    <dl
+      class="grid grid-cols-3 gap-x-4 gap-y-1 text-sm"
+      data-testid="market.instrument.dividends.next">
+      <dt class="text-xs text-fg-muted" i18n="@@uiMarket-dividendOverview-exDay">Ex-Tag</dt>
+      <dt class="text-xs text-fg-muted" i18n="@@uiMarket-dividendOverview-paymentDay">Zahltag</dt>
+      <dt class="text-xs text-fg-muted" i18n="@@uiMarket-dividendOverview-amount"
+        >Betrag je Stück</dt
+      >
+      <dd class="font-medium tabular-nums" data-testid="market.instrument.dividends.next.ex-day">
+        {{ next.exTick | formatGameDate }}
+      </dd>
+      <dd
+        class="font-medium tabular-nums"
+        data-testid="market.instrument.dividends.next.payment-day">
+        {{ next.paymentTick | formatGameDate }}
+      </dd>
+      <dd class="font-medium tabular-nums" data-testid="market.instrument.dividends.next.amount">
+        @if (next.cents !== null) {
+          {{ next.cents | formatCents }}
+        } @else if (_dividends.kind === 'etf') {
+          <span
+            class="text-xs font-normal text-fg-muted"
+            i18n="@@uiMarket-dividendOverview-etfAmount"
+            >Betrag wird am Ex-Tag festgelegt</span
+          >
+        } @else {
+          <span
+            class="text-xs font-normal text-fg-muted"
+            i18n="@@uiMarket-dividendOverview-notAnnounced"
+            >noch nicht angekündigt</span
+          >
+        }
+      </dd>
+    </dl>
+  } @else {
+    <p
+      class="text-sm text-fg-muted"
+      data-testid="market.instrument.dividends.no-next"
+      i18n="@@uiMarket-dividendOverview-noNext">
+      Es steht noch kein Termin fest.
+    </p>
+  }
+
+  <h3 class="mt-4 mb-2 text-sm font-semibold" i18n="@@uiMarket-dividendOverview-history">
+    Zahlungen der letzten fünf Jahre
+  </h3>
+  @if (_dividends.history.length > 0) {
+    <div
+      class="max-h-72 overflow-y-auto"
+      tabindex="0"
+      role="region"
+      [attr.aria-label]="historyLabel">
+      <table class="w-full text-sm" data-testid="market.instrument.dividends.history">
+        <thead class="sticky top-0 bg-surface">
+          <tr class="border-b border-border text-xs text-fg-muted">
+            <th
+              scope="col"
+              class="py-1 text-left font-medium"
+              i18n="@@uiMarket-dividendOverview-historyExDay">
+              Ex-Tag
+            </th>
+            <th
+              scope="col"
+              class="py-1 text-left font-medium"
+              i18n="@@uiMarket-dividendOverview-historyPaymentDay">
+              Zahltag
+            </th>
+            <th
+              scope="col"
+              class="py-1 text-right font-medium"
+              i18n="@@uiMarket-dividendOverview-historyAmount">
+              Betrag je Stück
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (payment of _dividends.history; track payment.exTick) {
+            <tr
+              class="border-b border-border tabular-nums"
+              data-testid="market.instrument.dividends.history.row">
+              <td class="py-1" data-testid="market.instrument.dividends.history.ex-day">
+                {{ payment.exTick | formatGameDate }}
+              </td>
+              <td class="py-1" data-testid="market.instrument.dividends.history.payment-day">
+                {{ payment.paymentTick | formatGameDate }}
+              </td>
+              <td class="py-1 text-right" data-testid="market.instrument.dividends.history.amount">
+                {{ payment.cents | formatCents }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <p
+      class="text-sm text-fg-muted"
+      data-testid="market.instrument.dividends.no-history"
+      i18n="@@uiMarket-dividendOverview-noHistory">
+      In den letzten fünf Jahren gab es keine Zahlung.
+    </p>
+  }
+}

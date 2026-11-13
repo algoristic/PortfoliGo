@@ -1,6 +1,8 @@
 @let _chart = chart();
 @let _crosshair = crosshair();
 @let _editing = editing();
+@let instrument = facade.routeInstrument$ | async;
+@let isIndex = instrument?.kind === 'index';
 
 @if (_chart) {
   <app-chart-toolbar
@@ -19,12 +21,14 @@
   <app-candle-readout
     class="mt-3"
     [candle]="_crosshair?.candle ?? _chart.lastCandle"
-    [interval]="_chart.interval"></app-candle-readout>
+    [interval]="_chart.interval"
+    [isIndex]="isIndex"></app-candle-readout>
 
   <app-chart-indicators
     class="mt-2"
     [indicators]="indicatorReadouts()"
     [canAdd]="canAddIndicator()"
+    [isIndex]="isIndex"
     (clickedAdd)="onAddIndicator()"
     (clickedEdit)="onEditIndicator($event)"
     (clickedRemove)="onRemoveIndicator($event)"></app-chart-indicators>

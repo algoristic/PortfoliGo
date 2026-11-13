@@ -4,6 +4,7 @@ import { Store } from '@ngrx/store';
 import { firstValueFrom } from 'rxjs';
 
 import { SubscriptionPayload } from '@app/engine/data-access/service/engine-service.model';
+import { EngineService } from '@app/engine/data-access/service/engine.service';
 import {
   generateMiniWorld,
   InProcessEngine,
@@ -18,6 +19,7 @@ import { EXCHANGES } from '@app/world/domain/taxonomy';
 import { installChartPlatform } from '../../../../testing/chart-platform';
 import { byTestId, click, queryByTestId, select, textOf, typeText } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
+import { parseCompactEuros, parseEuros, parseGermanNumber } from '../../../../testing/parse';
 import { installViewport } from '../../../../testing/viewport';
 import { selectRouteInstrumentQuote } from '../state/market.selectors';
 
@@ -27,8 +29,22 @@ const ANNA: NewPlayer = {
   start: { startCapital: 1_000_000, netIncome: 250_000, livingCosts: 180_000 },
 };
 
+const WORLD = generateMiniWorld(ANNA.seed).world;
 // Shares come first in the series order (TS §8.2), so the first company is series 0.
-const COMPANY = generateMiniWorld(ANNA.seed).world.companies[0];
+const COMPANY = WORLD.companies[0];
+const ETF = WORLD.etfs[0];
+const ETF_INDEX = WORLD.indices.find((index) => index.id === ETF.indexId);
+const ETF_ISSUER = WORLD.etfIssuers.find((issuer) => issuer.id === ETF.issuerId);
+const ETF_EXCHANGE = EXCHANGES.find((exchange) => exchange.id === ETF.exchangeId);
+const WORLD_INDEX = WORLD.indices.find((index) => index.kind === 'world');
+if (
+  ETF_INDEX === undefined ||
+  ETF_ISSUER === undefined ||
+  ETF_EXCHANGE === undefined ||
+  WORLD_INDEX === undefined
+) {
+  throw new Error('The mini world lacks an ETF with index, issuer and exchange or a world index');
+}
 const EXCHANGE = EXCHANGES.find((exchange) => exchange.id === COMPANY.exchangeId);
 if (EXCHANGE === undefined) {
   throw new Error('The company has no exchange');
@@ -54,6 +70,13 @@ function weekdaysBetween(from: number, to: number): number {
     }
   }
   return count;
+}
+
+/** A day index (days since 01.01.2020) as `dd.mm.yyyy`, from `Date`. */
+function date(day: number): string {
+  const at = new Date(Date.UTC(2020, 0, 1) + day * MS_PER_DAY);
+  const pad = (value: number): string => String(value).padStart(2, '0');
+  return `${pad(at.getUTCDate())}.${pad(at.getUTCMonth() + 1)}.${at.getUTCFullYear()}`;
 }
 
 function hhmm(minuteOfDay: number): string {
@@ -95,10 +118,38 @@ describe('InstrumentPage', () => {
     await run(200);
   }
 
-  async function openInstrument(): Promise<void> {
-    await harness.navigateByUrl(`/game/${playerId}/markets/${COMPANY.id}`);
+  async function openInstrument(id = COMPANY.id): Promise<void> {
+    await harness.navigateByUrl(`/game/${playerId}/markets/${id}`);
     await run(200);
     await run(300);
+  }
+
+  function text(testId: string): string {
+    return textOf(byTestId(page, testId));
+  }
+
+  /** The value of a stat tile (its second line, after the label). */
+  function tileValue(testId: string): string {
+    const value = byTestId(page, testId).querySelectorAll('span')[1];
+    return value === undefined ? '' : textOf(value);
+  }
+
+  function all(testId: string): HTMLElement[] {
+    return Array.from(page.querySelectorAll<HTMLElement>(`[data-testid="${testId}"]`));
+  }
+
+  /** Jumps to `minute` of Monday 01.04.2030 and lets the game run a few game minutes. */
+  async function runFrom(minute: number): Promise<void> {
+    await act(() => click(byTestId(page, 'shell.header.jump-button')));
+    await act(() => click(byTestId(document.body, 'clock.jump-dialog.date-kind')));
+    await act(() =>
+      typeText(byTestId<HTMLInputElement>(document.body, 'clock.jump-dialog.date'), '2030-04-01'),
+    );
+    await act(() =>
+      typeText(byTestId<HTMLInputElement>(document.body, 'clock.jump-dialog.time'), hhmm(minute)),
+    );
+    await act(() => click(byTestId(document.body, 'clock.jump-dialog.submit')));
+    await run(500);
   }
 
   function subscriptions(type: 'subscribe' | 'unsubscribe'): SubscriptionPayload[] {
@@ -290,5 +341,221 @@ describe('InstrumentPage', () => {
     await act(() => click(byTestId(page, 'market.instrument.indicator.i2.remove')));
     expect(queryByTestId(page, 'market.instrument.indicator.i2')).toBeNull();
     expect(overlayPoints()).toBe(`i1:${candles - 49}`);
+  });
+
+  // AP 4.5 acceptance (US-MK-03, US-MK-05): every detail of a share, live and highlighted, and
+  // adding it to the watchlist. Expected values come from the world and the engine's queries.
+  it('shows head, figures, profile, dividends and index membership of a share', async () => {
+    const restoreViewport = installViewport(1024);
+    onTestFinished(restoreViewport);
+    await openInstrument();
+    const engineService = TestBed.inject(EngineService);
+    const { figures } = await firstValueFrom(engineService.instrumentFigures(COMPANY.id));
+    const { details } = await firstValueFrom(engineService.instrumentDetails(COMPANY.id));
+    const dividends = await firstValueFrom(engineService.instrumentDividends(COMPANY.id));
+
+    // Head: master data, last price, bid, ask and spread; the game starts paused at Mon 00:00.
+    expect(text('market.instrument.name')).toBe(COMPANY.name);
+    expect(text('market.instrument.ticker')).toBe(COMPANY.ticker);
+    expect(text('market.instrument.isin')).toBe(COMPANY.isin);
+    expect(text('market.instrument.exchange')).toBe(EXCHANGE.name);
+    expect(text('market.instrument.kind')).toBe('Aktie');
+    expect(text('market.instrument.chart.readout.close')).toMatch(/€$/);
+    const last = parseEuros(text('market.instrument.last'));
+    const digits = figures.last >= 10 ? 2 : figures.last >= 1 ? 3 : 4;
+    expect(last).toBeCloseTo(figures.last, digits);
+    const bid = parseEuros(text('market.instrument.bid'));
+    const ask = parseEuros(text('market.instrument.ask'));
+    expect(bid).toBeLessThan(ask);
+    expect(parseEuros(text('market.instrument.spread'))).toBeCloseTo(ask - bid, digits);
+    expect(
+      parseGermanNumber(text('market.instrument.spread-percent').replace(/[()]/g, '')),
+    ).toBeCloseTo((ask - bid) / ((ask + bid) / 2), 4);
+    expect(text('market.instrument.change-percent')).toMatch(/%$/);
+    expect(text('market.instrument.status')).toBe(`Geschlossen · öffnet Mo., ${hhmm(OPEN)}`);
+    expect(text('market.instrument.closed')).toContain('Börse geschlossen');
+
+    // Key figures at the displayed precision.
+    const marketCap = parseCompactEuros(tileValue('market.instrument.figures.size'));
+    expect(Math.abs(marketCap.value - (figures.marketCap ?? Number.NaN))).toBeLessThanOrEqual(
+      0.05 * marketCap.factor,
+    );
+    const percent = (testId: string): number => parseGermanNumber(tileValue(testId));
+    expect(percent('market.instrument.figures.volatility')).toBeCloseTo(figures.volatility ?? 0, 3);
+    expect(percent('market.instrument.figures.beta')).toBeCloseTo(figures.beta ?? 0, 2);
+    expect(percent('market.instrument.figures.dividend-yield')).toBeCloseTo(
+      figures.dividendYield ?? 0,
+      4,
+    );
+    for (const period of ['m1', 'y1', 'y5'] as const) {
+      expect(percent(`market.instrument.figures.${period}`)).toBeCloseTo(
+        figures.performance[period] ?? 0,
+        4,
+      );
+    }
+
+    // Profile with the text of the template code and the indices of the share.
+    expect(text('market.instrument.profile.description')).toContain(String(COMPANY.foundedYear));
+    expect(text('market.instrument.profile.founded')).toBe(String(COMPANY.foundedYear));
+    expect(parseGermanNumber(text('market.instrument.profile.employees'))).toBe(COMPANY.employees);
+    expect(text('market.instrument.profile.risk-class')).toBe(`${COMPANY.riskClass} von 5`);
+    expect(text('market.instrument.profile.sector')).not.toBe(COMPANY.sectorId);
+    expect(details.kind === 'stock' && details.indexIds.length).toBeGreaterThan(0);
+    expect(
+      all('market.instrument.profile.indices.item').map((item) =>
+        item.getAttribute('data-instrument-id'),
+      ),
+    ).toEqual(details.kind === 'stock' ? details.indexIds : []);
+
+    // Dividends: the history of the engine, newest first, and the next date.
+    expect(all('market.instrument.dividends.history.row')).toHaveLength(dividends.history.length);
+    all('market.instrument.dividends.history.ex-day').forEach((cell, index) =>
+      expect(textOf(cell)).toBe(date(dividends.history[index].exDay)),
+    );
+    if (dividends.next !== null) {
+      expect(text('market.instrument.dividends.next.ex-day')).toBe(date(dividends.next.exDay));
+      expect(text('market.instrument.dividends.next.payment-day')).toBe(
+        date(dividends.next.paymentDay),
+      );
+      if (dividends.next.cents === null) {
+        expect(text('market.instrument.dividends.next.amount')).toBe('noch nicht angekündigt');
+      } else {
+        expect(parseEuros(text('market.instrument.dividends.next.amount'))).toBe(
+          dividends.next.cents / 100,
+        );
+      }
+    }
+    // Shares have no composition.
+    expect(queryByTestId(page, 'market.instrument.composition')).toBeNull();
+
+    // Add to the watchlist from the head.
+    const star = byTestId(page, 'market.instrument.watchlist');
+    expect(star.getAttribute('aria-pressed')).toBe('false');
+    await act(() => click(star));
+    await run(200);
+    expect(byTestId(page, 'market.instrument.watchlist').getAttribute('aria-pressed')).toBe('true');
+
+    // Live: once the exchange trades, the last price moves and flashes (US-MK-05).
+    const lastElement = byTestId(page, 'market.instrument.last');
+    const flashes: string[] = [];
+    const observer = new MutationObserver(() => {
+      const flash = lastElement.getAttribute('data-flash');
+      if (flash !== null) {
+        flashes.push(flash);
+      }
+    });
+    observer.observe(lastElement, { attributes: true, attributeFilter: ['data-flash'] });
+    onTestFinished(() => observer.disconnect());
+    await runFrom(OPEN + 60);
+    expect(text('market.instrument.status')).toBe(`Geöffnet · schließt Mo., ${hhmm(CLOSE)}`);
+    expect(queryByTestId(page, 'market.instrument.closed')).toBeNull();
+    const opened = text('market.instrument.last');
+    await act(() => click(byTestId(page, 'shell.header.toggle-pause')));
+    await run(3_000);
+    await act(() => click(byTestId(page, 'shell.header.toggle-pause')));
+    await run(500);
+    expect(text('market.instrument.last')).not.toBe(opened);
+    expect(flashes.length).toBeGreaterThan(0);
+    expect(flashes.every((flash) => flash === 'up' || flash === 'down')).toBe(true);
+  });
+
+  it('shows index, costs, issuer, positions, splits and iNAV of an ETF', async () => {
+    await openInstrument(ETF.id);
+    const engineService = TestBed.inject(EngineService);
+    const { figures } = await firstValueFrom(engineService.instrumentFigures(ETF.id));
+    const { composition } = await firstValueFrom(engineService.instrumentComposition(ETF.id));
+
+    expect(text('market.instrument.name')).toBe(ETF.name);
+    expect(text('market.instrument.kind')).toBe('ETF');
+    expect(text('market.instrument.exchange')).toBe(ETF_EXCHANGE.name);
+    expect(parseEuros(text('market.instrument.inav'))).toBeCloseTo(figures.indicativeValue ?? 0, 2);
+    expect(text('market.instrument.inav-tick')).toBe('Stand Mo., 00:00');
+
+    expect(text('market.instrument.profile.index')).toBe(ETF_INDEX.name);
+    expect(byTestId(page, 'market.instrument.profile.index').getAttribute('href')).toBe(
+      `/game/${playerId}/markets/${ETF.indexId}`,
+    );
+    expect(parseGermanNumber(text('market.instrument.profile.ter'))).toBeCloseTo(ETF.ter, 4);
+    expect(text('market.instrument.profile.issuer')).toBe(ETF_ISSUER.name);
+    const volume = parseCompactEuros(text('market.instrument.profile.fund-volume'));
+    expect(Math.abs(volume.value - ETF.fundVolume / 100)).toBeLessThanOrEqual(0.05 * volume.factor);
+    const distribution = text('market.instrument.profile.distribution');
+    expect(distribution).toBe(
+      ETF.distribution.kind === 'accumulating'
+        ? 'Thesaurierend'
+        : ETF.distribution.frequency === 'quarterly'
+          ? 'Ausschüttend, vierteljährlich'
+          : 'Ausschüttend, jährlich',
+    );
+
+    // The largest positions and the splits of the tracked index.
+    expect(composition).not.toBeNull();
+    expect(all('market.instrument.composition.top.name').map((cell) => textOf(cell))).toEqual(
+      composition?.top.map((position) => position.name),
+    );
+    expect(text('market.instrument.composition.count')).toBe(
+      `Werte im Index: ${ETF_INDEX.constituents.length}`,
+    );
+    const regions = all('market.instrument.composition.regions.item');
+    expect(regions.map((item) => item.getAttribute('data-key'))).toEqual(
+      composition?.regions.map((share) => share.key),
+    );
+    expect(all('market.instrument.composition.sectors.item').length).toBe(
+      Math.min(composition?.sectors.length ?? 0, 6),
+    );
+    expect(
+      byTestId(page, 'market.instrument.composition.regions')
+        .querySelector('svg')
+        ?.getAttribute('aria-label'),
+    ).toContain('Regionen');
+
+    // Dividends: accumulating ETFs say so, distributing ones show the next date without amount.
+    if (ETF.distribution.kind === 'accumulating') {
+      expect(queryByTestId(page, 'market.instrument.dividends.accumulating')).not.toBeNull();
+    } else if (queryByTestId(page, 'market.instrument.dividends.next') !== null) {
+      expect(text('market.instrument.dividends.next.amount')).toBe(
+        'Betrag wird am Ex-Tag festgelegt',
+      );
+    }
+  });
+
+  it('shows an index without bid and ask and with its composition', async () => {
+    await openInstrument(WORLD_INDEX.id);
+
+    expect(text('market.instrument.name')).toBe(WORLD_INDEX.name);
+    expect(text('market.instrument.kind')).toBe('Index');
+    expect(queryByTestId(page, 'market.instrument.bid')).toBeNull();
+    expect(queryByTestId(page, 'market.instrument.ask')).toBeNull();
+    expect(queryByTestId(page, 'market.instrument.spread')).toBeNull();
+    expect(queryByTestId(page, 'market.instrument.dividends')).toBeNull();
+    expect(text('market.instrument.profile.variant')).toBe('Kursindex');
+    // Index levels are points: the head, the candle readout and the indicator legend show no euros.
+    expect(text('market.instrument.last')).not.toContain('€');
+    expect(text('market.instrument.chart.readout.close')).toMatch(/\d,\d{2}$/);
+    expect(text('market.instrument.chart.readout.close')).not.toContain('€');
+    await act(() => click(byTestId(page, 'market.instrument.indicator.add')));
+    await act(() => click(byTestId(page, 'market.instrument.indicator-form.submit')));
+    expect(text('market.instrument.indicator.i1.values')).toMatch(/\d,\d{2}$/);
+    expect(text('market.instrument.indicator.i1.values')).not.toContain('€');
+    expect(parseGermanNumber(text('market.instrument.profile.constituents'))).toBe(
+      WORLD_INDEX.constituents.length,
+    );
+    expect(all('market.instrument.composition.top.row').length).toBe(
+      Math.min(10, WORLD_INDEX.constituents.length),
+    );
+    // The world index is its own benchmark (TS §8.2: beta exactly 1).
+    expect(tileValue('market.instrument.figures.beta')).toBe('1,00');
+
+    // A position opens the share: the page loads it in place.
+    await act(() => click(all('market.instrument.composition.top.name')[0]));
+    await run(300);
+    expect(text('market.instrument.kind')).toBe('Aktie');
+    expect(queryByTestId(page, 'market.instrument.composition')).toBeNull();
+    expect(queryByTestId(page, 'market.instrument.profile.description')).not.toBeNull();
+  });
+
+  it('says so when the instrument does not exist', async () => {
+    await openInstrument('stk-9999');
+    expect(text('market.instrument.not-found')).toContain('Wertpapier nicht gefunden');
   });
 });

@@ -55,6 +55,23 @@ export function formatSignedPercent(ratio: number, fractionDigits = 2): string {
   );
 }
 
+/**
+ * Like `formatPrice`, but for changes of a price: an explicit sign for values that don't round to
+ * zero and a typographic minus, e.g. `+0,125 €`, `−1,20 €`. The caller chooses the decimal places
+ * of the price itself (PS §10.4), not those of the change.
+ */
+export function formatSignedPrice(change: number, fractionDigits = 2): string {
+  return withMinusSign(
+    numberFormat({
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+      signDisplay: 'exceptZero',
+    }).format(change),
+  );
+}
+
 /** Like `formatCents`, but for changes, e.g. `+312,40 €`, `−45,10 €`. */
 export function formatSignedCents(cents: number): string {
   return withMinusSign(
@@ -75,6 +92,22 @@ export function formatNumber(value: number, fractionDigits = 0): string {
 /** Formats large numbers in short form, e.g. `1234567` → `1,2 Mio.`. */
 export function formatCompact(value: number): string {
   return numberFormat({ notation: 'compact', maximumFractionDigits: 1 }).format(value);
+}
+
+/**
+ * Large amounts of euros in short form for overviews (PS §10.4), at most one decimal place, e.g.
+ * `1234567890` → `1,2 Mrd. €`, `850000000` → `850 Mio. €`.
+ */
+export function formatCompactEuros(euros: number): string {
+  return withMinusSign(
+    numberFormat({
+      notation: 'compact',
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 1,
+    }).format(euros),
+  );
 }
 
 /**

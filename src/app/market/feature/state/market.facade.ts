@@ -25,6 +25,8 @@ export class MarketFacade {
   routeInstrument$ = this.#store.pipe(select(MarketSelectors.selectRouteInstrument));
   routeInstrumentQuote$ = this.#store.pipe(select(MarketSelectors.selectRouteInstrumentQuote));
   chart$ = this.#store.pipe(select(MarketSelectors.selectChartView));
+  instrumentHead$ = this.#store.pipe(select(MarketSelectors.selectInstrumentHead));
+  instrumentDetail$ = this.#store.pipe(select(MarketSelectors.selectInstrumentDetailView));
   overviewIndices$ = this.#store.pipe(select(MarketSelectors.selectOverviewIndices));
   moversView$ = this.#store.pipe(select(MarketSelectors.selectMoversView));
   screener$ = this.#store.pipe(select(MarketSelectors.selectScreenerView));

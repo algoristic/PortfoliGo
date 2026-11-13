@@ -1,0 +1,73 @@
+@let _composition = composition();
+
+<h3 class="mb-2 text-sm font-semibold" i18n="@@uiMarket-indexComposition-top">Größte Positionen</h3>
+<table class="w-full text-sm" data-testid="market.instrument.composition.top">
+  <caption class="sr-only" i18n="@@uiMarket-indexComposition-topCaption">
+    Größte Positionen mit ihrem Gewicht im Index
+  </caption>
+  <thead>
+    <tr class="border-b border-border text-xs text-fg-muted">
+      <th scope="col" class="py-1 text-left font-medium" i18n="@@uiMarket-indexComposition-name">
+        Wertpapier
+      </th>
+      <th scope="col" class="py-1 text-right font-medium" i18n="@@uiMarket-indexComposition-weight">
+        Gewicht
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (position of _composition.top; track position.id) {
+      <tr
+        class="border-b border-border"
+        data-testid="market.instrument.composition.top.row"
+        [attr.data-instrument-id]="position.id">
+        <td class="max-w-0 truncate py-1 pr-2">
+          <a
+            class="hover:underline"
+            data-testid="market.instrument.composition.top.name"
+            [routerLink]="['..', position.id]"
+            >{{ position.name }}</a
+          >
+        </td>
+        <td
+          class="py-1 text-right tabular-nums"
+          data-testid="market.instrument.composition.top.weight">
+          {{ position.weight | formatPercent: 2 }}
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
+<p class="mt-1 text-xs text-fg-muted" data-testid="market.instrument.composition.count">
+  <ng-container i18n="@@uiMarket-indexComposition-count">Werte im Index:</ng-container>
+  {{ _composition.constituentCount | formatNumber }}
+</p>
+
+<div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+  @for (split of splits(); track split.id) {
+    <div [attr.data-testid]="'market.instrument.composition.' + split.id">
+      <h3 class="mb-2 text-sm font-semibold">{{ split.heading }}</h3>
+      <div class="flex items-center gap-4">
+        <app-donut
+          class="size-24 shrink-0"
+          [segments]="split.segments"
+          [label]="split.label"></app-donut>
+        <ul class="flex min-w-0 flex-1 flex-col gap-1 text-sm">
+          @for (row of split.rows; track row.key) {
+            <li
+              class="flex items-center gap-2"
+              [attr.data-testid]="'market.instrument.composition.' + split.id + '.item'"
+              [attr.data-key]="row.key">
+              <span
+                class="size-3 shrink-0 rounded-sm"
+                aria-hidden="true"
+                [class]="row.swatchClass"></span>
+              <span class="min-w-0 flex-1 truncate">{{ row.label }}</span>
+              <span class="text-fg-muted tabular-nums">{{ row.weight | formatPercent: 1 }}</span>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  }
+</div>

@@ -20,7 +20,8 @@ import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { selectPhase } from '@app/engine/feature/state/session.selectors';
 import { Candle } from '@app/market/domain/models/candle.model';
-import { Instrument } from '@app/market/domain/models/instrument.model';
+import { InstrumentFigures } from '@app/market/domain/models/instrument-figures.model';
+import { Instrument, InstrumentDetails } from '@app/market/domain/models/instrument.model';
 import { LocalStorageService } from '@app/persistence/data-access/local-storage/local-storage.service';
 import { PlayerProfile } from '@app/players/domain/models/player.model';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
@@ -39,11 +40,16 @@ import {
   SCREENER_SUBSCRIPTION,
   WATCHLIST_SUBSCRIPTION,
 } from './market.model';
-import { initialChartState, initialScreenerState } from './market.reducer';
+import {
+  initialChartState,
+  initialInstrumentDetailState,
+  initialScreenerState,
+} from './market.reducer';
 import {
   selectChart,
   selectChartSettings,
   selectChartSubscription,
+  selectInstrumentDetail,
   selectInstrumentsLoaded,
   selectMarketDay,
   selectMoversWanted,
@@ -51,6 +57,8 @@ import {
   selectOverviewSparklines,
   selectQuoteSubscriptions,
   selectRouteInstrument,
+  selectRouteInstrumentId,
+  selectRouteInstrumentSession,
   selectScreener,
   selectScreenerCriteria,
   selectScreenerWindowSeries,
@@ -165,6 +173,9 @@ describe('MarketEffects', () => {
             { selector: selectInstrumentsLoaded, value: false },
             { selector: selectOverviewIndexSeries, value: [] },
             { selector: selectRouteInstrument, value: null },
+            { selector: selectRouteInstrumentId, value: undefined },
+            { selector: selectRouteInstrumentSession, value: null },
+            { selector: selectInstrumentDetail, value: initialInstrumentDetailState },
             { selector: selectTick, value: null },
             { selector: selectChart, value: initialChartState },
             { selector: selectChartSubscription, value: { interval: '1m', live: true } },
@@ -943,6 +954,135 @@ describe('MarketEffects', () => {
         MarketActions.quotesSubscriptionChanged({ key: WATCHLIST_SUBSCRIPTION, series: [4, 2] }),
         MarketActions.quotesSubscriptionChanged({ key: WATCHLIST_SUBSCRIPTION, series: [2] }),
       ]);
+    });
+  });
+
+  describe('loadInstrumentDetail$', () => {
+    const FIGURES = { id: STOCK.id, series: 7, last: 10 } as InstrumentFigures;
+    const DIVIDENDS = { history: [], next: null };
+
+    function showInstrument(id: string, instrument: Instrument | null, generation: number): void {
+      store.overrideSelector(selectRouteInstrumentId, id);
+      store.overrideSelector(selectRouteInstrument, instrument);
+      store.overrideSelector(selectInstrumentDetail, {
+        ...initialInstrumentDetailState,
+        generation,
+      });
+      store.overrideSelector(selectInstrumentsLoaded, true);
+      store.refreshState();
+    }
+
+    function spyQueries() {
+      return {
+        details: vi.spyOn(engine, 'instrumentDetails').mockReturnValue(
+          of({
+            kind: 'instrumentDetails' as const,
+            details: { kind: 'stock', id: STOCK.id } as InstrumentDetails,
+          }),
+        ),
+        figures: vi
+          .spyOn(engine, 'instrumentFigures')
+          .mockReturnValue(of({ kind: 'instrumentFigures' as const, figures: FIGURES, tick: NOW })),
+        dividends: vi
+          .spyOn(engine, 'instrumentDividends')
+          .mockReturnValue(of({ kind: 'instrumentDividends' as const, tick: NOW, ...DIVIDENDS })),
+        composition: vi
+          .spyOn(engine, 'instrumentComposition')
+          .mockReturnValue(
+            of({ kind: 'instrumentComposition' as const, composition: null, tick: NOW }),
+          ),
+      };
+    }
+
+    it('loads the parts of a share once the master data is there, with the visit generation', () => {
+      const queries = spyQueries();
+      const received: Action[] = [];
+      subscription = effects.loadInstrumentDetail$.subscribe((action) => received.push(action));
+      actions$.next(MarketActions.enterInstrumentPage());
+      expect(queries.details).not.toHaveBeenCalled();
+
+      showInstrument(STOCK.id, STOCK, 3);
+      expect(received).toEqual([
+        MarketActions.retrievedInstrumentDetails({
+          generation: 3,
+          details: { kind: 'stock', id: STOCK.id } as InstrumentDetails,
+        }),
+        MarketActions.retrievedInstrumentFigures({ generation: 3, figures: FIGURES, tick: NOW }),
+        MarketActions.retrievedInstrumentDividends({ generation: 3, dividends: DIVIDENDS }),
+      ]);
+      // Shares have no composition.
+      expect(queries.composition).not.toHaveBeenCalled();
+    });
+
+    it('asks for the composition of an ETF and not for the dividends of an accumulating one', () => {
+      const queries = spyQueries();
+      subscription = effects.loadInstrumentDetail$.subscribe();
+      const etf = { id: 'etf-0001', series: 9, kind: 'etf', distribution: 'accumulating' };
+      actions$.next(MarketActions.enterInstrumentPage());
+      showInstrument(etf.id, etf as Instrument, 1);
+      expect(queries.composition).toHaveBeenCalledWith('etf-0001');
+      expect(queries.dividends).not.toHaveBeenCalled();
+    });
+
+    it('loads figures, dividends and composition again on a new market day and a new session', () => {
+      const queries = spyQueries();
+      subscription = effects.loadInstrumentDetail$.subscribe();
+      actions$.next(MarketActions.enterInstrumentPage());
+      showInstrument(STOCK.id, STOCK, 1);
+      store.overrideSelector(selectRouteInstrumentSession, 10);
+      store.refreshState();
+      expect(queries.figures).toHaveBeenCalledTimes(1);
+
+      store.overrideSelector(selectMarketDay, 3_745);
+      store.refreshState();
+      expect(queries.figures).toHaveBeenCalledTimes(2);
+      expect(queries.dividends).toHaveBeenCalledTimes(2);
+
+      // The session opens: the previous close changes.
+      store.overrideSelector(selectRouteInstrumentSession, 10.5);
+      store.refreshState();
+      expect(queries.dividends).toHaveBeenCalledTimes(3);
+      expect(queries.details).toHaveBeenCalledTimes(1);
+
+      actions$.next(MarketActions.leaveInstrumentPage());
+      store.overrideSelector(selectMarketDay, 3_746);
+      store.refreshState();
+      expect(queries.figures).toHaveBeenCalledTimes(3);
+    });
+
+    it('asks only for the details of an ID the master data does not know', async () => {
+      const queries = spyQueries();
+      const error = new EngineCommandError('unknown-instrument');
+      queries.details.mockReturnValue(throwError(() => error));
+      const result = firstValueFrom(effects.loadInstrumentDetail$);
+      actions$.next(MarketActions.enterInstrumentPage());
+      showInstrument('stk-9999', null, 2);
+      expect(await result).toEqual(
+        MarketActions.loadInstrumentDetailFailure({ generation: 2, error }),
+      );
+      expect(queries.figures).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('showInstrumentDetailFailure$', () => {
+    it('shows a toast for failed queries but not for an unknown instrument', () => {
+      subscription = effects.showInstrumentDetailFailure$.subscribe();
+      actions$.next(
+        MarketActions.loadInstrumentDetailFailure({
+          generation: 1,
+          error: new EngineCommandError('unknown-instrument'),
+        }),
+      );
+      expect(toasts.error).not.toHaveBeenCalled();
+      actions$.next(
+        MarketActions.loadInstrumentDetailFailure({
+          generation: 1,
+          error: new EngineCommandError('worker-failed'),
+        }),
+      );
+      expect(toasts.error).toHaveBeenCalledWith(
+        'Die Angaben zum Wertpapier konnten nicht vollständig geladen werden.',
+      );
     });
   });
 });

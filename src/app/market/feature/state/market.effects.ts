@@ -60,6 +60,7 @@ import {
 import { LocalStorageService } from '@app/persistence/data-access/local-storage/local-storage.service';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
+import { hasComposition, hasDividends, isUnknownInstrument } from './instrument-view.utils';
 import * as MarketActions from './market.actions';
 import {
   CHART_SETTINGS_VERSION,
@@ -77,6 +78,7 @@ import {
   selectChart,
   selectChartSettings,
   selectChartSubscription,
+  selectInstrumentDetail,
   selectInstrumentsLoaded,
   selectMarketDay,
   selectMoversWanted,
@@ -84,6 +86,8 @@ import {
   selectOverviewSparklines,
   selectQuoteSubscriptions,
   selectRouteInstrument,
+  selectRouteInstrumentId,
+  selectRouteInstrumentSession,
   selectScreener,
   selectScreenerCriteria,
   selectScreenerWindowSeries,
@@ -605,6 +609,72 @@ export class MarketEffects {
   );
 
   /**
+   * Details, figures, dividends and composition of the instrument page (US-MK-03, TS §8.2) once
+   * the master data is there: every part the kind of the instrument has, at once and side by side
+   * (the first figures of an ETF take longest). Figures, dividends and composition load again on a
+   * new market day and when a new session of the instrument opens (today's ex-date joins the
+   * history); the details don't change. An ID the master data doesn't know asks only for the
+   * details, whose `unknown-instrument` makes the page say "not found". Answers carry the
+   * generation of the visit, so the reducer drops those of a previous instrument.
+   */
+  loadInstrumentDetail$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(MarketActions.enterInstrumentPage),
+      switchMap(() =>
+        this.#whenInstrumentsLoaded().pipe(
+          concatLatestFrom(() => [
+            this.#store.pipe(select(selectRouteInstrumentId)),
+            this.#store.pipe(select(selectRouteInstrument)),
+            this.#store.pipe(select(selectInstrumentDetail)),
+          ]),
+          switchMap(([, id, instrument, { generation }]) => {
+            if (id === undefined) {
+              return EMPTY;
+            }
+            const details = this.#engine.instrumentDetails(id).pipe(
+              map((result) =>
+                MarketActions.retrievedInstrumentDetails({ generation, details: result.details }),
+              ),
+              catchError((error: unknown) =>
+                of(MarketActions.loadInstrumentDetailFailure({ generation, error })),
+              ),
+            );
+            if (instrument === null) {
+              return details;
+            }
+            const facts$ = merge(
+              of(null),
+              this.#store.pipe(select(selectMarketDay), distinctUntilChanged(), skip(1)),
+              this.#store.pipe(
+                select(selectRouteInstrumentSession),
+                filter((session) => session !== null),
+                distinctUntilChanged(),
+                skip(1),
+              ),
+            ).pipe(switchMap(() => this.#instrumentFacts(instrument, generation)));
+            return merge(details, facts$);
+          }),
+          takeUntil(this.#actions$.pipe(ofType(MarketActions.leaveInstrumentPage))),
+        ),
+      ),
+    ),
+  );
+
+  showInstrumentDetailFailure$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(MarketActions.loadInstrumentDetailFailure),
+        filter(({ error }) => !isUnknownInstrument(error)),
+        tap(() =>
+          this.#toastService.error(
+            $localize`:@@featureMarket-marketEffects-loadInstrumentDetailFailure:Die Angaben zum Wertpapier konnten nicht vollständig geladen werden.`,
+          ),
+        ),
+      ),
+    { dispatch: false },
+  );
+
+  /**
    * The chart settings of this device (`pgo.ui.chart`, TS §9.3) when a game is entered; missing or
    * invalid values give the defaults field by field.
    */
@@ -745,6 +815,40 @@ export class MarketEffects {
         open.clear();
       };
     });
+  }
+
+  /** Figures, dividends (shares and distributing ETFs) and composition (indices and ETFs). */
+  #instrumentFacts(instrument: Instrument, generation: number): Observable<Action> {
+    const { id } = instrument;
+    const failed = (error: unknown): Observable<Action> =>
+      of(MarketActions.loadInstrumentDetailFailure({ generation, error }));
+    return merge(
+      this.#engine.instrumentFigures(id).pipe(
+        map(({ figures, tick }) =>
+          MarketActions.retrievedInstrumentFigures({ generation, figures, tick }),
+        ),
+        catchError(failed),
+      ),
+      hasDividends(instrument)
+        ? this.#engine.instrumentDividends(id).pipe(
+            map(({ history, next }) =>
+              MarketActions.retrievedInstrumentDividends({
+                generation,
+                dividends: { history, next },
+              }),
+            ),
+            catchError(failed),
+          )
+        : EMPTY,
+      hasComposition(instrument)
+        ? this.#engine.instrumentComposition(id).pipe(
+            map(({ composition }) =>
+              MarketActions.retrievedInstrumentComposition({ generation, composition }),
+            ),
+            catchError(failed),
+          )
+        : EMPTY,
+    );
   }
 
   /** The 15-minute candles of the trading day of an overview index, once the clock is known. */

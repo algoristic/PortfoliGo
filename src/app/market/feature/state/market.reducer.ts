@@ -19,9 +19,11 @@ import {
 import { ScreenerFilter, ScreenerFilterDimension } from '@app/market/ui/models/screener-view.model';
 import { COUNTRIES, INDUSTRIES } from '@app/world/domain/taxonomy';
 
+import { isUnknownInstrument } from './instrument-view.utils';
 import * as MarketActions from './market.actions';
 import {
   InstrumentChartState,
+  InstrumentDetailState,
   MarketMoversView,
   OverviewSparkline,
   OverviewSparklines,
@@ -59,6 +61,8 @@ export interface MarketState {
   /** `null` while no view watches them or before their first event. */
   movers: MarketMoversView | null;
   chart: InstrumentChartState;
+  /** Details, figures, dividends and composition of the shown instrument (AP 4.5). */
+  instrumentDetail: InstrumentDetailState;
   /** Only while the markets page is open. */
   overviewSparklines: OverviewSparklines;
   screener: ScreenerState;
@@ -82,6 +86,16 @@ export const initialChartState: InstrumentChartState = {
   loadingOlder: false,
 };
 
+export const initialInstrumentDetailState: InstrumentDetailState = {
+  generation: 0,
+  details: null,
+  figures: null,
+  figuresTick: null,
+  dividends: null,
+  composition: null,
+  notFound: false,
+};
+
 export const initialScreenerState: ScreenerState = {
   filter: DEFAULT_SCREENER_FILTER,
   generation: 0,
@@ -101,6 +115,7 @@ export const initialMarketState: MarketState = {
   moversSubscriptions: [],
   movers: null,
   chart: initialChartState,
+  instrumentDetail: initialInstrumentDetailState,
   overviewSparklines: {},
   screener: initialScreenerState,
   watchlist: initialWatchlistState,
@@ -459,6 +474,52 @@ const screenerReducer = createReducer(
   ),
 );
 
+/** Changes the detail parts only for an answer of their current generation. */
+function forDetailGeneration(
+  state: MarketState,
+  generation: number,
+  change: (detail: InstrumentDetailState) => InstrumentDetailState,
+): MarketState {
+  return generation === state.instrumentDetail.generation
+    ? { ...state, instrumentDetail: change(state.instrumentDetail) }
+    : state;
+}
+
+const instrumentDetailReducer = createReducer(
+  initialMarketState,
+  // Every visit (and every other instrument) starts empty; answers of the previous one are dropped.
+  on(MarketActions.enterInstrumentPage, MarketActions.leaveInstrumentPage, (state) => ({
+    ...state,
+    instrumentDetail: {
+      ...initialInstrumentDetailState,
+      generation: state.instrumentDetail.generation + 1,
+    },
+  })),
+  on(MarketActions.retrievedInstrumentDetails, (state, { generation, details }) =>
+    forDetailGeneration(state, generation, (detail) => ({ ...detail, details })),
+  ),
+  on(MarketActions.retrievedInstrumentFigures, (state, { generation, figures, tick }) =>
+    forDetailGeneration(state, generation, (detail) => ({
+      ...detail,
+      figures,
+      figuresTick: tick,
+    })),
+  ),
+  on(MarketActions.retrievedInstrumentDividends, (state, { generation, dividends }) =>
+    forDetailGeneration(state, generation, (detail) => ({ ...detail, dividends })),
+  ),
+  on(MarketActions.retrievedInstrumentComposition, (state, { generation, composition }) =>
+    forDetailGeneration(state, generation, (detail) => ({ ...detail, composition })),
+  ),
+  on(MarketActions.loadInstrumentDetailFailure, (state, { generation, error }) =>
+    forDetailGeneration(state, generation, (detail) => ({
+      ...detail,
+      notFound: detail.notFound || isUnknownInstrument(error),
+      error,
+    })),
+  ),
+);
+
 const overviewReducer = createReducer(
   initialMarketState,
   on(MarketActions.enterMarketsPage, MarketActions.leaveMarketsPage, (state) =>
@@ -545,8 +606,11 @@ const watchlistReducer = createReducer(
 );
 
 export function marketReducer(state: MarketState | undefined, action: Action): MarketState {
-  return watchlistReducer(
-    overviewReducer(screenerReducer(reducer(state, action), action), action),
+  return instrumentDetailReducer(
+    watchlistReducer(
+      overviewReducer(screenerReducer(reducer(state, action), action), action),
+      action,
+    ),
     action,
   );
 }

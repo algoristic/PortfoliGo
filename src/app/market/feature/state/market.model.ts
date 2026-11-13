@@ -4,10 +4,25 @@ import { MoversPayload } from '@app/engine/data-access/service/engine-service.mo
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
 import { ChartRange } from '@app/market/domain/models/chart.model';
-import { Instrument, InstrumentKind } from '@app/market/domain/models/instrument.model';
+import {
+  IndexComposition,
+  InstrumentDividends,
+  InstrumentFigures,
+} from '@app/market/domain/models/instrument-figures.model';
+import {
+  Instrument,
+  InstrumentDetails,
+  InstrumentKind,
+} from '@app/market/domain/models/instrument.model';
 import { ScreenerRow } from '@app/market/domain/models/screener.model';
 import { PerformancePeriod } from '@app/market/domain/performance-logic';
 import { ChartIndicator } from '@app/market/ui/models/chart-indicator.model';
+import {
+  CompositionView,
+  DividendsView,
+  InstrumentFiguresView,
+  InstrumentProfileView,
+} from '@app/market/ui/models/instrument-view.model';
 import { ScreenerFilter, ScreenerRange } from '@app/market/ui/models/screener-view.model';
 
 /** Quote packages of all subscriptions within this much real time make one `receivedQuotes`. */
@@ -156,4 +171,36 @@ export interface WatchlistState {
   /** The newest list sent with `updateWatchlist` until a projection confirms it or it fails. */
   requested: readonly string[] | null;
   rows: readonly ScreenerRow[];
+}
+
+/**
+ * Details, figures, dividends and composition of the instrument page (US-MK-03, TS §11.3), only of
+ * the shown instrument. `enterInstrumentPage` and `leaveInstrumentPage` raise `generation` and
+ * empty the parts; answers of older generations are dropped. A part is `null` until it arrived
+ * (the composition of shares stays `null`).
+ */
+export interface InstrumentDetailState {
+  generation: number;
+  details: InstrumentDetails | null;
+  figures: InstrumentFigures | null;
+  /** The tick the figures belong to (the indicative value is shown with it). */
+  figuresTick: Tick | null;
+  dividends: InstrumentDividends | null;
+  composition: IndexComposition | null;
+  /** The engine doesn't know the instrument of the route (`unknown-instrument`). */
+  notFound: boolean;
+  error?: unknown;
+}
+
+/** The detail parts of the instrument page as the view shows them; `null` while loading. */
+export interface InstrumentDetailView {
+  notFound: boolean;
+  /** A query failed and its part is missing: the page says so instead of a placeholder. */
+  failed: boolean;
+  figures: InstrumentFiguresView | null;
+  profile: InstrumentProfileView | null;
+  /** `undefined` for shares (no composition), `null` while loading. */
+  composition: CompositionView | null | undefined;
+  /** `undefined` for indices (no dividends), `null` while loading. */
+  dividends: DividendsView | null | undefined;
 }
