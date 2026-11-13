@@ -9,3 +9,7 @@ jobs:
   build:
     name: Lint, Test and Build
     uses: ./.github/workflows/build-latest.yml
+
+  verify:
+    name: Extended checks
+    uses: ./.github/workflows/verify-extended.yml

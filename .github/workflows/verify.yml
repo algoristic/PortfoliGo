@@ -1,0 +1,18 @@
+name: Verify
+
+# Non-blocking checks of TS §14.4 on every push to `main` and on demand.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Extended checks
+    uses: ./.github/workflows/verify-extended.yml

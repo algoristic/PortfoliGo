@@ -226,7 +226,8 @@ async function measureGameStart(
   }
 }
 
-test.describe('performance with four times CPU throttling (J10)', () => {
+// `@budget`: wall-clock budgets run outside the deployment gate in CI (TS §14.4).
+test.describe('performance with four times CPU throttling (J10)', { tag: '@budget' }, () => {
   test.skip(({ browserName }) => browserName !== 'chromium', 'CPU throttling needs CDP');
 
   test('starts a game within the budget', async ({ browser }) => {

@@ -1,0 +1,134 @@
+name: Verify PortfoliGo (extended)
+
+# Checks of TS §14.4 that do not gate the deployment: they are slow or measure wall-clock budgets,
+# which are noisy on the runners. `verify.yml` runs them on every push to `main`; a failure turns
+# that run red without stopping `publish.yml`.
+
+on:
+  workflow_call:
+
+jobs:
+  calibration:
+    name: Tests (calibration)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      # Property tests draw new inputs per commit; a rerun of the same commit reproduces them.
+      - name: Seed of the property tests
+        run: |
+          echo "FC_SEED=$((16#${GITHUB_SHA:0:7}))" >> "$GITHUB_ENV"
+          echo "fast-check seed: $((16#${GITHUB_SHA:0:7}))" >> "$GITHUB_STEP_SUMMARY"
+      - run: npm run test:calibration
+
+  perf:
+    name: Performance budgets
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Runners are slower and noisier than the development machine (TS §14.3).
+      PERF_FACTOR: '2'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test:perf
+
+  mutation:
+    name: Mutation tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      # Incremental mode: only mutants in changed code or with changed tests run again.
+      - uses: actions/cache@v4
+        with:
+          path: reports/mutation/incremental.json
+          key: stryker-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            stryker-${{ github.ref_name }}-
+            stryker-main-
+      - run: npm run test:mutation
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-report
+          path: reports/mutation/index.html
+          retention-days: 14
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - name: Bundle budget
+        run: npm run budget
+      # Own name, because pull requests run this workflow and `build-latest.yml` in one run.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-build-verify
+          path: www
+          retention-days: 1
+
+  e2e:
+    name: System tests (${{ matrix.name }})
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The image brings the browsers and their system libraries; its version matches @playwright/test.
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
+      options: --user 1001
+    env:
+      # J10 measures budgets (TS §14.3); runners are slower and noisier, as in the job `perf`.
+      PERF_FACTOR: '2'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: budgets
+            projects: --project=chromium --grep @budget
+          - name: firefox
+            projects: --project=firefox
+          - name: webkit
+            projects: --project=webkit
+          - name: mobile
+            projects: --project=mobile-chromium --project=mobile-webkit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: app-build-verify
+          path: www
+      - run: npx playwright test ${{ matrix.projects }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-verify-${{ matrix.name }}
+          path: playwright-report
+          retention-days: 14
