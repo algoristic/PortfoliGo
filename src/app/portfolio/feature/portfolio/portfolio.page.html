@@ -1,10 +1,114 @@
-<h1 class="text-xl font-semibold" i18n="@@featurePortfolio-portfolioPage-title">Depot</h1>
+@let loaded = portfolioFacade.loaded$ | async;
+@let view = portfolioFacade.view$ | async;
 
-<app-panel class="mt-4">
-  <app-empty-state
-    icon="briefcase"
-    heading="Noch keine Inhalte"
-    i18n-heading="@@featurePortfolio-portfolioPage-emptyHeading"
-    text="Diese Ansicht entsteht in AP 5.5."
-    i18n-text="@@featurePortfolio-portfolioPage-emptyText"></app-empty-state>
-</app-panel>
+<div class="flex flex-wrap items-end justify-between gap-3">
+  <h1 class="text-xl font-semibold" i18n="@@featurePortfolio-portfolioPage-title">Depot</h1>
+  @if (loaded && view && view.depots.length > 0) {
+    <label class="flex flex-col gap-1 text-xs text-fg-muted">
+      {{ depotLabel }}
+      <select
+        class="rounded-md border border-border bg-surface px-2 py-1.5 text-sm text-fg"
+        data-testid="portfolio.depot"
+        (change)="onSelectDepot($event)">
+        <option
+          [value]="allDepots"
+          [selected]="view.depotId === null"
+          i18n="@@featurePortfolio-portfolioPage-allDepots">
+          Alle Depots
+        </option>
+        @for (depot of view.depots; track depot.depotId) {
+          <option [value]="depot.depotId" [selected]="view.depotId === depot.depotId">
+            {{ depot.number }}{{ depot.bankName === null ? '' : ' · ' + depot.bankName }}
+          </option>
+        }
+      </select>
+    </label>
+  }
+</div>
+
+@if (!loaded || !view) {
+  <app-skeleton class="mt-4 h-32" [block]="true"></app-skeleton>
+} @else if (view.depots.length === 0) {
+  <app-panel class="mt-4">
+    <app-empty-state
+      icon="briefcase"
+      data-testid="portfolio.empty.no-depot"
+      heading="Noch kein Depot"
+      i18n-heading="@@featurePortfolio-portfolioPage-noDepotHeading"
+      text="Wertpapiere kaufst du über ein Depot. Eröffne eins bei einer Bank und überweise Geld auf sein Verrechnungskonto."
+      i18n-text="@@featurePortfolio-portfolioPage-noDepotText">
+      <div class="flex flex-wrap justify-center gap-2">
+        <button
+          appButton
+          type="button"
+          variant="primary"
+          data-testid="portfolio.empty.open-depot"
+          (click)="onOpenDepot()">
+          <i appIcon="plus-lg"></i>
+          <span i18n="@@featurePortfolio-portfolioPage-openDepot">Depot eröffnen</span>
+        </button>
+        <a appButton routerLink="../markets" data-testid="portfolio.empty.markets">
+          <i appIcon="graph-up"></i>
+          <span i18n="@@featurePortfolio-portfolioPage-markets">Zu den Märkten</span>
+        </a>
+      </div>
+    </app-empty-state>
+  </app-panel>
+} @else {
+  <app-portfolio-summary
+    class="mt-4"
+    data-testid="portfolio.summary"
+    [totals]="view.totals"
+    [cash]="view.cash"
+    [combined]="view.depotId === null"></app-portfolio-summary>
+
+  <section class="mt-6" aria-labelledby="portfolio-positions">
+    <h2 id="portfolio-positions" class="mb-3 text-lg font-semibold">{{ positionsHeading }}</h2>
+    @if (view.rows.length === 0) {
+      <app-panel>
+        <app-empty-state
+          icon="briefcase"
+          data-testid="portfolio.empty.no-positions"
+          heading="Noch keine Wertpapiere"
+          i18n-heading="@@featurePortfolio-portfolioPage-noPositionsHeading"
+          text="Wähle auf den Märkten ein Wertpapier und kaufe es mit „Kaufen“."
+          i18n-text="@@featurePortfolio-portfolioPage-noPositionsText">
+          <a appButton routerLink="../markets" data-testid="portfolio.empty.markets">
+            <i appIcon="graph-up"></i>
+            <span i18n="@@featurePortfolio-portfolioPage-toMarkets">Zu den Märkten</span>
+          </a>
+        </app-empty-state>
+      </app-panel>
+    } @else {
+      <app-position-table
+        data-testid="portfolio.positions"
+        [rows]="view.rows"
+        [totals]="view.totals"
+        [sort]="view.sort"
+        [compact]="!wide()"
+        (selectedSort)="onSort($event)"
+        (clickedBuy)="onBuy($event)"
+        (clickedSell)="onSell($event)"></app-position-table>
+    }
+  </section>
+
+  <section class="mt-6" aria-labelledby="portfolio-allocation">
+    <h2 id="portfolio-allocation" class="mb-3 text-lg font-semibold">{{ allocationHeading }}</h2>
+    <app-panel>
+      @if (view.allocation === null) {
+        <app-skeleton class="h-32" [block]="true"></app-skeleton>
+      } @else if (view.allocation.assetClasses.length === 0) {
+        <p
+          class="text-sm text-fg-muted"
+          data-testid="portfolio.allocation.empty"
+          i18n="@@featurePortfolio-portfolioPage-allocationEmpty">
+          Ohne Wertpapiere und Guthaben gibt es nichts aufzuteilen.
+        </p>
+      } @else {
+        <app-allocation
+          data-testid="portfolio.allocation"
+          [allocation]="view.allocation"></app-allocation>
+      }
+    </app-panel>
+  </section>
+}

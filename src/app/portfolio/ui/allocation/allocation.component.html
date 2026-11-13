@@ -1,0 +1,84 @@
+@let _splits = splits();
+
+<ng-template #splitTemplate let-split>
+  @if (split.pending) {
+    <app-skeleton class="h-32" [block]="true"></app-skeleton>
+  } @else {
+    <div
+      class="flex flex-col items-center gap-4 sm:flex-row sm:items-start"
+      [attr.data-testid]="'portfolio.allocation.' + split.id">
+      <app-donut
+        class="size-36 shrink-0"
+        [segments]="split.segments"
+        [label]="split.label"></app-donut>
+      <table class="w-full min-w-0 flex-1 text-sm">
+        <caption class="sr-only">{{ split.label }}</caption>
+        <thead>
+          <tr class="border-b border-border text-xs text-fg-muted">
+            <th scope="col" class="py-1 text-left font-medium">{{ split.heading }}</th>
+            <th
+              scope="col"
+              class="py-1 text-right font-medium"
+              i18n="@@uiPortfolio-allocation-value">
+              Wert
+            </th>
+            <th
+              scope="col"
+              class="py-1 pl-3 text-right font-medium"
+              i18n="@@uiPortfolio-allocation-share">
+              Anteil
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of split.rows; track row.key) {
+            <tr
+              class="border-b border-border last:border-b-0"
+              [attr.data-testid]="'portfolio.allocation.' + split.id + '.item'"
+              [attr.data-key]="row.key">
+              <th scope="row" class="py-1 pr-2 text-left font-normal">
+                <span class="flex items-center gap-2">
+                  <span
+                    class="size-3 shrink-0 rounded-sm"
+                    aria-hidden="true"
+                    [class]="row.swatchClass"></span>
+                  <span class="min-w-0 truncate" data-testid="portfolio.allocation.item.label">{{
+                    row.label
+                  }}</span>
+                </span>
+              </th>
+              <td
+                class="py-1 text-right whitespace-nowrap tabular-nums"
+                data-testid="portfolio.allocation.item.value">
+                {{ row.value | formatCents }}
+              </td>
+              <td
+                class="py-1 pl-3 text-right whitespace-nowrap text-fg-muted tabular-nums"
+                data-testid="portfolio.allocation.item.share">
+                {{ row.share | formatPercent: 1 }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</ng-template>
+
+<app-tabs testId="portfolio.allocation.tabs" [tabs]="tabs" [label]="tabsLabel">
+  <ng-template appTabPanel="asset-class">
+    <ng-container
+      [ngTemplateOutlet]="splitTemplate"
+      [ngTemplateOutletContext]="{ $implicit: _splits[0] }"></ng-container>
+  </ng-template>
+  <ng-template appTabPanel="region">
+    <ng-container
+      [ngTemplateOutlet]="splitTemplate"
+      [ngTemplateOutletContext]="{ $implicit: _splits[1] }"></ng-container>
+  </ng-template>
+  <ng-template appTabPanel="sector">
+    <ng-container
+      [ngTemplateOutlet]="splitTemplate"
+      [ngTemplateOutletContext]="{ $implicit: _splits[2] }"></ng-container>
+  </ng-template>
+</app-tabs>

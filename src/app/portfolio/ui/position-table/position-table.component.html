@@ -1,0 +1,324 @@
+@let _rows = rowViews();
+@let _totals = totals();
+@let _columns = columns();
+
+@if (compact()) {
+  @let _sorted = sortedColumn();
+  <div class="mb-3 flex items-end gap-2">
+    <label class="flex min-w-0 flex-1 flex-col gap-1 text-xs text-fg-muted">
+      {{ sortLabel }}
+      <select
+        class="rounded-md border border-border bg-surface px-2 py-1.5 text-sm text-fg"
+        data-testid="portfolio.positions.sort-key"
+        [value]="_sorted.key"
+        (change)="onSelectSortKey($event)">
+        @for (column of _columns; track column.key) {
+          <option [value]="column.key" [selected]="column.key === _sorted.key">
+            {{ column.label }}
+          </option>
+        }
+      </select>
+    </label>
+    <button
+      appButton
+      type="button"
+      data-testid="portfolio.positions.sort-direction"
+      [attr.aria-label]="directionLabel()"
+      (click)="onReverse()">
+      <i [appIcon]="_sorted.icon"></i>
+    </button>
+  </div>
+
+  <ul class="flex flex-col gap-3" data-testid="portfolio.positions.list" [attr.aria-label]="label">
+    @for (row of _rows; track row.instrumentId) {
+      <li
+        class="rounded-lg border border-border bg-surface p-3"
+        data-testid="portfolio.positions.row"
+        [attr.data-instrument-id]="row.instrumentId">
+        <a
+          class="block truncate font-medium hover:underline"
+          data-testid="portfolio.positions.row.name"
+          [routerLink]="['../markets', row.instrumentId]"
+          >{{ row.name }}</a
+        >
+        <dl class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+          <dt class="text-fg-muted" i18n="@@uiPortfolio-positionTable-cardQuantity">Stück</dt>
+          <dd class="text-right tabular-nums" data-testid="portfolio.positions.row.quantity">
+            {{ row.quantity | formatQuantity }}
+          </dd>
+          <dt class="text-fg-muted" i18n="@@uiPortfolio-positionTable-cardAverageCost">
+            Einstandskurs
+          </dt>
+          <dd class="text-right tabular-nums" data-testid="portfolio.positions.row.average-cost">
+            {{ row.averageCost | formatPrice }}
+          </dd>
+          <dt class="text-fg-muted" i18n="@@uiPortfolio-positionTable-cardPrice">Kurs</dt>
+          <dd
+            class="justify-self-end px-0.5 tabular-nums"
+            data-testid="portfolio.positions.row.price"
+            [appValueFlash]="row.price"
+            [enabled]="flashEnabled()">
+            {{ row.price | formatPrice }}
+          </dd>
+          <dt class="text-fg-muted" i18n="@@uiPortfolio-positionTable-cardValue">Wert</dt>
+          <dd
+            class="justify-self-end px-0.5 font-medium tabular-nums"
+            data-testid="portfolio.positions.row.value"
+            [appValueFlash]="row.value"
+            [enabled]="flashEnabled()">
+            {{ row.value | formatCents }}
+          </dd>
+          <dt class="text-fg-muted" i18n="@@uiPortfolio-positionTable-cardGain">
+            Gewinn/Verlust
+          </dt>
+          <dd class="flex flex-wrap justify-end gap-x-2 text-right">
+            @if (row.gain !== null) {
+              <app-price-change
+                data-testid="portfolio.positions.row.gain"
+                mode="cents"
+                [showArrow]="false"
+                [value]="row.gain"></app-price-change>
+            } @else {
+              <span data-testid="portfolio.positions.row.gain">–</span>
+            }
+            @if (row.gainRatio !== null) {
+              <app-price-change
+                data-testid="portfolio.positions.row.gain-ratio"
+                [value]="row.gainRatio"></app-price-change>
+            }
+          </dd>
+          <dt class="text-fg-muted" i18n="@@uiPortfolio-positionTable-cardShare">
+            Anteil am Depot
+          </dt>
+          <dd class="text-right tabular-nums" data-testid="portfolio.positions.row.share">
+            {{ row.share | formatPercent: 1 }}
+          </dd>
+        </dl>
+        <div class="mt-3 flex gap-2">
+          <button
+            appButton
+            type="button"
+            size="sm"
+            class="flex-1"
+            data-testid="portfolio.positions.row.buy"
+            [attr.aria-label]="row.buyLabel"
+            (click)="onBuy(row)">
+            <span i18n="@@uiPortfolio-positionTable-cardBuy">Kaufen</span>
+          </button>
+          <button
+            appButton
+            type="button"
+            size="sm"
+            class="flex-1"
+            data-testid="portfolio.positions.row.sell"
+            [attr.aria-label]="row.sellLabel"
+            (click)="onSell(row)">
+            <span i18n="@@uiPortfolio-positionTable-cardSell">Verkaufen</span>
+          </button>
+        </div>
+      </li>
+    }
+  </ul>
+
+  <dl
+    class="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg border border-border bg-surface-raised p-3 text-sm"
+    data-testid="portfolio.positions.total">
+    <dt class="font-semibold" i18n="@@uiPortfolio-positionTable-cardTotalValue">Summe Wert</dt>
+    <dd class="text-right font-semibold tabular-nums" data-testid="portfolio.positions.total.value">
+      {{ _totals.value | formatCents }}
+    </dd>
+    <dt class="text-fg-muted" i18n="@@uiPortfolio-positionTable-cardTotalCost">Einstandswert</dt>
+    <dd class="text-right tabular-nums" data-testid="portfolio.positions.total.cost">
+      {{ _totals.cost | formatCents }}
+    </dd>
+    <dt class="text-fg-muted" i18n="@@uiPortfolio-positionTable-cardTotalGain">Gewinn/Verlust</dt>
+    <dd class="flex flex-wrap justify-end gap-x-2">
+      @if (_totals.gain !== null) {
+        <app-price-change
+          data-testid="portfolio.positions.total.gain"
+          mode="cents"
+          [showArrow]="false"
+          [value]="_totals.gain"></app-price-change>
+      } @else {
+        <span data-testid="portfolio.positions.total.gain">–</span>
+      }
+      @if (_totals.gainRatio !== null) {
+        <app-price-change
+          data-testid="portfolio.positions.total.gain-ratio"
+          [value]="_totals.gainRatio"></app-price-change>
+      }
+    </dd>
+  </dl>
+} @else {
+  <div
+    class="overflow-x-auto rounded-lg border border-border bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+    role="region"
+    tabindex="0"
+    data-testid="portfolio.positions.table"
+    [attr.aria-label]="label">
+    <table class="w-full border-collapse text-sm">
+      <caption class="sr-only">{{ label }}</caption>
+      <thead>
+        <tr class="border-b border-border align-bottom">
+          @for (column of _columns; track column.key) {
+            <th
+              scope="col"
+              class="px-1 py-1 font-medium"
+              [class]="column.alignClass"
+              [attr.aria-sort]="column.ariaSort">
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 rounded-md px-1 py-1 whitespace-nowrap hover:bg-surface-raised"
+                [attr.data-testid]="'portfolio.positions.sort.' + column.key"
+                (click)="onSort(column.key)">
+                {{ column.label }}
+                <i [class]="column.iconClass" [appIcon]="column.icon"></i>
+              </button>
+            </th>
+          }
+          <th scope="col" class="px-2 py-2 font-medium">
+            <span class="sr-only" i18n="@@uiPortfolio-positionTable-actions">Aktionen</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of _rows; track row.instrumentId) {
+          <tr
+            class="border-b border-border"
+            data-testid="portfolio.positions.row"
+            [attr.data-instrument-id]="row.instrumentId">
+            <th scope="row" class="min-w-36 px-2 py-2 text-left font-normal">
+              <a
+                class="font-medium hover:underline"
+                data-testid="portfolio.positions.row.name"
+                [routerLink]="['../markets', row.instrumentId]"
+                >{{ row.name }}</a
+              >
+            </th>
+            <td
+              class="px-2 py-2 text-right whitespace-nowrap tabular-nums"
+              data-testid="portfolio.positions.row.quantity">
+              {{ row.quantity | formatQuantity }}
+            </td>
+            <td
+              class="px-2 py-2 text-right whitespace-nowrap tabular-nums"
+              data-testid="portfolio.positions.row.average-cost">
+              {{ row.averageCost | formatPrice }}
+            </td>
+            <td class="px-2 py-2 text-right whitespace-nowrap tabular-nums">
+              <span
+                class="px-0.5"
+                data-testid="portfolio.positions.row.price"
+                [appValueFlash]="row.price"
+                [enabled]="flashEnabled()"
+                >{{ row.price | formatPrice }}</span
+              >
+            </td>
+            <td class="px-2 py-2 text-right font-medium whitespace-nowrap tabular-nums">
+              <span
+                class="px-0.5"
+                data-testid="portfolio.positions.row.value"
+                [appValueFlash]="row.value"
+                [enabled]="flashEnabled()"
+                >{{ row.value | formatCents }}</span
+              >
+            </td>
+            <td class="px-2 py-2 text-right whitespace-nowrap">
+              @if (row.gain !== null) {
+                <app-price-change
+                  data-testid="portfolio.positions.row.gain"
+                  mode="cents"
+                  [showArrow]="false"
+                  [value]="row.gain"></app-price-change>
+              } @else {
+                <span data-testid="portfolio.positions.row.gain">–</span>
+              }
+            </td>
+            <td class="px-2 py-2 text-right whitespace-nowrap">
+              @if (row.gainRatio !== null) {
+                <app-price-change
+                  data-testid="portfolio.positions.row.gain-ratio"
+                  [value]="row.gainRatio"></app-price-change>
+              } @else {
+                <span data-testid="portfolio.positions.row.gain-ratio">–</span>
+              }
+            </td>
+            <td
+              class="px-2 py-2 text-right whitespace-nowrap tabular-nums"
+              data-testid="portfolio.positions.row.share">
+              {{ row.share | formatPercent: 1 }}
+            </td>
+            <td class="px-2 py-2 whitespace-nowrap">
+              <div class="flex justify-end gap-2">
+                <button
+                  appButton
+                  type="button"
+                  size="sm"
+                  data-testid="portfolio.positions.row.buy"
+                  [attr.aria-label]="row.buyLabel"
+                  (click)="onBuy(row)">
+                  <span i18n="@@uiPortfolio-positionTable-buy">Kaufen</span>
+                </button>
+                <button
+                  appButton
+                  type="button"
+                  size="sm"
+                  data-testid="portfolio.positions.row.sell"
+                  [attr.aria-label]="row.sellLabel"
+                  (click)="onSell(row)">
+                  <span i18n="@@uiPortfolio-positionTable-sell">Verkaufen</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+      <tfoot>
+        <tr class="bg-surface-raised font-semibold" data-testid="portfolio.positions.total">
+          <th scope="row" class="px-2 py-2 text-left" i18n="@@uiPortfolio-positionTable-total">
+            Summe
+          </th>
+          <td class="px-2 py-2"></td>
+          <td class="px-2 py-2 text-right whitespace-nowrap tabular-nums">
+            <span class="sr-only" i18n="@@uiPortfolio-positionTable-totalCost">Einstandswert</span>
+            <span data-testid="portfolio.positions.total.cost">{{
+              _totals.cost | formatCents
+            }}</span>
+          </td>
+          <td class="px-2 py-2"></td>
+          <td
+            class="px-2 py-2 text-right whitespace-nowrap tabular-nums"
+            data-testid="portfolio.positions.total.value">
+            {{ _totals.value | formatCents }}
+          </td>
+          <td class="px-2 py-2 text-right whitespace-nowrap">
+            @if (_totals.gain !== null) {
+              <app-price-change
+                data-testid="portfolio.positions.total.gain"
+                mode="cents"
+                [showArrow]="false"
+                [value]="_totals.gain"></app-price-change>
+            } @else {
+              <span data-testid="portfolio.positions.total.gain">–</span>
+            }
+          </td>
+          <td class="px-2 py-2 text-right whitespace-nowrap">
+            @if (_totals.gainRatio !== null) {
+              <app-price-change
+                data-testid="portfolio.positions.total.gain-ratio"
+                [value]="_totals.gainRatio"></app-price-change>
+            } @else {
+              <span data-testid="portfolio.positions.total.gain-ratio">–</span>
+            }
+          </td>
+          <td
+            class="px-2 py-2 text-right whitespace-nowrap tabular-nums"
+            data-testid="portfolio.positions.total.share">
+            {{ totalShare() | formatPercent: 1 }}
+          </td>
+          <td class="px-2 py-2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+}

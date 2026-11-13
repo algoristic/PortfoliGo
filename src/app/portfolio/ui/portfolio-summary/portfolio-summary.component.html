@@ -1,0 +1,9 @@
+<div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+  @for (tile of tiles(); track tile.id) {
+    <app-stat-tile
+      [attr.data-testid]="'portfolio.summary.' + tile.id"
+      [label]="tile.label"
+      [value]="tile.value"
+      [change]="tile.change"></app-stat-tile>
+  }
+</div>

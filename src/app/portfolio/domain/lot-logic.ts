@@ -72,5 +72,10 @@ export function lotTotals(lots: readonly Lot[]): { quantity: MicroUnits; cost: C
  */
 export function averageCost(lots: readonly Lot[]): number | null {
   const { quantity, cost } = lotTotals(lots);
+  return costPerShare(cost, quantity);
+}
+
+/** Acquisition cost per share in euros (TS §7.6); `null` without shares. */
+export function costPerShare(cost: Cents, quantity: MicroUnits): number | null {
   return quantity === 0 ? null : (centsToEuros(cost) * MICRO_UNITS_PER_UNIT) / quantity;
 }

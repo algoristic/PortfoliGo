@@ -8261,28 +8261,427 @@
         <source>Depot</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/feature/portfolio.routes.ts</context>
-          <context context-type="linenumber">6</context>
+          <context context-type="linenumber">8</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePortfolio-portfolioPage-title" datatype="html">
         <source>Depot</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
-          <context context-type="linenumber">1,5</context>
+          <context context-type="linenumber">5,6</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featurePortfolio-portfolioPage-emptyHeading" datatype="html">
-        <source>Noch keine Inhalte</source>
+      <trans-unit id="featurePortfolio-portfolioPage-allDepots" datatype="html">
+        <source> Alle Depots </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
-          <context context-type="linenumber">6,7</context>
+          <context context-type="linenumber">17,19</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featurePortfolio-portfolioPage-emptyText" datatype="html">
-        <source>Diese Ansicht entsteht in AP 5.5.</source>
+      <trans-unit id="featurePortfolio-portfolioPage-noDepotHeading" datatype="html">
+        <source>Noch kein Depot</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
-          <context context-type="linenumber">8,9</context>
+          <context context-type="linenumber">36,37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-noDepotText" datatype="html">
+        <source>Wertpapiere kaufst du über ein Depot. Eröffne eins bei einer Bank und überweise Geld auf sein Verrechnungskonto.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
+          <context context-type="linenumber">38,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-openDepot" datatype="html">
+        <source>Depot eröffnen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
+          <context context-type="linenumber">48,50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-markets" datatype="html">
+        <source>Zu den Märkten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
+          <context context-type="linenumber">52,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-noPositionsHeading" datatype="html">
+        <source>Noch keine Wertpapiere</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
+          <context context-type="linenumber">72,73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-noPositionsText" datatype="html">
+        <source>Wähle auf den Märkten ein Wertpapier und kaufe es mit „Kaufen“.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
+          <context context-type="linenumber">74,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-toMarkets" datatype="html">
+        <source>Zu den Märkten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
+          <context context-type="linenumber">78,81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-allocationEmpty" datatype="html">
+        <source> Ohne Wertpapiere und Guthaben gibt es nichts aufzuteilen. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.html</context>
+          <context context-type="linenumber">105,108</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-depot" datatype="html">
+        <source>Depot</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.ts</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-positions" datatype="html">
+        <source>Positionen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.ts</context>
+          <context context-type="linenumber">60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioPage-allocation" datatype="html">
+        <source>Allokation</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/portfolio/portfolio.page.ts</context>
+          <context context-type="linenumber">61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioEffects-loadCompositionFailure" datatype="html">
+        <source>Die Zusammensetzung eines ETF ließ sich nicht laden. Sein Wert erscheint bei Region und Sektor als „Nicht zugeordnet“.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/state/portfolio.effects.ts</context>
+          <context context-type="linenumber">116</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-allocation-value" datatype="html">
+        <source> Wert </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/allocation/allocation.component.html</context>
+          <context context-type="linenumber">23,25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-allocation-share" datatype="html">
+        <source> Anteil </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/allocation/allocation.component.html</context>
+          <context context-type="linenumber">29,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-allocation-assetClass" datatype="html">
+        <source>Assetklasse</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/allocation/allocation.component.ts</context>
+          <context context-type="linenumber">76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-allocation-region" datatype="html">
+        <source>Region</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/allocation/allocation.component.ts</context>
+          <context context-type="linenumber">77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-allocation-sector" datatype="html">
+        <source>Sektor</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/allocation/allocation.component.ts</context>
+          <context context-type="linenumber">78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-allocation-tabsLabel" datatype="html">
+        <source>Aufteilung nach</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/allocation/allocation.component.ts</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-allocation-donutLabel" datatype="html">
+        <source>Aufteilung nach <x id="heading" equiv-text="heading"/>, Anteile in der Tabelle daneben</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/allocation/allocation.component.ts</context>
+          <context context-type="linenumber">116</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-stock" datatype="html">
+        <source>Aktien</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-etf" datatype="html">
+        <source>ETFs</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-cash" datatype="html">
+        <source>Liquidität</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-unassigned" datatype="html">
+        <source>Nicht zugeordnet</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-name" datatype="html">
+        <source>Wertpapier</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-quantity" datatype="html">
+        <source>Stück</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-averageCost" datatype="html">
+        <source>Einstandskurs</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-price" datatype="html">
+        <source>Kurs</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-value" datatype="html">
+        <source>Wert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-gain" datatype="html">
+        <source>G/V</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-gainRatio" datatype="html">
+        <source>G/V %</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-share" datatype="html">
+        <source>Anteil</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioSummary-value" datatype="html">
+        <source>Depotwert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/portfolio-summary/portfolio-summary.component.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioSummary-cost" datatype="html">
+        <source>Einstandswert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/portfolio-summary/portfolio-summary.component.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioSummary-gain" datatype="html">
+        <source>Gewinn/Verlust</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/portfolio-summary/portfolio-summary.component.ts</context>
+          <context context-type="linenumber">43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioSummary-cashAll" datatype="html">
+        <source>Liquidität (alle Konten)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/portfolio-summary/portfolio-summary.component.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioSummary-cashDepot" datatype="html">
+        <source>Verrechnungskonto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/portfolio-summary/portfolio-summary.component.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-cardQuantity" datatype="html">
+        <source>Stück</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">45,46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-cardAverageCost" datatype="html">
+        <source> Einstandskurs </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">50,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-cardPrice" datatype="html">
+        <source>Kurs</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">55,57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-cardValue" datatype="html">
+        <source>Wert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">63,65</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-cardGain" datatype="html">
+        <source> Gewinn/Verlust </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">72,74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-cardShare" datatype="html">
+        <source> Anteil am Depot </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">91,93</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-cardBuy" datatype="html">
+        <source>Kaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">106,109</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-cardSell" datatype="html">
+        <source>Verkaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">116,119</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-cardTotalValue" datatype="html">
+        <source>Summe Wert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">126,127</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-cardTotalCost" datatype="html">
+        <source>Einstandswert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">130,131</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-cardTotalGain" datatype="html">
+        <source>Gewinn/Verlust</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">134,135</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-actions" datatype="html">
+        <source>Aktionen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">180,183</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-buy" datatype="html">
+        <source>Kaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">260,262</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-sell" datatype="html">
+        <source>Verkaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">269,271</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-total" datatype="html">
+        <source> Summe </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">279,281</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-totalCost" datatype="html">
+        <source>Einstandswert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.html</context>
+          <context context-type="linenumber">283,284</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-buyLabel" datatype="html">
+        <source><x id="name" equiv-text="row.name"/> kaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.ts</context>
+          <context context-type="linenumber">97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-sellLabel" datatype="html">
+        <source><x id="name" equiv-text="row.name"/> verkaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.ts</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-ascending" datatype="html">
+        <source>Aufsteigend, umkehren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.ts</context>
+          <context context-type="linenumber">105</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-descending" datatype="html">
+        <source>Absteigend, umkehren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.ts</context>
+          <context context-type="linenumber">106</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-label" datatype="html">
+        <source>Positionen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.ts</context>
+          <context context-type="linenumber">109</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-positionTable-sortLabel" datatype="html">
+        <source>Sortieren nach</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/position-table/position-table.component.ts</context>
+          <context context-type="linenumber">110</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsRoutes-settingsTitle" datatype="html">
