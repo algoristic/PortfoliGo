@@ -1,10 +1,11 @@
 import { mergeConfig } from 'vitest/config';
 
-import base from './vitest.config';
+import base, { simulating } from './vitest.config';
 
 // Mutation tests (Stryker) run only the rule specs of the mutated modules (TS §14.1). Without this
 // list Vitest would also run every spec that imports a mutated module, including the slow market
-// specs. A fixed fast-check seed keeps the result of a mutant reproducible.
+// specs. A fixed fast-check seed keeps the result of a mutant reproducible. Dropping `projects` also
+// drops the budgets of the `logic` project, so they are set again: instrumented runs are slower.
 const RULE_SPECS = [
   'src/app/shared/domain/money-logic.spec.ts',
   'src/app/shared/domain/price-step-logic.spec.ts',
@@ -45,6 +46,7 @@ export default mergeConfig(
     test: {
       include: RULE_SPECS,
       env: { FC_SEED: '20261112', FC_NUM_RUNS: '30' },
+      ...simulating,
     },
   },
 );

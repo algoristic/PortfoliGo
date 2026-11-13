@@ -7,7 +7,7 @@ import { defineConfig } from 'vitest/config';
 const longRunning = { testTimeout: 300_000, hookTimeout: 300_000 };
 // Logic specs simulate years of the market in the process (e.g. `LabSimulation`); on CI runners some
 // take longer than Vitest's default budgets of 5 s per test and 10 s per hook. Same budget as `angular`.
-const simulating = { testTimeout: 30_000, hookTimeout: 60_000 };
+export const simulating = { testTimeout: 30_000, hookTimeout: 60_000 };
 
 export default defineConfig({
   resolve: {
