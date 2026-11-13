@@ -1,0 +1,62 @@
+@let _account = account();
+@let _bank = bank();
+
+<div class="flex flex-wrap items-end justify-between gap-4">
+  <div class="min-w-0">
+    <p class="flex flex-wrap items-center gap-2 font-semibold">
+      <span data-testid="banking.statement.account.kind">{{
+        _account.kind | accountKindLabel
+      }}</span>
+      <span
+        class="font-normal text-fg-muted tabular-nums"
+        data-testid="banking.statement.account.number"
+        >{{ _account.number }}</span
+      >
+      @if (_account.salaryAccount) {
+        <app-badge tone="accent" i18n="@@uiBanking-accountHeader-salaryAccount"
+          >Gehaltskonto</app-badge
+        >
+      }
+      @if (_account.closedAt !== null) {
+        <app-badge data-testid="banking.statement.account.closed">
+          <ng-container i18n="@@uiBanking-accountHeader-closedAt"
+            >Geschlossen am {{ _account.closedAt | formatGameDate }}</ng-container
+          >
+        </app-badge>
+      }
+    </p>
+    <p class="truncate text-sm text-fg-muted" data-testid="banking.statement.account.bank">
+      {{ _bank?.name ?? '–' }}
+    </p>
+  </div>
+
+  <div class="flex flex-wrap items-end gap-x-6 gap-y-3">
+    <dl class="flex flex-wrap gap-x-6 gap-y-1">
+      <div class="flex flex-col">
+        <dt class="text-xs text-fg-muted" i18n="@@uiBanking-accountHeader-balance">Saldo</dt>
+        <dd
+          class="text-2xl font-semibold tabular-nums"
+          data-testid="banking.statement.account.balance"
+          [class]="balanceClass()">
+          {{ _account.balance | formatCents }}
+        </dd>
+      </div>
+      @if (_account.overdraftLimit !== null) {
+        <div class="flex flex-col">
+          <dt class="text-xs text-fg-muted" i18n="@@uiBanking-accountHeader-available"
+            >Verfügbar</dt
+          >
+          <dd
+            class="text-2xl font-semibold text-fg-muted tabular-nums"
+            data-testid="banking.statement.account.available">
+            {{ _account.available | formatCents }}
+          </dd>
+        </div>
+      }
+    </dl>
+
+    <div class="flex flex-wrap gap-2">
+      <ng-content select="[accountActions]" />
+    </div>
+  </div>
+</div>

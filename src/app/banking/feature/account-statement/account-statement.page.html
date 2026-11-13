@@ -1,12 +1,100 @@
-<h1 class="text-xl font-semibold" i18n="@@featureBanking-accountStatementPage-title"
+@let account = bankingFacade.statementAccount$ | async;
+@let notFound = bankingFacade.statementNotFound$ | async;
+@let filter = bankingFacade.statementFilter$ | async;
+@let filterActive = bankingFacade.statementFilterActive$ | async;
+@let statementWindow = bankingFacade.statementWindow$ | async;
+@let banks = bankingFacade.banks$ | async;
+
+<a appButton variant="ghost" size="sm" routerLink=".." data-testid="banking.statement.back">
+  <i appIcon="arrow-left"></i>
+  <span i18n="@@featureBanking-accountStatementPage-back">Alle Konten</span>
+</a>
+
+<h1 class="mt-2 text-xl font-semibold" i18n="@@featureBanking-accountStatementPage-title"
   >Kontoauszug</h1
 >
 
-<app-panel class="mt-4">
-  <app-empty-state
-    icon="journal-text"
-    heading="Noch keine Inhalte"
-    i18n-heading="@@featureBanking-accountStatementPage-emptyHeading"
-    text="Diese Ansicht entsteht in AP 3.4."
-    i18n-text="@@featureBanking-accountStatementPage-emptyText"></app-empty-state>
-</app-panel>
+@if (notFound) {
+  <app-panel class="mt-4">
+    <app-empty-state
+      icon="question-circle"
+      heading="Konto nicht gefunden"
+      i18n-heading="@@featureBanking-accountStatementPage-notFoundHeading"
+      text="Dieses Konto gibt es bei diesem Spieler nicht."
+      i18n-text="@@featureBanking-accountStatementPage-notFoundText"
+      data-testid="banking.statement.not-found">
+      <a appButton routerLink=".." data-testid="banking.statement.not-found.back">
+        <span i18n="@@featureBanking-accountStatementPage-notFoundBack">Zur Kontenübersicht</span>
+      </a>
+    </app-empty-state>
+  </app-panel>
+} @else {
+  @if (account) {
+    <app-account-header class="mt-4" [account]="account" [bank]="account.bank"></app-account-header>
+  } @else {
+    <app-skeleton class="mt-4" [lines]="2"></app-skeleton>
+  }
+
+  <app-panel class="mt-4">
+    @if (filter) {
+      <app-statement-filter
+        [period]="filter.period"
+        [types]="filter.types"
+        [search]="filter.search"
+        (selectedPeriod)="onSelectPeriod($event)"
+        (selectedTypes)="onSelectTypes($event)"
+        (enteredSearch)="onSearch($event)"></app-statement-filter>
+    }
+
+    <div class="mt-4">
+      @if (!statementWindow || statementWindow.total === null) {
+        <app-skeleton class="h-32" [block]="true"></app-skeleton>
+      } @else if (statementWindow.total === 0) {
+        @if (filterActive) {
+          <app-empty-state
+            icon="search"
+            heading="Keine Treffer"
+            i18n-heading="@@featureBanking-accountStatementPage-noMatchesHeading"
+            text="Keine Buchung passt zu Zeitraum, Buchungsart und Suche."
+            i18n-text="@@featureBanking-accountStatementPage-noMatchesText"
+            data-testid="banking.statement.no-matches">
+            <button
+              appButton
+              type="button"
+              data-testid="banking.statement.reset-filter"
+              (click)="onResetFilter()">
+              <span i18n="@@featureBanking-accountStatementPage-resetFilter"
+                >Filter zurücksetzen</span
+              >
+            </button>
+          </app-empty-state>
+        } @else {
+          <app-empty-state
+            icon="journal"
+            heading="Keine Buchungen"
+            i18n-heading="@@featureBanking-accountStatementPage-noEntriesHeading"
+            text="Auf diesem Konto wurde noch nichts gebucht."
+            i18n-text="@@featureBanking-accountStatementPage-noEntriesText"
+            data-testid="banking.statement.no-entries"></app-empty-state>
+        }
+      } @else {
+        <p class="mb-2 text-sm text-fg-muted tabular-nums" data-testid="banking.statement.total">
+          <ng-container
+            i18n="@@featureBanking-accountStatementPage-total"
+            >{statementWindow.total, plural,
+              =1 {1 Buchung}
+              other {{{ statementWindow.total | formatNumber }} Buchungen}
+            }</ng-container
+          >
+        </p>
+        <app-statement-list
+          [total]="statementWindow.total"
+          [offset]="statementWindow.offset"
+          [entries]="statementWindow.entries"
+          [banks]="banks"
+          [resetKey]="filter"
+          (changedRange)="onChangeRange($event)"></app-statement-list>
+      }
+    </div>
+  </app-panel>
+}

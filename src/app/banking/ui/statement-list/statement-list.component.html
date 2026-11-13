@@ -1,0 +1,65 @@
+@let _rows = rows();
+@let _total = total();
+
+<div
+  class="hidden items-center gap-3 border-b border-border px-3 py-2 text-xs font-medium text-fg-muted md:flex"
+  aria-hidden="true">
+  <span class="w-24 shrink-0" i18n="@@uiBanking-statementList-date">Datum</span>
+  <span class="min-w-0 flex-1" i18n="@@uiBanking-statementList-text">Buchungstext</span>
+  <span class="w-32 text-right" i18n="@@uiBanking-statementList-amount">Betrag</span>
+  <span class="w-32 text-right" i18n="@@uiBanking-statementList-balance">Saldo</span>
+</div>
+
+<cdk-virtual-scroll-viewport
+  class="h-128 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+  role="list"
+  tabindex="0"
+  data-testid="banking.statement.list"
+  [attr.aria-label]="label"
+  [itemSize]="rowHeight"
+  (scrolledIndexChange)="onScrolledIndex($event)">
+  <div
+    *cdkVirtualFor="let row of _rows; let index = index; trackBy: trackRow"
+    class="flex h-16 items-center gap-3 border-b border-border px-3"
+    role="listitem"
+    [attr.aria-posinset]="index + 1"
+    [attr.aria-setsize]="_total">
+    @if (row) {
+      <span
+        class="hidden w-24 shrink-0 text-sm text-fg-muted tabular-nums md:block"
+        data-testid="banking.statement.entry.date"
+        >{{ row.date }}</span
+      >
+      <div class="min-w-0 flex-1" data-testid="banking.statement.entry">
+        <p class="truncate text-sm font-medium" data-testid="banking.statement.entry.text">
+          {{ row.text }}
+        </p>
+        <p class="truncate text-xs text-fg-muted">
+          <span class="tabular-nums md:hidden">{{ row.date }}</span>
+          @if (row.detail) {
+            <span class="md:hidden" aria-hidden="true"> · </span>
+            <span data-testid="banking.statement.entry.detail">{{ row.detail }}</span>
+          }
+        </p>
+      </div>
+      <div class="flex shrink-0 flex-col items-end md:flex-row md:items-center md:gap-3">
+        <span
+          class="text-sm font-medium tabular-nums md:w-32 md:text-right"
+          data-testid="banking.statement.entry.amount"
+          [class]="row.amountClass"
+          >{{ row.amount }}</span
+        >
+        <span class="text-xs text-fg-muted tabular-nums md:w-32 md:text-right md:text-sm">
+          <span class="sr-only" i18n="@@uiBanking-statementList-balanceLabel">Saldo</span>
+          <span data-testid="banking.statement.entry.balance">{{ row.balance }}</span>
+        </span>
+      </div>
+    } @else {
+      <app-skeleton
+        class="flex-1"
+        data-testid="banking.statement.placeholder"
+        [lines]="2"></app-skeleton>
+      <span class="sr-only" i18n="@@uiBanking-statementList-loading">Wird geladen</span>
+    }
+  </div>
+</cdk-virtual-scroll-viewport>

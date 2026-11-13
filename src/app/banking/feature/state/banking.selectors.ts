@@ -1,10 +1,19 @@
+import { getRouterSelectors } from '@ngrx/router-store';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
-import { AccountId } from '@app/banking/domain/models/account.model';
+import { ACCOUNT_KINDS, AccountId } from '@app/banking/domain/models/account.model';
+import { isEngineCommandError } from '@app/engine/feature/state/session.utils';
 import { Bank } from '@app/world/domain/models/bank.model';
 
-import { AccountEntry, AccountTotals, BankCommand } from './banking.model';
+import {
+  AccountEntry,
+  AccountOverview,
+  AccountTotals,
+  BankCommand,
+  StatementWindow,
+} from './banking.model';
 import { accountsAdapter, BANKING_FEATURE_KEY, BankingState } from './banking.reducer';
+import { isStatementFilterActive } from './banking.utils';
 
 const selectState = createFeatureSelector<BankingState>(BANKING_FEATURE_KEY);
 const { selectAll } = accountsAdapter.getSelectors();
@@ -64,3 +73,79 @@ export const selectAccountsOfBank = (bankId: string) =>
   createSelector(selectOpenAccounts, (accounts) =>
     accounts.filter((account) => account.bankId === bankId),
   );
+
+/**
+ * Open accounts for the overview (AP 3.4): the salary account first, then by bank name, kind
+ * (current, savings, clearing) and number; closed accounts apart, the last closed first.
+ */
+export const selectAccountOverview = createSelector(selectAccounts, (accounts): AccountOverview => {
+  const open = accounts.filter((account) => account.closedAt === null).sort(compareOpenAccounts);
+  const closed = accounts
+    .filter((account) => account.closedAt !== null)
+    .sort((a, b) => (b.closedAt ?? 0) - (a.closedAt ?? 0) || a.number.localeCompare(b.number));
+  return { open, closed };
+});
+
+function compareOpenAccounts(a: AccountEntry, b: AccountEntry): number {
+  return (
+    Number(b.salaryAccount) - Number(a.salaryAccount) ||
+    bankName(a).localeCompare(bankName(b), 'de') ||
+    ACCOUNT_KINDS.indexOf(a.kind) - ACCOUNT_KINDS.indexOf(b.kind) ||
+    a.number.localeCompare(b.number)
+  );
+}
+
+function bankName(account: AccountEntry): string {
+  return account.bank?.name ?? account.bankId;
+}
+
+const { selectRouteParam } = getRouterSelectors();
+
+/** The account of the statement page, from the URL (`accounts/:accountId`). */
+export const selectStatementAccountId = createSelector(
+  selectRouteParam('accountId'),
+  (accountId) => (accountId ?? null) as AccountId | null,
+);
+export const selectStatementAccount = createSelector(
+  selectStatementAccountId,
+  selectAccounts,
+  (accountId, accounts) => accounts.find((account) => account.id === accountId) ?? null,
+);
+export const selectStatement = createSelector(selectState, (state) => state.statement);
+export const selectStatementFilter = createSelector(
+  selectStatement,
+  (statement) => statement.filter,
+);
+export const selectStatementTotal = createSelector(selectStatement, (statement) => statement.total);
+export const selectStatementOffset = createSelector(
+  selectStatement,
+  (statement) => statement.offset,
+);
+export const selectStatementEntries = createSelector(
+  selectStatement,
+  (statement) => statement.entries,
+);
+export const selectStatementWindow = createSelector(
+  selectStatementTotal,
+  selectStatementOffset,
+  selectStatementEntries,
+  (total, offset, entries): StatementWindow => ({ total, offset, entries }),
+);
+export const selectStatementLoading = createSelector(
+  selectStatement,
+  (statement) => statement.loading,
+);
+export const selectStatementFilterActive = createSelector(
+  selectStatementFilter,
+  isStatementFilterActive,
+);
+/**
+ * The account of the statement does not exist: the engine knows no such account, or the URL holds
+ * no account ID at all (`invalid-command`).
+ */
+export const selectStatementNotFound = createSelector(
+  selectStatement,
+  ({ error }) =>
+    isEngineCommandError(error, 'unknown-account') ||
+    isEngineCommandError(error, 'invalid-command'),
+);

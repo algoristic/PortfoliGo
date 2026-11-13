@@ -1,17 +1,21 @@
 import { AccountId, AccountKind } from '@app/banking/domain/models/account.model';
 import { BankConditions } from '@app/banking/domain/models/bank-conditions.model';
+import { EngineCommandError } from '@app/engine/data-access/service/engine.service';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
 import { Bank } from '@app/world/domain/models/bank.model';
 
 import { AccountEntry } from './banking.model';
 import {
+  selectAccountOverview,
   selectAccounts,
   selectAccountsOfBank,
   selectAccountTotals,
   selectOpenAccounts,
   selectSalaryAccount,
+  selectStatementNotFound,
   selectTargetAccounts,
 } from './banking.selectors';
+import { initialStatementState } from './banking.utils';
 
 const HOME = { id: 'bank-home', name: 'Hausbank', type: 'branch' } as Bank;
 const BROKER = {
@@ -94,6 +98,53 @@ describe('banking selectors', () => {
   describe('selectOpenAccounts', () => {
     it('leaves closed accounts out', () => {
       expect(selectOpenAccounts.projector([GIRO, CLOSED])).toEqual([GIRO]);
+    });
+  });
+
+  describe('selectAccountOverview', () => {
+    it('puts the salary account first, then sorts by bank name, kind and number', () => {
+      const AARE = { id: 'bank-aare', name: 'Aarebank', type: 'direct' } as Bank;
+      const second = entry('acc-6', 'current', 0, { bank: HOME });
+      const aareSavings = entry('acc-7', 'savings', 0, { bank: AARE });
+      const aareCurrent = entry('acc-8', 'current', 0, { bank: AARE });
+      const homeNumbered = { ...entry('acc-9', 'savings', 0), number: '0000000000' };
+      const { open } = selectAccountOverview.projector([
+        SAVINGS,
+        aareSavings,
+        GIRO,
+        homeNumbered,
+        second,
+        aareCurrent,
+        CLEARING,
+      ]);
+      expect(open.map((account) => account.id)).toEqual([
+        'acc-1',
+        'acc-8',
+        'acc-7',
+        'acc-4',
+        'acc-6',
+        'acc-9',
+        'acc-2',
+      ]);
+    });
+
+    it('lists the closed accounts apart, the last closed first', () => {
+      const later = entry('acc-6', 'current', 0, { closedAt: 200 });
+      expect(selectAccountOverview.projector([CLOSED, GIRO, later])).toEqual({
+        open: [GIRO],
+        closed: [later, CLOSED],
+      });
+    });
+  });
+
+  describe('selectStatementNotFound', () => {
+    it.each([
+      [new EngineCommandError('unknown-account'), true],
+      [new EngineCommandError('invalid-command'), true],
+      [new EngineCommandError('storage-failed'), false],
+      [undefined, false],
+    ])('is %s for %s', (error, notFound) => {
+      expect(selectStatementNotFound.projector({ ...initialStatementState, error })).toBe(notFound);
     });
   });
 });

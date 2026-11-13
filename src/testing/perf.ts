@@ -21,6 +21,8 @@ export const BUDGETS_MS = {
   catchUpYear: 5_000,
   /** One statement page in the worker over 10,000 transactions of an account (AP 3.4). */
   statementPage: 50,
+  /** Main-thread work per arriving statement page at 10,000 bookings: reducer, selectors, rows (AP 3.4). */
+  statementPageUi: 4,
 } as const;
 
 /** Median wall time of `runs` calls after `warmUp` calls. */

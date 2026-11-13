@@ -2,67 +2,123 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="de" datatype="plaintext" original="ng2.template">
     <body>
+      <trans-unit id="featureBanking-accountStatementPage-back" datatype="html">
+        <source>Alle Konten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
+          <context context-type="linenumber">10,13</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureBanking-accountStatementPage-title" datatype="html">
         <source>Kontoauszug</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">2,7</context>
+          <context context-type="linenumber">14,19</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featureBanking-accountStatementPage-emptyHeading" datatype="html">
-        <source>Noch keine Inhalte</source>
+      <trans-unit id="featureBanking-accountStatementPage-notFoundHeading" datatype="html">
+        <source>Konto nicht gefunden</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">8,9</context>
+          <context context-type="linenumber">21,22</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featureBanking-accountStatementPage-emptyText" datatype="html">
-        <source>Diese Ansicht entsteht in AP 3.4.</source>
+      <trans-unit id="featureBanking-accountStatementPage-notFoundText" datatype="html">
+        <source>Dieses Konto gibt es bei diesem Spieler nicht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">10,11</context>
+          <context context-type="linenumber">23,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountStatementPage-notFoundBack" datatype="html">
+        <source>Zur Kontenübersicht</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
+          <context context-type="linenumber">27,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountStatementPage-noMatchesHeading" datatype="html">
+        <source>Keine Treffer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
+          <context context-type="linenumber">56,57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountStatementPage-noMatchesText" datatype="html">
+        <source>Keine Buchung passt zu Zeitraum, Buchungsart und Suche.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
+          <context context-type="linenumber">58,59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountStatementPage-resetFilter" datatype="html">
+        <source>Filter zurücksetzen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
+          <context context-type="linenumber">67,70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountStatementPage-noEntriesHeading" datatype="html">
+        <source>Keine Buchungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
+          <context context-type="linenumber">74,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountStatementPage-noEntriesText" datatype="html">
+        <source>Auf diesem Konto wurde noch nichts gebucht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
+          <context context-type="linenumber">76,77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountStatementPage-total" datatype="html">
+        <source>{VAR_PLURAL, plural, =1 {1 Buchung} other {<x id="INTERPOLATION"/> Buchungen}}</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
+          <context context-type="linenumber">84,86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-title" datatype="html">
         <source>Konten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">1,4</context>
+          <context context-type="linenumber">6,9</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featureBanking-accountsPage-emptyHeading" datatype="html">
-        <source>Noch keine Inhalte</source>
+      <trans-unit id="featureBanking-accountsPage-openHeading" datatype="html">
+        <source>Offene Konten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">6,7</context>
+          <context context-type="linenumber">23,25</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featureBanking-accountsPage-emptyText" datatype="html">
-        <source>Diese Ansicht entsteht in AP 3.4.</source>
+      <trans-unit id="featureBanking-accountsPage-closedHeading" datatype="html">
+        <source>Geschlossene Konten (<x id="INTERPOLATION" equiv-text="{{ overview.closed.length }}"/>)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">8,9</context>
+          <context context-type="linenumber">40,41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsRoutes-accountsTitle" datatype="html">
         <source>Konten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/banking.routes.ts</context>
-          <context context-type="linenumber">6</context>
+          <context context-type="linenumber">8</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsRoutes-accountStatementTitle" datatype="html">
         <source>Kontoauszug</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/banking.routes.ts</context>
-          <context context-type="linenumber">13</context>
+          <context context-type="linenumber">15</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-banksRoutes-banksTitle" datatype="html">
         <source>Bankenvergleich</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/banking.routes.ts</context>
-          <context context-type="linenumber">23</context>
+          <context context-type="linenumber">27</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-banksPage-title" datatype="html">
@@ -226,46 +282,487 @@
           <context context-type="linenumber">76</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureBanking-bankingEffects-loadStatementFailure" datatype="html">
+        <source>Der Kontoauszug konnte nicht geladen werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
+          <context context-type="linenumber">209</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-closeAccountSuccess" datatype="html">
         <source>Das Konto ist geschlossen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">153</context>
+          <context context-type="linenumber">232</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-setSalaryAccountSuccess" datatype="html">
         <source>Dein Gehalt geht ab jetzt auf das neue Gehaltskonto.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">158</context>
+          <context context-type="linenumber">237</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-transferSuccess" datatype="html">
         <source><x id="amount" equiv-text="formatCents(action.transfer.amount)"/> überwiesen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">163</context>
+          <context context-type="linenumber">242</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-openCurrentSuccess" datatype="html">
         <source>Das Girokonto ist eröffnet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">205</context>
+          <context context-type="linenumber">390</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-openSavingsSuccess" datatype="html">
         <source>Das Tagesgeldkonto ist eröffnet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">207</context>
+          <context context-type="linenumber">392</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-openDepotSuccess" datatype="html">
         <source>Das Depot mit Verrechnungskonto ist eröffnet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">209</context>
+          <context context-type="linenumber">394</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountCard-salaryAccount" datatype="html">
+        <source>Gehaltskonto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-card/account-card.component.html</context>
+          <context context-type="linenumber">24,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountCard-closedAt" datatype="html">
+        <source>Geschlossen am <x id="INTERPOLATION" equiv-text="{{ _account.closedAt | formatGameDate }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-card/account-card.component.html</context>
+          <context context-type="linenumber">39,40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountCard-overdraftLimit" datatype="html">
+        <source>Dispo-Rahmen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-card/account-card.component.html</context>
+          <context context-type="linenumber">46,47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountCard-available" datatype="html">
+        <source>Verfügbar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-card/account-card.component.html</context>
+          <context context-type="linenumber">50,51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountCard-depot" datatype="html">
+        <source>Depot <x id="INTERPOLATION" equiv-text="{{ _account.depot.number }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-card/account-card.component.html</context>
+          <context context-type="linenumber">59,60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountCard-statement" datatype="html">
+        <source>Kontoauszug</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-card/account-card.component.html</context>
+          <context context-type="linenumber">73,77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountCard-statementLabel" datatype="html">
+        <source>Kontoauszug <x id="kind" equiv-text="accountKindLabel(this.account().kind)"/> <x id="number" equiv-text="this.account().number"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-card/account-card.component.ts</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountHeader-salaryAccount" datatype="html">
+        <source>Gehaltskonto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-header/account-header.component.html</context>
+          <context context-type="linenumber">17,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountHeader-closedAt" datatype="html">
+        <source>Geschlossen am <x id="INTERPOLATION" equiv-text="{{ _account.closedAt | formatGameDate }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-header/account-header.component.html</context>
+          <context context-type="linenumber">23,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountHeader-balance" datatype="html">
+        <source>Saldo</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-header/account-header.component.html</context>
+          <context context-type="linenumber">36,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountHeader-available" datatype="html">
+        <source>Verfügbar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-header/account-header.component.html</context>
+          <context context-type="linenumber">47,50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountTotals-total" datatype="html">
+        <source>Gesamt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-totals/account-totals.component.ts</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountTotals-current" datatype="html">
+        <source>Girokonten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-totals/account-totals.component.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountTotals-savings" datatype="html">
+        <source>Tagesgeld</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-totals/account-totals.component.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-accountTotals-clearing" datatype="html">
+        <source>Verrechnungskonten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/account-totals/account-totals.component.ts</context>
+          <context context-type="linenumber">43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-current" datatype="html">
+        <source>Girokonto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-savings" datatype="html">
+        <source>Tagesgeld</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-clearing" datatype="html">
+        <source>Verrechnungskonto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-openingBalance" datatype="html">
+        <source>Startkapital</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-salary" datatype="html">
+        <source>Gehalt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-livingCosts" datatype="html">
+        <source>Lebenshaltung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-accountFee" datatype="html">
+        <source>Kontoführung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-custodyFee" datatype="html">
+        <source>Depotgebühr</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-overdraftInterest" datatype="html">
+        <source>Dispozinsen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-debitInterest" datatype="html">
+        <source>Sollzinsen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-creditInterest" datatype="html">
+        <source>Habenzinsen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-transfer" datatype="html">
+        <source>Überweisung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-buy" datatype="html">
+        <source>Kauf</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-sell" datatype="html">
+        <source>Verkauf</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-dividend" datatype="html">
+        <source>Dividende</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-fundDistribution" datatype="html">
+        <source>Ausschüttung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-tax" datatype="html">
+        <source>Abgeltungsteuer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-bankingLabels-taxRefund" datatype="html">
+        <source>Steuererstattung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/labels/banking-labels.ts</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementFilter-period" datatype="html">
+        <source>Zeitraum</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-filter/statement-filter.component.html</context>
+          <context context-type="linenumber">10,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementFilter-type" datatype="html">
+        <source>Buchungsart</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-filter/statement-filter.component.html</context>
+          <context context-type="linenumber">28,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementFilter-search" datatype="html">
+        <source>Suche</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-filter/statement-filter.component.html</context>
+          <context context-type="linenumber">48,51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementFilter-periodAll" datatype="html">
+        <source>Alle</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-filter/statement-filter.component.ts</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementFilter-periodThisMonth" datatype="html">
+        <source>Dieser Monat</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-filter/statement-filter.component.ts</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementFilter-periodLastMonth" datatype="html">
+        <source>Vormonat</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-filter/statement-filter.component.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementFilter-periodThisYear" datatype="html">
+        <source>Dieses Jahr</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-filter/statement-filter.component.ts</context>
+          <context context-type="linenumber">37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementFilter-periodLastYear" datatype="html">
+        <source>Vorjahr</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-filter/statement-filter.component.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementFilter-typeAll" datatype="html">
+        <source>Alle Buchungsarten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-filter/statement-filter.component.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementFilter-searchPlaceholder" datatype="html">
+        <source>Zweck, Bank, Kontonummer oder Betrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-filter/statement-filter.component.ts</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementList-date" datatype="html">
+        <source>Datum</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-list.component.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementList-text" datatype="html">
+        <source>Buchungstext</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-list.component.html</context>
+          <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementList-amount" datatype="html">
+        <source>Betrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-list.component.html</context>
+          <context context-type="linenumber">9,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementList-balance" datatype="html">
+        <source>Saldo</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-list.component.html</context>
+          <context context-type="linenumber">10,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementList-balanceLabel" datatype="html">
+        <source>Saldo</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-list.component.html</context>
+          <context context-type="linenumber">53,54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementList-loading" datatype="html">
+        <source>Wird geladen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-list.component.html</context>
+          <context context-type="linenumber">62,65</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementList-label" datatype="html">
+        <source>Buchungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-list.component.ts</context>
+          <context context-type="linenumber">45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-openingBalance" datatype="html">
+        <source>Startkapital</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-salary" datatype="html">
+        <source>Gehalt <x id="month" equiv-text="month"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-livingCosts" datatype="html">
+        <source>Lebenshaltung <x id="month" equiv-text="month"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-accountFee" datatype="html">
+        <source>Kontoführung <x id="month" equiv-text="month"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-creditInterest" datatype="html">
+        <source>Habenzinsen <x id="period" equiv-text="period"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-overdraftInterest" datatype="html">
+        <source>Dispozinsen <x id="period" equiv-text="period"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-debitInterest" datatype="html">
+        <source>Sollzinsen <x id="period" equiv-text="period"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-closingRemainderTo" datatype="html">
+        <source>Restguthaben an <x id="account" equiv-text="account"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">132</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-closingRemainderFrom" datatype="html">
+        <source>Restguthaben von <x id="account" equiv-text="account"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">133</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-closingRemainderDetail" datatype="html">
+        <source>Kontoauflösung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">134</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-transferTo" datatype="html">
+        <source>Überweisung an <x id="account" equiv-text="account"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">140</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-transferFrom" datatype="html">
+        <source>Überweisung von <x id="account" equiv-text="account"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">141</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureClock-dialogJump-legend" datatype="html">

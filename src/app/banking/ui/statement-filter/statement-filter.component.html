@@ -1,0 +1,60 @@
+@let _period = period();
+@let _selectedType = selectedType();
+
+<div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="flex flex-col gap-1">
+    <label
+      class="text-sm font-medium"
+      for="banking-statement-period"
+      i18n="@@uiBanking-statementFilter-period"
+      >Zeitraum</label
+    >
+    <select
+      id="banking-statement-period"
+      class="h-10 rounded-md border border-border bg-surface px-2 text-sm text-fg"
+      data-testid="banking.statement.filter.period"
+      (change)="onSelectPeriod($event)">
+      @for (option of periodOptions; track option.id) {
+        <option [value]="option.id" [selected]="option.id === _period">{{ option.label }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="flex flex-col gap-1">
+    <label
+      class="text-sm font-medium"
+      for="banking-statement-type"
+      i18n="@@uiBanking-statementFilter-type"
+      >Buchungsart</label
+    >
+    <select
+      id="banking-statement-type"
+      class="h-10 rounded-md border border-border bg-surface px-2 text-sm text-fg"
+      data-testid="banking.statement.filter.type"
+      (change)="onSelectType($event)">
+      @for (option of typeOptions; track option.id) {
+        <option [value]="option.id" [selected]="option.id === _selectedType">
+          {{ option.label }}
+        </option>
+      }
+    </select>
+  </div>
+
+  <div class="flex flex-col gap-1 sm:col-span-2">
+    <label
+      class="text-sm font-medium"
+      for="banking-statement-search"
+      i18n="@@uiBanking-statementFilter-search"
+      >Suche</label
+    >
+    <input
+      id="banking-statement-search"
+      type="search"
+      class="h-10 min-w-0 rounded-md border border-border bg-surface px-3 text-sm text-fg"
+      autocomplete="off"
+      data-testid="banking.statement.filter.search"
+      [placeholder]="searchPlaceholder"
+      [value]="search()"
+      (input)="onSearch($event)" />
+  </div>
+</div>

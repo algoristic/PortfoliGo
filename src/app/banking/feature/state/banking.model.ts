@@ -1,4 +1,6 @@
 import { AccountKind } from '@app/banking/domain/models/account.model';
+import { TransactionType } from '@app/banking/domain/models/ledger.model';
+import { StatementEntry, StatementPeriod } from '@app/banking/domain/models/statement.model';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { Bank } from '@app/world/domain/models/bank.model';
@@ -24,4 +26,53 @@ export interface AccountEntry extends AccountView {
 export interface AccountTotals {
   byKind: Record<AccountKind, Cents>;
   total: Cents;
+}
+
+/** Filter of the statement page (US-BK-06); no `types` means all types. */
+export interface StatementFilterState {
+  period: StatementPeriod;
+  types: TransactionType[];
+  search: string;
+}
+
+/** Rows of the statement list from `start` (inclusive) to `end` (exclusive), as rendered. */
+export interface StatementRange {
+  start: number;
+  end: number;
+}
+
+/**
+ * The statement page in the store (TS §11.3): filter, number of matches and only the loaded window
+ * of entries (`entries[i]` is row `offset + i`), never the whole journal.
+ */
+export interface StatementState {
+  filter: StatementFilterState;
+  /** Raised by every new query (entering, filter, search); replies of older ones are dropped. */
+  generation: number;
+  /** Matches of the filter; `null` until the first page of this query arrived. */
+  total: number | null;
+  offset: number;
+  entries: StatementEntry[];
+  range: StatementRange;
+  loading: boolean;
+  error?: unknown;
+}
+
+/** What the statement list shows: the number of rows and the loaded window. */
+export interface StatementWindow {
+  total: number | null;
+  offset: number;
+  entries: StatementEntry[];
+}
+
+/** A statement query without the account: offset and limit of the window to load. */
+export interface StatementWindowRequest {
+  offset: number;
+  limit: number;
+}
+
+/** Open accounts in display order and the closed ones, newest closing first. */
+export interface AccountOverview {
+  open: AccountEntry[];
+  closed: AccountEntry[];
 }

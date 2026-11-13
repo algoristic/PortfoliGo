@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+import { enterAccountStatementPage, leaveAccountStatementPage } from './state/banking.guards';
+
 export const accountsRoutes: Routes = [
   {
     path: '',
@@ -11,6 +13,8 @@ export const accountsRoutes: Routes = [
   {
     path: ':accountId',
     title: $localize`:@@featureBanking-accountsRoutes-accountStatementTitle:Kontoauszug`,
+    canActivate: [enterAccountStatementPage()],
+    canDeactivate: [leaveAccountStatementPage()],
     loadComponent: async () => {
       return (await import('./account-statement/account-statement.page')).AccountStatementPage;
     },

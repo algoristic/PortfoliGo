@@ -1,0 +1,149 @@
+import { TextParams } from '@app/banking/domain/models/ledger.model';
+import { StatementCounterparty, StatementEntry } from '@app/banking/domain/models/statement.model';
+import {
+  dateTimeToTick,
+  daysInMonth,
+  startOfDay,
+  startOfMonth,
+  tickToDateTime,
+} from '@app/clock/domain/calendar-logic';
+import { formatGameDate } from '@app/clock/domain/game-time-format';
+import { Tick, TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
+
+import { StatementEntryText } from './statement-list.model';
+
+import { accountKindLabel, transactionTypeLabel } from '../labels/banking-labels';
+
+const monthFormat = new Intl.DateTimeFormat('de-DE', {
+  timeZone: 'UTC',
+  month: 'long',
+  year: 'numeric',
+});
+
+/**
+ * Booking text of a statement entry from its type, parameters and other side (TS §8.6): the engine
+ * stores codes and numbers, the purpose of a transfer is the player's own text.
+ */
+export function statementEntryText(
+  entry: StatementEntry,
+  bankNames: ReadonlyMap<string, string>,
+): StatementEntryText {
+  switch (entry.type) {
+    case 'opening-balance':
+      return plain($localize`:@@uiBanking-statementText-openingBalance:Startkapital`);
+    case 'salary':
+      return (
+        monthText(
+          entry.params,
+          (month) => $localize`:@@uiBanking-statementText-salary:Gehalt ${month}:month:`,
+        ) ?? plain(transactionTypeLabel(entry.type))
+      );
+    case 'living-costs':
+      return (
+        monthText(
+          entry.params,
+          (month) =>
+            $localize`:@@uiBanking-statementText-livingCosts:Lebenshaltung ${month}:month:`,
+        ) ?? plain(transactionTypeLabel(entry.type))
+      );
+    case 'account-fee':
+      return (
+        monthText(
+          entry.params,
+          (month) => $localize`:@@uiBanking-statementText-accountFee:Kontoführung ${month}:month:`,
+        ) ?? plain(transactionTypeLabel(entry.type))
+      );
+    case 'credit-interest':
+      return periodText(
+        entry,
+        (period) =>
+          $localize`:@@uiBanking-statementText-creditInterest:Habenzinsen ${period}:period:`,
+      );
+    case 'overdraft-interest':
+      return periodText(
+        entry,
+        (period) =>
+          $localize`:@@uiBanking-statementText-overdraftInterest:Dispozinsen ${period}:period:`,
+      );
+    case 'debit-interest':
+      return periodText(
+        entry,
+        (period) =>
+          $localize`:@@uiBanking-statementText-debitInterest:Sollzinsen ${period}:period:`,
+      );
+    case 'transfer':
+      return transferText(entry, bankNames);
+    default:
+      return plain(transactionTypeLabel(entry.type));
+  }
+}
+
+function plain(text: string): StatementEntryText {
+  return { text, detail: null };
+}
+
+/** `2030-04` (the month of a booking) → `April 2030`. */
+function monthText(params: TextParams, text: (month: string) => string): StatementEntryText | null {
+  const month = parseMonth(params['month']);
+  return month === null
+    ? null
+    : plain(text(monthFormat.format(Date.UTC(month.year, month.month - 1, 1))));
+}
+
+/**
+ * Interest of the months `from` to `to`, e.g. `01.04.–30.04.2030`. When an account closes, the
+ * interest runs to the day before the closing day, which lies in the month `to` (TS §7.4).
+ */
+function periodText(entry: StatementEntry, text: (period: string) => string): StatementEntryText {
+  const from = parseMonth(entry.params['from']);
+  const to = parseMonth(entry.params['to']);
+  if (from === null || to === null) {
+    return plain(transactionTypeLabel(entry.type));
+  }
+  let end: Tick = dateTimeToTick({ ...to, day: daysInMonth(to.year, to.month) });
+  let start: Tick = dateTimeToTick({ ...from, day: 1 });
+  if (end >= startOfDay(entry.tick)) {
+    end = startOfDay(entry.tick) - TICKS_PER_DAY;
+    start = Math.min(start, startOfMonth(end));
+  }
+  const endDate = formatGameDate(end);
+  const startDate = formatGameDate(start);
+  const sameYear = tickToDateTime(start).year === tickToDateTime(end).year;
+  // `01.04.2030` → `01.04.` within one year
+  return plain(text(`${sameYear ? startDate.slice(0, 6) : startDate}–${endDate}`));
+}
+
+function transferText(
+  entry: StatementEntry,
+  bankNames: ReadonlyMap<string, string>,
+): StatementEntryText {
+  const other = entry.counterparties.find(
+    (counterparty): counterparty is Extract<StatementCounterparty, { kind: 'own' }> =>
+      counterparty.kind === 'own',
+  );
+  if (other === undefined) {
+    return plain(transactionTypeLabel(entry.type));
+  }
+  const account = `${accountKindLabel(other.accountKind)} ${other.number} · ${bankNames.get(other.bankId) ?? other.bankId}`;
+  const outgoing = entry.amount < 0;
+  if (entry.refs['closedAccountId'] !== undefined) {
+    return {
+      text: outgoing
+        ? $localize`:@@uiBanking-statementText-closingRemainderTo:Restguthaben an ${account}:account:`
+        : $localize`:@@uiBanking-statementText-closingRemainderFrom:Restguthaben von ${account}:account:`,
+      detail: $localize`:@@uiBanking-statementText-closingRemainderDetail:Kontoauflösung`,
+    };
+  }
+  const purpose = entry.params['purpose'];
+  return {
+    text: outgoing
+      ? $localize`:@@uiBanking-statementText-transferTo:Überweisung an ${account}:account:`
+      : $localize`:@@uiBanking-statementText-transferFrom:Überweisung von ${account}:account:`,
+    detail: typeof purpose === 'string' && purpose.trim() !== '' ? purpose : null,
+  };
+}
+
+function parseMonth(value: string | number | undefined): { year: number; month: number } | null {
+  const match = typeof value === 'string' ? /^(\d{4})-(\d{2})$/.exec(value) : null;
+  return match === null ? null : { year: Number(match[1]), month: Number(match[2]) };
+}

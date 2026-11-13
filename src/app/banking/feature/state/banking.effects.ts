@@ -1,12 +1,19 @@
 import { inject, Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { concatLatestFrom } from '@ngrx/operators';
+import { Action, select, Store } from '@ngrx/store';
 import {
   catchError,
   concat,
+  debounceTime,
+  defer,
   filter,
+  finalize,
   last,
   map,
+  merge,
   mergeMap,
+  Observable,
   of,
   switchMap,
   take,
@@ -14,21 +21,50 @@ import {
   tap,
 } from 'rxjs';
 
-import { OpenableAccountKind } from '@app/banking/domain/models/account.model';
-import { ProjectionPayload } from '@app/engine/data-access/service/engine-service.model';
+import { AccountId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
+import { statementPeriodRange } from '@app/banking/domain/statement-period-logic';
+import { Tick } from '@app/clock/domain/models/time.model';
+import { selectTick } from '@app/clock/feature/state/clock.selectors';
+import {
+  ProjectionPayload,
+  StatementRequest,
+} from '@app/engine/data-access/service/engine-service.model';
 import { EngineService } from '@app/engine/data-access/service/engine.service';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
+import { selectPhase } from '@app/engine/feature/state/session.selectors';
+import { isEngineCommandError } from '@app/engine/feature/state/session.utils';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 import { formatCents } from '@app/shared/util/format';
 
 import { bankCommandFailureMessage } from './banking-errors.utils';
 import * as BankingActions from './banking.actions';
+import { StatementState, StatementWindowRequest } from './banking.model';
+import { selectStatement, selectStatementAccountId } from './banking.selectors';
+import { statementWindowRequest } from './banking.utils';
+
+/** Typing pauses this long before the search reaches the worker. */
+export const STATEMENT_SEARCH_DEBOUNCE_MS = 300;
+
+interface StatementLoad {
+  generation: number;
+  request: StatementRequest;
+}
 
 @Injectable()
 export class BankingEffects {
   readonly #actions$ = inject(Actions);
   readonly #engine = inject(EngineService);
   readonly #toastService = inject(ToastService);
+  readonly #store = inject(Store);
+
+  /** Ends the loads of the statement page: leaving it or the game, or entering another player. */
+  readonly #statementLeft$ = this.#actions$.pipe(
+    ofType(
+      BankingActions.leaveAccountStatementPage,
+      SessionActions.leaveGame,
+      SessionActions.enterGame,
+    ),
+  );
 
   /** Ends what a loaded player started: leaving the game or entering another one. */
   readonly #ended$ = this.#actions$.pipe(
@@ -134,6 +170,49 @@ export class BankingEffects {
     ),
   );
 
+  /**
+   * The statement page (TS §11.3, AP 3.4): once the player is loaded the first rows, then a new
+   * query when the filter changes (the search debounced), the window around the rendered rows when
+   * they reach rows that are not loaded, and the current window again when a projection reports a
+   * change of the account (new bookings). A new query replaces the running load. Scrolling does not:
+   * the worker answers one query after the other (each reads all bookings of the account), so while
+   * a load runs, scrolling waits and its arrival checks the rendered rows again. Leaving the page
+   * ends the loads.
+   */
+  loadStatement$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(BankingActions.enterAccountStatementPage),
+      switchMap(() =>
+        this.#store.pipe(
+          select(selectPhase),
+          filter((phase) => phase === 'loaded'),
+          take(1),
+          switchMap(() => this.#statementLoads()),
+          takeUntil(this.#statementLeft$),
+        ),
+      ),
+    ),
+  );
+
+  /** An unknown account shows on the page itself; other failures as a toast. */
+  showStatementFailure$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(BankingActions.loadStatementFailure),
+        filter(
+          ({ error }) =>
+            !isEngineCommandError(error, 'unknown-account') &&
+            !isEngineCommandError(error, 'invalid-command'),
+        ),
+        tap(() =>
+          this.#toastService.error(
+            $localize`:@@featureBanking-bankingEffects-loadStatementFailure:Der Kontoauszug konnte nicht geladen werden.`,
+          ),
+        ),
+      ),
+    { dispatch: false },
+  );
+
   showSuccess$ = createEffect(
     () =>
       this.#actions$.pipe(
@@ -197,6 +276,112 @@ export class BankingEffects {
       ),
     { dispatch: false },
   );
+
+  /** The loads of the statement page, each with the window and filter of its moment. */
+  #statementLoads(): Observable<Action> {
+    return defer(() => {
+      // The load that runs, if any; only it may clear the mark.
+      let running: object | null = null;
+      return this.#statementTriggers().pipe(
+        filter((force) => force || running === null),
+        concatLatestFrom(() => [
+          this.#store.pipe(select(selectStatementAccountId)),
+          this.#store.pipe(select(selectStatement)),
+          this.#store.pipe(select(selectTick)),
+        ]),
+        map(([force, accountId, statement, tick]) => {
+          const window = statementWindowRequest(statement, statement.range, force);
+          return accountId === null || window === null
+            ? null
+            : {
+                generation: statement.generation,
+                request: statementRequest(accountId, statement, window, tick),
+              };
+        }),
+        filter((load): load is StatementLoad => load !== null),
+        switchMap(({ generation, request }) => {
+          const load = {};
+          running = load;
+          const done = (): void => {
+            if (running === load) {
+              running = null;
+            }
+          };
+          return this.#engine.statement(request).pipe(
+            tap({ next: done, error: done }),
+            map(({ total, entries }) =>
+              BankingActions.retrievedStatementPage({
+                generation,
+                offset: request.offset,
+                total,
+                entries,
+              }),
+            ),
+            catchError((error: unknown) =>
+              of(BankingActions.loadStatementFailure({ generation, error })),
+            ),
+            finalize(done),
+          );
+        }),
+      );
+    });
+  }
+
+  /** `true`: a new query or new bookings; `false`: the rendered rows may need another window. */
+  #statementTriggers(): Observable<boolean> {
+    const actions$ = this.#actions$;
+    return merge(
+      of(true),
+      actions$.pipe(
+        ofType(
+          BankingActions.selectedStatementPeriod,
+          BankingActions.selectedStatementTypes,
+          BankingActions.clickedResetStatementFilter,
+        ),
+        map(() => true),
+      ),
+      actions$.pipe(
+        ofType(BankingActions.enteredStatementSearch),
+        debounceTime(STATEMENT_SEARCH_DEBOUNCE_MS),
+        map(() => true),
+      ),
+      actions$.pipe(
+        ofType(BankingActions.scrolledStatement, BankingActions.retrievedStatementPage),
+        map(() => false),
+      ),
+      actions$.pipe(
+        ofType(BankingActions.receivedProjection),
+        concatLatestFrom(() => this.#store.pipe(select(selectStatementAccountId))),
+        filter(([{ projection }, accountId]) =>
+          projection.accounts.some((account) => account.id === accountId),
+        ),
+        map(() => true),
+      ),
+    );
+  }
+}
+
+/** The query of a window: the period as ticks of the game time, empty filters left out. */
+function statementRequest(
+  accountId: AccountId,
+  { filter }: StatementState,
+  { offset, limit }: StatementWindowRequest,
+  tick: Tick | null,
+): StatementRequest {
+  const request: StatementRequest = {
+    accountId,
+    offset,
+    limit,
+    ...(tick === null ? {} : statementPeriodRange(filter.period, tick)),
+  };
+  if (filter.types.length > 0) {
+    request.types = [...filter.types];
+  }
+  const search = filter.search.trim();
+  if (search !== '') {
+    request.search = search;
+  }
+  return request;
 }
 
 function openedMessage(kind: OpenableAccountKind): string {

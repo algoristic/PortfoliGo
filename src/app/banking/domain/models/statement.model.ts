@@ -63,3 +63,19 @@ export interface StatementPage {
   total: number;
   entries: StatementEntry[];
 }
+
+/** Periods of the statement filter (US-BK-06); the bounds follow from the game time. */
+export const STATEMENT_PERIODS = [
+  'all',
+  'this-month',
+  'last-month',
+  'this-year',
+  'last-year',
+] as const;
+export type StatementPeriod = (typeof STATEMENT_PERIODS)[number];
+
+/** Inclusive tick bounds of a period; a missing bound is open. */
+export interface StatementPeriodRange {
+  from?: Tick;
+  to?: Tick;
+}

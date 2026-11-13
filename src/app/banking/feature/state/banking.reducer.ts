@@ -7,7 +7,13 @@ import { Cents } from '@app/shared/domain/models/money.model';
 import { Bank } from '@app/world/domain/models/bank.model';
 
 import * as BankingActions from './banking.actions';
-import { BankCommand, PendingBankCommands } from './banking.model';
+import {
+  BankCommand,
+  PendingBankCommands,
+  StatementFilterState,
+  StatementState,
+} from './banking.model';
+import { DEFAULT_STATEMENT_FILTER, initialStatementState } from './banking.utils';
 
 export const BANKING_FEATURE_KEY = 'banking';
 
@@ -21,6 +27,8 @@ export interface BankingState extends EntityState<AccountView> {
   /** Net worth of the last projection; `null` until the first. */
   netWorth: Cents | null;
   pending: PendingBankCommands;
+  /** The statement page that is open (TS §11.3); only its loaded window. */
+  statement: StatementState;
   error?: unknown;
 }
 
@@ -37,12 +45,31 @@ export const initialBankingState: BankingState = accountsAdapter.getInitialState
   banks: null,
   netWorth: null,
   pending: noPendingCommands,
+  statement: initialStatementState,
 });
 
 function changePending(state: BankingState, command: BankCommand, delta: 1 | -1): BankingState {
   return {
     ...state,
     pending: { ...state.pending, [command]: Math.max(0, state.pending[command] + delta) },
+  };
+}
+
+/**
+ * A new query of the statement from the top (the list scrolls up): replies of older queries are
+ * dropped, the rows shown so far stay until the first rows of the new one arrive.
+ */
+function newStatementQuery(state: BankingState, filter: StatementFilterState): BankingState {
+  const statement = state.statement;
+  return {
+    ...state,
+    statement: {
+      ...statement,
+      filter,
+      generation: statement.generation + 1,
+      range: { start: 0, end: statement.range.end - statement.range.start },
+      loading: true,
+    },
   };
 }
 
@@ -86,6 +113,54 @@ const reducer = createReducer(
     ...changePending(state, 'transfer', -1),
     error,
   })),
+  on(BankingActions.enterAccountStatementPage, (state) => ({
+    ...state,
+    statement: {
+      ...initialStatementState,
+      generation: state.statement.generation + 1,
+      loading: true,
+    },
+  })),
+  on(BankingActions.leaveAccountStatementPage, (state) => ({
+    ...state,
+    statement: { ...initialStatementState, generation: state.statement.generation + 1 },
+  })),
+  on(BankingActions.selectedStatementPeriod, (state, { period }) =>
+    newStatementQuery(state, { ...state.statement.filter, period }),
+  ),
+  on(BankingActions.selectedStatementTypes, (state, { types }) =>
+    newStatementQuery(state, { ...state.statement.filter, types }),
+  ),
+  on(BankingActions.enteredStatementSearch, (state, { search }) =>
+    newStatementQuery(state, { ...state.statement.filter, search }),
+  ),
+  on(BankingActions.clickedResetStatementFilter, (state) =>
+    newStatementQuery(state, DEFAULT_STATEMENT_FILTER),
+  ),
+  on(BankingActions.scrolledStatement, (state, { range }) => ({
+    ...state,
+    statement: { ...state.statement, range },
+  })),
+  on(BankingActions.retrievedStatementPage, (state, { generation, offset, total, entries }) =>
+    generation === state.statement.generation
+      ? {
+          ...state,
+          statement: {
+            ...state.statement,
+            total,
+            offset,
+            entries,
+            loading: false,
+            error: undefined,
+          },
+        }
+      : state,
+  ),
+  on(BankingActions.loadStatementFailure, (state, { generation, error }) =>
+    generation === state.statement.generation
+      ? { ...state, statement: { ...state.statement, loading: false, error } }
+      : state,
+  ),
 );
 
 export function bankingReducer(state: BankingState | undefined, action: Action): BankingState {

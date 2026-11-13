@@ -1,12 +1,16 @@
 import { createAction, props } from '@ngrx/store';
 
 import { AccountId, DepotId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
+import { TransactionType } from '@app/banking/domain/models/ledger.model';
+import { StatementEntry, StatementPeriod } from '@app/banking/domain/models/statement.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import {
   ProjectionPayload,
   TransferPayload,
 } from '@app/engine/data-access/service/engine-service.model';
 import { Bank } from '@app/world/domain/models/bank.model';
+
+import { StatementRange } from './banking.model';
 
 export const submittedOpenAccount = createAction(
   '[Banking/Page] Submitted open account',
@@ -76,4 +80,40 @@ export const transferSuccess = createAction(
 export const transferFailure = createAction(
   '[Banking/API] Transfer failure',
   props<{ error: unknown }>(),
+);
+
+export const enterAccountStatementPage = createAction(
+  '[Banking/Page] Enter account statement page',
+);
+export const leaveAccountStatementPage = createAction(
+  '[Banking/Page] Leave account statement page',
+);
+export const selectedStatementPeriod = createAction(
+  '[Banking/Page] Selected statement period',
+  props<{ period: StatementPeriod }>(),
+);
+/** No types: all types. */
+export const selectedStatementTypes = createAction(
+  '[Banking/Page] Selected statement types',
+  props<{ types: TransactionType[] }>(),
+);
+export const enteredStatementSearch = createAction(
+  '[Banking/Page] Entered statement search',
+  props<{ search: string }>(),
+);
+export const clickedResetStatementFilter = createAction(
+  '[Banking/Page] Clicked reset statement filter',
+);
+export const scrolledStatement = createAction(
+  '[Banking/Page] Scrolled statement',
+  props<{ range: StatementRange }>(),
+);
+/** A window of the statement of query `generation`: rows `offset` to `offset + entries.length`. */
+export const retrievedStatementPage = createAction(
+  '[Banking/API] Retrieved statement page',
+  props<{ generation: number; offset: number; total: number; entries: StatementEntry[] }>(),
+);
+export const loadStatementFailure = createAction(
+  '[Banking/API] Load statement failure',
+  props<{ generation: number; error: unknown }>(),
 );

@@ -1,21 +1,31 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Action } from '@ngrx/store';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { firstValueFrom, of, Subject, take, throwError, toArray } from 'rxjs';
 import type { Mocked } from 'vitest';
 
 import { BANK_COMMAND_ERRORS } from '@app/banking/domain/models/bank-command.model';
-import { ProjectionPayload } from '@app/engine/data-access/service/engine-service.model';
+import { StatementEntry } from '@app/banking/domain/models/statement.model';
+import { selectTick } from '@app/clock/feature/state/clock.selectors';
+import {
+  EngineQueryResultOf,
+  ProjectionPayload,
+} from '@app/engine/data-access/service/engine-service.model';
 import { EngineCommandError, EngineService } from '@app/engine/data-access/service/engine.service';
+import { AccountView } from '@app/engine/domain/models/account-view.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
+import { selectPhase } from '@app/engine/feature/state/session.selectors';
 import { PlayerProfile } from '@app/players/domain/models/player.model';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 import { Bank } from '@app/world/domain/models/bank.model';
 
 import { bankCommandFailureMessage } from './banking-errors.utils';
 import * as BankingActions from './banking.actions';
-import { BankingEffects } from './banking.effects';
-import { BANK_COMMANDS } from './banking.model';
+import { BankingEffects, STATEMENT_SEARCH_DEBOUNCE_MS } from './banking.effects';
+import { BANK_COMMANDS, StatementState } from './banking.model';
+import { selectStatement, selectStatementAccountId } from './banking.selectors';
+import { initialStatementState } from './banking.utils';
 
 function projection(tick: number, full: boolean, netWorth: number): ProjectionPayload {
   return { tick, full, accounts: [], netWorth };
@@ -35,10 +45,17 @@ describe('BankingEffects', () => {
   let engine: Mocked<
     Pick<
       EngineService,
-      'banks' | 'openAccount' | 'closeAccount' | 'setSalaryAccount' | 'transfer' | 'projection$'
+      | 'banks'
+      | 'openAccount'
+      | 'closeAccount'
+      | 'setSalaryAccount'
+      | 'transfer'
+      | 'statement'
+      | 'projection$'
     >
   >;
   let toasts: Mocked<Pick<ToastService, 'success' | 'error'>>;
+  let store: MockStore;
 
   beforeEach(() => {
     actions$ = new Subject();
@@ -49,6 +66,7 @@ describe('BankingEffects', () => {
       closeAccount: vi.fn(),
       setSalaryAccount: vi.fn(),
       transfer: vi.fn(),
+      statement: vi.fn(),
       projection$: projection$.asObservable(),
     };
     toasts = { success: vi.fn(), error: vi.fn() };
@@ -58,9 +76,11 @@ describe('BankingEffects', () => {
         provideMockActions(() => actions$.asObservable()),
         { provide: EngineService, useValue: engine },
         { provide: ToastService, useValue: toasts },
+        provideMockStore(),
       ],
     });
     effects = TestBed.inject(BankingEffects);
+    store = TestBed.inject(MockStore);
   });
 
   describe('watchProjection$', () => {
@@ -248,6 +268,188 @@ describe('BankingEffects', () => {
       );
       expect(new Set(texts).size).toBe(BANK_COMMAND_ERRORS.length);
       expect(texts.filter((text) => fallbacks.includes(text))).toEqual([]);
+    });
+  });
+
+  describe('loadStatement$', () => {
+    const MS_PER_MINUTE = 60_000;
+    /** Tick of a game time in UTC (TS §3.2), independent of the calendar functions. */
+    const tickAt = (month: number, day: number, hour = 0): number =>
+      (Date.UTC(2030, month - 1, day, hour) - Date.UTC(2020, 0, 1)) / MS_PER_MINUTE;
+    const entry = { seq: 1 } as StatementEntry;
+    let loads: Action[];
+    let subscription: { unsubscribe(): void };
+
+    function statement(changes: Partial<StatementState> = {}): StatementState {
+      return { ...initialStatementState, generation: 3, loading: true, ...changes };
+    }
+
+    function setState(changes: Partial<StatementState>): void {
+      store.overrideSelector(selectStatement, statement(changes));
+      store.refreshState();
+    }
+
+    beforeEach(() => {
+      store.overrideSelector(selectPhase, 'loaded');
+      store.overrideSelector(selectStatementAccountId, 'acc-1');
+      store.overrideSelector(selectTick, tickAt(5, 15, 10));
+      store.overrideSelector(selectStatement, statement());
+      engine.statement.mockReturnValue(
+        of({ kind: 'statement', total: 120, entries: [entry], tick: 1 }),
+      );
+      loads = [];
+      subscription = effects.loadStatement$.subscribe((action) => loads.push(action));
+    });
+
+    afterEach(() => {
+      subscription.unsubscribe();
+      vi.useRealTimers();
+    });
+
+    it('loads the first page once the player is loaded', () => {
+      store.overrideSelector(selectPhase, 'loading');
+      store.refreshState();
+      actions$.next(BankingActions.enterAccountStatementPage());
+      expect(engine.statement).not.toHaveBeenCalled();
+      store.overrideSelector(selectPhase, 'loaded');
+      store.refreshState();
+      expect(engine.statement).toHaveBeenCalledWith({ accountId: 'acc-1', offset: 0, limit: 50 });
+      expect(loads).toEqual([
+        BankingActions.retrievedStatementPage({
+          generation: 3,
+          offset: 0,
+          total: 120,
+          entries: [entry],
+        }),
+      ]);
+    });
+
+    it('queries the period as ticks of the game time, the types and the trimmed search', () => {
+      actions$.next(BankingActions.enterAccountStatementPage());
+      setState({
+        generation: 4,
+        filter: { period: 'last-month', types: ['transfer'], search: '  Urlaub ' },
+      });
+      actions$.next(BankingActions.selectedStatementPeriod({ period: 'last-month' }));
+      expect(engine.statement).toHaveBeenLastCalledWith({
+        accountId: 'acc-1',
+        offset: 0,
+        limit: 50,
+        from: tickAt(4, 1),
+        to: tickAt(5, 1) - 1,
+        types: ['transfer'],
+        search: 'Urlaub',
+      });
+      expect(loads.at(-1)).toEqual(
+        BankingActions.retrievedStatementPage({
+          generation: 4,
+          offset: 0,
+          total: 120,
+          entries: [entry],
+        }),
+      );
+    });
+
+    it('waits until typing pauses before it searches', async () => {
+      vi.useFakeTimers();
+      actions$.next(BankingActions.enterAccountStatementPage());
+      setState({ filter: { period: 'all', types: [], search: 'Url' } });
+      actions$.next(BankingActions.enteredStatementSearch({ search: 'Url' }));
+      await vi.advanceTimersByTimeAsync(STATEMENT_SEARCH_DEBOUNCE_MS - 1);
+      setState({ filter: { period: 'all', types: [], search: 'Urlaub' } });
+      actions$.next(BankingActions.enteredStatementSearch({ search: 'Urlaub' }));
+      await vi.advanceTimersByTimeAsync(STATEMENT_SEARCH_DEBOUNCE_MS - 1);
+      expect(engine.statement).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(engine.statement).toHaveBeenCalledTimes(2);
+      expect(engine.statement).toHaveBeenLastCalledWith(
+        expect.objectContaining({ search: 'Urlaub' }),
+      );
+    });
+
+    it('loads the window around the rendered rows only when they reach rows not loaded', () => {
+      actions$.next(BankingActions.enterAccountStatementPage());
+      const loaded = { total: 120, offset: 0, entries: new Array<StatementEntry>(50).fill(entry) };
+      setState({ ...loaded, range: { start: 20, end: 30 } });
+      actions$.next(BankingActions.scrolledStatement({ range: { start: 20, end: 30 } }));
+      expect(engine.statement).toHaveBeenCalledTimes(1);
+      setState({ ...loaded, range: { start: 35, end: 45 } });
+      actions$.next(BankingActions.scrolledStatement({ range: { start: 35, end: 45 } }));
+      expect(engine.statement).toHaveBeenLastCalledWith({
+        accountId: 'acc-1',
+        offset: 0,
+        limit: 100,
+      });
+    });
+
+    it('lets scrolling wait for a running load and checks the rows again when it arrives', () => {
+      const reply = new Subject<EngineQueryResultOf<'statement'>>();
+      engine.statement.mockReturnValue(reply);
+      actions$.next(BankingActions.enterAccountStatementPage());
+      setState({ total: 120, offset: 0, entries: [], range: { start: 60, end: 70 } });
+      actions$.next(BankingActions.scrolledStatement({ range: { start: 60, end: 70 } }));
+      expect(engine.statement).toHaveBeenCalledTimes(1);
+      reply.next({ kind: 'statement', total: 120, entries: [entry], tick: 1 });
+      actions$.next(loads[0]);
+      expect(engine.statement).toHaveBeenCalledTimes(2);
+      expect(engine.statement).toHaveBeenLastCalledWith({
+        accountId: 'acc-1',
+        offset: 0,
+        limit: 150,
+      });
+      // A new query does not wait.
+      actions$.next(BankingActions.clickedResetStatementFilter());
+      expect(engine.statement).toHaveBeenCalledTimes(3);
+    });
+
+    it('reloads the window when a projection changes the account, not for other accounts', () => {
+      actions$.next(BankingActions.enterAccountStatementPage());
+      setState({ total: 120, offset: 50, entries: [entry], range: { start: 60, end: 70 } });
+      const other = {
+        ...projection(5, false, 0),
+        accounts: [{ id: 'acc-2' } as Partial<AccountView> as AccountView],
+      };
+      actions$.next(BankingActions.receivedProjection({ projection: other }));
+      expect(engine.statement).toHaveBeenCalledTimes(1);
+      const own = {
+        ...projection(6, false, 0),
+        accounts: [{ id: 'acc-1' } as Partial<AccountView> as AccountView],
+      };
+      actions$.next(BankingActions.receivedProjection({ projection: own }));
+      expect(engine.statement).toHaveBeenLastCalledWith({
+        accountId: 'acc-1',
+        offset: 0,
+        limit: 150,
+      });
+    });
+
+    it('stops loading when the page is left', () => {
+      actions$.next(BankingActions.enterAccountStatementPage());
+      actions$.next(BankingActions.leaveAccountStatementPage());
+      actions$.next(BankingActions.clickedResetStatementFilter());
+      expect(engine.statement).toHaveBeenCalledTimes(1);
+    });
+
+    it('dispatches the failure with the generation of the query', () => {
+      const error = new EngineCommandError('unknown-account');
+      engine.statement.mockReturnValue(throwError(() => error));
+      actions$.next(BankingActions.enterAccountStatementPage());
+      expect(loads).toEqual([BankingActions.loadStatementFailure({ generation: 3, error })]);
+    });
+  });
+
+  describe('showStatementFailure$', () => {
+    it.each([
+      ['storage-failed', 1],
+      ['unknown-account', 0],
+      ['invalid-command', 0],
+    ] as const)('shows a toast for %s %d times', (code, times) => {
+      const subscription = effects.showStatementFailure$.subscribe();
+      actions$.next(
+        BankingActions.loadStatementFailure({ generation: 1, error: new EngineCommandError(code) }),
+      );
+      subscription.unsubscribe();
+      expect(toasts.error).toHaveBeenCalledTimes(times);
     });
   });
 });

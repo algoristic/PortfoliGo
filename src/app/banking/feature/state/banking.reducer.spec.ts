@@ -1,4 +1,5 @@
 import { AccountId } from '@app/banking/domain/models/account.model';
+import { StatementEntry } from '@app/banking/domain/models/statement.model';
 import { ProjectionPayload } from '@app/engine/data-access/service/engine-service.model';
 import { EngineCommandError } from '@app/engine/data-access/service/engine.service';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
@@ -133,6 +134,60 @@ describe('bankingReducer', () => {
         BankingActions.transferFailure({ error: new EngineCommandError('busy') }),
       );
       expect(state.pending.transfer).toBe(0);
+    });
+  });
+
+  describe('statement', () => {
+    const entries = [{ seq: 2 }, { seq: 1 }] as StatementEntry[];
+    const page = (generation: number): ReturnType<typeof BankingActions.retrievedStatementPage> =>
+      BankingActions.retrievedStatementPage({ generation, offset: 50, total: 120, entries });
+
+    it('starts each visit with a new query and takes only its pages', () => {
+      const first = reduce(BankingActions.enterAccountStatementPage());
+      const generation = first.statement.generation;
+      expect(first.statement.loading).toBe(true);
+      const loaded = bankingReducer(first, page(generation));
+      expect(loaded.statement).toMatchObject({ total: 120, offset: 50, entries, loading: false });
+      // A late reply of the previous visit changes nothing.
+      const again = [
+        BankingActions.leaveAccountStatementPage(),
+        BankingActions.enterAccountStatementPage(),
+      ].reduce(bankingReducer, loaded);
+      expect(bankingReducer(again, page(generation))).toBe(again);
+      expect(again.statement.total).toBeNull();
+    });
+
+    it('starts a new query from the top when the filter changes and keeps the rows until it answers', () => {
+      const loaded = reduce(
+        BankingActions.enterAccountStatementPage(),
+        BankingActions.scrolledStatement({ range: { start: 60, end: 70 } }),
+        page(1),
+        BankingActions.selectedStatementTypes({ types: ['salary'] }),
+        BankingActions.enteredStatementSearch({ search: 'Miete' }),
+      );
+      expect(loaded.statement).toMatchObject({
+        filter: { period: 'all', types: ['salary'], search: 'Miete' },
+        generation: 3,
+        total: 120,
+        entries,
+        range: { start: 0, end: 10 },
+        loading: true,
+      });
+      expect(bankingReducer(loaded, page(2))).toBe(loaded);
+      const reset = bankingReducer(loaded, BankingActions.clickedResetStatementFilter());
+      expect(reset.statement.filter).toEqual({ period: 'all', types: [], search: '' });
+      expect(reset.statement.generation).toBe(4);
+    });
+
+    it('keeps the error of the current query only', () => {
+      const error = new EngineCommandError('unknown-account');
+      const state = reduce(
+        BankingActions.enterAccountStatementPage(),
+        BankingActions.loadStatementFailure({ generation: 0, error: new Error('old') }),
+        BankingActions.loadStatementFailure({ generation: 1, error }),
+      );
+      expect(state.statement).toMatchObject({ error, loading: false });
+      expect(bankingReducer(state, page(1)).statement.error).toBeUndefined();
     });
   });
 });

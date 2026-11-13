@@ -51,6 +51,7 @@ const RULE_SPECS = [
   'src/app/banking/domain/monthly-values-logic.spec.ts',
   'src/app/banking/domain/bank-command-logic.spec.ts',
   'src/app/banking/domain/statement-logic.spec.ts',
+  'src/app/banking/domain/statement-period-logic.spec.ts',
   'src/app/taxes/domain/tax-logic.spec.ts',
   'src/app/players/domain/player-logic.spec.ts',
 ];
