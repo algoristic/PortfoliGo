@@ -1,3 +1,4 @@
+import { AccountId } from '@app/banking/domain/models/account.model';
 import { ClosedMonth } from '@app/banking/domain/models/household.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import {
@@ -49,7 +50,8 @@ export class NotificationSystem {
 
   /**
    * Notifications of an engine event (TS §12): account coverage, credit interest, dividends and
-   * fund distributions and refunds with them, executed, rejected and expired orders (a triggered stop notifies nothing).
+   * fund distributions and refunds with them, executed, rejected and expired orders with the refund
+   * of a sale (a triggered stop notifies nothing).
    */
   fromEvent(event: EngineEvent): void {
     switch (event.type) {
@@ -79,11 +81,15 @@ export class NotificationSystem {
         break;
       }
       case 'order-executed': {
-        const { orderId, depotId, instrumentId, side, quantity, price, total } = event;
+        const { orderId, depotId, instrumentId, side, quantity, price, total, tax } = event;
         this.#notify(event.tick, {
           code: 'order-executed',
-          params: { orderId, depotId, instrumentId, side, quantity, price, total },
+          params: { orderId, depotId, instrumentId, side, quantity, price, total, tax },
         });
+        if (tax < 0) {
+          const accountId = this.#clearingAccountOf(depotId);
+          this.#notify(event.tick, { code: 'tax-refund', params: { accountId, amount: -tax } });
+        }
         break;
       }
       case 'order-rejected': {
@@ -152,6 +158,15 @@ export class NotificationSystem {
     state.readUpTo = result.state.readUpTo;
     state.readSeqs = result.state.readSeqs;
     return { ok: true };
+  }
+
+  /** The clearing account of a depot, where its sales and their taxes are booked. */
+  #clearingAccountOf(depotId: string): AccountId {
+    const depot = this.#player.depots.find(({ id }) => id === depotId);
+    if (depot === undefined) {
+      throw new RangeError(`NotificationSystem: unknown depot ${depotId}`);
+    }
+    return depot.clearingAccountId;
   }
 
   #notify(tick: Tick, draft: NotificationDraft): void {

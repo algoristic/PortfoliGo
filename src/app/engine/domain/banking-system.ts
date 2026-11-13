@@ -62,7 +62,7 @@ import {
 import { Tick, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { SeedKey } from '@app/simulation/util/seed';
-import { TaxYear } from '@app/taxes/domain/models/tax.model';
+import { TaxableIncomeKind, TaxYear } from '@app/taxes/domain/models/tax.model';
 import { assessTaxableIncome, closeTaxYear, taxTransactionType } from '@app/taxes/domain/tax-logic';
 import { reservedAmount } from '@app/trading/domain/order-reservation-logic';
 
@@ -347,9 +347,35 @@ export class BankingSystem {
     }
   }
 
-  /** Year end at 00:00 of 1 January (TS §7.7). */
+  /** Year end at 00:00 of 1 January (TS §7.7): the closed year joins the history (US-ST-04). */
   closeYear(): void {
-    this.#player.taxYear = closeTaxYear(this.#player.taxYear);
+    const player = this.#player;
+    player.closedTaxYears.push(player.taxYear);
+    player.taxYear = closeTaxYear(player.taxYear);
+  }
+
+  /**
+   * Tax on capital income other than credit interest (TS §7.7): a sale's realized gain (losses
+   * negative) or a dividend or fund distribution, called right after its booking. Books the
+   * withholding (`tax`) or refund (`tax-refund`) against the tax office on `accountId`, the account
+   * of the triggering event, with the event's references, and returns it (refunds negative, 0
+   * without booking).
+   */
+  taxCapitalIncome(
+    tick: Tick,
+    accountId: AccountId,
+    income: Cents,
+    kind: Exclude<TaxableIncomeKind, 'interest'>,
+    refs?: Readonly<Record<string, string>>,
+  ): Cents {
+    const player = this.#player;
+    const { state, delta } = assessTaxableIncome(player.taxYear, income, kind);
+    player.taxYear = state;
+    const draft = taxDraft(tick, accountId, delta);
+    if (draft !== null) {
+      this.book(refs === undefined ? draft : { ...draft, refs });
+    }
+    return delta;
   }
 
   /** Balance and limit of an account (TS §7.4); the limit is `null` except for current accounts. */
@@ -530,17 +556,10 @@ export class BankingSystem {
         params: { from: monthKey(from), to: monthKey(to) },
       },
     ];
-    const { state, delta } = assessTaxableIncome(taxYear, amount);
-    const type = taxTransactionType(delta);
-    if (type !== null) {
-      drafts.push({
-        tick,
-        type,
-        postings: [
-          { account: account.id, amount: -delta },
-          { account: TAX_OFFICE_ACCOUNT, amount: delta },
-        ],
-      });
+    const { state, delta } = assessTaxableIncome(taxYear, amount, 'interest');
+    const tax = taxDraft(tick, account.id, delta);
+    if (tax !== null) {
+      drafts.push(tax);
     }
     return { drafts, taxYear: state, tax: delta };
   }
@@ -751,4 +770,20 @@ export class BankingSystem {
     }
     return conditions;
   }
+}
+
+/** The booking of a tax delta on an account against the tax office (TS §7.7), `null` for 0. */
+function taxDraft(tick: Tick, accountId: AccountId, delta: Cents): TransactionDraft | null {
+  const type = taxTransactionType(delta);
+  if (type === null) {
+    return null;
+  }
+  return {
+    tick,
+    type,
+    postings: [
+      { account: accountId, amount: -delta },
+      { account: TAX_OFFICE_ACCOUNT, amount: delta },
+    ],
+  };
 }

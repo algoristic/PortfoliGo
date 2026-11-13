@@ -5,6 +5,7 @@ import { provideClockState } from '@app/clock/feature/state/clock.providers';
 import { provideSessionState } from '@app/engine/feature/state/session.providers';
 import { provideMarketState } from '@app/market/feature/state/market.providers';
 import { provideNotificationsState } from '@app/notifications/feature/state/notifications.providers';
+import { provideTaxesState } from '@app/taxes/feature/state/taxes.providers';
 
 /**
  * The slices of the game area, registered exactly once at the shell route `/game/:playerId`
@@ -17,5 +18,6 @@ export function provideGameState(): Array<Provider | EnvironmentProviders> {
     provideBankingState(),
     provideNotificationsState(),
     provideMarketState(),
+    provideTaxesState(),
   ];
 }

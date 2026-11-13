@@ -143,11 +143,15 @@ export interface OrderParams {
   side: OrderSide;
 }
 
-/** `order-executed`: shares, execution price in euros and the debit or credit with costs. */
+/**
+ * `order-executed`: shares, execution price in euros, the debit or credit with costs and the tax
+ * booked on a sale's realized gain (refunds negative, 0 for purchases; TS §7.7).
+ */
 export interface OrderExecutedParams extends OrderParams {
   quantity: MicroUnits;
   price: number;
   total: Cents;
+  tax: Cents;
 }
 
 /** `order-rejected`: why the order could not execute (`ORDER_REJECTIONS`). */
@@ -157,7 +161,7 @@ export interface OrderRejectedParams extends OrderParams {
 
 /**
  * `dividend-received`: a dividend or fund distribution credited on its payment date (TS §6.5),
- * gross, with the tax booked right after it (refunds negative; 0 until AP 5.3).
+ * gross, with the tax booked right after it (refunds negative).
  */
 export interface DividendReceivedParams {
   kind: DistributionKind;

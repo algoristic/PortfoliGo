@@ -10,6 +10,7 @@ import { BackgroundMode, StartConditions } from '@app/engine/domain/models/game-
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { MarketMovers } from '@app/engine/domain/models/market-movers.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import { TaxesProjection } from '@app/engine/domain/models/taxes-view.model';
 import { TradingProjection } from '@app/engine/domain/models/trading-view.model';
 import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
 import {
@@ -510,6 +511,20 @@ export interface ProjectionPayload {
    * and depots that changed; missing when nothing changed.
    */
   trading?: TradingProjection;
+  /**
+   * Running and closed tax years (AP 5.3, TS §7.7): with `full` and whenever the tax year changed
+   * (a withholding or refund, new taxable income, the year end).
+   */
+  taxes?: TaxesProjection;
+}
+
+/**
+ * The tax part of a projection as `EngineService.taxes$` emits it; it replaces what the UI had.
+ * `full` marks the one of the full projection after `loadPlayer`.
+ */
+export interface TaxesProjectionUpdate extends TaxesProjection {
+  tick: Tick;
+  full: boolean;
 }
 
 /**

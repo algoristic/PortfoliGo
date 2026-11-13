@@ -58,11 +58,17 @@ export interface OrderPorts {
   /** A depot whose positions changed. */
   changedDepot(id: DepotId): void;
   /**
-   * Hook for the tax on a sale's realized gain (losses negative), called right after the booking of
-   * the sale on its clearing account (TS §7.7); returns the tax booked (refunds negative). AP 5.3
-   * books the tax here; until then it books nothing and returns 0.
+   * Tax on a sale's realized gain (losses negative), called right after the booking of the sale on
+   * its clearing account (TS §7.7); books it with the sale's references and returns it (refunds
+   * negative).
    */
-  taxCapitalIncome(tick: Tick, accountId: AccountId, income: Cents): Cents;
+  taxCapitalIncome(
+    tick: Tick,
+    accountId: AccountId,
+    income: Cents,
+    kind: 'sale',
+    refs: Readonly<Record<string, string>>,
+  ): Cents;
 }
 
 /**
@@ -320,6 +326,7 @@ export class OrderSystem {
         sale,
       ),
     );
+    let tax = 0;
     if (sale === undefined) {
       bookPurchase(positions, depot.id, order.instrumentId, {
         buyTick: tick,
@@ -328,7 +335,11 @@ export class OrderSystem {
       });
     } else {
       bookSale(positions, depot.id, order.instrumentId, fill.quantity, fill.total);
-      this.#ports.taxCapitalIncome(tick, depot.clearingAccountId, sale.realizedGain);
+      tax = this.#ports.taxCapitalIncome(tick, depot.clearingAccountId, sale.realizedGain, 'sale', {
+        orderId: order.id,
+        depotId: depot.id,
+        instrumentId: order.instrumentId,
+      });
     }
     this.#ports.changedDepot(depot.id);
     order.execution = { ...fill, tick };
@@ -339,6 +350,7 @@ export class OrderSystem {
       quantity: fill.quantity,
       price: fill.price,
       total: fill.total,
+      tax,
     });
     return true;
   }

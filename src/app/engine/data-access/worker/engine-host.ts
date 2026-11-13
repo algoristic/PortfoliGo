@@ -18,6 +18,7 @@ import { GameCommand, OpenedAccount } from '@app/engine/domain/models/engine-com
 import { tradingProjection } from '@app/engine/domain/order-projection';
 import { replayCommands } from '@app/engine/domain/replay';
 import { seriesQuote } from '@app/engine/domain/series-quote';
+import { taxesProjection } from '@app/engine/domain/tax-projection';
 import { Throttle } from '@app/engine/domain/throttle-logic';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
 import { isIntraday, MAX_CANDLE_LIMIT } from '@app/market/domain/candle-window';
@@ -59,6 +60,7 @@ import {
 import { oldestKeptSeq, unreadCount } from '@app/notifications/domain/read-state-logic';
 import { PlayerLock } from '@app/persistence/data-access/locks/player-locks';
 import { deriveSeedKey } from '@app/simulation/util/seed';
+import { TaxYear } from '@app/taxes/domain/models/tax.model';
 import { generateWorld } from '@app/world/domain/world-generator';
 
 import { CandleBackfill } from './candle-backfill';
@@ -189,6 +191,11 @@ interface LoadedGame {
    * accepted `updateWatchlist`, so a new reference means a change.
    */
   watchlistSent: readonly string[] | null;
+  /**
+   * The tax year of the last projection that carried it; the engine replaces it on every taxable
+   * event and at the year end, so a new reference means a change (AP 5.3).
+   */
+  taxYearSent: Readonly<TaxYear> | null;
   /** Loading and replaying: notifications are stored, but neither sent nor reported. */
   replaying: boolean;
   /** Indices of the absence report (positions in the world's index list). */
@@ -601,6 +608,7 @@ export class EngineHost {
       changedDepots: new Set(),
       projectionFull: true,
       valuedTick: -1,
+      taxYearSent: null,
       unsavedNotifications: [],
       notificationsWrittenMs: now,
       notificationWriteRunning: false,
@@ -1386,8 +1394,10 @@ export class EngineHost {
     const notificationsKey = JSON.stringify(notifications);
     const notificationsChanged = notificationsKey !== game.notificationsKey;
     const watchlistChanged = game.engine.player.watchlist !== game.watchlistSent;
+    const taxesChanged = game.engine.player.taxYear !== game.taxYearSent;
     if (
       (game.projectionFull ||
+        taxesChanged ||
         game.changedAccounts.size > 0 ||
         game.changedOrders.size > 0 ||
         game.changedDepots.size > 0 ||
@@ -1452,8 +1462,8 @@ export class EngineHost {
 
   /**
    * The changed accounts and the net worth (TS §8.3, §8.4); after loading all accounts. The
-   * notification, watchlist and trading parts go with it when they changed or the projection is
-   * full; the trading part then holds only the changed orders and depots.
+   * notification, watchlist, trading and tax parts go with it when they changed or the projection
+   * is full; the trading part then holds only the changed orders and depots.
    */
   #postProjection(
     game: LoadedGame,
@@ -1469,6 +1479,7 @@ export class EngineHost {
       : game.changedOrders.size > 0 || game.changedDepots.size > 0
         ? tradingProjection(player, { orders: game.changedOrders, depots: game.changedDepots })
         : undefined;
+    const taxes = full || player.taxYear !== game.taxYearSent ? taxesProjection(player) : undefined;
     this.#post('projection', {
       tick: game.engine.tick,
       full,
@@ -1477,8 +1488,10 @@ export class EngineHost {
       ...(part === undefined ? {} : { notifications: part }),
       ...(watchlist === undefined ? {} : { watchlist }),
       ...(trading === undefined ? {} : { trading }),
+      ...(taxes === undefined ? {} : { taxes }),
     });
     game.watchlistSent = player.watchlist;
+    game.taxYearSent = player.taxYear;
     game.projectionFull = false;
     game.valuedTick = game.engine.tick;
     game.changedAccounts.clear();

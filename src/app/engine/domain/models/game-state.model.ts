@@ -55,6 +55,8 @@ export interface PlayerState {
   interest: InterestAccrual[];
   /** Tax state of the current calendar year (TS §7.7). */
   taxYear: TaxYear;
+  /** Tax states of the closed years since the game start, oldest first (US-ST-04). */
+  closedTaxYears: TaxYear[];
   /** Household flows of the current month (TS §7.4). */
   monthlyValues: MonthlyValues;
   /** Household flows of the closed months since the game start, oldest first. */

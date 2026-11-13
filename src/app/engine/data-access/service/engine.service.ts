@@ -37,6 +37,7 @@ import {
   MoversPayload,
   NotificationsRequest,
   StatementRequest,
+  TaxesProjectionUpdate,
   TradingProjectionUpdate,
   TransferPayload,
 } from './engine-service.model';
@@ -114,6 +115,14 @@ export class EngineService implements OnDestroy {
       orders: trading?.orders ?? [],
       depots: trading?.depots ?? [],
     })),
+  );
+  /**
+   * Running and closed tax years (AP 5.3, TS §7.7) from the projections that carry them: after
+   * every `loadPlayer` and whenever the tax year changed.
+   */
+  taxes$: Observable<TaxesProjectionUpdate> = this.projection$.pipe(
+    map(({ tick, full, taxes }) => (taxes === undefined ? null : { tick, full, ...taxes })),
+    filter((update) => update !== null),
   );
   /**
    * New notifications (TS §8.3, §12) as the worker bundles them; none while catching up, those are

@@ -58,7 +58,14 @@ function executed(seq: number): GameNotification {
     seq,
     tick: 1_000 + seq,
     code: 'order-executed',
-    params: { ...ORDER, orderId: `ord-${seq}`, quantity: 1_000_000, price: 50, total: 5_090 },
+    params: {
+      ...ORDER,
+      orderId: `ord-${seq}`,
+      quantity: 1_000_000,
+      price: 50,
+      total: 5_090,
+      tax: 0,
+    },
   };
 }
 

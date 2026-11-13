@@ -52,7 +52,7 @@ export type EngineEvent =
   | {
       /**
        * A dividend or fund distribution was credited on its payment date (TS §6.5, §7.4); `tax` is
-       * the tax booked right after it (refunds negative; 0 until AP 5.3).
+       * the tax booked right after it (refunds negative).
        */
       type: 'distribution-paid';
       tick: Tick;
@@ -90,6 +90,11 @@ export type OrderEvent =
       price: number;
       /** Debit of a purchase or credit of a sale, costs included (TS §7.5). */
       total: Cents;
+      /**
+       * Tax booked right after a sale on its realized gain (TS §7.7), a refund negative; 0 for
+       * purchases. The credit after costs and taxes is `total − tax` (US-HD-02).
+       */
+      tax: Cents;
     })
   | (OrderEventBase & { type: 'order-rejected'; reason: OrderRejection })
   | (OrderEventBase & { type: 'order-expired' });

@@ -223,7 +223,7 @@ const arbNotification = fc
       code: fc.constant('order-executed' as const),
       params: arbOrderParams.chain((order) =>
         fc
-          .record({ quantity: arbCount, price: arbPrice, total: arbCount })
+          .record({ quantity: arbCount, price: arbPrice, total: arbCount, tax: arbCents })
           .map((fill) => ({ ...order, ...fill })),
       ),
     }),
@@ -1423,6 +1423,7 @@ describe('engine protocol guards', () => {
                 quantity: 1_000_000,
                 price: 12.5,
                 total: 1_340,
+                tax: 0,
               },
             },
           ],

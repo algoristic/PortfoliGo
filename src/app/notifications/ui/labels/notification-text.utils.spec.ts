@@ -137,7 +137,7 @@ describe('notificationText', () => {
       'an executed purchase of whole shares',
       {
         code: 'order-executed',
-        params: { ...ORDER, quantity: 10_000_000, price: 123.45, total: 124_845 },
+        params: { ...ORDER, quantity: 10_000_000, price: 123.45, total: 124_845, tax: 0 },
       },
       'Order ausgeführt',
       'Kauf von 10 Stück Nordwerk AG zu 123,45 €, belastet 1.248,45 €.',
@@ -155,7 +155,7 @@ describe('notificationText', () => {
       'an executed purchase of millionths below 1 €',
       {
         code: 'order-executed',
-        params: { ...ORDER, quantity: 1_234_567, price: 0.5123, total: 63 },
+        params: { ...ORDER, quantity: 1_234_567, price: 0.5123, total: 63, tax: 0 },
       },
       'Order ausgeführt',
       'Kauf von 1,234567 Stück Nordwerk AG zu 0,5123 €, belastet 0,63 €.',

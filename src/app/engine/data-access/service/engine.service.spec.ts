@@ -12,6 +12,7 @@ import {
   EngineCommandMessage,
   ProgressPayload,
   ProjectionPayload,
+  TaxesProjectionUpdate,
   TradingProjectionUpdate,
 } from './engine-service.model';
 import { EngineCommandError, EngineFatal, EngineService } from './engine.service';
@@ -421,6 +422,35 @@ describe('EngineService', () => {
         (e: EngineCommandError) => e.code,
       );
       expect(failure).toBe('order-not-active');
+      subscription.unsubscribe();
+    });
+
+    it('streams the tax years from the projections that carry them (AP 5.3)', async () => {
+      const updates: TaxesProjectionUpdate[] = [];
+      const subscription = service.taxes$.subscribe((update) => updates.push(update));
+      const { tick } = await firstValueFrom(service.loadPlayer(PLAYER));
+      expect(updates).toEqual([
+        {
+          tick,
+          full: true,
+          current: {
+            year: 2030,
+            lossCarryForward: 0,
+            income: 0,
+            withheld: 0,
+            interest: 0,
+            distributions: 0,
+            gains: 0,
+            losses: 0,
+            paid: 0,
+            refunded: 0,
+          },
+          closed: [],
+        },
+      ]);
+      // A command without taxable income sends a projection without the tax part.
+      await firstValueFrom(service.updateWatchlist([]));
+      expect(updates).toHaveLength(1);
       subscription.unsubscribe();
     });
 

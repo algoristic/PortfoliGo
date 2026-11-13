@@ -149,17 +149,32 @@ export function notificationText(
       return { title: heading, text: `${credited}.` };
     }
     case 'order-executed': {
-      const { instrumentId, side, quantity, price, total } = notification.params;
+      const { instrumentId, side, quantity, price, total, tax } = notification.params;
       const name = instrument(instrumentId);
       const shares = formatQuantity(quantity);
       const at = formatPrice(price, priceDecimals(price));
       const amount = formatCents(total);
+      if (side === 'buy') {
+        return {
+          title,
+          text: $localize`:@@uiNotifications-notificationText-orderExecutedBuy:Kauf von ${shares}:quantity: Stück ${name}:instrument: zu ${at}:price:, belastet ${amount}:total:.`,
+        };
+      }
+      if (tax > 0) {
+        return {
+          title,
+          text: $localize`:@@uiNotifications-notificationText-orderExecutedSellWithTax:Verkauf von ${shares}:quantity: Stück ${name}:instrument: zu ${at}:price:, gutgeschrieben ${amount}:total:, davon ${formatCents(tax)}:tax: Steuer einbehalten.`,
+        };
+      }
+      if (tax < 0) {
+        return {
+          title,
+          text: $localize`:@@uiNotifications-notificationText-orderExecutedSellWithRefund:Verkauf von ${shares}:quantity: Stück ${name}:instrument: zu ${at}:price:, gutgeschrieben ${amount}:total:, dazu ${formatCents(-tax)}:tax: Steuer erstattet.`,
+        };
+      }
       return {
         title,
-        text:
-          side === 'buy'
-            ? $localize`:@@uiNotifications-notificationText-orderExecutedBuy:Kauf von ${shares}:quantity: Stück ${name}:instrument: zu ${at}:price:, belastet ${amount}:total:.`
-            : $localize`:@@uiNotifications-notificationText-orderExecutedSell:Verkauf von ${shares}:quantity: Stück ${name}:instrument: zu ${at}:price:, gutgeschrieben ${amount}:total:.`,
+        text: $localize`:@@uiNotifications-notificationText-orderExecutedSell:Verkauf von ${shares}:quantity: Stück ${name}:instrument: zu ${at}:price:, gutgeschrieben ${amount}:total:.`,
       };
     }
     case 'order-rejected': {

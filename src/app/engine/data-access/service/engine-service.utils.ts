@@ -364,6 +364,25 @@ function isOrderView(value: unknown): boolean {
   );
 }
 
+function isTaxYear(value: unknown): boolean {
+  return hasFields(value, {
+    year: isCount,
+    lossCarryForward: isCents,
+    income: isCents,
+    withheld: isCents,
+    interest: isCents,
+    distributions: isCents,
+    gains: isCents,
+    losses: isCents,
+    paid: isCents,
+    refunded: isCents,
+  });
+}
+
+function isTaxesProjection(value: unknown): boolean {
+  return hasFields(value, { current: isTaxYear, closed: isListOf(isTaxYear) });
+}
+
 function isTradingProjection(value: unknown): boolean {
   return hasFields(value, {
     orders: isListOf(isOrderView),
@@ -425,7 +444,12 @@ const NOTIFICATION_PARAMS: Readonly<Partial<Record<string, Check>>> = {
     hasFields(params, { year: isCount, taxableIncome: isCents, taxWithheld: isCents }),
   'order-executed': (params) =>
     isOrderParams(params) &&
-    hasFields(params, { quantity: isCount, price: isFiniteNumber, total: isCount }),
+    hasFields(params, {
+      quantity: isCount,
+      price: isFiniteNumber,
+      total: isCount,
+      tax: isCents,
+    }),
   'order-rejected': (params) =>
     isOrderParams(params) && hasFields(params, { reason: isOneOf(ORDER_REJECTIONS) }),
   'order-expired': isOrderParams,
@@ -555,6 +579,7 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
       notifications: isOptional(isNotificationsProjection),
       watchlist: isOptional((watchlist) => hasFields(watchlist, { ids: isListOf(isString) })),
       trading: isOptional(isTradingProjection),
+      taxes: isOptional(isTaxesProjection),
     }),
   notification: (payload) =>
     hasFields(payload, { tick: isCount, notifications: isNotificationList }),

@@ -130,7 +130,7 @@ export class GameEngine {
       emit: (event) => this.#emit(event),
       changed,
     });
-    const taxCapitalIncome = (): Cents => this.#taxCapitalIncome();
+    const taxCapitalIncome = this.#banking.taxCapitalIncome.bind(this.#banking);
     const changedDepot = (id: DepotId): void => {
       this.#changedDepots.add(id);
     };
@@ -213,6 +213,7 @@ export class GameEngine {
         salaryAccountId: salaryAccount.id,
         nextTransactionSeq: 1,
         taxYear: openTaxYear(tickToDateTime(GAME_START_TICK).year),
+        closedTaxYears: [],
         monthlyValues: emptyMonthlyValues(),
         closedMonths: [],
         notifications: { nextSeq: 1, readUpTo: 0, readSeqs: [], autoPause: {} },
@@ -461,15 +462,6 @@ export class GameEngine {
     return this.#banking.book(draft);
   }
 
-  /**
-   * Tax on capital income (a sale's realized gain, a payout) booked after it on `accountId`,
-   * returning the tax (refunds negative). AP 5.3 books it here with the tax state of TS §7.7; until
-   * then capital income other than credit interest is untaxed.
-   */
-  #taxCapitalIncome(): Cents {
-    return 0;
-  }
-
   #setTick(tick: Tick): void {
     if (tick !== this.#state.tick) {
       this.#state.tick = tick;
@@ -652,6 +644,7 @@ function copyPlayer(player: Readonly<PlayerState>): PlayerState {
     inflows: player.inflows.map((entry) => ({ ...entry, salaryWindow: [...entry.salaryWindow] })),
     interest: player.interest.map((accrual) => ({ ...accrual })),
     taxYear: { ...player.taxYear },
+    closedTaxYears: player.closedTaxYears.map((year) => ({ ...year })),
     monthlyValues: { ...player.monthlyValues },
     closedMonths: player.closedMonths.map(({ month, values }) => ({
       month: { ...month },

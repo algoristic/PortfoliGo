@@ -280,6 +280,7 @@ describe('GameEngine orders', () => {
             quantity: 10 * SHARE,
             price: 100,
             total: 101_300,
+            tax: 0,
           },
         }),
       ]);

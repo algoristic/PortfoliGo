@@ -5,6 +5,7 @@ import { CalendarDate, Tick, TICKS_PER_MINUTE } from '@app/clock/domain/models/t
 import { Cents } from '@app/shared/domain/models/money.model';
 import { normal } from '@app/simulation/util/distributions';
 import { createStream } from '@app/simulation/util/random-stream';
+import { openTaxYear } from '@app/taxes/domain/tax-logic';
 import { miniWorld } from '@app/world/domain/testing/mini-world';
 
 import { BankingSystem } from './banking-system';
@@ -124,7 +125,8 @@ describe('BankingSystem', () => {
       expect(player.interest).toEqual([
         { accountId: 'acc-1', credit: 0, debit: 0, pendingCredit: 0, pendingDebit: 0 },
       ]);
-      expect(player.taxYear).toEqual({ year: 2030, lossCarryForward: 0, income: 0, withheld: 0 });
+      expect(player.taxYear).toEqual(openTaxYear(2030));
+      expect(player.closedTaxYears).toEqual([]);
       expect(player.monthlyValues).toEqual({
         income: 0,
         livingCosts: 0,
@@ -424,10 +426,11 @@ describe('BankingSystem', () => {
         },
       ]);
       expect(engine.player.taxYear).toEqual({
-        year: 2030,
-        lossCarryForward: 0,
+        ...openTaxYear(2030),
         income: 49_315 + 51_043 + 49_474,
         withheld: 90 + 12_368,
+        interest: 49_315 + 51_043 + 49_474,
+        paid: 90 + 12_368,
       });
       expect(engine.drainEvents().filter(({ type }) => type === 'interest-credited')).toEqual([
         {
@@ -460,11 +463,15 @@ describe('BankingSystem', () => {
         .map(({ type, postings }) => [type, postings[0][1]]);
       expect(december).toEqual([['credit-interest', expect.any(Number)]]);
       expect(engine.player.taxYear).toEqual({
-        year: 2031,
-        lossCarryForward: 0,
+        ...openTaxYear(2031),
         income: december[0][1],
-        withheld: 0,
+        interest: december[0][1],
       });
+      // The closed year 2030 stays as it ended for the tax overview (US-ST-04).
+      expect(engine.player.closedTaxYears).toEqual([
+        expect.objectContaining({ year: 2030, withheld: expect.any(Number) }),
+      ]);
+      expect(engine.player.closedTaxYears[0].interest).toBe(engine.player.closedTaxYears[0].income);
     });
   });
 

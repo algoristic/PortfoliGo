@@ -26,16 +26,22 @@ export interface DistributionPorts {
   schedulePayment(tick: Tick): void;
   /** A depot whose positions changed (the payouts they earned). */
   changedDepot(id: DepotId): void;
-  /** Hook for the tax on a payout (TS §7.7); see `OrderPorts.taxCapitalIncome`. */
-  taxCapitalIncome(tick: Tick, accountId: AccountId, income: Cents): Cents;
+  /** Tax on a payout (TS §7.7), booked with its references; see `OrderPorts.taxCapitalIncome`. */
+  taxCapitalIncome(
+    tick: Tick,
+    accountId: AccountId,
+    income: Cents,
+    kind: 'distribution',
+    refs: Readonly<Record<string, string>>,
+  ): Cents;
 }
 
 /**
  * Dividends and fund distributions of the player's holdings (TS §6.5, §7.4; US-PF-06): at the open
  * of an ex-date the holdings earn the payout (the shares then are those at the previous close, since
  * nothing trades in between), and at 06:00 of the payment date it is credited to the depot's
- * clearing account, or to the target chosen when that account closed in the meantime. Without tax
- * until AP 5.3 (`taxCapitalIncome`).
+ * clearing account, or to the target chosen when that account closed in the meantime, followed by
+ * its tax (`taxCapitalIncome`, TS §7.7).
  */
 export class DistributionSystem {
   readonly #player: PlayerState;
@@ -132,7 +138,10 @@ export class DistributionSystem {
       refs: { depotId, instrumentId },
       params: { quantity, cents },
     });
-    const tax = this.#ports.taxCapitalIncome(tick, accountId, amount);
+    const tax = this.#ports.taxCapitalIncome(tick, accountId, amount, 'distribution', {
+      depotId,
+      instrumentId,
+    });
     this.#ports.emit({
       type: 'distribution-paid',
       tick,

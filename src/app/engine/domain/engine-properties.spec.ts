@@ -48,7 +48,8 @@ import { TEST_SEEDS } from '../../../testing/seeds';
 // depots, one of them holding shares); many of them are rejected, which must be just as
 // deterministic. The notifications of the runs (overdrafts, interest, month ends, orders) are part
 // of both properties, and the positions always equal the start positions plus the unit postings,
-// with lots whose costs follow the purchases and sales to the cent (TS §7.6).
+// with lots whose costs follow the purchases and sales to the cent (TS §7.6). Taxes follow their
+// triggering credits and never take an account below its balance before them (TS §7.4, §7.7).
 
 /** End of the runs: four months after the start, across three month starts and a quarter. */
 const END_TICK = dateTimeToTick({ year: 2030, month: 8, day: 1 }) - 1;
@@ -362,8 +363,51 @@ describe('GameEngine properties', () => {
     }
   }
 
+  /**
+   * Taxes (TS §7.4, §7.7): every withholding or refund directly follows its triggering credit on the
+   * same account (credit interest, sale, dividend, fund distribution); a withholding never takes
+   * the account below its balance before that credit, so it never drives an account into the red,
+   * and a refund only follows a sale with a loss and is at most that loss. The tax year sums the
+   * triggering income and the booked taxes (all runs stay in 2030).
+   */
+  function expectTaxes(
+    snapshot: ReturnType<GameEngine['snapshot']>,
+    journal: readonly Transaction[],
+  ): void {
+    let income = 0;
+    let withheld = 0;
+    journal.forEach((transaction, n) => {
+      const { type, postings, params } = transaction;
+      if (type === 'credit-interest' || type === 'dividend' || type === 'fund-distribution') {
+        income += postings[0].amount;
+      } else if (type === 'sell') {
+        income += Number(params?.['realizedGain']);
+      }
+      if (type !== 'tax' && type !== 'tax-refund') {
+        return;
+      }
+      const [{ account, amount, balanceAfter }] = postings;
+      withheld -= amount;
+      const trigger = journal[n - 1];
+      const credit = trigger.postings.find((posting) => posting.account === account);
+      expect(credit).toBeDefined();
+      expect(trigger.tick).toBe(transaction.tick);
+      expect(['credit-interest', 'sell', 'dividend', 'fund-distribution']).toContain(trigger.type);
+      const before = (credit?.balanceAfter ?? 0) - (credit?.amount ?? 0);
+      if (type === 'tax') {
+        expect(balanceAfter).toBeGreaterThanOrEqual(before);
+      } else {
+        expect(trigger.type).toBe('sell');
+        expect(amount).toBeLessThanOrEqual(-Number(trigger.params?.['realizedGain']));
+      }
+    });
+    expect(snapshot.player.taxYear.income).toBe(income);
+    expect(snapshot.player.taxYear.withheld).toBe(withheld);
+  }
+
   it('runs through every kind of household transaction', () => {
-    const { journal, events } = referenceRun([]);
+    const { journal, events, snapshot } = referenceRun([]);
+    expectTaxes(snapshot, journal);
     const types = new Set(journal.map(({ type }) => type));
     expect([...types].sort()).toEqual([
       'account-fee',
@@ -443,6 +487,7 @@ describe('GameEngine properties', () => {
           expect(notifications).toEqual(reference.notifications);
           expectBalancesOfJournal(reference.snapshot, reference.journal);
           expectPositionsAndOrders(reference.snapshot, reference.journal);
+          expectTaxes(reference.snapshot, reference.journal);
         },
       ),
       { numRuns: 15 },
@@ -499,6 +544,7 @@ describe('GameEngine properties', () => {
           expect([...notifiedBefore, ...notifiedAfter]).toEqual(reference.notifications);
           expectBalancesOfJournal(live.snapshot(), reference.journal);
           expectPositionsAndOrders(live.snapshot(), reference.journal);
+          expectTaxes(live.snapshot(), reference.journal);
         },
       ),
       { numRuns: 15 },
