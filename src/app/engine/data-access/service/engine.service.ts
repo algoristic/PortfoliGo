@@ -1,6 +1,7 @@
 import { inject, Injectable, OnDestroy } from '@angular/core';
 import { defer, filter, map, Observable, Subject, take } from 'rxjs';
 
+import { AccountId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
 import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { BackgroundMode } from '@app/engine/domain/models/game-state.model';
@@ -18,9 +19,11 @@ import {
   EngineEventPayloads,
   EngineEventType,
   EngineQuery,
+  EngineQueryResultOf,
   EngineReplies,
   EngineWorkerPort,
   LoadPlayerPayload,
+  TransferPayload,
 } from './engine-service.model';
 import { isEngineEventMessage } from './engine-service.utils';
 
@@ -73,6 +76,11 @@ export class EngineService implements OnDestroy {
 
   clock$ = this.#payloads('clock');
   progress$ = this.#payloads('progress');
+  /**
+   * Changed accounts and the net worth (TS §8.3, §8.4), at most four times per second; a full one
+   * after every `loadPlayer`, also after a worker restart.
+   */
+  projection$ = this.#payloads('projection');
   /** Problems the engine survives, e.g. failed periodic writes (TS §9.5). */
   warning$ = this.#payloads('warning');
   fatal$ = this.#fatal.asObservable();
@@ -118,12 +126,55 @@ export class EngineService implements OnDestroy {
     return this.#request('cancelJump', {});
   }
 
-  query(query: EngineQuery): Observable<EngineReplies['query']> {
-    return this.#request('query', { query });
+  /** The exchanges of the world (TS §3.3); the other queries have their own methods. */
+  query(query: { kind: 'exchanges' }): Observable<EngineQueryResultOf<'exchanges'>> {
+    return this.#query(query);
+  }
+
+  /** Banks of the world with their conditions (bank comparison, account cards). */
+  banks(): Observable<EngineQueryResultOf<'banks'>> {
+    return this.#query({ kind: 'banks' });
+  }
+
+  /**
+   * What closing the account now would book, and what blocks it (TS §7.4); fails with
+   * `unknown-account` or `account-closed`.
+   */
+  closingPreview(accountId: AccountId): Observable<EngineQueryResultOf<'closingPreview'>> {
+    return this.#query({ kind: 'closingPreview', accountId });
+  }
+
+  /** The closed household months and the running one (US-EK-03). */
+  monthlyValues(): Observable<EngineQueryResultOf<'monthlyValues'>> {
+    return this.#query({ kind: 'monthlyValues' });
   }
 
   setBackgroundMode(mode: BackgroundMode): Observable<EngineReplies['setBackgroundMode']> {
     return this.#request('setBackgroundMode', { mode });
+  }
+
+  /** Opens an account, or a depot with its clearing account (`kind: 'depot'`). */
+  openAccount(bankId: string, kind: OpenableAccountKind): Observable<EngineReplies['openAccount']> {
+    return this.#request('openAccount', { bankId, kind });
+  }
+
+  /** Closes an account; a remainder after the settlement goes to `targetAccountId`. */
+  closeAccount(
+    accountId: AccountId,
+    targetAccountId?: AccountId,
+  ): Observable<EngineReplies['closeAccount']> {
+    return this.#request(
+      'closeAccount',
+      targetAccountId === undefined ? { accountId } : { accountId, targetAccountId },
+    );
+  }
+
+  setSalaryAccount(accountId: AccountId): Observable<EngineReplies['setSalaryAccount']> {
+    return this.#request('setSalaryAccount', { accountId });
+  }
+
+  transfer(transfer: TransferPayload): Observable<EngineReplies['transfer']> {
+    return this.#request('transfer', { ...transfer });
   }
 
   /**
@@ -169,6 +220,11 @@ export class EngineService implements OnDestroy {
   ngOnDestroy(): void {
     this.#worker?.terminate();
     this.#worker = undefined;
+  }
+
+  #query<Q extends EngineQuery>(query: Q): Observable<EngineQueryResultOf<Q['kind']>> {
+    // The worker answers a query with the result of its kind.
+    return this.#request('query', { query }) as Observable<EngineQueryResultOf<Q['kind']>>;
   }
 
   #payloads<K extends EngineEventType>(type: K): Observable<EngineEventPayloads[K]> {

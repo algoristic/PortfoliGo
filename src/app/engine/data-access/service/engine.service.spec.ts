@@ -1,12 +1,12 @@
 import { Injector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom, Subscription } from 'rxjs';
+import { firstValueFrom, Observable, Subscription } from 'rxjs';
 
 import { TestMarket, TestPrice } from '@app/engine/domain/testing/test-market';
 import { IndexedDbService } from '@app/persistence/data-access/indexed-db/indexed-db.service';
 import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
 
-import { EngineCommandMessage, ProgressPayload } from './engine-service.model';
+import { EngineCommandMessage, ProgressPayload, ProjectionPayload } from './engine-service.model';
 import { EngineCommandError, EngineFatal, EngineService } from './engine.service';
 
 import {
@@ -105,6 +105,84 @@ describe('EngineService', () => {
     });
   });
 
+  describe('banking', () => {
+    beforeEach(() => setup());
+
+    async function homeBankId(): Promise<string> {
+      const { banks } = await firstValueFrom(service.banks());
+      return banks.find(({ type }) => type === 'branch')?.id as string;
+    }
+
+    it('opens, transfers, switches the salary account and closes with the replies of the engine', async () => {
+      const projections: ProjectionPayload[] = [];
+      const subscription = service.projection$.subscribe((payload) => projections.push(payload));
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      const bankId = await homeBankId();
+      expect(await firstValueFrom(service.openAccount(bankId, 'current'))).toEqual({
+        tick: GAME_START,
+        accountId: 'acc-2',
+        depotId: null,
+      });
+      expect(
+        await firstValueFrom(
+          service.transfer({
+            fromAccountId: 'acc-1',
+            toAccountId: 'acc-2',
+            amount: 500_000,
+            purpose: 'Umzug',
+          }),
+        ),
+      ).toEqual({ tick: GAME_START });
+      expect(await firstValueFrom(service.setSalaryAccount('acc-2'))).toEqual({ tick: GAME_START });
+      expect(await firstValueFrom(service.closeAccount('acc-1', 'acc-2'))).toEqual({
+        tick: GAME_START,
+      });
+      expect(received('closeAccount').map(({ payload }) => payload)).toEqual([
+        { accountId: 'acc-1', targetAccountId: 'acc-2' },
+      ]);
+      // A full projection after loading, then the changed accounts of each command.
+      expect(projections.map(({ full, accounts }) => [full, accounts.map(({ id }) => id)])).toEqual(
+        [
+          [true, ['acc-1']],
+          [false, ['acc-2']],
+          [false, ['acc-1', 'acc-2']],
+          [false, ['acc-1', 'acc-2']],
+          [false, ['acc-1', 'acc-2']],
+        ],
+      );
+      subscription.unsubscribe();
+    });
+
+    it('errors with the code of the engine', async () => {
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      const code = (observable: Observable<unknown>): Promise<unknown> =>
+        firstValueFrom(observable).catch((e: EngineCommandError) => e.code);
+      expect(await code(service.closeAccount('acc-1'))).toBe('salary-account');
+      expect(await code(service.setSalaryAccount('acc-3'))).toBe('unknown-account');
+      expect(await code(service.openAccount('nope', 'depot'))).toBe('unknown-bank');
+      expect(
+        await code(
+          service.transfer({
+            fromAccountId: 'acc-1',
+            toAccountId: 'acc-1',
+            amount: 1,
+            purpose: '',
+          }),
+        ),
+      ).toBe('same-account');
+      expect(await code(service.closingPreview('acc-7'))).toBe('unknown-account');
+    });
+
+    it('answers the closing preview and the monthly values', async () => {
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      const { preview } = await firstValueFrom(service.closingPreview('acc-1'));
+      expect(preview.blockers).toEqual(['salary-account']);
+      const values = await firstValueFrom(service.monthlyValues());
+      expect(values.closedMonths).toEqual([]);
+      expect(values.current.month).toEqual({ year: 2030, month: 4 });
+    });
+  });
+
   describe('jumps', () => {
     beforeEach(() => setup({ config: { passBudgetMs: 0 } }));
 
@@ -184,6 +262,18 @@ describe('EngineService', () => {
       ]);
       expect(await firstValueFrom(service.setSpeed('1h'))).toBeNull();
       quotes.unsubscribe();
+    });
+
+    it('receives a full projection again from the restarted worker', async () => {
+      start();
+      const projections: ProjectionPayload[] = [];
+      const projection = service.projection$.subscribe((payload) => projections.push(payload));
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      engine.crash();
+      await engine.idle();
+      expect(projections.map(({ full }) => full)).toEqual([true, true]);
+      expect(projections[1]).toEqual(projections[0]);
+      projection.unsubscribe();
     });
 
     it('treats a fatal event of the worker like a failure', async () => {

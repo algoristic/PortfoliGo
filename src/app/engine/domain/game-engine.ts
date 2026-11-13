@@ -2,6 +2,7 @@ import { nextBankRunTick } from '@app/banking/domain/bank-run-logic';
 import { findHomeBank } from '@app/banking/domain/home-bank-logic';
 import { startInflows } from '@app/banking/domain/inflow-logic';
 import { OPENING_BALANCE_ACCOUNT } from '@app/banking/domain/ledger-logic';
+import { AccountId, OPENABLE_ACCOUNT_KINDS } from '@app/banking/domain/models/account.model';
 import { Transaction, TransactionDraft } from '@app/banking/domain/models/ledger.model';
 import { emptyMonthlyValues } from '@app/banking/domain/monthly-values-logic';
 import {
@@ -28,6 +29,7 @@ import { PriceSource } from '@app/market/domain/price-source';
 import { etfSeries } from '@app/market/domain/series';
 import { openTaxYear } from '@app/taxes/domain/tax-logic';
 
+import { BankCommands, ClosingPreviewResult } from './bank-commands';
 import { AccountBooks, BankingSystem, openAccount } from './banking-system';
 import { CommandResult, GameCommand } from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
@@ -79,8 +81,11 @@ export class GameEngine {
   /** Reused buffer of the day step; not part of the state. */
   readonly #marketDay: MarketDay;
   readonly #banking: BankingSystem;
+  readonly #bankCommands: BankCommands;
   #events: EngineEvent[] = [];
   #journal: Transaction[] = [];
+  /** Accounts whose projection changed since the last `drainChangedAccounts` (TS §8.4). */
+  #changedAccounts = new Set<AccountId>();
 
   constructor(
     world: GameWorld,
@@ -93,10 +98,15 @@ export class GameEngine {
     this.#history = history;
     this.#marketDay = createMarketDay(world.context);
     this.prices = (options.prices ?? priceSourcePort)(world, history, state.market);
+    const changed = (id: AccountId): void => {
+      this.#changedAccounts.add(id);
+    };
     this.#banking = new BankingSystem(world, state.player, {
       journal: (transaction) => this.#journal.push(transaction),
       emit: (event) => this.#events.push(event),
+      changed,
     });
+    this.#bankCommands = new BankCommands(world, state.player, this.#banking, changed);
   }
 
   /**
@@ -193,7 +203,9 @@ export class GameEngine {
 
   /**
    * Applies a game command after the current tick (TS §3.8, §8.5). Its tick must be the current
-   * tick; a command whose ID was already applied at this tick has no further effect.
+   * tick; a command whose ID was already applied at this tick has no further effect. Rejected
+   * commands count as applied too: replayed after a snapshot of their tick, a command rejected
+   * before it must not succeed because of a later command of the same tick.
    */
   applyCommand(command: GameCommand): CommandResult {
     if (command.tick !== this.#state.tick) {
@@ -202,11 +214,8 @@ export class GameEngine {
     if (this.#state.commandIds.includes(command.id)) {
       return { ok: true };
     }
-    const result = this.#execute(command);
-    if (result.ok) {
-      this.#state.commandIds.push(command.id);
-    }
-    return result;
+    this.#state.commandIds.push(command.id);
+    return this.#execute(command);
   }
 
   /** Processes the next tick. */
@@ -251,6 +260,21 @@ export class GameEngine {
     return journal;
   }
 
+  /**
+   * IDs of the accounts whose projection changed since the last call (postings, limits, opening,
+   * closing, salary flag), in the order of their first change; the host sends them (TS §8.4).
+   */
+  drainChangedAccounts(): AccountId[] {
+    const changed = [...this.#changedAccounts];
+    this.#changedAccounts = new Set();
+    return changed;
+  }
+
+  /** What closing the account now would book, without booking (TS §7.4). */
+  closingPreview(accountId: string): ClosingPreviewResult {
+    return this.#bankCommands.closingPreview(accountId, this.#state.tick);
+  }
+
   /** Copy of the state that shares nothing mutable with the engine (structured-cloneable). */
   snapshot(): GameSnapshot {
     return copyState(this.#state);
@@ -274,6 +298,20 @@ export class GameEngine {
           mode: command.mode,
         });
         return { ok: true };
+      case 'openAccount':
+        if (!OPENABLE_ACCOUNT_KINDS.includes(command.kind)) {
+          return { ok: false, error: 'invalid-command' };
+        }
+        return this.#bankCommands.openAccount(command, this.#state.tick);
+      case 'closeAccount':
+        return this.#bankCommands.closeAccount(command, this.#state.tick);
+      case 'setSalaryAccount':
+        return this.#bankCommands.setSalaryAccount(command);
+      case 'transfer':
+        if (typeof command.purpose !== 'string') {
+          return { ok: false, error: 'invalid-command' };
+        }
+        return this.#bankCommands.transfer(command, this.#state.tick);
       default:
         return { ok: false, error: 'invalid-command' };
     }

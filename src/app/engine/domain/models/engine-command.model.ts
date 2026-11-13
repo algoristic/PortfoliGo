@@ -1,4 +1,7 @@
+import { AccountId, DepotId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
+import { BANK_COMMAND_ERRORS } from '@app/banking/domain/models/bank-command.model';
 import { Tick } from '@app/clock/domain/models/time.model';
+import { Cents } from '@app/shared/domain/models/money.model';
 
 import { BackgroundMode } from './game-state.model';
 
@@ -16,9 +19,49 @@ export interface SetBackgroundModeCommand extends CommandBase {
   mode: BackgroundMode;
 }
 
-export type GameCommand = SetBackgroundModeCommand;
+/** Opens an account; `depot` opens a depot with its clearing account (US-BK-02). */
+export interface OpenAccountCommand extends CommandBase {
+  type: 'openAccount';
+  bankId: string;
+  kind: OpenableAccountKind;
+}
 
-export const COMMAND_ERRORS = ['tick-mismatch', 'invalid-command'] as const;
+/** Closes an account; a remainder goes to `targetAccountId` (US-BK-03, TS §7.4). */
+export interface CloseAccountCommand extends CommandBase {
+  type: 'closeAccount';
+  accountId: AccountId;
+  targetAccountId?: AccountId;
+}
+
+export interface SetSalaryAccountCommand extends CommandBase {
+  type: 'setSalaryAccount';
+  accountId: AccountId;
+}
+
+/** Own transfer (US-BK-04); `purpose` is the user's text, stored as given. */
+export interface TransferCommand extends CommandBase {
+  type: 'transfer';
+  fromAccountId: AccountId;
+  toAccountId: AccountId;
+  amount: Cents;
+  purpose: string;
+}
+
+export type GameCommand =
+  | SetBackgroundModeCommand
+  | OpenAccountCommand
+  | CloseAccountCommand
+  | SetSalaryAccountCommand
+  | TransferCommand;
+
+export const COMMAND_ERRORS = ['tick-mismatch', 'invalid-command', ...BANK_COMMAND_ERRORS] as const;
 export type CommandError = (typeof COMMAND_ERRORS)[number];
 
-export type CommandResult = { ok: true } | { ok: false; error: CommandError };
+/** The account that `openAccount` opened; `depotId` only for a depot. */
+export interface OpenedAccount {
+  accountId: AccountId;
+  depotId: DepotId | null;
+}
+
+export type CommandResult =
+  { ok: true; opened?: OpenedAccount } | { ok: false; error: CommandError };

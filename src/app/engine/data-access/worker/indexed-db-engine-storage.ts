@@ -43,8 +43,9 @@ type WriteTransaction = IDBPTransaction<unknown, WorkerStoreName[], 'readwrite'>
 type ReadTransaction = IDBPTransaction<unknown, WorkerStoreName[], 'readonly'>;
 
 function runtimeRecord(playerId: string, clock: StoredClock): RuntimeRecord {
-  const { tick, speed, paused, lastSeenAt } = clock;
-  return { playerId, tick, speed, paused, lastSeenAt };
+  const { tick, speed, paused, lastSeenAt, netWorth } = clock;
+  const record: RuntimeRecord = { playerId, tick, speed, paused, lastSeenAt };
+  return netWorth === undefined ? record : { ...record, netWorth };
 }
 
 async function putMonthStarts(

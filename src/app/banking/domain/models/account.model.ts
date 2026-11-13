@@ -39,3 +39,7 @@ export interface Depot {
   openedAt: Tick;
   closedAt: Tick | null;
 }
+
+/** What a player can open (US-BK-02): a depot always comes with its clearing account. */
+export const OPENABLE_ACCOUNT_KINDS = ['current', 'savings', 'depot'] as const;
+export type OpenableAccountKind = (typeof OPENABLE_ACCOUNT_KINDS)[number];

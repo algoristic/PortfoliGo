@@ -136,11 +136,11 @@ export function createPlayerProfile(
 /** Row of the player selection from the profile, the stored clock and the newest snapshot. */
 export function toPlayerListEntry(
   profile: PlayerProfile,
-  clock: { tick: number; lastSeenAt: number } | undefined,
+  clock: { tick: number; lastSeenAt: number; netWorth?: Cents } | undefined,
   snapshot: StoredVersions | undefined,
   current: StoredVersions = CURRENT_VERSIONS,
 ): PlayerListEntry {
-  return {
+  const entry: PlayerListEntry = {
     id: profile.id,
     name: profile.name,
     seed: profile.seed,
@@ -149,6 +149,7 @@ export function toPlayerListEntry(
     createdAt: profile.createdAt,
     outdated: isOutdated(profile, snapshot, current),
   };
+  return clock?.netWorth === undefined ? entry : { ...entry, netWorth: clock.netWorth };
 }
 
 /**

@@ -28,6 +28,7 @@ const RULE_SPECS = [
   'src/app/engine/domain/game-engine.spec.ts',
   'src/app/engine/domain/engine-properties.spec.ts',
   'src/app/engine/domain/banking-system.spec.ts',
+  'src/app/engine/domain/bank-commands.spec.ts',
   'src/app/engine/domain/clock-pacing-logic.spec.ts',
   'src/app/engine/domain/last-tick-logic.spec.ts',
   'src/app/engine/domain/jump-target-logic.spec.ts',
@@ -48,6 +49,7 @@ const RULE_SPECS = [
   'src/app/banking/domain/inflow-logic.spec.ts',
   'src/app/banking/domain/overdraft-logic.spec.ts',
   'src/app/banking/domain/monthly-values-logic.spec.ts',
+  'src/app/banking/domain/bank-command-logic.spec.ts',
   'src/app/taxes/domain/tax-logic.spec.ts',
   'src/app/players/domain/player-logic.spec.ts',
 ];

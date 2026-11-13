@@ -1,10 +1,9 @@
-import { accountId, accountNumber, depotId } from '@app/banking/domain/account-logic';
-import { AccountId, AccountKind, ClearingAccount } from '@app/banking/domain/models/account.model';
+import { AccountId, AccountKind } from '@app/banking/domain/models/account.model';
 import { DepotConditions } from '@app/banking/domain/models/bank-conditions.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { Bank } from '@app/world/domain/models/bank.model';
 
-import { openAccount, registerAccount } from '../banking-system';
+import { openAccount, openDepot } from '../banking-system';
 import { GameEngine } from '../game-engine';
 import { GameSnapshot, GameState, StartConditions } from '../models/game-state.model';
 import { GameWorld } from '../models/game-world.model';
@@ -88,40 +87,17 @@ export interface TestBooks {
 }
 
 /**
- * A copy of `snapshot` with more accounts, other balances or another salary account, until the bank
- * commands exist (AP 3.3). Balances are set without transactions, so the journal no longer sums to
- * them.
+ * A copy of `snapshot` with more accounts, other balances or another salary account, for scenarios
+ * that need balances without booking them. The journal no longer sums to the balances set here.
  */
 export function withBooks(snapshot: GameSnapshot, books: TestBooks): GameSnapshot {
   const state = structuredClone(snapshot) as GameState;
   const { player } = state;
   for (const { kind, bankId, balance } of books.accounts ?? []) {
-    let id: AccountId;
-    if (kind === 'clearing') {
-      const sequence = player.accountSequence + 1;
-      const account: ClearingAccount = {
-        id: accountId(sequence),
-        kind,
-        bankId,
-        number: accountNumber(sequence),
-        openedAt: state.tick,
-        closedAt: null,
-        depotId: depotId(sequence + 1),
-      };
-      player.accountSequence = sequence + 1;
-      registerAccount(player, account);
-      player.depots.push({
-        id: account.depotId,
-        bankId,
-        clearingAccountId: account.id,
-        number: accountNumber(sequence + 1),
-        openedAt: state.tick,
-        closedAt: null,
-      });
-      id = account.id;
-    } else {
-      id = openAccount(player, kind, bankId, state.tick).id;
-    }
+    const id =
+      kind === 'clearing'
+        ? openDepot(player, bankId, state.tick).account.id
+        : openAccount(player, kind, bankId, state.tick).id;
     player.balances.set(id, balance ?? 0);
   }
   for (const [id, balance] of Object.entries(books.balances ?? {})) {

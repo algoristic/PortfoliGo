@@ -1,3 +1,4 @@
+import { ACCOUNT_KINDS, OPENABLE_ACCOUNT_KINDS } from '@app/banking/domain/models/account.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
 import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
 
@@ -6,6 +7,7 @@ import {
   ENGINE_ERRORS,
   ENGINE_EVENT_TYPES,
   ENGINE_PROTOCOL,
+  ENGINE_QUERY_KINDS,
   ENGINE_WARNINGS,
   EngineCommandMessage,
   EngineEventMessage,
@@ -40,6 +42,27 @@ function isFiniteNumber(value: unknown): value is number {
 /** Ticks, cents, counts and series indices: non-negative safe integers. */
 function isCount(value: unknown): value is number {
   return Number.isSafeInteger(value) && (value as number) >= 0;
+}
+
+/** Balances and amounts: whole cents of either sign. */
+function isCents(value: unknown): value is number {
+  return Number.isSafeInteger(value);
+}
+
+/** `acc-<n>` and `dep-<n>` with the counter value n ≥ 1 (TS §7.2). */
+const ACCOUNT_ID = /^acc-[1-9]\d*$/;
+const DEPOT_ID = /^dep-[1-9]\d*$/;
+
+function isAccountId(value: unknown): boolean {
+  return isString(value) && ACCOUNT_ID.test(value);
+}
+
+function isDepotId(value: unknown): boolean {
+  return isString(value) && DEPOT_ID.test(value);
+}
+
+function isNonEmptyString(value: unknown): boolean {
+  return isString(value) && value.length > 0;
 }
 
 function isOneOf(list: readonly string[]): Check {
@@ -82,7 +105,10 @@ function isJumpTarget(value: unknown): boolean {
 }
 
 function isQuery(value: unknown): boolean {
-  return hasFields(value, { kind: (kind) => kind === 'exchanges' });
+  if (!isFields(value) || !isOneOf(ENGINE_QUERY_KINDS)(value['kind'])) {
+    return false;
+  }
+  return value['kind'] !== 'closingPreview' || isAccountId(value['accountId']);
 }
 
 const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = {
@@ -104,6 +130,19 @@ const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = 
   unsubscribe: (payload) => hasFields(payload, { series: isSeriesList }),
   query: (payload) => hasFields(payload, { query: isQuery }),
   setBackgroundMode: (payload) => hasFields(payload, { mode: isBackgroundMode }),
+  openAccount: (payload) =>
+    hasFields(payload, { bankId: isNonEmptyString, kind: isOneOf(OPENABLE_ACCOUNT_KINDS) }),
+  closeAccount: (payload) =>
+    hasFields(payload, { accountId: isAccountId, targetAccountId: isOptional(isAccountId) }),
+  setSalaryAccount: (payload) => hasFields(payload, { accountId: isAccountId }),
+  // Amount and purpose length are rules of the engine, which answers with its own codes.
+  transfer: (payload) =>
+    hasFields(payload, {
+      fromAccountId: isAccountId,
+      toAccountId: isAccountId,
+      amount: isCents,
+      purpose: isString,
+    }),
 };
 
 function isQuote(value: unknown): boolean {
@@ -115,6 +154,22 @@ function isQuote(value: unknown): boolean {
     previousClose: isFiniteNumber,
     change: isFiniteNumber,
     changeRatio: isFiniteNumber,
+  });
+}
+
+function isAccountView(value: unknown): boolean {
+  return hasFields(value, {
+    id: isAccountId,
+    kind: isOneOf(ACCOUNT_KINDS),
+    bankId: isString,
+    number: isString,
+    depot: isNullOr((depot) => hasFields(depot, { id: isDepotId, number: isString })),
+    openedAt: isCount,
+    closedAt: isNullOr(isCount),
+    balance: isCents,
+    overdraftLimit: isNullOr(isCount),
+    available: isCount,
+    salaryAccount: isBoolean,
   });
 }
 
@@ -148,6 +203,13 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
     hasFields(payload, {
       tick: isCount,
       quotes: (quotes) => Array.isArray(quotes) && quotes.every(isQuote),
+    }),
+  projection: (payload) =>
+    hasFields(payload, {
+      tick: isCount,
+      full: isBoolean,
+      accounts: (accounts) => Array.isArray(accounts) && accounts.every(isAccountView),
+      netWorth: isCents,
     }),
   progress: (payload) =>
     hasFields(payload, {

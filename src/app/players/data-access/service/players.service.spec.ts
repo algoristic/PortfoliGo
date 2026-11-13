@@ -286,6 +286,18 @@ describe('PlayersService', () => {
       ]);
     });
 
+    // TS §9.1: the worker writes the net worth with the clock state from M3 on
+    it('lists the net worth the worker stored with the clock', async () => {
+      const anna = await create();
+      await writeWorkerRecords(database, anna.id);
+      const runtime = (await database.get('runtime', anna.id)) as object;
+      await database.put('runtime', { ...runtime, netWorth: 1_234_567 });
+
+      const [player] = await firstValueFrom(service.loadPlayers());
+
+      expect(player).toMatchObject({ id: anna.id, tick: 5_400_000, netWorth: 1_234_567 });
+    });
+
     it('marks players whose newest snapshot or profile has another version', async () => {
       const current = await create({ ...ANNA, name: 'Aktuell' });
       const oldSchema = await create({ ...ANNA, name: 'Altes Schema' });

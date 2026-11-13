@@ -1,8 +1,14 @@
+import { AccountId, DepotId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
+import { BANK_COMMAND_ERRORS, ClosingPreview } from '@app/banking/domain/models/bank-command.model';
+import { ClosedMonth } from '@app/banking/domain/models/household.model';
 import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
+import { AccountView } from '@app/engine/domain/models/account-view.model';
 import { BackgroundMode, StartConditions } from '@app/engine/domain/models/game-state.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import { Cents } from '@app/shared/domain/models/money.model';
+import { Bank } from '@app/world/domain/models/bank.model';
 import { RegionId } from '@app/world/domain/models/taxonomy.model';
 
 /** Version of the message protocol between UI and worker (TS §8.3). */
@@ -36,10 +42,32 @@ export interface LoadPlayerPayload {
   minTick?: Tick;
 }
 
-/** Queries (TS §8.2); they write nothing and don't hold the clock. M2 knows only the exchanges. */
-export type EngineQuery = { kind: 'exchanges' };
+/**
+ * Queries (TS §8.2); they write nothing and don't hold the clock. `closingPreview` shows what
+ * closing an account now would book (TS §7.4); `monthlyValues` the household months (US-EK-03).
+ */
+export type EngineQuery =
+  | { kind: 'exchanges' }
+  | { kind: 'banks' }
+  | { kind: 'closingPreview'; accountId: AccountId }
+  | { kind: 'monthlyValues' };
+export type EngineQueryKind = EngineQuery['kind'];
+export const ENGINE_QUERY_KINDS = [
+  'exchanges',
+  'banks',
+  'closingPreview',
+  'monthlyValues',
+] as const satisfies readonly EngineQueryKind[];
 
-/** Commands UI → worker for M2 (TS §8.2). */
+/** Own transfer (US-BK-04): whole cents ≥ 1, purpose up to `MAX_PURPOSE_LENGTH` characters. */
+export interface TransferPayload {
+  fromAccountId: AccountId;
+  toAccountId: AccountId;
+  amount: Cents;
+  purpose: string;
+}
+
+/** Commands UI → worker (TS §8.2). */
 export interface EngineCommandPayloads {
   loadPlayer: LoadPlayerPayload;
   unloadPlayer: EmptyPayload;
@@ -53,6 +81,11 @@ export interface EngineCommandPayloads {
   unsubscribe: { series: number[] };
   query: { query: EngineQuery };
   setBackgroundMode: { mode: BackgroundMode };
+  openAccount: { bankId: string; kind: OpenableAccountKind };
+  /** `targetAccountId` receives the remainder after the settlement; required if one remains. */
+  closeAccount: { accountId: AccountId; targetAccountId?: AccountId };
+  setSalaryAccount: { accountId: AccountId };
+  transfer: TransferPayload;
 }
 
 export const ENGINE_COMMAND_TYPES = [
@@ -68,6 +101,10 @@ export const ENGINE_COMMAND_TYPES = [
   'unsubscribe',
   'query',
   'setBackgroundMode',
+  'openAccount',
+  'closeAccount',
+  'setSalaryAccount',
+  'transfer',
 ] as const satisfies readonly (keyof EngineCommandPayloads)[];
 export type EngineCommandType = (typeof ENGINE_COMMAND_TYPES)[number];
 
@@ -89,7 +126,35 @@ export interface ExchangeInfo {
   close: number;
 }
 
-export type EngineQueryResult = { kind: 'exchanges'; exchanges: ExchangeInfo[] };
+/** The household months: the closed ones oldest first, and the running month so far. */
+export interface MonthlyValuesResult {
+  closedMonths: ClosedMonth[];
+  current: ClosedMonth;
+}
+
+export type EngineQueryResult =
+  | { kind: 'exchanges'; exchanges: ExchangeInfo[] }
+  /** Banks of the world with their conditions (bank comparison, account cards). */
+  | { kind: 'banks'; banks: Bank[] }
+  | { kind: 'closingPreview'; preview: ClosingPreview }
+  | ({ kind: 'monthlyValues' } & MonthlyValuesResult);
+
+/** The result of a query of kind `K`. */
+export type EngineQueryResultOf<K extends EngineQueryKind> = Extract<
+  EngineQueryResult,
+  { kind: K }
+>;
+
+/** Reply to a game command: the tick after which it took effect. */
+export interface GameCommandReply {
+  tick: Tick;
+}
+
+/** Reply to `openAccount`: the new account; for a depot, its clearing account and the depot. */
+export interface OpenedAccountReply extends GameCommandReply {
+  accountId: AccountId;
+  depotId: DepotId | null;
+}
 
 /** Data of a successful reply per command. */
 export interface EngineReplies {
@@ -104,15 +169,18 @@ export interface EngineReplies {
   subscribe: null;
   unsubscribe: null;
   query: EngineQueryResult;
-  /** Tick after which the command took effect. */
-  setBackgroundMode: { tick: Tick };
+  setBackgroundMode: GameCommandReply;
+  openAccount: OpenedAccountReply;
+  closeAccount: GameCommandReply;
+  setSalaryAccount: GameCommandReply;
+  transfer: GameCommandReply;
 }
 
 /** Error codes of replies (TS §8.3); the UI turns them into texts. */
 export const ENGINE_ERRORS = [
   /** Envelope or type unknown. */
   'invalid-message',
-  /** Payload invalid, or a game command the engine rejects. */
+  /** Payload invalid, or a game command the engine cannot read. */
   'invalid-command',
   'player-not-loaded',
   /** A jump runs; only `cancelJump`, `unloadPlayer`, `setVisibility`, queries and subscriptions pass. */
@@ -129,6 +197,8 @@ export const ENGINE_ERRORS = [
   /** The stored game has another `simVersion` or `schemaVersion` (TS §15); it is not loaded. */
   'player-outdated',
   'internal-error',
+  /** The engine rejected a bank command or query (TS §7.4); see `BANK_COMMAND_ERRORS`. */
+  ...BANK_COMMAND_ERRORS,
 ] as const;
 export type EngineErrorCode = (typeof ENGINE_ERRORS)[number];
 
@@ -171,6 +241,18 @@ export interface ProgressPayload {
   total: number;
 }
 
+/**
+ * Changed projections (TS §8.3, §8.4): only the accounts that changed, with the net worth. `full`
+ * after loading a player: `accounts` holds all of them and replaces what the UI had.
+ */
+export interface ProjectionPayload {
+  tick: Tick;
+  full: boolean;
+  accounts: AccountView[];
+  /** Sum of the account balances in M3 (TS §7.9). */
+  netWorth: Cents;
+}
+
 export interface FatalPayload {
   message: string;
 }
@@ -192,10 +274,11 @@ export interface WarningPayload {
   message: string;
 }
 
-/** Events worker → UI for M2 (TS §8.3). */
+/** Events worker → UI (TS §8.3). */
 export interface EngineEventPayloads {
   clock: ClockPayload;
   quotes: QuotesPayload;
+  projection: ProjectionPayload;
   progress: ProgressPayload;
   reply: ReplyPayload;
   warning: WarningPayload;
@@ -205,6 +288,7 @@ export interface EngineEventPayloads {
 export const ENGINE_EVENT_TYPES = [
   'clock',
   'quotes',
+  'projection',
   'progress',
   'reply',
   'warning',

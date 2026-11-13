@@ -9,7 +9,10 @@ import { StoredClock, StoredSnapshot } from './engine-host.model';
 
 // Records of the stores the worker owns (TS §9.1); the key fields are in-line.
 
-/** `runtime`: clock state; its `tick` is also the game time the player list shows. */
+/**
+ * `runtime`: clock state; its `tick` and `netWorth` are also the game time and the net worth the
+ * player list shows (TS §9.1).
+ */
 export interface RuntimeRecord extends StoredClock {
   playerId: string;
 }

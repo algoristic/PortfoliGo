@@ -10,6 +10,7 @@ import { seriesCount } from '@app/market/domain/series';
 
 import { GameEngine } from './game-engine';
 import { createGameWorld } from './game-world';
+import { GameCommand } from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
 import { GameSnapshot } from './models/game-state.model';
 import { replayCommands } from './replay';
@@ -411,7 +412,7 @@ describe('GameEngine', () => {
       expect(engine.player.backgroundMode).toBe('realtime');
     });
 
-    it('accepts a command ID again after the command failed', () => {
+    it('applies a command ID only once per tick, also when the command failed', () => {
       const tick = engine.tick;
       const invalid = { id: 'c1', type: 'setBackgroundMode', mode: 'sleep', tick } as unknown;
       engine.applyCommand(invalid as never);
@@ -420,6 +421,10 @@ describe('GameEngine', () => {
       ).toEqual({
         ok: true,
       });
+      expect(engine.player.backgroundMode).toBe('realtime');
+      // A stamp of another tick is no command of this tick.
+      engine.applyCommand({ id: 'c2', type: 'setBackgroundMode', mode: 'pause', tick: tick + 1 });
+      engine.applyCommand({ id: 'c2', type: 'setBackgroundMode', mode: 'pause', tick });
       expect(engine.player.backgroundMode).toBe('pause');
     });
 
@@ -509,6 +514,43 @@ describe('GameEngine', () => {
         .drainEvents()
         .filter((event) => event.type === 'background-mode-changed');
       expect(changes.map((event) => event.tick)).toEqual([start + 5, start + 90, start + 90]);
+    });
+
+    // TS §8.5: the snapshot holds the IDs of the commands of its tick, rejected ones included
+    it('does not apply a command again that was rejected before the snapshot at its tick', () => {
+      const tick = engine.tick;
+      const commands: GameCommand[] = [
+        { id: 'c1', tick, type: 'openAccount', bankId: engine.player.homeBankId, kind: 'savings' },
+        {
+          id: 'c2',
+          tick,
+          type: 'transfer',
+          fromAccountId: 'acc-2',
+          toAccountId: 'acc-1',
+          amount: 10_000,
+          purpose: '',
+        },
+        {
+          id: 'c3',
+          tick,
+          type: 'transfer',
+          fromAccountId: 'acc-1',
+          toAccountId: 'acc-2',
+          amount: 50_000,
+          purpose: '',
+        },
+      ];
+      expect(commands.map((command) => engine.applyCommand(command))).toEqual([
+        { ok: true, opened: { accountId: 'acc-2', depotId: null } },
+        { ok: false, error: 'insufficient-funds' },
+        { ok: true },
+      ]);
+      const restored = GameEngine.restore(mini.world, engine.snapshot(), {
+        monthStarts: mini.monthStarts,
+      });
+      replayCommands(restored, commands, tick);
+      expect(restored.snapshot()).toEqual(engine.snapshot());
+      expect(restored.player.balances.get('acc-2')).toBe(50_000);
     });
   });
 });

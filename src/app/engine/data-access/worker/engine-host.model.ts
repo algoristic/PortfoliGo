@@ -7,6 +7,7 @@ import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
 import { PlayerLocks } from '@app/persistence/data-access/locks/player-locks';
+import { Cents } from '@app/shared/domain/models/money.model';
 import { SeedKey } from '@app/simulation/util/seed';
 import { World } from '@app/world/domain/models/world.model';
 
@@ -19,6 +20,8 @@ export interface StoredClock {
   paused: boolean;
   /** Wall-clock time of the write in milliseconds since the Unix epoch. */
   lastSeenAt: number;
+  /** Net worth at `tick` for the player list (TS §9.1); missing in records before M3. */
+  netWorth?: Cents;
 }
 
 /** Snapshots kept per player (TS §9.1). */
@@ -155,6 +158,8 @@ export interface EngineHostConfig {
   /** Rate limits of the events (TS §8.4). */
   clockPerSecond: number;
   quotesPerSecond: number;
+  /** Projections after commands and loading go out at once and count towards the limit. */
+  projectionPerSecond: number;
   /** Interval of the progress events of batch runs and the candle job (TS §3.7). */
   progressIntervalMs: number;
   /** Real time between two periodic writes of the clock state (TS §9.2). */
@@ -190,6 +195,7 @@ export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
   passBudgetMs: 8,
   clockPerSecond: 10,
   quotesPerSecond: 4,
+  projectionPerSecond: 4,
   progressIntervalMs: 100,
   clockSaveIntervalMs: 5_000,
   snapshotIntervalMs: 30_000,

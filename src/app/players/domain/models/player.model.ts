@@ -1,5 +1,6 @@
 import { Tick } from '@app/clock/domain/models/time.model';
 import { StartConditions } from '@app/engine/domain/models/game-state.model';
+import { Cents } from '@app/shared/domain/models/money.model';
 
 /**
  * Profile of a player in the `players` store (TS §9.1). The UI owns it; the worker owns the clock
@@ -34,8 +35,8 @@ export interface StoredVersions {
 }
 
 /**
- * One row of the player selection (PS US-SP-02). The net worth follows with M3 (TS §9.1): before
- * the ledger exists, the list shows no value instead of the start capital.
+ * One row of the player selection (PS US-SP-02). The net worth comes from the worker's clock state
+ * (TS §9.1); the list shows no value instead of the start capital while there is none.
  */
 export interface PlayerListEntry {
   id: string;
@@ -45,6 +46,8 @@ export interface PlayerListEntry {
   tick: Tick | null;
   /** Last use (wall clock, ms); `null` while the worker has never loaded the player. */
   lastSeenAt: number | null;
+  /** Net worth at `tick`; missing while the worker has not stored one (never loaded, or before M3). */
+  netWorth?: Cents;
   createdAt: number;
   /** Other `simVersion` or `schemaVersion` than the app: the player can only be deleted (E-25). */
   outdated: boolean;

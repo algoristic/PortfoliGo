@@ -1,6 +1,9 @@
+import { monthOf } from '@app/banking/domain/bank-run-logic';
+import { AccountId } from '@app/banking/domain/models/account.model';
 import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { dayIndex } from '@app/clock/domain/calendar-logic';
 import { Tick, TICKS_PER_DAY, TradingHours } from '@app/clock/domain/models/time.model';
+import { accountViews, netWorth } from '@app/engine/domain/account-projection';
 import { liveHighLow, WorkShare } from '@app/engine/domain/background-share-logic';
 import { catchUpSeenAt, catchUpTarget } from '@app/engine/domain/catch-up-logic';
 import { ClockPacer } from '@app/engine/domain/clock-pacing-logic';
@@ -8,7 +11,7 @@ import { GameEngine } from '@app/engine/domain/game-engine';
 import { createGameWorld } from '@app/engine/domain/game-world';
 import { jumpTargetTick } from '@app/engine/domain/jump-target-logic';
 import { ClockSettings } from '@app/engine/domain/models/engine-clock.model';
-import { GameCommand } from '@app/engine/domain/models/engine-command.model';
+import { GameCommand, OpenedAccount } from '@app/engine/domain/models/engine-command.model';
 import { replayCommands } from '@app/engine/domain/replay';
 import { seriesQuote } from '@app/engine/domain/series-quote';
 import { Throttle } from '@app/engine/domain/throttle-logic';
@@ -42,6 +45,8 @@ import {
   EngineErrorCode,
   EngineEventMessage,
   EngineEventPayloads,
+  EngineQuery,
+  EngineQueryResult,
   EngineReplies,
   ExchangeInfo,
   LoadPlayerPayload,
@@ -110,6 +115,9 @@ interface LoadedGame {
   snapshotTick: Tick;
   /** A game command was applied since the last snapshot. */
   changedSinceSnapshot: boolean;
+  /** Accounts changed since the last projection (TS §8.4), and whether the next one is full. */
+  changedAccounts: Set<AccountId>;
+  projectionFull: boolean;
 }
 
 /** What a snapshot writes, taken in one go (`#snapshotData`). */
@@ -146,6 +154,7 @@ export class EngineHost {
   readonly #config: EngineHostConfig;
   readonly #clockThrottle: Throttle;
   readonly #quotesThrottle: Throttle;
+  readonly #projectionThrottle: Throttle;
   readonly #subscriptions = new Set<number>();
   readonly #handlers: Handlers = {
     loadPlayer: (payload) => this.#load(payload),
@@ -179,9 +188,54 @@ export class EngineHost {
       series.forEach((s) => this.#subscriptions.delete(s));
       return null;
     },
-    query: () => ({ kind: 'exchanges', exchanges: this.#exchanges(this.#requireGame()) }),
-    setBackgroundMode: ({ mode }, id) =>
-      this.#applyGameCommand((tick) => ({ id, tick, type: 'setBackgroundMode', mode })),
+    query: ({ query }) => this.#query(this.#requireGame(), query),
+    setBackgroundMode: async ({ mode }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({ id, tick, type: 'setBackgroundMode', mode }))
+      ).tick,
+    }),
+    openAccount: async ({ bankId, kind }, id) => {
+      const { tick, opened } = await this.#applyGameCommand((at) => ({
+        id,
+        tick: at,
+        type: 'openAccount',
+        bankId,
+        kind,
+      }));
+      if (opened === undefined) {
+        throw new CommandFailure('internal-error', 'openAccount opened no account');
+      }
+      return { tick, ...opened };
+    },
+    closeAccount: async ({ accountId, targetAccountId }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({
+          id,
+          tick,
+          type: 'closeAccount',
+          accountId,
+          ...(targetAccountId === undefined ? {} : { targetAccountId }),
+        }))
+      ).tick,
+    }),
+    setSalaryAccount: async ({ accountId }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({ id, tick, type: 'setSalaryAccount', accountId }))
+      ).tick,
+    }),
+    transfer: async ({ fromAccountId, toAccountId, amount, purpose }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({
+          id,
+          tick,
+          type: 'transfer',
+          fromAccountId,
+          toAccountId,
+          amount,
+          purpose,
+        }))
+      ).tick,
+    }),
   };
 
   #queue: Promise<void> = Promise.resolve();
@@ -206,6 +260,8 @@ export class EngineHost {
   #lastClock: ClockPayload | null = null;
   #lastQuotesTick: number | null = null;
   #quotesStale = false;
+  /** A game command or a load ran: its projection goes out before the reply, unthrottled. */
+  #projectionDue = false;
 
   constructor(ports: EngineHostPorts, options: EngineHostOptions = {}) {
     this.#ports = ports;
@@ -213,6 +269,7 @@ export class EngineHost {
     this.#config = { ...DEFAULT_ENGINE_HOST_CONFIG, ...options.config };
     this.#clockThrottle = new Throttle(this.#config.clockPerSecond);
     this.#quotesThrottle = new Throttle(this.#config.quotesPerSecond);
+    this.#projectionThrottle = new Throttle(this.#config.projectionPerSecond);
   }
 
   /** Handles a message of the UI; resolves when it is answered. Never rejects. */
@@ -268,7 +325,8 @@ export class EngineHost {
           ? { ok: false, error: error.code, message: error.message }
           : { ok: false, error: 'internal-error', message: errorMessage(error) };
     }
-    // The clock goes out before the reply, so the UI sees the new state when the command ends.
+    // The clock and the projection go out before the reply, so the UI sees the new state when the
+    // command ends.
     this.#guarded(() => this.#flush());
     this.#reply(data.id, reply);
   }
@@ -358,6 +416,8 @@ export class EngineHost {
       snapshotMs: now,
       snapshotTick: engine.tick,
       changedSinceSnapshot: false,
+      changedAccounts: new Set(),
+      projectionFull: true,
     };
     this.#game = game;
     this.#drainEngineEvents(game, true);
@@ -383,6 +443,7 @@ export class EngineHost {
           );
     this.#lastClock = null;
     this.#quotesStale = true;
+    this.#projectionDue = true;
     if (target > engine.tick) {
       this.#startBatch(game, 'catch-up', target);
     } else {
@@ -468,7 +529,9 @@ export class EngineHost {
    * Accepts a game command (TS §8.5): hold the clock, stamp the command with the current tick,
    * write it ahead, apply it, answer, and go on with a new anchor.
    */
-  async #applyGameCommand(build: (tick: number) => GameCommand): Promise<{ tick: number }> {
+  async #applyGameCommand(
+    build: (tick: number) => GameCommand,
+  ): Promise<{ tick: number; opened?: OpenedAccount }> {
     const game = this.#requireIdle();
     this.#held++;
     try {
@@ -483,6 +546,7 @@ export class EngineHost {
       game.clockSavedMs = this.#ports.now();
       game.clockSavedTick = command.tick;
       this.#drainEngineEvents(game, this.#liveHighLow(game));
+      this.#projectionDue = true;
       if (!result.ok) {
         throw new CommandFailure(result.error);
       }
@@ -491,7 +555,9 @@ export class EngineHost {
         game.engine.tick,
         this.#ports.now(),
       );
-      return { tick: command.tick };
+      return result.opened === undefined
+        ? { tick: command.tick }
+        : { tick: command.tick, opened: result.opened };
     } finally {
       this.#held--;
       game.pacer.reanchor(game.engine.tick, this.#ports.now());
@@ -657,6 +723,9 @@ export class EngineHost {
    */
   #drainEngineEvents(game: LoadedGame, highLow: boolean): void {
     game.unsavedTransactions.push(...game.engine.drainTransactions());
+    for (const id of game.engine.drainChangedAccounts()) {
+      game.changedAccounts.add(id);
+    }
     for (const event of game.engine.drainEvents()) {
       if (event.type === 'session-closed') {
         const closed = game.candles.closed(event.series, event.day, game.engine.tick, highLow);
@@ -926,6 +995,53 @@ export class EngineHost {
       this.#lastQuotesTick = tick;
       this.#quotesStale = false;
     }
+    const forced = this.#projectionDue;
+    this.#projectionDue = false;
+    if (
+      (game.projectionFull || game.changedAccounts.size > 0) &&
+      (forced || this.#projectionThrottle.isDue(now))
+    ) {
+      this.#postProjection(game);
+      this.#projectionThrottle.sent(now);
+    }
+  }
+
+  /** The changed accounts and the net worth (TS §8.3, §8.4); after loading all accounts. */
+  #postProjection(game: LoadedGame): void {
+    const { player } = game.engine;
+    const full = game.projectionFull;
+    this.#post('projection', {
+      tick: game.engine.tick,
+      full,
+      accounts: accountViews(player, full ? undefined : [...game.changedAccounts]),
+      netWorth: netWorth(player),
+    });
+    game.projectionFull = false;
+    game.changedAccounts.clear();
+  }
+
+  /** Queries (TS §8.2) answer from the engine's state; they write nothing. */
+  #query(game: LoadedGame, query: EngineQuery): EngineQueryResult {
+    const { engine } = game;
+    switch (query.kind) {
+      case 'exchanges':
+        return { kind: 'exchanges', exchanges: this.#exchanges(game) };
+      case 'banks':
+        return { kind: 'banks', banks: engine.world.world.banks.map((bank) => ({ ...bank })) };
+      case 'closingPreview': {
+        const result = engine.closingPreview(query.accountId);
+        if (!result.ok) {
+          throw new CommandFailure(result.error);
+        }
+        return { kind: 'closingPreview', preview: result.preview };
+      }
+      case 'monthlyValues':
+        return {
+          kind: 'monthlyValues',
+          closedMonths: engine.player.closedMonths.map((closed) => ({ ...closed })),
+          current: { month: monthOf(engine.tick), values: { ...engine.player.monthlyValues } },
+        };
+    }
   }
 
   #clockPayload(game: LoadedGame): ClockPayload {
@@ -953,7 +1069,7 @@ export class EngineHost {
     const now = this.#ports.now();
     const lastSeenAt =
       game.batch?.kind === 'catch-up' ? catchUpSeenAt(now, tick, game.batch.to) : now;
-    return { tick, speed, paused, lastSeenAt };
+    return { tick, speed, paused, lastSeenAt, netWorth: netWorth(game.engine.player) };
   }
 
   /**

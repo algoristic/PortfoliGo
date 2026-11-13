@@ -1,6 +1,7 @@
 import fc from 'fast-check';
 
 import { journalBalances } from '@app/banking/domain/ledger-logic';
+import { AccountId, OPENABLE_ACCOUNT_KINDS } from '@app/banking/domain/models/account.model';
 import { Transaction } from '@app/banking/domain/models/ledger.model';
 import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
 import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
@@ -9,7 +10,7 @@ import { miniWorld } from '@app/world/domain/testing/mini-world';
 
 import { GameEngine } from './game-engine';
 import { createGameWorld } from './game-world';
-import { GameCommand } from './models/engine-command.model';
+import { CommandResult, GameCommand } from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
 import { BACKGROUND_MODES, GameSnapshot } from './models/game-state.model';
 import { GameWorld } from './models/game-world.model';
@@ -24,7 +25,9 @@ import { TEST_SEEDS } from '../../../testing/seeds';
 // Both include the journal, and the cached balances always equal the sums of the journal (TS §7.2).
 // The player has accounts at the test banks that book every kind of household transaction (TS §7.4):
 // salary and living costs, account fees, overdraft interest beyond the limit, monthly savings
-// interest with tax, quarterly savings interest and debit interest on a clearing account.
+// interest with tax, quarterly savings interest and debit interest on a clearing account. The
+// commands are random bank commands (AP 3.3) and background modes; many of them are rejected, which
+// must be just as deterministic.
 
 /** End of the runs: four months after the start, across three month starts and a quarter. */
 const END_TICK = dateTimeToTick({ year: 2030, month: 8, day: 1 }) - 1;
@@ -33,19 +36,65 @@ const MAX_STEPPED_TICKS = 3 * TICKS_PER_DAY;
 
 const arbRunTick = (): fc.Arbitrary<number> => fc.integer({ min: GAME_START_TICK, max: END_TICK });
 
-/** Commands at random ticks in log order (ascending tick, stable). */
+/** Mostly the accounts of the start, sometimes ones that random commands may have opened. */
+const arbAccountId = (): fc.Arbitrary<AccountId> =>
+  fc.oneof(
+    { weight: 3, arbitrary: fc.constantFrom<AccountId>('acc-1', 'acc-2', 'acc-3', 'acc-4') },
+    { weight: 1, arbitrary: fc.integer({ min: 5, max: 9 }).map((n): AccountId => `acc-${n}`) },
+  );
+
+type WithoutStamp<T> = T extends unknown ? Omit<T, 'id' | 'tick'> : never;
+
+const arbCommandBody = (): fc.Arbitrary<WithoutStamp<GameCommand>> =>
+  fc.oneof(
+    fc.record({
+      type: fc.constant('setBackgroundMode' as const),
+      mode: fc.constantFrom(...BACKGROUND_MODES),
+    }),
+    fc.record({
+      type: fc.constant('openAccount' as const),
+      bankId: fc.constantFrom('b1', 'b2', 'b3'),
+      kind: fc.constantFrom(...OPENABLE_ACCOUNT_KINDS),
+    }),
+    fc.record({
+      type: fc.constant('transfer' as const),
+      fromAccountId: arbAccountId(),
+      toAccountId: arbAccountId(),
+      amount: fc.integer({ min: 1, max: 2_000_000 }),
+      purpose: fc.string({ maxLength: 8 }),
+    }),
+    fc.record({ type: fc.constant('setSalaryAccount' as const), accountId: arbAccountId() }),
+    fc.record(
+      {
+        type: fc.constant('closeAccount' as const),
+        accountId: arbAccountId(),
+        targetAccountId: arbAccountId(),
+      },
+      { requiredKeys: ['type', 'accountId'] },
+    ),
+  );
+
+/**
+ * Commands at random ticks in log order (ascending tick, stable). The ticks come from a small pool,
+ * so that several commands often share a tick, also the tick of a snapshot.
+ */
 const arbCommands = (): fc.Arbitrary<GameCommand[]> =>
   fc
-    .array(fc.record({ tick: arbRunTick(), mode: fc.constantFrom(...BACKGROUND_MODES) }), {
-      maxLength: 6,
-    })
-    .map((drafts) =>
+    .tuple(
+      fc.array(arbRunTick(), { minLength: 1, maxLength: 4 }),
+      fc.array(fc.record({ slot: fc.nat(), body: arbCommandBody() }), { maxLength: 10 }),
+    )
+    .map(([ticks, drafts]) =>
       drafts
-        .map((draft, n) => ({ ...draft, id: `cmd-${n}`, type: 'setBackgroundMode' as const }))
+        .map(
+          ({ slot, body }, n) =>
+            ({ ...body, tick: ticks[slot % ticks.length], id: `cmd-${n}` }) as GameCommand,
+        )
         .sort((a, b) => a.tick - b.tick),
     );
 
 interface Reference {
+  results: CommandResult[];
   snapshot: ReturnType<GameEngine['snapshot']>;
   events: EngineEvent[];
   journal: Transaction[];
@@ -78,22 +127,29 @@ describe('GameEngine properties', () => {
   /** One uninterrupted run with the commands applied at their ticks. */
   function referenceRun(commands: readonly GameCommand[]): Reference {
     const engine = restoreStart();
-    replayCommands(engine, commands, END_TICK);
+    const results = replayCommands(engine, commands, END_TICK);
     return {
+      results,
       snapshot: engine.snapshot(),
       events: engine.drainEvents(),
       journal: engine.drainTransactions(),
     };
   }
 
-  /** The balances of the start (set without transactions) plus the sums of the journal. */
+  /**
+   * The balances of the start (set without transactions) plus the sums of the journal; accounts
+   * opened by commands start at 0.
+   */
   function expectBalancesOfJournal(
     snapshot: ReturnType<GameEngine['snapshot']>,
     journal: readonly Transaction[],
   ): void {
     const sums = journalBalances(journal);
     const expected = new Map(
-      [...start.player.balances].map(([id, balance]) => [id, balance + (sums.get(id) ?? 0)]),
+      snapshot.player.accounts.map(({ id }) => [
+        id,
+        (start.player.balances.get(id) ?? 0) + (sums.get(id) ?? 0),
+      ]),
     );
     expect(snapshot.player.balances).toEqual(expected);
   }
@@ -149,7 +205,8 @@ describe('GameEngine properties', () => {
             engine.runUntil(tick);
           }
           while (next < commands.length && commands[next].tick === engine.tick) {
-            expect(engine.applyCommand(commands[next++])).toEqual({ ok: true });
+            expect(engine.applyCommand(commands[next])).toEqual(reference.results[next]);
+            next++;
           }
           events.push(...engine.drainEvents());
           journal.push(...engine.drainTransactions());

@@ -1,5 +1,5 @@
 import { closingAccountFees, monthlyAccountFee } from '@app/banking/domain/account-fee-logic';
-import { accountId, accountNumber } from '@app/banking/domain/account-logic';
+import { accountId, accountNumber, depotId } from '@app/banking/domain/account-logic';
 import {
   bankRunPlan,
   isInterestPayoutDue,
@@ -23,7 +23,13 @@ import {
   TAX_OFFICE_ACCOUNT,
 } from '@app/banking/domain/ledger-logic';
 import { livingCosts } from '@app/banking/domain/living-costs-logic';
-import { Account, AccountId, AccountKind } from '@app/banking/domain/models/account.model';
+import {
+  Account,
+  AccountId,
+  AccountKind,
+  ClearingAccount,
+  Depot,
+} from '@app/banking/domain/models/account.model';
 import {
   BankConditions,
   CurrentAccountConditions,
@@ -38,10 +44,15 @@ import {
 } from '@app/banking/domain/models/household.model';
 import { Transaction, TransactionDraft } from '@app/banking/domain/models/ledger.model';
 import { addToMonthlyValues, emptyMonthlyValues } from '@app/banking/domain/monthly-values-logic';
-import { accountEvents, overdraftLimits } from '@app/banking/domain/overdraft-logic';
+import {
+  accountEvents,
+  availableAmount,
+  overdraftLimits,
+} from '@app/banking/domain/overdraft-logic';
 import { Tick, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { SeedKey } from '@app/simulation/util/seed';
+import { TaxYear } from '@app/taxes/domain/models/tax.model';
 import { assessTaxableIncome, closeTaxYear, taxTransactionType } from '@app/taxes/domain/tax-logic';
 
 import { EngineEvent } from './models/engine-event.model';
@@ -54,11 +65,34 @@ export type AccountBooks = Pick<
   'accounts' | 'balances' | 'accountSequence' | 'overdraftLimits' | 'inflows' | 'interest'
 >;
 
-/** Where the banking system delivers its results; the engine buffers both. */
+/** The part of the player state that opening a depot changes. */
+export type DepotBooks = AccountBooks & Pick<PlayerState, 'depots'>;
+
+/** Where the banking system delivers its results; the engine buffers them. */
 export interface BankingPorts {
   /** Every booked transaction, in journal order. */
   journal(transaction: Transaction): void;
   emit(event: EngineEvent): void;
+  /**
+   * An account whose projection changed (TS §8.4): a posting, a new limit, opening, closing or the
+   * salary flag. Called once per change; the engine collects the IDs for the host.
+   */
+  changed?(accountId: AccountId): void;
+}
+
+/**
+ * What closing an account books (TS §7.4), computed without booking: the credit interest with its
+ * tax, then the fees and the debit interest, each a transaction on the account.
+ */
+export interface AccountSettlement {
+  credits: TransactionDraft[];
+  charges: TransactionDraft[];
+  /** Tax year after the credit interest. */
+  taxYear: TaxYear;
+  /** Credit interest and its tax for `interest-credited`; `null` without credit interest. */
+  credited: { amount: Cents; tax: Cents } | null;
+  /** Balance after all bookings. */
+  balance: Cents;
 }
 
 /**
@@ -83,6 +117,39 @@ export function openAccount(
   books.accountSequence = sequence;
   registerAccount(books, account);
   return account;
+}
+
+/**
+ * Opens a depot with its clearing account (US-BK-02): the account takes the next number of the
+ * shared counter, the depot the one after it (TS §7.2).
+ */
+export function openDepot(
+  books: DepotBooks,
+  bankId: string,
+  tick: Tick,
+): { account: ClearingAccount; depot: Depot } {
+  const sequence = books.accountSequence + 1;
+  const account: ClearingAccount = {
+    id: accountId(sequence),
+    kind: 'clearing',
+    bankId,
+    number: accountNumber(sequence),
+    openedAt: tick,
+    closedAt: null,
+    depotId: depotId(sequence + 1),
+  };
+  const depot: Depot = {
+    id: account.depotId,
+    bankId,
+    clearingAccountId: account.id,
+    number: accountNumber(sequence + 1),
+    openedAt: tick,
+    closedAt: null,
+  };
+  books.accountSequence = sequence + 1;
+  registerAccount(books, account);
+  books.depots.push(depot);
+  return { account, depot };
 }
 
 /**
@@ -138,6 +205,7 @@ export class BankingSystem {
       // Only postings on player accounts carry a balance.
       if (balanceAfter !== null) {
         const id = account as AccountId;
+        this.#ports.changed?.(id);
         const limit = this.#limitOf(this.#account(id));
         this.#coverage(
           transaction.tick,
@@ -219,6 +287,9 @@ export class BankingSystem {
     }));
     player.overdraftLimits = limits;
     for (const { id, balance, previous, limit } of changes) {
+      if (limit !== previous) {
+        this.#ports.changed?.(id);
+      }
       this.#coverage(tick, id, { balance, limit: previous }, { balance, limit });
     }
   }
@@ -249,38 +320,83 @@ export class BankingSystem {
     this.#player.taxYear = closeTaxYear(this.#player.taxYear);
   }
 
+  /** Balance and limit of an account (TS §7.4); the limit is `null` except for current accounts. */
+  coverage(id: AccountId): CoverageState {
+    return { balance: this.#player.balances.get(id) ?? 0, limit: this.#limitOf(this.#account(id)) };
+  }
+
+  /** Amount for own transfers (TS §7.4): balance plus free limit. */
+  available(id: AccountId): Cents {
+    return availableAmount(this.coverage(id));
+  }
+
   /**
-   * What an account still earns and owes when it closes at `tick` (TS §7.4): the interest accrued
-   * up to the day before (credit with its tax first), the account fees up to the closing day, then
-   * the debit interest. The caller closes the account afterwards; the closing day itself accrues no
-   * interest, because the account is empty at its end.
+   * What an account still earns and owes when it closes at `tick` (TS §7.4), without booking it:
+   * the interest accrued up to the day before (credit with its tax first), the account fees up to
+   * the closing day, then the debit interest. The closing preview shows it, `settleAccount` books it.
    */
-  settleAccount(id: AccountId, tick: Tick): void {
+  settlement(id: AccountId, tick: Tick): AccountSettlement {
     const account = this.#account(id);
     const accrual = this.#accrual(id);
     const month = monthOf(tick);
     const credit = bookedInterest(accrual.pendingCredit + accrual.credit);
     const debit = bookedInterest(accrual.pendingDebit + accrual.debit);
-    accrual.credit = 0;
-    accrual.debit = 0;
-    accrual.pendingCredit = 0;
-    accrual.pendingDebit = 0;
+    let credits: TransactionDraft[] = [];
+    let taxYear = this.#player.taxYear;
+    let credited: AccountSettlement['credited'] = null;
     if (credit > 0) {
-      this.#bookCreditInterest(tick, account, credit, month, month);
+      const interest = this.#creditDrafts(tick, account, credit, month, month, taxYear);
+      credits = interest.drafts;
+      taxYear = interest.taxYear;
+      credited = { amount: credit, tax: interest.tax };
     }
+    const charges: TransactionDraft[] = [];
     if (account.kind === 'current') {
-      const charges = closingAccountFees(
+      const fees = closingAccountFees(
         this.#currentAccountConditions(account.bankId),
         account,
         tick,
         this.#inflows(id),
       );
-      for (const charge of charges) {
-        this.#bookAccountFee(tick, account, charge.amount, charge.month);
+      for (const charge of fees) {
+        charges.push(this.#feeDraft(tick, account, charge.amount, charge.month));
       }
     }
     if (debit < 0) {
-      this.#bookDebitInterest(tick, account, debit, month);
+      charges.push(this.#debitDraft(tick, account, debit, month));
+    }
+    let balance = this.#player.balances.get(id) ?? 0;
+    for (const draft of [...credits, ...charges]) {
+      for (const posting of draft.postings) {
+        if (posting.account === id) {
+          balance += posting.amount;
+        }
+      }
+    }
+    return { credits, charges, taxYear, credited, balance };
+  }
+
+  /**
+   * Books the settlement of a closing account (`settlement`) and clears its accrued interest. The
+   * caller closes the account afterwards; the closing day itself accrues no interest, because the
+   * account is empty at its end.
+   */
+  settleAccount(id: AccountId, tick: Tick): void {
+    const settlement = this.settlement(id, tick);
+    const accrual = this.#accrual(id);
+    accrual.credit = 0;
+    accrual.debit = 0;
+    accrual.pendingCredit = 0;
+    accrual.pendingDebit = 0;
+    for (const draft of settlement.credits) {
+      this.book(draft);
+    }
+    this.#player.taxYear = settlement.taxYear;
+    if (settlement.credited !== null) {
+      this.#ports.emit({ type: 'interest-credited', tick, accountId: id, ...settlement.credited });
+    }
+    for (const draft of settlement.charges) {
+      this.book(draft);
     }
   }
 
@@ -332,20 +448,44 @@ export class BankingSystem {
     to: CalendarMonth,
   ): void {
     const player = this.#player;
-    this.book({
+    const interest = this.#creditDrafts(tick, account, amount, from, to, player.taxYear);
+    for (const draft of interest.drafts) {
+      this.book(draft);
+    }
+    player.taxYear = interest.taxYear;
+    this.#ports.emit({
+      type: 'interest-credited',
       tick,
-      type: 'credit-interest',
-      postings: [
-        { account: account.id, amount },
-        { account: bankInterestAccount(account.bankId), amount: -amount },
-      ],
-      params: { from: monthKey(from), to: monthKey(to) },
+      accountId: account.id,
+      amount,
+      tax: interest.tax,
     });
-    const { state, delta } = assessTaxableIncome(player.taxYear, amount);
-    player.taxYear = state;
+  }
+
+  /** The credit interest and the tax on it (TS §7.7), with the tax year after them. */
+  #creditDrafts(
+    tick: Tick,
+    account: Account,
+    amount: Cents,
+    from: CalendarMonth,
+    to: CalendarMonth,
+    taxYear: TaxYear,
+  ): { drafts: TransactionDraft[]; taxYear: TaxYear; tax: Cents } {
+    const drafts: TransactionDraft[] = [
+      {
+        tick,
+        type: 'credit-interest',
+        postings: [
+          { account: account.id, amount },
+          { account: bankInterestAccount(account.bankId), amount: -amount },
+        ],
+        params: { from: monthKey(from), to: monthKey(to) },
+      },
+    ];
+    const { state, delta } = assessTaxableIncome(taxYear, amount);
     const type = taxTransactionType(delta);
     if (type !== null) {
-      this.book({
+      drafts.push({
         tick,
         type,
         postings: [
@@ -354,13 +494,7 @@ export class BankingSystem {
         ],
       });
     }
-    this.#ports.emit({
-      type: 'interest-credited',
-      tick,
-      accountId: account.id,
-      amount,
-      tax: delta,
-    });
+    return { drafts, taxYear: state, tax: delta };
   }
 
   /** Living costs of the month from the salary account, also into the red (TS §7.4). */
@@ -392,13 +526,13 @@ export class BankingSystem {
         this.#inflows(account.id).depositsLastMonth,
       );
       if (fee > 0) {
-        this.#bookAccountFee(tick, account, fee, month);
+        this.book(this.#feeDraft(tick, account, fee, month));
       }
     }
   }
 
-  #bookAccountFee(tick: Tick, account: Account, fee: Cents, month: CalendarMonth): void {
-    this.book({
+  #feeDraft(tick: Tick, account: Account, fee: Cents, month: CalendarMonth): TransactionDraft {
+    return {
       tick,
       type: 'account-fee',
       postings: [
@@ -406,7 +540,7 @@ export class BankingSystem {
         { account: bankFeesAccount(account.bankId), amount: fee },
       ],
       params: { month: monthKey(month) },
-    });
+    };
   }
 
   /**
@@ -422,13 +556,13 @@ export class BankingSystem {
       const amount = bookedInterest(accrual.pendingDebit);
       accrual.pendingDebit = 0;
       if (amount < 0) {
-        this.#bookDebitInterest(tick, account, amount, month);
+        this.book(this.#debitDraft(tick, account, amount, month));
       }
     }
   }
 
-  #bookDebitInterest(tick: Tick, account: Account, amount: Cents, month: CalendarMonth): void {
-    this.book({
+  #debitDraft(tick: Tick, account: Account, amount: Cents, month: CalendarMonth): TransactionDraft {
+    return {
       tick,
       type: account.kind === 'current' ? 'overdraft-interest' : 'debit-interest',
       postings: [
@@ -436,7 +570,7 @@ export class BankingSystem {
         { account: bankInterestAccount(account.bankId), amount: -amount },
       ],
       params: { from: monthKey(month), to: monthKey(month) },
-    });
+    };
   }
 
   #dailyInterest(account: Account, balance: Cents): number {

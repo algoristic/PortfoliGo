@@ -242,6 +242,34 @@ describe('player-logic', () => {
       });
     });
 
+    // TS §9.1: the worker stores the net worth with the clock from M3 on
+    it('takes the net worth from the clock, also when it is negative', () => {
+      const versions = { simVersion: SIM_VERSION, schemaVersion: SCHEMA_VERSION };
+      expect(
+        toPlayerListEntry(
+          profile(),
+          { tick: 5_400_000, lastSeenAt: 2_000, netWorth: 1_234_567 },
+          versions,
+        ).netWorth,
+      ).toBe(1_234_567);
+      expect(
+        toPlayerListEntry(
+          profile(),
+          { tick: 5_400_000, lastSeenAt: 2_000, netWorth: -500 },
+          versions,
+        ).netWorth,
+      ).toBe(-500);
+      expect(
+        toPlayerListEntry(profile(), { tick: 5_400_000, lastSeenAt: 2_000, netWorth: 0 }, versions)
+          .netWorth,
+      ).toBe(0);
+    });
+
+    it('has no net worth for a clock stored before M3', () => {
+      const entry = toPlayerListEntry(profile(), { tick: 5_400_000, lastSeenAt: 2_000 }, undefined);
+      expect('netWorth' in entry).toBe(false);
+    });
+
     it('has no game time for a player the worker never loaded', () => {
       const entry = toPlayerListEntry(profile(), undefined, undefined);
       expect(entry).toMatchObject({ tick: null, lastSeenAt: null, outdated: false });

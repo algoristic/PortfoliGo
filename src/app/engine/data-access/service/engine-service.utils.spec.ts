@@ -1,5 +1,6 @@
 import fc from 'fast-check';
 
+import { ACCOUNT_KINDS, OPENABLE_ACCOUNT_KINDS } from '@app/banking/domain/models/account.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
 import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
 
@@ -23,6 +24,9 @@ const arbCount = fc.nat({ max: 10_000_000 });
 const arbSpeed = fc.constantFrom(...SPEEDS.map((speed) => speed.id));
 const arbMode = fc.constantFrom(...BACKGROUND_MODES);
 const arbPrice = fc.double({ min: 0.01, max: 1e6, noNaN: true });
+const arbCents = fc.integer({ min: -1e12, max: 1e12 });
+const arbAccountId = fc.integer({ min: 1, max: 1e9 }).map((n) => `acc-${n}`);
+const arbDepotId = fc.integer({ min: 1, max: 1e9 }).map((n) => `dep-${n}`);
 
 function envelope<T extends string, P>(type: T, payload: fc.Arbitrary<P>) {
   return fc.record({
@@ -64,8 +68,39 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
   envelope('cancelJump', fc.constant({})),
   envelope('subscribe', fc.record({ series: fc.array(arbCount) })),
   envelope('unsubscribe', fc.record({ series: fc.array(arbCount) })),
-  envelope('query', fc.constant({ query: { kind: 'exchanges' as const } })),
+  envelope(
+    'query',
+    fc.record({
+      query: fc.oneof(
+        fc.constant({ kind: 'exchanges' as const }),
+        fc.constant({ kind: 'banks' as const }),
+        fc.constant({ kind: 'monthlyValues' as const }),
+        fc.record({ kind: fc.constant('closingPreview' as const), accountId: arbAccountId }),
+      ),
+    }),
+  ),
   envelope('setBackgroundMode', fc.record({ mode: arbMode })),
+  envelope(
+    'openAccount',
+    fc.record({ bankId: arbId, kind: fc.constantFrom(...OPENABLE_ACCOUNT_KINDS) }),
+  ),
+  envelope(
+    'closeAccount',
+    fc.record(
+      { accountId: arbAccountId, targetAccountId: arbAccountId },
+      { requiredKeys: ['accountId'] },
+    ),
+  ),
+  envelope('setSalaryAccount', fc.record({ accountId: arbAccountId })),
+  envelope(
+    'transfer',
+    fc.record({
+      fromAccountId: arbAccountId,
+      toAccountId: arbAccountId,
+      amount: arbCents,
+      purpose: fc.string(),
+    }),
+  ),
 ) as fc.Arbitrary<EngineCommandMessage>;
 
 const arbQuote = fc.record({
@@ -76,6 +111,20 @@ const arbQuote = fc.record({
   previousClose: arbPrice,
   change: fc.double({ min: -1e6, max: 1e6, noNaN: true }),
   changeRatio: fc.double({ min: -1, max: 1e3, noNaN: true }),
+});
+
+const arbAccountView = fc.record({
+  id: arbAccountId,
+  kind: fc.constantFrom(...ACCOUNT_KINDS),
+  bankId: arbId,
+  number: fc.string(),
+  depot: fc.option(fc.record({ id: arbDepotId, number: fc.string() }), { nil: null }),
+  openedAt: arbCount,
+  closedAt: fc.option(arbCount, { nil: null }),
+  balance: arbCents,
+  overdraftLimit: fc.option(arbCount, { nil: null }),
+  available: arbCount,
+  salaryAccount: fc.boolean(),
 });
 
 const arbEvent: fc.Arbitrary<EngineEventMessage> = fc.oneof(
@@ -93,6 +142,15 @@ const arbEvent: fc.Arbitrary<EngineEventMessage> = fc.oneof(
     }),
   ),
   envelope('quotes', fc.record({ tick: arbCount, quotes: fc.array(arbQuote, { maxLength: 4 }) })),
+  envelope(
+    'projection',
+    fc.record({
+      tick: arbCount,
+      full: fc.boolean(),
+      accounts: fc.array(arbAccountView, { maxLength: 4 }),
+      netWorth: arbCents,
+    }),
+  ),
   envelope(
     'progress',
     fc.record({
@@ -161,6 +219,22 @@ const CLOCK = {
   overloaded: false,
   jumping: false,
 };
+const TRANSFER = { fromAccountId: 'acc-1', toAccountId: 'acc-2', amount: 100, purpose: 'Miete' };
+const ACCOUNT = {
+  id: 'acc-2',
+  kind: 'clearing',
+  bankId: 'b3',
+  number: '0000000002',
+  depot: { id: 'dep-3', number: '0000000003' },
+  openedAt: 5_389_920,
+  closedAt: null,
+  balance: -1_479,
+  overdraftLimit: null,
+  available: 0,
+  salaryAccount: false,
+};
+const projection = (fields: Record<string, unknown>): unknown =>
+  event('projection', { tick: 1, full: false, accounts: [ACCOUNT], netWorth: 0, ...fields });
 const QUOTE = {
   series: 0,
   last: 1,
@@ -211,6 +285,10 @@ describe('engine protocol guards', () => {
             'series',
             'target',
             'start',
+            'query',
+            'accountId',
+            'amount',
+            'purpose',
           ),
           fc.anything(),
           fc.boolean(),
@@ -268,6 +346,24 @@ describe('engine protocol guards', () => {
       ['a jump target that is not an object', command('jumpTo', { target: null })],
       ['an unknown jump target', command('jumpTo', { target: { kind: 'tomorrow' } })],
       ['a payload that is not an object', command('pause', null)],
+      [
+        'an account kind that cannot be opened',
+        command('openAccount', { bankId: 'b1', kind: 'clearing' }),
+      ],
+      ['an empty bank id', command('openAccount', { bankId: '', kind: 'depot' })],
+      ['a depot id as account', command('closeAccount', { accountId: 'dep-2' })],
+      ['account number 0', command('setSalaryAccount', { accountId: 'acc-0' })],
+      [
+        'a target that is not an account',
+        command('closeAccount', { accountId: 'acc-2', targetAccountId: 3 }),
+      ],
+      ['a fractional amount', command('transfer', { ...TRANSFER, amount: 1.5 })],
+      ['an amount given as a string', command('transfer', { ...TRANSFER, amount: '100' })],
+      ['no purpose', command('transfer', { ...TRANSFER, purpose: undefined })],
+      [
+        'a closing preview without an account',
+        command('query', { query: { kind: 'closingPreview' } }),
+      ],
     ])('rejects a command with %s', (_label, message) => {
       expect(isEngineCommandMessage(message)).toBe(false);
     });
@@ -277,6 +373,16 @@ describe('engine protocol guards', () => {
       ['a jump to tick 0', command('jumpTo', { target: { kind: 'date', tick: 0 } })],
       ['zero start conditions', loadPlayer({})],
       ['a lower bound of the tick', loadPlayer({ minTick: 5_389_920 })],
+      ['a depot to open', command('openAccount', { bankId: 'b3', kind: 'depot' })],
+      ['a closing without target', command('closeAccount', { accountId: 'acc-12' })],
+      // The engine answers these with its own codes (`invalid-amount`, `purpose-too-long`).
+      ['a negative amount', command('transfer', { ...TRANSFER, amount: -100 })],
+      ['a long purpose', command('transfer', { ...TRANSFER, purpose: 'x'.repeat(500) })],
+      [
+        'a closing preview',
+        command('query', { query: { kind: 'closingPreview', accountId: 'acc-2' } }),
+      ],
+      ['the monthly values', command('query', { query: { kind: 'monthlyValues' } })],
     ])('accepts a command with %s', (_label, message) => {
       expect(isEngineCommandMessage(message)).toBe(true);
     });
@@ -291,7 +397,18 @@ describe('engine protocol guards', () => {
       fc.assert(
         fc.property(
           arbEvent,
-          fc.constantFrom('protocol', 'id', 'replyTo', 'payload', 'tick', 'quotes', 'ok', 'error'),
+          fc.constantFrom(
+            'protocol',
+            'id',
+            'replyTo',
+            'payload',
+            'tick',
+            'quotes',
+            'accounts',
+            'netWorth',
+            'ok',
+            'error',
+          ),
           fc.anything(),
           fc.boolean(),
           (message, key, value, inPayload) => {
@@ -375,6 +492,16 @@ describe('engine protocol guards', () => {
         'a negative progress',
         event('progress', { kind: 'jump', state: 'running', done: -1, total: 5 }),
       ],
+      ['a projection without net worth', projection({ netWorth: undefined })],
+      ['a fractional net worth', projection({ netWorth: 0.5 })],
+      ['accounts that are not a list', projection({ accounts: ACCOUNT })],
+      ['an account of an unknown kind', projection({ accounts: [{ ...ACCOUNT, kind: 'cfd' }] })],
+      ['a negative available amount', projection({ accounts: [{ ...ACCOUNT, available: -1 }] })],
+      [
+        'a depot without number',
+        projection({ accounts: [{ ...ACCOUNT, depot: { id: 'dep-3' } }] }),
+      ],
+      ['an engine error the protocol does not know', reply({ ok: false, error: 'no-money' })],
     ])('rejects an event with %s', (_label, message) => {
       expect(isEngineEventMessage(message)).toBe(false);
     });
@@ -388,6 +515,9 @@ describe('engine protocol guards', () => {
         event('progress', { kind: 'candles', state: 'done', done: 3, total: 3 }),
       ],
       ['a quote of series 0 without bid and ask', event('quotes', { tick: 0, quotes: [QUOTE] })],
+      ['a projection with a negative net worth', projection({ netWorth: -500 })],
+      ['a full projection without accounts', projection({ full: true, accounts: [] })],
+      ['a rejected transfer', reply({ ok: false, error: 'insufficient-funds' })],
     ])('accepts an event with %s', (_label, message) => {
       expect(isEngineEventMessage(message)).toBe(true);
     });
