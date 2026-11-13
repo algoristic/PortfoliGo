@@ -52,6 +52,7 @@ export { expect };
 
 /** No serious or critical WCAG 2.2 AA findings (NF-09); `exclude` takes CSS selectors. */
 export async function expectAccessible(page: Page, exclude: readonly string[] = []): Promise<void> {
+  await waitForTransitions(page);
   let builder = new AxeBuilder({ page }).withTags([
     'wcag2a',
     'wcag2aa',
@@ -70,4 +71,24 @@ export async function expectAccessible(page: Page, exclude: readonly string[] = 
         `${violation.id} (${violation.impact}): ${violation.nodes.map((node) => node.target.join(' ')).join(', ')}`,
     );
   expect(findings).toEqual([]);
+}
+
+/**
+ * axe reads the computed colours: in the middle of a transition (the fading dialog backdrop, a
+ * button's `transition-colors` right after a dialog opened) it measures intermediate colours and
+ * reports contrast findings that the resting page doesn't have. Waits for the finite animations
+ * running now; endless ones (`animate-pulse`) are skipped.
+ */
+async function waitForTransitions(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    const running = document
+      .getAnimations()
+      .filter(
+        (animation) =>
+          animation.playState === 'running' &&
+          animation.effect?.getComputedTiming().endTime !== Infinity,
+      );
+    // A cancelled transition rejects `finished`; it has stopped all the same.
+    await Promise.allSettled(running.map((animation) => animation.finished));
+  });
 }
