@@ -70,6 +70,11 @@ export class DailyCandleSource {
     return this.#history;
   }
 
+  /** The engine's price source with minute curves; `null` for other ports (test market). */
+  get priceSource(): PriceSource | null {
+    return this.#port instanceof PriceSource ? this.#port : null;
+  }
+
   get tables(): CurveTables {
     if (this.#port instanceof PriceSource) {
       return this.#port.tables;

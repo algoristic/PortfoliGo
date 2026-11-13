@@ -380,6 +380,60 @@ describe('EngineService', () => {
         { series: [], movers: true },
       ]);
     });
+
+    it('answers a block of candles up to the current tick', async () => {
+      const { tick } = await firstValueFrom(service.loadPlayer(PLAYER));
+      const result = await firstValueFrom(service.candles({ series: 0, interval: '1d', limit: 5 }));
+      expect(result).toMatchObject({ kind: 'candles', series: 0, interval: '1d', tick });
+      expect(result.candles).toHaveLength(5);
+      expect(result.candles.every((candle) => candle.tick < tick)).toBe(true);
+      const failure = await firstValueFrom(
+        service.candles({ series: 9_999, interval: '1d' }),
+      ).catch((e: EngineCommandError) => e.code);
+      expect(failure).toBe('unknown-instrument');
+    });
+
+    it('subscribes each chart once for all subscribers and resends them after a restart', async () => {
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      const daily: string[] = [];
+      const hourly: string[] = [];
+      const a = service
+        .chartCandles(0, '1d')
+        .subscribe(({ series, interval }) => daily.push(`${series}/${interval}`));
+      const b = service.chartCandles(0, '1d').subscribe();
+      const c = service
+        .chartCandles(0, '1h')
+        .subscribe(({ series, interval }) => hourly.push(`${series}/${interval}`));
+      // One sending per throttle period: the second chart follows 250 ms later.
+      await engine.advance(300);
+      expect(received('subscribe').map(({ payload }) => payload)).toEqual([
+        { series: [], charts: [{ series: 0, interval: '1d' }] },
+        { series: [], charts: [{ series: 0, interval: '1h' }] },
+      ]);
+      expect(daily).toEqual(['0/1d']);
+      expect(hourly).toEqual(['0/1h']);
+
+      c.unsubscribe();
+      await engine.idle();
+      expect(received('unsubscribe').map(({ payload }) => payload)).toEqual([
+        { series: [], charts: [{ series: 0, interval: '1h' }] },
+      ]);
+
+      engine.crash('boom');
+      await engine.idle();
+      expect(received('subscribe', 1).map(({ payload }) => payload)).toEqual([
+        { series: [], charts: [{ series: 0, interval: '1d' }] },
+      ]);
+
+      a.unsubscribe();
+      await engine.idle();
+      expect(received('unsubscribe', 1)).toEqual([]);
+      b.unsubscribe();
+      await engine.idle();
+      expect(received('unsubscribe', 1).map(({ payload }) => payload)).toEqual([
+        { series: [], charts: [{ series: 0, interval: '1d' }] },
+      ]);
+    });
   });
 
   describe('worker failures', () => {

@@ -5,6 +5,8 @@ import { TRANSACTION_TYPES } from '@app/banking/domain/models/ledger.model';
 import { MAX_STATEMENT_LIMIT } from '@app/banking/domain/models/statement.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
 import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
+import { MAX_CANDLE_LIMIT } from '@app/market/domain/candle-window';
+import { CANDLE_RESOLUTIONS } from '@app/market/domain/models/candle.model';
 import { INSTRUMENT_KINDS } from '@app/market/domain/models/instrument.model';
 import { SCREENER_SORT_KEYS, SORT_DIRECTIONS } from '@app/market/domain/models/screener.model';
 import {
@@ -82,6 +84,38 @@ const arbScreenerQuery = fc.record(
   },
   { requiredKeys: ['kind'] },
 );
+
+const arbInterval = fc.constantFrom(...CANDLE_RESOLUTIONS);
+const arbChart = fc.record({ series: arbCount, interval: arbInterval });
+
+const arbSubscription = fc.record(
+  {
+    series: fc.array(arbCount),
+    movers: fc.boolean(),
+    charts: fc.array(arbChart, { maxLength: 3 }),
+  },
+  { requiredKeys: ['series'] },
+);
+
+const arbCandlesQuery = fc.record(
+  {
+    kind: fc.constant('candles' as const),
+    series: arbCount,
+    interval: arbInterval,
+    from: arbCount,
+    to: arbCount,
+    limit: fc.integer({ min: 1, max: MAX_CANDLE_LIMIT }),
+  },
+  { requiredKeys: ['kind', 'series', 'interval'] },
+);
+
+const arbCandle = fc.record({
+  tick: fc.integer({ min: -10_000, max: 10_000_000 }),
+  open: arbPrice,
+  high: arbPrice,
+  low: arbPrice,
+  close: arbPrice,
+});
 
 const arbMonthlyValues = fc.record({
   income: arbCents,
@@ -181,14 +215,8 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
     }),
   ),
   envelope('cancelJump', fc.constant({})),
-  envelope(
-    'subscribe',
-    fc.record({ series: fc.array(arbCount), movers: fc.boolean() }, { requiredKeys: ['series'] }),
-  ),
-  envelope(
-    'unsubscribe',
-    fc.record({ series: fc.array(arbCount), movers: fc.boolean() }, { requiredKeys: ['series'] }),
-  ),
+  envelope('subscribe', arbSubscription),
+  envelope('unsubscribe', arbSubscription),
   envelope(
     'query',
     fc.record({
@@ -211,6 +239,7 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
         fc.constant({ kind: 'instruments' as const }),
         fc.record({ kind: fc.constant('instrumentDetails' as const), id: arbId }),
         arbScreenerQuery,
+        arbCandlesQuery,
       ),
     }),
   ),
@@ -310,6 +339,19 @@ const arbEvent: fc.Arbitrary<EngineEventMessage> = fc.oneof(
     ),
   ),
   envelope('quotes', fc.record({ tick: arbCount, quotes: fc.array(arbQuote, { maxLength: 4 }) })),
+  envelope(
+    'candle',
+    fc.record(
+      {
+        tick: arbCount,
+        series: arbCount,
+        interval: arbInterval,
+        candle: arbCandle,
+        previous: arbCandle,
+      },
+      { requiredKeys: ['tick', 'series', 'interval', 'candle'] },
+    ),
+  ),
   envelope(
     'movers',
     fc.record({
@@ -686,6 +728,37 @@ describe('engine protocol guards', () => {
         'a search longer than 100 characters',
         command('query', { query: { kind: 'screener', search: 'x'.repeat(101) } }),
       ],
+      [
+        'a chart with an unknown interval',
+        command('subscribe', { series: [], charts: [{ series: 0, interval: '2h' }] }),
+      ],
+      [
+        'a chart without a series',
+        command('unsubscribe', { series: [], charts: [{ interval: '1d' }] }),
+      ],
+      ['candles without an interval', command('query', { query: { kind: 'candles', series: 0 } })],
+      [
+        'candles of a negative series',
+        command('query', { query: { kind: 'candles', series: -1, interval: '1d' } }),
+      ],
+      [
+        'candles with a limit of 0',
+        command('query', { query: { kind: 'candles', series: 0, interval: '1m', limit: 0 } }),
+      ],
+      [
+        'candles with a limit above the maximum',
+        command('query', {
+          query: { kind: 'candles', series: 0, interval: '1m', limit: MAX_CANDLE_LIMIT + 1 },
+        }),
+      ],
+      [
+        'candles with a fractional limit',
+        command('query', { query: { kind: 'candles', series: 0, interval: '1m', limit: 1.5 } }),
+      ],
+      [
+        'candles up to a negative tick',
+        command('query', { query: { kind: 'candles', series: 0, interval: '1d', to: -1 } }),
+      ],
     ])('rejects a command with %s', (_label, message) => {
       expect(isEngineCommandMessage(message)).toBe(false);
     });
@@ -755,6 +828,33 @@ describe('engine protocol guards', () => {
             styles: ['growth'],
             dividendYield: { min: 0.01 },
             sort: { key: 'y5', direction: 'desc' },
+          },
+        }),
+      ],
+      [
+        'two charts',
+        command('subscribe', {
+          series: [],
+          charts: [
+            { series: 0, interval: '1m' },
+            { series: 0, interval: '1w' },
+          ],
+        }),
+      ],
+      [
+        'candles of a series',
+        command('query', { query: { kind: 'candles', series: 0, interval: '1d' } }),
+      ],
+      [
+        'a block of the most candles',
+        command('query', {
+          query: {
+            kind: 'candles',
+            series: 3,
+            interval: '5m',
+            from: 0,
+            to: 100,
+            limit: MAX_CANDLE_LIMIT,
           },
         }),
       ],
@@ -910,6 +1010,24 @@ describe('engine protocol guards', () => {
         projection({ notifications: { lastSeq: 1, unread: 0, autoPause: {} } }),
       ],
       ['a report without flows', event('report', { from: 0, to: 1 })],
+      [
+        'a candle with a missing high',
+        event('candle', {
+          tick: 1,
+          series: 0,
+          interval: '1d',
+          candle: { tick: 0, open: 1, high: Number.NaN, low: 1, close: 1 },
+        }),
+      ],
+      [
+        'a candle of an unknown interval',
+        event('candle', {
+          tick: 1,
+          series: 0,
+          interval: '1y',
+          candle: { tick: 0, open: 1, high: 1, low: 1, close: 1 },
+        }),
+      ],
     ])('rejects an event with %s', (_label, message) => {
       expect(isEngineEventMessage(message)).toBe(false);
     });
@@ -939,6 +1057,25 @@ describe('engine protocol guards', () => {
         }),
       ],
       ['a rejected read request', reply({ ok: false, error: 'unknown-notification' })],
+      [
+        'the first weekly candle, which starts before the epoch',
+        event('candle', {
+          tick: 0,
+          series: 0,
+          interval: '1w',
+          candle: { tick: -2_880, open: 1, high: 2, low: 1, close: 2 },
+        }),
+      ],
+      [
+        'a new candle with its predecessor',
+        event('candle', {
+          tick: 600,
+          series: 2,
+          interval: '1h',
+          candle: { tick: 600, open: 1, high: 1, low: 1, close: 1 },
+          previous: { tick: 540, open: 1, high: 2, low: 0.5, close: 1 },
+        }),
+      ],
     ])('accepts an event with %s', (_label, message) => {
       expect(isEngineEventMessage(message)).toBe(true);
     });

@@ -7,11 +7,15 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { BackgroundMode } from '@app/engine/domain/models/game-state.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import { CandleResolution } from '@app/market/domain/models/candle.model';
 import { ScreenerCriteria } from '@app/market/domain/models/screener.model';
 import { AutoPauseCode } from '@app/notifications/domain/models/notification.model';
 
 import { ENGINE_WORKER_FACTORY, MAX_WORKER_FAILURES } from './engine-service.config';
 import {
+  CandlePayload,
+  CandlesRequest,
+  ChartSubscription,
   ENGINE_PROTOCOL,
   EngineCommandMessage,
   EngineCommandPayloads,
@@ -72,6 +76,8 @@ export class EngineService implements OnDestroy {
   readonly #quoteCounts = new Map<number, number>();
   /** Subscribers of the topic `movers`. */
   #moversCount = 0;
+  /** Subscribers per chart (series and interval), by `series/interval`. */
+  readonly #chartCounts = new Map<string, { chart: ChartSubscription; count: number }>();
   #worker?: EngineWorkerPort;
   #nextId = 1;
   #lastLoad?: LoadPlayerPayload;
@@ -205,6 +211,15 @@ export class EngineService implements OnDestroy {
     return this.#query({ ...criteria, kind: 'screener' });
   }
 
+  /**
+   * A block of candles up to the current tick (TS §8.2, US-CH-01): the newest `limit` candles in
+   * `[from, to]`, ascending, and whether older ones exist. Older blocks for scrolling: `to` = start
+   * of the oldest loaded candle − 1. Fails with `unknown-instrument` for an unknown series.
+   */
+  candles(request: CandlesRequest): Observable<EngineQueryResultOf<'candles'>> {
+    return this.#query({ ...request, kind: 'candles' });
+  }
+
   /** Switches the auto-pause of a notification code (TS §12, US-ZT-06). */
   setAutoPause(code: AutoPauseCode, enabled: boolean): Observable<EngineReplies['setAutoPause']> {
     return this.#request('setAutoPause', { code, enabled });
@@ -305,6 +320,34 @@ export class EngineService implements OnDestroy {
         this.#moversCount--;
         if (this.#moversCount === 0) {
           this.#notify('unsubscribe', { series: [], movers: true });
+        }
+      };
+    });
+  }
+
+  /**
+   * The newest candle of a chart (TS §8.3, §8.4) whenever it changes, at most four times per
+   * second; with `previous` when a new candle began. The worker gets one subscription per series
+   * and interval however many views watch it, and its end with the last one.
+   */
+  chartCandles(series: number, interval: CandleResolution): Observable<CandlePayload> {
+    return new Observable<CandlePayload>((subscriber) => {
+      const key = `${series}/${interval}`;
+      const entry = this.#chartCounts.get(key) ?? { chart: { series, interval }, count: 0 };
+      entry.count++;
+      this.#chartCounts.set(key, entry);
+      if (entry.count === 1) {
+        this.#notify('subscribe', { series: [], charts: [{ series, interval }] });
+      }
+      const subscription = this.#payloads('candle')
+        .pipe(filter((payload) => payload.series === series && payload.interval === interval))
+        .subscribe(subscriber);
+      return () => {
+        subscription.unsubscribe();
+        entry.count--;
+        if (entry.count === 0) {
+          this.#chartCounts.delete(key);
+          this.#notify('unsubscribe', { series: [], charts: [{ series, interval }] });
         }
       };
     });
@@ -451,8 +494,13 @@ export class EngineService implements OnDestroy {
       });
     }
     const series = [...this.#quoteCounts.keys()];
-    if (series.length > 0 || this.#moversCount > 0) {
-      this.#notify('subscribe', this.#moversCount > 0 ? { series, movers: true } : { series });
+    const charts = [...this.#chartCounts.values()].map(({ chart }) => ({ ...chart }));
+    if (series.length > 0 || this.#moversCount > 0 || charts.length > 0) {
+      this.#notify('subscribe', {
+        series,
+        ...(this.#moversCount > 0 ? { movers: true } : {}),
+        ...(charts.length > 0 ? { charts } : {}),
+      });
     }
   }
 }

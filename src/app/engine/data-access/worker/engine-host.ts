@@ -18,8 +18,15 @@ import { replayCommands } from '@app/engine/domain/replay';
 import { seriesQuote } from '@app/engine/domain/series-quote';
 import { Throttle } from '@app/engine/domain/throttle-logic';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
+import { isIntraday, MAX_CANDLE_LIMIT } from '@app/market/domain/candle-window';
+import {
+  intradayCandleBlock,
+  latestCandle,
+  supportOpenClose,
+} from '@app/market/domain/chart-candles';
 import { DailyCloses } from '@app/market/domain/daily-closes';
 import { instrumentCatalog, instrumentDetails } from '@app/market/domain/instrument-catalog';
+import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
 import { indexSeries, seriesCount } from '@app/market/domain/series';
 import {
@@ -53,6 +60,7 @@ import { deriveSeedKey } from '@app/simulation/util/seed';
 import { generateWorld } from '@app/world/domain/world-generator';
 
 import { CandleBackfill } from './candle-backfill';
+import { dailyCandleBlock } from './daily-candle-query';
 import { DailyCandleSource } from './daily-candle-source';
 import { candleYear } from './daily-candles.utils';
 import {
@@ -69,6 +77,8 @@ import {
 
 import {
   AutoPauseCause,
+  CandlesQuery,
+  ChartSubscription,
   ClockPayload,
   ENGINE_COMMAND_TYPES,
   ENGINE_PROTOCOL,
@@ -129,6 +139,8 @@ interface LoadedGame {
   candlesWrittenMs: number;
   /** One candle write at a time; a write asked for meanwhile follows right after. */
   candleWrite?: Promise<void>;
+  /** The candles of the running write, until it settled (the candle query reads them too). */
+  candlesWriting: DailyCandlePatch[];
   candleWriteAgain: boolean;
   backfill?: CandleBackfill;
   backfillPlanned: boolean;
@@ -181,6 +193,25 @@ interface MarketData {
   closes: DailyCloses;
 }
 
+/** A subscribed chart (TS §8.4) and the newest candle sent for it, `null` before the first. */
+interface ChartState extends ChartSubscription {
+  sent: Candle | null;
+}
+
+function chartKey(series: number, interval: CandleResolution): string {
+  return `${series}/${interval}`;
+}
+
+function sameCandle(a: Candle, b: Candle): boolean {
+  return (
+    a.tick === b.tick &&
+    a.open === b.open &&
+    a.high === b.high &&
+    a.low === b.low &&
+    a.close === b.close
+  );
+}
+
 /** What a snapshot writes, taken in one go (`#snapshotData`). */
 interface SnapshotData {
   state: ReturnType<GameEngine['snapshot']>;
@@ -216,9 +247,12 @@ export class EngineHost {
   readonly #clockThrottle: Throttle;
   readonly #quotesThrottle: Throttle;
   readonly #moversThrottle: Throttle;
+  readonly #candleThrottle: Throttle;
   readonly #projectionThrottle: Throttle;
   readonly #notificationThrottle: Throttle;
   readonly #subscriptions = new Set<number>();
+  /** Subscribed charts by `chartKey` (TS §8.4); several at once. */
+  readonly #charts = new Map<string, ChartState>();
   readonly #handlers: Handlers = {
     loadPlayer: (payload) => this.#load(payload),
     unloadPlayer: () => this.#unload(),
@@ -242,19 +276,27 @@ export class EngineHost {
       }
       return null;
     },
-    subscribe: ({ series, movers }) => {
+    subscribe: ({ series, movers, charts }) => {
       series.forEach((s) => this.#subscriptions.add(s));
       this.#quotesStale = true;
       if (movers === true) {
         this.#moversSubscribed = true;
         this.#moversStale = true;
       }
+      // A chart subscribed (again) gets its newest candle with the next event.
+      for (const { series: s, interval } of charts ?? []) {
+        this.#charts.set(chartKey(s, interval), { series: s, interval, sent: null });
+        this.#chartsStale = true;
+      }
       return null;
     },
-    unsubscribe: ({ series, movers }) => {
+    unsubscribe: ({ series, movers, charts }) => {
       series.forEach((s) => this.#subscriptions.delete(s));
       if (movers === true) {
         this.#moversSubscribed = false;
+      }
+      for (const { series: s, interval } of charts ?? []) {
+        this.#charts.delete(chartKey(s, interval));
       }
       return null;
     },
@@ -350,6 +392,8 @@ export class EngineHost {
   #moversSubscribed = false;
   #moversStale = false;
   #lastMoversTick: number | null = null;
+  #chartsStale = false;
+  #lastChartsTick: number | null = null;
   /** A game command or a load ran: its projection goes out before the reply, unthrottled. */
   #projectionDue = false;
 
@@ -360,6 +404,7 @@ export class EngineHost {
     this.#clockThrottle = new Throttle(this.#config.clockPerSecond);
     this.#quotesThrottle = new Throttle(this.#config.quotesPerSecond);
     this.#moversThrottle = new Throttle(this.#config.moversPerSecond);
+    this.#candleThrottle = new Throttle(this.#config.candlePerSecond);
     this.#projectionThrottle = new Throttle(this.#config.projectionPerSecond);
     this.#notificationThrottle = new Throttle(this.#config.notificationPerSecond);
   }
@@ -491,6 +536,7 @@ export class EngineHost {
       lock,
       candles,
       candleBuffer: [],
+      candlesWriting: [],
       candleYears: new Set(),
       candlesWrittenMs: now,
       candleWriteAgain: false,
@@ -544,6 +590,8 @@ export class EngineHost {
           );
     this.#lastClock = null;
     this.#quotesStale = true;
+    this.#charts.forEach((chart) => (chart.sent = null));
+    this.#chartsStale = true;
     this.#projectionDue = true;
     if (target > engine.tick) {
       this.#openAbsence(game);
@@ -1129,6 +1177,7 @@ export class EngineHost {
     }
     const patches = game.candleBuffer;
     game.candleBuffer = [];
+    game.candlesWriting = patches;
     game.candleYears.clear();
     game.candlesWrittenMs = this.#ports.now();
     game.candleWrite = this.#write(
@@ -1136,6 +1185,7 @@ export class EngineHost {
       undefined,
       () => {
         game.candleWrite = undefined;
+        game.candlesWriting = [];
         if (game.candleWriteAgain) {
           game.candleWriteAgain = false;
           this.#writeCandles(game);
@@ -1265,6 +1315,17 @@ export class EngineHost {
       this.#lastMoversTick = tick;
       this.#moversStale = false;
     }
+    if (
+      this.#charts.size > 0 &&
+      (this.#chartsStale || tick !== this.#lastChartsTick) &&
+      this.#candleThrottle.isDue(now)
+    ) {
+      // The throttle also bounds the computing outside the session, where nothing goes out.
+      this.#postCandles(game);
+      this.#candleThrottle.sent(now);
+      this.#lastChartsTick = tick;
+      this.#chartsStale = false;
+    }
     const forced = this.#projectionDue;
     this.#projectionDue = false;
     const notifications = this.#notificationsProjection(game);
@@ -1285,6 +1346,42 @@ export class EngineHost {
       this.#post('notification', { tick, notifications: game.outgoingNotifications });
       game.outgoingNotifications = [];
       this.#notificationThrottle.sent(now);
+    }
+  }
+
+  /**
+   * `candle` events of the subscribed charts (TS §8.4): the newest candle when it differs from the
+   * one sent last, so nothing goes out outside the session. When a new candle began, the event
+   * carries the finished one before it. Only the newest candles are computed, never the history.
+   */
+  #postCandles(game: LoadedGame): void {
+    const prices = game.candles.priceSource;
+    if (prices === null) {
+      return;
+    }
+    const tick = game.engine.tick;
+    const count = seriesCount(game.engine.world.context);
+    for (const chart of this.#charts.values()) {
+      if (chart.series >= count) {
+        continue;
+      }
+      const candle = latestCandle(prices, chart.series, chart.interval, tick, tick);
+      const sent = chart.sent;
+      if (candle === null || (sent !== null && sameCandle(sent, candle))) {
+        continue;
+      }
+      const previous =
+        sent !== null && sent.tick !== candle.tick
+          ? latestCandle(prices, chart.series, chart.interval, candle.tick - 1, tick)
+          : null;
+      this.#post('candle', {
+        tick,
+        series: chart.series,
+        interval: chart.interval,
+        candle,
+        ...(previous === null ? {} : { previous }),
+      });
+      chart.sent = candle;
     }
   }
 
@@ -1358,7 +1455,54 @@ export class EngineHost {
       }
       case 'screener':
         return this.#screener(game, query);
+      case 'candles':
+        return this.#candles(game, query);
     }
+  }
+
+  /**
+   * A block of candles (TS §8.2) up to the tick at the start of the query (the query limit):
+   * intraday from the minute curves, daily and weekly from the stored daily candles and the support
+   * points. The not yet stored candles are taken before reading, like the statement does.
+   */
+  async #candles(game: LoadedGame, query: CandlesQuery): Promise<EngineQueryResult> {
+    const { engine, candles: source } = game;
+    const { context } = engine.world;
+    const tick = engine.tick;
+    const { series, interval } = query;
+    if (series >= seriesCount(context)) {
+      throw new CommandFailure('unknown-instrument');
+    }
+    const prices = source.priceSource;
+    if (prices === null) {
+      throw new CommandFailure('internal-error', 'the price port has no minute curves');
+    }
+    const range = {
+      from: query.from ?? null,
+      to: query.to,
+      limit: query.limit ?? MAX_CANDLE_LIMIT,
+    };
+    const result = { kind: 'candles' as const, series, interval, tick };
+    if (isIntraday(interval)) {
+      return { ...result, ...intradayCandleBlock(prices, series, interval, range, tick) };
+    }
+    const { playerId } = game;
+    const seriesId = source.ids[series];
+    const block = await dailyCandleBlock({
+      ...range,
+      series,
+      seriesId,
+      resolution: interval,
+      now: tick,
+      prices,
+      pending: [...game.candlesWriting, ...game.candleBuffer],
+      loadBuckets: (fromYear, toYear) =>
+        storageCall(() =>
+          this.#ports.storage.loadDailyCandles(playerId, seriesId, fromYear, toYear),
+        ),
+      support: (days) => supportOpenClose(context, source.history, source.tables, series, days),
+    });
+    return { ...result, ...block };
   }
 
   /**

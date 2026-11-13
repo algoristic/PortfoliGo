@@ -29,6 +29,8 @@ const config = {
     'src/app/market/domain/screener-logic.ts',
     'src/app/market/domain/instrument-catalog.ts',
     'src/app/market/domain/daily-closes.ts',
+    'src/app/market/domain/candle-window.ts',
+    'src/app/market/domain/chart-candles.ts',
     'src/app/lab/domain/calibration-targets.ts',
     'src/app/engine/domain/scheduler.ts',
     'src/app/engine/domain/game-engine.ts',

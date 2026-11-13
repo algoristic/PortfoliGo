@@ -76,7 +76,7 @@ export class PriceSource {
     assertNotAfter(tick, now);
     const day = dayIndex(tick);
     const minute = minuteOfDay(tick);
-    const { open, close } = this.#session(series);
+    const { open, close } = this.session(series);
     if (!isMarketDay(day) || minute < open) {
       return this.#lastClose(series, day - 1);
     }
@@ -151,7 +151,7 @@ export class PriceSource {
     if (to < fromTick) {
       return [];
     }
-    const { open } = this.#session(series);
+    const { open } = this.session(series);
     let fromDay = dayIndex(fromTick);
     const toDay = dayIndex(to);
     if (resolution === '1w') {
@@ -178,7 +178,8 @@ export class PriceSource {
     return resolution === '1w' ? weeklyCandles(candles) : candles;
   }
 
-  #session(series: number): { open: number; close: number } {
+  /** Session of a series in minutes of the day: the open and the close (last minute value). */
+  session(series: number): { open: number; close: number } {
     const { layout, indices, etfs } = this.#context;
     const { kind, index } = seriesRef(this.#context, series);
     const source = kind === 'stock' ? layout : kind === 'etf' ? etfs : indices;
@@ -190,7 +191,7 @@ export class PriceSource {
 
   /** Last index of the minute curve that is known at `now`; −1 before the open. */
   #lastIndex(series: number, day: number, now: Tick): number {
-    const { open, close } = this.#session(series);
+    const { open, close } = this.session(series);
     const nowDay = dayIndex(now);
     if (day > nowDay) {
       throw new RangeError(`PriceSource: day ${day} is after the current tick ${now}`);

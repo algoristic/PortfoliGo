@@ -27,6 +27,8 @@ const RULE_SPECS = [
   'src/app/market/domain/screener-logic.spec.ts',
   'src/app/market/domain/instrument-catalog.spec.ts',
   'src/app/market/domain/daily-closes.spec.ts',
+  'src/app/market/domain/candle-window.spec.ts',
+  'src/app/market/domain/chart-candles.spec.ts',
   'src/app/lab/domain/calibration-targets.spec.ts',
   'src/app/engine/domain/scheduler.spec.ts',
   'src/app/engine/domain/game-engine.spec.ts',

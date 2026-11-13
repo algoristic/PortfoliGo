@@ -173,6 +173,8 @@ export interface EngineHostConfig {
   quotesPerSecond: number;
   /** Rate limit of the `movers` event (TS §8.4). */
   moversPerSecond: number;
+  /** Rate limit of the `candle` events, all subscribed charts together per sending (TS §8.4). */
+  candlePerSecond: number;
   /** Projections after commands and loading go out at once and count towards the limit. */
   projectionPerSecond: number;
   /** Interval of the progress events of batch runs and the candle job (TS §3.7). */
@@ -213,6 +215,7 @@ export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
   clockPerSecond: 10,
   quotesPerSecond: 4,
   moversPerSecond: 4,
+  candlePerSecond: 4,
   projectionPerSecond: 4,
   progressIntervalMs: 100,
   clockSaveIntervalMs: 5_000,

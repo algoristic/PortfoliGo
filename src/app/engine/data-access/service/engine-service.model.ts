@@ -10,6 +10,7 @@ import { BackgroundMode, StartConditions } from '@app/engine/domain/models/game-
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { MarketMovers } from '@app/engine/domain/models/market-movers.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
 import { Instrument, InstrumentDetails } from '@app/market/domain/models/instrument.model';
 import { ScreenerCriteria, ScreenerRow } from '@app/market/domain/models/screener.model';
 import { AbsenceReport } from '@app/notifications/domain/models/absence-report.model';
@@ -96,6 +97,23 @@ export interface ScreenerQuery extends ScreenerCriteria {
 export const MAX_SCREENER_SEARCH_LENGTH = 100;
 
 /**
+ * Candles of a series for a chart (TS §8.2, US-CH-01): the newest `limit` candles (default and at
+ * most `MAX_CANDLE_LIMIT`, intraday at most `MAX_INTRADAY_DAYS` market days) whose start lies in
+ * `[from, to]`; `to` defaults to the current tick and never goes beyond it, `from` to the epoch.
+ * Older blocks for scrolling: `to` = start of the oldest loaded candle − 1.
+ */
+export interface CandlesQuery {
+  kind: 'candles';
+  series: number;
+  interval: CandleResolution;
+  from?: Tick;
+  to?: Tick;
+  limit?: number;
+}
+
+export type CandlesRequest = Omit<CandlesQuery, 'kind'>;
+
+/**
  * Queries (TS §8.2); they write nothing and don't hold the clock. `closingPreview` shows what
  * closing an account now would book (TS §7.4); `monthlyValues` the household months (US-EK-03).
  */
@@ -111,7 +129,8 @@ export type EngineQuery =
   /** Master data of all series (AP 4.1); it doesn't change during a game. */
   | { kind: 'instruments' }
   | { kind: 'instrumentDetails'; id: string }
-  | ScreenerQuery;
+  | ScreenerQuery
+  | CandlesQuery;
 export type EngineQueryKind = EngineQuery['kind'];
 export const ENGINE_QUERY_KINDS = [
   'exchanges',
@@ -124,6 +143,7 @@ export const ENGINE_QUERY_KINDS = [
   'instruments',
   'instrumentDetails',
   'screener',
+  'candles',
 ] as const satisfies readonly EngineQueryKind[];
 
 /** Own transfer (US-BK-04): whole cents ≥ 1, purpose up to `MAX_PURPOSE_LENGTH` characters. */
@@ -134,10 +154,20 @@ export interface TransferPayload {
   purpose: string;
 }
 
-/** Subscriptions (TS §8.4): series for `quotes`, and optionally the topic `movers`. */
+/** A chart whose newest candle the worker sends as `candle` events (TS §8.4). */
+export interface ChartSubscription {
+  series: number;
+  interval: CandleResolution;
+}
+
+/**
+ * Subscriptions (TS §8.4): series for `quotes`, optionally the topic `movers` and charts for
+ * `candle`.
+ */
 export interface SubscriptionPayload {
   series: number[];
   movers?: boolean;
+  charts?: ChartSubscription[];
 }
 
 /** Commands UI → worker (TS §8.2). */
@@ -150,7 +180,7 @@ export interface EngineCommandPayloads {
   setVisibility: { visible: boolean };
   jumpTo: { target: JumpTarget };
   cancelJump: EmptyPayload;
-  /** Quotes of `series`; `movers: true` adds the `movers` event (TS §8.4). */
+  /** Quotes of `series`; `movers: true` adds the `movers` event, `charts` `candle` events (TS §8.4). */
   subscribe: SubscriptionPayload;
   unsubscribe: SubscriptionPayload;
   query: { query: EngineQuery };
@@ -254,7 +284,8 @@ export type EngineQueryResult =
   | { kind: 'absenceReport'; report: AbsenceReport | null }
   | { kind: 'instruments'; instruments: Instrument[] }
   | { kind: 'instrumentDetails'; details: InstrumentDetails }
-  | ({ kind: 'screener' } & ScreenerResult);
+  | ({ kind: 'screener' } & ScreenerResult)
+  | ({ kind: 'candles' } & CandlesResult);
 
 /** The result of a query of kind `K`. */
 export type EngineQueryResultOf<K extends EngineQueryKind> = Extract<
@@ -271,6 +302,18 @@ export interface GameCommandReply {
 export interface OpenedAccountReply extends GameCommandReply {
   accountId: AccountId;
   depotId: DepotId | null;
+}
+
+/**
+ * A block of candles up to `tick` (the query limit), ascending; `hasOlder` is `false` once the
+ * block reaches the first candle since the epoch.
+ */
+export interface CandlesResult {
+  series: number;
+  interval: CandleResolution;
+  candles: Candle[];
+  hasOlder: boolean;
+  tick: Tick;
 }
 
 /** Data of a successful reply per command. */
@@ -316,7 +359,7 @@ export const ENGINE_ERRORS = [
   /** The stored game has another `simVersion` or `schemaVersion` (TS §15); it is not loaded. */
   'player-outdated',
   'internal-error',
-  /** `instrumentDetails` with an ID that is no series of the world. */
+  /** `instrumentDetails` with an ID, or `candles` with a series, that is no series of the world. */
   'unknown-instrument',
   /** The engine rejected a bank command or query (TS §7.4); see `BANK_COMMAND_ERRORS`. */
   ...BANK_COMMAND_ERRORS,
@@ -361,6 +404,20 @@ export interface QuotesPayload {
 /** Gainers, losers and sector indices of the day (TS §8.3), while `movers` is subscribed. */
 export interface MoversPayload extends MarketMovers {
   tick: Tick;
+}
+
+/**
+ * The newest candle of a subscribed chart (TS §8.3, §8.4) when it changed: the running one, and
+ * `previous`, the finished candle right before it, when a new candle began since the last event of
+ * the chart. If `previous.tick` is not the newest candle the chart holds, it skipped candles (a
+ * jump, high speed) and loads its block again.
+ */
+export interface CandlePayload {
+  tick: Tick;
+  series: number;
+  interval: CandleResolution;
+  candle: Candle;
+  previous?: Candle;
 }
 
 /**
@@ -439,6 +496,7 @@ export interface EngineEventPayloads {
   clock: ClockPayload;
   quotes: QuotesPayload;
   movers: MoversPayload;
+  candle: CandlePayload;
   projection: ProjectionPayload;
   notification: NotificationPayload;
   /** Absence report after a catch-up or a hidden period (US-BN-03). */
@@ -453,6 +511,7 @@ export const ENGINE_EVENT_TYPES = [
   'clock',
   'quotes',
   'movers',
+  'candle',
   'projection',
   'notification',
   'report',

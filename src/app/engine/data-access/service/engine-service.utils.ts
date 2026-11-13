@@ -3,6 +3,8 @@ import { TRANSACTION_TYPES } from '@app/banking/domain/models/ledger.model';
 import { MAX_STATEMENT_LIMIT } from '@app/banking/domain/models/statement.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
 import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
+import { MAX_CANDLE_LIMIT } from '@app/market/domain/candle-window';
+import { CANDLE_RESOLUTIONS } from '@app/market/domain/models/candle.model';
 import { INSTRUMENT_KINDS } from '@app/market/domain/models/instrument.model';
 import { SCREENER_SORT_KEYS, SORT_DIRECTIONS } from '@app/market/domain/models/screener.model';
 import {
@@ -106,9 +108,18 @@ function isListOf(check: Check): Check {
 const isSpeedId = isOneOf(SPEED_IDS);
 const isBackgroundMode = isOneOf(BACKGROUND_MODES);
 const isSeriesList: Check = isListOf(isCount);
+const isCandleResolution = isOneOf(CANDLE_RESOLUTIONS);
+
+function isChartSubscription(value: unknown): boolean {
+  return hasFields(value, { series: isCount, interval: isCandleResolution });
+}
 
 function isSubscription(payload: unknown): boolean {
-  return hasFields(payload, { series: isSeriesList, movers: isOptional(isBoolean) });
+  return hasFields(payload, {
+    series: isSeriesList,
+    movers: isOptional(isBoolean),
+    charts: isOptional(isListOf(isChartSubscription)),
+  });
 }
 
 function isStartConditions(value: unknown): boolean {
@@ -188,6 +199,16 @@ function isScreenerQuery(value: Fields): boolean {
   });
 }
 
+function isCandlesQuery(value: Fields): boolean {
+  return hasFields(value, {
+    series: isCount,
+    interval: isCandleResolution,
+    from: isOptional(isCount),
+    to: isOptional(isCount),
+    limit: isOptional((limit) => isCount(limit) && limit >= 1 && limit <= MAX_CANDLE_LIMIT),
+  });
+}
+
 function isQuery(value: unknown): boolean {
   if (!isFields(value) || !isOneOf(ENGINE_QUERY_KINDS)(value['kind'])) {
     return false;
@@ -203,6 +224,8 @@ function isQuery(value: unknown): boolean {
       return isNonEmptyString(value['id']);
     case 'screener':
       return isScreenerQuery(value);
+    case 'candles':
+      return isCandlesQuery(value);
     default:
       return true;
   }
@@ -254,6 +277,17 @@ function isQuote(value: unknown): boolean {
     previousClose: isFiniteNumber,
     change: isFiniteNumber,
     changeRatio: isFiniteNumber,
+  });
+}
+
+/** Candles of the events are complete; the first weekly candle starts before the epoch. */
+function isCandle(value: unknown): boolean {
+  return hasFields(value, {
+    tick: isCents,
+    open: isFiniteNumber,
+    high: isFiniteNumber,
+    low: isFiniteNumber,
+    close: isFiniteNumber,
   });
 }
 
@@ -395,6 +429,14 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
       sectors: isListOf((sector) =>
         hasFields(sector, { sectorId: isOneOf(SECTOR_IDS), quote: isQuote }),
       ),
+    }),
+  candle: (payload) =>
+    hasFields(payload, {
+      tick: isCount,
+      series: isCount,
+      interval: isCandleResolution,
+      candle: isCandle,
+      previous: isOptional(isCandle),
     }),
   projection: (payload) =>
     hasFields(payload, {
