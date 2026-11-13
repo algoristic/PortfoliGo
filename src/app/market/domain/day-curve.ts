@@ -12,7 +12,7 @@ import {
   profileWeights,
 } from './bridge-logic';
 import { MarketContext } from './market-context';
-import { LOADINGS_PER_INSTRUMENT } from './market-layout';
+import { LOADINGS_PER_INSTRUMENT, MarketLayout } from './market-layout';
 import { MarketDay } from './models/market-day.model';
 import { priceFromLog } from './price-logic';
 import { seriesRef } from './series';
@@ -85,7 +85,8 @@ export class DayCurves {
   /** Per factor and interval (`k · intervals + j`): 1 when the interval is computed. */
   readonly #factorDone: Uint8Array;
   readonly #instrumentCurves: (Float64Array | undefined)[];
-  readonly #instrumentDone: Uint8Array;
+  /** Per instrument: last computed index of its session curve, −1 when none. */
+  readonly #instrumentLast: Int32Array;
   /** Price index curves per index; total return curves are derived on each call. */
   readonly #indexCurves: (Float64Array | undefined)[];
   readonly #indexDone: Uint8Array;
@@ -106,7 +107,7 @@ export class DayCurves {
     this.#factorCurves = new Array(layout.factorIds.length);
     this.#factorDone = new Uint8Array(layout.factorIds.length * (layout.boundaries.length - 1));
     this.#instrumentCurves = new Array(instrumentCount);
-    this.#instrumentDone = new Uint8Array(instrumentCount);
+    this.#instrumentLast = new Int32Array(instrumentCount).fill(-1);
     this.#indexCurves = new Array(indices.ids.length);
     this.#indexDone = new Uint8Array(indices.ids.length);
     this.#indicative = new CurveRanges(instrumentCount);
@@ -127,7 +128,7 @@ export class DayCurves {
   load(day: Readonly<MarketDay>): this {
     this.#day = day;
     this.#factorDone.fill(0);
-    this.#instrumentDone.fill(0);
+    this.#instrumentLast.fill(-1);
     this.#indexDone.fill(0);
     this.#indicative.reset();
     this.#indicativeIndex.reset();
@@ -286,50 +287,75 @@ export class DayCurves {
    * the idiosyncratic bridge and the jumps from their minute on.
    */
   instrumentCurve(i: number): Float64Array {
+    const { layout } = this.#tables.context;
+    return this.#sessionPrefix(
+      i,
+      layout.boundaries[layout.closeBoundary[i]] - layout.boundaries[layout.openBoundary[i]],
+    );
+  }
+
+  /**
+   * The prices of `instrumentCurve` up to index `last` only; later values may be stale. The bridges
+   * are filled minute by minute, so the prefix equals the start of the whole curve bit for bit, and
+   * a share whose session reaches beyond the requested minutes needs fewer normals (TS §3.7).
+   */
+  #sessionPrefix(i: number, last: number): Float64Array {
     const existing = this.#instrumentCurves[i];
-    if (existing !== undefined && this.#instrumentDone[i] === 1) {
+    if (existing !== undefined && this.#instrumentLast[i] >= last) {
       return existing;
     }
     const day = this.day;
     const { layout, config } = this.#tables.context;
     const openBoundary = layout.openBoundary[i];
-    const closeBoundary = layout.closeBoundary[i];
     const open = layout.boundaries[openBoundary];
-    const length = layout.boundaries[closeBoundary] - open;
+    const length = layout.boundaries[layout.closeBoundary[i]] - open;
     const curve =
       existing !== undefined && existing.length === length + 1
         ? existing
         : new Float64Array(length + 1);
+    const floor = config.priceFloor;
+    curve[0] = priceFromLog(day.logOpen[i], floor);
+    const inner = Math.min(last, length - 1);
+    if (inner >= 1) {
+      const idio = this.#idio;
+      fillSessionIdio(this.#tables, day, i, idio, inner);
+      const toBoundary = boundaryAtOrAfter(layout.boundaries, open + inner);
+      const curves = this.#loadedFactorCurves(i, openBoundary, toBoundary);
+      const betas = loadingsOf(layout, i);
+      const logBase = layout.logBase[i];
+      const jumpEnd = day.jumpStart[i] + day.jumpCount[i];
+      const idioOpen = day.idioOpen[i];
+      let nextJump = day.jumpStart[i];
+      let jumps = 0;
+      for (let j = 1; j <= inner; j++) {
+        const minute = open + j;
+        while (nextJump < jumpEnd && day.jumpMinute[nextJump] <= minute) {
+          jumps += day.jumpSize[nextJump];
+          nextJump++;
+        }
+        curve[j] = priceFromLog(
+          sessionLog(logBase, factorAt(curves, betas, minute), idioOpen, idio[j], jumps),
+          floor,
+        );
+      }
+    }
+    if (last >= length) {
+      curve[length] = priceFromLog(day.logClose[i], floor);
+    }
+    this.#instrumentCurves[i] = curve;
+    this.#instrumentLast[i] = Math.min(last, length);
+    return curve;
+  }
 
-    const idio = this.#idio;
-    fillSessionIdio(this.#tables, day, i, idio);
+  /** Curves of the factors share i loads on, valid between the two boundaries. */
+  #loadedFactorCurves(i: number, fromBoundary: number, toBoundary: number): Float64Array[] {
+    const { layout } = this.#tables.context;
     const curves: Float64Array[] = [];
     for (let l = 0; l < LOADINGS_PER_INSTRUMENT; l++) {
       const k = layout.loadingFactors[i * LOADINGS_PER_INSTRUMENT + l];
-      curves.push(this.factorCurve(k, openBoundary, closeBoundary));
+      curves.push(this.factorCurve(k, fromBoundary, toBoundary));
     }
-    const logBase = layout.logBase[i];
-    const floor = config.priceFloor;
-    const jumpEnd = day.jumpStart[i] + day.jumpCount[i];
-    let nextJump = day.jumpStart[i];
-    let jumps = 0;
-    curve[0] = priceFromLog(day.logOpen[i], floor);
-    for (let j = 1; j < length; j++) {
-      const minute = open + j;
-      while (nextJump < jumpEnd && day.jumpMinute[nextJump] <= minute) {
-        jumps += day.jumpSize[nextJump];
-        nextJump++;
-      }
-      let factor = 0;
-      for (let l = 0; l < LOADINGS_PER_INSTRUMENT; l++) {
-        factor += layout.loadings[i * LOADINGS_PER_INSTRUMENT + l] * curves[l][minute];
-      }
-      curve[j] = priceFromLog(sessionLog(logBase, factor, day.idioOpen[i], idio[j], jumps), floor);
-    }
-    curve[length] = priceFromLog(day.logClose[i], floor);
-    this.#instrumentCurves[i] = curve;
-    this.#instrumentDone[i] = 1;
-    return curve;
+    return curves;
   }
 
   #indicativeInstrument(i: number, requestFrom: number, requestTo: number): Float64Array {
@@ -342,33 +368,26 @@ export class DayCurves {
     const day = this.day;
     const { layout, config } = this.#tables.context;
     const curve = existing ?? new Float64Array(MINUTES_PER_DAY + 1);
-    const session = this.instrumentCurve(i);
-    const curves: Float64Array[] = [];
-    for (let l = 0; l < LOADINGS_PER_INSTRUMENT; l++) {
-      const k = layout.loadingFactors[i * LOADINGS_PER_INSTRUMENT + l];
-      curves.push(
-        this.factorCurve(
-          k,
-          boundaryAtOrBefore(layout.boundaries, from),
-          boundaryAtOrAfter(layout.boundaries, to),
-        ),
-      );
-    }
     const open = layout.boundaries[layout.openBoundary[i]];
     const close = layout.boundaries[layout.closeBoundary[i]];
+    // Only the session minutes in [from, to] need the bridges; none when the session lies outside.
+    const session =
+      to >= open && from <= close ? this.#sessionPrefix(i, Math.min(to, close) - open) : null;
+    const curves = this.#loadedFactorCurves(
+      i,
+      boundaryAtOrBefore(layout.boundaries, from),
+      boundaryAtOrAfter(layout.boundaries, to),
+    );
+    const betas = loadingsOf(layout, i);
     const logBase = layout.logBase[i];
     const floor = config.priceFloor;
     for (let m = from; m <= to; m++) {
-      if (m >= open && m <= close) {
+      if (session !== null && m >= open && m <= close) {
         curve[m] = session[m - open];
         continue;
       }
-      let factor = 0;
-      for (let l = 0; l < LOADINGS_PER_INSTRUMENT; l++) {
-        factor += layout.loadings[i * LOADINGS_PER_INSTRUMENT + l] * curves[l][m];
-      }
       const idio = m < open ? day.prevIdioClose[i] : day.idioClose[i];
-      curve[m] = priceFromLog(frozenLog(logBase, factor, idio), floor);
+      curve[m] = priceFromLog(frozenLog(logBase, factorAt(curves, betas, m), idio), floor);
     }
     ranges.store(i, curve, from, to);
     return curve;
@@ -536,15 +555,15 @@ export class SupportValues {
       const idio = b < openBoundary ? day.prevIdioClose[i] : day.idioClose[i];
       price = priceFromLog(frozenLog(layout.logBase[i], factor, idio), floor);
     } else {
-      this.#idio ??= new Float64Array(MINUTES_PER_DAY + 1);
-      fillSessionIdio(this.#tables, day, i, this.#idio);
       const minute = layout.boundaries[b];
+      const j = minute - layout.boundaries[openBoundary];
+      this.#idio ??= new Float64Array(MINUTES_PER_DAY + 1);
+      fillSessionIdio(this.#tables, day, i, this.#idio, j);
       const jumpEnd = day.jumpStart[i] + day.jumpCount[i];
       let jumps = 0;
       for (let n = day.jumpStart[i]; n < jumpEnd && day.jumpMinute[n] <= minute; n++) {
         jumps += day.jumpSize[n];
       }
-      const j = minute - layout.boundaries[openBoundary];
       price = priceFromLog(
         sessionLog(layout.logBase[i], factor, day.idioOpen[i], this.#idio[j], jumps),
         floor,
@@ -613,6 +632,20 @@ function boundaryAtOrAfter(boundaries: Int32Array, minute: number): number {
   return j;
 }
 
+/** Loadings of share i in the order of `loadingFactors`. */
+function loadingsOf(layout: MarketLayout, i: number): Float64Array {
+  return layout.loadings.subarray(i * LOADINGS_PER_INSTRUMENT, (i + 1) * LOADINGS_PER_INSTRUMENT);
+}
+
+/** `Σ β_l · F_l(m)` in the order of the loadings. */
+function factorAt(curves: readonly Float64Array[], betas: Float64Array, m: number): number {
+  let factor = 0;
+  for (let l = 0; l < curves.length; l++) {
+    factor += betas[l] * curves[l][m];
+  }
+  return factor;
+}
+
 /** Log price inside the session: factors, `U_i` at the open, the bridge and the jumps so far. */
 function sessionLog(
   logBase: number,
@@ -643,12 +676,16 @@ export function etfValue(
   return distributing ? scale * level + pot : scale * level * reinvest;
 }
 
-/** Idiosyncratic bridge of share i over its session without drift and jumps (index 0 = open). */
+/**
+ * Idiosyncratic bridge of share i over its session without drift and jumps (index 0 = open), up to
+ * index `last` (the whole session by default).
+ */
 function fillSessionIdio(
   tables: CurveTables,
   day: Readonly<MarketDay>,
   i: number,
   idio: Float64Array,
+  last?: number,
 ): void {
   const jumpEnd = day.jumpStart[i] + day.jumpCount[i];
   let jumpSum = 0;
@@ -663,6 +700,7 @@ function fillSessionIdio(
     tables.sessionTables[i],
     tables.sessionScale[i],
     tables.instrumentBridgeStreams[i].create(day.day, tables.bridgeSuffix),
+    last,
   );
 }
 

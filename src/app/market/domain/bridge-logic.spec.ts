@@ -91,6 +91,27 @@ describe('bridge logic', () => {
       );
     });
 
+    it('writes up to minute `last` the same values as the whole bridge and nothing after', () => {
+      fc.assert(
+        fc.property(
+          arbWeights,
+          fc.double({ min: 0, max: 1, noNaN: true }),
+          fc.double({ min: 0, max: 2, noNaN: true }),
+          fc.string(),
+          (weights, share, scale, key) => {
+            const table = createBridgeTable(weights);
+            const last = Math.round(share * weights.length);
+            const whole = new Float64Array(weights.length + 1);
+            const prefix = new Float64Array(weights.length + 1).fill(Number.NaN);
+            fillBridge(whole, 0, 0.5, -0.25, table, scale, createStream(seedKey, key));
+            fillBridge(prefix, 0, 0.5, -0.25, table, scale, createStream(seedKey, key), last);
+            expect([...prefix.subarray(0, last + 1)]).toEqual([...whole.subarray(0, last + 1)]);
+            expect(prefix.subarray(last + 1).every(Number.isNaN)).toBe(true);
+          },
+        ),
+      );
+    });
+
     it('is reproducible from the stream', () => {
       const table = createUniformBridgeTable(30);
       const first = new Float64Array(31);

@@ -65,6 +65,9 @@ export function profileWeights(profile: readonly number[], length: number): Floa
  * Brownian bridge from `start` to `end` with a total variance of `scale²` (TS §6.1). Writes
  * `out[offset … offset + n]`; the inner values come from `rng` (n − 1 normals), the end point is
  * set as support point and never computed from the bridge (TS §4.5, rule 8).
+ *
+ * With `last < n`, only `out[offset … offset + last]` is written. The bridge is filled minute by
+ * minute with one normal each, so these values equal those of the whole bridge bit for bit.
  */
 export function fillBridge(
   out: Float64Array,
@@ -74,13 +77,17 @@ export function fillBridge(
   table: BridgeTable,
   scale: number,
   rng: RandomStream,
+  last = table.length,
 ): void {
   const { length, ratio, noise } = table;
+  const inner = Math.min(last, length - 1);
   let x = start;
   out[offset] = start;
-  for (let j = 0; j < length - 1; j++) {
+  for (let j = 0; j < inner; j++) {
     x += ratio[j] * (end - x) + noise[j] * scale * normal(rng);
     out[offset + j + 1] = x;
   }
-  out[offset + length] = end;
+  if (last >= length) {
+    out[offset + length] = end;
+  }
 }

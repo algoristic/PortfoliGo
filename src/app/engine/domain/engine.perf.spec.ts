@@ -18,9 +18,9 @@ import { BUDGETS_MS, expectWithinBudget, medianMs } from '../../../testing/perf'
 // year live within 15 % of 52.18 s. Live, the host runs one frame of ticks (16 ms at 1 w/s) per
 // call and writes the daily candles with high and low at every session close (TS §6.8).
 // With open orders, the engine checks every minute of their sessions (TS §3.8). Twenty limit orders
-// on shares of several exchanges that never execute (good till cancelled) stay open for the whole
-// year. Orders on ETFs cost the minute curves of their index constituents on every trading day
-// (about 21 ms, about 6 s per year in batch mode, AP 5.1); they are not part of this budget yet.
+// that never execute (good till cancelled) stay open for the whole year: on shares of several
+// exchanges, or half of them on ETFs, whose minute curves need the indicative values of all index
+// constituents during the ETF session on every trading day (TS §7.5).
 
 const FRAMES_PER_SECOND = 60;
 const TICKS_PER_FRAME = Math.ceil(TICKS_PER_WEEK / FRAMES_PER_SECOND);
@@ -32,6 +32,8 @@ describe('engine performance', () => {
   let monthStarts: readonly FactorStateEntry[];
   /** `start` with a depot `dep-3` and twenty open orders placed at the start tick. */
   let withOrders: GameSnapshot;
+  /** As `withOrders`, but ten of the orders are on ETFs. */
+  let withEtfOrders: GameSnapshot;
 
   beforeAll(() => {
     const seedKey = deriveSeedKey('perf-engine');
@@ -42,8 +44,19 @@ describe('engine performance', () => {
     const books = withBooks(start, {
       accounts: [{ kind: 'clearing', bankId: world.world.banks[0].id, balance: 10_000_000 }],
     });
+    withOrders = withLimitOrders(
+      books,
+      world.world.companies.slice(0, 20).map(({ id }) => id),
+    );
+    withEtfOrders = withLimitOrders(books, [
+      ...world.world.companies.slice(0, 10).map(({ id }) => id),
+      ...world.world.etfs.slice(0, 10).map(({ id }) => id),
+    ]);
+  });
+
+  /** Places one buy limit order far below the price (good till cancelled) per instrument. */
+  function withLimitOrders(books: GameSnapshot, ids: readonly string[]): GameSnapshot {
     const trading = GameEngine.restore(world, books, { monthStarts });
-    const ids = world.world.companies.slice(0, 20).map(({ id }) => id);
     ids.forEach((instrumentId, n) => {
       const result = trading.applyCommand({
         id: `order-${n}`,
@@ -62,8 +75,8 @@ describe('engine performance', () => {
       });
       expect(result.ok).toBe(true);
     });
-    withOrders = trading.snapshot();
-  });
+    return trading.snapshot();
+  }
 
   it('runs one game year live with daily candles within the budget', () => {
     let candleCount = 0;
@@ -114,6 +127,22 @@ describe('engine performance', () => {
     expect(open).toBe(20);
     expectWithinBudget(
       'engine: one game year in batch mode with 20 open share orders',
+      ms,
+      BUDGETS_MS.catchUpYear,
+    );
+  });
+
+  it('runs one game year in batch mode with ten open ETF and ten share orders within the catch-up budget', () => {
+    let open = 0;
+    const ms = medianMs(() => {
+      const engine = GameEngine.restore(world, withEtfOrders, { monthStarts });
+      engine.runUntil(END_TICK);
+      engine.drainEvents();
+      open = engine.player.orders.length;
+    }, 3);
+    expect(open).toBe(20);
+    expectWithinBudget(
+      'engine: one game year in batch mode with 10 open ETF and 10 share orders',
       ms,
       BUDGETS_MS.catchUpYear,
     );

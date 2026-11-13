@@ -6,6 +6,7 @@ import { createMarketContext, MarketContext } from './market-context';
 import { advanceMarket, copyMarketDay, createMarketState } from './market-step';
 import { MarketDay } from './models/market-day.model';
 import { priceFromLog } from './price-logic';
+import { etfSeries } from './series';
 import { goldenYear } from './testing/golden-year';
 import { miniMarket } from './testing/mini-market';
 
@@ -84,6 +85,30 @@ describe('DayCurves', () => {
           expect(shuffled.instrumentCurve(i)).toEqual(expected[i]);
         }
       }),
+      { numRuns: 20 },
+    );
+  });
+
+  it('computes the same session curves after an ETF curve needed only parts of them', () => {
+    const { layout, etfs } = miniContext;
+    const count = layout.instrumentIds.length;
+    fc.assert(
+      fc.property(
+        fc.integer({ min: 0, max: miniDays.length - 1 }),
+        fc.integer({ min: 0, max: etfs.ids.length - 1 }),
+        (n, e) => {
+          const day = miniDays[n];
+          const forward = new DayCurves(miniTables).load(day);
+          const expected = Array.from({ length: count }, (_value, i) =>
+            forward.instrumentCurve(i).slice(),
+          );
+          const afterEtf = new DayCurves(miniTables).load(day);
+          afterEtf.seriesCurve(etfSeries(miniContext, e));
+          for (let i = 0; i < count; i++) {
+            expect(afterEtf.instrumentCurve(i)).toEqual(expected[i]);
+          }
+        },
+      ),
       { numRuns: 20 },
     );
   });
