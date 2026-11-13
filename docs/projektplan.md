@@ -52,7 +52,7 @@ flowchart LR
 | M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Sparpläne, Steuern, Depot, Dashboard mit Benchmark                  | 7   |
 | M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen                                     | 6   |
 
-**Empfohlene Reihenfolge:** M3 ist mit AP 3.6 abgeschlossen. Als Nächstes M4 mit AP 4.1 (braucht nur AP 2.5); M5 braucht M3 und M4. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
+**Empfohlene Reihenfolge:** M3 ist mit AP 3.6 abgeschlossen, M4 läuft: AP 4.1 ist fertig, als Nächstes AP 4.2 (Chart-Komponenten), danach AP 4.3 und AP 4.4, zuletzt AP 4.5; M5 braucht M3 und M4. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
 
 ## 2. Arbeitsweise in Sessions
 
@@ -152,7 +152,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 3.4  | Kontenübersicht und Kontoauszug                  | fertig | 3.3            |
 | 3.5  | Bankenvergleich, Dialoge und Monatsübersicht     | fertig | 3.4            |
 | 3.6  | Benachrichtigungen                               | fertig | 3.3, 2.6       |
-| 4.1  | Marktdaten-Feed und Market-Slice                 | offen  | 2.5            |
+| 4.1  | Marktdaten-Feed und Market-Slice                 | fertig | 2.5            |
 | 4.2  | Chart-Komponenten                                | offen  | 4.1, 1.7       |
 | 4.3  | Indikatoren                                      | offen  | 4.2            |
 | 4.4  | Marktübersicht, Screener und Watchlist           | offen  | 4.2            |
@@ -311,7 +311,7 @@ flowchart TD
   AP3_5 --> AP6_6
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6 done
+  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1 done
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6
@@ -667,7 +667,7 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 
 #### AP 4.4 – Marktübersicht, Screener und Watchlist
 
-- **Umfang:** Märkte-Seite (Indizes, Gewinner und Verlierer, Sektoren); Screener mit Filtern nach TS §5.3, Sortierung, virtuellem Scrollen und Sparklines; Watchlist im Spielerzustand (Kommando `updateWatchlist`); kurze Hervorhebung von Kursänderungen, die bei „Bewegung reduzieren“ entfällt (US-MK-05; Schalter in AP 6.2). Soll: Heatmap der Sektoren (US-MK-01), Reihenfolge der Watchlist per Drag & Drop (US-MK-04).
+- **Umfang:** Märkte-Seite (Indizes, Gewinner und Verlierer, Sektoren); Screener mit Filtern nach TS §5.3, Sortierung, virtuellem Scrollen und Sparklines; Watchlist im Spielerzustand (Kommando `updateWatchlist`); kurze Hervorhebung von Kursänderungen, die bei „Bewegung reduzieren“ entfällt (US-MK-05; Schalter in AP 6.2). Soll-Punkte, die laut PO-Entscheidung vom 13.11.2026 in diesem AP umgesetzt werden: Heatmap der Sektoren (US-MK-01), Reihenfolge der Watchlist per Drag & Drop (US-MK-04).
 - **Abnahme:** Filter sind kombinierbar; die Watchlist bleibt nach dem Neuladen erhalten; bei Quotes für 250 Instrumente bleibt die Main-Thread-Arbeit je Update unter 4 ms. Seitentest: suchen, Filter kombinieren, sortieren, Watchlist ändern.
 - **Referenzen:** US-MK-01, US-MK-02, US-MK-04, US-MK-05; TS §14.3
 - **Abhängig von:** AP 4.2
@@ -676,7 +676,7 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 
 - **Umfang:** Kurskopf (Geld, Brief, Spread, Handelsstatus), Chart mit Indikatoren, Kennzahlen (Volatilität und Beta mit den Statistikfunktionen aus AP 1.8a), Profil für Aktien und ETFs (Text aus Vorlagen-Code), Dividenden (Historie, nächster Termin), Aktionen (Watchlist; Kaufen und Verkaufen werden in AP 5.4 angebunden). Der Dividendenkalender für Depot und Watchlist (US-MK-06) folgt in AP 5.7.
 - **Abnahme:** Alle Angaben aus US-MK-03 sichtbar und live aktualisiert, Kursänderungen hervorgehoben (US-MK-05). Seitentest: Aktie und ETF öffnen, Angaben prüfen, zur Watchlist hinzufügen.
-- **Vor der Umsetzung klären:** Indikativer Wert am Wochenende: Heute gilt der letzte Schluss. Nach dem Schluss am Freitag folgt der Wert den Faktoren bis 24:00, springt am Samstag auf den Schluss zurück und am Montag um 00:00 wieder auf den Faktorstand. Vorschlag: am Wochenende den Stand von Freitag 24:00 zeigen (TS §6.6).
+- **Entschieden (13.11.2026):** Der indikative Wert zeigt am Wochenende den Stand von Freitag 24:00 (Vorschlag aus TS §6.6 bestätigt). Kennzahlen: Volatilität annualisiert aus den täglichen Log-Renditen der letzten 252 Markttage, Beta gegen den Welt-Kursindex im selben Fenster, Dividendenrendite = Dividenden mit Ex-Tag in den letzten 12 Monaten ÷ Kurs, Performance 1M/1J/5J als Kursveränderung.
 - **Referenzen:** US-MK-03, US-MK-05, US-MK-06; TS §5.4, §6.6, §8.6
 - **Abhängig von:** AP 4.3, AP 4.4, AP 1.8a
 

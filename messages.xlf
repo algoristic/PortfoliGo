@@ -4206,14 +4206,14 @@
         <source>Märkte</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/market.routes.ts</context>
-          <context context-type="linenumber">6</context>
+          <context context-type="linenumber">13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketRoutes-instrumentTitle" datatype="html">
         <source>Instrument</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/market.routes.ts</context>
-          <context context-type="linenumber">13</context>
+          <context context-type="linenumber">22</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketsPage-title" datatype="html">
@@ -4235,6 +4235,13 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/markets/markets.page.html</context>
           <context context-type="linenumber">8,9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketEffects-loadInstrumentsFailure" datatype="html">
+        <source>Die Wertpapiere konnten nicht geladen werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
+          <context context-type="linenumber">169</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-dialogAbsenceReport-continue" datatype="html">
