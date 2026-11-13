@@ -49,7 +49,7 @@ flowchart LR
 | M2          | 1     | Spielschleife mit Spielern, Uhr und Persistenz     | Spieler anlegen, Zeit in jeder Geschwindigkeit laufen lassen, schließen, nachberechnen | 6   |
 | M3          | 1     | Geldflüsse: Einkommen, Kosten, Gebühren, Zinsen    | Kontoauszüge füllen sich; Konten eröffnen, Geld überweisen, Warnungen                  | 6   |
 | M4          | 1     | Märkte im Trading-Look                             | Marktübersicht, Screener, Watchlist, Instrumentseite mit Live-Chart und Indikatoren    | 5   |
-| M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Sparpläne, Steuern, Depot, Dashboard mit Benchmark                  | 9   |
+| M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Daueraufträge, Sparpläne, Steuern, Depot, Dashboard mit Benchmark   | 10  |
 | M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen                                     | 6   |
 
 **Empfohlene Reihenfolge:** M3 und M4 sind abgeschlossen (M4 mit AP 4.5). Als Nächstes folgt M5 mit AP 5.1 (abhängig von AP 3.3 und AP 1.6b); M5 braucht M3 und M4. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
@@ -104,74 +104,73 @@ Wird ein AP für eine Session zu groß, teilt Claude es (z. B. AP 3.4a und 3.4b)
 
 Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevor das genannte AP beginnt. Details und Begründungen stehen in TS §16 und den verlinkten Abschnitten. Am einfachsten ist es, alle Vorschläge gesammelt zu bestätigen und nur Abweichungen zu nennen; Claude trägt den Status dann in TS §16 ein.
 
-| ID   | Frage                                                              | Vorschlag                                                                                                                                                                                                | Spätestens vor |
-| ---- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| E-25 | Versionsregeln ab 1.0 (TS §15; vor 1.0 entschieden)                | Umfang der Kompatibilitätszusage festlegen, z. B. aktuelle und vorige `simVersion` spielbar, ältere lesbar                                                                                               | AP 6.6         |
-| E-28 | Umfang von Stufe 1 für Einsteiger (PS §7)                          | ETF-Durchschau als Muss, zweite Vergleichsgröße, Story „Erste Schritte“ (US-UI-10), Depotübertrag als Story in Stufe 2 (US-BK-12)                                                                        | AP 5.5         |
-| E-21 | Sparpläne brauchen jeden Monat eine Überweisung von Hand (TS §7.8) | Abbuchungskonto je Sparplan; Alternative: Daueraufträge in Stufe 1                                                                                                                                       | AP 5.6         |
-| E-05 | Capacitor                                                          | PWA im MVP; Capacitor als optionaler Meilenstein N1. Ergänzung: „Demnächst“ liest den Terminplaner, die Ereignisvorschau entsteht erst mit N1                                                            | AP 5.7         |
-| E-10 | Exportformat                                                       | base64(JSON) mit Spieler- und Marktzustand vom Beginn des Export-Tags; Kurshistorie nach dem Import im Hintergrund. Ergänzungen: gzip schon in Formatversion 1, ohne `commands`, Import startet pausiert | AP 6.1         |
+| ID   | Frage                                               | Vorschlag                                                                                                                                                                                                | Spätestens vor |
+| ---- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| E-25 | Versionsregeln ab 1.0 (TS §15; vor 1.0 entschieden) | Umfang der Kompatibilitätszusage festlegen, z. B. aktuelle und vorige `simVersion` spielbar, ältere lesbar                                                                                               | AP 6.6         |
+| E-05 | Capacitor                                           | PWA im MVP; Capacitor als optionaler Meilenstein N1 (die Ergänzung zu „Demnächst“ ist entschieden)                                                                                                       | AP 6.3         |
+| E-10 | Exportformat                                        | base64(JSON) mit Spieler- und Marktzustand vom Beginn des Export-Tags; Kurshistorie nach dem Import im Hintergrund. Ergänzungen: gzip schon in Formatversion 1, ohne `commands`, Import startet pausiert | AP 6.1         |
 
-E-21 bis E-28 und die Ergänzungen stammen aus der kritischen Prüfung vom 11.11.2026 ([Änderungsprotokoll](./aenderungsprotokoll.md)).
+Die Ergänzungen zu E-10 stammen aus der kritischen Prüfung vom 11.11.2026 ([Änderungsprotokoll](./aenderungsprotokoll.md)).
 
-**Bereits entschieden:** E-07 (`CLAUDE.md`), E-03 – Zufallsströme per MurmurHash3 x86_128, `sfc32`, eigene `detExp`/`detLog` (10.11.2026), E-09 – Geld in Cent, Stück in Millionstel, Kurse als Gleitkomma mit Preisraster (10.11.2026), E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6), E-06 – Tailwind CSS v4 mit angehobener Browserslist und Inter Variable als selbst gehostete Schrift (10.11.2026) sowie die Ergänzungen für `CLAUDE.md` aus TS §11.2 (10.11.2026, übernommen in AP 0.2), E-15 – Hash-Routing mit englischen Routenpfaden (10.11.2026), E-16 – Angular Aria neben dem CDK für Tabs und Menüs (10.11.2026), E-12 – Stufe 1 mit Aktien, ETFs und Indizes, CFDs bleiben in Stufe 3 (10.11.2026), E-13 – reale Regionen und Länder, fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen; Standardwelt nach TS §5.2 (10.11.2026), E-17 – Banking mit sofortiger Eröffnung und Überweisung, Dispo mit geduldeter Überziehung, Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (10.11.2026), E-02 – Tick = 1 Spielminute, Start Mo 01.04.2030 00:00, im Hintergrund Echtzeit (pro Spieler auf Pause umstellbar), eine Pause bleibt Pause (11.11.2026), E-18 – Handelszeiten je Region, Orders jederzeit, Ausführung in der Handelszeit (11.11.2026), E-04 – lightweight-charts 5.3.0 mit TradingView-Logo, lazy geladen; eigene SVG-Sparklines und -Donuts (Spike in AP 1.7, 11.11.2026), E-01 – autoritative Engine im Web Worker, NgRx hält nur Projektionen (12.11.2026), E-26 – die App bleibt bis 1.0 öffentlich, Impressum, Datenschutzhinweis und Hinweis „keine Anlageberatung“ erst in AP 6.5; das Risiko trägt der Product Owner (12.11.2026), E-27 – vierfache CPU-Drosselung (Chromium) statt Referenzgerät, Budgets Engine bei 1 w/s < 50 % eines Kerns und Spielstart < 6 s, erste Messung in M2 (12.11.2026), E-08 – Persistenz mit Ergänzungen: Marktzustände zu Monatsbeginn im eigenen Store (DB-Version 4), Write-ahead nur für Spielkommandos, Kommando-Log älter als der älteste Snapshot wird gelöscht, Uhr spätestens nach einem Spieltag gesichert, Tick des letzten `clock`-Ereignisses bei `pagehide` als Untergrenze; Tageskerzen bleiben je Spieler (12.11.2026), E-25 vor 1.0 – `SIM_VERSION` und `schemaVersion` ab AP 2.3, veraltete Spieler gesperrt (nur löschen; Zusage ab 1.0 offen bis AP 6.6) (12.11.2026), E-14 – Lebenshaltungskosten als Startparameter, Hausbank ist die erste Filialbank in Weltreihenfolge, Start pausiert, Vorgaben 10.000 € / 2.500 € / 1.800 € (12.11.2026). E-30 bis E-33 – Regionsfaktoren mit eigener Aktivität und Schwellenländer-Ziel als „Info“, Korrelationsziele über Large Caps, Zero-Beta-Rendite, Dividenden-Lebenszyklus (12.11.2026, Vorbereitung der Kalibrierung, AP 1.9b). E-34 – Prüfregel und Ziele der Kalibrierung: Median von `calib-1` bis `calib-5`, Korrelation zwischen Sektoren 0,2–0,4, Tagesprofil 1,3–2,0, Risikoklassen als Quintile (12.11.2026, AP 1.9c). E-11 – Steuern in Stufe 1: 25 % pauschal, 1.000 € Sparerpauschbetrag, ein Verlusttopf, ohne Soli und Kirchensteuer (13.11.2026). E-19 – Buchungstermine: Bank-Lauf 06:00, Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag des Monats (13.11.2026). E-17 ergänzt: Dispo je Bank nach dem Gehaltseingang bei ihr, geduldete Überziehung ohne Obergrenze (13.11.2026, TS §7.4). Das Deployment ist laut Product Owner unter `https://algoristic.de/portfoligo/` per HTTPS erreichbar.
+**Bereits entschieden:** E-07 (`CLAUDE.md`), E-03 – Zufallsströme per MurmurHash3 x86_128, `sfc32`, eigene `detExp`/`detLog` (10.11.2026), E-09 – Geld in Cent, Stück in Millionstel, Kurse als Gleitkomma mit Preisraster (10.11.2026), E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6), E-06 – Tailwind CSS v4 mit angehobener Browserslist und Inter Variable als selbst gehostete Schrift (10.11.2026) sowie die Ergänzungen für `CLAUDE.md` aus TS §11.2 (10.11.2026, übernommen in AP 0.2), E-15 – Hash-Routing mit englischen Routenpfaden (10.11.2026), E-16 – Angular Aria neben dem CDK für Tabs und Menüs (10.11.2026), E-12 – Stufe 1 mit Aktien, ETFs und Indizes, CFDs bleiben in Stufe 3 (10.11.2026), E-13 – reale Regionen und Länder, fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen; Standardwelt nach TS §5.2 (10.11.2026), E-17 – Banking mit sofortiger Eröffnung und Überweisung, Dispo mit geduldeter Überziehung, Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (10.11.2026), E-02 – Tick = 1 Spielminute, Start Mo 01.04.2030 00:00, im Hintergrund Echtzeit (pro Spieler auf Pause umstellbar), eine Pause bleibt Pause (11.11.2026), E-18 – Handelszeiten je Region, Orders jederzeit, Ausführung in der Handelszeit (11.11.2026), E-04 – lightweight-charts 5.3.0 mit TradingView-Logo, lazy geladen; eigene SVG-Sparklines und -Donuts (Spike in AP 1.7, 11.11.2026), E-01 – autoritative Engine im Web Worker, NgRx hält nur Projektionen (12.11.2026), E-26 – die App bleibt bis 1.0 öffentlich, Impressum, Datenschutzhinweis und Hinweis „keine Anlageberatung“ erst in AP 6.5; das Risiko trägt der Product Owner (12.11.2026), E-27 – vierfache CPU-Drosselung (Chromium) statt Referenzgerät, Budgets Engine bei 1 w/s < 50 % eines Kerns und Spielstart < 6 s, erste Messung in M2 (12.11.2026), E-08 – Persistenz mit Ergänzungen: Marktzustände zu Monatsbeginn im eigenen Store (DB-Version 4), Write-ahead nur für Spielkommandos, Kommando-Log älter als der älteste Snapshot wird gelöscht, Uhr spätestens nach einem Spieltag gesichert, Tick des letzten `clock`-Ereignisses bei `pagehide` als Untergrenze; Tageskerzen bleiben je Spieler (12.11.2026), E-25 vor 1.0 – `SIM_VERSION` und `schemaVersion` ab AP 2.3, veraltete Spieler gesperrt (nur löschen; Zusage ab 1.0 offen bis AP 6.6) (12.11.2026), E-14 – Lebenshaltungskosten als Startparameter, Hausbank ist die erste Filialbank in Weltreihenfolge, Start pausiert, Vorgaben 10.000 € / 2.500 € / 1.800 € (12.11.2026). E-30 bis E-33 – Regionsfaktoren mit eigener Aktivität und Schwellenländer-Ziel als „Info“, Korrelationsziele über Large Caps, Zero-Beta-Rendite, Dividenden-Lebenszyklus (12.11.2026, Vorbereitung der Kalibrierung, AP 1.9b). E-34 – Prüfregel und Ziele der Kalibrierung: Median von `calib-1` bis `calib-5`, Korrelation zwischen Sektoren 0,2–0,4, Tagesprofil 1,3–2,0, Risikoklassen als Quintile (12.11.2026, AP 1.9c). E-11 – Steuern in Stufe 1: 25 % pauschal, 1.000 € Sparerpauschbetrag, ein Verlusttopf, ohne Soli und Kirchensteuer (13.11.2026). E-19 – Buchungstermine: Bank-Lauf 06:00, Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag des Monats (13.11.2026). E-17 ergänzt: Dispo je Bank nach dem Gehaltseingang bei ihr, geduldete Überziehung ohne Obergrenze (13.11.2026, TS §7.4). E-21 – Daueraufträge (US-BK-10) in Stufe 1 statt eines Abbuchungskontos je Sparplan; Sparpläne buchen nur vom Verrechnungskonto ihres Depots (13.11.2026, TS §7.4, §7.8). E-28 – ETF-Durchschau als Muss, zweite Vergleichsgröße, Story „Erste Schritte“ (US-UI-10, Soll) in Stufe 1, Depotübertrag (US-BK-12) als Story in Stufe 2 (13.11.2026). E-05 ergänzt: „Demnächst“ liest die planbaren Termine aus Terminplaner und Kalender mit Basisbeträgen, keine Vorausrechnung im MVP (13.11.2026, TS §8.1; der Rest von E-05 ist weiter offen). Das Deployment ist laut Product Owner unter `https://algoristic.de/portfoligo/` per HTTPS erreichbar.
 
 ## 4. Statusübersicht
 
 Status: **offen**, **in Arbeit**, **fertig**.
 
-| AP   | Titel                                            | Status | Abhängig von   |
-| ---- | ------------------------------------------------ | ------ | -------------- |
-| 0.1  | Aufräumen und Baseline                           | fertig | –              |
-| 0.2  | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig | 0.1            |
-| 0.3  | App-Bootstrap und Infrastruktur                  | fertig | 0.1            |
-| 0.4  | App-Shell und UI-Grundkomponenten                | fertig | 0.2, 0.3       |
-| 0.5  | Testkonzept und Testinfrastruktur                | fertig | 0.4, 1.8a      |
-| 1.1  | Deterministischer Zufall und Mathematik          | fertig | 0.1            |
-| 1.2  | Spielkalender und Zeitmodell                     | fertig | 0.1            |
-| 1.3  | Weltgenerierung: Taxonomie, Unternehmen, Banken  | fertig | 1.1            |
-| 1.4  | Marktmodell: Tagesschritt und Vorlauf            | fertig | 1.2, 1.3       |
-| 1.5  | Brücken, Minutenkurse und Kerzen                 | fertig | 1.4            |
-| 1.6a | Dividenden und Indizes                           | fertig | 1.5            |
-| 1.6b | ETFs, indikative Werte, Geld- und Briefkurse     | fertig | 1.6a           |
-| 1.7  | Simulations-Labor: Welt, Simulation, Chart-Spike | fertig | 1.6b, 0.4      |
-| 1.8a | Simulations-Labor: Statistik                     | fertig | 1.7            |
-| 1.8b | Labor: Intraday, Langzeit, Selbsttest            | fertig | 1.8a           |
-| 1.9a | Marktmodell: Änderungen vor der Kalibrierung     | fertig | 1.8b           |
-| 1.9b | Marktmodell: Ergänzungen aus der Kalibrierung    | fertig | 1.9a           |
-| 1.9c | Kalibrierung des Marktmodells                    | fertig | 1.9b           |
-| 2.1  | GameEngine und Terminplaner                      | fertig | 1.6b           |
-| 2.2  | Worker-Host, Protokoll und EngineService         | fertig | 2.1, 0.3       |
-| 2.3  | Persistenz im Worker und Wiederherstellung       | fertig | 2.2            |
-| 2.4  | Spielerverwaltung                                | fertig | 2.3, 0.4       |
-| 2.5  | Spielsitzung und Uhr                             | fertig | 2.4            |
-| 2.6  | Einstellungen: Grundlage                         | fertig | 2.5            |
-| 3.1  | Hauptbuch und Kontenmodell                       | fertig | 2.4            |
-| 3.2  | Haushalt und periodische Buchungen               | fertig | 3.1            |
-| 3.3  | Bankkommandos und Banking-Slice                  | fertig | 3.2, 2.5       |
-| 3.4  | Kontenübersicht und Kontoauszug                  | fertig | 3.3            |
-| 3.5  | Bankenvergleich, Dialoge und Monatsübersicht     | fertig | 3.4            |
-| 3.6  | Benachrichtigungen                               | fertig | 3.3, 2.6       |
-| 4.1  | Marktdaten-Feed und Market-Slice                 | fertig | 2.5            |
-| 4.2  | Chart-Komponenten                                | fertig | 4.1, 1.7       |
-| 4.3  | Indikatoren                                      | fertig | 4.2            |
-| 4.4  | Marktübersicht, Screener und Watchlist           | fertig | 4.2            |
-| 4.5  | Instrument-Detailseite                           | fertig | 4.3, 4.4, 1.8a |
-| 5.1  | Depot und Orderausführung                        | offen  | 3.3, 1.6b      |
-| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1            |
-| 5.3  | Steuern                                          | offen  | 5.2            |
-| 5.4  | Order-Ticket und Orderbuch                       | offen  | 5.3, 4.5, 3.6  |
-| 5.5  | Depot, Positionen und Steuerübersicht (UI)       | offen  | 5.4            |
-| 5.6  | Sparpläne                                        | offen  | 5.5            |
-| 5.7  | Dashboard und Performance                        | offen  | 5.5            |
-| 5.8  | Chart: wählbare Auflösung und Indikatorfarben    | offen  | 4.5            |
-| 5.9  | Kopfzeile: stabiles Layout der Uhr               | offen  | 2.5            |
-| 6.1  | Export und Import                                | offen  | 5.6, 5.7       |
-| 6.2  | Einstellungen                                    | offen  | 6.1, 3.6, 2.6  |
-| 6.3  | PWA und Browser-Benachrichtigungen               | offen  | 6.2            |
-| 6.4  | Performance und Robustheit                       | offen  | 6.1, 1.9c      |
-| 6.5  | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3            |
-| 6.6  | Release 1.0                                      | offen  | 6.4, 6.5, 3.5  |
+| AP   | Titel                                            | Status | Abhängig von    |
+| ---- | ------------------------------------------------ | ------ | --------------- |
+| 0.1  | Aufräumen und Baseline                           | fertig | –               |
+| 0.2  | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig | 0.1             |
+| 0.3  | App-Bootstrap und Infrastruktur                  | fertig | 0.1             |
+| 0.4  | App-Shell und UI-Grundkomponenten                | fertig | 0.2, 0.3        |
+| 0.5  | Testkonzept und Testinfrastruktur                | fertig | 0.4, 1.8a       |
+| 1.1  | Deterministischer Zufall und Mathematik          | fertig | 0.1             |
+| 1.2  | Spielkalender und Zeitmodell                     | fertig | 0.1             |
+| 1.3  | Weltgenerierung: Taxonomie, Unternehmen, Banken  | fertig | 1.1             |
+| 1.4  | Marktmodell: Tagesschritt und Vorlauf            | fertig | 1.2, 1.3        |
+| 1.5  | Brücken, Minutenkurse und Kerzen                 | fertig | 1.4             |
+| 1.6a | Dividenden und Indizes                           | fertig | 1.5             |
+| 1.6b | ETFs, indikative Werte, Geld- und Briefkurse     | fertig | 1.6a            |
+| 1.7  | Simulations-Labor: Welt, Simulation, Chart-Spike | fertig | 1.6b, 0.4       |
+| 1.8a | Simulations-Labor: Statistik                     | fertig | 1.7             |
+| 1.8b | Labor: Intraday, Langzeit, Selbsttest            | fertig | 1.8a            |
+| 1.9a | Marktmodell: Änderungen vor der Kalibrierung     | fertig | 1.8b            |
+| 1.9b | Marktmodell: Ergänzungen aus der Kalibrierung    | fertig | 1.9a            |
+| 1.9c | Kalibrierung des Marktmodells                    | fertig | 1.9b            |
+| 2.1  | GameEngine und Terminplaner                      | fertig | 1.6b            |
+| 2.2  | Worker-Host, Protokoll und EngineService         | fertig | 2.1, 0.3        |
+| 2.3  | Persistenz im Worker und Wiederherstellung       | fertig | 2.2             |
+| 2.4  | Spielerverwaltung                                | fertig | 2.3, 0.4        |
+| 2.5  | Spielsitzung und Uhr                             | fertig | 2.4             |
+| 2.6  | Einstellungen: Grundlage                         | fertig | 2.5             |
+| 3.1  | Hauptbuch und Kontenmodell                       | fertig | 2.4             |
+| 3.2  | Haushalt und periodische Buchungen               | fertig | 3.1             |
+| 3.3  | Bankkommandos und Banking-Slice                  | fertig | 3.2, 2.5        |
+| 3.4  | Kontenübersicht und Kontoauszug                  | fertig | 3.3             |
+| 3.5  | Bankenvergleich, Dialoge und Monatsübersicht     | fertig | 3.4             |
+| 3.6  | Benachrichtigungen                               | fertig | 3.3, 2.6        |
+| 4.1  | Marktdaten-Feed und Market-Slice                 | fertig | 2.5             |
+| 4.2  | Chart-Komponenten                                | fertig | 4.1, 1.7        |
+| 4.3  | Indikatoren                                      | fertig | 4.2             |
+| 4.4  | Marktübersicht, Screener und Watchlist           | fertig | 4.2             |
+| 4.5  | Instrument-Detailseite                           | fertig | 4.3, 4.4, 1.8a  |
+| 5.1  | Depot und Orderausführung                        | offen  | 3.3, 1.6b       |
+| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | offen  | 5.1             |
+| 5.3  | Steuern                                          | offen  | 5.2             |
+| 5.4  | Order-Ticket und Orderbuch                       | offen  | 5.3, 4.5, 3.6   |
+| 5.5  | Depot, Positionen und Steuerübersicht (UI)       | offen  | 5.4             |
+| 5.6a | Daueraufträge                                    | offen  | 3.5, 5.1        |
+| 5.6b | Sparpläne                                        | offen  | 5.5             |
+| 5.7  | Dashboard und Performance                        | offen  | 5.5             |
+| 5.8  | Chart: wählbare Auflösung und Indikatorfarben    | offen  | 4.5             |
+| 5.9  | Kopfzeile: stabiles Layout der Uhr               | offen  | 2.5             |
+| 6.1  | Export und Import                                | offen  | 5.6a, 5.6b, 5.7 |
+| 6.2  | Einstellungen                                    | offen  | 6.1, 3.6, 2.6   |
+| 6.3  | PWA und Browser-Benachrichtigungen               | offen  | 6.2             |
+| 6.4  | Performance und Robustheit                       | offen  | 6.1, 1.9c       |
+| 6.5  | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3             |
+| 6.6  | Release 1.0                                      | offen  | 6.4, 6.5, 3.5   |
 
 ### Abhängigkeitsgraph
 
@@ -234,7 +233,8 @@ flowchart TD
     AP5_3["5.3 Steuern"]
     AP5_4["5.4 Order-Ticket und Orderbuch"]
     AP5_5["5.5 Depot, Positionen und Steuerübersicht (UI)"]
-    AP5_6["5.6 Sparpläne"]
+    AP5_6a["5.6a Daueraufträge"]
+    AP5_6b["5.6b Sparpläne"]
     AP5_7["5.7 Dashboard und Performance"]
     AP5_8["5.8 Chart: wählbare Auflösung und Indikatorfarben"]
     AP5_9["5.9 Kopfzeile: stabiles Layout der Uhr"]
@@ -299,11 +299,14 @@ flowchart TD
   AP4_5 --> AP5_4
   AP3_6 --> AP5_4
   AP5_4 --> AP5_5
-  AP5_5 --> AP5_6
+  AP3_5 --> AP5_6a
+  AP5_1 --> AP5_6a
+  AP5_5 --> AP5_6b
   AP5_5 --> AP5_7
   AP4_5 --> AP5_8
   AP2_5 --> AP5_9
-  AP5_6 --> AP6_1
+  AP5_6a --> AP6_1
+  AP5_6b --> AP6_1
   AP5_7 --> AP6_1
   AP6_1 --> AP6_2
   AP3_6 --> AP6_2
@@ -689,13 +692,15 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 ### M5 – Handel, Depot und Steuern
 
 **Ziel:** Das Kernspiel ist komplett.
-**Ergebnis:** Kaufen, verkaufen, Sparpläne, Steuern, Depot und Dashboard mit Benchmark – der Funktionsumfang des MVP. Dazu kommen Nachbesserungen an Chart und Kopfzeile (AP 5.8, AP 5.9). Sie hängen von keinem anderen M5-AP ab und können jederzeit umgesetzt werden.
+**Ergebnis:** Kaufen, verkaufen, Daueraufträge, Sparpläne, Steuern, Depot und Dashboard mit Benchmark – der Funktionsumfang des MVP. Dazu kommen Nachbesserungen an Chart und Kopfzeile (AP 5.8, AP 5.9). Sie hängen von keinem anderen M5-AP ab und können jederzeit umgesetzt werden.
+
+**`SCHEMA_VERSION` in M5 (PO-Entscheidung 13.11.2026):** Sie wird in M5 nur einmal erhöht, am Ende, mit dem letzten AP, das den Spielerzustand ändert. Zwischenstände von M5 erhöhen sie nicht, auch wenn sich die Struktur des gespeicherten Zustands ändert (abweichend von §2.4); Spielstände aus Zwischenständen von M5 können deshalb unbrauchbar werden.
 
 #### AP 5.1 – Depot und Orderausführung
 
 - **Umfang:** Depot mit Verrechnungskonto eröffnen; Orderarten und Gültigkeit; Prüfung je Tick; Ausführung zu Geld- und Briefkurs; Gebühren; Reservierung, Ablehnung und Ablauf; Sonderfall Pause; Sperre neuer Käufe bei negativem Verrechnungskonto; Ereignisse.
 - **Abnahme:** Tests für alle Orderarten und Zustandsübergänge (inkl. Storno und Ablauf ausgelöster Stop-Limit-Orders), Kurslücken, Reservierungen und Gebührenmodelle; die Markt-Prüfsumme ist mit und ohne Orders identisch.
-- **Vor der Umsetzung klären** (TS §7.5): Stückberechnung bei Betragsorders (bei Erteilung oder Ausführung); „bis Tagesende“ als Kalender- oder Handelstag; Verkauf von Bruchstücken bei Banken ohne Bruchstückhandel; ob Reservierungen den verfügbaren Betrag für Überweisungen und Sparpläne mindern; Bewertung mit oder ohne Aufschlag des Handelsplatzes; Kaufsperre an der Kursuntergrenze (E-22).
+- **Geklärt (13.11.2026, TS §7.5):** Betragsorders berechnen die Stücke bei der Ausführung, Stück = (Betrag − Kosten) / Brief zum Ausführungskurs, abgerundet auf ganze Stück bzw. auf Millionstel bei `fractionalShares`; reserviert wird der Betrag. „Bis Tagesende“ endet mit dem nächsten Handelsschluss der Börse des Instruments (außerhalb der Handelszeit dem des nächsten Handelstags). Verkaufsorders dürfen bei allen Banken Bruchstücke enthalten; nur Kauf-Einzelorders sind bei Banken ohne `fractionalShares` auf ganze Stück beschränkt. Reservierungen offener Kauforders mindern den verfügbaren Betrag des Verrechnungskontos (für Überweisungen, Daueraufträge und Sparpläne). Bewertet wird zum Geldkurs ohne Aufschlag des Handelsplatzes (TS §7.9). Die Kaufsperre an der Kursuntergrenze (E-22) ist entschieden.
 - **Referenzen:** US-HD-01–US-HD-03; TS §7.4, §7.5
 - **Abhängig von:** AP 3.3, AP 1.6b
 
@@ -703,7 +708,7 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 
 - **Umfang:** Positionen und Lots nach FIFO mit Anschaffungskosten in Cent, Einstandskurs, realisierte Gewinne und Verluste; Dividenden und ETF-Ausschüttungen an die Bestände am Stichtag, Gutschrift am Zahltag; Depotgebühr quartalsweise auf den durchschnittlichen Depotwert.
 - **Abnahme:** Tests für FIFO-Teilverkäufe (Anschaffungskosten summieren sich exakt), Stichtagsregel, ausschüttende ETFs, Depotgebühr inklusive Belastung eines leeren Verrechnungskontos.
-- **Vor der Umsetzung klären:** Depot schließen zwischen Ex-Tag und Zahltag – sperren oder die Dividende aufs Zielkonto zahlen (TS §7.4)?
+- **Geklärt (13.11.2026):** Ein Depot darf zwischen Ex-Tag und Zahltag geschlossen werden; die Dividende bzw. Ausschüttung geht am Zahltag auf das beim Schließen gewählte Zielkonto (TS §7.4). Depotgebühr bei angebrochenen Quartalen (Festlegung ohne PO-Entscheidung, TS §7.3): anteilig nach Kalendertagen wie die Kontoführung, der Durchschnitt läuft über die Tage, an denen das Depot offen war; beim Schließen wird die anteilige Gebühr mit der Abrechnung gebucht. Die Details legt AP 5.2 fest.
 - **Referenzen:** US-PF-06, US-BK-08; TS §6.5, §7.4, §7.6
 - **Abhängig von:** AP 5.1
 
@@ -723,24 +728,33 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 
 #### AP 5.5 – Depot, Positionen und Steuerübersicht (UI)
 
-- **Umfang:** Depotübersicht (Positionen, Summen, Allokation als Donut nach Assetklasse, Region und Sektor) mit Kaufen und Verkaufen aus der Positionsliste; Positionsdetail (Lots, realisierte Gewinne, Dividenden, Trades im Chart als S); Steuerseite. ETF-Durchschau in der Allokation (Soll; E-28 schlägt Muss vor).
+- **Umfang:** Depotübersicht (Positionen, Summen, Allokation als Donut nach Assetklasse, Region und Sektor) mit Kaufen und Verkaufen aus der Positionsliste; Positionsdetail (Lots, realisierte Gewinne, Dividenden, Trades im Chart als S); Steuerseite. ETF-Durchschau in der Allokation (Muss, E-28).
 - **Abnahme:** Werte stimmen mit der Engine-Projektion überein; Tabellen sortierbar; Kauf und Verkauf aus dem Depot; responsive. Seitentest: Positionen, Allokation, Positionsdetail, Steuerseite.
 - **Referenzen:** US-PF-02, US-PF-03, US-PF-06, US-ST-04; E-28
 - **Abhängig von:** AP 5.4
 
-#### AP 5.6 – Sparpläne
+#### AP 5.6a – Daueraufträge
 
-- **Umfang:** Engine (Ausführung immer in Bruchstücken, Kosten, Ausfall), Kommandos und UI (anlegen, ändern, pausieren, löschen; Übersicht im Depot und unter Orders). Abbuchungskonto nach E-21 (TS §7.8).
+- **Umfang:** Engine: Kommandos anlegen, ändern, pausieren und löschen; Ausführung im Bank-Lauf um 06:00 am Ausführungstag (1–28) bzw. am nächsten Bankarbeitstag, als letzter Schritt nach allen Gutschriften und Lastschriften der Bank; Ausfall ohne Teilüberweisung mit Ereignis und Benachrichtigung, wenn der verfügbare Betrag des Quellkontos nicht reicht (Reservierungen offener Kauforders mindern ihn). Slice und UI auf der Kontenseite.
+- **Abnahme:** Tests für Ausführungstage, Wochenenden (nächster Bankarbeitstag), Reihenfolge im Bank-Lauf (Dauerauftrag am Gehaltstag sieht das Gehalt), fehlende Deckung; Daueraufträge werden auch während der Nachberechnung ausgeführt. Seitentest: Dauerauftrag anlegen, ändern, pausieren, löschen.
+- **Vor der Umsetzung klären:** Was geschieht mit einem Dauerauftrag, dessen Quell- oder Zielkonto geschlossen wird (TS §7.4)?
+- **Hinweis:** Fachlich hängt das AP nur an AP 3.5 und AP 5.1 (Reservierungen mindern den verfügbaren Betrag); im Plan läuft es nach AP 5.5.
+- **Referenzen:** US-BK-10; TS §7.4; E-21
+- **Abhängig von:** AP 3.5, AP 5.1
+
+#### AP 5.6b – Sparpläne
+
+- **Umfang:** Engine (Ausführung immer in Bruchstücken, Kosten, Ausfall), Kommandos und UI (anlegen, ändern, pausieren, löschen; Übersicht im Depot und unter Orders). Sparpläne buchen nur vom Verrechnungskonto ihres Depots; den Zufluss übernimmt ein Dauerauftrag (AP 5.6a, E-21, TS §7.8).
 - **Abnahme:** Tests für Ausführungstage, Wochenenden, Bruchstücke und fehlende Deckung; Sparpläne werden auch während der Nachberechnung ausgeführt. Seitentest: Sparplan anlegen, ändern, pausieren, löschen.
 - **Referenzen:** US-HD-05; TS §7.8; E-21
 - **Abhängig von:** AP 5.5
 
 #### AP 5.7 – Dashboard und Performance
 
-- **Umfang:** Tagesreihen (Vermögen, Zuflüsse), zeitgewichtete Rendite, Benchmark-Schattenportfolio; Dashboard mit Gesamtvermögen (Kopfzeile und Kachel), Vermögensverlauf, Cashflow des Monats, Top-Positionen, Watchlist, letzten Benachrichtigungen und „Demnächst" (nur planbare Termine, TS §8.1; S). Soll: Erträge und Kosten (US-PF-07), Dividendenkalender für Depot und Watchlist (US-MK-06).
+- **Umfang:** Tagesreihen (Vermögen, Zuflüsse), zeitgewichtete Rendite, Benchmark-Schattenportfolio und zweite Vergleichsgröße (US-PF-05, E-28); Dashboard mit Gesamtvermögen (Kopfzeile und Kachel), Vermögensverlauf, Cashflow des Monats, Top-Positionen, Watchlist, letzten Benachrichtigungen und „Demnächst" (nur planbare Termine, TS §8.1; S). Soll: Erträge und Kosten (US-PF-07), Dividendenkalender für Depot und Watchlist (US-MK-06), „Erste Schritte“ auf der Übersicht (US-UI-10).
 - **Abnahme:** Tests für Rendite (inkl. Tagen mit Vermögen ≤ 0) und Benchmark; Dashboard vollständig. Seitentest des Dashboards mit Werten aus dem Domain-Code als Orakel.
-- **Vor der Umsetzung klären:** externe Flüsse in der Rendite am Tagesanfang statt am Tagesende ansetzen und „Veränderung heute“ ohne Zuflüsse rechnen (TS §7.9); „Demnächst“ aus Terminplaner und Kalender statt aus einer Vorausrechnung (E-05, TS §8.1); zweite Vergleichsgröße (E-28).
-- **Referenzen:** US-PF-01, US-PF-04, US-PF-05, US-PF-07, US-MK-06; TS §7.9, §8.1; E-05, E-28
+- **Geklärt (13.11.2026):** Externe Flüsse gehen am Tagesanfang in die Rendite ein, `r_day = V_end / (V_start + CF_day) − 1`; Tage mit `V_start + CF_day ≤ 0` gehen nicht in die Verkettung ein. „Veränderung heute“ rechnet ohne externe Zuflüsse (Einkommen, Lebenshaltung), zeigt also Markt, Zinsen, Kosten und Steuern (TS §7.9). „Demnächst“ liest die planbaren Termine aus Terminplaner und Kalender mit Basisbeträgen, ohne Vorausrechnung (E-05, TS §8.1). Zweite Vergleichsgröße und „Erste Schritte“ gehören zum Umfang (E-28).
+- **Referenzen:** US-PF-01, US-PF-04, US-PF-05, US-PF-07, US-MK-06, US-UI-10; TS §7.9, §8.1; E-05, E-28
 - **Abhängig von:** AP 5.5
 
 #### AP 5.8 – Chart: wählbare Auflösung und Indikatorfarben
@@ -754,9 +768,9 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
   - Die Farbauswahl ist per Tastatur bedienbar und zugänglich benannt.
   - Die Bollinger-Fläche ist im hellen und im dunklen Theme lesbar, Kerzen und Linien darunter bleiben erkennbar.
   - Seitentest: Auflösung wählen, der Chart zeigt Kerzen dieser Auflösung und lädt beim Scrollen ältere; Farbe eines Indikators ändern, sie bleibt nach dem Neuladen erhalten.
-- **Vor der Umsetzung klären:**
-  - Bleibt die gewählte Auflösung beim Wechsel des Zeitraums erhalten, solange sie zulässig ist, oder fällt sie auf „Auto“ zurück? Wird sie in `pgo.ui.chart` gespeichert?
-  - Dürfen zwei Indikatoren dieselbe Farbe haben? Heute gilt höchstens ein Indikator je Chart-Farbe (TS §11.7).
+- **Geklärt (13.11.2026):**
+  - Die gewählte Auflösung bleibt beim Wechsel des Zeitraums erhalten, solange sie zulässig ist, sonst fällt sie auf „Auto“ zurück. Sie wird nicht in `pgo.ui.chart` gespeichert.
+  - Mehrere Indikatoren dürfen dieselbe Farbe haben; die Regel „höchstens ein Indikator je Chart-Farbe“ (TS §11.7) entfällt. Ein neuer Indikator bekommt weiterhin die erste freie Farbe, sind alle belegt, die erste. Die Obergrenze an Indikatoren bleibt.
 - **Hinweis:** Der Wrapper `charts/ui/price-chart` zeichnet bisher nur Linien-Overlays, die Bollinger-Bänder gestrichelt. Für die Fläche zwischen zwei Linien braucht er eine Erweiterung, z. B. ein Series-Primitive von lightweight-charts.
 - **Referenzen:** US-CH-01, US-CH-02; TS §6.8, §8.2, §11.7
 - **Abhängig von:** AP 4.5
@@ -793,7 +807,7 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
   - Systemtest mit echtem Download und Upload in Chromium, Firefox und WebKit.
 - **Vor der Umsetzung klären:** die Ergänzungen zu E-10 – gzip schon in Formatversion 1, Export ohne `commands`, Import startet pausiert (TS §10.1, §10.3). Beim Import legt die UI das Profil an (TS §9.1).
 - **Referenzen:** US-EX-01–US-EX-03; TS §10; E-10
-- **Abhängig von:** AP 5.6, AP 5.7
+- **Abhängig von:** AP 5.6a, AP 5.6b, AP 5.7
 
 #### AP 6.2 – Einstellungen
 
@@ -846,12 +860,13 @@ Stories der Stufe 1 (PS §7) und die Arbeitspakete, die sie umsetzen. AP 6.6 pr�
 | US-BK-01–05                                | AP 3.3 (Kommandos), AP 3.5 (Oberfläche); Depot eröffnen: AP 5.1 und AP 5.4 |
 | US-BK-06                                   | AP 3.4                                                                     |
 | US-BK-07, US-BK-08                         | AP 3.2; Depotgebühr: AP 5.2                                                |
+| US-BK-10                                   | AP 5.6a                                                                    |
 | US-MK-01, US-MK-02, US-MK-04               | AP 4.4                                                                     |
 | US-MK-03                                   | AP 4.5                                                                     |
 | US-MK-05                                   | AP 4.1 (Feed), AP 4.4 und AP 4.5 (Hervorhebung); Schalter: AP 6.2          |
 | US-MK-06 (Soll)                            | AP 4.5 (Termine am Instrument), AP 5.7 (Kalender für Depot und Watchlist)  |
 | US-HD-01–04                                | AP 5.1 (Engine), AP 5.4 (Oberfläche)                                       |
-| US-HD-05                                   | AP 5.6                                                                     |
+| US-HD-05                                   | AP 5.6b                                                                    |
 | US-PF-01, US-PF-04, US-PF-05               | AP 5.7                                                                     |
 | US-PF-02, US-PF-03, US-PF-06               | AP 5.5; Lots und Erträge in der Engine: AP 5.2                             |
 | US-PF-07 (Soll)                            | AP 5.7                                                                     |
@@ -867,7 +882,7 @@ Stories der Stufe 1 (PS §7) und die Arbeitspakete, die sie umsetzen. AP 6.6 pr�
 | US-UI-03, US-UI-04                         | AP 0.4 und jedes UI-AP; Abschlussprüfung: AP 6.5                           |
 | US-UI-05 (Soll), US-UI-06 (Soll), US-UI-08 | AP 6.5                                                                     |
 | US-UI-07 (Soll)                            | AP 6.3                                                                     |
-| US-UI-10 (Soll, Vorschlag E-28)            | noch nicht zugeordnet                                                      |
+| US-UI-10 (Soll)                            | AP 5.7                                                                     |
 
 Soll-Punkte innerhalb von Stories, die noch kein AP nennt: Saldoverlauf als Chart (US-BK-06) und die Aufteilung des Vermögensverlaufs in Bargeld und Wertpapiere (US-PF-04). Sie werden zugeordnet oder bewusst auf nach 1.0 verschoben, sobald M4 steht.
 
@@ -881,7 +896,7 @@ Die Reihenfolge ab M7 ist ein Vorschlag und wird nach dem MVP gemeinsam priorisi
 | ---------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | M7 – Zinsen, Inflation, Anleihen   | 2     | Makromodell (Verbraucherpreise, Leitzins, Zinskurve), Inflation bei Kosten und Gehalt, Realwertanzeige, Staats- und Unternehmensanleihen mit Stückzinsen, Renten-ETFs, Tagesgeld am Leitzins, Festgeld und Lockzinsen                                                                                                                                                                                                | US-MK-10, US-MK-11, US-BK-11                                           |
 | M8 – Rohstoffe, Edelmetalle, Fonds | 2     | Rohstoffe mit Branchenkopplung, ETCs, physische Edelmetalle über das Barvermögen (Händler, Spanne, Spekulationsfrist), aktive Fonds                                                                                                                                                                                                                                                                                  | US-MK-12, US-MK-13, US-MK-14                                           |
-| M9 – Realismus-Ausbau              | 2     | Steuerdetails, Daueraufträge, Trailing-Stop, Kursalarme, Fundamentaldaten und Quartalszahlen, Unternehmensereignisse, Fremdwährungen, Feiertage und Direkthandel, Vergleichschart, weitere Indikatoren, Risikokennzahlen; voraussichtlich in zwei Teile zu schneiden                                                                                                                                                 | US-ST-10–12, US-BK-10, US-HD-10–11, US-MK-15–18, US-CH-03–04, US-PF-08 |
+| M9 – Realismus-Ausbau              | 2     | Steuerdetails, Depotübertrag, Trailing-Stop, Kursalarme, Fundamentaldaten und Quartalszahlen, Unternehmensereignisse, Fremdwährungen, Feiertage und Direkthandel, Vergleichschart, weitere Indikatoren, Risikokennzahlen; voraussichtlich in zwei Teile zu schneiden                                                                                                                                                 | US-ST-10–12, US-BK-12, US-HD-10–11, US-MK-15–18, US-CH-03–04, US-PF-08 |
 | M10 – CFDs                         | 3     | CFD-Konto, Long und Short mit Hebel, Margin, Finanzierungskosten, Margin-Call und Zwangsglattstellung                                                                                                                                                                                                                                                                                                                | US-CF-01, US-CF-02                                                     |
 | M11 – Große Welt                   | 3     | Deutlich größere Welt mit mehr Ländern, Börsen, Branchen, Aktien, ETFs und den Assetklassen aus M7/M8 (Größenordnung: einige Tausend bis 10.000 Aktien, Zielgröße wird vor dem Start festgelegt); erweiterter Namensgenerator, genäherte breite Indizes, Tageskerzen und Hoch/Tief bei Bedarf, eigene Budgets für Spielstart, Speicher und Export, Bedienung großer Listen; Umsetzung nach der Checkliste in TS §5.8 | US-MK-19, US-MK-20                                                     |
 | M12 – Regeln und Backtesting       | 3     | Regel-Editor („wenn Bedingung, dann Aktion") ohne `eval`, Auswertung zum Kerzenschluss in der Engine, Ausführungsprotokoll, Backtest auf der Historie mit denselben Indikatorfunktionen                                                                                                                                                                                                                              | US-RG-01–US-RG-04                                                      |

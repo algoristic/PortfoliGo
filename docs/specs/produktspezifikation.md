@@ -279,6 +279,7 @@ Als Anwender möchte ich nicht mehr benötigte Konten schließen, damit keine Ge
 
 - Beim Schließen rechnet die Bank ab: Aufgelaufene Zinsen und anteilige Gebühren bis zum Schließtag werden gebucht, ein Restguthaben wird auf ein gewähltes eigenes Konto überwiesen.
 - Ein negativer Saldo muss vorher ausgeglichen werden. Depots müssen leer sein und dürfen keine offenen Orders oder Sparpläne haben; andernfalls erklärt ein Hinweis, was fehlt.
+- Ein Depot lässt sich auch zwischen Ex-Tag und Zahltag einer Dividende schließen; die Dividende bzw. Ausschüttung geht am Zahltag auf das beim Schließen gewählte Zielkonto.
 - Das Gehaltskonto lässt sich erst schließen, wenn ein anderes Gehaltskonto bestimmt ist.
 
 **US-BK-04 – Geld überweisen** · Stufe 1 · M
@@ -286,7 +287,7 @@ Als Anwender möchte ich Geld zwischen meinen Konten bewegen, damit ich es dorth
 
 - Überweisungen zwischen eigenen Konten (Girokonto, Tagesgeld, Verrechnungskonto) mit Betrag und Verwendungszweck.
 - Ausführung sofort und kostenlos (Echtzeitüberweisung, E-17).
-- Überwiesen werden kann höchstens der verfügbare Betrag (Guthaben plus freier Dispo, falls vorhanden); eine eigene Überweisung führt nie in die geduldete Überziehung.
+- Überwiesen werden kann höchstens der verfügbare Betrag (Guthaben plus freier Dispo, falls vorhanden; bei Verrechnungskonten abzüglich des für offene Kauforders reservierten Betrags); eine eigene Überweisung führt nie in die geduldete Überziehung.
 
 **US-BK-05 – Gehaltskonto festlegen** · Stufe 1 · M
 Als Anwender möchte ich bestimmen, welches Girokonto mein Gehaltskonto ist, damit ich von günstigeren Konditionen profitiere.
@@ -315,7 +316,15 @@ Als Anwender möchte ich gewarnt werden, wenn ein Konto nicht gedeckt ist, damit
 Als Anwender möchte ich, dass Zinsen und Gebühren gemäß den Konditionen gebucht werden, damit sich die Wahl der Bank spürbar auswirkt.
 
 - Habenzinsen werden taggenau berechnet und auf Tagesgeldkonten je nach Bank monatlich oder quartalsweise, auf Verrechnungskonten monatlich gutgeschrieben; die Abgeltungsteuer wird einbehalten (US-ST-01).
-- Kontoführungs- und Depotgebühren werden periodisch belastet und im Kontoauszug ausgewiesen. Im Eröffnungs- und im Schließmonat fällt die Kontoführung anteilig nach Kalendertagen an.
+- Kontoführungs- und Depotgebühren werden periodisch belastet und im Kontoauszug ausgewiesen. Im Eröffnungs- und im Schließmonat fällt die Kontoführung anteilig nach Kalendertagen an, im Eröffnungs- und im Schließquartal ebenso die Depotgebühr.
+
+**US-BK-10 – Daueraufträge** · Stufe 1 · M
+Als Anwender möchte ich regelmäßig einen festen Betrag automatisch zwischen meinen Konten überweisen, damit z. B. meine Sparpläne gedeckt sind, ohne dass ich jeden Monat von Hand überweise.
+
+- Angaben: Quellkonto, Zielkonto (zwei verschiedene offene eigene Konten), Betrag, Ausführungstag (1–28); Intervall monatlich.
+- Ausführung im Bank-Lauf um 06:00 am Ausführungstag bzw. am nächsten Bankarbeitstag, nach Gehalt, Zinsen, Lebenshaltung und Gebühren: Ein Dauerauftrag am Gehaltstag sieht das Gehalt schon.
+- Reicht der verfügbare Betrag des Quellkontos nicht, fällt die Ausführung aus und der Anwender wird benachrichtigt; es gibt keine Teilüberweisung.
+- Daueraufträge lassen sich auf der Kontenseite anlegen, ändern, pausieren und löschen (E-21).
 
 ### 7.5 Märkte und Instrumente (MK)
 
@@ -363,7 +372,7 @@ Als Anwender möchte ich anstehende Dividenden meiner Werte sehen, damit ich Aus
 **US-HD-01 – Kaufen** · Stufe 1 · M
 Als Anwender möchte ich Wertpapiere über ein Depot kaufen und vorher alle Kosten sehen, damit ich keine Überraschungen erlebe.
 
-- Order-Ticket: Depot, Instrument, Stückzahl oder Betrag, Orderart, Gültigkeit. Bei Betragsorders werden Stücke berechnet; Bruchstücke nur, wenn die Bank sie anbietet.
+- Order-Ticket: Depot, Instrument, Stückzahl oder Betrag, Orderart, Gültigkeit. Bei Betragsorders werden die Stücke bei der Ausführung zum Briefkurs berechnet und abgerundet; Bruchstücke nur, wenn die Bank sie anbietet. Reserviert wird der Betrag.
 - Vor dem Absenden zeigt eine Kostenvorschau: Briefkurs, Kurswert, Orderentgelt, Fremdkosten, Gesamtbetrag und verfügbares Guthaben.
 - Fehlt die Deckung auf dem Verrechnungskonto, wird die Order nicht angenommen und der Fehlbetrag angezeigt.
 - Die Ausführung erzeugt eine Buchung, eine Position bzw. ein Lot und eine Benachrichtigung.
@@ -372,6 +381,7 @@ Als Anwender möchte ich Wertpapiere über ein Depot kaufen und vorher alle Kost
 Als Anwender möchte ich Positionen ganz oder teilweise verkaufen, damit ich Gewinne sichern oder Verluste begrenzen kann.
 
 - Ausführung zum Geldkurs.
+- Bruchstücke (z. B. aus Sparplänen) lassen sich bei jeder Bank verkaufen, auch wenn sie beim Kauf nur ganze Stück anbietet.
 - Die Vorschau zeigt den voraussichtlichen Gewinn oder Verlust und die Steuer.
 - Der Erlös wird nach Kosten und Steuern dem Verrechnungskonto gutgeschrieben.
 
@@ -379,7 +389,7 @@ Als Anwender möchte ich Positionen ganz oder teilweise verkaufen, damit ich Gew
 Als Anwender möchte ich verschiedene Orderarten nutzen, damit ich zu meinen Bedingungen handle.
 
 - Orderarten: Market (bestens/billigst), Limit, Stop (Stop-Loss, Stop-Buy), Stop-Limit.
-- Gültigkeit: bis Tagesende, bis Datum, bis auf Widerruf (höchstens ein Jahr).
+- Gültigkeit: bis Tagesende (bis zum nächsten Handelsschluss der Börse; außerhalb der Handelszeit bis zum Schluss des nächsten Handelstags), bis Datum, bis auf Widerruf (höchstens ein Jahr).
 - Orders außerhalb der Handelszeit werden zur Börseneröffnung geprüft und ausgeführt. Kurslücken über Nacht wirken sich realistisch aus (ein Stop-Loss kann unter dem Stopkurs ausgeführt werden).
 
 **US-HD-04 – Orderbuch** · Stufe 1 · M
@@ -387,7 +397,7 @@ Als Anwender möchte ich offene und vergangene Orders sehen und verwalten, damit
 
 - Offene Orders mit Status; Stornieren und Ändern (Limit, Stop, Gültigkeit).
 - Orderhistorie mit Ausführungsdetails (Kurs, Zeitpunkt, Kosten).
-- Für offene Kauforders reserviertes Guthaben ist sichtbar.
+- Für offene Kauforders reserviertes Guthaben ist sichtbar; es mindert den verfügbaren Betrag des Verrechnungskontos für Überweisungen, Daueraufträge und Sparpläne.
 
 **US-HD-05 – Sparplan** · Stufe 1 · M
 Als Anwender möchte ich regelmäßig automatisch investieren, damit mein Vermögen auch ohne mein Zutun wächst.
@@ -395,15 +405,15 @@ Als Anwender möchte ich regelmäßig automatisch investieren, damit mein Vermö
 - Angaben: Depot, sparplanfähiges Instrument (ETF oder Aktie), Betrag, Ausführungstag (z. B. 1. oder 15.), Intervall (monatlich).
 - Ausführung zur Börseneröffnung am Ausführungstag bzw. am nächsten Handelstag, mit Bruchstücken und den Sparplankosten der Bank.
 - Sparpläne lassen sich pausieren, ändern und löschen. Fehlt die Deckung, fällt die Ausführung aus und der Anwender wird benachrichtigt.
-- **(Vorschlag, E-21)** Abbuchungskonto: Der Sparplan nennt ein eigenes Konto (z. B. das Gehaltskonto). Bei der Ausführung wird der Betrag von dort automatisch aufs Verrechnungskonto überwiesen. Ohne diese Regel bräuchte jeder Sparplan eine monatliche Überweisung von Hand, weil das Gehalt auf dem Girokonto eingeht und Daueraufträge erst in Stufe 2 folgen (US-BK-10).
+- Der Sparplan bucht vom Verrechnungskonto seines Depots. Den monatlichen Zufluss vom Gehaltskonto übernimmt ein Dauerauftrag (US-BK-10, E-21).
 
 ### 7.7 Portfolio und Auswertung (PF)
 
 **US-PF-01 – Gesamtvermögen** · Stufe 1 · M
 Als Anwender möchte ich mein Gesamtvermögen jederzeit sehen, damit ich weiß, wo ich stehe.
 
-- Live-Wert: Summe aller Kontosalden (Überziehungen mindern sie) und Depotwerte zum Geldkurs.
-- Veränderung heute und seit Spielbeginn (absolut und in %).
+- Live-Wert: Summe aller Kontosalden (Überziehungen mindern sie) und Depotwerte zum Geldkurs (ohne Aufschlag des Handelsplatzes, bei allen Banken gleich).
+- Veränderung heute und seit Spielbeginn (absolut und in %). Die Veränderung heute rechnet ohne Einkommen und Lebenshaltung; sie zeigt Markt, Zinsen, Kosten und Steuern.
 
 **US-PF-02 – Depotübersicht** · Stufe 1 · M
 Als Anwender möchte ich alle Positionen eines Depots mit ihrer Entwicklung sehen, damit ich mein Portfolio steuern kann.
@@ -415,7 +425,7 @@ Als Anwender möchte ich alle Positionen eines Depots mit ihrer Entwicklung sehe
 Als Anwender möchte ich sehen, wie mein Vermögen verteilt ist, damit ich Klumpenrisiken erkenne.
 
 - Aufteilung nach Assetklasse, Region und Sektor als Donut mit Tabelle.
-- ETFs werden anhand ihrer Indexzusammensetzung aufgeschlüsselt („Durchschau") (S). **(Vorschlag, E-28)** Muss statt Soll: Ohne Durchschau sagt die Aufteilung nach Region und Sektor bei einem ETF-Depot nichts aus.
+- ETFs werden anhand ihrer Indexzusammensetzung aufgeschlüsselt („Durchschau", E-28). Ohne Durchschau sagt die Aufteilung nach Region und Sektor bei einem ETF-Depot nichts aus.
 
 **US-PF-04 – Vermögensverlauf** · Stufe 1 · M
 Als Anwender möchte ich die Entwicklung meines Vermögens über die Zeit sehen, damit ich meinen Fortschritt erkenne.
@@ -428,7 +438,7 @@ Als Anwender möchte ich meine Rendite mit einer einfachen Alternative vergleich
 
 - Zeitgewichtete Rendite seit Spielbeginn, im laufenden Jahr und annualisiert. Einkommen und Lebenshaltungskosten verfälschen sie nicht.
 - Benchmark: Schattenportfolio, in das Startkapital und alle Netto-Zuflüsse ohne Kosten in den Weltindex geflossen wären – Vergleich als Chart und Kennzahl.
-- **(Vorschlag, E-28)** Zweite Vergleichsgröße: das Vermögen, wenn alle Zuflüsse auf dem Gehaltskonto geblieben wären. Die Benchmark ist kostenlos, steuerfrei und voll investiert und deshalb kaum zu schlagen; die zweite Größe zeigt, was das Investieren gebracht hat.
+- Zweite Vergleichsgröße (E-28): das Vermögen, wenn alle Zuflüsse auf dem Gehaltskonto geblieben wären. Die Benchmark ist kostenlos, steuerfrei und voll investiert und deshalb kaum zu schlagen; die zweite Größe zeigt, was das Investieren gebracht hat.
 
 **US-PF-06 – Positionsdetail** · Stufe 1 · M
 Als Anwender möchte ich die Historie einer Position sehen, damit ich meine Entscheidungen nachvollziehe.
@@ -582,7 +592,7 @@ Als Anwender möchte ich das Verhalten der App an einer Stelle anpassen.
 - Für den Spieler (Teil des Spielstands, wird mit exportiert): Name, Seed (anzeigen, kopieren), automatische Pause je Ereignistyp und das Verhalten im Hintergrund (E-02) – in Echtzeit weiterlaufen (Standard) oder pausieren.
 - Export des Spielers (US-EX-01).
 
-**US-UI-10 – Erste Schritte** · Stufe 1 · S · **(Vorschlag, E-28)**
+**US-UI-10 – Erste Schritte** · Stufe 1 · S
 Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schritte geführt werden, damit ich weiß, wie ich vom Girokonto zum ersten Wertpapier komme.
 
 - Eine Liste auf der Übersicht führt durch: Banken vergleichen, Depot eröffnen, Geld überweisen, erstes Wertpapier kaufen, Sparplan anlegen.
@@ -601,9 +611,8 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 | US-MK-16 | Unternehmensereignisse: Aktiensplits, Übernahmen, Insolvenzen, Börsengänge, Indexanpassungen                                 | 2     |
 | US-MK-17 | Fremdwährungen: Instrumente in USD, JPY usw., Wechselkurse und Devisenkosten                                                 | 2     |
 | US-MK-18 | Börsenfeiertage und Direkthandel mit erweiterten Handelszeiten                                                               | 2     |
-| US-BK-10 | Daueraufträge                                                                                                                | 2     |
 | US-BK-11 | Festgeld und Neukunden-Lockzinsen                                                                                            | 2     |
-| US-BK-12 | Depotübertrag: Wertpapiere ohne Verkauf zu einer anderen Bank übertragen **(Vorschlag, E-28)**                               | 2     |
+| US-BK-12 | Depotübertrag: Wertpapiere ohne Verkauf zu einer anderen Bank übertragen (E-28)                                              | 2     |
 | US-HD-10 | Trailing-Stop                                                                                                                | 2     |
 | US-HD-11 | Kursalarme („benachrichtige mich, wenn X > 50")                                                                              | 2     |
 | US-ST-10 | Teilfreistellung und Vorabpauschale bei Fonds und ETFs                                                                       | 2     |
@@ -635,13 +644,13 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 
 ## 8. Ausbaustufen
 
-| Stufe | Name                        | Inhalt                                                                                                                                                                                                                                                                 | Meilensteine |
-| ----- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| 1     | MVP „Spielbar"              | Spieler, Zeit, Einkommen und Kosten, Banken und Konten, Aktien und ETFs, Handel mit Market-, Limit-, Stop- und Stop-Limit-Orders, Sparpläne, Steuern (vereinfacht), Portfolio und Performance, Charts mit Basisindikatoren, Benachrichtigungen, Export und Import, PWA | M0–M6        |
-| 2     | „Vollständiger Markt"       | Zinsen und Inflation, Anleihen, Tagesgeld und Festgeld am Leitzins, Rohstoffe und ETCs, Edelmetalle, aktive Fonds, Steuerdetails, Fundamentaldaten, Unternehmensereignisse, Kursalarme, Daueraufträge, weitere Indikatoren                                             | M7–M9        |
-| 3     | „Trading & Automatisierung" | CFDs, große Welt mit deutlich mehr Instrumenten, Regelwerk, Backtesting                                                                                                                                                                                                | M10–M12      |
-| 4     | „Leben & Welt"              | Lebensereignisse, Upgrades, Versicherungen, Karriere, Newsticker, Erben und Prestige                                                                                                                                                                                   | M13–M15      |
-| N     | „Native" (optional)         | App für Android und iOS mit Capacitor, vorausgeplante Benachrichtigungen                                                                                                                                                                                               | N1           |
+| Stufe | Name                        | Inhalt                                                                                                                                                                                                                                                                                    | Meilensteine |
+| ----- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 1     | MVP „Spielbar"              | Spieler, Zeit, Einkommen und Kosten, Banken und Konten mit Daueraufträgen, Aktien und ETFs, Handel mit Market-, Limit-, Stop- und Stop-Limit-Orders, Sparpläne, Steuern (vereinfacht), Portfolio und Performance, Charts mit Basisindikatoren, Benachrichtigungen, Export und Import, PWA | M0–M6        |
+| 2     | „Vollständiger Markt"       | Zinsen und Inflation, Anleihen, Tagesgeld und Festgeld am Leitzins, Rohstoffe und ETCs, Edelmetalle, aktive Fonds, Steuerdetails, Fundamentaldaten, Unternehmensereignisse, Kursalarme, Depotübertrag, weitere Indikatoren                                                                | M7–M9        |
+| 3     | „Trading & Automatisierung" | CFDs, große Welt mit deutlich mehr Instrumenten, Regelwerk, Backtesting                                                                                                                                                                                                                   | M10–M12      |
+| 4     | „Leben & Welt"              | Lebensereignisse, Upgrades, Versicherungen, Karriere, Newsticker, Erben und Prestige                                                                                                                                                                                                      | M13–M15      |
+| N     | „Native" (optional)         | App für Android und iOS mit Capacitor, vorausgeplante Benachrichtigungen                                                                                                                                                                                                                  | N1           |
 
 **Bekannte Grenze von Stufe 1:** Gehalt, Lebenshaltungskosten, Gebühren und Sparerpauschbetrag bleiben nominal fest; Inflation und Gehaltsentwicklung folgen in Stufe 2 und 4. In sehr langen Spielen verlieren Einkommen und Gebühren deshalb gegenüber dem Vermögen an Gewicht. Wie sich der Markt über Jahrzehnte verhält, klärt E-22 (TS §6.4).
 
@@ -694,19 +703,19 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 
 ### 10.3 Hauptansichten
 
-| Ansicht            | Inhalt                                                                                                                                                                                                                                      |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Spielerauswahl     | Spieler als Liste, „Neuer Spieler", Import                                                                                                                                                                                                  |
-| Spieler anlegen    | Formular mit Voreinstellungen, Seed und Vorschau der Startbedingungen                                                                                                                                                                       |
-| Übersicht          | Gesamtvermögen mit Verlauf, Cashflow des Monats, Top-Positionen, Watchlist, letzte Benachrichtigungen, „Demnächst" (nur planbare Termine wie Gehalt, Lastschriften, angekündigte Dividenden, Sparpläne – nichts, was künftige Kurse verrät) |
-| Märkte             | Indizes, Gewinner und Verlierer, Sektoren, Screener mit Filtern                                                                                                                                                                             |
-| Instrument         | Kurskopf, Chart mit Indikatoren, Kennzahlen, Profil, Dividenden, Kauf und Verkauf                                                                                                                                                           |
-| Depot              | Positionen, Allokation, Performance und Benchmark, Sparpläne                                                                                                                                                                                |
-| Konten & Banken    | Kontenübersicht, Kontoauszug, Bankenvergleich, Überweisen, Konto eröffnen                                                                                                                                                                   |
-| Orders             | Offene Orders, Orderhistorie, Sparpläne                                                                                                                                                                                                     |
-| Steuern            | Jahresübersicht, Verlusttopf, Sparerpauschbetrag                                                                                                                                                                                            |
-| Benachrichtigungen | Liste mit Filtern                                                                                                                                                                                                                           |
-| Einstellungen      | Erscheinungsbild, Zeitverhalten, Benachrichtigungen, Spieler (Seed, Export)                                                                                                                                                                 |
+| Ansicht            | Inhalt                                                                                                                                                                                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Spielerauswahl     | Spieler als Liste, „Neuer Spieler", Import                                                                                                                                                                                                                                |
+| Spieler anlegen    | Formular mit Voreinstellungen, Seed und Vorschau der Startbedingungen                                                                                                                                                                                                     |
+| Übersicht          | Erste Schritte (ausblendbar), Gesamtvermögen mit Verlauf, Cashflow des Monats, Top-Positionen, Watchlist, letzte Benachrichtigungen, „Demnächst" (nur planbare Termine wie Gehalt, Lastschriften, angekündigte Dividenden, Sparpläne – nichts, was künftige Kurse verrät) |
+| Märkte             | Indizes, Gewinner und Verlierer, Sektoren, Screener mit Filtern                                                                                                                                                                                                           |
+| Instrument         | Kurskopf, Chart mit Indikatoren, Kennzahlen, Profil, Dividenden, Kauf und Verkauf                                                                                                                                                                                         |
+| Depot              | Positionen, Allokation, Performance und Benchmark, Sparpläne                                                                                                                                                                                                              |
+| Konten & Banken    | Kontenübersicht, Kontoauszug, Bankenvergleich, Überweisen, Daueraufträge, Konto eröffnen                                                                                                                                                                                  |
+| Orders             | Offene Orders, Orderhistorie, Sparpläne                                                                                                                                                                                                                                   |
+| Steuern            | Jahresübersicht, Verlusttopf, Sparerpauschbetrag                                                                                                                                                                                                                          |
+| Benachrichtigungen | Liste mit Filtern                                                                                                                                                                                                                                                         |
+| Einstellungen      | Erscheinungsbild, Zeitverhalten, Benachrichtigungen, Spieler (Seed, Export)                                                                                                                                                                                               |
 
 ### 10.4 Zahlen und Zeit
 
@@ -723,5 +732,5 @@ Nicht geplant sind:
 - Echtgeld, echte Kursdaten und die Anbindung echter Broker.
 - Online-Funktionen: Mehrspieler, serverseitige Ranglisten, Benutzerkonten, Cloud-Synchronisation (kein Backend). Ein Vergleich mit anderen ist über geteilte Seeds möglich.
 - Kryptowährungen, Optionen, Futures, Optionsscheine und Zertifikate – vorerst; sie können später als eigene Erweiterung geprüft werden.
-- Depotübertrag zwischen Banken – in Stufe 1: Wer die Depotbank wechselt, verkauft und kauft neu, mit Kosten und Steuern. **(Vorschlag, E-28)** Der Übertrag folgt als US-BK-12 in Stufe 2.
+- Depotübertrag zwischen Banken – in Stufe 1: Wer die Depotbank wechselt, verkauft und kauft neu, mit Kosten und Steuern. Der Übertrag folgt als US-BK-12 in Stufe 2 (E-28).
 - Steuerliche Vollständigkeit: Kirchensteuer, Günstigerprüfung, persönlicher Einkommensteuersatz und Steuererklärung werden nicht oder nur stark vereinfacht abgebildet.
