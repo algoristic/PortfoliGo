@@ -4,11 +4,11 @@ description: >-
   Bearbeitet eine komplexe Aufgabe als Orchestrator: Aufgabe sichten, alle offenen Punkte vorab mit dem
   Nutzer klären, in Teilaufgaben zerlegen, die Umsetzung an Sub-Agents (Opus, effort medium) delegieren,
   Ergebnisse prüfen und selbstständig committen (ohne Push), am Ende ein Abschlussbericht.
-  Nur auf ausdrücklichen Aufruf mit /orchestrate <Aufgabe>; vorher /effort xhigh setzen und Auto-Modus nutzen.
+  Nur auf ausdrücklichen Aufruf mit /orchestrate <Aufgabe>; vorher /effort high setzen und Auto-Modus nutzen.
 argument-hint: <Aufgabe, z. B. „Setze AP 2.1 aus docs/projektplan.md um“>
 disable-model-invocation: true
 model: opus
-effort: xhigh
+effort: high
 ---
 
 # Orchestrator
@@ -25,7 +25,7 @@ brauchst, aber schreibe keinen nennenswerten Code selbst.
 
 - **Effort:** `model`/`effort` aus dem Frontmatter gelten nur für den ersten Turn. Jede Rückmeldung eines
   Sub-Agents startet einen neuen Turn mit der Session-Einstellung. Der Nutzer setzt deshalb vor dem Aufruf
-  `/effort xhigh` (danach wieder zurück). Erinnere beim Plan-Schritt in Phase 1 daran.
+  `/effort high` (danach wieder zurück). Erinnere beim Plan-Schritt in Phase 1 daran.
 - **Berechtigungen:** Die autonome Phase braucht den Auto-Modus (oder passende Allow-Regeln), sonst hält
   jeder Berechtigungs-Prompt den Lauf an. Ist kein Auto-Modus aktiv, weise beim „Los“ darauf hin.
 - **Node:** Jeder Bash-Aufruf startet eine neue Shell mit zu altem Default-Node. Jeder `npm`-, `npx`- und
@@ -76,7 +76,7 @@ stillschweigend anpassen. Arbeite am Rest weiter und führe den Punkt im Bericht
    mit `AskUserQuestion`, gebündelt in möglichst wenigen Runden, jeweils mit deiner Empfehlung als erster
    Option. Frag nichts, was du aus Code, Spezifikation oder vernünftigen Defaults selbst beantworten kannst.
 4. **Plan vorlegen:** Zeig den Plan kurz im Chat: Teilaufgaben mit Ziel und Dateien, Reihenfolge und
-   Abhängigkeiten, was parallel läuft, geplante Commits, Prüfungen. Erinnere an `/effort xhigh` und den
+   Abhängigkeiten, was parallel läuft, geplante Commits, Prüfungen. Erinnere an `/effort high` und den
    Auto-Modus. Hol dir mit einer letzten `AskUserQuestion` das „Los“ (Optionen: „Los“, „Plan anpassen“).
    Bei „Plan anpassen“ den Plan überarbeiten und Schritt 4 wiederholen. Ab dem „Los“ arbeitest du ohne
    Rückfragen.
