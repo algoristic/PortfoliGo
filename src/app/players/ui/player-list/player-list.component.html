@@ -71,6 +71,7 @@
           i18n="@@uiPlayers-playerList-open"
           [variant]="player.isLast ? 'primary' : 'secondary'"
           [disabled]="player.outdated"
+          [attr.aria-label]="player.openLabel"
           [attr.data-testid]="'players.list.' + player.id + '.open'"
           (click)="onOpen(player.id)">
           Öffnen

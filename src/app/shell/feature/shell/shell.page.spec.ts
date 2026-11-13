@@ -219,6 +219,8 @@ describe('ShellPage', () => {
       expect(overlayHeading()).toBeNull();
       expect(textOf(byTestId(page, 'shell.session-status'))).toBe('Das Spiel ist bereit.');
       expect(clock()).toBe(GAME_START_TEXT);
+      // TS §11.10: the overlay held the focus; it moves to the content like the skip link.
+      expect(document.activeElement).toBe(byTestId(page, 'shell.content'));
 
       await run(10_000);
       expect(clock()).toBe(GAME_START_TEXT);
@@ -601,6 +603,7 @@ describe('ShellPage', () => {
       // One task tick per pass, so the jump takes several passes (TS §3.7).
       engine = new InProcessEngine({ storage: 'indexed-db', locks, config: { passBudgetMs: 0 } });
       await openGame();
+      byTestId(page, 'shell.header.jump-button').focus();
       await openJumpDialog();
       await act(() => click(body('clock.jump-dialog.next-month')));
       await act(() => click(body('clock.jump-dialog.submit')));
@@ -614,6 +617,8 @@ describe('ShellPage', () => {
       );
       expect(textOf(byTestId(page, 'shell.header.jump-progress'))).toMatch(/^\d+ %$/);
       expect(queryByTestId(page, 'shell.header.toggle-pause')).toBeNull();
+      // TS §11.10: the jump button is gone, so the focus moves to „Abbrechen“ and back afterwards.
+      expect(document.activeElement).toBe(byTestId(page, 'shell.header.cancel-jump'));
 
       await act(() => click(byTestId(page, 'shell.header.cancel-jump')));
       await run(200);
@@ -621,6 +626,7 @@ describe('ShellPage', () => {
       expect(clock()).toMatch(/^[A-Z][a-z]\., 0\d\.04\.2030, \d\d:\d\d$/);
       expect(textOf(byTestId(page, 'shell.header.paused'))).toBe('Pausiert');
       expect(byTestId<HTMLButtonElement>(page, 'shell.header.toggle-pause').disabled).toBe(false);
+      expect(document.activeElement).toBe(byTestId(page, 'shell.header.toggle-pause'));
     });
   });
 

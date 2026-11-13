@@ -1,6 +1,6 @@
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, viewChild } from '@angular/core';
+import { Component, effect, ElementRef, inject, Injector, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { map } from 'rxjs';
@@ -9,6 +9,7 @@ import { ClockFacade } from '@app/clock/feature/state/clock.facade';
 import { ClockControlsComponent } from '@app/clock/ui/clock-controls/clock-controls.component';
 import { MarketStatusComponent } from '@app/clock/ui/market-status/market-status.component';
 import { SessionFacade } from '@app/engine/feature/state/session.facade';
+import { focusIfLost } from '@app/shared/ui/focus/focus-if-lost';
 import { NavItem } from '@app/shared/ui/nav-link/nav-item.model';
 
 import { BOTTOM_NAV_SIZE, DESKTOP_QUERY } from './shell.page.model';
@@ -40,6 +41,7 @@ export class ShellPage {
   sessionFacade = inject(SessionFacade);
   clockFacade = inject(ClockFacade);
   readonly #breakpointObserver = inject(BreakpointObserver);
+  readonly #injector = inject(Injector);
   readonly #router = inject(Router);
   // Only used as the base for relative navigation from menus, not for reading parameters.
   readonly #route = inject(ActivatedRoute);
@@ -95,9 +97,24 @@ export class ShellPage {
     this.#breakpointObserver.observe(DESKTOP_QUERY).pipe(map((state) => state.matches)),
     { initialValue: this.#breakpointObserver.isMatched(DESKTOP_QUERY) },
   );
+  #isReady = toSignal(this.sessionFacade.status$.pipe(map((status) => status === 'ready')), {
+    initialValue: false,
+  });
 
   skipLinkLabel = $localize`:@@featureShell-shellPage-skipToContent:Zum Inhalt springen`;
   readyLabel = $localize`:@@featureShell-shellPage-gameReady:Das Spiel ist bereit.`;
+
+  constructor() {
+    // The overlay held the focus; when it closes, the focus goes to the content like the skip link.
+    let wasReady = false;
+    effect(() => {
+      const isReady = this.#isReady();
+      if (isReady && !wasReady) {
+        focusIfLost(this.#injector, () => this.content().nativeElement);
+      }
+      wasReady = isReady;
+    });
+  }
 
   // A `href="#content"` link would change the hash route, so the skip link moves focus itself.
   onSkipToContent(): void {

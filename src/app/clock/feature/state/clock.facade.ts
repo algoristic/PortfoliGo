@@ -6,6 +6,7 @@ import { BackgroundMode } from '@app/engine/domain/models/game-state.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 
 import * as ClockActions from './clock.actions';
+import { CLOCK_SHORTCUTS_ENABLED } from './clock.config';
 import * as ClockSelectors from './clock.selectors';
 
 @Injectable()
@@ -25,6 +26,7 @@ export class ClockFacade {
   regionStatuses$ = this.#store.pipe(select(ClockSelectors.selectRegionStatuses));
   exchangeStatuses$ = this.#store.pipe(select(ClockSelectors.selectExchangeStatuses));
   backgroundMode$ = this.#store.pipe(select(ClockSelectors.selectBackgroundMode));
+  shortcutsEnabled$ = inject(CLOCK_SHORTCUTS_ENABLED);
 
   togglePause(): void {
     this.#store.dispatch(ClockActions.clickedTogglePause());

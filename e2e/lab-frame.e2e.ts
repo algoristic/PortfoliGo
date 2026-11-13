@@ -41,12 +41,29 @@ test.describe('building blocks', () => {
     await expect(page.getByTestId('lab.components.confirm-result')).toHaveText('Bestätigt');
   });
 
-  test('shows and dismisses a toast', async ({ page }) => {
+  test('shows a toast at the top centre and dismisses it', async ({ page }) => {
     await page.getByTestId('lab.components.toast.success').click();
     const dismiss = page.locator('[data-testid^="toast."][data-testid$=".dismiss"]');
     await expect(dismiss).toHaveCount(1);
+
+    const viewport = page.viewportSize();
+    const toast = await page.locator('li[data-testid^="toast."]').boundingBox();
+    expect(viewport).not.toBeNull();
+    expect(toast).not.toBeNull();
+    if (viewport && toast) {
+      const centre = toast.x + toast.width / 2;
+      expect(Math.abs(centre - viewport.width / 2)).toBeLessThanOrEqual(1);
+      expect(toast.y).toBeLessThan(viewport.height / 4);
+    }
+
     await dismiss.click();
     await expect(dismiss).toHaveCount(0);
+    // Without toasts, the overlay must not swallow clicks on the header below it.
+    const hit = await page.evaluate(
+      ([x, y]) => !document.elementFromPoint(x, y)?.closest('.cdk-overlay-container'),
+      [(viewport?.width ?? 0) / 2, 8],
+    );
+    expect(hit).toBe(true);
   });
 
   test('moves between tabs with the arrow keys, Home and End', async ({ page }) => {

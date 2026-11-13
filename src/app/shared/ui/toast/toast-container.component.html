@@ -1,7 +1,7 @@
 <ol class="flex w-full flex-col gap-2" aria-live="polite" aria-relevant="additions">
   @for (toast of toasts(); track toast.id) {
     <li
-      class="flex items-start gap-3 rounded-lg border border-border bg-surface-raised p-3 text-sm text-fg shadow-lg"
+      class="mx-4 flex items-start gap-3 rounded-lg border border-border bg-surface-raised p-3 text-sm text-fg shadow-lg first:mt-4 last:mb-4"
       [attr.data-testid]="'toast.' + toast.id">
       <i
         class="mt-0.5 text-base"

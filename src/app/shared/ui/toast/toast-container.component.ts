@@ -22,7 +22,7 @@ const TONE_ICONS: Record<ToastTone, string> = {
   selector: 'app-toast-container',
   imports: [IconDirective],
   templateUrl: './toast-container.component.html',
-  host: { class: 'block' },
+  host: { class: 'block w-full' },
 })
 export class ToastContainerComponent {
   toasts = input<Toast[]>([]);

@@ -1,10 +1,21 @@
 import { Menu, MenuItem, MenuTrigger } from '@angular/aria/menu';
-import { Component, computed, input, output } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  Injector,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
 
 import { SpeedId, SPEEDS } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { focusIfLost } from '@app/shared/ui/focus/focus-if-lost';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { IconButtonDirective } from '@app/shared/ui/icon-button/icon-button.directive';
 import { MenuItemDirective } from '@app/shared/ui/menu/menu-item.directive';
@@ -38,6 +49,8 @@ import { FormatGameTimePipe } from '../pipes/format-game-time/format-game-time.p
   host: { class: 'flex min-w-0 items-center' },
 })
 export class ClockControlsComponent {
+  readonly #injector = inject(Injector);
+
   /** Game time of the last `clock` event, `null` before the first. */
   tick = input<Tick | null>(null);
   speed = input<SpeedId | null>(null);
@@ -50,6 +63,8 @@ export class ClockControlsComponent {
   canFaster = input(false);
   canSlower = input(false);
   compact = input(false);
+  /** Whether the clock shortcuts are on; when off, labels and `aria-keyshortcuts` omit them. */
+  shortcutsEnabled = input(true);
 
   clickedTogglePause = output<void>();
   selectedSpeed = output<SpeedId>();
@@ -57,6 +72,9 @@ export class ClockControlsComponent {
   clickedSlower = output<void>();
   clickedJump = output<void>();
   clickedCancelJump = output<void>();
+
+  togglePauseButton = viewChild<ElementRef<HTMLButtonElement>>('togglePause');
+  cancelJumpButton = viewChild<ElementRef<HTMLButtonElement>>('cancelJump');
 
   speedOptions: SpeedOption[] = SPEEDS.map(({ id }) => ({ id, label: speedLabel(id) }));
 
@@ -69,16 +87,49 @@ export class ClockControlsComponent {
     const ratio = this.jumpRatio();
     return ratio === null ? null : Math.round(ratio * 100);
   });
+  toggleLabel = computed(() => {
+    const shortcuts = this.shortcutsEnabled();
+    if (this.paused()) {
+      return shortcuts ? this.resumeShortcutLabel : this.resumeLabel;
+    }
+    return shortcuts ? this.pauseShortcutLabel : this.pauseLabel;
+  });
+  fasterButtonLabel = computed(() =>
+    this.shortcutsEnabled() ? this.fasterShortcutLabel : this.fasterLabel,
+  );
+  slowerButtonLabel = computed(() =>
+    this.shortcutsEnabled() ? this.slowerShortcutLabel : this.slowerLabel,
+  );
 
   clockLabel = $localize`:@@uiClock-clockControls-clockLabel:Spielzeit`;
-  pauseLabel = $localize`:@@uiClock-clockControls-pause:Pause (Leertaste)`;
-  resumeLabel = $localize`:@@uiClock-clockControls-resume:Weiter (Leertaste)`;
-  fasterLabel = $localize`:@@uiClock-clockControls-faster:Schneller (+)`;
-  slowerLabel = $localize`:@@uiClock-clockControls-slower:Langsamer (−)`;
+  pauseShortcutLabel = $localize`:@@uiClock-clockControls-pause:Pause (Leertaste)`;
+  resumeShortcutLabel = $localize`:@@uiClock-clockControls-resume:Weiter (Leertaste)`;
+  fasterShortcutLabel = $localize`:@@uiClock-clockControls-faster:Schneller (+)`;
+  slowerShortcutLabel = $localize`:@@uiClock-clockControls-slower:Langsamer (−)`;
+  pauseLabel = $localize`:@@uiClock-clockControls-pauseWithoutShortcut:Pause`;
+  resumeLabel = $localize`:@@uiClock-clockControls-resumeWithoutShortcut:Weiter`;
+  fasterLabel = $localize`:@@uiClock-clockControls-fasterWithoutShortcut:Schneller`;
+  slowerLabel = $localize`:@@uiClock-clockControls-slowerWithoutShortcut:Langsamer`;
   speedMenuLabel = $localize`:@@uiClock-clockControls-speedMenu:Geschwindigkeit`;
   jumpLabel = $localize`:@@uiClock-clockControls-jump:Vorspulen`;
   jumpProgressLabel = $localize`:@@uiClock-clockControls-jumpProgress:Fortschritt des Vorspulens`;
   overloadedLabel = $localize`:@@uiClock-clockControls-overloadedHint:Das Gerät kann die gewählte Geschwindigkeit gerade nicht halten. Es wird keine Spielzeit übersprungen.`;
+
+  constructor() {
+    // Starting or ending a jump removes the focused control (jump button, menu or cancel), so the
+    // focus moves to the control that replaces it instead of falling back to `<body>`.
+    let wasJumping = false;
+    effect(() => {
+      const isJumping = this.jumping();
+      if (isJumping !== wasJumping) {
+        focusIfLost(
+          this.#injector,
+          () => (isJumping ? this.cancelJumpButton() : this.togglePauseButton())?.nativeElement,
+        );
+      }
+      wasJumping = isJumping;
+    });
+  }
 
   onTogglePause(): void {
     this.clickedTogglePause.emit();

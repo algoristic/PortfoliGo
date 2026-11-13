@@ -7,7 +7,7 @@
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h1 class="text-2xl font-semibold" i18n="@@featurePlayers-playersPage-title">Spielerauswahl</h1>
     @if (players && players.length > 0) {
-      <a appButton variant="primary" routerLink="new" data-testid="players.list.create">
+      <a #createLink appButton variant="primary" routerLink="new" data-testid="players.list.create">
         <i appIcon="person-plus"></i>
         <span i18n="@@featurePlayers-playersPage-create">Neuer Spieler</span>
       </a>
@@ -34,6 +34,7 @@
         text="Lege einen Spieler an, um ein Spiel zu beginnen. Jeder Spieler hat seine eigene Welt."
         i18n-text="@@featurePlayers-playersPage-emptyText">
         <a
+          #createLink
           appButton
           variant="primary"
           routerLink="new"

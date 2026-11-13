@@ -43,6 +43,7 @@ export class PlayerListComponent {
         isLast,
         renameLabel: $localize`:@@uiPlayers-playerList-rename:${player.name}:name: umbenennen`,
         deleteLabel: $localize`:@@uiPlayers-playerList-delete:${player.name}:name: löschen`,
+        openLabel: $localize`:@@uiPlayers-playerList-openPlayer:${player.name}:name: öffnen`,
         classes: `${ROW_CLASSES} ${isLast ? 'border-accent' : 'border-border'}`,
       };
     }),

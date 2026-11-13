@@ -83,11 +83,14 @@ export class ToastService {
   #attachContainer(): ComponentRef<ToastContainerComponent> {
     if (!this.#containerRef) {
       this.#overlayRef = createOverlayRef(this.#injector, {
-        // Top centre: at the bottom, toasts would cover the mobile navigation.
+        // Top centre: at the bottom, toasts would cover the mobile navigation. The size is set
+        // here because the unlayered CDK pane styles win over Tailwind utilities; without toasts
+        // the pane has no height, so it never blocks clicks on the header below.
         positionStrategy: createGlobalPositionStrategy(this.#injector)
           .top('0')
           .centerHorizontally(),
-        panelClass: ['w-full', 'max-w-md', 'p-4'],
+        width: '28rem',
+        maxWidth: '100%',
       });
       this.#containerRef = this.#overlayRef.attach(new ComponentPortal(ToastContainerComponent));
       this.#containerRef.instance.dismissedToast.subscribe((toastId) => this.dismiss(toastId));

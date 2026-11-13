@@ -142,6 +142,9 @@ describe('PlayersPage', () => {
       expect(textOf(byTestId(page, 'players.list.p-ben.last-seen'))).toBe('–');
       expect(queryByTestId(page, 'players.list.p-ben.last-played')).toBeNull();
       expect(queryByTestId(page, 'players.list.p-anna.outdated')).toBeNull();
+      expect(byTestId(page, 'players.list.p-ben.open').getAttribute('aria-label')).toBe(
+        'Ben öffnen',
+      );
     });
 
     it('opens the game area of the selected player and remembers it', async () => {
@@ -178,7 +181,9 @@ describe('PlayersPage', () => {
     });
 
     it('deletes a player with all its data after the confirmation', async () => {
-      await act(() => click(byTestId(page, 'players.list.p-anna.delete')));
+      const deleteButton = byTestId(page, 'players.list.p-anna.delete');
+      deleteButton.focus();
+      await act(() => click(deleteButton));
       const dialog = document.body.querySelector('[role="alertdialog"]');
       expect(dialog === null ? '' : textOf(dialog)).toContain('„Anna“');
       await act(() => click(confirmButton()));
@@ -190,6 +195,21 @@ describe('PlayersPage', () => {
       expect(await database.count('snapshots')).toBe(0);
       expect(lastPlayerId()).toBeUndefined();
       expect(locks.held).toEqual([]);
+      // TS §11.10: the focused row is gone, so the focus moves to „Neuer Spieler“.
+      expect(document.activeElement).toBe(byTestId(page, 'players.list.create'));
+    });
+
+    it('moves the focus to „Neuer Spieler“ of the empty list after deleting the last player', async () => {
+      for (const id of [ANNA, BEN]) {
+        const deleteButton = byTestId(page, `players.list.${id}.delete`);
+        deleteButton.focus();
+        await act(() => click(deleteButton));
+        await act(() => click(confirmButton()));
+      }
+
+      expect(shownPlayerIds()).toEqual([]);
+      expect(textOf(page)).toContain('Noch keine Spieler');
+      expect(document.activeElement).toBe(byTestId(page, 'players.list.create'));
     });
 
     it('keeps the player when the deletion is not confirmed', async () => {

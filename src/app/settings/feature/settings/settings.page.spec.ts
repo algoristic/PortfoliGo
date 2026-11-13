@@ -140,8 +140,16 @@ describe('SettingsPage', () => {
 
   it('ignores the clock shortcuts while they are switched off', async () => {
     const content = byTestId(page, 'shell.content');
+    const togglePause = (): HTMLElement => byTestId(page, 'shell.header.toggle-pause');
+    expect(togglePause().getAttribute('aria-label')).toBe('Weiter (Leertaste)');
+    expect(togglePause().getAttribute('aria-keyshortcuts')).toBe('Space');
+
     await act(() => click(input('settings.device.shortcuts')));
     expect(input('settings.device.shortcuts').checked).toBe(false);
+    // TS §11.10: switched-off shortcuts are no longer named in the clock bar.
+    expect(togglePause().getAttribute('aria-label')).toBe('Weiter');
+    expect(togglePause().getAttribute('title')).toBe('Weiter');
+    expect(togglePause().hasAttribute('aria-keyshortcuts')).toBe(false);
 
     content.focus();
     await act(() => press(content, ' '));

@@ -2,6 +2,7 @@
 @let _compact = compact();
 @let _disabled = isDisabled();
 @let _speed = speed();
+@let _shortcuts = shortcutsEnabled();
 
 <div class="flex shrink-0 items-center gap-2 text-sm" [attr.title]="clockLabel">
   <i appIcon="clock" class="text-fg-muted max-sm:hidden"></i>
@@ -31,6 +32,7 @@
       jumpRatio() | formatPercent: 0
     }}</span>
     <button
+      #cancelJump
       appButton
       type="button"
       size="sm"
@@ -61,12 +63,13 @@
     }
 
     <button
+      #togglePause
       appIconButton
       type="button"
       size="sm"
-      aria-keyshortcuts="Space"
       data-testid="shell.header.toggle-pause"
-      [label]="_paused ? resumeLabel : pauseLabel"
+      [attr.aria-keyshortcuts]="_shortcuts ? 'Space' : null"
+      [label]="toggleLabel()"
       [disabled]="_disabled"
       (click)="onTogglePause()">
       <i [appIcon]="_paused ? 'play-fill' : 'pause-fill'"></i>
@@ -77,9 +80,9 @@
         appIconButton
         type="button"
         size="sm"
-        aria-keyshortcuts="-"
         data-testid="shell.header.slower"
-        [label]="slowerLabel"
+        [attr.aria-keyshortcuts]="_shortcuts ? '-' : null"
+        [label]="slowerButtonLabel()"
         [disabled]="_disabled || !canSlower()"
         (click)="onSlower()">
         <i appIcon="dash-lg"></i>
@@ -138,9 +141,9 @@
         appIconButton
         type="button"
         size="sm"
-        aria-keyshortcuts="+"
         data-testid="shell.header.faster"
-        [label]="fasterLabel"
+        [attr.aria-keyshortcuts]="_shortcuts ? '+' : null"
+        [label]="fasterButtonLabel()"
         [disabled]="_disabled || !canFaster()"
         (click)="onFaster()">
         <i appIcon="plus-lg"></i>

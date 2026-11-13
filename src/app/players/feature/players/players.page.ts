@@ -1,9 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, effect, ElementRef, inject, Injector, viewChild } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
+import { map } from 'rxjs';
 
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
+import { focusIfLost } from '@app/shared/ui/focus/focus-if-lost';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { PanelComponent } from '@app/shared/ui/panel/panel.component';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
@@ -28,6 +31,26 @@ import { PlayersFacade } from '../state/players.facade';
 })
 export class PlayersPage {
   playersFacade = inject(PlayersFacade);
+  readonly #injector = inject(Injector);
+
+  createLink = viewChild<ElementRef<HTMLElement>>('createLink');
+
+  #playerCount = toSignal(this.playersFacade.players$.pipe(map((players) => players.length)), {
+    initialValue: 0,
+  });
+
+  constructor() {
+    // Deleting a player removes the focused row. „Neuer Spieler“ exists with and without players,
+    // so the focus goes there instead of falling back to `<body>`.
+    let previousCount = 0;
+    effect(() => {
+      const count = this.#playerCount();
+      if (count < previousCount) {
+        focusIfLost(this.#injector, () => this.createLink()?.nativeElement);
+      }
+      previousCount = count;
+    });
+  }
 
   onOpenPlayer(playerId: string): void {
     this.playersFacade.openPlayer(playerId);

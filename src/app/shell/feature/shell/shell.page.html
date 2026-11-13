@@ -12,6 +12,7 @@
 @let regionStatuses = clockFacade.regionStatuses$ | async;
 @let exchangeStatuses = clockFacade.exchangeStatuses$ | async;
 @let jumpRatio = sessionFacade.jumpRatio$ | async;
+@let shortcutsEnabled = clockFacade.shortcutsEnabled$ | async;
 @let isBlocked = sessionStatus !== 'ready';
 
 <!-- While the overlay covers the game, the game area is inert (TS §11.10). -->
@@ -49,6 +50,7 @@
         [jumpRatio]="jumpRatio"
         [canFaster]="canFaster ?? false"
         [canSlower]="canSlower ?? false"
+        [shortcutsEnabled]="shortcutsEnabled ?? true"
         (clickedTogglePause)="clockFacade.togglePause()"
         (selectedSpeed)="clockFacade.setSpeed($event)"
         (clickedFaster)="clockFacade.faster()"
