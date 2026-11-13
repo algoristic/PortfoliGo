@@ -1,0 +1,97 @@
+@let _period = indicatorForm.period();
+@let _kind = kind();
+
+<form
+  class="flex flex-wrap items-start gap-3 rounded-md border border-border p-3 text-sm"
+  data-testid="market.instrument.indicator-form"
+  [formRoot]="indicatorForm">
+  @if (isNew()) {
+    <label class="flex flex-col gap-1">
+      <span class="text-fg-muted" i18n="@@uiMarket-formIndicator-kind">Indikator</span>
+      <select
+        #kindSelect
+        class="h-8 rounded-md border border-border bg-bg px-2 text-fg"
+        data-testid="market.instrument.indicator-form.kind"
+        (change)="onSelectKind(kindSelect.value)">
+        @for (kind of kinds; track kind) {
+          <option [value]="kind" [selected]="kind === _kind">{{ kindLabels[kind] }}</option>
+        }
+      </select>
+    </label>
+  } @else {
+    <p class="flex flex-col gap-1">
+      <span class="text-fg-muted" i18n="@@uiMarket-formIndicator-kindFixed">Indikator</span>
+      <span class="flex h-8 items-center font-medium">{{ kindLabels[_kind] }}</span>
+    </p>
+  }
+
+  <div class="flex flex-col gap-1">
+    <label
+      class="text-fg-muted"
+      for="market-indicator-period"
+      i18n="@@uiMarket-formIndicator-period"
+      >Periode</label
+    >
+    <input
+      id="market-indicator-period"
+      type="number"
+      class="h-8 w-20 rounded-md border border-border bg-bg px-2 text-fg tabular-nums aria-invalid:border-down"
+      inputmode="numeric"
+      aria-describedby="market-indicator-period-errors"
+      data-testid="market.instrument.indicator-form.period"
+      [attr.aria-invalid]="_period.touched() && _period.invalid()"
+      [formField]="indicatorForm.period" />
+  </div>
+
+  @if (isBollinger()) {
+    <div class="flex flex-col gap-1">
+      <label
+        class="text-fg-muted"
+        for="market-indicator-multiplier"
+        i18n="@@uiMarket-formIndicator-multiplier"
+        >Faktor</label
+      >
+      <select
+        id="market-indicator-multiplier"
+        class="h-8 rounded-md border border-border bg-bg px-2 text-fg tabular-nums"
+        data-testid="market.instrument.indicator-form.multiplier"
+        [formField]="indicatorForm.multiplier">
+        @for (multiplier of multipliers; track multiplier) {
+          <option [value]="'' + multiplier">{{ multiplier | formatNumber: 1 }}</option>
+        }
+      </select>
+    </div>
+  }
+
+  <div class="flex items-center gap-2 self-end">
+    <button
+      appButton
+      type="submit"
+      size="sm"
+      variant="primary"
+      data-testid="market.instrument.indicator-form.submit">
+      @if (isNew()) {
+        <ng-container i18n="@@uiMarket-formIndicator-add">Hinzufügen</ng-container>
+      } @else {
+        <ng-container i18n="@@uiMarket-formIndicator-apply">Übernehmen</ng-container>
+      }
+    </button>
+    <button
+      appButton
+      type="button"
+      size="sm"
+      data-testid="market.instrument.indicator-form.cancel"
+      i18n="@@uiMarket-formIndicator-cancel"
+      (click)="clickedCancel.emit()">
+      Abbrechen
+    </button>
+  </div>
+
+  <p id="market-indicator-period-errors" class="w-full text-down empty:hidden">
+    @if (_period.touched() && _period.invalid()) {
+      @for (error of _period.errors(); track error.kind) {
+        <span data-testid="market.instrument.indicator-form.period-error">{{ error.message }}</span>
+      }
+    }
+  </p>
+</form>

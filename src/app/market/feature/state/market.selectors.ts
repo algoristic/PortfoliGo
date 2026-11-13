@@ -12,6 +12,7 @@ import {
 import { Instrument, INSTRUMENT_KINDS } from '@app/market/domain/models/instrument.model';
 
 import {
+  ChartSettings,
   ChartSubscription,
   InstrumentChartView,
   InstrumentQuote,
@@ -119,6 +120,12 @@ export const selectRouteInstrumentQuote = createSelector(
 
 export const selectChart = createSelector(selectState, (state) => state.chart);
 
+/** What `pgo.ui.chart` stores (TS §9.3). */
+export const selectChartSettings = createSelector(
+  selectChart,
+  ({ range, chartType, indicators }): ChartSettings => ({ range, chartType, indicators }),
+);
+
 /** The chart subscription of the instrument page: live candles only while the block reaches now. */
 export const selectChartSubscription = createSelector(selectChart, (chart): ChartSubscription => ({
   interval: CHART_RANGE_INTERVALS[chart.range],
@@ -138,6 +145,7 @@ export const selectChartView = createSelector(
       range: chart.range,
       interval: CHART_RANGE_INTERVALS[chart.range],
       chartType: chart.chartType,
+      indicators: chart.indicators,
       candles: chart.candles,
       lastCandle: chart.candles.at(-1) ?? null,
       loading: chart.loading,

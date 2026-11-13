@@ -6,6 +6,7 @@ import {
   buffer,
   catchError,
   concat,
+  concatMap,
   connect,
   defer,
   distinctUntilChanged,
@@ -13,6 +14,7 @@ import {
   exhaustMap,
   filter,
   finalize,
+  ignoreElements,
   map,
   Observable,
   of,
@@ -35,10 +37,12 @@ import {
   trimChartBlock,
 } from '@app/market/domain/chart-view-logic';
 import { Instrument } from '@app/market/domain/models/instrument.model';
+import { LocalStorageService } from '@app/persistence/data-access/local-storage/local-storage.service';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
 import * as MarketActions from './market.actions';
 import {
+  CHART_SETTINGS_VERSION,
   ChartSubscription,
   INSTRUMENT_PAGE_SUBSCRIPTION,
   MARKETS_PAGE_SUBSCRIPTION,
@@ -47,6 +51,7 @@ import {
 } from './market.model';
 import {
   selectChart,
+  selectChartSettings,
   selectChartSubscription,
   selectInstrumentsLoaded,
   selectMoversWanted,
@@ -54,7 +59,7 @@ import {
   selectQuoteSubscriptions,
   selectRouteInstrument,
 } from './market.selectors';
-import { latestQuotes } from './market.utils';
+import { latestQuotes, parseChartSettings } from './market.utils';
 
 @Injectable()
 export class MarketEffects {
@@ -63,6 +68,7 @@ export class MarketEffects {
   readonly #store = inject(Store);
   readonly #toastService = inject(ToastService);
   readonly #pendingTasks = inject(PendingTasks);
+  readonly #localStorage = inject(LocalStorageService);
 
   /** Ends what a loaded player started: leaving the game or entering another one. */
   readonly #ended$ = this.#actions$.pipe(
@@ -295,6 +301,43 @@ export class MarketEffects {
     ),
   );
 
+  /**
+   * The chart settings of this device (`pgo.ui.chart`, TS §9.3) when a game is entered; missing or
+   * invalid values give the defaults field by field.
+   */
+  loadChartSettings$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(SessionActions.enterGame),
+      switchMap(() =>
+        this.#localStorage.get<unknown>('pgo.ui.chart', CHART_SETTINGS_VERSION).pipe(
+          map((data) => MarketActions.loadedChartSettings({ settings: parseChartSettings(data) })),
+          catchError((error: unknown) => of(MarketActions.loadChartSettingsFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
+  /** Every change of period, chart type or indicators is saved at once. */
+  saveChartSettings$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(
+        MarketActions.clickedChartRange,
+        MarketActions.clickedChartType,
+        MarketActions.clickedChartDay,
+        MarketActions.submittedChartDate,
+        MarketActions.submittedChartIndicator,
+        MarketActions.clickedRemoveChartIndicator,
+      ),
+      concatLatestFrom(() => this.#store.pipe(select(selectChartSettings))),
+      concatMap(([, settings]) =>
+        this.#localStorage.set('pgo.ui.chart', CHART_SETTINGS_VERSION, settings).pipe(
+          ignoreElements(),
+          catchError((error: unknown) => of(MarketActions.saveChartSettingsFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
   showFailure$ = createEffect(
     () =>
       this.#actions$.pipe(
@@ -315,6 +358,19 @@ export class MarketEffects {
         tap(() =>
           this.#toastService.error(
             $localize`:@@featureMarket-marketEffects-loadChartCandlesFailure:Der Kursverlauf konnte nicht geladen werden.`,
+          ),
+        ),
+      ),
+    { dispatch: false },
+  );
+
+  showChartSettingsFailure$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(MarketActions.saveChartSettingsFailure),
+        tap(() =>
+          this.#toastService.error(
+            $localize`:@@featureMarket-marketEffects-saveChartSettingsFailure:Die Chart-Einstellungen gelten nur bis zum Neuladen, weil sie auf diesem Gerät nicht gespeichert werden konnten.`,
           ),
         ),
       ),

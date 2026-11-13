@@ -4213,21 +4213,21 @@
         <source> Der Kursverlauf konnte nicht geladen werden. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument-chart/instrument-chart.component.html</context>
-          <context context-type="linenumber">38,42</context>
+          <context context-type="linenumber">57,61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentChart-loadingOlder" datatype="html">
         <source> Lade ältere Kerzen … </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument-chart/instrument-chart.component.html</context>
-          <context context-type="linenumber">47,51</context>
+          <context context-type="linenumber">66,70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentChart-chartLabel" datatype="html">
         <source>Kursverlauf</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/instrument-chart/instrument-chart.component.ts</context>
-          <context context-type="linenumber">28</context>
+          <context context-type="linenumber">96</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentPage-title" datatype="html">
@@ -4276,14 +4276,21 @@
         <source>Die Wertpapiere konnten nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">304</context>
+          <context context-type="linenumber">347</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-marketEffects-loadChartCandlesFailure" datatype="html">
         <source>Der Kursverlauf konnte nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
-          <context context-type="linenumber">317</context>
+          <context context-type="linenumber">360</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureMarket-marketEffects-saveChartSettingsFailure" datatype="html">
+        <source>Die Chart-Einstellungen gelten nur bis zum Neuladen, weil sie auf diesem Gerät nicht gespeichert werden konnten.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/state/market.effects.ts</context>
+          <context context-type="linenumber">373</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-candleReadout-openTitle" datatype="html">
@@ -4347,6 +4354,34 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/candle-readout/candle-readout.component.html</context>
           <context context-type="linenumber">49,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartIndicators-list" datatype="html">
+        <source>Indikatoren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-indicators/chart-indicators.component.html</context>
+          <context context-type="linenumber">2</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartIndicators-add" datatype="html">
+        <source>Indikator</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-indicators/chart-indicators.component.html</context>
+          <context context-type="linenumber">57,60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartIndicators-edit" datatype="html">
+        <source><x id="LABEL" equiv-text="label"/> ändern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-indicators/chart-indicators.component.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-chartIndicators-remove" datatype="html">
+        <source><x id="LABEL" equiv-text="label"/> entfernen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/chart-indicators/chart-indicators.component.ts</context>
+          <context context-type="linenumber">52</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-chartToolbar-rangeGroup" datatype="html">
@@ -4459,6 +4494,97 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/chart-toolbar/chart-toolbar.component.ts</context>
           <context context-type="linenumber">60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-formIndicator-kind" datatype="html">
+        <source>Indikator</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/form-indicator/form-indicator.component.html</context>
+          <context context-type="linenumber">10,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-formIndicator-kindFixed" datatype="html">
+        <source>Indikator</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/form-indicator/form-indicator.component.html</context>
+          <context context-type="linenumber">23,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-formIndicator-period" datatype="html">
+        <source>Periode</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/form-indicator/form-indicator.component.html</context>
+          <context context-type="linenumber">33,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-formIndicator-multiplier" datatype="html">
+        <source>Faktor</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/form-indicator/form-indicator.component.html</context>
+          <context context-type="linenumber">52,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-formIndicator-add" datatype="html">
+        <source>Hinzufügen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/form-indicator/form-indicator.component.html</context>
+          <context context-type="linenumber">74,76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-formIndicator-apply" datatype="html">
+        <source>Übernehmen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/form-indicator/form-indicator.component.html</context>
+          <context context-type="linenumber">76,79</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-formIndicator-cancel" datatype="html">
+        <source> Abbrechen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/form-indicator/form-indicator.component.html</context>
+          <context context-type="linenumber">86,90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-formIndicator-periodInvalid" datatype="html">
+        <source>Bitte gib eine ganze Zahl von <x id="MIN" equiv-text="INDICATOR_PERIOD_MIN"/> bis <x id="MAX" equiv-text="INDICATOR_PERIOD_MAX"/> ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/form-indicator/form-indicator.component.ts</context>
+          <context context-type="linenumber">64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-formIndicator-multiplierInvalid" datatype="html">
+        <source>Bitte wähle einen Faktor.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/form-indicator/form-indicator.component.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indicatorLabels-sma" datatype="html">
+        <source>SMA</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/indicator-labels.ts</context>
+          <context context-type="linenumber">8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indicatorLabels-ema" datatype="html">
+        <source>EMA</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/indicator-labels.ts</context>
+          <context context-type="linenumber">10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indicatorLabels-smma" datatype="html">
+        <source>SMMA</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/indicator-labels.ts</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiMarket-indicatorLabels-bollinger" datatype="html">
+        <source>Bollinger</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/ui/labels/indicator-labels.ts</context>
+          <context context-type="linenumber">14</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-dialogAbsenceReport-continue" datatype="html">

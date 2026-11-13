@@ -284,4 +284,55 @@ describe('marketReducer', () => {
       });
     });
   });
+
+  describe('chart settings and indicators', () => {
+    const settings = {
+      range: '1y' as const,
+      chartType: 'area' as const,
+      indicators: [
+        { id: 'i4', spec: { kind: 'sma' as const, period: 50 }, color: 'chart-3' as const },
+      ],
+    };
+
+    it('takes over the stored settings and keeps them for every instrument', () => {
+      const state = reduce(
+        MarketActions.loadedChartSettings({ settings }),
+        MarketActions.enterInstrumentPage(),
+        MarketActions.leaveInstrumentPage(),
+        MarketActions.clickedChartDay({ day: 3000 }),
+      );
+      expect(state.chart.chartType).toBe('area');
+      expect(state.chart.indicators).toBe(settings.indicators);
+      expect(state.chart.range).toBe('1d');
+      expect(reduce(MarketActions.loadedChartSettings({ settings })).chart.range).toBe('1y');
+    });
+
+    it('adds, changes and removes indicators', () => {
+      const added = reduce(
+        MarketActions.loadedChartSettings({ settings }),
+        MarketActions.submittedChartIndicator({
+          id: null,
+          spec: { kind: 'bollinger', period: 20, multiplier: 2 },
+        }),
+      );
+      expect(added.chart.indicators.map(({ id, color }) => [id, color])).toEqual([
+        ['i4', 'chart-3'],
+        ['i5', 'chart-1'],
+      ]);
+      const changed = marketReducer(
+        added,
+        MarketActions.submittedChartIndicator({ id: 'i4', spec: { kind: 'ema', period: 9 } }),
+      );
+      expect(changed.chart.indicators[0]).toEqual({
+        id: 'i4',
+        spec: { kind: 'ema', period: 9 },
+        color: 'chart-3',
+      });
+      const removed = marketReducer(
+        changed,
+        MarketActions.clickedRemoveChartIndicator({ id: 'i4' }),
+      );
+      expect(removed.chart.indicators.map(({ id }) => id)).toEqual(['i5']);
+    });
+  });
 });

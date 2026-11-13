@@ -99,6 +99,7 @@ function overlayPoint(point: PriceChartOverlayPoint): LineData {
     class: 'relative block',
     '[attr.data-candle-count]': 'candles().length',
     '[attr.data-last-tick]': 'lastTick()',
+    '[attr.data-overlay-points]': 'overlayPoints()',
   },
 })
 export class PriceChartComponent {
@@ -126,6 +127,12 @@ export class PriceChartComponent {
   container = viewChild.required<ElementRef<HTMLDivElement>>('container');
 
   lastTick = computed(() => this.candles().at(-1)?.tick ?? null);
+  /** `id:count` per overlay, for tests. */
+  overlayPoints = computed(() =>
+    this.overlays()
+      .map((overlay) => `${overlay.id}:${overlay.points.length}`)
+      .join(' '),
+  );
 
   #handle = signal<ChartHandle | undefined>(undefined);
   #colors = signal<PriceChartColors | undefined>(undefined);
@@ -289,10 +296,13 @@ export class PriceChartComponent {
     }
     for (const overlay of overlays) {
       const color = colors.categories[overlay.color];
+      const lineStyle =
+        overlay.lineStyle === 'dashed' ? library.LineStyle.Dashed : library.LineStyle.Solid;
       const current = this.#overlaySeries.get(overlay.id);
       if (current === undefined) {
         const series = chart.addSeries(library.LineSeries, {
           color,
+          lineStyle,
           lineWidth: 1,
           priceLineVisible: false,
           lastValueVisible: false,
@@ -302,7 +312,7 @@ export class PriceChartComponent {
         this.#overlaySeries.set(overlay.id, { series, overlay });
         continue;
       }
-      current.series.applyOptions({ color });
+      current.series.applyOptions({ color, lineStyle });
       if (current.overlay.points !== overlay.points) {
         const updates = incrementalUpdates(current.overlay.points, overlay.points, samePoint);
         if (updates === null) {

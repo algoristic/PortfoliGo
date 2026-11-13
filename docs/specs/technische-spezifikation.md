@@ -1763,6 +1763,28 @@ Alle Werte sind versioniertes JSON (`{ "v": 1, "data": … }`; Einträge mit and
 
 `parseSettings` (`settings/domain/settings-logic.ts`) ersetzt jeden fehlenden oder ungültigen Wert einzeln durch seine Vorgabe und behält gültige Werte anderer Abschnitte. Spätere APs ergänzen Abschnitte (Farben, Bewegung, Toasts und Browser-Benachrichtigungen je Ereignis-Code) ohne neue Version; erst eine inkompatible Änderung erhöht `SETTINGS_VERSION` (`settings/data-access/service/settings-service.model.ts`) – und zugleich die Version im Inline-Skript von `src/index.html` (§11.5), das `data.appearance.colorScheme` direkt liest. Gespeichert wird nach jeder Änderung; schlägt das fehl, gilt die Einstellung bis zum Neuladen und ein Toast weist darauf hin.
 
+**`pgo.ui.chart` (AP 4.3):** Version 1 (`CHART_SETTINGS_VERSION`), geräteweit für alle Spieler; gelesen beim Betreten eines Spiels, geschrieben nach jeder Änderung von Zeitraum, Charttyp oder Indikatoren (Effects über den `LocalStorageService`):
+
+```json
+{
+  "v": 1,
+  "data": {
+    "range": "6m",
+    "chartType": "candles",
+    "indicators": [
+      { "id": "i1", "spec": { "kind": "sma", "period": 20 }, "color": "chart-1" },
+      {
+        "id": "i2",
+        "spec": { "kind": "bollinger", "period": 20, "multiplier": 2 },
+        "color": "chart-2"
+      }
+    ]
+  }
+}
+```
+
+`parseChartSettings` (`market/feature/state/market.utils.ts`) ersetzt einen fehlenden oder ungültigen Zeitraum bzw. Charttyp durch die Vorgabe (1T, Kerzen) und verwirft ungültige Indikatoren einzeln (Id `i<n>`, Parameter nach §11.7, Kategoriefarbe), doppelte Ids und alles über sechs Indikatoren. Ein gewählter vergangener Tag (1T) wird nicht gespeichert; jedes Instrument beginnt live. Schlägt das Speichern fehl, gilt die Auswahl bis zum Neuladen und ein Toast weist darauf hin.
+
 ### 9.4 Mehrere Tabs
 
 - `navigator.locks.request('pgo:player:<id>', { ifAvailable: true }, …)` stellt sicher, dass nur ein Tab einen Spieler simuliert; ein zweiter Tab zeigt einen Hinweis (US-SP-02).
@@ -2038,6 +2060,28 @@ Seit Angular 21 gibt es mit Angular Aria (`@angular/aria`) offizielle, ungestylt
 
 - Lange Zeiträume von Indizes und ETFs nicht aus Minutenkurven rechnen (rund 2,5 s je Spieljahr): gespeicherte Tageskerzen (E-08) oder Eröffnung und Schluss aus den Stützpunkten (`SupportValues`, wie im Labor).
 - Indikatoren sind reine Funktionen in `analysis/domain` (SMA, EMA, SMMA, Bollinger), inkrementell fortschreibbar.
+- **Indikatoren (AP 4.3, US-CH-02):** berechnet über die Schlusskurse der angezeigten Kerzen (`analysis/domain/indicator-logic.ts`); vor dem `n`-ten Wert gibt es keinen Punkt.
+
+  | Indikator      | Definition                                                                                                              | Parameter (Vorgabe) |
+  | -------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------- |
+  | SMA(n)         | arithmetisches Mittel der letzten `n` Schlusskurse                                                                      | `n` (20)            |
+  | EMA(n)         | α = 2/(n+1); Startwert = SMA der ersten `n` Werte (erster Punkt am `n`-ten Wert), danach `ema = α·x + (1−α)·ema_vorher` | `n` (20)            |
+  | SMMA(n)        | geglättet nach Wilder (RMA): wie EMA mit α = 1/n                                                                        | `n` (14)            |
+  | Bollinger(n,k) | Mitte = SMA(n), Bänder = Mitte ± k·σ mit der Populations-Standardabweichung (÷ n) der letzten `n` Werte                 | `n` (20), `k` (2)   |
+
+  Grenzen: `n` ganzzahlig von 2 bis 200; `k` von 0,5 bis 4 in Schritten von 0,5 (Auswahlliste, `BOLLINGER_MULTIPLIERS`). Beispiel (Orakel der Logik-Tests) für die Reihe 2, 4, 6, 8, 7, 9 mit n = 3 und k = 2:
+
+  | Wert            | 2   | 4   | 6               | 8               | 7               | 9               |
+  | --------------- | --- | --- | --------------- | --------------- | --------------- | --------------- |
+  | SMA(3)          | –   | –   | 4               | 6               | 7               | 8               |
+  | EMA(3), α = ½   | –   | –   | 4               | 6               | 6,5             | 7,75            |
+  | SMMA(3), α = ⅓  | –   | –   | 4               | 16/3 ≈ 5,3333   | 53/9 ≈ 5,8889   | 187/27 ≈ 6,9259 |
+  | σ (÷ n)         | –   | –   | √(8/3) ≈ 1,6330 | √(8/3) ≈ 1,6330 | √(2/3) ≈ 0,8165 | √(2/3) ≈ 0,8165 |
+  | Bollinger oben  | –   | –   | 7,2660          | 9,2660          | 8,6330          | 9,6330          |
+  | Bollinger unten | –   | –   | 0,7340          | 2,7340          | 5,3670          | 6,3670          |
+  - Inkrementell: `createIndicatorTracker(spec)` liefert einen Fortschreiber mit `push(x)` (neue Kerze) und `replaceLast(x)` (laufende Kerze geändert). Er hält das Fenster der letzten `n` Werte (SMA, Bollinger: jeder Punkt wird über das Fenster in derselben Reihenfolge neu summiert, keine gleitende Summe) bzw. den Durchschnitt vor dem neuesten Wert (EMA, SMMA); seine Ergebnisse sind bitgleich zur Vollberechnung `indicatorSeries(values, spec)`. `market/domain/chart-indicator-logic.ts` (`ChartIndicatorSet`) setzt die Indikatoren des Charts fort, wenn sich nur die neueste Kerze geändert hat oder eine angehängt wurde (wie `incrementalUpdates` des Wrappers), sonst (neuer Datensatz, vorangestellte Kerzen, geänderte Parameter) rechnet es neu.
+  - Bedienung: Die Legende unter der OHLC-Anzeige (`market/ui/chart-indicators`) zeigt je Indikator Farbe, Name mit Parametern („SMA 20“, „Bollinger 20/2,5“) und die Werte unter dem Fadenkreuz bzw. an der neuesten Kerze (Bollinger: Mitte · oben · unten), dazu „Ändern“, „Entfernen“ und „+ Indikator“. Das Formular (`market/ui/form-indicator`, Signal Forms) wählt beim Hinzufügen die Art (Vorgaben je Art) und ändert sonst nur die Parameter. Mehrere Indikatoren gleichzeitig, auch dieselbe Art mehrfach, höchstens sechs (`MAX_CHART_INDICATORS`): Jeder bekommt beim Hinzufügen die erste freie Kategoriefarbe `--pgo-chart-1` … `-6` und behält sie. Bollinger zeichnet drei Linien in derselben Farbe, die Bänder gestrichelt (`PriceChartOverlay.lineStyle`).
+  - Gespeichert wird die Auswahl geräteweit in `pgo.ui.chart` (§9.3).
 
 ### 11.8 Formulare
 

@@ -1,0 +1,59 @@
+<div class="flex flex-wrap items-center gap-2 text-sm">
+  <ul class="contents" aria-label="Indikatoren" i18n-aria-label="@@uiMarket-chartIndicators-list">
+    @for (row of rows(); track row.id) {
+      <li
+        class="flex items-center gap-1 rounded-md border border-border py-0.5 pr-0.5 pl-2"
+        [attr.data-testid]="'market.instrument.indicator.' + row.id">
+        <span [class]="row.swatchClass" aria-hidden="true"></span>
+        <span
+          class="font-medium"
+          [attr.data-testid]="'market.instrument.indicator.' + row.id + '.label'"
+          >{{ row.label }}</span
+        >
+        <span
+          class="text-fg-muted tabular-nums"
+          [attr.data-testid]="'market.instrument.indicator.' + row.id + '.values'">
+          @if (row.values) {
+            @for (value of row.values; track $index) {
+              @if (!$first) {
+                ·
+              }
+              {{ value | formatPrice }}
+            }
+          } @else {
+            –
+          }
+        </span>
+        <button
+          appIconButton
+          type="button"
+          size="sm"
+          [label]="row.editLabel"
+          [attr.data-testid]="'market.instrument.indicator.' + row.id + '.edit'"
+          (click)="onEdit(row.id)">
+          <i appIcon="sliders"></i>
+        </button>
+        <button
+          appIconButton
+          type="button"
+          size="sm"
+          [label]="row.removeLabel"
+          [attr.data-testid]="'market.instrument.indicator.' + row.id + '.remove'"
+          (click)="onRemove(row.id)">
+          <i appIcon="x-lg"></i>
+        </button>
+      </li>
+    }
+  </ul>
+  <button
+    appButton
+    type="button"
+    size="sm"
+    variant="ghost"
+    data-testid="market.instrument.indicator.add"
+    [disabled]="!canAdd()"
+    (click)="onAdd()">
+    <i appIcon="plus-lg"></i>
+    <span i18n="@@uiMarket-chartIndicators-add">Indikator</span>
+  </button>
+</div>

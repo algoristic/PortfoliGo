@@ -35,3 +35,15 @@ export interface LiveCandle {
  */
 export const LIVE_CANDLE_STEPS = ['replace', 'append', 'ignore', 'reload'] as const;
 export type LiveCandleStep = (typeof LIVE_CANDLE_STEPS)[number];
+
+/** A value of an indicator line at the start of a candle. */
+export interface IndicatorLinePoint {
+  tick: Tick;
+  value: number;
+}
+
+/**
+ * The lines of an indicator over the shown candles (TS §11.7): one for a moving average, middle,
+ * upper and lower band for Bollinger bands.
+ */
+export type IndicatorLines = readonly (readonly IndicatorLinePoint[])[];

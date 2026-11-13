@@ -20,12 +20,14 @@ import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { Candle } from '@app/market/domain/models/candle.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
+import { LocalStorageService } from '@app/persistence/data-access/local-storage/local-storage.service';
 import { PlayerProfile } from '@app/players/domain/models/player.model';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
 import * as MarketActions from './market.actions';
 import { MarketEffects } from './market.effects';
 import {
+  ChartSettings,
   ChartSubscription,
   INSTRUMENT_PAGE_SUBSCRIPTION,
   InstrumentChartState,
@@ -36,6 +38,7 @@ import {
 import { initialChartState } from './market.reducer';
 import {
   selectChart,
+  selectChartSettings,
   selectChartSubscription,
   selectInstrumentsLoaded,
   selectMoversWanted,
@@ -112,6 +115,15 @@ function candle(tick: number, close = 10): Candle {
 const NOW = tickAt(2030, 4, 1, 480);
 const FRIDAY = tickAt(2030, 3, 29, 540);
 
+const CHART_SETTINGS: ChartSettings = {
+  range: '6m',
+  chartType: 'line',
+  indicators: [
+    { id: 'i1', spec: { kind: 'sma', period: 50 }, color: 'chart-1' },
+    { id: 'i2', spec: { kind: 'bollinger', period: 20, multiplier: 2.5 }, color: 'chart-2' },
+  ],
+};
+
 describe('MarketEffects', () => {
   let effects: MarketEffects;
   let actions$: Subject<Action>;
@@ -129,6 +141,7 @@ describe('MarketEffects', () => {
       providers: [
         MarketEffects,
         EngineService,
+        LocalStorageService,
         provideMockActions(() => actions$.asObservable()),
         { provide: ENGINE_WORKER_FACTORY, useValue: () => worker },
         { provide: ToastService, useValue: toasts },
@@ -142,6 +155,7 @@ describe('MarketEffects', () => {
             { selector: selectTick, value: null },
             { selector: selectChart, value: initialChartState },
             { selector: selectChartSubscription, value: { interval: '1m', live: true } },
+            { selector: selectChartSettings, value: CHART_SETTINGS },
           ],
         }),
       ],
@@ -152,6 +166,7 @@ describe('MarketEffects', () => {
   });
 
   afterEach(() => {
+    localStorage.clear();
     subscription?.unsubscribe();
     subscription = undefined;
     vi.useRealTimers();
@@ -537,6 +552,61 @@ describe('MarketEffects', () => {
       subscription = effects.showChartFailure$.subscribe();
       actions$.next(MarketActions.loadOlderChartCandlesFailure({ generation: 1, error: 'x' }));
       expect(toasts.error).toHaveBeenCalledWith('Der Kursverlauf konnte nicht geladen werden.');
+    });
+  });
+
+  describe('loadChartSettings$', () => {
+    it('reads the stored chart settings when a game is entered', async () => {
+      localStorage.setItem('pgo.ui.chart', JSON.stringify({ v: 1, data: CHART_SETTINGS }));
+      const result = firstValueFrom(effects.loadChartSettings$);
+      actions$.next(ENTER);
+      expect(await result).toEqual(MarketActions.loadedChartSettings({ settings: CHART_SETTINGS }));
+    });
+
+    it.each([
+      ['broken JSON', '{"v":1,'],
+      ['another version', JSON.stringify({ v: 2, data: CHART_SETTINGS })],
+      ['an invalid value', JSON.stringify({ v: 1, data: { range: 'x', indicators: [{}] } })],
+    ])('gives the defaults for %s', async (_name, raw) => {
+      localStorage.setItem('pgo.ui.chart', raw);
+      const result = firstValueFrom(effects.loadChartSettings$);
+      actions$.next(ENTER);
+      expect(await result).toEqual(
+        MarketActions.loadedChartSettings({
+          settings: { range: '1d', chartType: 'candles', indicators: [] },
+        }),
+      );
+    });
+  });
+
+  describe('saveChartSettings$', () => {
+    it('stores the chart settings of the store after a change', () => {
+      subscription = effects.saveChartSettings$.subscribe();
+      actions$.next(MarketActions.clickedRemoveChartIndicator({ id: 'i3' }));
+      expect(JSON.parse(localStorage.getItem('pgo.ui.chart') ?? 'null')).toEqual({
+        v: 1,
+        data: CHART_SETTINGS,
+      });
+    });
+
+    it('dispatches saveChartSettingsFailure and shows a toast when saving fails', async () => {
+      const error = new DOMException('full', 'QuotaExceededError');
+      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw error;
+      });
+      onTestFinished(() => {
+        vi.restoreAllMocks();
+      });
+      const result = firstValueFrom(effects.saveChartSettings$);
+      actions$.next(MarketActions.clickedChartType({ chartType: 'line' }));
+      const failure = await result;
+      expect(failure).toEqual(MarketActions.saveChartSettingsFailure({ error }));
+
+      subscription = effects.showChartSettingsFailure$.subscribe();
+      actions$.next(failure);
+      expect(toasts.error).toHaveBeenCalledWith(
+        'Die Chart-Einstellungen gelten nur bis zum Neuladen, weil sie auf diesem Gerät nicht gespeichert werden konnten.',
+      );
     });
   });
 });

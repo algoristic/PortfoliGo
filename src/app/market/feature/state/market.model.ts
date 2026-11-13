@@ -5,6 +5,7 @@ import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import { Candle, CandleResolution } from '@app/market/domain/models/candle.model';
 import { ChartRange } from '@app/market/domain/models/chart.model';
 import { Instrument, InstrumentKind } from '@app/market/domain/models/instrument.model';
+import { ChartIndicator } from '@app/market/ui/models/chart-indicator.model';
 
 /** Quote packages of all subscriptions within this much real time make one `receivedQuotes`. */
 export const QUOTES_BUNDLE_WINDOW_MS = 100;
@@ -12,6 +13,19 @@ export const QUOTES_BUNDLE_WINDOW_MS = 100;
 /** Subscription keys of the pages (TS §8.4, §11.3); other views choose their own keys. */
 export const MARKETS_PAGE_SUBSCRIPTION = 'markets-page';
 export const INSTRUMENT_PAGE_SUBSCRIPTION = 'instrument-page';
+
+/** Version of `pgo.ui.chart` (TS §9.3); entries of other versions count as missing. */
+export const CHART_SETTINGS_VERSION = 1;
+
+/** At most one indicator per chart colour (TS §11.7). */
+export const MAX_CHART_INDICATORS = 6;
+
+/** What `pgo.ui.chart` keeps on this device (TS §9.3): period, chart type and indicators. */
+export interface ChartSettings {
+  range: ChartRange;
+  chartType: PriceChartType;
+  indicators: readonly ChartIndicator[];
+}
 
 /** Named quote subscriptions: the series each view watches, sorted and without duplicates. */
 export type QuoteSubscriptions = Readonly<Record<string, readonly number[]>>;
@@ -35,6 +49,7 @@ export interface InstrumentQuote {
 export interface InstrumentChartState {
   range: ChartRange;
   chartType: PriceChartType;
+  indicators: readonly ChartIndicator[];
   day: number | null;
   generation: number;
   candles: readonly Candle[];
@@ -58,6 +73,7 @@ export interface InstrumentChartView {
   range: ChartRange;
   interval: CandleResolution;
   chartType: PriceChartType;
+  indicators: readonly ChartIndicator[];
   candles: readonly Candle[];
   /** The newest candle, `null` without candles. */
   lastCandle: Candle | null;

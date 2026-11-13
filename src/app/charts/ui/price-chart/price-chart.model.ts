@@ -39,14 +39,19 @@ export interface PriceChartOverlayPoint {
   value: number;
 }
 
+export const PRICE_CHART_LINE_STYLES = ['solid', 'dashed'] as const;
+export type PriceChartLineStyle = (typeof PRICE_CHART_LINE_STYLES)[number];
+
 /**
- * A line over the price (e.g. an indicator, AP 4.3) in a category colour. Points that keep their
- * values from one input to the next are updated incrementally like candles.
+ * A line over the price (e.g. an indicator, AP 4.3) in a category colour, solid unless `lineStyle`
+ * says otherwise. Points that keep their values from one input to the next are updated
+ * incrementally like candles.
  */
 export interface PriceChartOverlay {
   id: string;
   points: readonly PriceChartOverlayPoint[];
   color: ChartColor;
+  lineStyle?: PriceChartLineStyle;
 }
 
 /** The visible period of the chart in game time; `null` without data. */

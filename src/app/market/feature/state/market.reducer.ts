@@ -13,7 +13,13 @@ import { Instrument } from '@app/market/domain/models/instrument.model';
 
 import * as MarketActions from './market.actions';
 import { InstrumentChartState, MarketMoversView, QuoteSubscriptions } from './market.model';
-import { normalizeSeries, sameSeries, subscribedSeries } from './market.utils';
+import {
+  DEFAULT_CHART_SETTINGS,
+  normalizeSeries,
+  sameSeries,
+  subscribedSeries,
+  withChartIndicator,
+} from './market.utils';
 
 export const MARKET_FEATURE_KEY = 'market';
 
@@ -42,8 +48,7 @@ export const quotesAdapter: EntityAdapter<SeriesQuote> = createEntityAdapter<Ser
 });
 
 export const initialChartState: InstrumentChartState = {
-  range: '1d',
-  chartType: 'candles',
+  ...DEFAULT_CHART_SETTINGS,
   day: null,
   generation: 0,
   candles: [],
@@ -75,8 +80,8 @@ function withSubscriptions(state: MarketState, subscriptions: QuoteSubscriptions
 }
 
 /**
- * A new start block of the chart: the next generation without the loaded candles; period and chart
- * type stay. `loading` shows the placeholder until the block arrives.
+ * A new start block of the chart: the next generation without the loaded candles; period, chart
+ * type and indicators stay. `loading` shows the placeholder until the block arrives.
  */
 function newChart(
   chart: InstrumentChartState,
@@ -86,6 +91,7 @@ function newChart(
     ...initialChartState,
     range: chart.range,
     chartType: chart.chartType,
+    indicators: chart.indicators,
     generation: chart.generation + 1,
     loading: true,
     ...changes,
@@ -186,6 +192,25 @@ const reducer = createReducer(
   on(MarketActions.clickedChartType, (state, { chartType }) => ({
     ...state,
     chart: { ...state.chart, chartType },
+  })),
+  // Read when the game is entered, before any chart loads.
+  on(
+    MarketActions.loadedChartSettings,
+    (state, { settings: { range, chartType, indicators } }) => ({
+      ...state,
+      chart: { ...state.chart, range, chartType, indicators },
+    }),
+  ),
+  on(MarketActions.submittedChartIndicator, (state, { id, spec }) => ({
+    ...state,
+    chart: { ...state.chart, indicators: withChartIndicator(state.chart.indicators, id, spec) },
+  })),
+  on(MarketActions.clickedRemoveChartIndicator, (state, { id }) => ({
+    ...state,
+    chart: {
+      ...state.chart,
+      indicators: state.chart.indicators.filter((indicator) => indicator.id !== id),
+    },
   })),
   on(MarketActions.clickedChartDay, MarketActions.submittedChartDate, (state, { day }) =>
     withChartDay(state, day),

@@ -1,11 +1,14 @@
 import { createAction, props } from '@ngrx/store';
 
+import { IndicatorSpec } from '@app/analysis/domain/models/indicator.model';
 import { PriceChartType } from '@app/charts/ui/price-chart/price-chart.model';
 import { MoversPayload } from '@app/engine/data-access/service/engine-service.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import { Candle } from '@app/market/domain/models/candle.model';
 import { ChartRange, LiveCandle } from '@app/market/domain/models/chart.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
+
+import { ChartSettings } from './market.model';
 
 export const enterMarketsPage = createAction('[Market/Page] Enter markets page');
 export const leaveMarketsPage = createAction('[Market/Page] Leave markets page');
@@ -95,4 +98,27 @@ export const receivedLiveCandle = createAction(
 export const detectedChartGap = createAction(
   '[Market/API] Detected chart gap',
   props<{ generation: number }>(),
+);
+
+/** The settings of `pgo.ui.chart` (TS §9.3), read when a game is entered. */
+export const loadedChartSettings = createAction(
+  '[Market/API] Loaded chart settings',
+  props<{ settings: ChartSettings }>(),
+);
+export const loadChartSettingsFailure = createAction(
+  '[Market/API] Load chart settings failure',
+  props<{ error: unknown }>(),
+);
+export const saveChartSettingsFailure = createAction(
+  '[Market/API] Save chart settings failure',
+  props<{ error: unknown }>(),
+);
+/** A new indicator (`id` `null`) or new parameters of an existing one (US-CH-02). */
+export const submittedChartIndicator = createAction(
+  '[Market/Page] Submitted chart indicator',
+  props<{ id: string | null; spec: IndicatorSpec }>(),
+);
+export const clickedRemoveChartIndicator = createAction(
+  '[Market/Page] Clicked remove chart indicator',
+  props<{ id: string }>(),
 );

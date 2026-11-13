@@ -16,7 +16,7 @@ import { NewPlayer } from '@app/players/domain/models/player.model';
 import { EXCHANGES } from '@app/world/domain/taxonomy';
 
 import { installChartPlatform } from '../../../../testing/chart-platform';
-import { byTestId, click, textOf, typeText } from '../../../../testing/dom';
+import { byTestId, click, queryByTestId, select, textOf, typeText } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
 import { installViewport } from '../../../../testing/viewport';
 import { selectRouteInstrumentQuote } from '../state/market.selectors';
@@ -203,6 +203,8 @@ describe('InstrumentPage', () => {
     const restoreViewport = installViewport(1024);
     onTestFinished(restoreViewport);
     await openInstrument();
+    await act(() => click(byTestId(page, 'market.instrument.indicator.add')));
+    await act(() => click(byTestId(page, 'market.instrument.indicator-form.submit')));
 
     // Jump to an hour after the open and let the game run at 1 min/s (TS §3.4).
     await act(() => click(byTestId(page, 'shell.header.jump-button')));
@@ -230,5 +232,63 @@ describe('InstrumentPage', () => {
     const minute = Number(clock?.[1]) * 60 + Number(clock?.[2]);
     expect(minute).toBeGreaterThan(OPEN + 60);
     expect(chart()).toEqual({ count: minute - OPEN + 1, lastTick: tick(2030, 4, 1, minute) });
+    // The SMA 20 follows the live candles.
+    expect(byTestId(page, 'market.instrument.chart').getAttribute('data-overlay-points')).toBe(
+      `i1:${minute - OPEN + 1 - 19}`,
+    );
+  });
+
+  it('draws indicators, keeps them for the next visit and removes them', async () => {
+    await openInstrument();
+    const candles = CLOSE - OPEN;
+
+    function overlayPoints(): string {
+      return byTestId(page, 'market.instrument.chart').getAttribute('data-overlay-points') ?? '';
+    }
+
+    function label(id: string): string {
+      return textOf(byTestId(page, `market.instrument.indicator.${id}.label`));
+    }
+
+    async function submitForm(period: string): Promise<void> {
+      typeText(byTestId<HTMLInputElement>(page, 'market.instrument.indicator-form.period'), period);
+      await act(() => click(byTestId(page, 'market.instrument.indicator-form.submit')));
+    }
+
+    // SMA 20 and Bollinger 20/2: a point from the 20th candle on, three lines for the bands.
+    await act(() => click(byTestId(page, 'market.instrument.indicator.add')));
+    await submitForm('20');
+    await act(() => click(byTestId(page, 'market.instrument.indicator.add')));
+    select(byTestId(page, 'market.instrument.indicator-form.kind'), 'bollinger');
+    await submitForm('20');
+    expect(label('i1')).toBe('SMA 20');
+    expect(label('i2')).toBe('Bollinger 20/2');
+    const points = candles - 19;
+    expect(overlayPoints()).toBe(
+      `i1:${points} i2.middle:${points} i2.upper:${points} i2.lower:${points}`,
+    );
+    // Middle, upper and lower band at the newest candle.
+    expect(
+      textOf(byTestId(page, 'market.instrument.indicator.i2.values')).split(' · '),
+    ).toHaveLength(3);
+
+    await act(() => click(byTestId(page, 'market.instrument.indicator.i1.edit')));
+    await submitForm('50');
+    expect(label('i1')).toBe('SMA 50');
+    expect(overlayPoints()).toContain(`i1:${candles - 49} `);
+
+    // A new visit of the game reads the indicators from pgo.ui.chart.
+    await harness.navigateByUrl('/players');
+    await run(200);
+    await openInstrument();
+    expect(label('i1')).toBe('SMA 50');
+    expect(label('i2')).toBe('Bollinger 20/2');
+    expect(overlayPoints()).toBe(
+      `i1:${candles - 49} i2.middle:${points} i2.upper:${points} i2.lower:${points}`,
+    );
+
+    await act(() => click(byTestId(page, 'market.instrument.indicator.i2.remove')));
+    expect(queryByTestId(page, 'market.instrument.indicator.i2')).toBeNull();
+    expect(overlayPoints()).toBe(`i1:${candles - 49}`);
   });
 });

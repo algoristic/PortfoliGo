@@ -1,36 +1,55 @@
-@let chart = facade.chart$ | async;
+@let _chart = chart();
 @let _crosshair = crosshair();
+@let _editing = editing();
 
-@if (chart) {
+@if (_chart) {
   <app-chart-toolbar
-    [range]="chart.range"
-    [chartType]="chart.chartType"
-    [live]="chart.live"
-    [shownDayTick]="chart.shownDayTick"
-    [previousDay]="chart.previousDay"
-    [nextDay]="chart.nextDay"
-    [today]="chart.today"
+    [range]="_chart.range"
+    [chartType]="_chart.chartType"
+    [live]="_chart.live"
+    [shownDayTick]="_chart.shownDayTick"
+    [previousDay]="_chart.previousDay"
+    [nextDay]="_chart.nextDay"
+    [today]="_chart.today"
     (selectedRange)="facade.selectChartRange($event)"
     (selectedChartType)="facade.selectChartType($event)"
     (selectedDay)="facade.showChartDay($event)"
-    (submittedDate)="onSubmitDate($event, chart.today)"></app-chart-toolbar>
+    (submittedDate)="onSubmitDate($event, _chart.today)"></app-chart-toolbar>
 
   <app-candle-readout
     class="mt-3"
-    [candle]="_crosshair?.candle ?? chart.lastCandle"
-    [interval]="chart.interval"></app-candle-readout>
+    [candle]="_crosshair?.candle ?? _chart.lastCandle"
+    [interval]="_chart.interval"></app-candle-readout>
+
+  <app-chart-indicators
+    class="mt-2"
+    [indicators]="indicatorReadouts()"
+    [canAdd]="canAddIndicator()"
+    (clickedAdd)="onAddIndicator()"
+    (clickedEdit)="onEditIndicator($event)"
+    (clickedRemove)="onRemoveIndicator($event)"></app-chart-indicators>
+
+  @if (_editing) {
+    <app-form-indicator
+      class="mt-2"
+      [spec]="_editing.spec"
+      [isNew]="_editing.id === null"
+      (submittedIndicator)="onSubmitIndicator($event, _editing.id)"
+      (clickedCancel)="onCancelIndicator()"></app-form-indicator>
+  }
 
   <div class="relative mt-2 h-80 md:h-96">
     <app-price-chart
       class="h-full"
-      [candles]="chart.candles"
-      [chartType]="chart.chartType"
-      [loading]="chart.loading"
+      [candles]="_chart.candles"
+      [chartType]="_chart.chartType"
+      [overlays]="overlays()"
+      [loading]="_chart.loading"
       [label]="chartLabel"
       data-testid="market.instrument.chart"
       (scrolledToStart)="facade.loadOlderChartCandles()"
       (movedCrosshair)="onMoveCrosshair($event)"></app-price-chart>
-    @if (chart.failed) {
+    @if (_chart.failed) {
       <p
         class="absolute inset-0 flex items-center justify-center text-sm text-fg-muted"
         data-testid="market.instrument.chart.failed"
@@ -39,7 +58,7 @@
       </p>
     }
   </div>
-  @if (chart.loadingOlder) {
+  @if (_chart.loadingOlder) {
     <p
       class="mt-1 text-sm text-fg-muted"
       data-testid="market.instrument.chart.loading-older"

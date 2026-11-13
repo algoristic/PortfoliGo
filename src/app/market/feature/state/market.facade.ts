@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
+import { IndicatorSpec } from '@app/analysis/domain/models/indicator.model';
 import { PriceChartType } from '@app/charts/ui/price-chart/price-chart.model';
 import { ChartRange } from '@app/market/domain/models/chart.model';
 
@@ -80,5 +81,14 @@ export class MarketFacade {
 
   loadOlderChartCandles(): void {
     this.#store.dispatch(MarketActions.scrolledToChartStart());
+  }
+
+  /** Adds an indicator (`id` `null`) or changes the parameters of one. */
+  submitChartIndicator(id: string | null, spec: IndicatorSpec): void {
+    this.#store.dispatch(MarketActions.submittedChartIndicator({ id, spec }));
+  }
+
+  removeChartIndicator(id: string): void {
+    this.#store.dispatch(MarketActions.clickedRemoveChartIndicator({ id }));
   }
 }

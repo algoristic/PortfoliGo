@@ -2,6 +2,8 @@ import { EnvironmentProviders, Provider } from '@angular/core';
 import { provideEffects } from '@ngrx/effects';
 import { provideState } from '@ngrx/store';
 
+import { provideLocalStorageService } from '@app/persistence/data-access/local-storage/local-storage-service.providers';
+
 import { MarketEffects } from './market.effects';
 import { MarketFacade } from './market.facade';
 import * as fromMarket from './market.reducer';
@@ -12,5 +14,6 @@ export function provideMarketState(): Array<Provider | EnvironmentProviders> {
     MarketFacade,
     provideState(fromMarket.MARKET_FEATURE_KEY, fromMarket.marketReducer),
     provideEffects(MarketEffects),
+    provideLocalStorageService(),
   ];
 }

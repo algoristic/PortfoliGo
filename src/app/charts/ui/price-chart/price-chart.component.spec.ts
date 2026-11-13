@@ -232,6 +232,20 @@ describe('PriceChartComponent', () => {
       await settle(fixture);
       expect(calls.removeSeries).toHaveBeenCalledWith(overlay.series);
     });
+
+    it('draws dashed lines and reports the points per overlay', async () => {
+      const { LineStyle } = await import('lightweight-charts');
+      fixture.componentRef.setInput('overlays', [
+        { id: 'bb.upper', points: points(20), color: 'chart-2', lineStyle: 'dashed' },
+        { id: 'bb.middle', points: points(20), color: 'chart-2' },
+      ]);
+      await settle(fixture);
+      expect(calls.series[1].series.options()).toMatchObject({ lineStyle: LineStyle.Dashed });
+      expect(calls.series[2].series.options()).toMatchObject({ lineStyle: LineStyle.Solid });
+      expect(fixture.nativeElement.getAttribute('data-overlay-points')).toBe(
+        'bb.upper:20 bb.middle:20',
+      );
+    });
   });
 
   describe('scrolledToStart', () => {
