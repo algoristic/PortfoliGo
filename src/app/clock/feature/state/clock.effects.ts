@@ -152,20 +152,23 @@ export class ClockEffects {
       ]),
       map(([, clock, sessions]) => (clock === null || clock.jumping ? null : { clock, sessions })),
       filter((open): open is { clock: ClockPayload; sessions: TradingHours[] } => open !== null),
-      exhaustMap(({ clock, sessions }) =>
-        this.#dialog
-          .open<JumpDialogResult, JumpDialogData>(DialogJumpComponent, {
-            data: { now: clock.tick, sessions },
-            ariaLabel: $localize`:@@featureClock-clockEffects-jumpDialogLabel:Vorspulen`,
-            width: '28rem',
-            maxWidth: 'calc(100vw - 2rem)',
-            maxHeight: 'calc(100dvh - 2rem)',
-          })
-          .closed.pipe(
-            filter((target): target is JumpTarget => target !== undefined),
-            map((target) => ClockActions.submittedJump({ target })),
-          ),
-      ),
+      exhaustMap(({ clock, sessions }) => {
+        const dialogRef = this.#dialog.open<JumpDialogResult, JumpDialogData>(DialogJumpComponent, {
+          data: { now: clock.tick, sessions },
+          ariaLabel: $localize`:@@featureClock-clockEffects-jumpDialogLabel:Vorspulen`,
+          width: '28rem',
+          maxWidth: 'calc(100vw - 2rem)',
+          maxHeight: 'calc(100dvh - 2rem)',
+        });
+        // `FormField` listens to validity animations of date and time inputs from the creation
+        // pass on but reads its input only after the first update; WebKit can start them in
+        // between (NG0950), so the dialog gets its first update before the browser renders.
+        dialogRef.componentRef?.changeDetectorRef.detectChanges();
+        return dialogRef.closed.pipe(
+          filter((target): target is JumpTarget => target !== undefined),
+          map((target) => ClockActions.submittedJump({ target })),
+        );
+      }),
     ),
   );
 

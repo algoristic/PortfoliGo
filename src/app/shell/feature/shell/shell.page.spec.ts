@@ -571,6 +571,34 @@ describe('ShellPage', () => {
       expect(clock()).toBe('Mi., 01.05.2030, 00:00');
     });
 
+    it('accepts validity animations of the date inputs before the dialog first renders', async () => {
+      // WebKit starts the validity animations of `FormField` (Angular forms) for date and time
+      // inputs in its next rendering step, possibly before the dialog's first change detection.
+      await openGame();
+      const errors: unknown[] = [];
+      const onError = (event: ErrorEvent): void => {
+        errors.push(event.error);
+      };
+      window.addEventListener('error', onError);
+      try {
+        click(byTestId(page, 'shell.header.jump-button'));
+        for (const testId of ['clock.jump-dialog.date', 'clock.jump-dialog.time']) {
+          const animation = new Event('animationstart');
+          Object.defineProperty(animation, 'animationName', { value: 'ng-valid' });
+          body(testId).dispatchEvent(animation);
+        }
+        await settle(harness.fixture);
+      } finally {
+        window.removeEventListener('error', onError);
+      }
+      expect(errors).toEqual([]);
+
+      await act(() => click(body('clock.jump-dialog.next-month')));
+      await act(() => click(body('clock.jump-dialog.submit')));
+      await run(200);
+      expect(clock()).toBe('Mi., 01.05.2030, 00:00');
+    });
+
     it('jumps to a date at most one year ahead', async () => {
       await openGame();
       await openJumpDialog();
