@@ -154,18 +154,22 @@ describe('importedPlayerName', () => {
     ['x'.repeat(40), ' (Import)', `${'x'.repeat(31)} (Import)`],
     [`${'x'.repeat(30)}  y`, ' (Import)', `${'x'.repeat(30)} (Import)`],
     ['😀'.repeat(40), ' (Import)', `${'😀'.repeat(31)} (Import)`],
+    [' ', ' (Import)', '(Import)'],
   ])('names %j with %j as %j', (name, suffix, expected) => {
     expect(importedPlayerName(name, suffix)).toBe(expected);
   });
 
   it('keeps every result within 40 code points and starting with the trimmed name', () => {
     fc.assert(
-      fc.property(fc.string({ minLength: 1, maxLength: 40 }), (name) => {
-        const result = importedPlayerName(name, ' (Import)');
-        expect([...result].length).toBeLessThanOrEqual(40);
-        expect(result.endsWith(' (Import)')).toBe(true);
-        expect(name.trim().startsWith(result.slice(0, -' (Import)'.length).trim())).toBe(true);
-      }),
+      fc.property(
+        fc.string({ minLength: 1, maxLength: 40 }).filter((name) => name.trim() !== ''),
+        (name) => {
+          const result = importedPlayerName(name, ' (Import)');
+          expect([...result].length).toBeLessThanOrEqual(40);
+          expect(result.endsWith(' (Import)')).toBe(true);
+          expect(name.trim().startsWith(result.slice(0, -' (Import)'.length).trim())).toBe(true);
+        },
+      ),
     );
   });
 });
