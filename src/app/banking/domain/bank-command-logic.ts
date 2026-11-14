@@ -18,6 +18,8 @@ export interface ClosingState {
   isSalaryAccount: boolean;
   /** Depot without positions, open orders and savings plans; always true for other accounts. */
   depotEmpty: boolean;
+  /** The account is source or target of a standing order (AP 5.6a). */
+  hasStandingOrders: boolean;
   /** Balance after the closing settlement. */
   remainder: Cents;
 }
@@ -100,7 +102,8 @@ export function transferError(
 
 /**
  * What keeps an account from closing (TS §7.4, US-BK-03): the salary account, a depot that is not
- * empty, and a negative balance after the settlement.
+ * empty, standing orders from or to it (AP 5.6a; the player deletes them first), and a negative
+ * balance after the settlement.
  */
 export function closingBlockers(state: ClosingState): ClosingBlocker[] {
   const blockers: ClosingBlocker[] = [];
@@ -109,6 +112,9 @@ export function closingBlockers(state: ClosingState): ClosingBlocker[] {
   }
   if (!state.depotEmpty) {
     blockers.push('depot-not-empty');
+  }
+  if (state.hasStandingOrders) {
+    blockers.push('standing-orders');
   }
   if (state.remainder < 0) {
     blockers.push('negative-balance');

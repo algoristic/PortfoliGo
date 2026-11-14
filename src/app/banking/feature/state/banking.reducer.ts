@@ -2,6 +2,7 @@ import { createEntityAdapter, EntityAdapter, EntityState } from '@ngrx/entity';
 import { Action, createReducer, on } from '@ngrx/store';
 
 import { BankSort, nextBankSort } from '@app/banking/domain/bank-comparison-logic';
+import { StandingOrderView } from '@app/banking/domain/models/standing-order.model';
 import { MonthlyValuesResult } from '@app/engine/data-access/service/engine-service.model';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
@@ -35,6 +36,11 @@ export interface BankingState extends EntityState<AccountView> {
   bankSort: BankSort | null;
   /** Monthly values while the accounts page is open (US-EK-03); `null` until loaded. */
   monthlyValues: MonthlyValuesResult | null;
+  /**
+   * All standing orders with their next execution (US-BK-10), in the order they were created;
+   * `null` until the first projection that carries them.
+   */
+  standingOrders: StandingOrderView[] | null;
   error?: unknown;
 }
 
@@ -45,6 +51,10 @@ const noPendingCommands: PendingBankCommands = {
   closeAccount: 0,
   setSalaryAccount: 0,
   transfer: 0,
+  createStandingOrder: 0,
+  changeStandingOrder: 0,
+  setStandingOrderPaused: 0,
+  deleteStandingOrder: 0,
 };
 
 export const initialBankingState: BankingState = accountsAdapter.getInitialState({
@@ -54,6 +64,7 @@ export const initialBankingState: BankingState = accountsAdapter.getInitialState
   statement: initialStatementState,
   bankSort: null,
   monthlyValues: null,
+  standingOrders: null,
 });
 
 function changePending(state: BankingState, command: BankCommand, delta: 1 | -1): BankingState {
@@ -85,14 +96,16 @@ const reducer = createReducer(
   initialBankingState,
   // Nothing of the previous player stays when another one is entered or the game is left.
   on(SessionActions.enterGame, SessionActions.leaveGame, () => initialBankingState),
-  on(BankingActions.receivedProjection, (state, { projection }) =>
-    projection.full
-      ? accountsAdapter.setAll(projection.accounts, { ...state, netWorth: projection.netWorth })
-      : accountsAdapter.upsertMany(projection.accounts, {
-          ...state,
-          netWorth: projection.netWorth,
-        }),
-  ),
+  on(BankingActions.receivedProjection, (state, { projection }) => {
+    const changed = {
+      ...state,
+      netWorth: projection.netWorth,
+      standingOrders: projection.standingOrders ?? state.standingOrders,
+    };
+    return projection.full
+      ? accountsAdapter.setAll(projection.accounts, changed)
+      : accountsAdapter.upsertMany(projection.accounts, changed);
+  }),
   on(BankingActions.retrievedBanks, (state, { banks }) => ({ ...state, banks })),
   on(BankingActions.loadBanksFailure, (state, { error }) => ({ ...state, error })),
   on(BankingActions.submittedOpenAccount, (state) => changePending(state, 'openAccount', 1)),
@@ -105,6 +118,46 @@ const reducer = createReducer(
     changePending(state, 'setSalaryAccount', -1),
   ),
   on(BankingActions.transferSuccess, (state) => changePending(state, 'transfer', -1)),
+  on(BankingActions.submittedCreateStandingOrder, (state) =>
+    changePending(state, 'createStandingOrder', 1),
+  ),
+  on(BankingActions.submittedChangeStandingOrder, (state) =>
+    changePending(state, 'changeStandingOrder', 1),
+  ),
+  on(BankingActions.submittedStandingOrderPaused, (state) =>
+    changePending(state, 'setStandingOrderPaused', 1),
+  ),
+  on(BankingActions.submittedDeleteStandingOrder, (state) =>
+    changePending(state, 'deleteStandingOrder', 1),
+  ),
+  on(BankingActions.createStandingOrderSuccess, (state) =>
+    changePending(state, 'createStandingOrder', -1),
+  ),
+  on(BankingActions.changeStandingOrderSuccess, (state) =>
+    changePending(state, 'changeStandingOrder', -1),
+  ),
+  on(BankingActions.setStandingOrderPausedSuccess, (state) =>
+    changePending(state, 'setStandingOrderPaused', -1),
+  ),
+  on(BankingActions.deleteStandingOrderSuccess, (state) =>
+    changePending(state, 'deleteStandingOrder', -1),
+  ),
+  on(BankingActions.createStandingOrderFailure, (state, { error }) => ({
+    ...changePending(state, 'createStandingOrder', -1),
+    error,
+  })),
+  on(BankingActions.changeStandingOrderFailure, (state, { error }) => ({
+    ...changePending(state, 'changeStandingOrder', -1),
+    error,
+  })),
+  on(BankingActions.setStandingOrderPausedFailure, (state, { error }) => ({
+    ...changePending(state, 'setStandingOrderPaused', -1),
+    error,
+  })),
+  on(BankingActions.deleteStandingOrderFailure, (state, { error }) => ({
+    ...changePending(state, 'deleteStandingOrder', -1),
+    error,
+  })),
   on(BankingActions.openAccountFailure, (state, { error }) => ({
     ...changePending(state, 'openAccount', -1),
     error,

@@ -325,6 +325,7 @@ Als Anwender möchte ich regelmäßig einen festen Betrag automatisch zwischen m
 - Ausführung im Bank-Lauf um 06:00 am Ausführungstag bzw. am nächsten Bankarbeitstag, nach Gehalt, Zinsen, Lebenshaltung und Gebühren: Ein Dauerauftrag am Gehaltstag sieht das Gehalt schon.
 - Reicht der verfügbare Betrag des Quellkontos nicht, fällt die Ausführung aus und der Anwender wird benachrichtigt; es gibt keine Teilüberweisung.
 - Daueraufträge lassen sich auf der Kontenseite anlegen, ändern, pausieren und löschen (E-21).
+- Ein Konto, das Quell- oder Zielkonto eines Dauerauftrags ist, lässt sich erst schließen, wenn der Dauerauftrag gelöscht ist. Mehrere Daueraufträge am selben Tag laufen in der Reihenfolge, in der sie angelegt wurden; ein Verwendungszweck ist optional.
 
 ### 7.5 Märkte und Instrumente (MK)
 

@@ -182,6 +182,136 @@ export class BankingEffects {
     ),
   );
 
+  createStandingOrder$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(BankingActions.submittedCreateStandingOrder),
+      mergeMap(({ order }) =>
+        this.#engine.createStandingOrder(order).pipe(
+          map(({ standingOrderId, tick }) =>
+            BankingActions.createStandingOrderSuccess({ standingOrderId, tick }),
+          ),
+          catchError((error: unknown) => of(BankingActions.createStandingOrderFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
+  changeStandingOrder$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(BankingActions.submittedChangeStandingOrder),
+      mergeMap(({ standingOrderId, order }) =>
+        this.#engine.changeStandingOrder(standingOrderId, order).pipe(
+          map(({ tick }) => BankingActions.changeStandingOrderSuccess({ standingOrderId, tick })),
+          catchError((error: unknown) => of(BankingActions.changeStandingOrderFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
+  setStandingOrderPaused$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(BankingActions.submittedStandingOrderPaused),
+      mergeMap(({ standingOrderId, paused }) =>
+        this.#engine.setStandingOrderPaused(standingOrderId, paused).pipe(
+          map(({ tick }) =>
+            BankingActions.setStandingOrderPausedSuccess({ standingOrderId, paused, tick }),
+          ),
+          catchError((error: unknown) =>
+            of(BankingActions.setStandingOrderPausedFailure({ error })),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  deleteStandingOrder$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(BankingActions.submittedDeleteStandingOrder),
+      mergeMap(({ standingOrderId }) =>
+        this.#engine.deleteStandingOrder(standingOrderId).pipe(
+          map(({ tick }) => BankingActions.deleteStandingOrderSuccess({ standingOrderId, tick })),
+          catchError((error: unknown) => of(BankingActions.deleteStandingOrderFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
+  showStandingOrderSuccess$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(
+          BankingActions.createStandingOrderSuccess,
+          BankingActions.changeStandingOrderSuccess,
+          BankingActions.setStandingOrderPausedSuccess,
+          BankingActions.deleteStandingOrderSuccess,
+        ),
+        tap((action) => {
+          switch (action.type) {
+            case BankingActions.createStandingOrderSuccess.type:
+              this.#toastService.success(
+                $localize`:@@featureBanking-bankingEffects-createStandingOrderSuccess:Der Dauerauftrag ist angelegt.`,
+              );
+              break;
+            case BankingActions.changeStandingOrderSuccess.type:
+              this.#toastService.success(
+                $localize`:@@featureBanking-bankingEffects-changeStandingOrderSuccess:Der Dauerauftrag ist geändert.`,
+              );
+              break;
+            case BankingActions.setStandingOrderPausedSuccess.type:
+              this.#toastService.success(
+                action.paused
+                  ? $localize`:@@featureBanking-bankingEffects-pauseStandingOrderSuccess:Der Dauerauftrag ist pausiert.`
+                  : $localize`:@@featureBanking-bankingEffects-resumeStandingOrderSuccess:Der Dauerauftrag läuft wieder.`,
+              );
+              break;
+            case BankingActions.deleteStandingOrderSuccess.type:
+              this.#toastService.success(
+                $localize`:@@featureBanking-bankingEffects-deleteStandingOrderSuccess:Der Dauerauftrag ist gelöscht.`,
+              );
+              break;
+          }
+        }),
+      ),
+    { dispatch: false },
+  );
+
+  showStandingOrderFailure$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(
+          BankingActions.createStandingOrderFailure,
+          BankingActions.changeStandingOrderFailure,
+          BankingActions.setStandingOrderPausedFailure,
+          BankingActions.deleteStandingOrderFailure,
+        ),
+        tap((action) => {
+          switch (action.type) {
+            case BankingActions.createStandingOrderFailure.type:
+              this.#toastService.error(
+                bankCommandFailureMessage('createStandingOrder', action.error),
+              );
+              break;
+            case BankingActions.changeStandingOrderFailure.type:
+              this.#toastService.error(
+                bankCommandFailureMessage('changeStandingOrder', action.error),
+              );
+              break;
+            case BankingActions.setStandingOrderPausedFailure.type:
+              this.#toastService.error(
+                bankCommandFailureMessage('setStandingOrderPaused', action.error),
+              );
+              break;
+            case BankingActions.deleteStandingOrderFailure.type:
+              this.#toastService.error(
+                bankCommandFailureMessage('deleteStandingOrder', action.error),
+              );
+              break;
+          }
+        }),
+      ),
+    { dispatch: false },
+  );
+
   /**
    * The statement page (TS §11.3, AP 3.4): once the player is loaded the first rows, then a new
    * query when the filter changes (the search debounced), the window around the rendered rows when

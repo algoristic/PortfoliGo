@@ -8,9 +8,12 @@ import { select, Store } from '@ngrx/store';
 import { catchError, exhaustMap, filter, map, Observable, of, switchMap, tap } from 'rxjs';
 
 import { AccountId } from '@app/banking/domain/models/account.model';
+import { StandingOrderFormModel } from '@app/banking/ui/models/standing-order-form.model';
 import { EngineService } from '@app/engine/data-access/service/engine.service';
 import { selectPlayerId } from '@app/engine/feature/state/session.selectors';
+import { openConfirmDialog } from '@app/shared/ui/dialog-confirm/dialog-confirm.utils';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
+import { formatCents } from '@app/shared/util/format';
 
 import { bankCommandFailureMessage } from './banking-errors.utils';
 import * as BankingActions from './banking.actions';
@@ -20,8 +23,10 @@ import {
   selectBanks,
   selectOpenCurrentAccounts,
   selectSalaryAccount,
+  selectStandingOrders,
   selectStatementAccountId,
 } from './banking.selectors';
+import { standingOrderPreselection } from './banking.utils';
 
 import { DialogCloseAccountComponent } from '../dialog-close-account/dialog-close-account.component';
 import {
@@ -38,6 +43,11 @@ import {
   SalaryAccountDialogData,
   SalaryAccountDialogResult,
 } from '../dialog-salary-account/dialog-salary-account.model';
+import { DialogStandingOrderComponent } from '../dialog-standing-order/dialog-standing-order.component';
+import {
+  StandingOrderDialogData,
+  StandingOrderDialogResult,
+} from '../dialog-standing-order/dialog-standing-order.model';
 import { DialogTransferComponent } from '../dialog-transfer/dialog-transfer.component';
 import { TransferDialogData, TransferDialogResult } from '../dialog-transfer/dialog-transfer.model';
 
@@ -119,6 +129,84 @@ export class BankingDialogEffects {
           map((transfer) => BankingActions.submittedTransfer({ transfer })),
         ),
       ),
+    ),
+  );
+
+  /**
+   * A standing order needs two open accounts. The source is the clicked account, else the salary
+   * account; the target the only other account, else from the salary account the first clearing
+   * account (the inflow of a savings plan, E-21).
+   */
+  createStandingOrderDialog$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(BankingActions.clickedCreateStandingOrder),
+      concatLatestFrom(() => this.#store.pipe(select(selectAccountOverview))),
+      map(([{ fromAccountId }, { open }]): StandingOrderDialogData | null => {
+        const initial = standingOrderPreselection(open, fromAccountId);
+        return initial === null ? null : { accounts: open, mode: 'create', initial };
+      }),
+      filter((data): data is StandingOrderDialogData => data !== null),
+      exhaustMap((data) =>
+        this.#openStandingOrder(data).pipe(
+          map((order) => BankingActions.submittedCreateStandingOrder({ order })),
+        ),
+      ),
+    ),
+  );
+
+  changeStandingOrderDialog$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(BankingActions.clickedChangeStandingOrder),
+      concatLatestFrom(() => [
+        this.#store.pipe(select(selectAccountOverview)),
+        this.#store.pipe(select(selectStandingOrders)),
+      ]),
+      map(([{ standingOrderId }, { open }, orders]) => {
+        const order = orders?.find((candidate) => candidate.id === standingOrderId);
+        if (order === undefined) {
+          return null;
+        }
+        const initial: StandingOrderFormModel = {
+          fromAccountId: order.fromAccountId,
+          toAccountId: order.toAccountId,
+          amount: order.amount,
+          day: String(order.day),
+          purpose: order.purpose,
+        };
+        const data: StandingOrderDialogData = { accounts: open, mode: 'change', initial };
+        return { standingOrderId, data };
+      }),
+      filter((change) => change !== null),
+      exhaustMap(({ standingOrderId, data }) =>
+        this.#openStandingOrder(data).pipe(
+          map((order) => BankingActions.submittedChangeStandingOrder({ standingOrderId, order })),
+        ),
+      ),
+    ),
+  );
+
+  deleteStandingOrderDialog$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(BankingActions.clickedDeleteStandingOrder),
+      concatLatestFrom(() => this.#store.pipe(select(selectStandingOrders))),
+      map(
+        ([{ standingOrderId }, orders]) =>
+          orders?.find((candidate) => candidate.id === standingOrderId) ?? null,
+      ),
+      filter((order) => order !== null),
+      exhaustMap((order) => {
+        const amount = formatCents(order.amount);
+        return openConfirmDialog(this.#dialog, {
+          heading: $localize`:@@featureBanking-bankingDialogEffects-deleteStandingOrderHeading:Dauerauftrag löschen?`,
+          message: $localize`:@@featureBanking-bankingDialogEffects-deleteStandingOrderMessage:Der Dauerauftrag über ${amount}:amount: am ${order.day}:day:. jedes Monats wird gelöscht und nicht mehr ausgeführt.`,
+          confirmLabel: $localize`:@@featureBanking-bankingDialogEffects-deleteStandingOrderConfirm:Löschen`,
+          declineLabel: $localize`:@@featureBanking-bankingDialogEffects-deleteStandingOrderDecline:Behalten`,
+          tone: 'danger',
+        }).pipe(
+          filter(Boolean),
+          map(() => BankingActions.submittedDeleteStandingOrder({ standingOrderId: order.id })),
+        );
+      }),
     ),
   );
 
@@ -232,6 +320,19 @@ export class BankingDialogEffects {
       ),
     { dispatch: false },
   );
+
+  #openStandingOrder(data: StandingOrderDialogData): Observable<StandingOrderDialogResult> {
+    return this.#open<StandingOrderDialogResult, StandingOrderDialogData>(
+      DialogStandingOrderComponent,
+      {
+        data,
+        ariaLabel:
+          data.mode === 'create'
+            ? $localize`:@@featureBanking-bankingDialogEffects-createStandingOrderLabel:Dauerauftrag anlegen`
+            : $localize`:@@featureBanking-bankingDialogEffects-changeStandingOrderLabel:Dauerauftrag ändern`,
+      },
+    ).pipe(filter((order): order is StandingOrderDialogResult => order !== undefined));
+  }
 
   #open<TResult, TData>(
     component: ComponentType<unknown>,

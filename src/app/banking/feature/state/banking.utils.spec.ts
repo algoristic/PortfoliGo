@@ -1,7 +1,12 @@
+import { AccountId, AccountKind } from '@app/banking/domain/models/account.model';
 import { StatementEntry } from '@app/banking/domain/models/statement.model';
 
-import { StatementState } from './banking.model';
-import { isStatementFilterActive, statementWindowRequest } from './banking.utils';
+import { AccountEntry, StatementState } from './banking.model';
+import {
+  isStatementFilterActive,
+  standingOrderPreselection,
+  statementWindowRequest,
+} from './banking.utils';
 
 type LoadedWindow = Pick<StatementState, 'total' | 'offset' | 'entries'>;
 
@@ -58,5 +63,39 @@ describe('isStatementFilterActive', () => {
     [{ period: 'all', types: [], search: 'x' }, true],
   ] as const)('%o is active: %s', (filter, active) => {
     expect(isStatementFilterActive({ ...filter, types: [...filter.types] })).toBe(active);
+  });
+});
+
+describe('standingOrderPreselection', () => {
+  function account(id: AccountId, kind: AccountKind, salaryAccount = false): AccountEntry {
+    return { id, kind, salaryAccount } as AccountEntry;
+  }
+
+  const GIRO = account('acc-1', 'current', true);
+  const SAVINGS = account('acc-2', 'savings');
+  const CLEARING = account('acc-3', 'clearing');
+  const SECOND_GIRO = account('acc-4', 'current');
+
+  // US-BK-10, E-21: from the salary account to the clearing account of a depot
+  it.each<[string, AccountEntry[], AccountId | undefined, string, string]>([
+    ['salary account to clearing account', [GIRO, SAVINGS, CLEARING], undefined, 'acc-1', 'acc-3'],
+    ['only other account', [GIRO, SAVINGS], undefined, 'acc-1', 'acc-2'],
+    ['no clearing account', [GIRO, SAVINGS, SECOND_GIRO], undefined, 'acc-1', ''],
+    ['clicked account', [GIRO, SAVINGS, CLEARING], 'acc-2', 'acc-2', ''],
+    ['clicked account, one other', [GIRO, SAVINGS], 'acc-2', 'acc-2', 'acc-1'],
+    ['unknown clicked account', [GIRO, SAVINGS], 'acc-9', 'acc-1', 'acc-2'],
+  ])('preselects %s', (_case, open, fromAccountId, from, to) => {
+    expect(standingOrderPreselection(open, fromAccountId)).toEqual({
+      fromAccountId: from,
+      toAccountId: to,
+      amount: null,
+      day: '1',
+      purpose: '',
+    });
+  });
+
+  it('needs two open accounts', () => {
+    expect(standingOrderPreselection([GIRO])).toBeNull();
+    expect(standingOrderPreselection([])).toBeNull();
   });
 });

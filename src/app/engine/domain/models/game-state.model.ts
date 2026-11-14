@@ -8,6 +8,7 @@ import {
   OverdraftLimit,
 } from '@app/banking/domain/models/household.model';
 import { Balances } from '@app/banking/domain/models/ledger.model';
+import { StandingOrder } from '@app/banking/domain/models/standing-order.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { MarketState } from '@app/market/domain/models/market-state.model';
 import { NotificationState } from '@app/notifications/domain/models/notification.model';
@@ -80,6 +81,13 @@ export interface PlayerState {
   pendingDistributions: PendingDistribution[];
   /** Depot values for the custody fee per depot in depot order (TS §7.3, §7.4). */
   custody: CustodyAccrual[];
+  /**
+   * Standing orders in the order they were created (US-BK-10, TS §7.4). Every change replaces the
+   * array, so a new reference means a change for the projection.
+   */
+  standingOrders: StandingOrder[];
+  /** Last value of the standing order counter (`so-<n>`). */
+  standingOrderSequence: number;
 }
 
 /** Dynamic state of a game (TS §8.1). Everything in it is plain, structured-cloneable data. */

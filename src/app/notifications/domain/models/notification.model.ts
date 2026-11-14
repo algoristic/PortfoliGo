@@ -1,5 +1,6 @@
 import { AccountId, DepotId } from '@app/banking/domain/models/account.model';
 import { MonthlyValues } from '@app/banking/domain/models/household.model';
+import { StandingOrderId } from '@app/banking/domain/models/standing-order.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { DistributionKind } from '@app/portfolio/domain/models/distribution.model';
 import { Cents, MicroUnits } from '@app/shared/domain/models/money.model';
@@ -29,11 +30,12 @@ export type NotificationSource = (typeof NOTIFICATION_SOURCES)[number];
 
 /**
  * Codes of TS §12. The engine creates the account, earnings and system codes since AP 3.6, the
- * order codes since AP 5.1, `dividend-received` since AP 5.2.
+ * order codes since AP 5.1, `dividend-received` since AP 5.2, `standing-order-failed` since AP 5.6a.
  */
 export const NOTIFICATION_CODES = [
   'account-uncovered',
   'overdraft-limit-exceeded',
+  'standing-order-failed',
   'order-executed',
   'order-rejected',
   'order-expired',
@@ -81,6 +83,7 @@ function info(
 export const NOTIFICATION_CODE_INFO: Readonly<Record<NotificationCode, NotificationCodeInfo>> = {
   'account-uncovered': info('account', 'warning', 'engine', true, true, false),
   'overdraft-limit-exceeded': info('account', 'critical', 'engine', true, true, true),
+  'standing-order-failed': info('account', 'warning', 'engine', true, true, false),
   'order-executed': info('order', 'info', 'engine', true, false, false),
   'order-rejected': info('order', 'warning', 'engine', true, true, false),
   'order-expired': info('order', 'info', 'engine', true, false, false),
@@ -107,6 +110,18 @@ export interface AccountCoverageParams {
   balance: Cents;
   /** Overdraft limit; `null` for accounts without overdraft facility. */
   limit: Cents | null;
+}
+
+/**
+ * `standing-order-failed`: the standing order did not execute because the available amount of the
+ * source was below its amount (TS §7.4).
+ */
+export interface StandingOrderFailedParams {
+  standingOrderId: StandingOrderId;
+  fromAccountId: AccountId;
+  toAccountId: AccountId;
+  amount: Cents;
+  available: Cents;
 }
 
 /** Credit interest booked on an account and the tax booked with it (refunds negative). */
@@ -180,6 +195,7 @@ export type PendingParams = Readonly<Record<string, string | number | null>>;
 export interface NotificationParams {
   'account-uncovered': AccountCoverageParams;
   'overdraft-limit-exceeded': AccountCoverageParams;
+  'standing-order-failed': StandingOrderFailedParams;
   'order-executed': OrderExecutedParams;
   'order-rejected': OrderRejectedParams;
   'order-expired': OrderParams;

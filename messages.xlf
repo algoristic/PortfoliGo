@@ -83,63 +83,105 @@
         <source>Konten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">9,11</context>
+          <context context-type="linenumber">10,12</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-openAccount" datatype="html">
         <source>Konto eröffnen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">20,23</context>
+          <context context-type="linenumber">21,24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-transfer" datatype="html">
         <source>Überweisen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">29,32</context>
+          <context context-type="linenumber">30,33</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-banks" datatype="html">
         <source>Bankenvergleich</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">34,39</context>
+          <context context-type="linenumber">35,40</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-openHeading" datatype="html">
         <source>Offene Konten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">54,56</context>
+          <context context-type="linenumber">55,57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-closedHeading" datatype="html">
         <source>Geschlossene Konten (<x id="INTERPOLATION" equiv-text="{{ overview.closed.length }}"/>)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">80,81</context>
+          <context context-type="linenumber">81,82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountsPage-standingOrdersIntro" datatype="html">
+        <source> Daueraufträge überweisen jeden Monat einen festen Betrag zwischen deinen Konten. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
+          <context context-type="linenumber">99,103</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountsPage-createStandingOrder" datatype="html">
+        <source>Dauerauftrag anlegen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
+          <context context-type="linenumber">108,112</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-accountsTab" datatype="html">
         <source>Konten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
-          <context context-type="linenumber">61</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountsPage-standingOrdersTab" datatype="html">
+        <source>Daueraufträge</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
+          <context context-type="linenumber">71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-monthsTab" datatype="html">
         <source>Monatsübersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
-          <context context-type="linenumber">62</context>
+          <context context-type="linenumber">73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-tabsLabel" datatype="html">
         <source>Ansicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
-          <context context-type="linenumber">64</context>
+          <context context-type="linenumber">75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountsPage-noStandingOrdersHeading" datatype="html">
+        <source>Noch keine Daueraufträge</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
+          <context context-type="linenumber">76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountsPage-noStandingOrdersText" datatype="html">
+        <source>Lege einen an, z. B. vom Gehaltskonto auf das Verrechnungskonto eines Depots mit Sparplan.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
+          <context context-type="linenumber">77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountsPage-noStandingOrdersSingleAccount" datatype="html">
+        <source>Für einen Dauerauftrag brauchst du ein zweites Konto.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
+          <context context-type="linenumber">78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsRoutes-accountsTitle" datatype="html">
@@ -388,6 +430,111 @@
           <context context-type="linenumber">52</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-from" datatype="html">
+        <source>Von</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.html</context>
+          <context context-type="linenumber">15,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-fromNone" datatype="html">
+        <source>Konto wählen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.html</context>
+          <context context-type="linenumber">26,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-to" datatype="html">
+        <source>An</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.html</context>
+          <context context-type="linenumber">46,49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-toNone" datatype="html">
+        <source>Konto wählen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.html</context>
+          <context context-type="linenumber">55,56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-amount" datatype="html">
+        <source>Betrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.html</context>
+          <context context-type="linenumber">75,78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-day" datatype="html">
+        <source>Ausführungstag (monatlich)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.html</context>
+          <context context-type="linenumber">98,101</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-dayOption" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ day }}"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.html</context>
+          <context context-type="linenumber">109,110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-dayHint" datatype="html">
+        <source> Ausgeführt um 06:00 nach Gehalt, Zinsen und Gebühren; fällt der Tag auf ein Wochenende, am nächsten Bankarbeitstag. Reicht das verfügbare Guthaben nicht, fällt die Ausführung aus. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.html</context>
+          <context context-type="linenumber">126,130</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-purpose" datatype="html">
+        <source>Verwendungszweck (optional)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.html</context>
+          <context context-type="linenumber">135,138</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-purposeLength" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ purposeLength() }}"/> von <x id="INTERPOLATION_1" equiv-text="{{ maxPurposeLength }}"/> Zeichen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.html</context>
+          <context context-type="linenumber">147,148</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-decline" datatype="html">
+        <source> Abbrechen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.html</context>
+          <context context-type="linenumber">167,171</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-createHeading" datatype="html">
+        <source>Dauerauftrag anlegen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.ts</context>
+          <context context-type="linenumber">67</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-changeHeading" datatype="html">
+        <source>Dauerauftrag ändern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.ts</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-create" datatype="html">
+        <source>Anlegen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.ts</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-dialogStandingOrder-save" datatype="html">
+        <source>Speichern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/dialog-standing-order/dialog-standing-order.component.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureBanking-dialogTransfer-from" datatype="html">
         <source>Von</source>
         <context-group purpose="location">
@@ -469,28 +616,70 @@
         <source>Konto eröffnen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-dialogs.effects.ts</context>
-          <context context-type="linenumber">89</context>
+          <context context-type="linenumber">99</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingDialogEffects-transferLabel" datatype="html">
         <source>Überweisen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-dialogs.effects.ts</context>
-          <context context-type="linenumber">116</context>
+          <context context-type="linenumber">126</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingDialogEffects-deleteStandingOrderHeading" datatype="html">
+        <source>Dauerauftrag löschen?</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-dialogs.effects.ts</context>
+          <context context-type="linenumber">200</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingDialogEffects-deleteStandingOrderMessage" datatype="html">
+        <source>Der Dauerauftrag über <x id="amount" equiv-text="amount"/> am <x id="day" equiv-text="order.day"/>. jedes Monats wird gelöscht und nicht mehr ausgeführt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-dialogs.effects.ts</context>
+          <context context-type="linenumber">201</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingDialogEffects-deleteStandingOrderConfirm" datatype="html">
+        <source>Löschen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-dialogs.effects.ts</context>
+          <context context-type="linenumber">202</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingDialogEffects-deleteStandingOrderDecline" datatype="html">
+        <source>Behalten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-dialogs.effects.ts</context>
+          <context context-type="linenumber">203</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingDialogEffects-closeAccountLabel" datatype="html">
         <source>Konto schließen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-dialogs.effects.ts</context>
-          <context context-type="linenumber">146</context>
+          <context context-type="linenumber">234</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingDialogEffects-salaryAccountLabel" datatype="html">
         <source>Gehaltskonto wechseln</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-dialogs.effects.ts</context>
-          <context context-type="linenumber">183</context>
+          <context context-type="linenumber">271</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingDialogEffects-createStandingOrderLabel" datatype="html">
+        <source>Dauerauftrag anlegen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-dialogs.effects.ts</context>
+          <context context-type="linenumber">331</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingDialogEffects-changeStandingOrderLabel" datatype="html">
+        <source>Dauerauftrag ändern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-dialogs.effects.ts</context>
+          <context context-type="linenumber">332</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-busy" datatype="html">
@@ -605,88 +794,172 @@
           <context context-type="linenumber">64</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureBanking-bankingErrors-standingOrders" datatype="html">
+        <source>Für dieses Konto gibt es noch Daueraufträge. Lösche sie zuerst.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingErrors-invalidDay" datatype="html">
+        <source>Der Ausführungstag muss zwischen dem 1. und dem 28. liegen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingErrors-unknownStandingOrder" datatype="html">
+        <source>Diesen Dauerauftrag gibt es nicht mehr.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-openAccountFailure" datatype="html">
         <source>Das Konto konnte nicht eröffnet werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">71</context>
+          <context context-type="linenumber">77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-closeAccountFailure" datatype="html">
         <source>Das Konto konnte nicht geschlossen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">73</context>
+          <context context-type="linenumber">79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-setSalaryAccountFailure" datatype="html">
         <source>Das Gehaltskonto konnte nicht gewechselt werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">75</context>
+          <context context-type="linenumber">81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-transferFailure" datatype="html">
         <source>Die Überweisung konnte nicht ausgeführt werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">77</context>
+          <context context-type="linenumber">83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingErrors-createStandingOrderFailure" datatype="html">
+        <source>Der Dauerauftrag konnte nicht angelegt werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingErrors-changeStandingOrderFailure" datatype="html">
+        <source>Der Dauerauftrag konnte nicht geändert werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
+          <context context-type="linenumber">87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingErrors-setStandingOrderPausedFailure" datatype="html">
+        <source>Der Dauerauftrag konnte nicht pausiert oder fortgesetzt werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
+          <context context-type="linenumber">89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingErrors-deleteStandingOrderFailure" datatype="html">
+        <source>Der Dauerauftrag konnte nicht gelöscht werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
+          <context context-type="linenumber">91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingEffects-createStandingOrderSuccess" datatype="html">
+        <source>Der Dauerauftrag ist angelegt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
+          <context context-type="linenumber">252</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingEffects-changeStandingOrderSuccess" datatype="html">
+        <source>Der Dauerauftrag ist geändert.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
+          <context context-type="linenumber">257</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingEffects-pauseStandingOrderSuccess" datatype="html">
+        <source>Der Dauerauftrag ist pausiert.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
+          <context context-type="linenumber">263</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingEffects-resumeStandingOrderSuccess" datatype="html">
+        <source>Der Dauerauftrag läuft wieder.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
+          <context context-type="linenumber">264</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-bankingEffects-deleteStandingOrderSuccess" datatype="html">
+        <source>Der Dauerauftrag ist gelöscht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
+          <context context-type="linenumber">269</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-loadMonthlyValuesFailure" datatype="html">
         <source>Die Monatsübersicht konnte nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">249</context>
+          <context context-type="linenumber">379</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-loadStatementFailure" datatype="html">
         <source>Der Kontoauszug konnte nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">268</context>
+          <context context-type="linenumber">398</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-closeAccountSuccess" datatype="html">
         <source>Das Konto ist geschlossen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">291</context>
+          <context context-type="linenumber">421</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-setSalaryAccountSuccess" datatype="html">
         <source>Dein Gehalt geht ab jetzt auf das neue Gehaltskonto.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">296</context>
+          <context context-type="linenumber">426</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-transferSuccess" datatype="html">
         <source><x id="amount" equiv-text="formatCents(action.transfer.amount)"/> überwiesen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">301</context>
+          <context context-type="linenumber">431</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-openCurrentSuccess" datatype="html">
         <source>Das Girokonto ist eröffnet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">467</context>
+          <context context-type="linenumber">597</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-openSavingsSuccess" datatype="html">
         <source>Das Tagesgeldkonto ist eröffnet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">469</context>
+          <context context-type="linenumber">599</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-openDepotSuccess" datatype="html">
         <source>Das Depot mit Verrechnungskonto ist eröffnet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">471</context>
+          <context context-type="linenumber">601</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-accountActions-transfer" datatype="html">
@@ -1439,6 +1712,62 @@
           <context context-type="linenumber">77</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiBanking-standingOrderSchema-fromRequired" datatype="html">
+        <source>Bitte wähle das Konto, von dem überwiesen wird.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/schemas/standing-order-schema.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderSchema-toRequired" datatype="html">
+        <source>Bitte wähle das Empfängerkonto.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/schemas/standing-order-schema.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderSchema-sameAccount" datatype="html">
+        <source>Absender- und Empfängerkonto müssen verschieden sein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/schemas/standing-order-schema.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderSchema-amountRequired" datatype="html">
+        <source>Bitte gib einen Betrag ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/schemas/standing-order-schema.ts</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderSchema-invalidAmount" datatype="html">
+        <source>Der Betrag muss mindestens 0,01 € sein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/schemas/standing-order-schema.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderSchema-dayRequired" datatype="html">
+        <source>Bitte wähle den Ausführungstag.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/schemas/standing-order-schema.ts</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderSchema-invalidDay" datatype="html">
+        <source>Der Ausführungstag muss zwischen dem 1. und dem 28. liegen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/schemas/standing-order-schema.ts</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderSchema-purposeTooLong" datatype="html">
+        <source>Der Verwendungszweck darf höchstens <x id="maxLength" equiv-text="MAX_PURPOSE_LENGTH"/> Zeichen lang sein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/schemas/standing-order-schema.ts</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiBanking-transferSchema-fromRequired" datatype="html">
         <source>Bitte wähle das Konto, von dem du überweist.</source>
         <context-group purpose="location">
@@ -1486,6 +1815,118 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/schemas/transfer-schema.ts</context>
           <context context-type="linenumber">60</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-paused" datatype="html">
+        <source>pausiert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.html</context>
+          <context context-type="linenumber">16,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-to" datatype="html">
+        <source>an</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.html</context>
+          <context context-type="linenumber">23,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-day" datatype="html">
+        <source>Ausführungstag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.html</context>
+          <context context-type="linenumber">28,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-dayValue" datatype="html">
+        <source>monatlich am <x id="INTERPOLATION" equiv-text="{{ row.day }}"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.html</context>
+          <context context-type="linenumber">31,32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-next" datatype="html">
+        <source> Nächste Ausführung </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.html</context>
+          <context context-type="linenumber">37,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-nextPaused" datatype="html">
+        <source>keine, pausiert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.html</context>
+          <context context-type="linenumber">41,43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-purpose" datatype="html">
+        <source> Verwendungszweck </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.html</context>
+          <context context-type="linenumber">50,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-change" datatype="html">
+        <source>Ändern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.html</context>
+          <context context-type="linenumber">68,70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-resume" datatype="html">
+        <source>Fortsetzen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.html</context>
+          <context context-type="linenumber">83,85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-pause" datatype="html">
+        <source>Pausieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.html</context>
+          <context context-type="linenumber">86,89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-delete" datatype="html">
+        <source>Löschen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.html</context>
+          <context context-type="linenumber">98,102</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-name" datatype="html">
+        <source>Dauerauftrag <x id="amount" equiv-text="formatCents(order.amount)"/> am <x id="day" equiv-text="order.day"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-changeLabel" datatype="html">
+        <source>ändern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-pauseLabel" datatype="html">
+        <source>pausieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.ts</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-resumeLabel" datatype="html">
+        <source>fortsetzen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-standingOrderList-deleteLabel" datatype="html">
+        <source>löschen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/standing-order-list/standing-order-list.component.ts</context>
+          <context context-type="linenumber">54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementFilter-period" datatype="html">
@@ -1677,18 +2118,32 @@
           <context context-type="linenumber">134</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiBanking-statementText-standingOrderTo" datatype="html">
+        <source>Dauerauftrag an <x id="account" equiv-text="account"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">142</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-standingOrderFrom" datatype="html">
+        <source>Dauerauftrag von <x id="account" equiv-text="account"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">143</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiBanking-statementText-transferTo" datatype="html">
         <source>Überweisung an <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">140</context>
+          <context context-type="linenumber">149</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-transferFrom" datatype="html">
         <source>Überweisung von <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">141</context>
+          <context context-type="linenumber">150</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiCharts-chartColorPicker-chart1" datatype="html">
@@ -7522,123 +7977,130 @@
           <context context-type="linenumber">62</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiNotifications-notificationLabels-standingOrderFailed" datatype="html">
+        <source>Dauerauftrag nicht ausgeführt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
+          <context context-type="linenumber">64</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-orderExecuted" datatype="html">
         <source>Order ausgeführt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">64</context>
+          <context context-type="linenumber">66</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-orderRejected" datatype="html">
         <source>Order abgelehnt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-orderExpired" datatype="html">
         <source>Order verfallen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">68</context>
+          <context context-type="linenumber">70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-savingsPlanExecuted" datatype="html">
         <source>Sparplan ausgeführt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">70</context>
+          <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-savingsPlanFailed" datatype="html">
         <source>Sparplan fehlgeschlagen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">72</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-dividendReceived" datatype="html">
         <source>Dividende erhalten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">74</context>
+          <context context-type="linenumber">76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-interestCredited" datatype="html">
         <source>Zinsen gutgeschrieben</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">76</context>
+          <context context-type="linenumber">78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-taxRefund" datatype="html">
         <source>Steuererstattung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">78</context>
+          <context context-type="linenumber">80</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-monthClosed" datatype="html">
         <source>Monatsabschluss</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">80</context>
+          <context context-type="linenumber">82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-yearClosed" datatype="html">
         <source>Steuerjahr abgeschlossen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">82</context>
+          <context context-type="linenumber">84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-storageQuotaExceeded" datatype="html">
         <source>Speicher voll</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">84</context>
+          <context context-type="linenumber">86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-marketChecksumMismatch" datatype="html">
         <source>Kursdaten weichen ab</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">86</context>
+          <context context-type="linenumber">88</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-backupReminder" datatype="html">
         <source>Sicherung empfohlen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">88</context>
+          <context context-type="linenumber">90</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-rejectionInsufficientFunds" datatype="html">
         <source>Das Guthaben auf dem Verrechnungskonto reicht nicht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">96</context>
+          <context context-type="linenumber">98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-rejectionPriceFloor" datatype="html">
         <source>Der Kurs liegt an der Preisuntergrenze.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">98</context>
+          <context context-type="linenumber">100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-rejectionAmountTooSmall" datatype="html">
         <source>Der Betrag reicht nach Abzug der Kosten für keinen Kauf.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">100</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-rejectionInsufficientQuantity" datatype="html">
         <source>Im Depot liegen nicht genug freie Stücke.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">102</context>
+          <context context-type="linenumber">104</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-accountUncovered" datatype="html">
@@ -7669,151 +8131,158 @@
           <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiNotifications-notificationText-standingOrderFailed" datatype="html">
+        <source><x id="amount" equiv-text="formatCents(amount)"/> von <x id="from" equiv-text="account(fromAccountId)"/> an <x id="to" equiv-text="account(toAccountId)"/> wurden nicht überwiesen: verfügbar waren nur <x id="available" equiv-text="formatCents(available)"/>.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiNotifications-notificationText-interestWithTax" datatype="html">
         <source><x id="amount" equiv-text="interest"/> Habenzinsen auf <x id="account" equiv-text="name"/>, davon <x id="tax" equiv-text="formatCents(tax)"/> Steuer einbehalten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">84</context>
+          <context context-type="linenumber">91</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-interestWithRefund" datatype="html">
         <source><x id="amount" equiv-text="interest"/> Habenzinsen auf <x id="account" equiv-text="name"/>, dazu <x id="tax" equiv-text="formatCents(-tax)"/> Steuer erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">90</context>
+          <context context-type="linenumber">97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-interest" datatype="html">
         <source><x id="amount" equiv-text="interest"/> Habenzinsen auf <x id="account" equiv-text="name"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">95</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-taxRefund" datatype="html">
         <source><x id="amount" equiv-text="formatCents(amount)"/> Steuer auf <x id="account" equiv-text="account(accountId)"/> erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">102</context>
+          <context context-type="linenumber">109</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-monthClosedTitle" datatype="html">
         <source>Monatsabschluss <x id="month" equiv-text="monthName"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">110</context>
+          <context context-type="linenumber">117</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-monthClosed" datatype="html">
         <source>Einnahmen <x id="earnings" equiv-text="formatCents(monthlyEarnings(values))"/>, Ausgaben <x id="spending" equiv-text="formatCents(monthlySpending(values))"/>, Sparquote <x id="rate" equiv-text="rate"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">111</context>
+          <context context-type="linenumber">118</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-yearClosedTitle" datatype="html">
         <source>Steuerjahr <x id="year" equiv-text="year"/> abgeschlossen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">117</context>
+          <context context-type="linenumber">124</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-yearClosed" datatype="html">
         <source>Steuerpflichtige Kapitalerträge <x id="income" equiv-text="formatCents(taxableIncome)"/>, einbehaltene Steuer <x id="tax" equiv-text="formatCents(taxWithheld)"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">118</context>
+          <context context-type="linenumber">125</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-fundDistributionTitle" datatype="html">
         <source>Ausschüttung erhalten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">130</context>
+          <context context-type="linenumber">137</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-dividend" datatype="html">
         <source>Dividende von <x id="amount" equiv-text="gross"/> für <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> auf <x id="account" equiv-text="target"/> gutgeschrieben</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">133</context>
+          <context context-type="linenumber">140</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-fundDistribution" datatype="html">
         <source>Ausschüttung von <x id="amount" equiv-text="gross"/> für <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> auf <x id="account" equiv-text="target"/> gutgeschrieben</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">134</context>
+          <context context-type="linenumber">141</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-distributionWithTax" datatype="html">
         <source><x id="credited" equiv-text="credited"/>, davon <x id="tax" equiv-text="formatCents(tax)"/> Steuer einbehalten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">138</context>
+          <context context-type="linenumber">145</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-distributionWithRefund" datatype="html">
         <source><x id="credited" equiv-text="credited"/>, dazu <x id="tax" equiv-text="formatCents(-tax)"/> Steuer erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">144</context>
+          <context context-type="linenumber">151</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedBuy" datatype="html">
         <source>Kauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, belastet <x id="total" equiv-text="amount"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">158</context>
+          <context context-type="linenumber">165</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedSellWithTax" datatype="html">
         <source>Verkauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, gutgeschrieben <x id="total" equiv-text="amount"/>, davon <x id="tax" equiv-text="formatCents(tax)"/> Steuer einbehalten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">164</context>
+          <context context-type="linenumber">171</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedSellWithRefund" datatype="html">
         <source>Verkauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, gutgeschrieben <x id="total" equiv-text="amount"/>, dazu <x id="tax" equiv-text="formatCents(-tax)"/> Steuer erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">170</context>
+          <context context-type="linenumber">177</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedSell" datatype="html">
         <source>Verkauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, gutgeschrieben <x id="total" equiv-text="amount"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">175</context>
+          <context context-type="linenumber">182</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderRejectedBuy" datatype="html">
         <source>Kauforder für <x id="instrument" equiv-text="name"/> abgelehnt: <x id="reason" equiv-text="why"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">186</context>
+          <context context-type="linenumber">193</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderRejectedSell" datatype="html">
         <source>Verkaufsorder für <x id="instrument" equiv-text="name"/> abgelehnt: <x id="reason" equiv-text="why"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">187</context>
+          <context context-type="linenumber">194</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExpiredBuy" datatype="html">
         <source>Die Kauforder für <x id="instrument" equiv-text="name"/> ist verfallen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">197</context>
+          <context context-type="linenumber">204</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExpiredSell" datatype="html">
         <source>Die Verkaufsorder für <x id="instrument" equiv-text="name"/> ist verfallen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">198</context>
+          <context context-type="linenumber">205</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationFilter-category" datatype="html">

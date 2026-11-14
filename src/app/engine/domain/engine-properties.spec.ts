@@ -7,6 +7,10 @@ import {
   OPENABLE_ACCOUNT_KINDS,
 } from '@app/banking/domain/models/account.model';
 import { Transaction } from '@app/banking/domain/models/ledger.model';
+import {
+  StandingOrderId,
+  StandingOrderSpec,
+} from '@app/banking/domain/models/standing-order.model';
 import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
 import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
@@ -44,9 +48,9 @@ import { TEST_SEEDS } from '../../../testing/seeds';
 // interest with tax, quarterly savings interest and debit interest on a clearing account, and a
 // depot that earns a dividend and a fund distribution and pays a custody fee (AP 5.2). The
 // commands are random bank commands (AP 3.3), background modes, the notification commands (AP 3.6)
-// and watchlist updates (AP 4.4) and order commands (AP 5.1: placing, changing and cancelling in two
-// depots, one of them holding shares); many of them are rejected, which must be just as
-// deterministic. The notifications of the runs (overdrafts, interest, month ends, orders) are part
+// and watchlist updates (AP 4.4), order commands (AP 5.1: placing, changing and cancelling in two
+// depots, one of them holding shares) and standing order commands (AP 5.6a, executed in the bank
+// runs); many of them are rejected, which must be just as deterministic. The notifications of the runs (overdrafts, interest, month ends, orders) are part
 // of both properties, and the positions always equal the start positions plus the unit postings,
 // with lots whose costs follow the purchases and sales to the cent (TS §7.6). Taxes follow their
 // triggering credits and never take an account below its balance before them (TS §7.4, §7.7).
@@ -125,6 +129,19 @@ const arbOrderSpec = (instruments: readonly string[]): fc.Arbitrary<OrderSpec> =
       stop: spec.type === 'stop' || spec.type === 'stop-limit' ? spec.stop : null,
     }));
 
+const arbStandingOrderId = (): fc.Arbitrary<StandingOrderId> =>
+  fc.integer({ min: 1, max: 3 }).map((n): StandingOrderId => `so-${n}`);
+
+/** Standing orders between the start accounts; days around the month start and end, sometimes 29. */
+const arbStandingOrder = (): fc.Arbitrary<StandingOrderSpec> =>
+  fc.record({
+    fromAccountId: arbAccountId(),
+    toAccountId: arbAccountId(),
+    amount: fc.integer({ min: 1, max: 3_000_000 }),
+    day: fc.oneof(fc.integer({ min: 1, max: 5 }), fc.integer({ min: 25, max: 29 })),
+    purpose: fc.string({ maxLength: 8 }),
+  });
+
 const arbCommandBody = (instruments: readonly string[]): fc.Arbitrary<WithoutStamp<GameCommand>> =>
   fc.oneof(
     fc.record({
@@ -180,6 +197,22 @@ const arbCommandBody = (instruments: readonly string[]): fc.Arbitrary<WithoutSta
       ),
     }),
     fc.record({ type: fc.constant('cancelOrder' as const), orderId: arbOrderId() }),
+    fc.record({ type: fc.constant('createStandingOrder' as const), order: arbStandingOrder() }),
+    fc.record({ type: fc.constant('createStandingOrder' as const), order: arbStandingOrder() }),
+    fc.record({
+      type: fc.constant('changeStandingOrder' as const),
+      standingOrderId: arbStandingOrderId(),
+      order: arbStandingOrder(),
+    }),
+    fc.record({
+      type: fc.constant('setStandingOrderPaused' as const),
+      standingOrderId: arbStandingOrderId(),
+      paused: fc.boolean(),
+    }),
+    fc.record({
+      type: fc.constant('deleteStandingOrder' as const),
+      standingOrderId: arbStandingOrderId(),
+    }),
   );
 
 /**

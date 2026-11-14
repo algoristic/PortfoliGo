@@ -57,6 +57,21 @@ describe('notificationText', () => {
       'Tagesgeld 0000000002 · Direktbank Süd steht bei -3,00 €.',
     ],
     [
+      'a failed standing order',
+      {
+        code: 'standing-order-failed',
+        params: {
+          standingOrderId: 'so-1',
+          fromAccountId: 'acc-1',
+          toAccountId: 'acc-2',
+          amount: 50_000,
+          available: 12_345,
+        },
+      },
+      'Dauerauftrag nicht ausgeführt',
+      '500,00 € von Girokonto 0000000001 · Hansebank an Tagesgeld 0000000002 · Direktbank Süd wurden nicht überwiesen: verfügbar waren nur 123,45 €.',
+    ],
+    [
       'an exceeded overdraft limit',
       {
         code: 'overdraft-limit-exceeded',

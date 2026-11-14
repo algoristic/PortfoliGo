@@ -2,6 +2,11 @@ import { AccountId, DepotId, OpenableAccountKind } from '@app/banking/domain/mod
 import { BANK_COMMAND_ERRORS, ClosingPreview } from '@app/banking/domain/models/bank-command.model';
 import { ClosedMonth } from '@app/banking/domain/models/household.model';
 import { TransactionType } from '@app/banking/domain/models/ledger.model';
+import {
+  StandingOrderId,
+  StandingOrderSpec,
+  StandingOrderView,
+} from '@app/banking/domain/models/standing-order.model';
 import { StatementEntry } from '@app/banking/domain/models/statement.model';
 import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
@@ -210,6 +215,12 @@ export interface EngineCommandPayloads {
   closeAccount: { accountId: AccountId; targetAccountId?: AccountId };
   setSalaryAccount: { accountId: AccountId };
   transfer: TransferPayload;
+  /** Monthly transfer between own accounts (US-BK-10); the engine answers with its ID. */
+  createStandingOrder: { order: StandingOrderSpec };
+  /** Replaces accounts, amount, day and purpose of a standing order. */
+  changeStandingOrder: { standingOrderId: StandingOrderId; order: StandingOrderSpec };
+  setStandingOrderPaused: { standingOrderId: StandingOrderId; paused: boolean };
+  deleteStandingOrder: { standingOrderId: StandingOrderId };
   setAutoPause: { code: AutoPauseCode; enabled: boolean };
   /**
    * Marks notifications as read: all up to `upTo` (the newest the UI knows, `lastSeq` of the
@@ -246,6 +257,10 @@ export const ENGINE_COMMAND_TYPES = [
   'closeAccount',
   'setSalaryAccount',
   'transfer',
+  'createStandingOrder',
+  'changeStandingOrder',
+  'setStandingOrderPaused',
+  'deleteStandingOrder',
   'setAutoPause',
   'markNotificationsRead',
   'updateWatchlist',
@@ -348,6 +363,11 @@ export interface PlacedOrderReply extends GameCommandReply {
   orderId: string;
 }
 
+/** Reply to `createStandingOrder`: the ID of the new standing order (`so-<n>`). */
+export interface CreatedStandingOrderReply extends GameCommandReply {
+  standingOrderId: StandingOrderId;
+}
+
 /**
  * A block of candles up to `tick` (the query limit), ascending; `hasOlder` is `false` once the
  * block reaches the first candle since the epoch.
@@ -378,6 +398,10 @@ export interface EngineReplies {
   closeAccount: GameCommandReply;
   setSalaryAccount: GameCommandReply;
   transfer: GameCommandReply;
+  createStandingOrder: CreatedStandingOrderReply;
+  changeStandingOrder: GameCommandReply;
+  setStandingOrderPaused: GameCommandReply;
+  deleteStandingOrder: GameCommandReply;
   setAutoPause: GameCommandReply;
   markNotificationsRead: GameCommandReply;
   updateWatchlist: GameCommandReply;
@@ -516,6 +540,21 @@ export interface ProjectionPayload {
    * (a withholding or refund, new taxable income, the year end).
    */
   taxes?: TaxesProjection;
+  /**
+   * All standing orders with their next execution (AP 5.6a, TS §8.3): with `full` and whenever one
+   * was created, changed, paused, resumed, deleted or executed.
+   */
+  standingOrders?: StandingOrderView[];
+}
+
+/**
+ * The standing orders of a projection as `EngineService.standingOrders$` emits them; they replace
+ * what the UI had. `full` marks the one of the full projection after `loadPlayer`.
+ */
+export interface StandingOrdersProjectionUpdate {
+  tick: Tick;
+  full: boolean;
+  standingOrders: StandingOrderView[];
 }
 
 /**

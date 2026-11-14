@@ -13,6 +13,7 @@ import {
   BankCommand,
   BankComparison,
   MonthlyOverviewRow,
+  StandingOrderEntry,
   StatementWindow,
 } from './banking.model';
 import { accountsAdapter, BANKING_FEATURE_KEY, BankingState } from './banking.reducer';
@@ -29,6 +30,10 @@ export const selectPending = createSelector(selectState, (state) => state.pendin
 
 export const selectBankSort = createSelector(selectState, (state) => state.bankSort);
 export const selectMonthlyValues = createSelector(selectState, (state) => state.monthlyValues);
+export const selectStandingOrderViews = createSelector(
+  selectState,
+  (state) => state.standingOrders,
+);
 
 export const selectIsPending = (command: BankCommand) =>
   createSelector(selectPending, (pending) => pending[command] > 0);
@@ -183,4 +188,34 @@ export const selectStatementNotFound = createSelector(
   ({ error }) =>
     isEngineCommandError(error, 'unknown-account') ||
     isEngineCommandError(error, 'invalid-command'),
+);
+
+/**
+ * The standing orders with their accounts, in the order they were created (US-BK-10); `null`
+ * until the first projection.
+ */
+export const selectStandingOrders = createSelector(
+  selectStandingOrderViews,
+  selectAccounts,
+  (orders, accounts): StandingOrderEntry[] | null => {
+    if (orders === null) {
+      return null;
+    }
+    const byId = new Map(accounts.map((account) => [account.id, account]));
+    return orders.map((order) => ({
+      ...order,
+      from: byId.get(order.fromAccountId) ?? null,
+      to: byId.get(order.toAccountId) ?? null,
+    }));
+  },
+);
+
+/**
+ * Active standing orders by their next execution, earliest first; equal days in the order they
+ * execute in the bank run (created first). For „Demnächst“ (AP 5.7, E-05).
+ */
+export const selectUpcomingStandingOrders = createSelector(selectStandingOrders, (orders) =>
+  (orders ?? [])
+    .filter((order) => order.nextExecution !== null)
+    .sort((a, b) => (a.nextExecution as number) - (b.nextExecution as number)),
 );

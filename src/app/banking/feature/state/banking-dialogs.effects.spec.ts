@@ -9,6 +9,7 @@ import type { Mocked } from 'vitest';
 
 import { AccountId, AccountKind } from '@app/banking/domain/models/account.model';
 import { ClosingPreview } from '@app/banking/domain/models/bank-command.model';
+import { StandingOrderSpec } from '@app/banking/domain/models/standing-order.model';
 import { EngineCommandError, EngineService } from '@app/engine/data-access/service/engine.service';
 import { selectPlayerId } from '@app/engine/feature/state/session.selectors';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
@@ -16,12 +17,13 @@ import { Bank } from '@app/world/domain/models/bank.model';
 
 import { BankingDialogEffects } from './banking-dialogs.effects';
 import * as BankingActions from './banking.actions';
-import { AccountEntry } from './banking.model';
+import { AccountEntry, StandingOrderEntry } from './banking.model';
 import {
   selectAccountOverview,
   selectBanks,
   selectOpenCurrentAccounts,
   selectSalaryAccount,
+  selectStandingOrders,
   selectStatementAccountId,
 } from './banking.selectors';
 
@@ -49,6 +51,24 @@ function entry(id: AccountId, kind: AccountKind, salaryAccount = false): Account
 const GIRO = entry('acc-1', 'current', true);
 const SAVINGS = entry('acc-2', 'savings');
 const SECOND_GIRO = entry('acc-3', 'current');
+const CLEARING = entry('acc-4', 'clearing');
+const SPEC: StandingOrderSpec = {
+  fromAccountId: 'acc-1',
+  toAccountId: 'acc-4',
+  amount: 50_000,
+  day: 15,
+  purpose: 'Sparplan',
+};
+const STANDING_ORDER: StandingOrderEntry = {
+  id: 'so-1',
+  ...SPEC,
+  createdAt: 0,
+  paused: false,
+  handledUpTo: '2030-03',
+  nextExecution: 1_000,
+  from: GIRO,
+  to: CLEARING,
+};
 const PREVIEW: ClosingPreview = {
   bookings: [],
   remainder: 100_000,
@@ -104,6 +124,7 @@ describe('BankingDialogEffects', () => {
             { selector: selectOpenCurrentAccounts, value: [GIRO, SECOND_GIRO] },
             { selector: selectStatementAccountId, value: null },
             { selector: selectPlayerId, value: 'p-1' },
+            { selector: selectStandingOrders, value: [STANDING_ORDER] },
           ],
         }),
       ],
@@ -166,6 +187,81 @@ describe('BankingDialogEffects', () => {
       store.refreshState();
       emitted(effects.transferDialog$, BankingActions.clickedTransfer({}));
       expect(dialog.open).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('createStandingOrderDialog$', () => {
+    it('preselects the salary account and its clearing account and sends the order', async () => {
+      store.overrideSelector(selectAccountOverview, {
+        open: [GIRO, SAVINGS, CLEARING],
+        closed: [],
+      });
+      store.refreshState();
+      closeWith(SPEC);
+      const result = firstValueFrom(effects.createStandingOrderDialog$);
+      actions$.next(BankingActions.clickedCreateStandingOrder({}));
+      expect(await result).toEqual(BankingActions.submittedCreateStandingOrder({ order: SPEC }));
+      expect(openedData()).toEqual({
+        accounts: [GIRO, SAVINGS, CLEARING],
+        mode: 'create',
+        initial: {
+          fromAccountId: 'acc-1',
+          toAccountId: 'acc-4',
+          amount: null,
+          day: '1',
+          purpose: '',
+        },
+      });
+    });
+
+    it('opens nothing with a single open account', () => {
+      store.overrideSelector(selectAccountOverview, { open: [GIRO], closed: [] });
+      store.refreshState();
+      emitted(effects.createStandingOrderDialog$, BankingActions.clickedCreateStandingOrder({}));
+      expect(dialog.open).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('changeStandingOrderDialog$', () => {
+    it('opens with the values of the order and sends the change', async () => {
+      const changed = { ...SPEC, amount: 60_000 };
+      closeWith(changed);
+      const result = firstValueFrom(effects.changeStandingOrderDialog$);
+      actions$.next(BankingActions.clickedChangeStandingOrder({ standingOrderId: 'so-1' }));
+      expect(await result).toEqual(
+        BankingActions.submittedChangeStandingOrder({ standingOrderId: 'so-1', order: changed }),
+      );
+      expect(openedData()).toEqual({
+        accounts: [GIRO, SAVINGS],
+        mode: 'change',
+        initial: { ...SPEC, day: '15' },
+      });
+    });
+
+    it('opens nothing for an unknown standing order', () => {
+      emitted(
+        effects.changeStandingOrderDialog$,
+        BankingActions.clickedChangeStandingOrder({ standingOrderId: 'so-9' }),
+      );
+      expect(dialog.open).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('deleteStandingOrderDialog$', () => {
+    it('deletes only after the confirmation', async () => {
+      closeWith(false);
+      expect(
+        emitted(
+          effects.deleteStandingOrderDialog$,
+          BankingActions.clickedDeleteStandingOrder({ standingOrderId: 'so-1' }),
+        ),
+      ).toEqual([]);
+      closeWith(true);
+      const result = firstValueFrom(effects.deleteStandingOrderDialog$);
+      actions$.next(BankingActions.clickedDeleteStandingOrder({ standingOrderId: 'so-1' }));
+      expect(await result).toEqual(
+        BankingActions.submittedDeleteStandingOrder({ standingOrderId: 'so-1' }),
+      );
     });
   });
 

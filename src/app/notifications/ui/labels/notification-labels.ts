@@ -60,6 +60,8 @@ export function notificationCodeLabel(code: NotificationCode): string {
       return $localize`:@@uiNotifications-notificationLabels-accountUncovered:Konto nicht gedeckt`;
     case 'overdraft-limit-exceeded':
       return $localize`:@@uiNotifications-notificationLabels-overdraftLimitExceeded:Dispo überschritten`;
+    case 'standing-order-failed':
+      return $localize`:@@uiNotifications-notificationLabels-standingOrderFailed:Dauerauftrag nicht ausgeführt`;
     case 'order-executed':
       return $localize`:@@uiNotifications-notificationLabels-orderExecuted:Order ausgeführt`;
     case 'order-rejected':

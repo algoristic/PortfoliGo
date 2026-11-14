@@ -2,6 +2,7 @@ import { BankSort } from '@app/banking/domain/bank-comparison-logic';
 import { AccountKind } from '@app/banking/domain/models/account.model';
 import { CalendarMonth, MonthlyValues } from '@app/banking/domain/models/household.model';
 import { TransactionType } from '@app/banking/domain/models/ledger.model';
+import { StandingOrderView } from '@app/banking/domain/models/standing-order.model';
 import { StatementEntry, StatementPeriod } from '@app/banking/domain/models/statement.model';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
 import { Cents } from '@app/shared/domain/models/money.model';
@@ -13,6 +14,10 @@ export const BANK_COMMANDS = [
   'closeAccount',
   'setSalaryAccount',
   'transfer',
+  'createStandingOrder',
+  'changeStandingOrder',
+  'setStandingOrderPaused',
+  'deleteStandingOrder',
 ] as const;
 export type BankCommand = (typeof BANK_COMMANDS)[number];
 
@@ -90,4 +95,10 @@ export interface MonthlyOverviewRow {
   month: CalendarMonth;
   values: MonthlyValues;
   running: boolean;
+}
+
+/** A standing order with its accounts (US-BK-10); an account is `null` until the projection has it. */
+export interface StandingOrderEntry extends StandingOrderView {
+  from: AccountEntry | null;
+  to: AccountEntry | null;
 }

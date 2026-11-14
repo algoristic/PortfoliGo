@@ -7,7 +7,8 @@ export type CalendarMonth = Pick<CalendarDate, 'year' | 'month'>;
 
 /**
  * Steps of the bank run at 06:00 in booking order (TS §3.8, §7.4): the limits first, so that the
- * debits of the new month meet the new limits; then credits before debits.
+ * debits of the new month meet the new limits; then credits before debits; the standing orders
+ * last, so that they see every credit and debit of the bank (AP 5.6a).
  */
 export const BANK_RUN_STEPS = [
   'overdraft-limits',
@@ -18,6 +19,7 @@ export const BANK_RUN_STEPS = [
   'custody-fee',
   'overdraft-interest',
   'debit-interest',
+  'standing-orders',
 ] as const;
 export type BankRunStep = (typeof BANK_RUN_STEPS)[number];
 

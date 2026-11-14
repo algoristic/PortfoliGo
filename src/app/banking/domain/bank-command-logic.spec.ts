@@ -159,18 +159,27 @@ describe('bank-command-logic', () => {
   });
 
   describe('closingBlockers', () => {
-    // TS §7.4, US-BK-03
+    // TS §7.4, US-BK-03; standing orders since AP 5.6a
     it.each([
-      [false, true, 0, []],
-      [false, true, 5_000, []],
-      [false, true, -1, ['negative-balance']],
-      [true, true, 5_000, ['salary-account']],
-      [false, false, 0, ['depot-not-empty']],
-      [true, false, -1, ['salary-account', 'depot-not-empty', 'negative-balance']],
+      [false, true, false, 0, []],
+      [false, true, false, 5_000, []],
+      [false, true, false, -1, ['negative-balance']],
+      [true, true, false, 5_000, ['salary-account']],
+      [false, false, false, 0, ['depot-not-empty']],
+      [false, true, true, 0, ['standing-orders']],
+      [
+        true,
+        false,
+        true,
+        -1,
+        ['salary-account', 'depot-not-empty', 'standing-orders', 'negative-balance'],
+      ],
     ])(
-      'salary %s, depot empty %s, remainder %d → %j',
-      (isSalaryAccount, depotEmpty, remainder, expected) => {
-        expect(closingBlockers({ isSalaryAccount, depotEmpty, remainder })).toEqual(expected);
+      'salary %s, depot empty %s, standing orders %s, remainder %d → %j',
+      (isSalaryAccount, depotEmpty, hasStandingOrders, remainder, expected) => {
+        expect(
+          closingBlockers({ isSalaryAccount, depotEmpty, hasStandingOrders, remainder }),
+        ).toEqual(expected);
       },
     );
   });

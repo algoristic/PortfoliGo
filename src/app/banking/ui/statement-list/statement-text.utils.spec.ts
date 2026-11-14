@@ -128,6 +128,27 @@ describe('statementEntryText', () => {
       'Restguthaben von Tagesgeld 0000000002 · Direktbank Süd',
       'Kontoauflösung',
     ],
+    [
+      'outgoing standing order',
+      entry('transfer', {
+        counterparties: [SAVINGS],
+        refs: { standingOrderId: 'so-1' },
+        params: { purpose: 'Sparrate' },
+      }),
+      'Dauerauftrag an Tagesgeld 0000000002 · Direktbank Süd',
+      'Sparrate',
+    ],
+    [
+      'incoming standing order without purpose',
+      entry('transfer', {
+        amount: 100,
+        counterparties: [CURRENT],
+        refs: { standingOrderId: 'so-1' },
+        params: { purpose: '' },
+      }),
+      'Dauerauftrag von Girokonto 0000000001 · Hansebank',
+      null,
+    ],
   ])('names %s', (_name, statementEntry, text, detail) => {
     expect(statementEntryText(statementEntry, BANK_NAMES)).toEqual({ text, detail });
   });

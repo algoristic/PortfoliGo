@@ -1,5 +1,9 @@
 import { AccountId, DepotId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
 import { BANK_COMMAND_ERRORS } from '@app/banking/domain/models/bank-command.model';
+import {
+  StandingOrderId,
+  StandingOrderSpec,
+} from '@app/banking/domain/models/standing-order.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { WATCHLIST_COMMAND_ERRORS } from '@app/market/domain/models/watchlist.model';
 import {
@@ -57,6 +61,31 @@ export interface TransferCommand extends CommandBase {
   purpose: string;
 }
 
+/** Creates a standing order (US-BK-10, TS §7.4); the result carries its ID. */
+export interface CreateStandingOrderCommand extends CommandBase {
+  type: 'createStandingOrder';
+  order: StandingOrderSpec;
+}
+
+/** Replaces accounts, amount, day and purpose of a standing order. */
+export interface ChangeStandingOrderCommand extends CommandBase {
+  type: 'changeStandingOrder';
+  standingOrderId: StandingOrderId;
+  order: StandingOrderSpec;
+}
+
+/** Pauses or resumes a standing order. */
+export interface SetStandingOrderPausedCommand extends CommandBase {
+  type: 'setStandingOrderPaused';
+  standingOrderId: StandingOrderId;
+  paused: boolean;
+}
+
+export interface DeleteStandingOrderCommand extends CommandBase {
+  type: 'deleteStandingOrder';
+  standingOrderId: StandingOrderId;
+}
+
 /** Auto-pause of a notification code (TS §12, US-ZT-06). */
 export interface SetAutoPauseCommand extends CommandBase {
   type: 'setAutoPause';
@@ -105,6 +134,10 @@ export type GameCommand =
   | CloseAccountCommand
   | SetSalaryAccountCommand
   | TransferCommand
+  | CreateStandingOrderCommand
+  | ChangeStandingOrderCommand
+  | SetStandingOrderPausedCommand
+  | DeleteStandingOrderCommand
   | PlaceOrderCommand
   | ChangeOrderCommand
   | CancelOrderCommand;
@@ -125,6 +158,10 @@ export interface OpenedAccount {
   depotId: DepotId | null;
 }
 
-/** `opened` answers `openAccount`, `orderId` answers `placeOrder`. */
+/**
+ * `opened` answers `openAccount`, `orderId` answers `placeOrder`, `standingOrderId` answers
+ * `createStandingOrder`.
+ */
 export type CommandResult =
-  { ok: true; opened?: OpenedAccount; orderId?: string } | { ok: false; error: CommandError };
+  | { ok: true; opened?: OpenedAccount; orderId?: string; standingOrderId?: StandingOrderId }
+  | { ok: false; error: CommandError };

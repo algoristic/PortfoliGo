@@ -28,6 +28,7 @@ import {
   typeText,
 } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
+import { installScrollViewport } from '../../../../testing/scroll-viewport';
 import { MONTHLY_VALUES_THROTTLE_MS } from '../state/banking.effects';
 import { BankingFacade } from '../state/banking.facade';
 
@@ -346,6 +347,109 @@ describe('AccountsPage', () => {
       expect(
         queryByTestId(byTestId(page, 'banking.monthly.row.2030-05'), 'banking.monthly.row.running'),
       ).not.toBeNull();
+    });
+  });
+
+  // US-BK-10, AP 5.6a: create, change, pause and delete; the execution shows in the statement
+  describe('standing orders', () => {
+    function clock(): string {
+      return textOf(byTestId(page, 'shell.header.clock'));
+    }
+
+    function orderText(part: string): string {
+      return textOf(
+        byTestId(byTestId(page, 'banking.standing-orders.so-1'), `banking.standing-orders.${part}`),
+      );
+    }
+
+    it('creates, changes, pauses, resumes and deletes a standing order that executes after a jump', async () => {
+      await openAccount(DIRECT_BANK, 'savings');
+      await act(() => click(byTestId(page, 'banking.accounts.tabs.standing-orders.tab')));
+      expect(queryByTestId(page, 'banking.standing-orders.empty')).not.toBeNull();
+
+      await act(() => click(byTestId(page, 'banking.standing-orders.create')));
+      // From the salary account to the only other account.
+      expect(body<HTMLSelectElement>('banking.standing-order-dialog.from').value).toBe('acc-1');
+      expect(body<HTMLSelectElement>('banking.standing-order-dialog.to').value).toBe('acc-2');
+      await act(() =>
+        typeText(body<HTMLInputElement>('banking.standing-order-dialog.amount'), '250,00'),
+      );
+      await act(() => select(body<HTMLSelectElement>('banking.standing-order-dialog.day'), '2'));
+      await act(() =>
+        typeText(body<HTMLInputElement>('banking.standing-order-dialog.purpose'), 'Rücklage'),
+      );
+      await act(() => click(body('banking.standing-order-dialog.submit')));
+      expect(queryByTestId(document.body, 'banking.standing-order-dialog.submit')).toBeNull();
+      await run(100);
+      expect(orderText('amount')).toBe('250,00 €');
+      expect(orderText('from')).toBe(`Girokonto 0000000001 · ${BANKS[0].name}`);
+      expect(orderText('to')).toBe(`Tagesgeld 0000000002 · ${DIRECT_BANK.name}`);
+      expect(orderText('day')).toBe('monatlich am 2.');
+      // Created on Monday, 01.04.2030: first on Tuesday, 02.04.
+      expect(orderText('next')).toBe('02.04.2030');
+      expect(orderText('purpose')).toBe('Rücklage');
+
+      await act(() => click(byTestId(page, 'banking.standing-orders.so-1.change')));
+      expect(body<HTMLSelectElement>('banking.standing-order-dialog.day').value).toBe('2');
+      await act(() =>
+        typeText(body<HTMLInputElement>('banking.standing-order-dialog.amount'), '300,00'),
+      );
+      await act(() => select(body<HTMLSelectElement>('banking.standing-order-dialog.day'), '3'));
+      await act(() => click(body('banking.standing-order-dialog.submit')));
+      await run(100);
+      expect(orderText('amount')).toBe('300,00 €');
+      expect(orderText('next')).toBe('03.04.2030');
+
+      await act(() => click(byTestId(page, 'banking.standing-orders.so-1.pause')));
+      await run(100);
+      expect(queryByTestId(page, 'banking.standing-orders.paused')).not.toBeNull();
+      expect(orderText('next')).toBe('keine, pausiert');
+      await act(() => click(byTestId(page, 'banking.standing-orders.so-1.resume')));
+      await run(100);
+      expect(queryByTestId(page, 'banking.standing-orders.paused')).toBeNull();
+      expect(orderText('next')).toBe('03.04.2030');
+
+      // Past the execution on Wednesday, 03.04.2030, 06:00.
+      gameFacade(ClockFacade).jumpTo({ kind: 'date', tick: tickAt(Date.UTC(2030, 3, 3, 7)) });
+      for (let pass = 0; pass < 100 && !clock().endsWith('07:00'); pass++) {
+        await run(MINUTES_PER_HOUR);
+      }
+      expect(clock()).toBe('Mi., 03.04.2030, 07:00');
+      // Projections go out at most four times a second.
+      await run(300);
+      expect(orderText('next')).toBe('03.05.2030');
+
+      // Keeps the account open until the standing order is deleted (TS §7.4).
+      await act(() => click(byTestId(page, 'banking.accounts.tabs.accounts.tab')));
+      await act(() => click(byTestId(card('acc-2'), 'banking.accounts.card.close')));
+      expect(textOf(body('banking.close-account-dialog.blocker.standing-orders'))).toBe(
+        'Für dieses Konto gibt es noch Daueraufträge. Lösche sie zuerst.',
+      );
+      await act(() => click(body('banking.close-account-dialog.decline')));
+
+      await act(() => click(byTestId(page, 'banking.accounts.tabs.standing-orders.tab')));
+      await act(() => click(byTestId(page, 'banking.standing-orders.so-1.delete')));
+      await act(() => click(body('dialog-confirm.decline')));
+      expect(queryByTestId(page, 'banking.standing-orders.so-1')).not.toBeNull();
+      await act(() => click(byTestId(page, 'banking.standing-orders.so-1.delete')));
+      await act(() => click(body('dialog-confirm.confirm')));
+      await run(100);
+      expect(queryByTestId(page, 'banking.standing-orders.so-1')).toBeNull();
+      expect(queryByTestId(page, 'banking.standing-orders.empty')).not.toBeNull();
+
+      const restoreViewport = installScrollViewport(512);
+      try {
+        await harness.navigateByUrl(`${TestBed.inject(Router).url}/acc-2`);
+        await run(200);
+        const texts = [
+          ...page.querySelectorAll('[data-testid="banking.statement.entry.text"]'),
+        ].map(textOf);
+        expect(texts).toEqual([`Dauerauftrag von Girokonto 0000000001 · ${BANKS[0].name}`]);
+        expect(textOf(byTestId(page, 'banking.statement.entry.detail'))).toBe('Rücklage');
+        expect(textOf(byTestId(page, 'banking.statement.entry.amount'))).toBe('+300,00 €');
+      } finally {
+        restoreViewport();
+      }
     });
   });
 });

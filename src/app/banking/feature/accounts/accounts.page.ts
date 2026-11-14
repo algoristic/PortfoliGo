@@ -5,11 +5,15 @@ import { RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 
 import { AccountId } from '@app/banking/domain/models/account.model';
+import { StandingOrderId } from '@app/banking/domain/models/standing-order.model';
 import { AccountActionsComponent } from '@app/banking/ui/account-actions/account-actions.component';
 import { AccountCardComponent } from '@app/banking/ui/account-card/account-card.component';
 import { AccountTotalsComponent } from '@app/banking/ui/account-totals/account-totals.component';
 import { MonthlyOverviewComponent } from '@app/banking/ui/monthly-overview/monthly-overview.component';
+import { StandingOrderListComponent } from '@app/banking/ui/standing-order-list/standing-order-list.component';
+import { StandingOrderPauseChange } from '@app/banking/ui/standing-order-list/standing-order-list.model';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
 import { focusIfLost } from '@app/shared/ui/focus/focus-if-lost';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
@@ -21,7 +25,8 @@ import { BankingFacade } from '../state/banking.facade';
 
 /**
  * Account overview (US-BK-02, AP 3.4) with the bank commands (AP 3.5): the open accounts as cards
- * with their actions, totals, the closed ones apart, and the monthly overview (US-EK-03) as a tab.
+ * with their actions, totals, the closed ones apart; the standing orders (US-BK-10, AP 5.6a) and
+ * the monthly overview (US-EK-03) as tabs.
  */
 @Component({
   selector: 'app-accounts-page',
@@ -32,6 +37,8 @@ import { BankingFacade } from '../state/banking.facade';
     AccountCardComponent,
     AccountTotalsComponent,
     MonthlyOverviewComponent,
+    StandingOrderListComponent,
+    EmptyStateComponent,
     ButtonDirective,
     IconDirective,
     SkeletonComponent,
@@ -59,9 +66,16 @@ export class AccountsPage {
 
   tabs: TabItem[] = [
     { id: 'accounts', label: $localize`:@@featureBanking-accountsPage-accountsTab:Konten` },
+    {
+      id: 'standing-orders',
+      label: $localize`:@@featureBanking-accountsPage-standingOrdersTab:Daueraufträge`,
+    },
     { id: 'months', label: $localize`:@@featureBanking-accountsPage-monthsTab:Monatsübersicht` },
   ];
   tabsLabel = $localize`:@@featureBanking-accountsPage-tabsLabel:Ansicht`;
+  noStandingOrdersHeading = $localize`:@@featureBanking-accountsPage-noStandingOrdersHeading:Noch keine Daueraufträge`;
+  noStandingOrdersText = $localize`:@@featureBanking-accountsPage-noStandingOrdersText:Lege einen an, z. B. vom Gehaltskonto auf das Verrechnungskonto eines Depots mit Sparplan.`;
+  noStandingOrdersSingleAccount = $localize`:@@featureBanking-accountsPage-noStandingOrdersSingleAccount:Für einen Dauerauftrag brauchst du ein zweites Konto.`;
 
   constructor() {
     // An action button that disappears with its account or with the salary badge takes the focus
@@ -90,5 +104,21 @@ export class AccountsPage {
 
   onCloseAccount(accountId: AccountId): void {
     this.bankingFacade.clickCloseAccount(accountId);
+  }
+
+  onCreateStandingOrder(): void {
+    this.bankingFacade.clickCreateStandingOrder();
+  }
+
+  onChangeStandingOrder(standingOrderId: StandingOrderId): void {
+    this.bankingFacade.clickChangeStandingOrder(standingOrderId);
+  }
+
+  onPauseStandingOrder({ id, paused }: StandingOrderPauseChange): void {
+    this.bankingFacade.setStandingOrderPaused(id, paused);
+  }
+
+  onDeleteStandingOrder(standingOrderId: StandingOrderId): void {
+    this.bankingFacade.clickDeleteStandingOrder(standingOrderId);
   }
 }

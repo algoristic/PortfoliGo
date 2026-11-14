@@ -72,6 +72,8 @@ const RULE_SPECS = [
   'src/app/banking/domain/statement-period-logic.spec.ts',
   'src/app/banking/domain/bank-comparison-logic.spec.ts',
   'src/app/banking/domain/custody-fee-logic.spec.ts',
+  'src/app/banking/domain/standing-order-logic.spec.ts',
+  'src/app/engine/domain/game-engine-standing-orders.spec.ts',
   'src/app/taxes/domain/tax-logic.spec.ts',
   'src/app/trading/domain/order-validity-logic.spec.ts',
   'src/app/trading/domain/order-execution-logic.spec.ts',

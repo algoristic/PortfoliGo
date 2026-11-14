@@ -32,6 +32,12 @@ export const BANK_COMMAND_ERRORS = [
   'insufficient-funds',
   /** The purpose has more than `MAX_PURPOSE_LENGTH` characters. */
   'purpose-too-long',
+  /** The account is source or target of a standing order, paused ones included (AP 5.6a). */
+  'standing-orders',
+  /** The execution day of a standing order is no whole number from 1 to 28. */
+  'invalid-day',
+  /** No standing order of the player has the ID. */
+  'unknown-standing-order',
 ] as const;
 export type BankCommandError = (typeof BANK_COMMAND_ERRORS)[number];
 
@@ -39,6 +45,7 @@ export type BankCommandError = (typeof BANK_COMMAND_ERRORS)[number];
 export const CLOSING_BLOCKERS = [
   'salary-account',
   'depot-not-empty',
+  'standing-orders',
   'negative-balance',
 ] as const satisfies readonly BankCommandError[];
 export type ClosingBlocker = (typeof CLOSING_BLOCKERS)[number];

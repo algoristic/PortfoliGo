@@ -15,6 +15,17 @@ import {
 } from '@app/banking/domain/models/bank-command.model';
 import { BankConditions } from '@app/banking/domain/models/bank-conditions.model';
 import { TransactionDraft } from '@app/banking/domain/models/ledger.model';
+import {
+  StandingOrder,
+  StandingOrderId,
+  StandingOrderSpec,
+} from '@app/banking/domain/models/standing-order.model';
+import {
+  handledBefore,
+  laterMonth,
+  standingOrderError,
+  standingOrderId,
+} from '@app/banking/domain/standing-order-logic';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { hasPositions } from '@app/trading/domain/position-logic';
@@ -22,10 +33,14 @@ import { hasPositions } from '@app/trading/domain/position-logic';
 import { BankingSystem, openAccount, openDepot } from './banking-system';
 import { DistributionSystem } from './distribution-system';
 import {
+  ChangeStandingOrderCommand,
   CloseAccountCommand,
   CommandResult,
+  CreateStandingOrderCommand,
+  DeleteStandingOrderCommand,
   OpenAccountCommand,
   SetSalaryAccountCommand,
+  SetStandingOrderPausedCommand,
   TransferCommand,
 } from './models/engine-command.model';
 import { PlayerState } from './models/game-state.model';
@@ -177,6 +192,114 @@ export class BankCommands {
     return { ok: true };
   }
 
+  /**
+   * Creates a standing order (US-BK-10, TS §7.4): its first execution is the first execution day on
+   * or after today, at the bank run of that day.
+   */
+  createStandingOrder({ order }: CreateStandingOrderCommand, tick: Tick): CommandResult {
+    const spec = standingOrderSpec(order);
+    if (spec === null) {
+      return { ok: false, error: 'invalid-command' };
+    }
+    const error = standingOrderError(this.#player.accounts, spec);
+    if (error !== null) {
+      return { ok: false, error };
+    }
+    const sequence = this.#player.standingOrderSequence + 1;
+    const created: StandingOrder = {
+      id: standingOrderId(sequence),
+      ...spec,
+      createdAt: tick,
+      paused: false,
+      handledUpTo: handledBefore(spec.day, tick),
+    };
+    this.#player.standingOrderSequence = sequence;
+    this.#player.standingOrders = [...this.#player.standingOrders, created];
+    return { ok: true, standingOrderId: created.id };
+  }
+
+  /**
+   * Replaces accounts, amount, day and purpose of a standing order. A month already executed or
+   * failed stays done, and a new day that lies before today waits for the next month.
+   */
+  changeStandingOrder(
+    { standingOrderId: id, order }: ChangeStandingOrderCommand,
+    tick: Tick,
+  ): CommandResult {
+    const spec = standingOrderSpec(order);
+    if (spec === null) {
+      return { ok: false, error: 'invalid-command' };
+    }
+    const error = this.#standingOrderIdError(id) ?? standingOrderError(this.#player.accounts, spec);
+    if (error !== null) {
+      return { ok: false, error };
+    }
+    this.#replaceStandingOrder(id, (current) => ({
+      ...current,
+      ...spec,
+      handledUpTo: laterMonth(current.handledUpTo, handledBefore(spec.day, tick)),
+    }));
+    return { ok: true };
+  }
+
+  /**
+   * Pauses or resumes a standing order. A paused order skips its executions; on resuming, the
+   * months whose day lay before today stay skipped. Pausing a paused order changes nothing.
+   */
+  setStandingOrderPaused(
+    { standingOrderId: id, paused }: SetStandingOrderPausedCommand,
+    tick: Tick,
+  ): CommandResult {
+    if (typeof paused !== 'boolean') {
+      return { ok: false, error: 'invalid-command' };
+    }
+    const error = this.#standingOrderIdError(id);
+    if (error !== null) {
+      return { ok: false, error };
+    }
+    this.#replaceStandingOrder(id, (current) => {
+      if (current.paused === paused) {
+        return current;
+      }
+      return paused
+        ? { ...current, paused }
+        : {
+            ...current,
+            paused,
+            handledUpTo: laterMonth(current.handledUpTo, handledBefore(current.day, tick)),
+          };
+    });
+    return { ok: true };
+  }
+
+  deleteStandingOrder({ standingOrderId: id }: DeleteStandingOrderCommand): CommandResult {
+    const error = this.#standingOrderIdError(id);
+    if (error !== null) {
+      return { ok: false, error };
+    }
+    this.#player.standingOrders = this.#player.standingOrders.filter((order) => order.id !== id);
+    return { ok: true };
+  }
+
+  #standingOrderIdError(id: unknown): BankCommandError | null {
+    return this.#player.standingOrders.some((order) => order.id === id)
+      ? null
+      : 'unknown-standing-order';
+  }
+
+  /** Replaces the order (a new array, so the projection sees the change) unless nothing changed. */
+  #replaceStandingOrder(
+    id: StandingOrderId,
+    change: (current: StandingOrder) => StandingOrder,
+  ): void {
+    const orders = this.#player.standingOrders;
+    const index = orders.findIndex((order) => order.id === id);
+    const changed = change(orders[index]);
+    if (changed !== orders[index]) {
+      this.#player.standingOrders = orders.map((order, i) => (i === index ? changed : order));
+    }
+  }
+
   #closing(
     accountId: string,
     tick: Tick,
@@ -198,6 +321,9 @@ export class BankCommands {
       blockers: closingBlockers({
         isSalaryAccount: account.id === this.#player.salaryAccountId,
         depotEmpty: this.#depotIsEmpty(account),
+        hasStandingOrders: this.#player.standingOrders.some(
+          (order) => order.fromAccountId === account.id || order.toAccountId === account.id,
+        ),
         remainder: settlement.balance,
       }),
     };
@@ -218,6 +344,31 @@ export class BankCommands {
       !orders.some((order) => order.depotId === account.depotId)
     );
   }
+}
+
+/**
+ * The fields of a standing order from a command, or `null` when one has the wrong type; only these
+ * fields are stored, whatever else the command carries.
+ */
+function standingOrderSpec(value: unknown): StandingOrderSpec | null {
+  // Primitives have none of the fields; only `null` and `undefined` cannot be destructured.
+  const { fromAccountId, toAccountId, amount, day, purpose } = (value ?? {}) as Record<
+    string,
+    unknown
+  >;
+  return typeof fromAccountId === 'string' &&
+    typeof toAccountId === 'string' &&
+    typeof amount === 'number' &&
+    typeof day === 'number' &&
+    typeof purpose === 'string'
+    ? {
+        fromAccountId: fromAccountId as AccountId,
+        toAccountId: toAccountId as AccountId,
+        amount,
+        day,
+        purpose,
+      }
+    : null;
 }
 
 function closingBooking(draft: TransactionDraft, accountId: AccountId): ClosingBooking {

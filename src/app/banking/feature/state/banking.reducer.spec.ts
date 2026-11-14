@@ -1,4 +1,5 @@
 import { AccountId } from '@app/banking/domain/models/account.model';
+import { StandingOrderView } from '@app/banking/domain/models/standing-order.model';
 import { StatementEntry } from '@app/banking/domain/models/statement.model';
 import { ProjectionPayload } from '@app/engine/data-access/service/engine-service.model';
 import { EngineCommandError } from '@app/engine/data-access/service/engine.service';
@@ -48,6 +49,33 @@ const received = (
 
 describe('bankingReducer', () => {
   describe('receivedProjection', () => {
+    it('replaces the standing orders only with projections that carry them', () => {
+      const standingOrders: StandingOrderView[] = [
+        {
+          id: 'so-1',
+          fromAccountId: 'acc-1',
+          toAccountId: 'acc-2',
+          amount: 10_000,
+          day: 1,
+          purpose: '',
+          createdAt: 0,
+          paused: false,
+          handledUpTo: '2030-03',
+          nextExecution: 360,
+        },
+      ];
+      const loaded = reduce(received({ ...projection(true, [], 0), standingOrders }));
+      expect(loaded.standingOrders).toEqual(standingOrders);
+      const kept = bankingReducer(loaded, received(projection(false, [], 0)));
+      expect(kept.standingOrders).toBe(loaded.standingOrders);
+      const deleted = bankingReducer(
+        kept,
+        received({ ...projection(false, [], 0), standingOrders: [] }),
+      );
+      expect(deleted.standingOrders).toEqual([]);
+      expect(reduce().standingOrders).toBeNull();
+    });
+
     it('replaces all accounts with a full projection and updates only the changed ones with a delta', () => {
       const state = reduce(
         received(projection(true, [account('acc-1', 100), account('acc-2', 200)], 300)),
@@ -102,12 +130,17 @@ describe('bankingReducer', () => {
         open,
         open,
         BankingActions.submittedSalaryAccount({ accountId: 'acc-1' }),
+        BankingActions.submittedStandingOrderPaused({ standingOrderId: 'so-1', paused: true }),
       );
       expect(twice.pending).toEqual({
         openAccount: 2,
         closeAccount: 0,
         setSalaryAccount: 1,
         transfer: 0,
+        createStandingOrder: 0,
+        changeStandingOrder: 0,
+        setStandingOrderPaused: 1,
+        deleteStandingOrder: 0,
       });
 
       const error = new EngineCommandError('unknown-bank');
@@ -121,6 +154,11 @@ describe('bankingReducer', () => {
         }),
         BankingActions.openAccountFailure({ error }),
         BankingActions.setSalaryAccountSuccess({ accountId: 'acc-1', tick: 1 }),
+        BankingActions.setStandingOrderPausedSuccess({
+          standingOrderId: 'so-1',
+          paused: true,
+          tick: 1,
+        }),
       ].reduce(bankingReducer, twice);
       expect(answered.pending).toEqual(initialBankingState.pending);
       expect(answered.error).toBe(error);

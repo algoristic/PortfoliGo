@@ -135,11 +135,20 @@ function transferText(
     };
   }
   const purpose = entry.params['purpose'];
+  const detail = typeof purpose === 'string' && purpose.trim() !== '' ? purpose : null;
+  if (entry.refs['standingOrderId'] !== undefined) {
+    return {
+      text: outgoing
+        ? $localize`:@@uiBanking-statementText-standingOrderTo:Dauerauftrag an ${account}:account:`
+        : $localize`:@@uiBanking-statementText-standingOrderFrom:Dauerauftrag von ${account}:account:`,
+      detail,
+    };
+  }
   return {
     text: outgoing
       ? $localize`:@@uiBanking-statementText-transferTo:Überweisung an ${account}:account:`
       : $localize`:@@uiBanking-statementText-transferFrom:Überweisung von ${account}:account:`,
-    detail: typeof purpose === 'string' && purpose.trim() !== '' ? purpose : null,
+    detail,
   };
 }
 

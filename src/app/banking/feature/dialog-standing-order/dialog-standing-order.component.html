@@ -1,0 +1,178 @@
+@let _from = standingOrderForm.fromAccountId();
+@let _to = standingOrderForm.toAccountId();
+@let _amount = standingOrderForm.amount();
+@let _day = standingOrderForm.day();
+@let _purpose = standingOrderForm.purpose();
+
+<form [formRoot]="standingOrderForm">
+  <app-dialog [heading]="heading" testId="banking.standing-order-dialog" (clickedClose)="decline()">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <label
+          class="font-medium"
+          for="banking-standing-order-from"
+          i18n="@@featureBanking-dialogStandingOrder-from"
+          >Von</label
+        >
+        <select
+          id="banking-standing-order-from"
+          class="h-10 rounded-md border border-border bg-surface px-2 text-fg aria-invalid:border-down"
+          cdkFocusInitial
+          aria-describedby="banking-standing-order-from-errors"
+          data-testid="banking.standing-order-dialog.from"
+          [attr.aria-invalid]="_from.touched() && _from.invalid()"
+          [formField]="standingOrderForm.fromAccountId">
+          <option value="" i18n="@@featureBanking-dialogStandingOrder-fromNone"
+            >Konto wählen</option
+          >
+          @for (option of accountOptions; track option.id) {
+            <option [value]="option.id">{{ option.label }}</option>
+          }
+        </select>
+        <p id="banking-standing-order-from-errors" class="text-down">
+          @if (_from.touched() && _from.invalid()) {
+            @for (error of _from.errors(); track error.kind) {
+              <span>{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label
+          class="font-medium"
+          for="banking-standing-order-to"
+          i18n="@@featureBanking-dialogStandingOrder-to"
+          >An</label
+        >
+        <select
+          id="banking-standing-order-to"
+          class="h-10 rounded-md border border-border bg-surface px-2 text-fg aria-invalid:border-down"
+          aria-describedby="banking-standing-order-to-errors"
+          data-testid="banking.standing-order-dialog.to"
+          [attr.aria-invalid]="_to.touched() && _to.invalid()"
+          [formField]="standingOrderForm.toAccountId">
+          <option value="" i18n="@@featureBanking-dialogStandingOrder-toNone">Konto wählen</option>
+          @for (option of accountOptions; track option.id) {
+            <option [value]="option.id">{{ option.label }}</option>
+          }
+        </select>
+        <p id="banking-standing-order-to-errors" class="text-down">
+          @if (_to.touched() && _to.invalid()) {
+            @for (error of _to.errors(); track error.kind) {
+              <span data-testid="banking.standing-order-dialog.to-error">{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1">
+          <label
+            class="font-medium"
+            for="banking-standing-order-amount"
+            i18n="@@featureBanking-dialogStandingOrder-amount"
+            >Betrag</label
+          >
+          <app-amount-input
+            inputId="banking-standing-order-amount"
+            describedBy="banking-standing-order-amount-errors"
+            testId="banking.standing-order-dialog.amount"
+            [formField]="standingOrderForm.amount"></app-amount-input>
+          <p id="banking-standing-order-amount-errors" class="text-down">
+            @if (_amount.touched() && _amount.invalid()) {
+              @for (error of _amount.errors(); track error.kind) {
+                <span data-testid="banking.standing-order-dialog.amount-error">{{
+                  error.message
+                }}</span>
+              }
+            }
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label
+            class="font-medium"
+            for="banking-standing-order-day"
+            i18n="@@featureBanking-dialogStandingOrder-day"
+            >Ausführungstag (monatlich)</label
+          >
+          <select
+            id="banking-standing-order-day"
+            class="h-10 rounded-md border border-border bg-surface px-2 text-fg tabular-nums aria-invalid:border-down"
+            aria-describedby="banking-standing-order-day-hint banking-standing-order-day-errors"
+            data-testid="banking.standing-order-dialog.day"
+            [attr.aria-invalid]="_day.touched() && _day.invalid()"
+            [formField]="standingOrderForm.day">
+            @for (day of dayOptions; track day) {
+              <option [value]="day" i18n="@@featureBanking-dialogStandingOrder-dayOption"
+                >{{ day }}.</option
+              >
+            }
+          </select>
+          <p id="banking-standing-order-day-errors" class="text-down">
+            @if (_day.touched() && _day.invalid()) {
+              @for (error of _day.errors(); track error.kind) {
+                <span>{{ error.message }}</span>
+              }
+            }
+          </p>
+        </div>
+      </div>
+      <p
+        id="banking-standing-order-day-hint"
+        class="-mt-3 text-fg-muted"
+        i18n="@@featureBanking-dialogStandingOrder-dayHint">
+        Ausgeführt um 06:00 nach Gehalt, Zinsen und Gebühren; fällt der Tag auf ein Wochenende, am
+        nächsten Bankarbeitstag. Reicht das verfügbare Guthaben nicht, fällt die Ausführung aus.
+      </p>
+
+      <div class="flex flex-col gap-1">
+        <label
+          class="font-medium"
+          for="banking-standing-order-purpose"
+          i18n="@@featureBanking-dialogStandingOrder-purpose"
+          >Verwendungszweck (optional)</label
+        >
+        <input
+          id="banking-standing-order-purpose"
+          class="h-10 rounded-md border border-border bg-surface px-3 text-fg aria-invalid:border-down"
+          autocomplete="off"
+          aria-describedby="banking-standing-order-purpose-hint banking-standing-order-purpose-errors"
+          data-testid="banking.standing-order-dialog.purpose"
+          [attr.aria-invalid]="_purpose.touched() && _purpose.invalid()"
+          [formField]="standingOrderForm.purpose" />
+        <p id="banking-standing-order-purpose-hint" class="text-fg-muted tabular-nums">
+          <ng-container i18n="@@featureBanking-dialogStandingOrder-purposeLength"
+            >{{ purposeLength() }} von {{ maxPurposeLength }} Zeichen</ng-container
+          >
+        </p>
+        <p id="banking-standing-order-purpose-errors" class="text-down">
+          @if (_purpose.touched() && _purpose.invalid()) {
+            @for (error of _purpose.errors(); track error.kind) {
+              <span>{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+    </div>
+
+    <ng-container dialogActions>
+      <button
+        appButton
+        type="button"
+        data-testid="banking.standing-order-dialog.decline"
+        i18n="@@featureBanking-dialogStandingOrder-decline"
+        (click)="decline()">
+        Abbrechen
+      </button>
+      <button
+        appButton
+        type="submit"
+        variant="primary"
+        data-testid="banking.standing-order-dialog.submit">
+        {{ submitLabel }}
+      </button>
+    </ng-container>
+  </app-dialog>
+</form>

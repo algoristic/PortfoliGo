@@ -2,6 +2,10 @@ import { inject, Injectable, OnDestroy } from '@angular/core';
 import { defer, filter, map, Observable, Subject, take } from 'rxjs';
 
 import { AccountId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
+import {
+  StandingOrderId,
+  StandingOrderSpec,
+} from '@app/banking/domain/models/standing-order.model';
 import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { BackgroundMode } from '@app/engine/domain/models/game-state.model';
@@ -36,6 +40,7 @@ import {
   LoadPlayerPayload,
   MoversPayload,
   NotificationsRequest,
+  StandingOrdersProjectionUpdate,
   StatementRequest,
   TaxesProjectionUpdate,
   TradingProjectionUpdate,
@@ -122,6 +127,16 @@ export class EngineService implements OnDestroy {
    */
   taxes$: Observable<TaxesProjectionUpdate> = this.projection$.pipe(
     map(({ tick, full, taxes }) => (taxes === undefined ? null : { tick, full, ...taxes })),
+    filter((update) => update !== null),
+  );
+  /**
+   * All standing orders with their next execution (AP 5.6a, TS §8.3): after every `loadPlayer` and
+   * whenever one was created, changed, paused, resumed, deleted or executed.
+   */
+  standingOrders$: Observable<StandingOrdersProjectionUpdate> = this.projection$.pipe(
+    map(({ tick, full, standingOrders }) =>
+      standingOrders === undefined ? null : { tick, full, standingOrders },
+    ),
     filter((update) => update !== null),
   );
   /**
@@ -322,6 +337,31 @@ export class EngineService implements OnDestroy {
 
   transfer(transfer: TransferPayload): Observable<EngineReplies['transfer']> {
     return this.#request('transfer', { ...transfer });
+  }
+
+  /** Creates a standing order (US-BK-10, TS §7.4) and answers with its ID. */
+  createStandingOrder(order: StandingOrderSpec): Observable<EngineReplies['createStandingOrder']> {
+    return this.#request('createStandingOrder', { order: { ...order } });
+  }
+
+  changeStandingOrder(
+    standingOrderId: StandingOrderId,
+    order: StandingOrderSpec,
+  ): Observable<EngineReplies['changeStandingOrder']> {
+    return this.#request('changeStandingOrder', { standingOrderId, order: { ...order } });
+  }
+
+  setStandingOrderPaused(
+    standingOrderId: StandingOrderId,
+    paused: boolean,
+  ): Observable<EngineReplies['setStandingOrderPaused']> {
+    return this.#request('setStandingOrderPaused', { standingOrderId, paused });
+  }
+
+  deleteStandingOrder(
+    standingOrderId: StandingOrderId,
+  ): Observable<EngineReplies['deleteStandingOrder']> {
+    return this.#request('deleteStandingOrder', { standingOrderId });
   }
 
   /**

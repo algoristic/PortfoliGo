@@ -112,6 +112,7 @@ describe('absence-report-logic', () => {
       expect(NOTIFICATION_CODES.filter((code) => isWarning(code))).toEqual<NotificationCode[]>([
         'account-uncovered',
         'overdraft-limit-exceeded',
+        'standing-order-failed',
         'order-rejected',
         'savings-plan-failed',
         'storage-quota-exceeded',

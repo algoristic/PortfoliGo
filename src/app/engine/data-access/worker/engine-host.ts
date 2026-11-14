@@ -1,6 +1,7 @@
 import { monthOf } from '@app/banking/domain/bank-run-logic';
 import { AccountId, DepotId } from '@app/banking/domain/models/account.model';
 import { Transaction } from '@app/banking/domain/models/ledger.model';
+import { StandingOrder, StandingOrderId } from '@app/banking/domain/models/standing-order.model';
 import { mergeJournal, statementPage } from '@app/banking/domain/statement-logic';
 import { dayIndex } from '@app/clock/domain/calendar-logic';
 import { Tick, TICKS_PER_DAY, TradingHours } from '@app/clock/domain/models/time.model';
@@ -18,6 +19,7 @@ import { GameCommand, OpenedAccount } from '@app/engine/domain/models/engine-com
 import { tradingProjection } from '@app/engine/domain/order-projection';
 import { replayCommands } from '@app/engine/domain/replay';
 import { seriesQuote } from '@app/engine/domain/series-quote';
+import { standingOrderViews } from '@app/engine/domain/standing-order-projection';
 import { taxesProjection } from '@app/engine/domain/tax-projection';
 import { Throttle } from '@app/engine/domain/throttle-logic';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
@@ -196,6 +198,11 @@ interface LoadedGame {
    * event and at the year end, so a new reference means a change (AP 5.3).
    */
   taxYearSent: Readonly<TaxYear> | null;
+  /**
+   * The standing orders of the last projection that carried them; the engine replaces the array on
+   * every change and execution, so a new reference means a change (AP 5.6a).
+   */
+  standingOrdersSent: readonly StandingOrder[] | null;
   /** Loading and replaying: notifications are stored, but neither sent nor reported. */
   replaying: boolean;
   /** Indices of the absence report (positions in the world's index list). */
@@ -369,6 +376,50 @@ export class EngineHost {
           toAccountId,
           amount,
           purpose,
+        }))
+      ).tick,
+    }),
+    createStandingOrder: async ({ order }, id) => {
+      const { tick, standingOrderId } = await this.#applyGameCommand((at) => ({
+        id,
+        tick: at,
+        type: 'createStandingOrder',
+        order,
+      }));
+      if (standingOrderId === undefined) {
+        throw new CommandFailure('internal-error', 'createStandingOrder created no standing order');
+      }
+      return { tick, standingOrderId };
+    },
+    changeStandingOrder: async ({ standingOrderId, order }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({
+          id,
+          tick,
+          type: 'changeStandingOrder',
+          standingOrderId,
+          order,
+        }))
+      ).tick,
+    }),
+    setStandingOrderPaused: async ({ standingOrderId, paused }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({
+          id,
+          tick,
+          type: 'setStandingOrderPaused',
+          standingOrderId,
+          paused,
+        }))
+      ).tick,
+    }),
+    deleteStandingOrder: async ({ standingOrderId }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({
+          id,
+          tick,
+          type: 'deleteStandingOrder',
+          standingOrderId,
         }))
       ).tick,
     }),
@@ -609,6 +660,7 @@ export class EngineHost {
       projectionFull: true,
       valuedTick: -1,
       taxYearSent: null,
+      standingOrdersSent: null,
       unsavedNotifications: [],
       notificationsWrittenMs: now,
       notificationWriteRunning: false,
@@ -742,9 +794,12 @@ export class EngineHost {
    * Accepts a game command (TS §8.5): hold the clock, stamp the command with the current tick,
    * write it ahead, apply it, answer, and go on with a new anchor.
    */
-  async #applyGameCommand(
-    build: (tick: number) => GameCommand,
-  ): Promise<{ tick: number; opened?: OpenedAccount; orderId?: string }> {
+  async #applyGameCommand(build: (tick: number) => GameCommand): Promise<{
+    tick: number;
+    opened?: OpenedAccount;
+    orderId?: string;
+    standingOrderId?: StandingOrderId;
+  }> {
     const game = this.#requireIdle();
     this.#held++;
     try {
@@ -772,6 +827,9 @@ export class EngineHost {
         tick: command.tick,
         ...(result.opened === undefined ? {} : { opened: result.opened }),
         ...(result.orderId === undefined ? {} : { orderId: result.orderId }),
+        ...(result.standingOrderId === undefined
+          ? {}
+          : { standingOrderId: result.standingOrderId }),
       };
     } finally {
       this.#held--;
@@ -1395,9 +1453,11 @@ export class EngineHost {
     const notificationsChanged = notificationsKey !== game.notificationsKey;
     const watchlistChanged = game.engine.player.watchlist !== game.watchlistSent;
     const taxesChanged = game.engine.player.taxYear !== game.taxYearSent;
+    const standingOrdersChanged = game.engine.player.standingOrders !== game.standingOrdersSent;
     if (
       (game.projectionFull ||
         taxesChanged ||
+        standingOrdersChanged ||
         game.changedAccounts.size > 0 ||
         game.changedOrders.size > 0 ||
         game.changedDepots.size > 0 ||
@@ -1480,6 +1540,10 @@ export class EngineHost {
         ? tradingProjection(player, { orders: game.changedOrders, depots: game.changedDepots })
         : undefined;
     const taxes = full || player.taxYear !== game.taxYearSent ? taxesProjection(player) : undefined;
+    const standingOrders =
+      full || player.standingOrders !== game.standingOrdersSent
+        ? standingOrderViews(player, game.engine.tick)
+        : undefined;
     this.#post('projection', {
       tick: game.engine.tick,
       full,
@@ -1489,9 +1553,11 @@ export class EngineHost {
       ...(watchlist === undefined ? {} : { watchlist }),
       ...(trading === undefined ? {} : { trading }),
       ...(taxes === undefined ? {} : { taxes }),
+      ...(standingOrders === undefined ? {} : { standingOrders }),
     });
     game.watchlistSent = player.watchlist;
     game.taxYearSent = player.taxYear;
+    game.standingOrdersSent = player.standingOrders;
     game.projectionFull = false;
     game.valuedTick = game.engine.tick;
     game.changedAccounts.clear();

@@ -228,6 +228,33 @@ function isCandlesQuery(value: Fields): boolean {
   });
 }
 
+function isStandingOrderId(value: unknown): boolean {
+  return isString(value) && /^so-[1-9]\d*$/.test(value);
+}
+
+function isStandingOrderSpec(value: unknown): boolean {
+  return hasFields(value, {
+    fromAccountId: isAccountId,
+    toAccountId: isAccountId,
+    amount: isCents,
+    day: isCount,
+    purpose: isString,
+  });
+}
+
+function isStandingOrderView(value: unknown): boolean {
+  return (
+    isStandingOrderSpec(value) &&
+    hasFields(value, {
+      id: isStandingOrderId,
+      createdAt: isCount,
+      paused: isBoolean,
+      handledUpTo: (month) => isString(month) && /^\d{4}-\d{2}$/.test(month),
+      nextExecution: isNullOr(isCount),
+    })
+  );
+}
+
 function isQuery(value: unknown): boolean {
   if (!isFields(value) || !isOneOf(ENGINE_QUERY_KINDS)(value['kind'])) {
     return false;
@@ -285,6 +312,13 @@ const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = 
       amount: isCents,
       purpose: isString,
     }),
+  // The shape only; day range and purpose length are rules of the engine (TS §7.4).
+  createStandingOrder: (payload) => hasFields(payload, { order: isStandingOrderSpec }),
+  changeStandingOrder: (payload) =>
+    hasFields(payload, { standingOrderId: isStandingOrderId, order: isStandingOrderSpec }),
+  setStandingOrderPaused: (payload) =>
+    hasFields(payload, { standingOrderId: isStandingOrderId, paused: isBoolean }),
+  deleteStandingOrder: (payload) => hasFields(payload, { standingOrderId: isStandingOrderId }),
   setAutoPause: (payload) =>
     hasFields(payload, { code: isOneOf(AUTO_PAUSE_CODES), enabled: isBoolean }),
   markNotificationsRead: isMarkReadPayload,
@@ -435,6 +469,14 @@ const isCoverageParams: Check = (params) =>
 const NOTIFICATION_PARAMS: Readonly<Partial<Record<string, Check>>> = {
   'account-uncovered': isCoverageParams,
   'overdraft-limit-exceeded': isCoverageParams,
+  'standing-order-failed': (params) =>
+    hasFields(params, {
+      standingOrderId: isStandingOrderId,
+      fromAccountId: isAccountId,
+      toAccountId: isAccountId,
+      amount: isCount,
+      available: isCount,
+    }),
   'interest-credited': (params) =>
     hasFields(params, { accountId: isAccountId, amount: isCents, tax: isCents }),
   'tax-refund': (params) => hasFields(params, { accountId: isAccountId, amount: isCents }),
@@ -580,6 +622,7 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
       watchlist: isOptional((watchlist) => hasFields(watchlist, { ids: isListOf(isString) })),
       trading: isOptional(isTradingProjection),
       taxes: isOptional(isTaxesProjection),
+      standingOrders: isOptional(isListOf(isStandingOrderView)),
     }),
   notification: (payload) =>
     hasFields(payload, { tick: isCount, notifications: isNotificationList }),

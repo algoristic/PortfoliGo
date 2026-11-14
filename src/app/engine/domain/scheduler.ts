@@ -77,3 +77,14 @@ export function popTask(scheduler: SchedulerState): ScheduledTask | undefined {
   heap[i] = last;
   return first;
 }
+
+/**
+ * Removes the tasks that `remove` matches; the rest keep their order (a sorted array is a valid
+ * heap). Used rarely, e.g. when a command moves the next bank run (AP 5.6a).
+ */
+export function unscheduleTasks(
+  scheduler: SchedulerState,
+  remove: (task: ScheduledTask) => boolean,
+): void {
+  scheduler.heap = scheduler.heap.filter((task) => !remove(task)).sort(compareTasks);
+}

@@ -49,7 +49,7 @@ export class NotificationSystem {
   }
 
   /**
-   * Notifications of an engine event (TS §12): account coverage, credit interest, dividends and
+   * Notifications of an engine event (TS §12): account coverage, failed standing orders, credit interest, dividends and
    * fund distributions and refunds with them, executed, rejected and expired orders with the refund
    * of a sale (a triggered stop notifies nothing).
    */
@@ -59,6 +59,14 @@ export class NotificationSystem {
       case 'overdraft-limit-exceeded': {
         const { accountId, balance, limit } = event;
         this.#notify(event.tick, { code: event.type, params: { accountId, balance, limit } });
+        break;
+      }
+      case 'standing-order-failed': {
+        const { standingOrderId, fromAccountId, toAccountId, amount, available } = event;
+        this.#notify(event.tick, {
+          code: 'standing-order-failed',
+          params: { standingOrderId, fromAccountId, toAccountId, amount, available },
+        });
         break;
       }
       case 'interest-credited': {

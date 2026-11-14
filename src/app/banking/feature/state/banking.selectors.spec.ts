@@ -1,10 +1,11 @@
 import { AccountId, AccountKind } from '@app/banking/domain/models/account.model';
 import { BankConditions } from '@app/banking/domain/models/bank-conditions.model';
+import { StandingOrderView } from '@app/banking/domain/models/standing-order.model';
 import { EngineCommandError } from '@app/engine/data-access/service/engine.service';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
 import { Bank } from '@app/world/domain/models/bank.model';
 
-import { AccountEntry } from './banking.model';
+import { AccountEntry, StandingOrderEntry } from './banking.model';
 import {
   selectAccountOverview,
   selectAccounts,
@@ -15,8 +16,10 @@ import {
   selectOpenAccounts,
   selectOpenCurrentAccounts,
   selectSalaryAccount,
+  selectStandingOrders,
   selectStatementNotFound,
   selectTargetAccounts,
+  selectUpcomingStandingOrders,
 } from './banking.selectors';
 import { initialStatementState } from './banking.utils';
 
@@ -228,6 +231,50 @@ describe('banking selectors', () => {
 
     it('is null while the values are not loaded', () => {
       expect(selectMonthlyOverview.projector(null)).toBeNull();
+    });
+  });
+
+  describe('standing orders', () => {
+    function standingOrder(
+      id: StandingOrderView['id'],
+      nextExecution: number | null,
+    ): StandingOrderView {
+      return {
+        id,
+        fromAccountId: 'acc-1',
+        toAccountId: 'acc-9',
+        amount: 10_000,
+        day: 1,
+        purpose: '',
+        createdAt: 0,
+        paused: nextExecution === null,
+        handledUpTo: '2030-03',
+        nextExecution,
+      };
+    }
+
+    it('joins the accounts, an unknown one as null', () => {
+      const [joined] = selectStandingOrders.projector(
+        [standingOrder('so-1', 10)],
+        OPEN,
+      ) as StandingOrderEntry[];
+      expect([joined.from, joined.to]).toEqual([GIRO, null]);
+      expect(selectStandingOrders.projector(null, OPEN)).toBeNull();
+    });
+
+    it('orders the active ones by next execution, ties in the order they were created', () => {
+      const orders = [
+        standingOrder('so-1', 300),
+        standingOrder('so-2', null),
+        standingOrder('so-3', 100),
+        standingOrder('so-4', 300),
+      ].map((order) => ({ ...order, from: null, to: null }));
+      expect(selectUpcomingStandingOrders.projector(orders).map(({ id }) => id)).toEqual([
+        'so-3',
+        'so-1',
+        'so-4',
+      ]);
+      expect(selectUpcomingStandingOrders.projector(null)).toEqual([]);
     });
   });
 });

@@ -1,5 +1,6 @@
 import { AccountId, DepotId } from '@app/banking/domain/models/account.model';
 import { AccountEventCode } from '@app/banking/domain/models/household.model';
+import { StandingOrderId } from '@app/banking/domain/models/standing-order.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { DistributionKind } from '@app/portfolio/domain/models/distribution.model';
 import { Cents, MicroUnits } from '@app/shared/domain/models/money.model';
@@ -63,6 +64,19 @@ export type EngineEvent =
       quantity: MicroUnits;
       amount: Cents;
       tax: Cents;
+    }
+  | {
+      /**
+       * A standing order did not execute: the available amount of the source was below its amount
+       * (TS §7.4); nothing was booked.
+       */
+      type: 'standing-order-failed';
+      tick: Tick;
+      standingOrderId: StandingOrderId;
+      fromAccountId: AccountId;
+      toAccountId: AccountId;
+      amount: Cents;
+      available: Cents;
     }
   | OrderEvent;
 

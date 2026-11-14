@@ -74,6 +74,13 @@ export function notificationText(
             : $localize`:@@uiNotifications-notificationText-overdraftLimitExceeded:${name}:account: steht bei ${amount}:balance: und überschreitet den Dispo-Rahmen von ${formatCents(limit)}:limit:.`,
       };
     }
+    case 'standing-order-failed': {
+      const { fromAccountId, toAccountId, amount, available } = notification.params;
+      return {
+        title,
+        text: $localize`:@@uiNotifications-notificationText-standingOrderFailed:${formatCents(amount)}:amount: von ${account(fromAccountId)}:from: an ${account(toAccountId)}:to: wurden nicht überwiesen: verfügbar waren nur ${formatCents(available)}:available:.`,
+      };
+    }
     case 'interest-credited': {
       const { accountId, amount, tax } = notification.params;
       const name = account(accountId);

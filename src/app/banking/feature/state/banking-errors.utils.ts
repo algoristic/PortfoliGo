@@ -62,6 +62,12 @@ export function bankCommandErrorMessage(code: BankCommandError): string {
       return $localize`:@@featureBanking-bankingErrors-insufficientFunds:Der Betrag ist höher als das, was auf dem Konto verfügbar ist.`;
     case 'purpose-too-long':
       return $localize`:@@featureBanking-bankingErrors-purposeTooLong:Der Verwendungszweck darf höchstens ${MAX_PURPOSE_LENGTH}:maxLength: Zeichen lang sein.`;
+    case 'standing-orders':
+      return $localize`:@@featureBanking-bankingErrors-standingOrders:Für dieses Konto gibt es noch Daueraufträge. Lösche sie zuerst.`;
+    case 'invalid-day':
+      return $localize`:@@featureBanking-bankingErrors-invalidDay:Der Ausführungstag muss zwischen dem 1. und dem 28. liegen.`;
+    case 'unknown-standing-order':
+      return $localize`:@@featureBanking-bankingErrors-unknownStandingOrder:Diesen Dauerauftrag gibt es nicht mehr.`;
   }
 }
 
@@ -75,5 +81,13 @@ function bankCommandFallbackMessage(command: BankCommand): string {
       return $localize`:@@featureBanking-bankingErrors-setSalaryAccountFailure:Das Gehaltskonto konnte nicht gewechselt werden.`;
     case 'transfer':
       return $localize`:@@featureBanking-bankingErrors-transferFailure:Die Überweisung konnte nicht ausgeführt werden.`;
+    case 'createStandingOrder':
+      return $localize`:@@featureBanking-bankingErrors-createStandingOrderFailure:Der Dauerauftrag konnte nicht angelegt werden.`;
+    case 'changeStandingOrder':
+      return $localize`:@@featureBanking-bankingErrors-changeStandingOrderFailure:Der Dauerauftrag konnte nicht geändert werden.`;
+    case 'setStandingOrderPaused':
+      return $localize`:@@featureBanking-bankingErrors-setStandingOrderPausedFailure:Der Dauerauftrag konnte nicht pausiert oder fortgesetzt werden.`;
+    case 'deleteStandingOrder':
+      return $localize`:@@featureBanking-bankingErrors-deleteStandingOrderFailure:Der Dauerauftrag konnte nicht gelöscht werden.`;
   }
 }

@@ -1,6 +1,9 @@
+import { AccountId } from '@app/banking/domain/models/account.model';
 import { MAX_STATEMENT_LIMIT } from '@app/banking/domain/models/statement.model';
+import { StandingOrderFormModel } from '@app/banking/ui/models/standing-order-form.model';
 
 import {
+  AccountEntry,
   StatementFilterState,
   StatementRange,
   StatementState,
@@ -61,4 +64,40 @@ export function statementWindowRequest(
     Math.ceil(range.end / STATEMENT_PAGE_SIZE) * STATEMENT_PAGE_SIZE + STATEMENT_PAGE_SIZE,
   );
   return { offset: start, limit: Math.min(MAX_STATEMENT_LIMIT, end - start) };
+}
+
+/** Execution day of a new standing order when the player chooses none: the first of the month. */
+export const DEFAULT_STANDING_ORDER_DAY = '1';
+
+/**
+ * The preselected values of „Dauerauftrag anlegen“ (US-BK-10), `null` with fewer than two open
+ * accounts: the source is the clicked account, else the salary account, else the first; the target
+ * the only other account, else from the salary account the first clearing account (the inflow of
+ * a savings plan, E-21), else none.
+ */
+export function standingOrderPreselection(
+  open: readonly AccountEntry[],
+  fromAccountId?: AccountId,
+): StandingOrderFormModel | null {
+  const from =
+    open.find((account) => account.id === fromAccountId) ??
+    open.find((account) => account.salaryAccount) ??
+    open[0];
+  if (open.length < 2 || from === undefined) {
+    return null;
+  }
+  const others = open.filter((account) => account.id !== from.id);
+  const to =
+    others.length === 1
+      ? others[0]
+      : from.salaryAccount
+        ? others.find((account) => account.kind === 'clearing')
+        : undefined;
+  return {
+    fromAccountId: from.id,
+    toAccountId: to?.id ?? '',
+    amount: null,
+    day: DEFAULT_STANDING_ORDER_DAY,
+    purpose: '',
+  };
 }

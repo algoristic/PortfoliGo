@@ -55,7 +55,14 @@ import { PricePort } from './models/price-port.model';
 import { ExDividend, ScheduledTask } from './models/scheduled-task.model';
 import { NotificationSystem } from './notification-system';
 import { copyOrder, OrderSystem } from './order-system';
-import { copyScheduler, createScheduler, peekTask, popTask, scheduleTask } from './scheduler';
+import {
+  copyScheduler,
+  createScheduler,
+  peekTask,
+  popTask,
+  scheduleTask,
+  unscheduleTasks,
+} from './scheduler';
 import { Valuation } from './valuation';
 
 /** Creates the price port over the engine's market; the history and the state grow in place. */
@@ -224,6 +231,8 @@ export class GameEngine {
         positions: [],
         pendingDistributions: [],
         custody: [],
+        standingOrders: [],
+        standingOrderSequence: 0,
       },
       scheduler,
       commandIds: [],
@@ -420,6 +429,20 @@ export class GameEngine {
           return { ok: false, error: 'invalid-command' };
         }
         return this.#bankCommands.transfer(command, this.#state.tick);
+      case 'createStandingOrder':
+        return this.#rescheduledBankRun(
+          this.#bankCommands.createStandingOrder(command, this.#state.tick),
+        );
+      case 'changeStandingOrder':
+        return this.#rescheduledBankRun(
+          this.#bankCommands.changeStandingOrder(command, this.#state.tick),
+        );
+      case 'setStandingOrderPaused':
+        return this.#rescheduledBankRun(
+          this.#bankCommands.setStandingOrderPaused(command, this.#state.tick),
+        );
+      case 'deleteStandingOrder':
+        return this.#rescheduledBankRun(this.#bankCommands.deleteStandingOrder(command));
       case 'setAutoPause':
         return this.#notifications.setAutoPause(command);
       case 'markNotificationsRead':
@@ -435,6 +458,21 @@ export class GameEngine {
       default:
         return { ok: false, error: 'invalid-command' };
     }
+  }
+
+  /**
+   * A changed standing order may move the next bank run (TS §7.4): after an accepted command the
+   * one scheduled bank run is replaced by the next one after the current tick.
+   */
+  #rescheduledBankRun(result: CommandResult): CommandResult {
+    if (result.ok) {
+      const { scheduler, tick, player } = this.#state;
+      unscheduleTasks(scheduler, (task) => task.kind === 'bank-run');
+      scheduleTask(scheduler, nextBankRunTick(tick + TICKS_PER_MINUTE, player.standingOrders), {
+        kind: 'bank-run',
+      });
+    }
+    return result;
   }
 
   /** Replaces the watchlist when the new list is valid (US-MK-04, TS §8.2). */
@@ -491,9 +529,11 @@ export class GameEngine {
         break;
       case 'bank-run':
         this.#banking.runBank(tick);
-        scheduleTask(this.#state.scheduler, nextBankRunTick(tick + TICKS_PER_MINUTE), {
-          kind: 'bank-run',
-        });
+        scheduleTask(
+          this.#state.scheduler,
+          nextBankRunTick(tick + TICKS_PER_MINUTE, this.#state.player.standingOrders),
+          { kind: 'bank-run' },
+        );
         break;
       case 'session-open': {
         const exchangeId = this.world.exchanges[task.exchange].id;
@@ -662,6 +702,8 @@ function copyPlayer(player: Readonly<PlayerState>): PlayerState {
     positions: player.positions.map(copyPosition),
     pendingDistributions: player.pendingDistributions.map((distribution) => ({ ...distribution })),
     custody: player.custody.map((accrual) => ({ ...accrual })),
+    standingOrders: player.standingOrders.map((order) => ({ ...order })),
+    standingOrderSequence: player.standingOrderSequence,
   };
 }
 

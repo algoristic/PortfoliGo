@@ -1,0 +1,103 @@
+<ul class="grid grid-cols-1 gap-3 lg:grid-cols-2" data-testid="banking.standing-orders.list">
+  @for (row of rows(); track row.id) {
+    <li
+      class="flex flex-col gap-2 rounded-lg border border-border bg-surface p-4"
+      [attr.data-testid]="'banking.standing-orders.' + row.id">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <span
+          class="text-lg font-semibold tabular-nums"
+          data-testid="banking.standing-orders.amount"
+          >{{ row.amount | formatCents }}</span
+        >
+        @if (row.paused) {
+          <app-badge
+            data-testid="banking.standing-orders.paused"
+            i18n="@@uiBanking-standingOrderList-paused"
+            >pausiert</app-badge
+          >
+        }
+      </div>
+      <p class="flex min-w-0 flex-col text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-1">
+        <span class="break-words" data-testid="banking.standing-orders.from">{{ row.from }}</span>
+        <span class="text-fg-muted" aria-hidden="true"><i appIcon="arrow-right"></i></span>
+        <span class="sr-only" i18n="@@uiBanking-standingOrderList-to">an</span>
+        <span class="break-words" data-testid="banking.standing-orders.to">{{ row.to }}</span>
+      </p>
+      <dl class="flex flex-col gap-1 text-sm">
+        <div class="flex flex-wrap gap-x-2">
+          <dt class="text-fg-muted" i18n="@@uiBanking-standingOrderList-day">Ausführungstag</dt>
+          <dd class="tabular-nums" data-testid="banking.standing-orders.day">
+            <ng-container i18n="@@uiBanking-standingOrderList-dayValue"
+              >monatlich am {{ row.day }}.</ng-container
+            >
+          </dd>
+        </div>
+        <div class="flex flex-wrap gap-x-2">
+          <dt class="text-fg-muted" i18n="@@uiBanking-standingOrderList-next">
+            Nächste Ausführung
+          </dt>
+          <dd class="tabular-nums" data-testid="banking.standing-orders.next">
+            @if (row.nextExecution === null) {
+              <span i18n="@@uiBanking-standingOrderList-nextPaused">keine, pausiert</span>
+            } @else {
+              {{ row.nextExecution | formatGameDate }}
+            }
+          </dd>
+        </div>
+        @if (row.purpose !== '') {
+          <div class="flex flex-wrap gap-x-2">
+            <dt class="text-fg-muted" i18n="@@uiBanking-standingOrderList-purpose">
+              Verwendungszweck
+            </dt>
+            <dd class="min-w-0 break-words" data-testid="banking.standing-orders.purpose">
+              {{ row.purpose }}
+            </dd>
+          </div>
+        }
+      </dl>
+      <div class="flex flex-wrap gap-1">
+        <button
+          appButton
+          type="button"
+          variant="ghost"
+          size="sm"
+          [attr.aria-label]="row.name + ': ' + changeLabel"
+          [attr.data-testid]="'banking.standing-orders.' + row.id + '.change'"
+          (click)="onChange(row.id)">
+          <i appIcon="pencil"></i>
+          <span i18n="@@uiBanking-standingOrderList-change">Ändern</span>
+        </button>
+        <!-- One button for both, so that the focus stays on it when it switches. -->
+        <button
+          appButton
+          type="button"
+          variant="ghost"
+          size="sm"
+          [attr.aria-label]="row.name + ': ' + (row.paused ? resumeLabel : pauseLabel)"
+          [attr.data-testid]="
+            'banking.standing-orders.' + row.id + (row.paused ? '.resume' : '.pause')
+          "
+          (click)="onPause(row.id, !row.paused)">
+          @if (row.paused) {
+            <i appIcon="play-fill"></i>
+            <span i18n="@@uiBanking-standingOrderList-resume">Fortsetzen</span>
+          } @else {
+            <i appIcon="pause-fill"></i>
+            <span i18n="@@uiBanking-standingOrderList-pause">Pausieren</span>
+          }
+        </button>
+        <button
+          appButton
+          type="button"
+          variant="ghost"
+          size="sm"
+          [attr.aria-label]="row.name + ': ' + deleteLabel"
+          [attr.data-testid]="'banking.standing-orders.' + row.id + '.delete'"
+          (click)="onDelete(row.id)">
+          <i appIcon="trash"></i>
+          <span i18n="@@uiBanking-standingOrderList-delete">Löschen</span>
+        </button>
+      </div>
+    </li>
+  }
+</ul>

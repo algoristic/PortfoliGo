@@ -53,12 +53,14 @@ import {
   InterestAccrual,
 } from '@app/banking/domain/models/household.model';
 import { Transaction, TransactionDraft } from '@app/banking/domain/models/ledger.model';
+import { StandingOrder } from '@app/banking/domain/models/standing-order.model';
 import { addToMonthlyValues, emptyMonthlyValues } from '@app/banking/domain/monthly-values-logic';
 import {
   accountEvents,
   availableAfterReservations,
   overdraftLimits,
 } from '@app/banking/domain/overdraft-logic';
+import { canExecute, dueMonth } from '@app/banking/domain/standing-order-logic';
 import { Tick, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { SeedKey } from '@app/simulation/util/seed';
@@ -263,7 +265,7 @@ export class BankingSystem {
 
   /** The bank run at 06:00 (TS §7.4, E-19): the steps of `bankRunPlan` in their order. */
   runBank(tick: Tick): void {
-    const plan = bankRunPlan(tick);
+    const plan = bankRunPlan(tick, this.#player.standingOrders);
     for (const step of plan.steps) {
       switch (step) {
         case 'overdraft-limits':
@@ -289,6 +291,9 @@ export class BankingSystem {
           break;
         case 'debit-interest':
           this.#chargeDebitInterest(tick, 'clearing', plan.settledMonth);
+          break;
+        case 'standing-orders':
+          this.#executeStandingOrders(tick);
           break;
       }
     }
@@ -471,6 +476,50 @@ export class BankingSystem {
     }
     for (const draft of settlement.charges) {
       this.book(draft);
+    }
+  }
+
+  /**
+   * The standing orders due today in the order they were created (TS §7.4, AP 5.6a): each one is a
+   * `transfer` of its whole amount if the available amount of the source covers it, else it fails
+   * with `standing-order-failed`. Either way its month is done.
+   */
+  #executeStandingOrders(tick: Tick): void {
+    const orders = this.#player.standingOrders;
+    let changed: StandingOrder[] | null = null;
+    orders.forEach((order, index) => {
+      const month = dueMonth(order, tick);
+      if (month === null) {
+        return;
+      }
+      changed ??= orders.slice();
+      changed[index] = { ...order, handledUpTo: monthKey(month) };
+      const available = this.available(order.fromAccountId);
+      if (!canExecute(order.amount, available)) {
+        this.#ports.emit({
+          type: 'standing-order-failed',
+          tick,
+          standingOrderId: order.id,
+          fromAccountId: order.fromAccountId,
+          toAccountId: order.toAccountId,
+          amount: order.amount,
+          available,
+        });
+        return;
+      }
+      this.book({
+        tick,
+        type: 'transfer',
+        postings: [
+          { account: order.fromAccountId, amount: -order.amount },
+          { account: order.toAccountId, amount: order.amount },
+        ],
+        refs: { standingOrderId: order.id },
+        params: { purpose: order.purpose },
+      });
+    });
+    if (changed !== null) {
+      this.#player.standingOrders = changed;
     }
   }
 

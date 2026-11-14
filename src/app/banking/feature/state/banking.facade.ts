@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { BankComparisonKey } from '@app/banking/domain/bank-comparison-logic';
 import { AccountId, OpenableAccountKind } from '@app/banking/domain/models/account.model';
 import { TransactionType } from '@app/banking/domain/models/ledger.model';
+import { StandingOrderId } from '@app/banking/domain/models/standing-order.model';
 import { StatementPeriod } from '@app/banking/domain/models/statement.model';
 import { TransferPayload } from '@app/engine/data-access/service/engine-service.model';
 
@@ -33,6 +34,9 @@ export class BankingFacade {
   statementNotFound$ = this.#store.pipe(select(BankingSelectors.selectStatementNotFound));
   bankComparison$ = this.#store.pipe(select(BankingSelectors.selectBankComparison));
   monthlyOverview$ = this.#store.pipe(select(BankingSelectors.selectMonthlyOverview));
+  standingOrders$ = this.#store.pipe(select(BankingSelectors.selectStandingOrders));
+  /** Active standing orders by next execution (AP 5.7 „Demnächst“). */
+  upcomingStandingOrders$ = this.#store.pipe(select(BankingSelectors.selectUpcomingStandingOrders));
 
   account$(accountId: AccountId): Observable<AccountEntry | null> {
     return this.#store.pipe(select(BankingSelectors.selectAccount(accountId)));
@@ -68,6 +72,26 @@ export class BankingFacade {
     this.#store.dispatch(
       BankingActions.clickedSalaryAccount(accountId === undefined ? {} : { accountId }),
     );
+  }
+
+  clickCreateStandingOrder(fromAccountId?: AccountId): void {
+    this.#store.dispatch(
+      BankingActions.clickedCreateStandingOrder(
+        fromAccountId === undefined ? {} : { fromAccountId },
+      ),
+    );
+  }
+
+  clickChangeStandingOrder(standingOrderId: StandingOrderId): void {
+    this.#store.dispatch(BankingActions.clickedChangeStandingOrder({ standingOrderId }));
+  }
+
+  clickDeleteStandingOrder(standingOrderId: StandingOrderId): void {
+    this.#store.dispatch(BankingActions.clickedDeleteStandingOrder({ standingOrderId }));
+  }
+
+  setStandingOrderPaused(standingOrderId: StandingOrderId, paused: boolean): void {
+    this.#store.dispatch(BankingActions.submittedStandingOrderPaused({ standingOrderId, paused }));
   }
 
   sortBanks(key: BankComparisonKey): void {
