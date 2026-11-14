@@ -79,7 +79,7 @@ Es gibt kein „Game Over" und kein festes Spielziel. Motivation entsteht aus de
 
 - Die Spielzeit läuft in Ticks. Ein Tick entspricht einer Spielminute (E-02).
 - Der Anwender wählt die Geschwindigkeit – Echtzeit (1 s/s), 1 min/s, 10 min/s, 1 h/s, 2 h/s, 4 h/s, 1 d/s oder 1 w/s – und kann sie jederzeit ändern oder die Zeit anhalten.
-- Ist die App geschlossen, läuft die Zeit in Echtzeit weiter. Beim nächsten Öffnen wird die verstrichene Zeit nachberechnet. Dasselbe gilt, solange die App nicht sichtbar ist (z. B. Hintergrund-Tab); pro Spieler lässt sich stattdessen „im Hintergrund pausieren" einstellen. Geplant ist außerdem, eine verborgene App mit der gewählten oder einer eigenen Geschwindigkeit weiterlaufen und nach einer Zeitspanne pausieren zu lassen (E-35, Vorschlag). War das Spiel pausiert, bleibt es pausiert (E-02).
+- Ist die App geschlossen, läuft die Zeit in Echtzeit weiter. Beim nächsten Öffnen wird die verstrichene Zeit nachberechnet. Dasselbe gilt, solange die App nicht sichtbar ist (z. B. Hintergrund-Tab); pro Spieler lässt sich stattdessen „im Hintergrund pausieren" einstellen. Außerdem lässt sich eine verborgene App mit der gewählten oder einer eigenen Geschwindigkeit weiterlaufen und nach einer Zeitspanne pausieren (E-35, AP 6.7). War das Spiel pausiert, bleibt es pausiert (E-02).
 - Börsen haben Handelszeiten. Orders lassen sich jederzeit erteilen und werden während der Handelszeit ausgeführt (E-18). Nachts und am Wochenende stehen Aktienkurse still. Banken buchen nur an Bankarbeitstagen (E-19).
 
 ### 4.4 Die simulierte Welt
@@ -221,7 +221,7 @@ Als Anwender möchte ich die Zeit komplett anhalten, damit ich in Ruhe analysier
 **US-ZT-04 – Offline-Fortschritt** · Stufe 1 · M
 Als Anwender möchte ich, dass die Zeit weiterläuft, wenn ich die App schließe, damit sich das Spiel wie ein echtes Finanzleben anfühlt.
 
-- Ist die App geschlossen, läuft die Spielzeit in Echtzeit (1 s/s) weiter. Dasselbe gilt, solange die App nicht sichtbar ist (E-02); wer das nicht möchte, stellt für den Spieler „im Hintergrund pausieren" ein (US-UI-09). Mit E-35 (Vorschlag) kommen weitere Modi dazu; geschlossen läuft die Zeit aber immer höchstens in Echtzeit.
+- Ist die App geschlossen, läuft die Spielzeit in Echtzeit (1 s/s) weiter. Dasselbe gilt, solange die App nicht sichtbar ist (E-02); wer das nicht möchte, stellt für den Spieler „im Hintergrund pausieren" ein (US-UI-09). Mit E-35 kommen weitere Modi dazu; geschlossen läuft die Zeit aber immer höchstens in Echtzeit.
 - Beim nächsten Öffnen wird die verstrichene Zeit mit Fortschrittsanzeige nachberechnet. Alle fälligen Vorgänge (Gehalt, Kosten, Orders, Dividenden, Sparpläne) werden in der richtigen Reihenfolge verarbeitet.
 - War das Spiel pausiert, bleibt es pausiert und es wird nichts nachberechnet (E-02).
 - Anschließend erscheint der Abwesenheitsbericht (US-BN-03).
@@ -539,6 +539,7 @@ Als Anwender möchte ich einen Spieler jederzeit exportieren, damit ich ihn sich
 Als Anwender möchte ich einen exportierten Spieler importieren, damit ich weiterspielen kann.
 
 - Import aus einer Datei oder aus eingefügtem Text; der Import legt immer einen neuen Spieler an.
+- Der importierte Spieler startet pausiert; die Zeit seit dem Export wird nicht nachberechnet (E-10).
 - Ungültige oder beschädigte Daten und inkompatible Versionen werden mit verständlicher Meldung abgelehnt.
 
 **US-EX-03 – Datensicherung und Speicherschutz** · Stufe 1 · S
@@ -595,7 +596,7 @@ Als Anwender möchte ich wissen, dass PortfoliGo ein Spiel mit vereinfachten Reg
 Als Anwender möchte ich das Verhalten der App an einer Stelle anpassen.
 
 - Für dieses Gerät: Erscheinungsbild und Farben, Hervorhebung von Kursänderungen, Tastenkürzel an/aus, Toasts und Browser-Benachrichtigungen je Ereignistyp.
-- Für den Spieler (Teil des Spielstands, wird mit exportiert): Name, Seed (anzeigen, kopieren), automatische Pause je Ereignistyp und das Verhalten im Hintergrund (E-02) – in Echtzeit weiterlaufen (Standard) oder pausieren; mit E-35 (Vorschlag, AP 6.7) zusätzlich mit der gewählten Geschwindigkeit oder einer eigenen Hintergrund-Geschwindigkeit weiterlaufen, jeweils wahlweise mit Pause nach einer Zeitspanne.
+- Für den Spieler (Teil des Spielstands, wird mit exportiert): Name, Seed (anzeigen, kopieren), automatische Pause je Ereignistyp und das Verhalten im Hintergrund (E-02) – in Echtzeit weiterlaufen (Standard) oder pausieren; mit E-35 (AP 6.7) zusätzlich mit der gewählten Geschwindigkeit oder einer eigenen Hintergrund-Geschwindigkeit weiterlaufen, jeweils wahlweise mit Pause nach einer Zeitspanne.
 - Export des Spielers (US-EX-01).
 
 **US-UI-10 – Erste Schritte** · Stufe 1 · S
@@ -608,7 +609,7 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 Als Anwender möchte ich die App auf Deutsch oder Englisch nutzen.
 
 - Die Sprache ist eine Einstellung dieses Geräts; Standard ist Deutsch, unabhängig von der Browsersprache.
-- Der Wechsel lädt die App neu. Alle Texte, Zahlen und Datumsangaben erscheinen in der gewählten Sprache; Beträge bleiben in Euro (E-36, Vorschlag).
+- Der Wechsel lädt die App neu. Alle Texte, Zahlen und Datumsangaben erscheinen in der gewählten Sprache; Beträge bleiben in Euro (E-36).
 - Namen der simulierten Welt (Unternehmen, Banken, Börsen, Indizes) werden nicht übersetzt.
 
 ### 7.12 Spätere Ausbaustufen (Skizze)
@@ -685,7 +686,7 @@ Als Anwender möchte ich die App auf Deutsch oder Englisch nutzen.
 | NF-07 | **Speicher:** Ein Spieler belegt höchstens rund 15 MB plus 1,5 MB je Spieljahr; ältere Kursdaten werden verdichtet. Lange Spiele sind normal – bei 1 w/s vergehen rund 70 Spieljahre pro Stunde Echtzeit.                                                                                                                                                                                                                                                                                                                                |
 | NF-08 | **Plattformen:** Aktuelle Versionen von Chrome und Edge (ab 119), Firefox (ab 128), Safari und iOS (ab 17.0); Desktop, Tablet und Smartphone.                                                                                                                                                                                                                                                                                                                                                                                            |
 | NF-09 | **Barrierefreiheit:** WCAG 2.2 AA; Bewegungen werden bei „Bewegung reduzieren" vermieden.                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| NF-10 | **Sprache:** Deutsch; alle Texte sind für Übersetzungen vorbereitet (i18n).                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| NF-10 | **Sprache:** Deutsch (Standard) und Englisch (US-UI-11, E-36); alle Texte laufen über i18n.                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | NF-11 | **Wartbarkeit:** Code folgt den Konventionen in `CLAUDE.md`; Geschäftslogik ist durch Tests mit unabhängigen Erwartungswerten abgedeckt, deren Wirksamkeit Mutationstests messen; die wichtigsten Abläufe prüfen Systemtests in echten Browsern (TS §14.1).                                                                                                                                                                                                                                                                              |
 
 ## 10. UI/UX-Konzept
