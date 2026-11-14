@@ -6,6 +6,7 @@ export const TASK_ORDER = [
   'distribution-payment',
   'bank-run',
   'session-open',
+  'savings-plan',
   'session-close',
   'order-expiry',
   'month-end',
@@ -24,7 +25,8 @@ export interface ExDividend {
 
 /**
  * Distribution payments run at 06:00 of a payment date, before the bank run, and credit every
- * pending payout due by then (TS §3.8, §7.4). Order expiry runs at the order's `expiresAt`; it expires the order only if it is still active
+ * pending payout due by then (TS §3.8, §7.4). The one `savings-plan` task runs at the next execution
+ * of any savings plan, right after the opening of the exchanges at that tick (TS §7.8). Order expiry runs at the order's `expiresAt`; it expires the order only if it is still active
  * and still expires then (a change of the validity schedules a new task, TS §7.5).
  */
 export type TaskSpec =
@@ -32,6 +34,7 @@ export type TaskSpec =
   | { kind: 'distribution-payment' }
   | { kind: 'bank-run' }
   | { kind: 'session-open'; exchange: number; dividends: readonly ExDividend[] }
+  | { kind: 'savings-plan' }
   | { kind: 'session-close'; exchange: number }
   | { kind: 'order-expiry'; orderId: string }
   | { kind: 'month-end' }

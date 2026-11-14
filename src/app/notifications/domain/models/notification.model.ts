@@ -5,6 +5,7 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { DistributionKind } from '@app/portfolio/domain/models/distribution.model';
 import { Cents, MicroUnits } from '@app/shared/domain/models/money.model';
 import { OrderRejection, OrderSide } from '@app/trading/domain/models/order.model';
+import { SavingsPlanFailure, SavingsPlanId } from '@app/trading/domain/models/savings-plan.model';
 
 /** Categories of the notification centre (PS US-BN-01, TS §12). */
 export const NOTIFICATION_CATEGORIES = [
@@ -30,7 +31,8 @@ export type NotificationSource = (typeof NOTIFICATION_SOURCES)[number];
 
 /**
  * Codes of TS §12. The engine creates the account, earnings and system codes since AP 3.6, the
- * order codes since AP 5.1, `dividend-received` since AP 5.2, `standing-order-failed` since AP 5.6a.
+ * order codes since AP 5.1, `dividend-received` since AP 5.2, `standing-order-failed` since AP 5.6a,
+ * the savings plan codes since AP 5.6b.
  */
 export const NOTIFICATION_CODES = [
   'account-uncovered',
@@ -189,6 +191,28 @@ export interface DividendReceivedParams {
   tax: Cents;
 }
 
+/** The savings plan of a savings plan notification (TS §7.8). */
+export interface SavingsPlanParams {
+  savingsPlanId: SavingsPlanId;
+  depotId: DepotId;
+  instrumentId: string;
+  /** The plan's monthly amount. */
+  amount: Cents;
+}
+
+/** `savings-plan-executed`: shares bought at the ask (with mark-up) and the debit with costs. */
+export interface SavingsPlanExecutedParams extends SavingsPlanParams {
+  quantity: MicroUnits;
+  price: number;
+  total: Cents;
+}
+
+/** `savings-plan-failed`: why nothing was bought and the available amount after reservations. */
+export interface SavingsPlanFailedParams extends SavingsPlanParams {
+  reason: SavingsPlanFailure;
+  available: Cents;
+}
+
 /** Parameters of codes the engine does not create yet; their APs define them. */
 export type PendingParams = Readonly<Record<string, string | number | null>>;
 
@@ -199,8 +223,8 @@ export interface NotificationParams {
   'order-executed': OrderExecutedParams;
   'order-rejected': OrderRejectedParams;
   'order-expired': OrderParams;
-  'savings-plan-executed': PendingParams;
-  'savings-plan-failed': PendingParams;
+  'savings-plan-executed': SavingsPlanExecutedParams;
+  'savings-plan-failed': SavingsPlanFailedParams;
   'dividend-received': DividendReceivedParams;
   'interest-credited': InterestCreditedParams;
   'tax-refund': TaxRefundParams;

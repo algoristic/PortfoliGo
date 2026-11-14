@@ -13,7 +13,11 @@ import {
   formatQuantity,
 } from '@app/shared/util/format';
 
-import { notificationCodeLabel, orderRejectionLabel } from './notification-labels';
+import {
+  notificationCodeLabel,
+  orderRejectionLabel,
+  savingsPlanFailureLabel,
+} from './notification-labels';
 
 /** Title and text of a notification as the centre, the toasts and the absence report show it. */
 export interface NotificationText {
@@ -203,6 +207,25 @@ export function notificationText(
           side === 'buy'
             ? $localize`:@@uiNotifications-notificationText-orderExpiredBuy:Die Kauforder für ${name}:instrument: ist verfallen.`
             : $localize`:@@uiNotifications-notificationText-orderExpiredSell:Die Verkaufsorder für ${name}:instrument: ist verfallen.`,
+      };
+    }
+    case 'savings-plan-executed': {
+      const { instrumentId, quantity, price, total } = notification.params;
+      const name = instrument(instrumentId);
+      const shares = formatQuantity(quantity);
+      const at = formatPrice(price, priceDecimals(price));
+      return {
+        title,
+        text: $localize`:@@uiNotifications-notificationText-savingsPlanExecuted:Sparplan: ${shares}:quantity: Stück ${name}:instrument: zu ${at}:price: gekauft, belastet ${formatCents(total)}:total:.`,
+      };
+    }
+    case 'savings-plan-failed': {
+      const { instrumentId, amount, reason, available } = notification.params;
+      const name = instrument(instrumentId);
+      const why = savingsPlanFailureLabel(reason, available);
+      return {
+        title,
+        text: $localize`:@@uiNotifications-notificationText-savingsPlanFailed:Sparplan über ${formatCents(amount)}:amount: für ${name}:instrument: nicht ausgeführt: ${why}:reason:`,
       };
     }
     default:

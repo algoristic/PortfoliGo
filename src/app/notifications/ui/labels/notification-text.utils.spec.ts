@@ -9,6 +9,12 @@ const NAMES = new Map([
 ]);
 
 const INSTRUMENTS = new Map([['stk-0001', 'Nordwerk AG']]);
+const PLAN = {
+  savingsPlanId: 'sp-1',
+  depotId: 'dep-2',
+  instrumentId: 'stk-0001',
+  amount: 5_000,
+} as const;
 
 const ORDER = {
   orderId: 'ord-1',
@@ -137,8 +143,8 @@ describe('notificationText', () => {
     ],
     [
       'a code whose parameters follow with its AP',
-      { code: 'savings-plan-executed', params: {} },
-      'Sparplan ausgeführt',
+      { code: 'storage-quota-exceeded', params: {} },
+      'Speicher voll',
       '',
     ],
   ])('words %s', (_case, partial, title, text) => {
@@ -249,6 +255,40 @@ describe('notificationText', () => {
       { code: 'order-expired', params: { ...ORDER, side: 'sell' } },
       'Order verfallen',
       'Die Verkaufsorder für Nordwerk AG ist verfallen.',
+    ],
+    // TS §7.8, §12: savings plans
+    [
+      'an executed savings plan',
+      {
+        code: 'savings-plan-executed',
+        params: { ...PLAN, quantity: 410_416, price: 120, total: 5_000 },
+      },
+      'Sparplan ausgeführt',
+      'Sparplan: 0,410416 Stück Nordwerk AG zu 120,00 € gekauft, belastet 50,00 €.',
+    ],
+    [
+      'a savings plan without cover',
+      {
+        code: 'savings-plan-failed',
+        params: { ...PLAN, reason: 'insufficient-funds', available: 1_234 },
+      },
+      'Sparplan fehlgeschlagen',
+      'Sparplan über 50,00 € für Nordwerk AG nicht ausgeführt: Auf dem Verrechnungskonto waren nur 12,34 € verfügbar.',
+    ],
+    [
+      'a savings plan at the price floor',
+      { code: 'savings-plan-failed', params: { ...PLAN, reason: 'price-floor', available: 9_000 } },
+      'Sparplan fehlgeschlagen',
+      'Sparplan über 50,00 € für Nordwerk AG nicht ausgeführt: Der Kurs liegt an der Preisuntergrenze.',
+    ],
+    [
+      'a savings plan too small for its costs',
+      {
+        code: 'savings-plan-failed',
+        params: { ...PLAN, reason: 'amount-too-small', available: 9_000 },
+      },
+      'Sparplan fehlgeschlagen',
+      'Sparplan über 50,00 € für Nordwerk AG nicht ausgeführt: Der Betrag reicht nach Abzug der Kosten für keinen Kauf.',
     ],
   ])('words %s', (_case, partial, title, text) => {
     expect(notificationText(notification(partial), NAMES, INSTRUMENTS)).toEqual({ title, text });

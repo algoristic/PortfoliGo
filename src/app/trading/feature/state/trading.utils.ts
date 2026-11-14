@@ -8,12 +8,18 @@ import { Instrument } from '@app/market/domain/models/instrument.model';
 import { instrumentStatus } from '@app/market/feature/state/instrument-view.utils';
 import { TaxYear } from '@app/taxes/domain/models/tax.model';
 import { ORDER_HISTORY_LENGTH, OrderSide } from '@app/trading/domain/models/order.model';
+import { SavingsPlanView } from '@app/trading/domain/models/savings-plan.model';
 import { isAtPriceFloor } from '@app/trading/domain/order-command-logic';
-import { venueQuote } from '@app/trading/domain/order-preview-logic';
+import { ExchangeQuote, venueQuote } from '@app/trading/domain/order-preview-logic';
 import { isActive } from '@app/trading/domain/order-reservation-logic';
 import { ChangeOrderContext } from '@app/trading/ui/models/change-order.model';
 import { DepotReservation, OrderBookEntry } from '@app/trading/ui/models/order-book.model';
 import { OrderTicketContext } from '@app/trading/ui/models/order-ticket.model';
+import {
+  SavingsPlanDepot,
+  SavingsPlanEntry,
+  SavingsPlanInstrument,
+} from '@app/trading/ui/models/savings-plan.model';
 import { InstrumentTradeView } from '@app/trading/ui/models/trade-actions.model';
 
 import { DepotEntry } from './trading.model';
@@ -90,6 +96,7 @@ export function instrumentTradeView(
     instrumentId: instrument.id,
     name: instrument.name,
     tradable: instrument.kind !== 'index',
+    savingsPlanEligible: instrument.savingsPlanEligible,
     hasDepot: open.length > 0,
     quantity,
     free,
@@ -229,4 +236,100 @@ export function changeOrderContext(
     reserved: depot.clearingAccount.reserved,
     ask,
   };
+}
+
+/** Number of a savings plan ID `sp-<n>`: the creation order (TS §7.8). */
+export function savingsPlanSequence(id: string): number {
+  const match = /^sp-(\d+)$/.exec(id);
+  return match === null ? 0 : Number(match[1]);
+}
+
+/** Savings plans in creation order with instrument, depot and bank names (US-HD-05). */
+export function savingsPlanEntries(
+  plans: readonly SavingsPlanView[] | null,
+  instruments: Readonly<Record<string, Instrument | undefined>>,
+  depots: readonly DepotEntry[],
+): SavingsPlanEntry[] | null {
+  if (plans === null) {
+    return null;
+  }
+  const byId = new Map(depots.map((depot) => [depot.depotId, depot] as const));
+  return [...plans]
+    .sort((a, b) => savingsPlanSequence(a.id) - savingsPlanSequence(b.id))
+    .map((plan) => {
+      const depot = byId.get(plan.depotId);
+      return {
+        plan,
+        instrumentName: instruments[plan.instrumentId]?.name ?? plan.instrumentId,
+        depotNumber: depot?.number ?? plan.depotId,
+        bankName: depot?.bank?.name ?? null,
+      };
+    });
+}
+
+/**
+ * The next executions of the active savings plans, earliest first (ties in creation order); for the
+ * „Demnächst“ widget of AP 5.7 (TS §8.1: planned dates only, no amounts that depend on prices).
+ */
+export function upcomingSavingsPlans(
+  entries: readonly SavingsPlanEntry[] | null,
+): SavingsPlanEntry[] {
+  return (entries ?? [])
+    .filter(({ plan }) => plan.nextExecution !== null)
+    .sort(
+      (a, b) =>
+        (a.plan.nextExecution ?? 0) - (b.plan.nextExecution ?? 0) ||
+        savingsPlanSequence(a.plan.id) - savingsPlanSequence(b.plan.id),
+    );
+}
+
+/** Savings-plan-eligible instruments for the dialog: ETFs, then shares, each by name (`de`). */
+export function savingsPlanInstruments(
+  instruments: Readonly<Record<string, Instrument | undefined>>,
+): SavingsPlanInstrument[] {
+  const collator = new Intl.Collator('de');
+  return Object.values(instruments)
+    .filter((instrument): instrument is Instrument => instrument?.savingsPlanEligible === true)
+    .sort(
+      (a, b) =>
+        Number(a.kind !== 'etf') - Number(b.kind !== 'etf') ||
+        collator.compare(a.name, b.name) ||
+        a.id.localeCompare(b.id),
+    )
+    .map(({ id, name, kind }) => ({ id, name, kind }));
+}
+
+/** The open depots of the savings plan dialog with costs, mark-up and clearing account. */
+export function savingsPlanDepots(depots: readonly DepotEntry[]): SavingsPlanDepot[] {
+  return depots.flatMap((depot) =>
+    !depot.open || depot.bank === null
+      ? []
+      : [
+          {
+            depotId: depot.depotId,
+            number: depot.number,
+            bankName: depot.bank.name,
+            savingsPlanFee: depot.bank.conditions.depot.savingsPlanFee,
+            spreadMarkup: depot.bank.conditions.depot.spreadMarkup,
+            clearingBalance: depot.clearingAccount.balance,
+            reserved: depot.clearingAccount.reserved,
+          },
+        ],
+  );
+}
+
+/** Last quote of an instrument without a venue mark-up; `null` without bid and ask. */
+export function exchangeQuote(quote: SeriesQuote | null | undefined): ExchangeQuote | null {
+  return quote === null || quote === undefined || quote.bid === null || quote.ask === null
+    ? null
+    : { last: quote.last, bid: quote.bid, ask: quote.ask };
+}
+
+/**
+ * Depot the savings plan dialog starts with: the given one while it is open, else the first open
+ * depot; `null` without one.
+ */
+export function savingsPlanDepot(depots: readonly DepotEntry[], depotId?: DepotId): DepotId | null {
+  const open = depots.filter((depot) => depot.open);
+  return (open.find((depot) => depot.depotId === depotId) ?? open[0])?.depotId ?? null;
 }

@@ -2,9 +2,14 @@ import { DepotConditions } from '@app/banking/domain/models/bank-conditions.mode
 import { EngineCommandError } from '@app/engine/data-access/service/engine.service';
 import { Instrument } from '@app/market/domain/models/instrument.model';
 import { ORDER_COMMAND_ERRORS, OrderSpec } from '@app/trading/domain/models/order.model';
+import { SAVINGS_PLAN_COMMAND_ERRORS } from '@app/trading/domain/models/savings-plan.model';
 import { OrderTicketContext } from '@app/trading/ui/models/order-ticket.model';
 
-import { orderCommandFailureMessage, placeOrderShortfall } from './trading-errors.utils';
+import {
+  orderCommandFailureMessage,
+  placeOrderShortfall,
+  savingsPlanCommandFailureMessage,
+} from './trading-errors.utils';
 
 // TS §7.5: bank F, Geld 99,90 € / Brief 100,10 €, 2.000,00 € with 500,00 € reserved.
 const F: DepotConditions = {
@@ -83,5 +88,31 @@ describe('placeOrderShortfall', () => {
     expect(placeOrderShortfall({ ...ORDER, side: 'sell' }, CONTEXT)).toBeNull();
     expect(placeOrderShortfall({ ...ORDER, depotId: 'dep-9' }, CONTEXT)).toBeNull();
     expect(placeOrderShortfall(ORDER, null)).toBeNull();
+  });
+});
+
+describe('savingsPlanCommandFailureMessage', () => {
+  it('words every code of the savings plan rules', () => {
+    const texts = SAVINGS_PLAN_COMMAND_ERRORS.map((code) =>
+      savingsPlanCommandFailureMessage('createSavingsPlan', new EngineCommandError(code)),
+    );
+    expect(new Set(texts).size).toBe(SAVINGS_PLAN_COMMAND_ERRORS.length);
+    expect(
+      savingsPlanCommandFailureMessage(
+        'createSavingsPlan',
+        new EngineCommandError('not-savings-plan-eligible'),
+      ),
+    ).toBe(
+      'Für dieses Wertpapier gibt es keinen Sparplan. Sparplanfähig sind ETFs und große Aktien.',
+    );
+  });
+
+  it('names the command when the reason is unknown', () => {
+    expect(savingsPlanCommandFailureMessage('deleteSavingsPlan', new Error('x'))).toBe(
+      'Der Sparplan konnte nicht gelöscht werden.',
+    );
+    expect(
+      savingsPlanCommandFailureMessage('changeSavingsPlan', new EngineCommandError('busy')),
+    ).toBe('Das geht gerade nicht, weil die Spielzeit noch berechnet wird.');
   });
 });

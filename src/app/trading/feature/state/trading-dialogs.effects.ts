@@ -9,13 +9,19 @@ import * as BankingActions from '@app/banking/feature/state/banking.actions';
 import * as MarketActions from '@app/market/feature/state/market.actions';
 import { selectInstrumentEntities } from '@app/market/feature/state/market.selectors';
 import { openConfirmDialog } from '@app/shared/ui/dialog-confirm/dialog-confirm.utils';
+import { formatCents } from '@app/shared/util/format';
 import { OrderSide } from '@app/trading/domain/models/order.model';
+import { SavingsPlanChange, SavingsPlanSpec } from '@app/trading/domain/models/savings-plan.model';
 import { isActive } from '@app/trading/domain/order-reservation-logic';
 
 import * as TradingActions from './trading.actions';
-import { ORDER_CHANGE_SUBSCRIPTION, ORDER_TICKET_SUBSCRIPTION } from './trading.model';
-import { selectDepots, selectOrderEntities } from './trading.selectors';
-import { preselectedDepot } from './trading.utils';
+import {
+  ORDER_CHANGE_SUBSCRIPTION,
+  ORDER_TICKET_SUBSCRIPTION,
+  SAVINGS_PLAN_SUBSCRIPTION,
+} from './trading.model';
+import { selectDepots, selectOrderEntities, selectSavingsPlans } from './trading.selectors';
+import { preselectedDepot, savingsPlanDepot } from './trading.utils';
 
 import { DialogChangeOrderComponent } from '../dialog-change-order/dialog-change-order.component';
 import {
@@ -27,6 +33,15 @@ import {
   OrderTicketDialogData,
   OrderTicketDialogResult,
 } from '../dialog-order-ticket/dialog-order-ticket.model';
+import { DialogSavingsPlanComponent } from '../dialog-savings-plan/dialog-savings-plan.component';
+import {
+  SavingsPlanDialogData,
+  SavingsPlanDialogResult,
+} from '../dialog-savings-plan/dialog-savings-plan.model';
+
+/** What a click on „Sparplan anlegen“ leads to. */
+type SavingsPlanStart =
+  { kind: 'dialog'; data: SavingsPlanDialogData; series: number | null } | { kind: 'no-depot' };
 
 /** What a click on „Kaufen“ or „Verkaufen“ leads to. */
 type TicketStart =
@@ -135,6 +150,170 @@ export class TradingDialogEffects {
       ),
     ),
   );
+
+  /**
+   * „Sparplan anlegen“ (US-HD-05): for an eligible instrument (instrument page) or with an
+   * instrument to choose (depot page, order book), in the given or the first open depot; without
+   * an open depot the hint „Kein Depot“. The chosen instrument's quote is watched under
+   * `SAVINGS_PLAN_SUBSCRIPTION` for the preview.
+   */
+  createSavingsPlanDialog$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(TradingActions.clickedCreateSavingsPlan),
+      concatLatestFrom(() => [
+        this.#store.pipe(select(selectInstrumentEntities)),
+        this.#store.pipe(select(selectDepots)),
+      ]),
+      map(([{ instrumentId, depotId }, instruments, depots]): SavingsPlanStart | null => {
+        const instrument = instrumentId === undefined ? undefined : instruments[instrumentId];
+        if (instrumentId !== undefined && instrument?.savingsPlanEligible !== true) {
+          return null;
+        }
+        const depot = savingsPlanDepot(depots, depotId);
+        return depot === null
+          ? { kind: 'no-depot' }
+          : {
+              kind: 'dialog',
+              data: {
+                mode: 'create',
+                initial: {
+                  depotId: depot,
+                  instrumentId: instrumentId ?? '',
+                  amount: null,
+                  day: '1',
+                },
+              },
+              series: instrument?.series ?? null,
+            };
+      }),
+      filter((start): start is SavingsPlanStart => start !== null),
+      exhaustMap((start) =>
+        start.kind === 'no-depot'
+          ? this.#offerDepot()
+          : this.#openSavingsPlan(start.data, start.series, (result) =>
+              TradingActions.submittedCreateSavingsPlan({ plan: result as SavingsPlanSpec }),
+            ),
+      ),
+    ),
+  );
+
+  changeSavingsPlanDialog$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(TradingActions.clickedChangeSavingsPlan),
+      concatLatestFrom(() => [
+        this.#store.pipe(select(selectSavingsPlans)),
+        this.#store.pipe(select(selectInstrumentEntities)),
+      ]),
+      map(([{ savingsPlanId }, plans, instruments]) => {
+        const plan = plans?.find((candidate) => candidate.id === savingsPlanId);
+        return plan === undefined
+          ? null
+          : {
+              savingsPlanId,
+              series: instruments[plan.instrumentId]?.series ?? null,
+              data: {
+                mode: 'change' as const,
+                initial: {
+                  depotId: plan.depotId,
+                  instrumentId: plan.instrumentId,
+                  amount: plan.amount,
+                  day: String(plan.day),
+                },
+              },
+            };
+      }),
+      filter((start) => start !== null),
+      exhaustMap(({ savingsPlanId, series, data }) =>
+        this.#openSavingsPlan(data, series, (result) =>
+          TradingActions.submittedChangeSavingsPlan({
+            savingsPlanId,
+            change: { amount: result.amount, day: result.day },
+          }),
+        ),
+      ),
+    ),
+  );
+
+  deleteSavingsPlanDialog$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(TradingActions.clickedDeleteSavingsPlan),
+      concatLatestFrom(() => [
+        this.#store.pipe(select(selectSavingsPlans)),
+        this.#store.pipe(select(selectInstrumentEntities)),
+      ]),
+      map(([{ savingsPlanId }, plans, instruments]) => {
+        const plan = plans?.find((candidate) => candidate.id === savingsPlanId);
+        return plan === undefined
+          ? null
+          : { plan, name: instruments[plan.instrumentId]?.name ?? plan.instrumentId };
+      }),
+      filter((target) => target !== null),
+      exhaustMap(({ plan, name }) => {
+        const amount = formatCents(plan.amount);
+        return openConfirmDialog(this.#dialog, {
+          heading: $localize`:@@featureTrading-tradingDialogEffects-deleteSavingsPlanHeading:Sparplan löschen?`,
+          message: $localize`:@@featureTrading-tradingDialogEffects-deleteSavingsPlanMessage:Der Sparplan für ${name}:instrument: über ${amount}:amount: am ${plan.day}:day:. jedes Monats wird gelöscht. Gekaufte Anteile bleiben im Depot.`,
+          confirmLabel: $localize`:@@featureTrading-tradingDialogEffects-deleteSavingsPlanConfirm:Löschen`,
+          declineLabel: $localize`:@@featureTrading-tradingDialogEffects-deleteSavingsPlanDecline:Behalten`,
+          tone: 'danger',
+        }).pipe(
+          filter(Boolean),
+          map(() => TradingActions.submittedDeleteSavingsPlan({ savingsPlanId: plan.id })),
+        );
+      }),
+    ),
+  );
+
+  /** The dialog chose another instrument: watch its quote for the preview. */
+  savingsPlanInstrumentQuote$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(TradingActions.selectedSavingsPlanInstrument),
+      concatLatestFrom(() => this.#store.pipe(select(selectInstrumentEntities))),
+      map(([{ instrumentId }, instruments]) => instruments[instrumentId]),
+      filter((instrument) => instrument !== undefined),
+      map((instrument) =>
+        MarketActions.quotesSubscriptionChanged({
+          key: SAVINGS_PLAN_SUBSCRIPTION,
+          series: [instrument.series],
+        }),
+      ),
+    ),
+  );
+
+  #openSavingsPlan(
+    data: SavingsPlanDialogData,
+    series: number | null,
+    toAction: (result: SavingsPlanChange & Partial<SavingsPlanSpec>) => Action,
+  ): Observable<Action> {
+    const dialog$ = this.#dialog
+      .open<SavingsPlanDialogResult, SavingsPlanDialogData>(DialogSavingsPlanComponent, {
+        data,
+        injector: this.#injector,
+        ariaLabel:
+          data.mode === 'create'
+            ? $localize`:@@featureTrading-tradingDialogEffects-createSavingsPlanLabel:Sparplan anlegen`
+            : $localize`:@@featureTrading-tradingDialogEffects-changeSavingsPlanLabel:Sparplan ändern`,
+        width: '32rem',
+        maxWidth: 'calc(100vw - 2rem)',
+        maxHeight: 'calc(100dvh - 2rem)',
+      })
+      .closed.pipe(
+        filter((result): result is SavingsPlanDialogResult => result !== undefined),
+        map(toAction),
+      );
+    return concat(
+      series === null
+        ? of()
+        : of(
+            MarketActions.quotesSubscriptionChanged({
+              key: SAVINGS_PLAN_SUBSCRIPTION,
+              series: [series],
+            }),
+          ),
+      dialog$,
+      of(MarketActions.quotesSubscriptionEnded({ key: SAVINGS_PLAN_SUBSCRIPTION })),
+    );
+  }
 
   #openChange(orderId: string, series: number): Observable<Action> {
     const change$ = this.#dialog

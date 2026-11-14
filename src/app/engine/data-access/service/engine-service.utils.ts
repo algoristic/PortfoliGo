@@ -20,6 +20,7 @@ import {
   ORDER_SIDES,
   ORDER_STATUSES,
 } from '@app/trading/domain/models/order.model';
+import { SAVINGS_PLAN_FAILURES } from '@app/trading/domain/models/savings-plan.model';
 import { isOrderChange, isOrderSpec } from '@app/trading/domain/order-command-logic';
 import {
   REGION_IDS,
@@ -255,6 +256,42 @@ function isStandingOrderView(value: unknown): boolean {
   );
 }
 
+function isSavingsPlanId(value: unknown): boolean {
+  return isString(value) && /^sp-[1-9]\d*$/.test(value);
+}
+
+function isSavingsPlanChange(value: unknown): boolean {
+  return hasFields(value, { amount: isCents, day: isCount });
+}
+
+function isSavingsPlanSpec(value: unknown): boolean {
+  return (
+    isSavingsPlanChange(value) &&
+    hasFields(value, { depotId: isDepotId, instrumentId: isNonEmptyString })
+  );
+}
+
+function isSavingsPlanView(value: unknown): boolean {
+  return (
+    isSavingsPlanSpec(value) &&
+    hasFields(value, {
+      id: isSavingsPlanId,
+      createdAt: isCount,
+      paused: isBoolean,
+      handledUpTo: (month) => isString(month) && /^\d{4}-\d{2}$/.test(month),
+      nextExecution: isNullOr(isCount),
+    })
+  );
+}
+
+const isSavingsPlanParams: Check = (params) =>
+  hasFields(params, {
+    savingsPlanId: isSavingsPlanId,
+    depotId: isDepotId,
+    instrumentId: isNonEmptyString,
+    amount: isCount,
+  });
+
 function isQuery(value: unknown): boolean {
   if (!isFields(value) || !isOneOf(ENGINE_QUERY_KINDS)(value['kind'])) {
     return false;
@@ -328,6 +365,13 @@ const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = 
   changeOrder: (payload) =>
     hasFields(payload, { orderId: isNonEmptyString, change: isOrderChange }),
   cancelOrder: (payload) => hasFields(payload, { orderId: isNonEmptyString }),
+  // The shape only; eligibility, amount and day are rules of the engine (TS §7.8).
+  createSavingsPlan: (payload) => hasFields(payload, { plan: isSavingsPlanSpec }),
+  changeSavingsPlan: (payload) =>
+    hasFields(payload, { savingsPlanId: isSavingsPlanId, change: isSavingsPlanChange }),
+  setSavingsPlanPaused: (payload) =>
+    hasFields(payload, { savingsPlanId: isSavingsPlanId, paused: isBoolean }),
+  deleteSavingsPlan: (payload) => hasFields(payload, { savingsPlanId: isSavingsPlanId }),
 };
 
 function isQuote(value: unknown): boolean {
@@ -495,6 +539,12 @@ const NOTIFICATION_PARAMS: Readonly<Partial<Record<string, Check>>> = {
   'order-rejected': (params) =>
     isOrderParams(params) && hasFields(params, { reason: isOneOf(ORDER_REJECTIONS) }),
   'order-expired': isOrderParams,
+  'savings-plan-executed': (params) =>
+    isSavingsPlanParams(params) &&
+    hasFields(params, { quantity: isCount, price: isFiniteNumber, total: isCount }),
+  'savings-plan-failed': (params) =>
+    isSavingsPlanParams(params) &&
+    hasFields(params, { reason: isOneOf(SAVINGS_PLAN_FAILURES), available: isCount }),
   'dividend-received': (params) =>
     hasFields(params, {
       kind: isOneOf(DISTRIBUTION_KINDS),
@@ -623,6 +673,7 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
       trading: isOptional(isTradingProjection),
       taxes: isOptional(isTaxesProjection),
       standingOrders: isOptional(isListOf(isStandingOrderView)),
+      savingsPlans: isOptional(isListOf(isSavingsPlanView)),
     }),
   notification: (payload) =>
     hasFields(payload, { tick: isCount, notifications: isNotificationList }),

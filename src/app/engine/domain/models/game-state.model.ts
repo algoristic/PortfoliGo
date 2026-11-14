@@ -17,6 +17,7 @@ import { Cents } from '@app/shared/domain/models/money.model';
 import { TaxYear } from '@app/taxes/domain/models/tax.model';
 import { Order } from '@app/trading/domain/models/order.model';
 import { Position } from '@app/trading/domain/models/position.model';
+import { SavingsPlan } from '@app/trading/domain/models/savings-plan.model';
 
 import { SchedulerState } from './scheduled-task.model';
 
@@ -88,6 +89,13 @@ export interface PlayerState {
   standingOrders: StandingOrder[];
   /** Last value of the standing order counter (`so-<n>`). */
   standingOrderSequence: number;
+  /**
+   * Savings plans in the order they were created (US-HD-05, TS §7.8). Every change and every
+   * execution replaces the array, so a new reference means a change for the projection.
+   */
+  savingsPlans: SavingsPlan[];
+  /** Last value of the savings plan counter (`sp-<n>`). */
+  savingsPlanSequence: number;
 }
 
 /** Dynamic state of a game (TS §8.1). Everything in it is plain, structured-cloneable data. */

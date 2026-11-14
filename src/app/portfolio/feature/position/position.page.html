@@ -31,7 +31,10 @@
       <app-trade-actions
         [view]="trade"
         (clickedBuy)="onBuy(view.instrumentId, view.depotId)"
-        (clickedSell)="onSell(view.instrumentId, view.depotId)"></app-trade-actions>
+        (clickedSell)="onSell(view.instrumentId, view.depotId)"
+        (clickedCreateSavingsPlan)="
+          onCreateSavingsPlan(view.instrumentId, view.depotId)
+        "></app-trade-actions>
     }
     @if (view && view.depots.length > 1) {
       <label class="flex flex-col gap-1 text-xs text-fg-muted">

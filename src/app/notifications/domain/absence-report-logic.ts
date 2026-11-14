@@ -18,10 +18,14 @@ export const MAX_REPORT_WARNINGS = 50;
 /** Executed and expired orders listed in a report; the report counts the others. */
 export const MAX_REPORT_ORDERS = 50;
 
-/** Order codes the report lists besides the warnings (US-BN-03); rejections are warnings. */
+/**
+ * Order and savings plan codes the report lists besides the warnings (US-BN-03); rejections and
+ * failed savings plans are warnings.
+ */
 export const REPORT_ORDER_CODES = [
   'order-executed',
   'order-expired',
+  'savings-plan-executed',
 ] as const satisfies readonly NotificationCode[];
 
 const WARNING_RANK = NOTIFICATION_SEVERITIES.indexOf('warning');

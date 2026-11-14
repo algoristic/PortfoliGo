@@ -40,6 +40,13 @@ import {
   OrderChange,
   OrderSpec,
 } from '@app/trading/domain/models/order.model';
+import {
+  SAVINGS_PLAN_COMMAND_ERRORS,
+  SavingsPlanChange,
+  SavingsPlanId,
+  SavingsPlanSpec,
+  SavingsPlanView,
+} from '@app/trading/domain/models/savings-plan.model';
 import { Bank } from '@app/world/domain/models/bank.model';
 import { RegionId } from '@app/world/domain/models/taxonomy.model';
 
@@ -238,6 +245,12 @@ export interface EngineCommandPayloads {
   changeOrder: { orderId: string; change: OrderChange };
   /** Cancels an active order (US-HD-04). */
   cancelOrder: { orderId: string };
+  /** Monthly purchase of an instrument (US-HD-05, TS §7.8); the engine answers with its ID. */
+  createSavingsPlan: { plan: SavingsPlanSpec };
+  /** Replaces amount and day of a savings plan. */
+  changeSavingsPlan: { savingsPlanId: SavingsPlanId; change: SavingsPlanChange };
+  setSavingsPlanPaused: { savingsPlanId: SavingsPlanId; paused: boolean };
+  deleteSavingsPlan: { savingsPlanId: SavingsPlanId };
 }
 
 export const ENGINE_COMMAND_TYPES = [
@@ -267,6 +280,10 @@ export const ENGINE_COMMAND_TYPES = [
   'placeOrder',
   'changeOrder',
   'cancelOrder',
+  'createSavingsPlan',
+  'changeSavingsPlan',
+  'setSavingsPlanPaused',
+  'deleteSavingsPlan',
 ] as const satisfies readonly (keyof EngineCommandPayloads)[];
 export type EngineCommandType = (typeof ENGINE_COMMAND_TYPES)[number];
 
@@ -368,6 +385,11 @@ export interface CreatedStandingOrderReply extends GameCommandReply {
   standingOrderId: StandingOrderId;
 }
 
+/** Reply to `createSavingsPlan`: the ID of the new savings plan (`sp-<n>`). */
+export interface CreatedSavingsPlanReply extends GameCommandReply {
+  savingsPlanId: SavingsPlanId;
+}
+
 /**
  * A block of candles up to `tick` (the query limit), ascending; `hasOlder` is `false` once the
  * block reaches the first candle since the epoch.
@@ -408,6 +430,10 @@ export interface EngineReplies {
   placeOrder: PlacedOrderReply;
   changeOrder: GameCommandReply;
   cancelOrder: GameCommandReply;
+  createSavingsPlan: CreatedSavingsPlanReply;
+  changeSavingsPlan: GameCommandReply;
+  setSavingsPlanPaused: GameCommandReply;
+  deleteSavingsPlan: GameCommandReply;
 }
 
 /** Error codes of replies (TS §8.3); the UI turns them into texts. */
@@ -444,6 +470,8 @@ export const ENGINE_ERRORS = [
   ...WATCHLIST_COMMAND_ERRORS,
   /** The engine rejected an order command (TS §7.5); see `ORDER_COMMAND_ERRORS`. */
   ...ORDER_COMMAND_ERRORS,
+  /** The engine rejected a savings plan command (TS §7.8); see `SAVINGS_PLAN_COMMAND_ERRORS`. */
+  ...SAVINGS_PLAN_COMMAND_ERRORS,
 ] as const;
 export type EngineErrorCode = (typeof ENGINE_ERRORS)[number];
 
@@ -545,6 +573,21 @@ export interface ProjectionPayload {
    * was created, changed, paused, resumed, deleted or executed.
    */
   standingOrders?: StandingOrderView[];
+  /**
+   * All savings plans with their next execution (AP 5.6b, TS §8.3): with `full` and whenever one
+   * was created, changed, paused, resumed, deleted or executed.
+   */
+  savingsPlans?: SavingsPlanView[];
+}
+
+/**
+ * The savings plans of a projection as `EngineService.savingsPlans$` emits them; they replace what
+ * the UI had. `full` marks the one of the full projection after `loadPlayer`.
+ */
+export interface SavingsPlansProjectionUpdate {
+  tick: Tick;
+  full: boolean;
+  savingsPlans: SavingsPlanView[];
 }
 
 /**

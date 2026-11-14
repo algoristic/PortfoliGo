@@ -1,0 +1,225 @@
+@let _depot = savingsPlanForm.depotId();
+@let _instrument = savingsPlanForm.instrumentId();
+@let _amount = savingsPlanForm.amount();
+@let _day = savingsPlanForm.day();
+@let _preview = preview();
+@let _ask = ask();
+
+<form [formRoot]="savingsPlanForm">
+  <app-dialog [heading]="heading" testId="trading.savings-plan-dialog" (clickedClose)="decline()">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-1">
+        <label
+          class="font-medium"
+          for="trading-savings-plan-instrument"
+          i18n="@@featureTrading-dialogSavingsPlan-instrument"
+          >Wertpapier</label
+        >
+        <select
+          id="trading-savings-plan-instrument"
+          class="h-10 min-w-0 rounded-md border border-border bg-surface px-2 text-fg disabled:opacity-70 aria-invalid:border-down"
+          aria-describedby="trading-savings-plan-instrument-errors"
+          [attr.cdkFocusInitial]="data.mode === 'create' ? '' : null"
+          data-testid="trading.savings-plan-dialog.instrument"
+          [attr.aria-invalid]="_instrument.touched() && _instrument.invalid()"
+          [formField]="savingsPlanForm.instrumentId"
+          (change)="onSelectInstrument()">
+          <option value="" i18n="@@featureTrading-dialogSavingsPlan-instrumentNone"
+            >Wertpapier wählen</option
+          >
+          <optgroup label="ETFs" i18n-label="@@featureTrading-dialogSavingsPlan-etfs">
+            @for (option of etfs(); track option.id) {
+              <option [value]="option.id">{{ option.name }}</option>
+            }
+          </optgroup>
+          <optgroup label="Aktien" i18n-label="@@featureTrading-dialogSavingsPlan-stocks">
+            @for (option of stocks(); track option.id) {
+              <option [value]="option.id">{{ option.name }}</option>
+            }
+          </optgroup>
+        </select>
+        <p id="trading-savings-plan-instrument-errors" class="text-down">
+          @if (_instrument.touched() && _instrument.invalid()) {
+            @for (error of _instrument.errors(); track error.kind) {
+              <span>{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <label
+          class="font-medium"
+          for="trading-savings-plan-depot"
+          i18n="@@featureTrading-dialogSavingsPlan-depot"
+          >Depot</label
+        >
+        <select
+          id="trading-savings-plan-depot"
+          class="h-10 min-w-0 rounded-md border border-border bg-surface px-2 text-fg disabled:opacity-70 aria-invalid:border-down"
+          aria-describedby="trading-savings-plan-depot-hint trading-savings-plan-depot-errors"
+          data-testid="trading.savings-plan-dialog.depot"
+          [attr.aria-invalid]="_depot.touched() && _depot.invalid()"
+          [formField]="savingsPlanForm.depotId">
+          <option value="" i18n="@@featureTrading-dialogSavingsPlan-depotNone">Depot wählen</option>
+          @for (option of depots(); track option.depotId) {
+            <option [value]="option.depotId" i18n="@@featureTrading-dialogSavingsPlan-depotOption"
+              >Depot {{ option.number }} · {{ option.bankName }}</option
+            >
+          }
+        </select>
+        <p
+          id="trading-savings-plan-depot-hint"
+          class="text-fg-muted"
+          i18n="@@featureTrading-dialogSavingsPlan-depotHint">
+          Der Sparplan bucht vom Verrechnungskonto dieses Depots.
+        </p>
+        <p id="trading-savings-plan-depot-errors" class="text-down">
+          @if (_depot.touched() && _depot.invalid()) {
+            @for (error of _depot.errors(); track error.kind) {
+              <span>{{ error.message }}</span>
+            }
+          }
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="flex flex-col gap-1">
+          <label
+            class="font-medium"
+            for="trading-savings-plan-amount"
+            i18n="@@featureTrading-dialogSavingsPlan-amount"
+            >Betrag (monatlich)</label
+          >
+          <app-amount-input
+            inputId="trading-savings-plan-amount"
+            describedBy="trading-savings-plan-amount-errors"
+            testId="trading.savings-plan-dialog.amount"
+            [formField]="savingsPlanForm.amount"></app-amount-input>
+          <p id="trading-savings-plan-amount-errors" class="text-down">
+            @if (_amount.touched() && _amount.invalid()) {
+              @for (error of _amount.errors(); track error.kind) {
+                <span data-testid="trading.savings-plan-dialog.amount-error">{{
+                  error.message
+                }}</span>
+              }
+            }
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label
+            class="font-medium"
+            for="trading-savings-plan-day"
+            i18n="@@featureTrading-dialogSavingsPlan-day"
+            >Ausführungstag</label
+          >
+          <select
+            id="trading-savings-plan-day"
+            class="h-10 rounded-md border border-border bg-surface px-2 text-fg tabular-nums aria-invalid:border-down"
+            aria-describedby="trading-savings-plan-day-hint trading-savings-plan-day-errors"
+            [attr.cdkFocusInitial]="data.mode === 'change' ? '' : null"
+            data-testid="trading.savings-plan-dialog.day"
+            [attr.aria-invalid]="_day.touched() && _day.invalid()"
+            [formField]="savingsPlanForm.day">
+            @for (day of dayOptions; track day) {
+              <option [value]="day" i18n="@@featureTrading-dialogSavingsPlan-dayOption"
+                >{{ day }}.</option
+              >
+            }
+          </select>
+          <p id="trading-savings-plan-day-errors" class="text-down">
+            @if (_day.touched() && _day.invalid()) {
+              @for (error of _day.errors(); track error.kind) {
+                <span>{{ error.message }}</span>
+              }
+            }
+          </p>
+        </div>
+      </div>
+      <p
+        id="trading-savings-plan-day-hint"
+        class="-mt-3 text-fg-muted"
+        i18n="@@featureTrading-dialogSavingsPlan-dayHint">
+        Gekauft wird zum Handelsbeginn der Börse am Ausführungstag, sonst am nächsten Handelstag,
+        zum Briefkurs und immer in Bruchstücken. Reicht das verfügbare Guthaben nicht, fällt die
+        Ausführung aus.
+      </p>
+
+      @if (_preview) {
+        <section
+          class="flex flex-col gap-2 rounded-md border border-border bg-surface-raised p-3"
+          aria-labelledby="trading-savings-plan-preview"
+          aria-live="polite"
+          data-testid="trading.savings-plan-dialog.preview">
+          <h3
+            id="trading-savings-plan-preview"
+            class="font-medium"
+            i18n="@@featureTrading-dialogSavingsPlan-previewHeading">
+            Vorschau je Ausführung
+          </h3>
+          <dl class="flex flex-col gap-1 text-sm">
+            <div class="flex flex-wrap justify-between gap-x-2">
+              <dt class="text-fg-muted" i18n="@@featureTrading-dialogSavingsPlan-costs">
+                Sparplankosten
+              </dt>
+              <dd class="tabular-nums" data-testid="trading.savings-plan-dialog.costs">
+                {{ _preview.costs | formatCents }}
+              </dd>
+            </div>
+            <div class="flex flex-wrap justify-between gap-x-2">
+              <dt class="text-fg-muted" i18n="@@featureTrading-dialogSavingsPlan-quantity">
+                Stück zum aktuellen Brief
+              </dt>
+              <dd class="tabular-nums" data-testid="trading.savings-plan-dialog.quantity">
+                @if (_preview.quantity === null || _ask === null) {
+                  <span i18n="@@featureTrading-dialogSavingsPlan-noQuote">noch kein Kurs</span>
+                } @else {
+                  <ng-container i18n="@@featureTrading-dialogSavingsPlan-quantityValue"
+                    >ca. {{ _preview.quantity | formatQuantity }} zu
+                    {{ _ask | formatPrice }}</ng-container
+                  >
+                }
+              </dd>
+            </div>
+            <div class="flex flex-wrap justify-between gap-x-2">
+              <dt class="text-fg-muted" i18n="@@featureTrading-dialogSavingsPlan-available">
+                Verfügbar auf dem Verrechnungskonto
+              </dt>
+              <dd class="tabular-nums" data-testid="trading.savings-plan-dialog.available">
+                {{ _preview.available | formatCents }}
+              </dd>
+            </div>
+          </dl>
+          @if (!_preview.covered) {
+            <p
+              class="text-sm text-warning"
+              data-testid="trading.savings-plan-dialog.inflow-hint"
+              i18n="@@featureTrading-dialogSavingsPlan-inflowHint">
+              Das Verrechnungskonto deckt den Betrag derzeit nicht. Richte unter „Konten“ einen
+              Dauerauftrag ein, der vor dem Ausführungstag Geld auf das Verrechnungskonto überweist.
+            </p>
+          }
+        </section>
+      }
+    </div>
+
+    <ng-container dialogActions>
+      <button
+        appButton
+        type="button"
+        data-testid="trading.savings-plan-dialog.decline"
+        i18n="@@featureTrading-dialogSavingsPlan-decline"
+        (click)="decline()">
+        Abbrechen
+      </button>
+      <button
+        appButton
+        type="submit"
+        variant="primary"
+        data-testid="trading.savings-plan-dialog.submit">
+        {{ submitLabel }}
+      </button>
+    </ng-container>
+  </app-dialog>
+</form>

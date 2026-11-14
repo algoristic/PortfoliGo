@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
-import { map } from 'rxjs';
+import { distinctUntilChanged, map, switchMap } from 'rxjs';
 
 import { DepotId } from '@app/banking/domain/models/account.model';
 import { PositionSortKey } from '@app/portfolio/domain/models/portfolio.model';
@@ -16,7 +16,10 @@ import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.comp
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { PanelComponent } from '@app/shared/ui/panel/panel.component';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
+import { SavingsPlanId } from '@app/trading/domain/models/savings-plan.model';
 import { TradingFacade } from '@app/trading/feature/state/trading.facade';
+import { SavingsPlanPauseChange } from '@app/trading/ui/models/savings-plan.model';
+import { SavingsPlanListComponent } from '@app/trading/ui/savings-plan-list/savings-plan-list.component';
 
 import { PortfolioFacade } from '../state/portfolio.facade';
 
@@ -25,7 +28,8 @@ const ALL_DEPOTS = 'all';
 
 /**
  * Depot overview (US-PF-02, US-PF-03): one depot or all combined, the positions with value and
- * gain, „Kaufen“ and „Verkaufen“ per position, and the allocation with look-through of the ETFs.
+ * gain, „Kaufen“ and „Verkaufen“ per position, the savings plans of the shown depots (US-HD-05)
+ * and the allocation with look-through of the ETFs.
  */
 @Component({
   selector: 'app-portfolio-page',
@@ -39,6 +43,7 @@ const ALL_DEPOTS = 'all';
     PanelComponent,
     PortfolioSummaryComponent,
     PositionTableComponent,
+    SavingsPlanListComponent,
     SkeletonComponent,
   ],
   templateUrl: './portfolio.page.html',
@@ -56,9 +61,17 @@ export class PortfolioPage {
     { initialValue: false },
   );
 
+  /** The savings plans of the shown depot, or of all depots (US-HD-05, AP 5.6b). */
+  savingsPlans$ = this.portfolioFacade.view$.pipe(
+    map((view) => view?.depotId ?? null),
+    distinctUntilChanged(),
+    switchMap((depotId) => this.#tradingFacade.depotSavingsPlanEntries$(depotId)),
+  );
+
   depotLabel = $localize`:@@featurePortfolio-portfolioPage-depot:Depot`;
   positionsHeading = $localize`:@@featurePortfolio-portfolioPage-positions:Positionen`;
   allocationHeading = $localize`:@@featurePortfolio-portfolioPage-allocation:Allokation`;
+  savingsPlansHeading = $localize`:@@featurePortfolio-portfolioPage-savingsPlans:Sparpläne`;
 
   onSelectDepot(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
@@ -79,5 +92,21 @@ export class PortfolioPage {
 
   onOpenDepot(): void {
     this.portfolioFacade.clickOpenDepot();
+  }
+
+  onCreateSavingsPlan(depotId: DepotId | null): void {
+    this.#tradingFacade.clickCreateSavingsPlan(undefined, depotId ?? undefined);
+  }
+
+  onChangeSavingsPlan(savingsPlanId: SavingsPlanId): void {
+    this.#tradingFacade.clickChangeSavingsPlan(savingsPlanId);
+  }
+
+  onPauseSavingsPlan({ id, paused }: SavingsPlanPauseChange): void {
+    this.#tradingFacade.setSavingsPlanPaused(id, paused);
+  }
+
+  onDeleteSavingsPlan(savingsPlanId: SavingsPlanId): void {
+    this.#tradingFacade.clickDeleteSavingsPlan(savingsPlanId);
   }
 }

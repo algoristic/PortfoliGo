@@ -15,6 +15,11 @@ import { CandleResolution } from '@app/market/domain/models/candle.model';
 import { ScreenerCriteria } from '@app/market/domain/models/screener.model';
 import { AutoPauseCode } from '@app/notifications/domain/models/notification.model';
 import { OrderChange, OrderSpec } from '@app/trading/domain/models/order.model';
+import {
+  SavingsPlanChange,
+  SavingsPlanId,
+  SavingsPlanSpec,
+} from '@app/trading/domain/models/savings-plan.model';
 
 import {
   ENGINE_COMMAND_ID_PREFIX,
@@ -40,6 +45,7 @@ import {
   LoadPlayerPayload,
   MoversPayload,
   NotificationsRequest,
+  SavingsPlansProjectionUpdate,
   StandingOrdersProjectionUpdate,
   StatementRequest,
   TaxesProjectionUpdate,
@@ -136,6 +142,16 @@ export class EngineService implements OnDestroy {
   standingOrders$: Observable<StandingOrdersProjectionUpdate> = this.projection$.pipe(
     map(({ tick, full, standingOrders }) =>
       standingOrders === undefined ? null : { tick, full, standingOrders },
+    ),
+    filter((update) => update !== null),
+  );
+  /**
+   * All savings plans with their next execution (AP 5.6b, TS §8.3): after every `loadPlayer` and
+   * whenever one was created, changed, paused, resumed, deleted or executed.
+   */
+  savingsPlans$: Observable<SavingsPlansProjectionUpdate> = this.projection$.pipe(
+    map(({ tick, full, savingsPlans }) =>
+      savingsPlans === undefined ? null : { tick, full, savingsPlans },
     ),
     filter((update) => update !== null),
   );
@@ -380,6 +396,29 @@ export class EngineService implements OnDestroy {
   /** Cancels an active order (US-HD-04). */
   cancelOrder(orderId: string): Observable<EngineReplies['cancelOrder']> {
     return this.#request('cancelOrder', { orderId });
+  }
+
+  /** Creates a savings plan (US-HD-05, TS §7.8) and answers with its ID. */
+  createSavingsPlan(plan: SavingsPlanSpec): Observable<EngineReplies['createSavingsPlan']> {
+    return this.#request('createSavingsPlan', { plan: { ...plan } });
+  }
+
+  changeSavingsPlan(
+    savingsPlanId: SavingsPlanId,
+    change: SavingsPlanChange,
+  ): Observable<EngineReplies['changeSavingsPlan']> {
+    return this.#request('changeSavingsPlan', { savingsPlanId, change: { ...change } });
+  }
+
+  setSavingsPlanPaused(
+    savingsPlanId: SavingsPlanId,
+    paused: boolean,
+  ): Observable<EngineReplies['setSavingsPlanPaused']> {
+    return this.#request('setSavingsPlanPaused', { savingsPlanId, paused });
+  }
+
+  deleteSavingsPlan(savingsPlanId: SavingsPlanId): Observable<EngineReplies['deleteSavingsPlan']> {
+    return this.#request('deleteSavingsPlan', { savingsPlanId });
   }
 
   /**

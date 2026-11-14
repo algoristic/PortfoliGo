@@ -489,10 +489,10 @@ describe('GameEngine', () => {
     it('never runs an unknown task silently', () => {
       const snapshot = engine.snapshot();
       scheduleTask(snapshot.scheduler, snapshot.tick + 1, {
-        kind: 'savings-plan',
+        kind: 'unknown-task',
       } as unknown as TaskSpec);
       const restored = GameEngine.restore(mini.world, snapshot, { monthStarts: mini.monthStarts });
-      expect(() => restored.step()).toThrow(/savings-plan/);
+      expect(() => restored.step()).toThrow(/unknown-task/);
     });
   });
 

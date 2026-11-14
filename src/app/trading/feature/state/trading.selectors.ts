@@ -21,9 +21,14 @@ import {
   compareNewestClosed,
   depotEntries,
   depotReservations,
+  exchangeQuote,
   instrumentTradeView,
   orderBookEntries,
   orderTicketContext,
+  savingsPlanDepots,
+  savingsPlanEntries,
+  savingsPlanInstruments,
+  upcomingSavingsPlans,
 } from './trading.utils';
 
 const selectState = createFeatureSelector<TradingState>(TRADING_FEATURE_KEY);
@@ -144,3 +149,44 @@ export const selectChangeOrderContext = (orderId: string) =>
           );
     },
   );
+
+/** All savings plans as the projection carried them; `null` until the first (AP 5.6b). */
+export const selectSavingsPlans = createSelector(selectState, (state) => state.savingsPlans);
+
+/** Savings plans in creation order with instrument, depot and bank names (US-HD-05). */
+export const selectSavingsPlanEntries = createSelector(
+  selectSavingsPlans,
+  selectInstrumentEntities,
+  selectDepots,
+  savingsPlanEntries,
+);
+
+/** The savings plans of one depot (depot page). */
+export const selectDepotSavingsPlanEntries = (depotId: DepotId | null) =>
+  createSelector(selectSavingsPlanEntries, (entries) =>
+    entries === null || depotId === null
+      ? entries
+      : entries.filter(({ plan }) => plan.depotId === depotId),
+  );
+
+/** Next executions of the active savings plans, earliest first (for „Demnächst“, AP 5.7). */
+export const selectUpcomingSavingsPlans = createSelector(
+  selectSavingsPlanEntries,
+  upcomingSavingsPlans,
+);
+
+/** Savings-plan-eligible instruments: ETFs, then shares, by name. */
+export const selectSavingsPlanInstruments = createSelector(
+  selectInstrumentEntities,
+  savingsPlanInstruments,
+);
+
+/** Open depots with what the savings plan dialog needs. */
+export const selectSavingsPlanDepots = createSelector(selectDepots, savingsPlanDepots);
+
+/** Last quote of an instrument without a venue mark-up; `null` while unknown. */
+export const selectExchangeQuote = (instrumentId: string) =>
+  createSelector(selectInstrumentEntities, selectQuoteEntities, (instruments, quotes) => {
+    const instrument = instruments[instrumentId];
+    return instrument === undefined ? null : exchangeQuote(quotes[instrument.series]);
+  });

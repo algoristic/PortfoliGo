@@ -2,6 +2,7 @@
 @let openOrders = tradingFacade.openOrderEntries$ | async;
 @let history = tradingFacade.orderHistoryEntries$ | async;
 @let reservations = tradingFacade.depotReservations$ | async;
+@let savingsPlans = tradingFacade.savingsPlanEntries$ | async;
 
 <h1
   #heading
@@ -32,6 +33,36 @@
       <app-order-history
         data-testid="trading.order-history"
         [entries]="history"></app-order-history>
+    }
+  </ng-template>
+  <ng-template appTabPanel="savings-plans">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+      <p class="text-fg-muted" i18n="@@featureTrading-ordersPage-savingsPlansIntro">
+        Sparpläne kaufen monatlich zum Handelsbeginn, vom Verrechnungskonto ihres Depots.
+      </p>
+      <button
+        appButton
+        type="button"
+        data-testid="trading.savings-plans.create"
+        (click)="onCreateSavingsPlan()">
+        <i appIcon="plus-lg"></i>
+        <span i18n="@@featureTrading-ordersPage-createSavingsPlan">Sparplan anlegen</span>
+      </button>
+    </div>
+    @if (savingsPlans === null) {
+      <app-skeleton class="h-32" [block]="true"></app-skeleton>
+    } @else if (savingsPlans.length === 0) {
+      <app-empty-state
+        icon="piggy-bank"
+        data-testid="trading.savings-plans.empty"
+        [heading]="noSavingsPlansHeading"
+        [text]="noSavingsPlansText"></app-empty-state>
+    } @else {
+      <app-savings-plan-list
+        [entries]="savingsPlans"
+        (clickedChange)="onChangeSavingsPlan($event)"
+        (clickedPause)="onPauseSavingsPlan($event)"
+        (clickedDelete)="onDeleteSavingsPlan($event)"></app-savings-plan-list>
     }
   </ng-template>
 </app-tabs>

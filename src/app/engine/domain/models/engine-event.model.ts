@@ -5,6 +5,7 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { DistributionKind } from '@app/portfolio/domain/models/distribution.model';
 import { Cents, MicroUnits } from '@app/shared/domain/models/money.model';
 import { OrderRejection, OrderSide } from '@app/trading/domain/models/order.model';
+import { SavingsPlanFailure, SavingsPlanId } from '@app/trading/domain/models/savings-plan.model';
 
 import { BackgroundMode } from './game-state.model';
 
@@ -78,7 +79,37 @@ export type EngineEvent =
       amount: Cents;
       available: Cents;
     }
-  | OrderEvent;
+  | OrderEvent
+  | SavingsPlanEvent;
+
+/** What every savings plan event says about its plan (TS §7.8). */
+interface SavingsPlanEventBase {
+  tick: Tick;
+  savingsPlanId: SavingsPlanId;
+  depotId: DepotId;
+  instrumentId: string;
+  /** The plan's monthly amount. */
+  amount: Cents;
+}
+
+/**
+ * Events of a savings plan's execution (TS §7.8, §12): bought shares at the ask with the debit
+ * (market value + costs), or a failure with its reason and the available amount after
+ * reservations; a failure books nothing.
+ */
+export type SavingsPlanEvent =
+  | (SavingsPlanEventBase & {
+      type: 'savings-plan-executed';
+      quantity: MicroUnits;
+      /** Ask with the bank's mark-up, in euros. */
+      price: number;
+      total: Cents;
+    })
+  | (SavingsPlanEventBase & {
+      type: 'savings-plan-failed';
+      reason: SavingsPlanFailure;
+      available: Cents;
+    });
 
 /** What every order event says about its order (TS §7.5). */
 interface OrderEventBase {

@@ -1,5 +1,6 @@
 @let loaded = portfolioFacade.loaded$ | async;
 @let view = portfolioFacade.view$ | async;
+@let savingsPlans = savingsPlans$ | async;
 
 <div class="flex flex-wrap items-end justify-between gap-3">
   <h1 class="text-xl font-semibold" i18n="@@featurePortfolio-portfolioPage-title">Depot</h1>
@@ -89,6 +90,39 @@
         (selectedSort)="onSort($event)"
         (clickedBuy)="onBuy($event)"
         (clickedSell)="onSell($event)"></app-position-table>
+    }
+  </section>
+
+  <section class="mt-6" aria-labelledby="portfolio-savings-plans">
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <h2 id="portfolio-savings-plans" class="text-lg font-semibold">{{ savingsPlansHeading }}</h2>
+      <button
+        appButton
+        type="button"
+        size="sm"
+        data-testid="portfolio.savings-plans.create"
+        (click)="onCreateSavingsPlan(view.depotId)">
+        <i appIcon="plus-lg"></i>
+        <span i18n="@@featurePortfolio-portfolioPage-createSavingsPlan">Sparplan anlegen</span>
+      </button>
+    </div>
+    @if (savingsPlans === null) {
+      <app-skeleton class="h-24" [block]="true"></app-skeleton>
+    } @else if (savingsPlans.length === 0) {
+      <p
+        class="text-sm text-fg-muted"
+        data-testid="portfolio.savings-plans.empty"
+        i18n="@@featurePortfolio-portfolioPage-noSavingsPlans">
+        Keine Sparpläne. Ein Sparplan kauft jeden Monat für einen festen Betrag Bruchstücke eines
+        ETFs oder einer großen Aktie.
+      </p>
+    } @else {
+      <app-savings-plan-list
+        data-testid="portfolio.savings-plans"
+        [entries]="savingsPlans"
+        (clickedChange)="onChangeSavingsPlan($event)"
+        (clickedPause)="onPauseSavingsPlan($event)"
+        (clickedDelete)="onDeleteSavingsPlan($event)"></app-savings-plan-list>
     }
   </section>
 

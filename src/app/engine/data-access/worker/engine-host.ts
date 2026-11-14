@@ -63,6 +63,7 @@ import { oldestKeptSeq, unreadCount } from '@app/notifications/domain/read-state
 import { PlayerLock } from '@app/persistence/data-access/locks/player-locks';
 import { deriveSeedKey } from '@app/simulation/util/seed';
 import { TaxYear } from '@app/taxes/domain/models/tax.model';
+import { SavingsPlan, SavingsPlanId } from '@app/trading/domain/models/savings-plan.model';
 import { generateWorld } from '@app/world/domain/world-generator';
 
 import { CandleBackfill } from './candle-backfill';
@@ -203,6 +204,8 @@ interface LoadedGame {
    * every change and execution, so a new reference means a change (AP 5.6a).
    */
   standingOrdersSent: readonly StandingOrder[] | null;
+  /** The savings plans of the last projection that carried them (as `standingOrdersSent`, AP 5.6b). */
+  savingsPlansSent: readonly SavingsPlan[] | null;
   /** Loading and replaying: notifications are stored, but neither sent nor reported. */
   replaying: boolean;
   /** Indices of the absence report (positions in the world's index list). */
@@ -464,6 +467,50 @@ export class EngineHost {
       tick: (await this.#applyGameCommand((tick) => ({ id, tick, type: 'cancelOrder', orderId })))
         .tick,
     }),
+    createSavingsPlan: async ({ plan }, id) => {
+      const { tick, savingsPlanId } = await this.#applyGameCommand((at) => ({
+        id,
+        tick: at,
+        type: 'createSavingsPlan',
+        plan,
+      }));
+      if (savingsPlanId === undefined) {
+        throw new CommandFailure('internal-error', 'createSavingsPlan created no savings plan');
+      }
+      return { tick, savingsPlanId };
+    },
+    changeSavingsPlan: async ({ savingsPlanId, change }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({
+          id,
+          tick,
+          type: 'changeSavingsPlan',
+          savingsPlanId,
+          change,
+        }))
+      ).tick,
+    }),
+    setSavingsPlanPaused: async ({ savingsPlanId, paused }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({
+          id,
+          tick,
+          type: 'setSavingsPlanPaused',
+          savingsPlanId,
+          paused,
+        }))
+      ).tick,
+    }),
+    deleteSavingsPlan: async ({ savingsPlanId }, id) => ({
+      tick: (
+        await this.#applyGameCommand((tick) => ({
+          id,
+          tick,
+          type: 'deleteSavingsPlan',
+          savingsPlanId,
+        }))
+      ).tick,
+    }),
   };
 
   #queue: Promise<void> = Promise.resolve();
@@ -661,6 +708,7 @@ export class EngineHost {
       valuedTick: -1,
       taxYearSent: null,
       standingOrdersSent: null,
+      savingsPlansSent: null,
       unsavedNotifications: [],
       notificationsWrittenMs: now,
       notificationWriteRunning: false,
@@ -799,6 +847,7 @@ export class EngineHost {
     opened?: OpenedAccount;
     orderId?: string;
     standingOrderId?: StandingOrderId;
+    savingsPlanId?: SavingsPlanId;
   }> {
     const game = this.#requireIdle();
     this.#held++;
@@ -830,6 +879,7 @@ export class EngineHost {
         ...(result.standingOrderId === undefined
           ? {}
           : { standingOrderId: result.standingOrderId }),
+        ...(result.savingsPlanId === undefined ? {} : { savingsPlanId: result.savingsPlanId }),
       };
     } finally {
       this.#held--;
@@ -1454,10 +1504,12 @@ export class EngineHost {
     const watchlistChanged = game.engine.player.watchlist !== game.watchlistSent;
     const taxesChanged = game.engine.player.taxYear !== game.taxYearSent;
     const standingOrdersChanged = game.engine.player.standingOrders !== game.standingOrdersSent;
+    const savingsPlansChanged = game.engine.player.savingsPlans !== game.savingsPlansSent;
     if (
       (game.projectionFull ||
         taxesChanged ||
         standingOrdersChanged ||
+        savingsPlansChanged ||
         game.changedAccounts.size > 0 ||
         game.changedOrders.size > 0 ||
         game.changedDepots.size > 0 ||
@@ -1544,6 +1596,10 @@ export class EngineHost {
       full || player.standingOrders !== game.standingOrdersSent
         ? standingOrderViews(player, game.engine.tick)
         : undefined;
+    const savingsPlans =
+      full || player.savingsPlans !== game.savingsPlansSent
+        ? game.engine.savingsPlanViews()
+        : undefined;
     this.#post('projection', {
       tick: game.engine.tick,
       full,
@@ -1554,10 +1610,12 @@ export class EngineHost {
       ...(trading === undefined ? {} : { trading }),
       ...(taxes === undefined ? {} : { taxes }),
       ...(standingOrders === undefined ? {} : { standingOrders }),
+      ...(savingsPlans === undefined ? {} : { savingsPlans }),
     });
     game.watchlistSent = player.watchlist;
     game.taxYearSent = player.taxYear;
     game.standingOrdersSent = player.standingOrders;
+    game.savingsPlansSent = player.savingsPlans;
     game.projectionFull = false;
     game.valuedTick = game.engine.tick;
     game.changedAccounts.clear();

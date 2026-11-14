@@ -35,6 +35,13 @@ if (BROKER === undefined || EXCHANGE === undefined) {
   throw new Error('The mini world lacks an online broker or the exchange of its first company');
 }
 const COSTS = 6.7; // 4,60 € order fee + 2,10 € exchange fee
+// Savings plans (AP 5.6b): an ETF, always eligible, and a share that is not.
+const ETF = WORLD.etfs[0];
+const ETF_EXCHANGE = EXCHANGES.find((exchange) => exchange.id === ETF.exchangeId);
+const SMALL = WORLD.companies.find((company) => !company.savingsPlanEligible);
+if (ETF_EXCHANGE === undefined || SMALL === undefined) {
+  throw new Error('The mini world lacks the exchange of its first ETF or a small share');
+}
 
 function hhmm(minuteOfDay: number): string {
   const pad = (value: number): string => String(value).padStart(2, '0');
@@ -257,5 +264,111 @@ describe('OrdersPage', () => {
     expect(parseEuros(text(row, 'trading.order-history.row.total'))).toBe(
       cents(cents(10 * price) + COSTS),
     );
+  });
+
+  // AP 5.6b acceptance: create, change, pause and delete a savings plan (US-HD-05); it executes
+  // after a jump past its day and shows up as a position and a notification.
+  it('creates, changes, pauses, resumes and deletes a savings plan that buys after a jump', async () => {
+    const fee = BROKER.conditions.depot.savingsPlanFee;
+    // Online brokers charge a flat amount or nothing (TS §5.7); checked, so the costs stay literal.
+    expect(['flat', 'free']).toContain(fee.kind);
+    const costs = fee.kind === 'flat' ? fee.amount / 100 : 0;
+    await openDepotWithMoney();
+
+    // A share without savings plans keeps the button with its reason.
+    await open(`markets/${SMALL.id}`);
+    const blocked = byTestId(page, 'trading.trade-actions.savings-plan');
+    expect(blocked.getAttribute('aria-disabled')).toBe('true');
+    expect(text(page, 'trading.trade-actions.savings-plan-reason')).toContain(
+      'Für dieses Wertpapier gibt es keinen Sparplan.',
+    );
+    await act(() => click(blocked));
+    expect(queryByTestId(document.body, 'trading.savings-plan-dialog.submit')).toBeNull();
+
+    // From the ETF's page, with the ETF and the depot preselected.
+    await open(`markets/${ETF.id}`);
+    await act(() => click(byTestId(page, 'trading.trade-actions.savings-plan')));
+    expect(body<HTMLSelectElement>('trading.savings-plan-dialog.instrument').value).toBe(ETF.id);
+    expect(body<HTMLSelectElement>('trading.savings-plan-dialog.depot').value).toBe('dep-3');
+    await act(() => typeText(body<HTMLInputElement>('trading.savings-plan-dialog.amount'), '100'));
+    await act(() => select(body<HTMLSelectElement>('trading.savings-plan-dialog.day'), '2'));
+    await run(300);
+    expect(parseEuros(text(document.body, 'trading.savings-plan-dialog.costs'))).toBe(costs);
+    // TS §7.8: shares = (amount − costs) / ask on millionths, here from the shown ask.
+    const preview = text(document.body, 'trading.savings-plan-dialog.quantity');
+    const [, shown, askText] = /^ca\. (\S+) zu (.+)$/.exec(preview) ?? [];
+    const ask = BigInt(Math.round(parseEuros(askText) * 10_000));
+    const budget = BigInt(Math.round((100 - costs) * 100)) * 100_000_000n;
+    expect(Math.round(parseEuros(shown) * 1_000_000)).toBe(Number(budget / ask));
+    // 3.000 € cover the amount: no hint to a standing order.
+    expect(queryByTestId(document.body, 'trading.savings-plan-dialog.inflow-hint')).toBeNull();
+    await act(() => typeText(body<HTMLInputElement>('trading.savings-plan-dialog.amount'), '5000'));
+    expect(queryByTestId(document.body, 'trading.savings-plan-dialog.inflow-hint')).not.toBeNull();
+    await act(() => typeText(body<HTMLInputElement>('trading.savings-plan-dialog.amount'), '100'));
+    await act(() => click(body('trading.savings-plan-dialog.submit')));
+    expect(queryByTestId(document.body, 'trading.savings-plan-dialog.submit')).toBeNull();
+    expect(toasts()).toContain(`Sparplan für ${ETF.name} angelegt.`);
+
+    await open('orders');
+    await act(() => click(byTestId(page, 'trading.orders.tabs.savings-plans.tab')));
+    const plan = (): HTMLElement => byTestId(page, 'trading.savings-plans.sp-1');
+    const planText = (field: string): string => text(plan(), `trading.savings-plans.${field}`);
+    expect(planText('instrument')).toBe(ETF.name);
+    expect(planText('amount')).toBe('100,00 € monatlich am 2.');
+    expect(planText('depot')).toContain(BROKER.name);
+    // Created on Monday, 01.04.2030: first at the open on Tuesday, 02.04.
+    const firstOpen = `Di., 02.04.2030, ${hhmm(ETF_EXCHANGE.open)}`;
+    expect(planText('next')).toBe(firstOpen);
+
+    await act(() => click(byTestId(page, 'trading.savings-plans.sp-1.change')));
+    expect(body<HTMLSelectElement>('trading.savings-plan-dialog.instrument').disabled).toBe(true);
+    expect(body<HTMLSelectElement>('trading.savings-plan-dialog.day').value).toBe('2');
+    await act(() => typeText(body<HTMLInputElement>('trading.savings-plan-dialog.amount'), '150'));
+    await act(() => click(body('trading.savings-plan-dialog.submit')));
+    await run(100);
+    expect(toasts()).toContain('Der Sparplan ist geändert.');
+    expect(planText('amount')).toBe('150,00 € monatlich am 2.');
+
+    await act(() => click(byTestId(page, 'trading.savings-plans.sp-1.pause')));
+    await run(100);
+    expect(queryByTestId(plan(), 'trading.savings-plans.paused')).not.toBeNull();
+    expect(planText('next')).toBe('keine, pausiert');
+    await act(() => click(byTestId(page, 'trading.savings-plans.sp-1.resume')));
+    await run(100);
+    expect(queryByTestId(plan(), 'trading.savings-plans.paused')).toBeNull();
+    expect(planText('next')).toBe(firstOpen);
+
+    // Past the execution at the open on Tuesday, 02.04.2030.
+    await act(() => click(byTestId(page, 'shell.header.jump-button')));
+    await act(() => click(body('clock.jump-dialog.date-kind')));
+    await act(() => typeText(body<HTMLInputElement>('clock.jump-dialog.date'), '2030-04-02'));
+    await act(() =>
+      typeText(body<HTMLInputElement>('clock.jump-dialog.time'), hhmm(ETF_EXCHANGE.open + 1)),
+    );
+    await act(() => click(body('clock.jump-dialog.submit')));
+    await run(500);
+    // Thursday, 02.05.2030.
+    expect(planText('next')).toBe(`Do., 02.05.2030, ${hhmm(ETF_EXCHANGE.open)}`);
+
+    await open('portfolio');
+    expect(text(page, 'portfolio.positions')).toContain(ETF.name);
+    expect(text(page, 'portfolio.savings-plans')).toContain(ETF.name);
+    await open('notifications');
+    expect(textOf(page)).toContain('Sparplan ausgeführt');
+    expect(textOf(page)).toContain(`Stück ${ETF.name} zu`);
+
+    // Deleting asks first; the position stays.
+    await open('portfolio');
+    await act(() => click(byTestId(page, 'trading.savings-plans.sp-1.delete')));
+    expect(text(document.body, 'dialog-confirm.confirm')).toBe('Löschen');
+    await act(() => click(body('dialog-confirm.decline')));
+    expect(queryByTestId(page, 'trading.savings-plans.sp-1')).not.toBeNull();
+    await act(() => click(byTestId(page, 'trading.savings-plans.sp-1.delete')));
+    await act(() => click(body('dialog-confirm.confirm')));
+    await run(100);
+    expect(toasts()).toContain('Der Sparplan ist gelöscht.');
+    expect(queryByTestId(page, 'trading.savings-plans.sp-1')).toBeNull();
+    expect(queryByTestId(page, 'portfolio.savings-plans.empty')).not.toBeNull();
+    expect(text(page, 'portfolio.positions')).toContain(ETF.name);
   });
 });

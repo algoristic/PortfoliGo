@@ -42,7 +42,8 @@
       class="mt-3"
       [view]="trade"
       (clickedBuy)="onBuy(trade.instrumentId)"
-      (clickedSell)="onSell(trade.instrumentId)"></app-trade-actions>
+      (clickedSell)="onSell(trade.instrumentId)"
+      (clickedCreateSavingsPlan)="onCreateSavingsPlan(trade.instrumentId)"></app-trade-actions>
   }
 
   @if (detail?.failed) {

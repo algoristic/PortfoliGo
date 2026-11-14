@@ -4,7 +4,12 @@ import {
   OrderCommandError,
   OrderSpec,
 } from '@app/trading/domain/models/order.model';
+import {
+  SAVINGS_PLAN_COMMAND_ERRORS,
+  SavingsPlanCommandError,
+} from '@app/trading/domain/models/savings-plan.model';
 import { orderCommandErrorLabel } from '@app/trading/ui/labels/order-labels';
+import { savingsPlanCommandErrorLabel } from '@app/trading/ui/labels/savings-plan-labels';
 import { OrderTicketContext } from '@app/trading/ui/models/order-ticket.model';
 import { ticketPreview } from '@app/trading/ui/schemas/order-ticket-schema';
 
@@ -54,6 +59,41 @@ export function placeOrderShortfall(
     return null;
   }
   return ticketPreview(order, depot, context)?.shortfall ?? null;
+}
+
+/** The savings plan commands (TS §8.2) for the texts of their failures. */
+export type SavingsPlanCommand =
+  'createSavingsPlan' | 'changeSavingsPlan' | 'setSavingsPlanPaused' | 'deleteSavingsPlan';
+
+/**
+ * Text of a failed savings plan command (TS §8.6): the reason for every code of the savings plan
+ * rules, a running jump or a failed write, otherwise what could not be done.
+ */
+export function savingsPlanCommandFailureMessage(
+  command: SavingsPlanCommand,
+  error: unknown,
+): string {
+  if (error instanceof EngineCommandError) {
+    if ((SAVINGS_PLAN_COMMAND_ERRORS as readonly string[]).includes(error.code)) {
+      return savingsPlanCommandErrorLabel(error.code as SavingsPlanCommandError);
+    }
+    if (error.code === 'busy') {
+      return $localize`:@@featureTrading-tradingErrors-savingsPlanBusy:Das geht gerade nicht, weil die Spielzeit noch berechnet wird.`;
+    }
+    if (error.code === 'storage-failed') {
+      return $localize`:@@featureTrading-tradingErrors-savingsPlanStorageFailed:Die Änderung konnte nicht gespeichert werden und wurde nicht übernommen.`;
+    }
+  }
+  switch (command) {
+    case 'createSavingsPlan':
+      return $localize`:@@featureTrading-tradingErrors-createSavingsPlanFailure:Der Sparplan konnte nicht angelegt werden.`;
+    case 'changeSavingsPlan':
+      return $localize`:@@featureTrading-tradingErrors-changeSavingsPlanFailure:Der Sparplan konnte nicht geändert werden.`;
+    case 'setSavingsPlanPaused':
+      return $localize`:@@featureTrading-tradingErrors-pauseSavingsPlanFailure:Der Sparplan konnte nicht pausiert oder fortgesetzt werden.`;
+    case 'deleteSavingsPlan':
+      return $localize`:@@featureTrading-tradingErrors-deleteSavingsPlanFailure:Der Sparplan konnte nicht gelöscht werden.`;
+  }
 }
 
 function isOrderCommandError(code: string): code is OrderCommandError {

@@ -21,6 +21,17 @@
       (click)="onSell()">
       Verkaufen
     </button>
+    <button
+      appButton
+      type="button"
+      variant="ghost"
+      aria-describedby="trading-trade-actions-savings-plan-reason"
+      data-testid="trading.trade-actions.savings-plan"
+      [attr.aria-disabled]="!_view.savingsPlanEligible || null"
+      (click)="onCreateSavingsPlan()">
+      <i appIcon="piggy-bank"></i>
+      <span i18n="@@uiTrading-tradeActions-savingsPlan">Sparplan anlegen</span>
+    </button>
     @if (_view.quantity > 0) {
       <span class="text-sm text-fg-muted tabular-nums" data-testid="trading.trade-actions.position">
         <ng-container i18n="@@uiTrading-tradeActions-position"
@@ -35,6 +46,17 @@
       >{{ sellBlocked() ? sellReason() : '' }}</span
     >
   </div>
+  <p
+    id="trading-trade-actions-savings-plan-reason"
+    class="mt-1 text-sm text-fg-muted empty:hidden"
+    data-testid="trading.trade-actions.savings-plan-reason">
+    @if (!_view.savingsPlanEligible) {
+      <ng-container i18n="@@uiTrading-tradeActions-notEligible"
+        >Für dieses Wertpapier gibt es keinen Sparplan. Sparplanfähig sind ETFs und große
+        Aktien.</ng-container
+      >
+    }
+  </p>
   @if (!_view.hasDepot) {
     <p class="mt-2 text-sm text-fg-muted" data-testid="trading.trade-actions.no-depot">
       <ng-container i18n="@@uiTrading-tradeActions-noDepot"

@@ -16,6 +16,12 @@ import {
   OrderChange,
   OrderSpec,
 } from '@app/trading/domain/models/order.model';
+import {
+  SAVINGS_PLAN_COMMAND_ERRORS,
+  SavingsPlanChange,
+  SavingsPlanId,
+  SavingsPlanSpec,
+} from '@app/trading/domain/models/savings-plan.model';
 
 import { BackgroundMode } from './game-state.model';
 
@@ -125,6 +131,31 @@ export interface CancelOrderCommand extends CommandBase {
   orderId: string;
 }
 
+/** Creates a savings plan (US-HD-05, TS §7.8); the result carries its ID. */
+export interface CreateSavingsPlanCommand extends CommandBase {
+  type: 'createSavingsPlan';
+  plan: SavingsPlanSpec;
+}
+
+/** Replaces amount and day of a savings plan; depot and instrument stay. */
+export interface ChangeSavingsPlanCommand extends CommandBase {
+  type: 'changeSavingsPlan';
+  savingsPlanId: SavingsPlanId;
+  change: SavingsPlanChange;
+}
+
+/** Pauses or resumes a savings plan. */
+export interface SetSavingsPlanPausedCommand extends CommandBase {
+  type: 'setSavingsPlanPaused';
+  savingsPlanId: SavingsPlanId;
+  paused: boolean;
+}
+
+export interface DeleteSavingsPlanCommand extends CommandBase {
+  type: 'deleteSavingsPlan';
+  savingsPlanId: SavingsPlanId;
+}
+
 export type GameCommand =
   | SetBackgroundModeCommand
   | SetAutoPauseCommand
@@ -140,7 +171,11 @@ export type GameCommand =
   | DeleteStandingOrderCommand
   | PlaceOrderCommand
   | ChangeOrderCommand
-  | CancelOrderCommand;
+  | CancelOrderCommand
+  | CreateSavingsPlanCommand
+  | ChangeSavingsPlanCommand
+  | SetSavingsPlanPausedCommand
+  | DeleteSavingsPlanCommand;
 
 export const COMMAND_ERRORS = [
   'tick-mismatch',
@@ -149,6 +184,7 @@ export const COMMAND_ERRORS = [
   ...NOTIFICATION_COMMAND_ERRORS,
   ...WATCHLIST_COMMAND_ERRORS,
   ...ORDER_COMMAND_ERRORS,
+  ...SAVINGS_PLAN_COMMAND_ERRORS,
 ] as const;
 export type CommandError = (typeof COMMAND_ERRORS)[number];
 
@@ -160,8 +196,14 @@ export interface OpenedAccount {
 
 /**
  * `opened` answers `openAccount`, `orderId` answers `placeOrder`, `standingOrderId` answers
- * `createStandingOrder`.
+ * `createStandingOrder`, `savingsPlanId` answers `createSavingsPlan`.
  */
 export type CommandResult =
-  | { ok: true; opened?: OpenedAccount; orderId?: string; standingOrderId?: StandingOrderId }
+  | {
+      ok: true;
+      opened?: OpenedAccount;
+      orderId?: string;
+      standingOrderId?: StandingOrderId;
+      savingsPlanId?: SavingsPlanId;
+    }
   | { ok: false; error: CommandError };

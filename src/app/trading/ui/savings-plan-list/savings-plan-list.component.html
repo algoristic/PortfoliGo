@@ -1,0 +1,92 @@
+<ul class="grid grid-cols-1 gap-3 lg:grid-cols-2" data-testid="trading.savings-plans.list">
+  @for (row of rows(); track row.id) {
+    <li
+      class="flex min-w-0 flex-col gap-2 rounded-lg border border-border bg-surface p-4"
+      [attr.data-testid]="'trading.savings-plans.' + row.id">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <a
+          class="min-w-0 font-semibold break-words hover:underline"
+          data-testid="trading.savings-plans.instrument"
+          [routerLink]="['../markets', row.instrumentId]"
+          >{{ row.instrumentName }}</a
+        >
+        @if (row.paused) {
+          <app-badge
+            data-testid="trading.savings-plans.paused"
+            i18n="@@uiTrading-savingsPlanList-paused"
+            >pausiert</app-badge
+          >
+        }
+      </div>
+      <dl class="flex flex-col gap-1 text-sm">
+        <div class="flex flex-wrap gap-x-2">
+          <dt class="text-fg-muted" i18n="@@uiTrading-savingsPlanList-amount">Betrag</dt>
+          <dd class="tabular-nums" data-testid="trading.savings-plans.amount">
+            <ng-container i18n="@@uiTrading-savingsPlanList-amountValue"
+              >{{ row.amount | formatCents }} monatlich am {{ row.day }}.</ng-container
+            >
+          </dd>
+        </div>
+        <div class="flex flex-wrap gap-x-2">
+          <dt class="text-fg-muted" i18n="@@uiTrading-savingsPlanList-depot">Depot</dt>
+          <dd class="min-w-0 break-words" data-testid="trading.savings-plans.depot">
+            {{ row.depotLabel }}
+          </dd>
+        </div>
+        <div class="flex flex-wrap gap-x-2">
+          <dt class="text-fg-muted" i18n="@@uiTrading-savingsPlanList-next">Nächste Ausführung</dt>
+          <dd class="tabular-nums" data-testid="trading.savings-plans.next">
+            @if (row.nextExecution === null) {
+              <span i18n="@@uiTrading-savingsPlanList-nextPaused">keine, pausiert</span>
+            } @else {
+              {{ row.nextExecution | formatGameTime }}
+            }
+          </dd>
+        </div>
+      </dl>
+      <div class="flex flex-wrap gap-1">
+        <button
+          appButton
+          type="button"
+          variant="ghost"
+          size="sm"
+          [attr.aria-label]="row.name + ': ' + changeLabel"
+          [attr.data-testid]="'trading.savings-plans.' + row.id + '.change'"
+          (click)="onChange(row.id)">
+          <i appIcon="pencil"></i>
+          <span i18n="@@uiTrading-savingsPlanList-change">Ändern</span>
+        </button>
+        <!-- One button for both, so that the focus stays on it when it switches. -->
+        <button
+          appButton
+          type="button"
+          variant="ghost"
+          size="sm"
+          [attr.aria-label]="row.name + ': ' + (row.paused ? resumeLabel : pauseLabel)"
+          [attr.data-testid]="
+            'trading.savings-plans.' + row.id + (row.paused ? '.resume' : '.pause')
+          "
+          (click)="onPause(row.id, !row.paused)">
+          @if (row.paused) {
+            <i appIcon="play-fill"></i>
+            <span i18n="@@uiTrading-savingsPlanList-resume">Fortsetzen</span>
+          } @else {
+            <i appIcon="pause-fill"></i>
+            <span i18n="@@uiTrading-savingsPlanList-pause">Pausieren</span>
+          }
+        </button>
+        <button
+          appButton
+          type="button"
+          variant="ghost"
+          size="sm"
+          [attr.aria-label]="row.name + ': ' + deleteLabel"
+          [attr.data-testid]="'trading.savings-plans.' + row.id + '.delete'"
+          (click)="onDelete(row.id)">
+          <i appIcon="trash"></i>
+          <span i18n="@@uiTrading-savingsPlanList-delete">Löschen</span>
+        </button>
+      </div>
+    </li>
+  }
+</ul>

@@ -13,13 +13,32 @@ import { Instrument } from '@app/market/domain/models/instrument.model';
 import * as MarketActions from '@app/market/feature/state/market.actions';
 import { selectInstrumentEntities } from '@app/market/feature/state/market.selectors';
 import { OrderSpec } from '@app/trading/domain/models/order.model';
+import { SavingsPlanView } from '@app/trading/domain/models/savings-plan.model';
 
 import { TradingDialogEffects } from './trading-dialogs.effects';
 import * as TradingActions from './trading.actions';
-import { DepotEntry, ORDER_CHANGE_SUBSCRIPTION, ORDER_TICKET_SUBSCRIPTION } from './trading.model';
-import { selectDepots, selectOrderEntities } from './trading.selectors';
+import {
+  DepotEntry,
+  ORDER_CHANGE_SUBSCRIPTION,
+  ORDER_TICKET_SUBSCRIPTION,
+  SAVINGS_PLAN_SUBSCRIPTION,
+} from './trading.model';
+import { selectDepots, selectOrderEntities, selectSavingsPlans } from './trading.selectors';
 
-const SHARE = { id: 'stk-1', kind: 'stock', name: 'Astix', series: 4 } as Instrument;
+const SHARE = {
+  id: 'stk-1',
+  kind: 'stock',
+  name: 'Astix',
+  series: 4,
+  savingsPlanEligible: true,
+} as Instrument;
+const SMALL = {
+  id: 'stk-2',
+  kind: 'stock',
+  name: 'Klein AG',
+  series: 5,
+  savingsPlanEligible: false,
+} as Instrument;
 const INDEX = { id: 'idx-1', kind: 'index', name: 'Welt', series: 9 } as Instrument;
 
 function depot(depotId: DepotEntry['depotId'], quantity: number): DepotEntry {
@@ -57,6 +76,18 @@ const ORDER: OrderSpec = {
   validity: { kind: 'day' },
 };
 
+const PLAN: SavingsPlanView = {
+  id: 'sp-1',
+  depotId: 'dep-4',
+  instrumentId: SHARE.id,
+  amount: 5_000,
+  day: 15,
+  createdAt: 0,
+  paused: false,
+  handledUpTo: '2030-03',
+  nextExecution: 99,
+};
+
 const OPEN_ORDER = { ...ORDER, id: 'ord-1', side: 'buy', status: 'open' } as OrderView;
 
 describe('TradingDialogEffects', () => {
@@ -72,7 +103,12 @@ describe('TradingDialogEffects', () => {
   function emitted(
     action: Action,
     effect:
-      'orderTicketDialog$' | 'changeOrderDialog$' | 'cancelOrderDialog$' = 'orderTicketDialog$',
+      | 'orderTicketDialog$'
+      | 'changeOrderDialog$'
+      | 'cancelOrderDialog$'
+      | 'createSavingsPlanDialog$'
+      | 'changeSavingsPlanDialog$'
+      | 'savingsPlanInstrumentQuote$' = 'orderTicketDialog$',
   ): unknown[] {
     const received: unknown[] = [];
     const subscription = effects[effect].subscribe((next) => received.push(next));
@@ -93,7 +129,12 @@ describe('TradingDialogEffects', () => {
       ],
     });
     store = TestBed.inject(MockStore);
-    store.overrideSelector(selectInstrumentEntities, { [SHARE.id]: SHARE, [INDEX.id]: INDEX });
+    store.overrideSelector(selectInstrumentEntities, {
+      [SHARE.id]: SHARE,
+      [SMALL.id]: SMALL,
+      [INDEX.id]: INDEX,
+    });
+    store.overrideSelector(selectSavingsPlans, [PLAN]);
     store.overrideSelector(selectDepots, [depot('dep-2', 0), depot('dep-4', 3_000_000)]);
     store.overrideSelector(selectOrderEntities, {
       'ord-1': OPEN_ORDER,
@@ -198,6 +239,88 @@ describe('TradingDialogEffects', () => {
         emitted(TradingActions.clickedCancelOrder({ orderId: 'ord-2' }), 'cancelOrderDialog$'),
       ).toEqual([]);
       expect(dialog.open).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('savings plans (AP 5.6b)', () => {
+    it('opens „Sparplan anlegen“ for an eligible instrument in the given depot and watches its quote', () => {
+      const plan = { depotId: 'dep-4', instrumentId: SHARE.id, amount: 5_000, day: 15 } as const;
+      closeWith(plan);
+      expect(
+        emitted(
+          TradingActions.clickedCreateSavingsPlan({ instrumentId: SHARE.id, depotId: 'dep-4' }),
+          'createSavingsPlanDialog$',
+        ),
+      ).toEqual([
+        MarketActions.quotesSubscriptionChanged({ key: SAVINGS_PLAN_SUBSCRIPTION, series: [4] }),
+        TradingActions.submittedCreateSavingsPlan({ plan }),
+        MarketActions.quotesSubscriptionEnded({ key: SAVINGS_PLAN_SUBSCRIPTION }),
+      ]);
+      expect(dialog.open.mock.calls[0][1]?.data).toEqual({
+        mode: 'create',
+        initial: { depotId: 'dep-4', instrumentId: SHARE.id, amount: null, day: '1' },
+      });
+    });
+
+    it('opens no dialog for an instrument without savings plans', () => {
+      expect(
+        emitted(
+          TradingActions.clickedCreateSavingsPlan({ instrumentId: SMALL.id }),
+          'createSavingsPlanDialog$',
+        ),
+      ).toEqual([]);
+      expect(dialog.open).not.toHaveBeenCalled();
+    });
+
+    it('lets the depot page choose the instrument, without a quote until one is chosen', () => {
+      closeWith(undefined);
+      expect(
+        emitted(TradingActions.clickedCreateSavingsPlan({}), 'createSavingsPlanDialog$'),
+      ).toEqual([MarketActions.quotesSubscriptionEnded({ key: SAVINGS_PLAN_SUBSCRIPTION })]);
+      expect(dialog.open.mock.calls[0][1]?.data).toMatchObject({
+        initial: { depotId: 'dep-2', instrumentId: '' },
+      });
+      expect(
+        emitted(
+          TradingActions.selectedSavingsPlanInstrument({ instrumentId: SHARE.id }),
+          'savingsPlanInstrumentQuote$',
+        ),
+      ).toEqual([
+        MarketActions.quotesSubscriptionChanged({ key: SAVINGS_PLAN_SUBSCRIPTION, series: [4] }),
+      ]);
+    });
+
+    it('offers a depot when there is none', () => {
+      store.overrideSelector(selectDepots, []);
+      store.refreshState();
+      closeWith(true);
+      expect(
+        emitted(
+          TradingActions.clickedCreateSavingsPlan({ instrumentId: SHARE.id }),
+          'createSavingsPlanDialog$',
+        ),
+      ).toEqual([BankingActions.clickedOpenAccount({ kind: 'depot' })]);
+    });
+
+    it('changes amount and day of a plan with its values preselected', () => {
+      closeWith({ amount: 7_500, day: 3 });
+      expect(
+        emitted(
+          TradingActions.clickedChangeSavingsPlan({ savingsPlanId: 'sp-1' }),
+          'changeSavingsPlanDialog$',
+        ),
+      ).toEqual([
+        MarketActions.quotesSubscriptionChanged({ key: SAVINGS_PLAN_SUBSCRIPTION, series: [4] }),
+        TradingActions.submittedChangeSavingsPlan({
+          savingsPlanId: 'sp-1',
+          change: { amount: 7_500, day: 3 },
+        }),
+        MarketActions.quotesSubscriptionEnded({ key: SAVINGS_PLAN_SUBSCRIPTION }),
+      ]);
+      expect(dialog.open.mock.calls[0][1]?.data).toEqual({
+        mode: 'change',
+        initial: { depotId: 'dep-4', instrumentId: SHARE.id, amount: 5_000, day: '15' },
+      });
     });
   });
 });

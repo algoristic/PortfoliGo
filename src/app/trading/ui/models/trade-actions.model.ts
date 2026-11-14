@@ -6,6 +6,8 @@ export interface InstrumentTradeView {
   name: string;
   /** Shares and ETFs; indices have no bid and ask (TS §6.7). */
   tradable: boolean;
+  /** Shares and ETFs with `savingsPlanEligible` (US-HD-05, TS §7.8). */
+  savingsPlanEligible: boolean;
   /** The player has an open depot. */
   hasDepot: boolean;
   /** Shares held in all open depots. */

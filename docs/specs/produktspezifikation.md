@@ -405,7 +405,8 @@ Als Anwender möchte ich regelmäßig automatisch investieren, damit mein Vermö
 
 - Angaben: Depot, sparplanfähiges Instrument (ETF oder Aktie), Betrag, Ausführungstag (z. B. 1. oder 15.), Intervall (monatlich).
 - Ausführung zur Börseneröffnung am Ausführungstag bzw. am nächsten Handelstag, mit Bruchstücken und den Sparplankosten der Bank.
-- Sparpläne lassen sich pausieren, ändern und löschen. Fehlt die Deckung, fällt die Ausführung aus und der Anwender wird benachrichtigt.
+- Sparpläne lassen sich pausieren, ändern (Betrag und Ausführungstag) und löschen. Fehlt die Deckung, fällt die Ausführung aus und der Anwender wird benachrichtigt. Der Mindestbetrag ist 1,00 € und muss über den Sparplankosten liegen (Festlegung AP 5.6b).
+- Die Sparpläne stehen im Orderbuch (Tab „Sparpläne“) und auf der Depotseite; „Sparplan anlegen“ gibt es dort und auf der Seite eines sparplanfähigen Wertpapiers (AP 5.6b).
 - Der Sparplan bucht vom Verrechnungskonto seines Depots. Den monatlichen Zufluss vom Gehaltskonto übernimmt ein Dauerauftrag (US-BK-10, E-21).
 
 ### 7.7 Portfolio und Auswertung (PF)

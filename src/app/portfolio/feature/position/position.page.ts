@@ -85,4 +85,8 @@ export class PositionPage {
   onSell(instrumentId: string, depotId: DepotId | null): void {
     this.tradingFacade.clickSell(instrumentId, depotId ?? undefined);
   }
+
+  onCreateSavingsPlan(instrumentId: string, depotId: DepotId | null): void {
+    this.tradingFacade.clickCreateSavingsPlan(instrumentId, depotId ?? undefined);
+  }
 }

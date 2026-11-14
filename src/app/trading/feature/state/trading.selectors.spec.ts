@@ -3,6 +3,7 @@ import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
 import { OrderView, PositionView } from '@app/engine/domain/models/trading-view.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
 import { OrderStatus } from '@app/trading/domain/models/order.model';
+import { SavingsPlanView } from '@app/trading/domain/models/savings-plan.model';
 import { Bank } from '@app/world/domain/models/bank.model';
 
 import { DepotEntry } from './trading.model';
@@ -10,13 +11,18 @@ import {
   selectChangeOrderContext,
   selectDepotReservations,
   selectDepots,
+  selectDepotSavingsPlanEntries,
   selectOpenOrderEntries,
   selectOpenOrders,
   selectOrderHistory,
   selectPosition,
   selectRouteInstrumentTrade,
+  selectSavingsPlanDepots,
+  selectSavingsPlanEntries,
+  selectSavingsPlanInstruments,
+  selectUpcomingSavingsPlans,
 } from './trading.selectors';
-import { orderTicketContext, preselectedDepot } from './trading.utils';
+import { orderTicketContext, preselectedDepot, savingsPlanDepot } from './trading.utils';
 
 const BANK = {
   id: 'bnk-1',
@@ -121,6 +127,7 @@ describe('trading selectors', () => {
       instrumentId: 'stk-1',
       name: 'Astix',
       tradable: true,
+      savingsPlanEligible: SHARE.savingsPlanEligible,
       hasDepot: true,
       quantity: 3_500_000,
       free: 1_500_000,
@@ -255,6 +262,92 @@ describe('trading selectors', () => {
       expect(
         selectChangeOrderContext('ord-1').projector({ 'ord-1': buy }, {}, {}, depots, null),
       ).toBeNull();
+    });
+  });
+
+  describe('savings plans (AP 5.6b)', () => {
+    function plan(n: number, depotId: string, nextExecution: number | null): SavingsPlanView {
+      return {
+        id: `sp-${n}`,
+        depotId: depotId as SavingsPlanView['depotId'],
+        instrumentId: n === 3 ? 'etf-9' : 'stk-1',
+        amount: 5_000,
+        day: 15,
+        createdAt: 0,
+        paused: nextExecution === null,
+        handledUpTo: '2030-03',
+        nextExecution,
+      };
+    }
+    const plans = [plan(10, 'dep-3', 500), plan(2, 'dep-7', 700), plan(3, 'dep-9', 500)];
+    const entries = selectSavingsPlanEntries.projector(plans, { 'stk-1': SHARE }, depots);
+
+    it('names instrument, depot and bank in creation order, IDs where unknown', () => {
+      expect(
+        entries?.map(({ plan: { id }, instrumentName, depotNumber, bankName }) => [
+          id,
+          instrumentName,
+          depotNumber,
+          bankName,
+        ]),
+      ).toEqual([
+        ['sp-2', 'Astix', 'Ddep-7', 'Darara Invest'],
+        ['sp-3', 'etf-9', 'dep-9', null],
+        ['sp-10', 'Astix', 'Ddep-3', 'Darara Invest'],
+      ]);
+      expect(selectSavingsPlanEntries.projector(null, {}, depots)).toBeNull();
+    });
+
+    it('filters the plans of the depot shown on the depot page', () => {
+      expect(
+        selectDepotSavingsPlanEntries('dep-3' as SavingsPlanView['depotId'])
+          .projector(entries)
+          ?.map(({ plan: { id } }) => id),
+      ).toEqual(['sp-10']);
+      expect(selectDepotSavingsPlanEntries(null).projector(entries)).toBe(entries);
+    });
+
+    it('lists the next executions of active plans earliest first, ties in creation order', () => {
+      const withPaused = [
+        ...(entries ?? []),
+        ...(selectSavingsPlanEntries.projector([plan(1, 'dep-3', null)], {}, depots) ?? []),
+      ];
+      expect(
+        selectUpcomingSavingsPlans.projector(withPaused).map(({ plan: { id } }) => id),
+      ).toEqual(['sp-3', 'sp-10', 'sp-2']);
+    });
+
+    it('offers the eligible instruments, ETFs first, each by name', () => {
+      const instruments = {
+        a: { id: 'a', kind: 'stock', name: 'Zeta', savingsPlanEligible: true },
+        b: { id: 'b', kind: 'etf', name: 'Welt ETF', savingsPlanEligible: true },
+        c: { id: 'c', kind: 'stock', name: 'Ärzte AG', savingsPlanEligible: true },
+        d: { id: 'd', kind: 'stock', name: 'Klein AG', savingsPlanEligible: false },
+        e: { id: 'e', kind: 'index', name: 'Index', savingsPlanEligible: false },
+      } as unknown as Record<string, Instrument>;
+      expect(selectSavingsPlanInstruments.projector(instruments).map(({ id }) => id)).toEqual([
+        'b',
+        'c',
+        'a',
+      ]);
+    });
+
+    it('offers the open depots with their savings plan costs and clearing account', () => {
+      expect(
+        selectSavingsPlanDepots
+          .projector(depots)
+          .map(({ depotId, clearingBalance, reserved }) => [depotId, clearingBalance, reserved]),
+      ).toEqual([
+        ['dep-3', 50_000, 10_000],
+        ['dep-7', 50_000, 10_000],
+      ]);
+    });
+
+    it('starts the dialog in the given open depot, else the first open one', () => {
+      expect(savingsPlanDepot(depots, 'dep-7')).toBe('dep-7');
+      expect(savingsPlanDepot(depots, 'dep-5')).toBe('dep-3');
+      expect(savingsPlanDepot(depots)).toBe('dep-3');
+      expect(savingsPlanDepot([])).toBeNull();
     });
   });
 });

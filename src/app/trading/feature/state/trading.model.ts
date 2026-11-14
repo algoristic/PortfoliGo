@@ -9,6 +9,9 @@ export const ORDER_TICKET_SUBSCRIPTION = 'order-ticket';
 /** Quote subscription of the open dialog „Order ändern“ (TS §8.4, §11.3). */
 export const ORDER_CHANGE_SUBSCRIPTION = 'order-change';
 
+/** Quote subscription of the open savings plan dialog for its preview (TS §8.4, §11.3). */
+export const SAVINGS_PLAN_SUBSCRIPTION = 'savings-plan';
+
 /** The order commands of the slice (TS §8.2); each has its own pending count. */
 export const ORDER_COMMANDS = ['placeOrder', 'changeOrder', 'cancelOrder'] as const;
 export type OrderCommand = (typeof ORDER_COMMANDS)[number];

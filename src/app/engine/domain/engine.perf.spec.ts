@@ -181,6 +181,44 @@ describe('engine performance', () => {
     );
   });
 
+  it('runs one game year in batch mode with ten savings plans within the catch-up budget', () => {
+    // AP 5.6b: five shares and five ETFs bought every month at their exchange's open (TS §7.8).
+    const funded = withBooks(start, {
+      accounts: [{ kind: 'clearing', bankId: world.world.banks[0].id, balance: 10_000_000 }],
+    });
+    const planning = GameEngine.restore(world, funded, { monthStarts });
+    const eligible = [
+      ...world.world.companies.filter(({ savingsPlanEligible }) => savingsPlanEligible).slice(0, 5),
+      ...world.world.etfs.slice(0, 5),
+    ];
+    eligible.forEach(({ id }, n) => {
+      const result = planning.applyCommand({
+        id: `plan-${n}`,
+        tick: planning.tick,
+        type: 'createSavingsPlan',
+        plan: { depotId: 'dep-3', instrumentId: id, amount: 10_000, day: 1 + 2 * n },
+      });
+      expect(result.ok).toBe(true);
+    });
+    const withPlans = planning.snapshot();
+    let purchases = 0;
+    const ms = medianMs(() => {
+      const engine = GameEngine.restore(world, withPlans, { monthStarts });
+      engine.runUntil(END_TICK);
+      engine.drainEvents();
+      purchases = engine
+        .drainTransactions()
+        .filter(({ refs }) => refs?.['savingsPlanId'] !== undefined).length;
+    }, 3);
+    // Twelve months of ten plans.
+    expect(purchases).toBe(120);
+    expectWithinBudget(
+      'engine: one game year in batch mode with 10 savings plans',
+      ms,
+      BUDGETS_MS.catchUpYear,
+    );
+  });
+
   it('runs one game year in batch mode (without candles) within the budget', () => {
     const ms = medianMs(() => {
       const engine = GameEngine.restore(world, start, { monthStarts });

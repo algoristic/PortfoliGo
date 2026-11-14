@@ -4,6 +4,7 @@ import { Action, createReducer, on } from '@ngrx/store';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { OrderView, PositionView } from '@app/engine/domain/models/trading-view.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
+import { SavingsPlanView } from '@app/trading/domain/models/savings-plan.model';
 
 import * as TradingActions from './trading.actions';
 import { OrderCommand, PendingOrderCommands } from './trading.model';
@@ -21,6 +22,8 @@ export interface TradingState extends EntityState<OrderView> {
   /** Tick of the last trading projection; `null` until the first full one. */
   tick: Tick | null;
   pending: PendingOrderCommands;
+  /** All savings plans with their next execution; `null` until the first projection (AP 5.6b). */
+  savingsPlans: SavingsPlanView[] | null;
   error?: unknown;
 }
 
@@ -32,6 +35,7 @@ export const initialTradingState: TradingState = ordersAdapter.getInitialState({
   holdings: {},
   tick: null,
   pending: noPendingCommands,
+  savingsPlans: null,
 });
 
 function changePending(state: TradingState, command: OrderCommand, delta: 1 | -1): TradingState {
@@ -57,6 +61,17 @@ const reducer = createReducer(
     const dropped = droppedHistoryIds(Object.values(updated.entities) as OrderView[]);
     return dropped.length === 0 ? updated : ordersAdapter.removeMany(dropped, updated);
   }),
+  on(TradingActions.receivedSavingsPlans, (state, { savingsPlans }) => ({
+    ...state,
+    savingsPlans: savingsPlans.savingsPlans,
+  })),
+  on(
+    TradingActions.createSavingsPlanFailure,
+    TradingActions.changeSavingsPlanFailure,
+    TradingActions.setSavingsPlanPausedFailure,
+    TradingActions.deleteSavingsPlanFailure,
+    (state, { error }) => ({ ...state, error }),
+  ),
   on(TradingActions.submittedPlaceOrder, (state) => changePending(state, 'placeOrder', 1)),
   on(TradingActions.submittedChangeOrder, (state) => changePending(state, 'changeOrder', 1)),
   on(TradingActions.submittedCancelOrder, (state) => changePending(state, 'cancelOrder', 1)),

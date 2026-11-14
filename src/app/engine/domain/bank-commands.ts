@@ -331,17 +331,18 @@ export class BankCommands {
   }
 
   /**
-   * Whether the depot of a clearing account holds no positions and no active orders (savings plans
-   * follow with AP 5.6); true for other accounts.
+   * Whether the depot of a clearing account holds no positions, no active orders and no savings
+   * plans, paused ones included (TS §7.4, §7.8); true for other accounts.
    */
   #depotIsEmpty(account: Account): boolean {
     if (account.kind !== 'clearing') {
       return true;
     }
-    const { positions, orders } = this.#player;
+    const { positions, orders, savingsPlans } = this.#player;
     return (
       !hasPositions(positions, account.depotId) &&
-      !orders.some((order) => order.depotId === account.depotId)
+      !orders.some((order) => order.depotId === account.depotId) &&
+      !savingsPlans.some((plan) => plan.depotId === account.depotId)
     );
   }
 }

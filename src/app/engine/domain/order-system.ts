@@ -4,7 +4,6 @@ import { Transaction, TransactionDraft } from '@app/banking/domain/models/ledger
 import { isWeekend, minuteOfDay } from '@app/clock/domain/calendar-logic';
 import { Tick, TradingHours } from '@app/clock/domain/models/time.model';
 import { isTradingTime } from '@app/clock/domain/trading-hours-logic';
-import { etfSeries, seriesIds } from '@app/market/domain/series';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { Quote } from '@app/shared/domain/models/quote.model';
 import {
@@ -38,6 +37,7 @@ import {
 import { isOrderExpired, orderExpiry } from '@app/trading/domain/order-validity-logic';
 import { bookPurchase, bookSale, holdingOf, saleOf } from '@app/trading/domain/position-logic';
 
+import { instrumentSessions } from './instrument-sessions';
 import { CommandResult } from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
 import { PlayerState } from './models/game-state.model';
@@ -97,19 +97,9 @@ export class OrderSystem {
     this.#ports = ports;
     this.#conditions = new Map(world.world.banks.map((bank) => [bank.id, bank.conditions.depot]));
     this.#priceFloor = world.context.config.priceFloor;
-    const ids = seriesIds(world.context);
-    this.#series = new Map(ids.map((id, series) => [id, series]));
-    const hours: (TradingHours | null)[] = ids.map(() => null);
-    for (const exchange of world.exchanges) {
-      const session: TradingHours = { open: exchange.open, close: exchange.close };
-      for (const i of exchange.stocks) {
-        hours[i] = session;
-      }
-      for (const e of exchange.etfs) {
-        hours[etfSeries(world.context, e)] = session;
-      }
-    }
-    this.#hours = hours;
+    const sessions = instrumentSessions(world);
+    this.#series = sessions.series;
+    this.#hours = sessions.hours;
   }
 
   /**

@@ -145,6 +145,7 @@ describe('EngineHost banking', () => {
           trading: { orders: [], depots: [] },
           taxes: { current: expect.objectContaining({ year: 2030, income: 0 }), closed: [] },
           standingOrders: [],
+          savingsPlans: [],
         },
       ]);
     });

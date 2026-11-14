@@ -49,9 +49,10 @@ export class NotificationSystem {
   }
 
   /**
-   * Notifications of an engine event (TS §12): account coverage, failed standing orders, credit interest, dividends and
-   * fund distributions and refunds with them, executed, rejected and expired orders with the refund
-   * of a sale (a triggered stop notifies nothing).
+   * Notifications of an engine event (TS §12): account coverage, failed standing orders, credit
+   * interest, dividends and fund distributions and refunds with them, executed, rejected and expired
+   * orders with the refund of a sale (a triggered stop notifies nothing), executed and failed
+   * savings plans.
    */
   fromEvent(event: EngineEvent): void {
     switch (event.type) {
@@ -113,6 +114,22 @@ export class NotificationSystem {
         this.#notify(event.tick, {
           code: 'order-expired',
           params: { orderId, depotId, instrumentId, side },
+        });
+        break;
+      }
+      case 'savings-plan-executed': {
+        const { savingsPlanId, depotId, instrumentId, amount, quantity, price, total } = event;
+        this.#notify(event.tick, {
+          code: 'savings-plan-executed',
+          params: { savingsPlanId, depotId, instrumentId, amount, quantity, price, total },
+        });
+        break;
+      }
+      case 'savings-plan-failed': {
+        const { savingsPlanId, depotId, instrumentId, amount, reason, available } = event;
+        this.#notify(event.tick, {
+          code: 'savings-plan-failed',
+          params: { savingsPlanId, depotId, instrumentId, amount, reason, available },
         });
         break;
       }

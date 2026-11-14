@@ -63,6 +63,10 @@ export class InstrumentPage {
     this.tradingFacade.clickSell(instrumentId);
   }
 
+  onCreateSavingsPlan(instrumentId: string): void {
+    this.tradingFacade.clickCreateSavingsPlan(instrumentId);
+  }
+
   onToggleWatchlist(id: string, watched: boolean): void {
     if (watched) {
       this.facade.addToWatchlist(id);

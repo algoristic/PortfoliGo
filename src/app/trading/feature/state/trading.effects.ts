@@ -16,15 +16,30 @@ import {
   tap,
 } from 'rxjs';
 
-import { TradingProjectionUpdate } from '@app/engine/data-access/service/engine-service.model';
+import {
+  SavingsPlansProjectionUpdate,
+  TradingProjectionUpdate,
+} from '@app/engine/data-access/service/engine-service.model';
 import { EngineService } from '@app/engine/data-access/service/engine.service';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { selectInstrumentEntities } from '@app/market/feature/state/market.selectors';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
-import { orderCommandFailureMessage, placeOrderShortfall } from './trading-errors.utils';
+import {
+  orderCommandFailureMessage,
+  placeOrderShortfall,
+  SavingsPlanCommand,
+  savingsPlanCommandFailureMessage,
+} from './trading-errors.utils';
 import * as TradingActions from './trading.actions';
 import { selectOrderTicketContext } from './trading.selectors';
+
+const SAVINGS_PLAN_FAILURE_COMMANDS: Readonly<Record<string, SavingsPlanCommand>> = {
+  [TradingActions.createSavingsPlanFailure.type]: 'createSavingsPlan',
+  [TradingActions.changeSavingsPlanFailure.type]: 'changeSavingsPlan',
+  [TradingActions.setSavingsPlanPausedFailure.type]: 'setSavingsPlanPaused',
+  [TradingActions.deleteSavingsPlanFailure.type]: 'deleteSavingsPlan',
+};
 
 @Injectable()
 export class TradingEffects {
@@ -64,6 +79,145 @@ export class TradingEffects {
         );
       }),
     ),
+  );
+
+  /** Like `watchTrading$`: the savings plans of every projection that carries them (AP 5.6b). */
+  watchSavingsPlans$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(SessionActions.enterGame),
+      switchMap(({ profile }) => {
+        const loaded$ = this.#actions$.pipe(
+          ofType(SessionActions.loadPlayerSuccess),
+          filter(({ loaded }) => loaded.playerId === profile.id),
+          take(1),
+        );
+        const fullBeforeLoad$ = this.#engine.savingsPlans$.pipe(
+          filter((update) => update.full),
+          takeUntil(loaded$),
+          last(undefined, null),
+          filter((update): update is SavingsPlansProjectionUpdate => update !== null),
+        );
+        return concat(fullBeforeLoad$, this.#engine.savingsPlans$).pipe(
+          map((savingsPlans) => TradingActions.receivedSavingsPlans({ savingsPlans })),
+          takeUntil(this.#ended$),
+        );
+      }),
+    ),
+  );
+
+  createSavingsPlan$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(TradingActions.submittedCreateSavingsPlan),
+      mergeMap(({ plan }) =>
+        this.#engine.createSavingsPlan(plan).pipe(
+          map(({ savingsPlanId, tick }) =>
+            TradingActions.createSavingsPlanSuccess({ plan, savingsPlanId, tick }),
+          ),
+          catchError((error: unknown) => of(TradingActions.createSavingsPlanFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
+  changeSavingsPlan$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(TradingActions.submittedChangeSavingsPlan),
+      mergeMap(({ savingsPlanId, change }) =>
+        this.#engine.changeSavingsPlan(savingsPlanId, change).pipe(
+          map(({ tick }) => TradingActions.changeSavingsPlanSuccess({ savingsPlanId, tick })),
+          catchError((error: unknown) => of(TradingActions.changeSavingsPlanFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
+  setSavingsPlanPaused$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(TradingActions.submittedSetSavingsPlanPaused),
+      mergeMap(({ savingsPlanId, paused }) =>
+        this.#engine.setSavingsPlanPaused(savingsPlanId, paused).pipe(
+          map(({ tick }) =>
+            TradingActions.setSavingsPlanPausedSuccess({ savingsPlanId, paused, tick }),
+          ),
+          catchError((error: unknown) => of(TradingActions.setSavingsPlanPausedFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
+  deleteSavingsPlan$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(TradingActions.submittedDeleteSavingsPlan),
+      mergeMap(({ savingsPlanId }) =>
+        this.#engine.deleteSavingsPlan(savingsPlanId).pipe(
+          map(({ tick }) => TradingActions.deleteSavingsPlanSuccess({ savingsPlanId, tick })),
+          catchError((error: unknown) => of(TradingActions.deleteSavingsPlanFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
+  showSavingsPlanSuccess$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(
+          TradingActions.createSavingsPlanSuccess,
+          TradingActions.changeSavingsPlanSuccess,
+          TradingActions.setSavingsPlanPausedSuccess,
+          TradingActions.deleteSavingsPlanSuccess,
+        ),
+        concatLatestFrom(() => this.#store.pipe(select(selectInstrumentEntities))),
+        tap(([action, instruments]) => {
+          switch (action.type) {
+            case TradingActions.createSavingsPlanSuccess.type: {
+              const name = instruments[action.plan.instrumentId]?.name ?? action.plan.instrumentId;
+              this.#toastService.success(
+                $localize`:@@featureTrading-tradingEffects-createSavingsPlanSuccess:Sparplan für ${name}:instrument: angelegt.`,
+              );
+              break;
+            }
+            case TradingActions.changeSavingsPlanSuccess.type:
+              this.#toastService.success(
+                $localize`:@@featureTrading-tradingEffects-changeSavingsPlanSuccess:Der Sparplan ist geändert.`,
+              );
+              break;
+            case TradingActions.setSavingsPlanPausedSuccess.type:
+              this.#toastService.success(
+                action.paused
+                  ? $localize`:@@featureTrading-tradingEffects-pauseSavingsPlanSuccess:Der Sparplan ist pausiert.`
+                  : $localize`:@@featureTrading-tradingEffects-resumeSavingsPlanSuccess:Der Sparplan läuft wieder.`,
+              );
+              break;
+            case TradingActions.deleteSavingsPlanSuccess.type:
+              this.#toastService.success(
+                $localize`:@@featureTrading-tradingEffects-deleteSavingsPlanSuccess:Der Sparplan ist gelöscht.`,
+              );
+              break;
+          }
+        }),
+      ),
+    { dispatch: false },
+  );
+
+  showSavingsPlanFailure$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(
+          TradingActions.createSavingsPlanFailure,
+          TradingActions.changeSavingsPlanFailure,
+          TradingActions.setSavingsPlanPausedFailure,
+          TradingActions.deleteSavingsPlanFailure,
+        ),
+        tap((action) =>
+          this.#toastService.error(
+            savingsPlanCommandFailureMessage(
+              SAVINGS_PLAN_FAILURE_COMMANDS[action.type],
+              action.error,
+            ),
+          ),
+        ),
+      ),
+    { dispatch: false },
   );
 
   placeOrder$ = createEffect(() =>

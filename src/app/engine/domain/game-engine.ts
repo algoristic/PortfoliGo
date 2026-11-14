@@ -36,6 +36,7 @@ import { watchlistError } from '@app/market/domain/watchlist-logic';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { openTaxYear } from '@app/taxes/domain/tax-logic';
+import { SavingsPlanView } from '@app/trading/domain/models/savings-plan.model';
 import { copyPosition } from '@app/trading/domain/position-logic';
 
 import { BankCommands, ClosingPreviewResult } from './bank-commands';
@@ -55,6 +56,7 @@ import { PricePort } from './models/price-port.model';
 import { ExDividend, ScheduledTask } from './models/scheduled-task.model';
 import { NotificationSystem } from './notification-system';
 import { copyOrder, OrderSystem } from './order-system';
+import { copySavingsPlan, SavingsPlanSystem } from './savings-plan-system';
 import {
   copyScheduler,
   createScheduler,
@@ -105,6 +107,7 @@ export class GameEngine {
   readonly #notifications: NotificationSystem;
   readonly #orders: OrderSystem;
   readonly #distributions: DistributionSystem;
+  readonly #savingsPlans: SavingsPlanSystem;
   readonly #valuation: Valuation;
   #events: EngineEvent[] = [];
   #journal: Transaction[] = [];
@@ -149,6 +152,12 @@ export class GameEngine {
       },
       changedDepot,
       taxCapitalIncome,
+    });
+    this.#savingsPlans = new SavingsPlanSystem(world, state.player, this.prices, {
+      book: (draft) => this.#banking.book(draft),
+      emit: (event) => this.#emit(event),
+      available: (id) => this.#banking.available(id),
+      changedDepot,
     });
     this.#bankCommands = new BankCommands(
       world,
@@ -233,6 +242,8 @@ export class GameEngine {
         custody: [],
         standingOrders: [],
         standingOrderSequence: 0,
+        savingsPlans: [],
+        savingsPlanSequence: 0,
       },
       scheduler,
       commandIds: [],
@@ -387,6 +398,11 @@ export class GameEngine {
     return this.#valuation.holdingsValue(this.#state.player.positions, this.#state.tick);
   }
 
+  /** The savings plans with their next execution after the current tick (TS §8.3). */
+  savingsPlanViews(): SavingsPlanView[] {
+    return this.#savingsPlans.views(this.#state.tick);
+  }
+
   /** What closing the account now would book, without booking (TS §7.4). */
   closingPreview(accountId: string): ClosingPreviewResult {
     return this.#bankCommands.closingPreview(accountId, this.#state.tick);
@@ -455,6 +471,16 @@ export class GameEngine {
         return this.#orders.change(command.orderId, command.change, this.#state.tick);
       case 'cancelOrder':
         return this.#orders.cancel(command.orderId, this.#state.tick);
+      case 'createSavingsPlan':
+        return this.#rescheduledSavingsPlans(this.#savingsPlans.create(command, this.#state.tick));
+      case 'changeSavingsPlan':
+        return this.#rescheduledSavingsPlans(this.#savingsPlans.change(command, this.#state.tick));
+      case 'setSavingsPlanPaused':
+        return this.#rescheduledSavingsPlans(
+          this.#savingsPlans.setPaused(command, this.#state.tick),
+        );
+      case 'deleteSavingsPlan':
+        return this.#rescheduledSavingsPlans(this.#savingsPlans.delete(command));
       default:
         return { ok: false, error: 'invalid-command' };
     }
@@ -473,6 +499,27 @@ export class GameEngine {
       });
     }
     return result;
+  }
+
+  /**
+   * A changed savings plan may move the next execution (TS §7.8): after an accepted command the one
+   * scheduled `savings-plan` task is replaced by the next execution after the current tick.
+   */
+  #rescheduledSavingsPlans(result: CommandResult): CommandResult {
+    if (result.ok) {
+      this.#scheduleSavingsPlans(this.#state.tick);
+    }
+    return result;
+  }
+
+  /** Puts the one `savings-plan` task on the first execution after `tick`, if any. */
+  #scheduleSavingsPlans(tick: Tick): void {
+    const { scheduler } = this.#state;
+    unscheduleTasks(scheduler, (task) => task.kind === 'savings-plan');
+    const next = this.#savingsPlans.nextTick(tick);
+    if (next !== null) {
+      scheduleTask(scheduler, next, { kind: 'savings-plan' });
+    }
   }
 
   /** Replaces the watchlist when the new list is valid (US-MK-04, TS §8.2). */
@@ -546,6 +593,10 @@ export class GameEngine {
       }
       case 'distribution-payment':
         this.#distributions.pay(tick);
+        break;
+      case 'savings-plan':
+        this.#savingsPlans.run(tick);
+        this.#scheduleSavingsPlans(tick);
         break;
       case 'session-close': {
         const exchange = this.world.exchanges[task.exchange];
@@ -704,6 +755,8 @@ function copyPlayer(player: Readonly<PlayerState>): PlayerState {
     custody: player.custody.map((accrual) => ({ ...accrual })),
     standingOrders: player.standingOrders.map((order) => ({ ...order })),
     standingOrderSequence: player.standingOrderSequence,
+    savingsPlans: player.savingsPlans.map(copySavingsPlan),
+    savingsPlanSequence: player.savingsPlanSequence,
   };
 }
 

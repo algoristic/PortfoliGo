@@ -3,7 +3,10 @@ import {
   NotificationCode,
   NotificationSeverity,
 } from '@app/notifications/domain/models/notification.model';
+import { Cents } from '@app/shared/domain/models/money.model';
+import { formatCents } from '@app/shared/util/format';
 import { OrderRejection } from '@app/trading/domain/models/order.model';
+import { SavingsPlanFailure } from '@app/trading/domain/models/savings-plan.model';
 
 /** Names of the categories of the notification centre (PS US-BN-01, TS §12). */
 export function notificationCategoryLabel(category: NotificationCategory): string {
@@ -92,6 +95,18 @@ export function notificationCodeLabel(code: NotificationCode): string {
 }
 
 /** Why an order was rejected at execution (TS §7.5), as a sentence. */
+/** Why a savings plan did not execute (TS §7.8), as a sentence. */
+export function savingsPlanFailureLabel(reason: SavingsPlanFailure, available: Cents): string {
+  switch (reason) {
+    case 'insufficient-funds':
+      return $localize`:@@uiNotifications-notificationLabels-savingsPlanInsufficientFunds:Auf dem Verrechnungskonto waren nur ${formatCents(available)}:available: verfügbar.`;
+    case 'price-floor':
+      return $localize`:@@uiNotifications-notificationLabels-savingsPlanPriceFloor:Der Kurs liegt an der Preisuntergrenze.`;
+    case 'amount-too-small':
+      return $localize`:@@uiNotifications-notificationLabels-savingsPlanAmountTooSmall:Der Betrag reicht nach Abzug der Kosten für keinen Kauf.`;
+  }
+}
+
 export function orderRejectionLabel(reason: OrderRejection): string {
   switch (reason) {
     case 'insufficient-funds':

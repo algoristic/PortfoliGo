@@ -25,6 +25,7 @@ import {
   OrderSpec,
   OrderValidity,
 } from '@app/trading/domain/models/order.model';
+import { SavingsPlanId, SavingsPlanSpec } from '@app/trading/domain/models/savings-plan.model';
 import { isActive, reservedAmount } from '@app/trading/domain/order-reservation-logic';
 import { miniWorld } from '@app/world/domain/testing/mini-world';
 
@@ -49,9 +50,10 @@ import { TEST_SEEDS } from '../../../testing/seeds';
 // depot that earns a dividend and a fund distribution and pays a custody fee (AP 5.2). The
 // commands are random bank commands (AP 3.3), background modes, the notification commands (AP 3.6)
 // and watchlist updates (AP 4.4), order commands (AP 5.1: placing, changing and cancelling in two
-// depots, one of them holding shares) and standing order commands (AP 5.6a, executed in the bank
-// runs); many of them are rejected, which must be just as deterministic. The notifications of the runs (overdrafts, interest, month ends, orders) are part
-// of both properties, and the positions always equal the start positions plus the unit postings,
+// depots, one of them holding shares), standing order commands (AP 5.6a, executed in the bank
+// runs) and savings plan commands (AP 5.6b, executed at the opens, buying lots); many of them are
+// rejected, which must be just as deterministic. The notifications of the runs (overdrafts,
+// interest, month ends, orders, savings plans) are part of both properties, and the positions always equal the start positions plus the unit postings,
 // with lots whose costs follow the purchases and sales to the cent (TS §7.6). Taxes follow their
 // triggering credits and never take an account below its balance before them (TS §7.4, §7.7).
 
@@ -142,6 +144,18 @@ const arbStandingOrder = (): fc.Arbitrary<StandingOrderSpec> =>
     purpose: fc.string({ maxLength: 8 }),
   });
 
+const arbSavingsPlanId = (): fc.Arbitrary<SavingsPlanId> =>
+  fc.integer({ min: 1, max: 3 }).map((n): SavingsPlanId => `sp-${n}`);
+
+/** Savings plans in both depots on the instruments (an index and a share may be refused). */
+const arbSavingsPlan = (instruments: readonly string[]): fc.Arbitrary<SavingsPlanSpec> =>
+  fc.record({
+    depotId: arbDepotId(),
+    instrumentId: fc.constantFrom(...instruments),
+    amount: fc.integer({ min: 50, max: 2_000_000 }),
+    day: fc.oneof(fc.integer({ min: 1, max: 5 }), fc.integer({ min: 25, max: 29 })),
+  });
+
 const arbCommandBody = (instruments: readonly string[]): fc.Arbitrary<WithoutStamp<GameCommand>> =>
   fc.oneof(
     fc.record({
@@ -212,6 +226,31 @@ const arbCommandBody = (instruments: readonly string[]): fc.Arbitrary<WithoutSta
     fc.record({
       type: fc.constant('deleteStandingOrder' as const),
       standingOrderId: arbStandingOrderId(),
+    }),
+    fc.record({
+      type: fc.constant('createSavingsPlan' as const),
+      plan: arbSavingsPlan(instruments),
+    }),
+    fc.record({
+      type: fc.constant('createSavingsPlan' as const),
+      plan: arbSavingsPlan(instruments),
+    }),
+    fc.record({
+      type: fc.constant('changeSavingsPlan' as const),
+      savingsPlanId: arbSavingsPlanId(),
+      change: fc.record({
+        amount: fc.integer({ min: 50, max: 2_000_000 }),
+        day: fc.integer({ min: 1, max: 29 }),
+      }),
+    }),
+    fc.record({
+      type: fc.constant('setSavingsPlanPaused' as const),
+      savingsPlanId: arbSavingsPlanId(),
+      paused: fc.boolean(),
+    }),
+    fc.record({
+      type: fc.constant('deleteSavingsPlan' as const),
+      savingsPlanId: arbSavingsPlanId(),
     }),
   );
 
