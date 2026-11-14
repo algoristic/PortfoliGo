@@ -1,21 +1,34 @@
 import { Component, computed, input, output } from '@angular/core';
 
-import { ColorSchemeSetting } from '@app/settings/domain/models/settings.model';
+import { ChangeColorSetting, ColorSchemeSetting } from '@app/settings/domain/models/settings.model';
 
-import { ColorSchemeOption, ShortcutEntry } from './device-settings.model';
+import { PriceChangeComponent } from '@app/shared/ui/price-change/price-change.component';
 
-/** Settings of this device (PS US-UI-09): appearance (US-UI-01) and shortcuts (US-ZT-02). */
+import { ChangeColorOption, ColorSchemeOption, ShortcutEntry } from './device-settings.model';
+
+/**
+ * Settings of this device (PS US-UI-09): appearance (US-UI-01), gain and loss colours (US-UI-02),
+ * price highlight (US-MK-05) and shortcuts (US-ZT-02).
+ */
 @Component({
   selector: 'app-device-settings',
-  imports: [],
+  imports: [PriceChangeComponent],
   templateUrl: './device-settings.component.html',
   host: { class: 'block' },
 })
 export class DeviceSettingsComponent {
   colorScheme = input<ColorSchemeSetting | null>();
+  changeColors = input<ChangeColorSetting | null>();
+  priceHighlight = input<boolean | null>();
   shortcutsEnabled = input<boolean | null>();
 
+  /** Sample changes next to the colour choice: +1,23 % and −0,45 %. */
+  sampleGain = 0.0123;
+  sampleLoss = -0.0045;
+
   selectedColorScheme = output<ColorSchemeSetting>();
+  selectedChangeColors = output<ChangeColorSetting>();
+  toggledPriceHighlight = output<boolean>();
   toggledShortcuts = output<boolean>();
 
   colorSchemeOptions = computed(() =>
@@ -43,6 +56,26 @@ export class DeviceSettingsComponent {
     })),
   );
 
+  changeColorOptions = computed(() =>
+    (
+      [
+        {
+          id: 'green-red',
+          label: $localize`:@@uiSettings-deviceSettings-changeColorsGreenRed:Grün und Rot`,
+          hint: $localize`:@@uiSettings-deviceSettings-changeColorsGreenRedHint:Standard`,
+        },
+        {
+          id: 'blue-orange',
+          label: $localize`:@@uiSettings-deviceSettings-changeColorsBlueOrange:Blau und Orange`,
+          hint: $localize`:@@uiSettings-deviceSettings-changeColorsBlueOrangeHint:bei Rot-Grün-Sehschwäche`,
+        },
+      ] satisfies Omit<ChangeColorOption, 'checked'>[]
+    ).map((option): ChangeColorOption => ({
+      ...option,
+      checked: option.id === this.changeColors(),
+    })),
+  );
+
   shortcuts: ShortcutEntry[] = [
     {
       key: $localize`:@@uiSettings-deviceSettings-spaceKey:Leertaste`,
@@ -54,6 +87,14 @@ export class DeviceSettingsComponent {
 
   onSelectColorScheme(colorScheme: ColorSchemeSetting): void {
     this.selectedColorScheme.emit(colorScheme);
+  }
+
+  onSelectChangeColors(changeColors: ChangeColorSetting): void {
+    this.selectedChangeColors.emit(changeColors);
+  }
+
+  onTogglePriceHighlight(event: Event): void {
+    this.toggledPriceHighlight.emit((event.target as HTMLInputElement).checked);
   }
 
   onToggleShortcuts(event: Event): void {

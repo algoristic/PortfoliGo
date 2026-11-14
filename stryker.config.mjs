@@ -114,6 +114,8 @@ const config = {
     'src/app/notifications/domain/read-state-logic.ts',
     'src/app/notifications/domain/notification-page-logic.ts',
     'src/app/notifications/domain/absence-report-logic.ts',
+    'src/app/notifications/domain/notification-channel-logic.ts',
+    'src/app/settings/domain/settings-logic.ts',
     'src/app/engine/domain/notification-system.ts',
     'src/app/persistence/util/tagged-json.ts',
     'src/app/persistence/util/canonical-json.ts',

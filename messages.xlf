@@ -4117,73 +4117,80 @@
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-intro" datatype="html">
-        <source> Semantische Farben, Schrift und Kontraste in beiden Erscheinungsbildern. </source>
+        <source> Semantische Farben, Schrift und Kontraste in beiden Erscheinungsbildern, auch mit Blau und Orange für Gewinn und Verlust. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">6,9</context>
+          <context context-type="linenumber">6,10</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-themeDark" datatype="html">
         <source>Dunkel</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">21,23</context>
+          <context context-type="linenumber">24,26</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-themeLight" datatype="html">
         <source>Hell</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">24,27</context>
+          <context context-type="linenumber">27,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-tokensPage-blueOrange" datatype="html">
+        <source>, Blau und Orange</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
+          <context context-type="linenumber">32,35</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-colors" datatype="html">
         <source> Farben </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">30,32</context>
+          <context context-type="linenumber">40,42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-text" datatype="html">
         <source> Text </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">45,47</context>
+          <context context-type="linenumber">55,57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-numbers" datatype="html">
         <source> Zahlen (tabular-nums) </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">58,60</context>
+          <context context-type="linenumber">70,72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-contrastMinimums" datatype="html">
         <source> Kontraste (Text mindestens <x id="INTERPOLATION" equiv-text="{{ minimumRatio }}"/>:1, Chartfarben <x id="INTERPOLATION_1" equiv-text="{{ minimumGraphicRatio }}"/>:1) </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">69,71</context>
+          <context context-type="linenumber">81,84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-foreground" datatype="html">
         <source> Text </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">75,77</context>
+          <context context-type="linenumber">88,90</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-background" datatype="html">
         <source> Hintergrund </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">78,80</context>
+          <context context-type="linenumber">91,93</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-tokensPage-ratio" datatype="html">
         <source> Verhältnis </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/tokens/tokens.page.html</context>
-          <context context-type="linenumber">81,83</context>
+          <context context-type="linenumber">94,96</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-marketDays" datatype="html">
@@ -9469,13 +9476,6 @@
           <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featurePlayers-playersEffects-renameDialogLabel" datatype="html">
-        <source>Spieler umbenennen</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">118</context>
-        </context-group>
-      </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-deleteHeading" datatype="html">
         <source>Spieler löschen?</source>
         <context-group purpose="location">
@@ -9585,102 +9585,123 @@
         <source>Sicherung empfohlen: Exportiere deinen Spielstand unter Einstellungen → Spieler. So bleibt er erhalten, auch wenn der Browser seine Daten löscht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">516</context>
+          <context context-type="linenumber">521</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-seedCopied" datatype="html">
+        <source>Kopiert: Der Seed ist in der Zwischenablage.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">537</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-seedCopyFailure" datatype="html">
+        <source>Das Kopieren hat nicht geklappt. Markiere den Seed und kopiere ihn selbst.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">540</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-renameDialogLabel" datatype="html">
+        <source>Spieler umbenennen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">551</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-renameNotFound" datatype="html">
         <source>Den Spieler gibt es nicht mehr.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">536</context>
+          <context context-type="linenumber">578</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-renameInvalid" datatype="html">
         <source>Der Name ist ungültig.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">539</context>
+          <context context-type="linenumber">581</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-renameFailure" datatype="html">
         <source>Der Spieler konnte nicht umbenannt werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">541</context>
+          <context context-type="linenumber">583</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-importFailure" datatype="html">
         <source>Der Spielstand konnte nicht importiert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">547</context>
+          <context context-type="linenumber">589</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">566</context>
+          <context context-type="linenumber">608</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-importUnreadable" datatype="html">
         <source>Die Daten lassen sich nicht lesen. Prüfe, ob du die ganze Datei gewählt oder den ganzen Text eingefügt hast.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">551</context>
+          <context context-type="linenumber">593</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-importInvalid" datatype="html">
         <source>Das ist kein PortfoliGo-Spielstand.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">553</context>
+          <context context-type="linenumber">595</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-importFormatVersion" datatype="html">
         <source>Der Spielstand hat ein Format, das diese Version von PortfoliGo nicht kennt. Aktualisiere die App und versuche es erneut.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">555</context>
+          <context context-type="linenumber">597</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-importChecksum" datatype="html">
         <source>Der Spielstand ist beschädigt oder wurde verändert: Die Prüfsumme stimmt nicht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">557</context>
+          <context context-type="linenumber">599</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-importVersion" datatype="html">
         <source>Der Spielstand stammt aus einer anderen Version von PortfoliGo und lässt sich hier nicht fortsetzen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">560</context>
+          <context context-type="linenumber">602</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-importStructure" datatype="html">
         <source>Der Spielstand ist unvollständig oder fehlerhaft und lässt sich nicht laden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">562</context>
+          <context context-type="linenumber">604</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-importStorage" datatype="html">
         <source>Der Spielstand konnte nicht gespeichert werden. Prüfe den freien Speicher und versuche es erneut.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">564</context>
+          <context context-type="linenumber">606</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-exportBusy" datatype="html">
         <source>Während des Vorspulens oder der Nachberechnung lässt sich nicht exportieren. Versuche es gleich noch einmal.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">572</context>
+          <context context-type="linenumber">614</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-exportFailure" datatype="html">
         <source>Der Spielstand konnte nicht exportiert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">574</context>
+          <context context-type="linenumber">616</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPlayers-formNewPlayer-name" datatype="html">
@@ -10801,28 +10822,42 @@
         <source>Einstellungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">8,10</context>
+          <context context-type="linenumber">13,15</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-deviceHeading" datatype="html">
         <source>Dieses Gerät</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">12,13</context>
+          <context context-type="linenumber">17,18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureSettings-settingsPage-deviceHint" datatype="html">
+        <source> Gilt für alle Spieler in diesem Browser und wird nicht exportiert. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
+          <context context-type="linenumber">21,24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-playerHeading" datatype="html">
         <source>Spieler</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">24</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureSettings-settingsPage-playerHint" datatype="html">
+        <source> Gehört zum Spielstand und wird mit dem Spieler exportiert. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
+          <context context-type="linenumber">43,46</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsEffects-saveFailure" datatype="html">
         <source>Die Einstellung gilt nur bis zum Neuladen, weil sie auf diesem Gerät nicht gespeichert werden konnte.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/state/settings.effects.ts</context>
-          <context context-type="linenumber">70</context>
+          <context context-type="linenumber">91</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-autoPauseSettings-legend" datatype="html">
@@ -10846,81 +10881,208 @@
           <context context-type="linenumber">3,5</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiSettings-deviceSettings-changeColorsLegend" datatype="html">
+        <source> Farben für Gewinn und Verlust </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
+          <context context-type="linenumber">29,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-deviceSettings-changeColorsHint" datatype="html">
+        <source>Vorzeichen und Pfeil zeigen die Richtung immer zusätzlich an. Beispiel:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
+          <context context-type="linenumber">51,54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-deviceSettings-priceHighlightLabel" datatype="html">
+        <source>Kursänderungen hervorheben</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
+          <context context-type="linenumber">67,69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-deviceSettings-priceHighlightHint" datatype="html">
+        <source> Geänderte Kurse leuchten kurz in der Farbe für Gewinn oder Verlust auf. Ist auf dem Gerät „Bewegung reduzieren“ eingestellt, entfällt das immer. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
+          <context context-type="linenumber">90,95</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-shortcutsLabel" datatype="html">
         <source>Tastenkürzel</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
-          <context context-type="linenumber">29,30</context>
+          <context context-type="linenumber">97,98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-shortcutsHint" datatype="html">
         <source> Steuern die Spielzeit ohne Maus. Sie greifen nicht, solange ein Eingabefeld oder Bedienelement den Fokus hat. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
-          <context context-type="linenumber">49,52</context>
+          <context context-type="linenumber">117,120</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-colorSchemeDark" datatype="html">
         <source>Dunkel</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">26</context>
+          <context context-type="linenumber">39</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-colorSchemeDarkHint" datatype="html">
         <source>Standard</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">27</context>
+          <context context-type="linenumber">40</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-colorSchemeLight" datatype="html">
         <source>Hell</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">31</context>
+          <context context-type="linenumber">44</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-colorSchemeSystem" datatype="html">
         <source>System</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">36</context>
+          <context context-type="linenumber">49</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-colorSchemeSystemHint" datatype="html">
         <source>wie das Gerät</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">37</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-deviceSettings-changeColorsGreenRed" datatype="html">
+        <source>Grün und Rot</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
+          <context context-type="linenumber">64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-deviceSettings-changeColorsGreenRedHint" datatype="html">
+        <source>Standard</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
+          <context context-type="linenumber">65</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-deviceSettings-changeColorsBlueOrange" datatype="html">
+        <source>Blau und Orange</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-deviceSettings-changeColorsBlueOrangeHint" datatype="html">
+        <source>bei Rot-Grün-Sehschwäche</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
+          <context context-type="linenumber">70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-spaceKey" datatype="html">
         <source>Leertaste</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">48</context>
+          <context context-type="linenumber">81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-togglePause" datatype="html">
         <source>Pause oder weiter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">49</context>
+          <context context-type="linenumber">82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-faster" datatype="html">
         <source>schneller</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">51</context>
+          <context context-type="linenumber">84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-slower" datatype="html">
         <source>langsamer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">52</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-notificationChannelSettings-legend" datatype="html">
+        <source> Benachrichtigungen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/notification-channel-settings/notification-channel-settings.component.html</context>
+          <context context-type="linenumber">3,6</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-notificationChannelSettings-hint" datatype="html">
+        <source> Im Benachrichtigungszentrum steht jedes Ereignis. Hier wählst du, welche zusätzlich kurz eingeblendet werden und welche der Browser meldet, während die App verborgen ist – das geht nur, wenn du es dem Browser erlaubst. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/notification-channel-settings/notification-channel-settings.component.html</context>
+          <context context-type="linenumber">9,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-notificationChannelSettings-event" datatype="html">
+        <source> Ereignis </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/notification-channel-settings/notification-channel-settings.component.html</context>
+          <context context-type="linenumber">27,29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-notificationChannelSettings-toast" datatype="html">
+        <source>Einblendung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/notification-channel-settings/notification-channel-settings.component.ts</context>
+          <context context-type="linenumber">67</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-notificationChannelSettings-browser" datatype="html">
+        <source>Browser</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/notification-channel-settings/notification-channel-settings.component.ts</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerProfile-nameLabel" datatype="html">
+        <source>Name</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-profile/player-profile.component.html</context>
+          <context context-type="linenumber">6,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerProfile-rename" datatype="html">
+        <source>Umbenennen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-profile/player-profile.component.html</context>
+          <context context-type="linenumber">18,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerProfile-seedLabel" datatype="html">
+        <source>Seed</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-profile/player-profile.component.html</context>
+          <context context-type="linenumber">23,24</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerProfile-copySeed" datatype="html">
+        <source>Seed kopieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-profile/player-profile.component.html</context>
+          <context context-type="linenumber">40,44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerProfile-seedHint" datatype="html">
+        <source> Mit demselben Seed entsteht dieselbe Welt: gleiche Banken, Wertpapiere und Kursverläufe. Teile ihn, damit andere in deiner Welt spielen können.
+</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-profile/player-profile.component.html</context>
+          <context context-type="linenumber">46,49</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-playerSettings-backgroundModeLegend" datatype="html">
@@ -10949,14 +11111,6 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.html</context>
           <context context-type="linenumber">74,78</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiSettings-playerSettings-gameStateHint" datatype="html">
-        <source> Diese Einstellung gehört zum Spielstand und wird mit dem Spieler exportiert.
-</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.html</context>
-          <context context-type="linenumber">79,81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-playerSettings-realtime" datatype="html">

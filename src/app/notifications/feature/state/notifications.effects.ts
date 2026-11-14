@@ -30,10 +30,8 @@ import { EngineService } from '@app/engine/data-access/service/engine.service';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { selectPhase, selectStatus } from '@app/engine/feature/state/session.selectors';
 import { AbsenceReport } from '@app/notifications/domain/models/absence-report.model';
-import {
-  MarkReadRequest,
-  NOTIFICATION_CODE_INFO,
-} from '@app/notifications/domain/models/notification.model';
+import { MarkReadRequest } from '@app/notifications/domain/models/notification.model';
+import { notificationChannelEnabled } from '@app/notifications/domain/notification-channel-logic';
 import {
   notificationCodeLabel,
   notificationCountLabel,
@@ -47,6 +45,7 @@ import { ToastService } from '@app/shared/ui/toast/toast.service';
 
 import { notificationFailureMessage } from './notifications-errors.utils';
 import * as NotificationsActions from './notifications.actions';
+import { NOTIFICATION_CHANNEL_SETTINGS } from './notifications.config';
 import { NOTIFICATION_PAGE_SIZE, NotificationBundle } from './notifications.model';
 import {
   selectAccountNames,
@@ -66,6 +65,7 @@ export class NotificationsEffects {
   readonly #store = inject(Store);
   readonly #toastService = inject(ToastService);
   readonly #pendingTasks = inject(PendingTasks);
+  readonly #channelSettings$ = inject(NOTIFICATION_CHANNEL_SETTINGS);
 
   /** Ends what a loaded player started: leaving the game or entering another one. */
   readonly #ended$ = this.#actions$.pipe(
@@ -96,23 +96,25 @@ export class NotificationsEffects {
   );
 
   /**
-   * Toasts of the codes with a toast by default (TS §12; the switches per code follow in AP 6.2).
-   * The first notification opens a window of `TOAST_BUNDLE_WINDOW_MS`; at its end, the
-   * notifications of each code make one toast. The window is a pending task, so that tests and
-   * `whenStable` wait for the toasts.
+   * Toasts of the codes whose toast is on for this device (TS §12, `NOTIFICATION_CHANNEL_SETTINGS`;
+   * a switch acts on the next notification). The first notification opens a window of
+   * `TOAST_BUNDLE_WINDOW_MS`; at its end, the notifications of each code make one toast. The
+   * window is a pending task, so that tests and `whenStable` wait for the toasts.
    */
   showToasts$ = createEffect(
     () =>
       this.#actions$.pipe(
         ofType(NotificationsActions.receivedNotifications),
-        map(({ notifications }) =>
-          notifications.filter(({ code }) => NOTIFICATION_CODE_INFO[code].toast),
+        concatLatestFrom(() => this.#channelSettings$),
+        map(([{ notifications }, settings]) =>
+          notifications.filter(({ code }) => notificationChannelEnabled(settings, 'toast', code)),
         ),
         filter((notifications) => notifications.length > 0),
         connect((notifications$) =>
           notifications$.pipe(buffer(notifications$.pipe(exhaustMap(() => this.#window())))),
         ),
-        map((windows) => bundleToastNotifications(windows.flat())),
+        concatLatestFrom(() => this.#channelSettings$),
+        map(([windows, settings]) => bundleToastNotifications(windows.flat(), settings)),
         concatLatestFrom(() => [
           this.#store.pipe(select(selectAccountNames)),
           this.#store.pipe(select(selectInstrumentNames)),

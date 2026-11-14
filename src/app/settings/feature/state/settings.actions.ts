@@ -1,12 +1,30 @@
 import { createAction, props } from '@ngrx/store';
 
-import { ColorSchemeSetting, Settings } from '@app/settings/domain/models/settings.model';
+import { NotificationChannel } from '@app/notifications/domain/models/notification-channel.model';
+import { NotificationCode } from '@app/notifications/domain/models/notification.model';
+import {
+  ChangeColorSetting,
+  ColorSchemeSetting,
+  Settings,
+} from '@app/settings/domain/models/settings.model';
 
 /** The app starts; the settings load before the first route (`provideSettingsState()`). */
 export const enterApp = createAction('[Settings/Page] Enter app');
 export const selectedColorScheme = createAction(
   '[Settings/Page] Selected color scheme',
   props<{ colorScheme: ColorSchemeSetting }>(),
+);
+export const selectedChangeColors = createAction(
+  '[Settings/Page] Selected change colors',
+  props<{ changeColors: ChangeColorSetting }>(),
+);
+export const toggledPriceHighlight = createAction(
+  '[Settings/Page] Toggled price highlight',
+  props<{ enabled: boolean }>(),
+);
+export const toggledNotificationChannel = createAction(
+  '[Settings/Page] Toggled notification channel',
+  props<{ channel: NotificationChannel; code: NotificationCode; enabled: boolean }>(),
 );
 export const toggledShortcuts = createAction(
   '[Settings/Page] Toggled shortcuts',

@@ -2,7 +2,15 @@ import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { Action } from '@ngrx/store';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
-import { firstValueFrom, NEVER, of, Subject, Subscription, throwError } from 'rxjs';
+import {
+  BehaviorSubject,
+  firstValueFrom,
+  NEVER,
+  of,
+  Subject,
+  Subscription,
+  throwError,
+} from 'rxjs';
 import type { Mocked } from 'vitest';
 
 import { emptyMonthlyValues } from '@app/banking/domain/monthly-values-logic';
@@ -10,11 +18,13 @@ import { EngineCommandError, EngineService } from '@app/engine/data-access/servi
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { selectStatus } from '@app/engine/feature/state/session.selectors';
 import { AbsenceReport } from '@app/notifications/domain/models/absence-report.model';
+import { NotificationChannelSettings } from '@app/notifications/domain/models/notification-channel.model';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
 import { PlayerProfile } from '@app/players/domain/models/player.model';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
 import * as NotificationsActions from './notifications.actions';
+import { NOTIFICATION_CHANNEL_SETTINGS } from './notifications.config';
 import { NotificationsEffects, TOAST_BUNDLE_WINDOW_MS } from './notifications.effects';
 import {
   selectAccountNames,
@@ -77,10 +87,12 @@ describe('NotificationsEffects', () => {
     >
   >;
   let toasts: Mocked<Pick<ToastService, 'show' | 'error'>>;
+  let channelSettings$: BehaviorSubject<NotificationChannelSettings>;
   let store: MockStore;
 
   beforeEach(() => {
     actions$ = new Subject();
+    channelSettings$ = new BehaviorSubject<NotificationChannelSettings>({ toast: {}, browser: {} });
     engine = {
       markNotificationsRead: vi.fn(),
       setAutoPause: vi.fn(),
@@ -94,6 +106,7 @@ describe('NotificationsEffects', () => {
         provideMockActions(() => actions$.asObservable()),
         { provide: EngineService, useValue: { ...engine, notification$: NEVER, report$: NEVER } },
         { provide: ToastService, useValue: toasts },
+        { provide: NOTIFICATION_CHANNEL_SETTINGS, useValue: channelSettings$ },
         provideMockStore({
           selectors: [
             { selector: selectAccountNames, value: NAMES },
@@ -176,6 +189,19 @@ describe('NotificationsEffects', () => {
       expect(toasts.show).not.toHaveBeenCalled();
       vi.advanceTimersByTime(1);
       expect(toasts.show).toHaveBeenCalledTimes(1);
+    });
+
+    it('follows the toast switches of this device from the next notification on', () => {
+      // TS §12: toast per code is a device setting (AP 6.2).
+      channelSettings$.next({ toast: { 'account-uncovered': false }, browser: {} });
+      receive(uncovered(1));
+      vi.advanceTimersByTime(TOAST_BUNDLE_WINDOW_MS);
+      expect(toasts.show).not.toHaveBeenCalled();
+
+      channelSettings$.next({ toast: { 'interest-credited': true }, browser: {} });
+      receive(uncovered(2), interest(3));
+      vi.advanceTimersByTime(TOAST_BUNDLE_WINDOW_MS);
+      expect(toasts.show.mock.calls.map(([tone]) => tone)).toEqual(['warning', 'info']);
     });
   });
 

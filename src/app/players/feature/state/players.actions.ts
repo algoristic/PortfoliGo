@@ -12,6 +12,10 @@ export const clickedOpenPlayer = createAction(
   '[Players/Page] Clicked open player',
   props<{ playerId: string }>(),
 );
+/** Rename the player of the open game (settings page). */
+export const clickedRenameOpenPlayer = createAction('[Players/Page] Clicked rename open player');
+/** The settings page copied the seed in the click; `copied` is false when the browser refused. */
+export const copiedSeed = createAction('[Players/Page] Copied seed', props<{ copied: boolean }>());
 export const clickedRenamePlayer = createAction(
   '[Players/Page] Clicked rename player',
   props<{ playerId: string }>(),

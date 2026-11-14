@@ -1,5 +1,7 @@
 import { Action, createReducer, on } from '@ngrx/store';
 
+import * as PlayersActions from '@app/players/feature/state/players.actions';
+
 import * as SessionActions from './session.actions';
 import { ProgressInfo } from './session.model';
 import { isEngineCommandError } from './session.utils';
@@ -18,6 +20,8 @@ export type SessionPhase =
 export interface SessionState {
   playerId: string | null;
   playerName: string | null;
+  /** Seed of the open player, shown and copied on the settings page (PS US-SP-03). */
+  playerSeed: string | null;
   phase: SessionPhase;
   /** Running progress per kind; finished and cancelled runs are removed. */
   progress: Partial<Record<ProgressKind, ProgressInfo>>;
@@ -28,6 +32,7 @@ export interface SessionState {
 export const initialSessionState: SessionState = {
   playerId: null,
   playerName: null,
+  playerSeed: null,
   phase: 'idle',
   progress: {},
   warning: null,
@@ -39,8 +44,13 @@ const reducer = createReducer(
     ...initialSessionState,
     playerId: profile.id,
     playerName: profile.name,
+    playerSeed: profile.seed,
     phase: 'loading' as const,
   })),
+  // Renamed on the settings page (or in another place): the header and the export use the new name.
+  on(PlayersActions.renamePlayerSuccess, (state, { profile }) =>
+    profile.id === state.playerId ? { ...state, playerName: profile.name } : state,
+  ),
   on(SessionActions.leaveGame, () => initialSessionState),
   // A late reply of a previous load (the player was left in the meantime) changes nothing.
   on(SessionActions.loadPlayerSuccess, (state, { loaded }) =>

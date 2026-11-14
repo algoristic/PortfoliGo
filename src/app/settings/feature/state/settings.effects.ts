@@ -35,7 +35,13 @@ export class SettingsEffects {
   /** Every change is saved at once; the page has no save button. */
   saveSettings$ = createEffect(() =>
     this.#actions$.pipe(
-      ofType(SettingsActions.selectedColorScheme, SettingsActions.toggledShortcuts),
+      ofType(
+        SettingsActions.selectedColorScheme,
+        SettingsActions.selectedChangeColors,
+        SettingsActions.toggledPriceHighlight,
+        SettingsActions.toggledShortcuts,
+        SettingsActions.toggledNotificationChannel,
+      ),
       concatLatestFrom(() => this.#store.pipe(select(SettingsSelectors.selectSettings))),
       concatMap(([, settings]) =>
         this.#settingsService.save(settings).pipe(
@@ -57,6 +63,21 @@ export class SettingsEffects {
         ),
         concatLatestFrom(() => this.#store.pipe(select(SettingsSelectors.selectColorScheme))),
         tap(([, colorScheme]) => this.#colorSchemeService.apply(colorScheme)),
+      ),
+    { dispatch: false },
+  );
+
+  /** Takes over the class of the gain and loss colours from `src/index.html` (PS US-UI-02). */
+  applyChangeColors$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(
+          SettingsActions.loadedSettings,
+          SettingsActions.loadSettingsFailure,
+          SettingsActions.selectedChangeColors,
+        ),
+        concatLatestFrom(() => this.#store.pipe(select(SettingsSelectors.selectChangeColors))),
+        tap(([, changeColors]) => this.#colorSchemeService.applyChangeColors(changeColors)),
       ),
     { dispatch: false },
   );

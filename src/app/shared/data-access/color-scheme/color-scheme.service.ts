@@ -1,6 +1,8 @@
 import { DestroyRef, DOCUMENT, inject, Injectable } from '@angular/core';
 
 import {
+  BLUE_ORANGE_CLASS,
+  ChangeColors,
   ColorSchemePreference,
   PREFERS_DARK_QUERY,
   resolveColorScheme,
@@ -9,7 +11,8 @@ import {
 /**
  * Keeps the `dark` class on `<html>` in sync with a colour scheme preference; with `system` it
  * follows `prefers-color-scheme`, also when that changes. Before Angular starts, the inline script
- * in `src/index.html` sets the class from the stored settings (TS §11.5).
+ * in `src/index.html` sets the class from the stored settings (TS §11.5). The same goes for the
+ * class of the gain and loss colours (`applyChangeColors`, PS US-UI-02).
  */
 @Injectable()
 export class ColorSchemeService {
@@ -38,6 +41,13 @@ export class ColorSchemeService {
       query.removeEventListener('change', onChange);
       unregister();
     };
+  }
+
+  applyChangeColors(changeColors: ChangeColors): void {
+    this.#document.documentElement.classList.toggle(
+      BLUE_ORANGE_CLASS,
+      changeColors === 'blue-orange',
+    );
   }
 
   #setDark(isDark: boolean): void {

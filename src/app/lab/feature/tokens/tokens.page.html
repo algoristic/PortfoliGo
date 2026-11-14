@@ -3,98 +3,112 @@
 <div class="p-6">
   <h1 class="text-2xl font-semibold" i18n="@@featureLab-tokensPage-title">Design-Tokens</h1>
   <p class="mt-2 text-fg-muted" i18n="@@featureLab-tokensPage-intro">
-    Semantische Farben, Schrift und Kontraste in beiden Erscheinungsbildern.
+    Semantische Farben, Schrift und Kontraste in beiden Erscheinungsbildern, auch mit Blau und
+    Orange für Gewinn und Verlust.
   </p>
 
   <div class="mt-6 grid gap-6 lg:grid-cols-2">
-    @for (theme of themes; track theme) {
-      @let themeMeasurement = _measurement?.[theme];
-      <section
-        #panel
-        class="tokens__panel rounded-lg p-4 text-fg"
-        [class.dark]="theme === 'dark'"
-        [class.light]="theme === 'light'"
-        [attr.data-testid]="'lab.tokens.' + theme + '-panel'">
-        <h2 class="text-lg font-semibold">
-          @switch (theme) {
-            @case ('dark') {
-              <ng-container i18n="@@featureLab-tokensPage-themeDark">Dunkel</ng-container>
-            }
-            @case ('light') {
-              <ng-container i18n="@@featureLab-tokensPage-themeLight">Hell</ng-container>
-            }
-          }
-        </h2>
-
-        <h3 class="mt-4 text-sm font-semibold text-fg-muted" i18n="@@featureLab-tokensPage-colors">
-          Farben
-        </h3>
-        <ul class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
-          @for (swatch of swatches; track swatch.token) {
-            <li>
-              <div class="tokens__swatch h-12 rounded-md" [class]="swatch.swatchClass"></div>
-              <div class="mt-1 font-mono text-xs">{{ swatch.token }}</div>
-              <div class="font-mono text-xs text-fg-muted">
-                {{ themeMeasurement?.values?.[swatch.token] }}
-              </div>
-            </li>
-          }
-        </ul>
-
-        <h3 class="mt-4 text-sm font-semibold text-fg-muted" i18n="@@featureLab-tokensPage-text">
-          Text
-        </h3>
-        <div class="mt-2 grid gap-2">
-          @for (surface of ['bg-bg', 'bg-surface', 'bg-surface-raised']; track surface) {
-            <div class="flex flex-wrap gap-x-4 gap-y-1 rounded-md p-2" [class]="surface">
-              @for (sample of samples; track sample.token) {
-                <span [class]="sample.textClass">{{ sample.token }}</span>
+    @for (tokenPanel of tokenPanels; track tokenPanel.id) {
+      @let themeMeasurement = _measurement?.[tokenPanel.id];
+      <!-- The palette class sits above the theme class, like on `<html>` (`src/styles.css`). -->
+      <div [class]="tokenPanel.paletteClass">
+        <section
+          #panel
+          class="tokens__panel rounded-lg p-4 text-fg"
+          [class.dark]="tokenPanel.theme === 'dark'"
+          [class.light]="tokenPanel.theme === 'light'"
+          [attr.data-testid]="'lab.tokens.' + tokenPanel.id + '-panel'">
+          <h2 class="text-lg font-semibold">
+            @switch (tokenPanel.theme) {
+              @case ('dark') {
+                <ng-container i18n="@@featureLab-tokensPage-themeDark">Dunkel</ng-container>
               }
-            </div>
-          }
-        </div>
-
-        <h3 class="mt-4 text-sm font-semibold text-fg-muted" i18n="@@featureLab-tokensPage-numbers">
-          Zahlen (tabular-nums)
-        </h3>
-        <div class="mt-2 grid grid-cols-3 gap-x-4 text-right tabular-nums">
-          <span>1.234,56 €</span><span class="text-up">+12,34 %</span
-          ><span class="text-down">−0,42 %</span> <span>98.765,43 €</span
-          ><span class="text-up">+1,10 %</span><span class="text-down">−11,11 %</span>
-        </div>
-
-        <h3
-          class="mt-4 text-sm font-semibold text-fg-muted"
-          i18n="@@featureLab-tokensPage-contrastMinimums">
-          Kontraste (Text mindestens {{ minimumRatio }}:1, Chartfarben {{ minimumGraphicRatio }}:1)
-        </h3>
-        <table class="mt-2 w-full text-sm tabular-nums">
-          <thead class="text-fg-muted">
-            <tr>
-              <th scope="col" class="text-left" i18n="@@featureLab-tokensPage-foreground">
-                Text
-              </th>
-              <th scope="col" class="text-left" i18n="@@featureLab-tokensPage-background">
-                Hintergrund
-              </th>
-              <th scope="col" class="text-right" i18n="@@featureLab-tokensPage-ratio">
-                Verhältnis
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (row of themeMeasurement?.rows ?? []; track row.foreground + row.background) {
-              <tr>
-                <td class="font-mono">{{ row.foreground }}</td>
-                <td class="font-mono">{{ row.background }}</td>
-                <td class="text-right" [class.text-down]="!row.passes">
-                  {{ row.ratio | number: '1.2-2' }}:1
-                </td>
-              </tr>
+              @case ('light') {
+                <ng-container i18n="@@featureLab-tokensPage-themeLight">Hell</ng-container>
+              }
             }
-          </tbody>
-        </table>
-      </section>
+            @if (tokenPanel.changeColors === 'blue-orange') {
+              <ng-container i18n="@@featureLab-tokensPage-blueOrange"
+                >, Blau und Orange</ng-container
+              >
+            }
+          </h2>
+
+          <h3
+            class="mt-4 text-sm font-semibold text-fg-muted"
+            i18n="@@featureLab-tokensPage-colors">
+            Farben
+          </h3>
+          <ul class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
+            @for (swatch of swatches; track swatch.token) {
+              <li>
+                <div class="tokens__swatch h-12 rounded-md" [class]="swatch.swatchClass"></div>
+                <div class="mt-1 font-mono text-xs">{{ swatch.token }}</div>
+                <div class="font-mono text-xs text-fg-muted">
+                  {{ themeMeasurement?.values?.[swatch.token] }}
+                </div>
+              </li>
+            }
+          </ul>
+
+          <h3 class="mt-4 text-sm font-semibold text-fg-muted" i18n="@@featureLab-tokensPage-text">
+            Text
+          </h3>
+          <div class="mt-2 grid gap-2">
+            @for (surface of ['bg-bg', 'bg-surface', 'bg-surface-raised']; track surface) {
+              <div class="flex flex-wrap gap-x-4 gap-y-1 rounded-md p-2" [class]="surface">
+                @for (sample of samples; track sample.token) {
+                  <span [class]="sample.textClass">{{ sample.token }}</span>
+                }
+              </div>
+            }
+          </div>
+
+          <h3
+            class="mt-4 text-sm font-semibold text-fg-muted"
+            i18n="@@featureLab-tokensPage-numbers">
+            Zahlen (tabular-nums)
+          </h3>
+          <div class="mt-2 grid grid-cols-3 gap-x-4 text-right tabular-nums">
+            <span>1.234,56 €</span><span class="text-up">+12,34 %</span
+            ><span class="text-down">−0,42 %</span> <span>98.765,43 €</span
+            ><span class="text-up">+1,10 %</span><span class="text-down">−11,11 %</span>
+          </div>
+
+          <h3
+            class="mt-4 text-sm font-semibold text-fg-muted"
+            i18n="@@featureLab-tokensPage-contrastMinimums">
+            Kontraste (Text mindestens {{ minimumRatio }}:1, Chartfarben
+            {{ minimumGraphicRatio }}:1)
+          </h3>
+          <table class="mt-2 w-full text-sm tabular-nums">
+            <thead class="text-fg-muted">
+              <tr>
+                <th scope="col" class="text-left" i18n="@@featureLab-tokensPage-foreground">
+                  Text
+                </th>
+                <th scope="col" class="text-left" i18n="@@featureLab-tokensPage-background">
+                  Hintergrund
+                </th>
+                <th scope="col" class="text-right" i18n="@@featureLab-tokensPage-ratio">
+                  Verhältnis
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of themeMeasurement?.rows ?? []; track row.foreground + row.background) {
+                <tr>
+                  <td class="font-mono">{{ row.foreground }}</td>
+                  <td class="font-mono">{{ row.background }}</td>
+                  <td class="text-right" [class.text-down]="!row.passes">
+                    {{ row.ratio | number: '1.2-2' }}:1
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+      </div>
     }
   </div>
 </div>

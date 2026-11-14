@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
-import { select, Store } from '@ngrx/store';
+import { Action, select, Store } from '@ngrx/store';
 import {
   catchError,
   concat,
@@ -27,6 +27,8 @@ import { EngineCommandError } from '@app/engine/data-access/service/engine.servi
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { selectPlayerId, selectPlayerName } from '@app/engine/feature/state/session.selectors';
 import { isEngineCommandError } from '@app/engine/feature/state/session.utils';
+import { notificationChannelEnabled } from '@app/notifications/domain/notification-channel-logic';
+import { NOTIFICATION_CHANNEL_SETTINGS } from '@app/notifications/feature/state/notifications.config';
 import { PlayerListEntry } from '@app/players/domain/models/player.model';
 import { normalizePlayerName } from '@app/players/domain/player-logic';
 import { openConfirmDialog } from '@app/shared/ui/dialog-confirm/dialog-confirm.utils';
@@ -59,6 +61,7 @@ export class PlayersEffects {
   readonly #dialog = inject(Dialog);
   readonly #router = inject(Router);
   readonly #toastService = inject(ToastService);
+  readonly #channelSettings$ = inject(NOTIFICATION_CHANNEL_SETTINGS);
 
   // Failed changes reload the list: another tab may have changed or deleted the player.
   loadPlayers$ = createEffect(() =>
@@ -111,23 +114,20 @@ export class PlayersEffects {
       concatLatestFrom(() => this.#store.pipe(select(PlayersSelectors.selectPlayers))),
       map(([{ playerId }, players]) => findPlayer(players, playerId)),
       filter((player): player is PlayerListEntry => player !== undefined && !player.outdated),
-      exhaustMap((player) =>
-        this.#dialog
-          .open<RenamePlayerDialogResult, RenamePlayerDialogData>(DialogRenamePlayerComponent, {
-            data: { name: player.name },
-            ariaLabel: $localize`:@@featurePlayers-playersEffects-renameDialogLabel:Spieler umbenennen`,
-            autoFocus: 'input',
-            width: '28rem',
-            maxWidth: 'calc(100vw - 2rem)',
-            maxHeight: 'calc(100dvh - 2rem)',
-          })
-          .closed.pipe(
-            filter(
-              (name): name is string =>
-                name !== undefined && normalizePlayerName(name) !== player.name,
-            ),
-            map((name) => PlayersActions.submittedPlayerName({ playerId: player.id, name })),
-          ),
+      exhaustMap((player) => this.#renameDialog(player.id, player.name)),
+    ),
+  );
+
+  /** Renaming the player of the open game from the settings (PS US-UI-09). */
+  openRenameOpenPlayerDialog$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(PlayersActions.clickedRenameOpenPlayer),
+      concatLatestFrom(() => [
+        this.#store.pipe(select(selectPlayerId)),
+        this.#store.pipe(select(selectPlayerName)),
+      ]),
+      exhaustMap(([, playerId, name]) =>
+        playerId === null || name === null ? EMPTY : this.#renameDialog(playerId, name),
       ),
     ),
   );
@@ -495,7 +495,8 @@ export class PlayersEffects {
 
   /**
    * Backup reminder (US-EX-03, TS §9.3): once the entered player is loaded, a hint if the last
-   * export (or the creation) is older than the interval; then it waits a day.
+   * export (or the creation) is older than the interval; then it waits a day. With the toast of
+   * `backup-reminder` switched off on this device (TS §12) it is neither shown nor noted.
    */
   remindBackup$ = createEffect(
     () =>
@@ -506,6 +507,10 @@ export class PlayersEffects {
             ofType(SessionActions.loadPlayerSuccess),
             filter(({ loaded }) => loaded.playerId === profile.id),
             take(1),
+            concatLatestFrom(() => this.#channelSettings$),
+            filter(([, settings]) =>
+              notificationChannelEnabled(settings, 'toast', 'backup-reminder'),
+            ),
             switchMap(() => this.#service.remindBackup(profile).pipe(catchError(() => of(false)))),
             filter(Boolean),
             takeUntil(this.#actions$.pipe(ofType(SessionActions.leaveGame))),
@@ -520,6 +525,43 @@ export class PlayersEffects {
       ),
     { dispatch: false },
   );
+
+  /** The seed was copied in the click itself (CDK `Clipboard`, PS US-SP-03). */
+  showSeedCopied$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(PlayersActions.copiedSeed),
+        tap(({ copied }) =>
+          copied
+            ? this.#toastService.success(
+                $localize`:@@featurePlayers-playersEffects-seedCopied:Kopiert: Der Seed ist in der Zwischenablage.`,
+              )
+            : this.#toastService.error(
+                $localize`:@@featurePlayers-playersEffects-seedCopyFailure:Das Kopieren hat nicht geklappt. Markiere den Seed und kopiere ihn selbst.`,
+              ),
+        ),
+      ),
+    { dispatch: false },
+  );
+
+  #renameDialog(playerId: string, name: string): Observable<Action> {
+    return this.#dialog
+      .open<RenamePlayerDialogResult, RenamePlayerDialogData>(DialogRenamePlayerComponent, {
+        data: { name },
+        ariaLabel: $localize`:@@featurePlayers-playersEffects-renameDialogLabel:Spieler umbenennen`,
+        autoFocus: 'input',
+        width: '28rem',
+        maxWidth: 'calc(100vw - 2rem)',
+        maxHeight: 'calc(100dvh - 2rem)',
+      })
+      .closed.pipe(
+        filter(
+          (newName): newName is string =>
+            newName !== undefined && normalizePlayerName(newName) !== name,
+        ),
+        map((newName) => PlayersActions.submittedPlayerName({ playerId, name: newName })),
+      );
+  }
 
   /** Remembers the player for the next start (TS §9.3); a full localStorage doesn't block it. */
   #rememberPlayer(playerId: string): Observable<void> {

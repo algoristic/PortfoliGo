@@ -22,17 +22,25 @@
       Sets the `dark` class before Angular starts, so a stored appearance doesn't flicker (TS §11.5).
       Reads `pgo.settings` version 1 like `parseSettings` (`settings/domain/settings-logic.ts`,
       `SETTINGS_VERSION`): `data.appearance.colorScheme` is "light", "system" or anything else (dark,
-      the default of E-06). The settings slice takes over with the `ColorSchemeService`.
+      the default of E-06); `data.appearance.changeColors` "blue-orange" sets `colors-blue-orange`,
+      anything else keeps green and red (PS US-UI-02). The settings slice takes over with the
+      `ColorSchemeService`.
     -->
     <script>
       (function () {
         var scheme = 'dark';
+        var changeColors = 'green-red';
         try {
           var entry = JSON.parse(localStorage.getItem('pgo.settings'));
           if (entry && entry.v === 1) {
+            changeColors = entry.data.appearance.changeColors;
             scheme = entry.data.appearance.colorScheme;
           }
         } catch (error) {}
+        document.documentElement.classList.toggle(
+          'colors-blue-orange',
+          changeColors === 'blue-orange',
+        );
         var dark =
           scheme === 'light'
             ? false

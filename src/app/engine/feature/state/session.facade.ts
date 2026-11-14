@@ -13,6 +13,7 @@ export class SessionFacade {
 
   playerId$ = this.#store.pipe(select(SessionSelectors.selectPlayerId));
   playerName$ = this.#store.pipe(select(SessionSelectors.selectPlayerName));
+  playerSeed$ = this.#store.pipe(select(SessionSelectors.selectPlayerSeed));
   status$ = this.#store.pipe(select(SessionSelectors.selectStatus));
   catchUpRatio$ = this.#store.pipe(select(SessionSelectors.selectCatchUpRatio));
   jumpRatio$ = this.#store.pipe(select(SessionSelectors.selectJumpRatio));

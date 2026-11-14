@@ -1,24 +1,27 @@
+import { NotificationChannelSettings } from '@app/notifications/domain/models/notification-channel.model';
 import {
   GameNotification,
   NOTIFICATION_CODE_INFO,
   NotificationSeverity,
 } from '@app/notifications/domain/models/notification.model';
+import { notificationChannelEnabled } from '@app/notifications/domain/notification-channel-logic';
 import { ToastTone } from '@app/shared/ui/toast/toast.model';
 
 import { NotificationBundle } from './notifications.model';
 
 /**
- * Toasts of the notifications of one bundling window (US-BN-02, TS §12): only codes with a toast
- * by default (the switches per code follow in AP 6.2), one bundle per code with its number and its
- * newest notification, in the order the codes first occurred.
+ * Toasts of the notifications of one bundling window (US-BN-02, TS §12): only codes whose toast is
+ * on for this device (`settings`, else the default of TS §12), one bundle per code with its number
+ * and its newest notification, in the order the codes first occurred.
  */
 export function bundleToastNotifications(
   notifications: readonly GameNotification[],
+  settings: Readonly<NotificationChannelSettings>,
 ): NotificationBundle[] {
   const bundles = new Map<GameNotification['code'], NotificationBundle>();
   for (const notification of notifications) {
     const info = NOTIFICATION_CODE_INFO[notification.code];
-    if (!info.toast) {
+    if (!notificationChannelEnabled(settings, 'toast', notification.code)) {
       continue;
     }
     const bundle = bundles.get(notification.code);

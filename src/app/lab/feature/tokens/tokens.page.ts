@@ -9,13 +9,12 @@ import {
   viewChildren,
 } from '@angular/core';
 
-import { COLOR_SCHEMES } from '@app/shared/data-access/color-scheme/color-scheme-service.utils';
-
 import {
   COLOR_TOKENS,
   MINIMUM_GRAPHIC_CONTRAST,
   MINIMUM_TEXT_CONTRAST,
   ThemeMeasurement,
+  TOKEN_PANELS,
   TokenSample,
   TokenSwatch,
   TokenValues,
@@ -32,7 +31,7 @@ import { buildContrastRows } from './tokens.page.utils';
 export class TokensPage {
   readonly #document = inject(DOCUMENT);
 
-  themes = COLOR_SCHEMES;
+  tokenPanels = TOKEN_PANELS;
   minimumRatio = MINIMUM_TEXT_CONTRAST;
   minimumGraphicRatio = MINIMUM_GRAPHIC_CONTRAST;
   swatches: TokenSwatch[] = [
@@ -75,16 +74,18 @@ export class TokensPage {
     if (!view) {
       return;
     }
-    // Panels render in `COLOR_SCHEMES` order.
-    const [dark, light] = this.panels().map((panel) => {
+    // Panels render in `TOKEN_PANELS` order.
+    const measured = this.panels().map((panel) => {
       const style = view.getComputedStyle(panel.nativeElement);
       const values: TokenValues = Object.fromEntries(
         COLOR_TOKENS.map((token) => [token, style.getPropertyValue(`--pgo-${token}`).trim()]),
       );
       return { values, rows: buildContrastRows(values) };
     });
-    if (dark && light) {
-      this.measurement.set({ dark, light });
+    if (measured.length === TOKEN_PANELS.length) {
+      this.measurement.set(
+        Object.fromEntries(TOKEN_PANELS.map(({ id }, index) => [id, measured[index]])),
+      );
     }
   }
 }

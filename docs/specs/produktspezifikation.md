@@ -559,7 +559,7 @@ Als Anwender möchte ich zwischen dunklem und hellem Erscheinungsbild wählen, d
 **US-UI-02 – Farben für Gewinn und Verlust** · Stufe 1 · S
 Als Anwender mit Farbsehschwäche möchte ich Gewinne und Verluste unterscheiden können.
 
-- Wahl zwischen Grün/Rot und einer farbsehschwächefreundlichen Kombination (z. B. Blau/Orange); zusätzlich immer Vorzeichen und Pfeil.
+- Wahl zwischen Grün/Rot (Standard) und Blau/Orange für Rot-Grün-Sehschwäche, als Einstellung dieses Geräts (AP 6.2); zusätzlich immer Vorzeichen und Pfeil.
 
 **US-UI-03 – Responsives Layout** · Stufe 1 · M
 Als Anwender möchte ich PortfoliGo auf Desktop, Tablet und Smartphone nutzen.
@@ -735,7 +735,7 @@ Als Anwender möchte ich die App auf Deutsch oder Englisch nutzen.
 | Orders             | Offene Orders, Orderhistorie, Sparpläne                                                                                                                                                                                                                                                                                                   |
 | Steuern            | Jahresübersicht, Verlusttopf, Sparerpauschbetrag                                                                                                                                                                                                                                                                                          |
 | Benachrichtigungen | Liste mit Filtern                                                                                                                                                                                                                                                                                                                         |
-| Einstellungen      | Erscheinungsbild, Zeitverhalten, Benachrichtigungen, Spieler (Seed, Export)                                                                                                                                                                                                                                                               |
+| Einstellungen      | Dieses Gerät: Erscheinungsbild, Farben für Gewinn und Verlust, Hervorhebung von Kursänderungen, Tastenkürzel, Benachrichtigungen je Ereignis (Einblendung, Browser); Spieler: Name, Seed, Verhalten im Hintergrund, automatische Pause, Spielstand sichern                                                                                |
 
 ### 10.4 Zahlen und Zeit
 

@@ -9,6 +9,7 @@ const selectState = createFeatureSelector<SessionState>(SESSION_FEATURE_KEY);
 
 export const selectPlayerId = createSelector(selectState, (state) => state.playerId);
 export const selectPlayerName = createSelector(selectState, (state) => state.playerName);
+export const selectPlayerSeed = createSelector(selectState, (state) => state.playerSeed);
 export const selectPhase = createSelector(selectState, (state) => state.phase);
 export const selectProgress = createSelector(selectState, (state) => state.progress);
 export const selectWarning = createSelector(selectState, (state) => state.warning);

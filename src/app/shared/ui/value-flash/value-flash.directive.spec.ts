@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { VALUE_FLASH_ENABLED } from './value-flash.config';
 import { VALUE_FLASH_MS, ValueFlashDirective } from './value-flash.directive';
 
 @Component({
@@ -68,5 +69,21 @@ describe('ValueFlashDirective', () => {
     host.enabled.set(false);
     set(12);
     expect(element.dataset['flash']).toBeUndefined();
+  });
+
+  it('does not flash while the device setting is off and flashes again once it is on', () => {
+    // PS US-MK-05: the highlight can be switched off (AP 6.2).
+    const deviceSetting = signal(false);
+    TestBed.configureTestingModule({
+      providers: [{ provide: VALUE_FLASH_ENABLED, useValue: deviceSetting }],
+    });
+    const { element, set } = render();
+    set(10);
+    set(11);
+    expect(element.dataset['flash']).toBeUndefined();
+
+    deviceSetting.set(true);
+    set(12);
+    expect(element.dataset['flash']).toBe('up');
   });
 });

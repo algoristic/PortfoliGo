@@ -24,6 +24,74 @@
   </div>
 </fieldset>
 
+<fieldset class="mt-6" aria-describedby="settings-device-change-colors-hint">
+  <legend class="mb-2 font-medium" i18n="@@uiSettings-deviceSettings-changeColorsLegend">
+    Farben für Gewinn und Verlust
+  </legend>
+  <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+    @for (option of changeColorOptions(); track option.id) {
+      <label
+        class="flex cursor-pointer items-center gap-3 rounded-md border border-border p-3 has-checked:border-accent has-checked:bg-surface-raised">
+        <input
+          type="radio"
+          name="change-colors"
+          [value]="option.id"
+          [checked]="option.checked"
+          [attr.data-testid]="'settings.device.change-colors.' + option.id"
+          (change)="onSelectChangeColors(option.id)" />
+        <span class="flex flex-col">
+          <span class="font-medium">{{ option.label }}</span>
+          <span class="text-sm text-fg-muted">{{ option.hint }}</span>
+        </span>
+      </label>
+    }
+  </div>
+  <p id="settings-device-change-colors-hint" class="mt-2 text-sm text-fg-muted">
+    <span i18n="@@uiSettings-deviceSettings-changeColorsHint"
+      >Vorzeichen und Pfeil zeigen die Richtung immer zusätzlich an. Beispiel:</span
+    >
+    <app-price-change
+      class="ml-1 font-medium"
+      data-testid="settings.device.change-colors.up"
+      [value]="sampleGain"></app-price-change>
+    <app-price-change
+      class="ml-2 font-medium"
+      data-testid="settings.device.change-colors.down"
+      [value]="sampleLoss"></app-price-change>
+  </p>
+</fieldset>
+
+<div class="mt-6 border-t border-border pt-4">
+  <label class="flex cursor-pointer items-center justify-between gap-4">
+    <span class="font-medium" i18n="@@uiSettings-deviceSettings-priceHighlightLabel"
+      >Kursänderungen hervorheben</span
+    >
+    <span class="relative inline-flex shrink-0">
+      <input
+        type="checkbox"
+        role="switch"
+        class="peer absolute inset-0 z-10 m-0 size-full cursor-pointer appearance-none opacity-0"
+        aria-describedby="settings-device-price-highlight-hint"
+        data-testid="settings.device.price-highlight"
+        [checked]="priceHighlight() ?? true"
+        (change)="onTogglePriceHighlight($event)" />
+      <span
+        aria-hidden="true"
+        class="h-6 w-11 rounded-full bg-border transition-colors peer-checked:bg-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent motion-reduce:transition-none"></span>
+      <span
+        aria-hidden="true"
+        class="absolute top-1 left-1 size-4 rounded-full bg-fg transition-transform peer-checked:translate-x-5 peer-checked:bg-surface motion-reduce:transition-none"></span>
+    </span>
+  </label>
+  <p
+    id="settings-device-price-highlight-hint"
+    class="mt-2 text-sm text-fg-muted"
+    i18n="@@uiSettings-deviceSettings-priceHighlightHint">
+    Geänderte Kurse leuchten kurz in der Farbe für Gewinn oder Verlust auf. Ist auf dem Gerät
+    „Bewegung reduzieren“ eingestellt, entfällt das immer.
+  </p>
+</div>
+
 <div class="mt-6 border-t border-border pt-4">
   <label class="flex cursor-pointer items-center justify-between gap-4">
     <span class="font-medium" i18n="@@uiSettings-deviceSettings-shortcutsLabel">Tastenkürzel</span>

@@ -1,5 +1,6 @@
 import { Action, createReducer, on } from '@ngrx/store';
 
+import { withNotificationChannel } from '@app/notifications/domain/notification-channel-logic';
 import { DEFAULT_SETTINGS, Settings } from '@app/settings/domain/models/settings.model';
 
 import * as SettingsActions from './settings.actions';
@@ -32,6 +33,24 @@ const reducer = createReducer(
     settings: {
       ...state.settings,
       appearance: { ...state.settings.appearance, colorScheme },
+    },
+  })),
+  on(SettingsActions.selectedChangeColors, (state, { changeColors }) => ({
+    ...state,
+    settings: {
+      ...state.settings,
+      appearance: { ...state.settings.appearance, changeColors },
+    },
+  })),
+  on(SettingsActions.toggledPriceHighlight, (state, { enabled }) => ({
+    ...state,
+    settings: { ...state.settings, motion: { ...state.settings.motion, priceHighlight: enabled } },
+  })),
+  on(SettingsActions.toggledNotificationChannel, (state, { channel, code, enabled }) => ({
+    ...state,
+    settings: {
+      ...state.settings,
+      notifications: withNotificationChannel(state.settings.notifications, channel, code, enabled),
     },
   })),
   on(SettingsActions.toggledShortcuts, (state, { enabled }) => ({

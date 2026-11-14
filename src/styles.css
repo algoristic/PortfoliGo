@@ -46,8 +46,13 @@
   --pgo-fg: #1f2328;
   --pgo-fg-muted: #59636e;
   --pgo-accent: #0b5cd5;
-  --pgo-up: #0f7b3f;
-  --pgo-down: #c62828;
+  /* Gain and loss: green and red by default, blue and orange with `.colors-blue-orange` (US-UI-02). */
+  --pgo-up-green-red: #0f7b3f;
+  --pgo-down-green-red: #c62828;
+  --pgo-up-blue-orange: #0a5fa8;
+  --pgo-down-blue-orange: #a14a00;
+  --pgo-up: var(--pgo-up-green-red);
+  --pgo-down: var(--pgo-down-green-red);
   --pgo-warning: #8a5a00;
   /* Categories of charts (donut segments, overlays): ≥ 3:1 on bg/surface/surface-raised. */
   --pgo-chart-1: #1f6fd1;
@@ -67,8 +72,12 @@
   --pgo-fg: #e6edf3;
   --pgo-fg-muted: #9aa7b4;
   --pgo-accent: #4c9eff;
-  --pgo-up: #26c281;
-  --pgo-down: #ff6b6b;
+  --pgo-up-green-red: #26c281;
+  --pgo-down-green-red: #ff6b6b;
+  --pgo-up-blue-orange: #5aa9e6;
+  --pgo-down-blue-orange: #ff9933;
+  --pgo-up: var(--pgo-up-green-red);
+  --pgo-down: var(--pgo-down-green-red);
   --pgo-warning: #f0b429;
   --pgo-chart-1: #5c9dff;
   --pgo-chart-2: #ff8a4c;
@@ -76,6 +85,26 @@
   --pgo-chart-4: #c77dff;
   --pgo-chart-5: #33c3d6;
   --pgo-chart-6: #f06595;
+}
+
+/*
+ * Choice of the gain and loss colours (PS US-UI-02, TS §11.5): the class on `<html>` (settings,
+ * set early by `src/index.html`) picks the pair of the theme beneath it. The rules come after the
+ * themes, so they win on the same element; `.colors-green-red` comes last, so a nested element can
+ * show the default pair inside `.colors-blue-orange` (`#/lab/tokens`).
+ */
+.colors-blue-orange,
+.colors-blue-orange .light,
+.colors-blue-orange .dark {
+  --pgo-up: var(--pgo-up-blue-orange);
+  --pgo-down: var(--pgo-down-blue-orange);
+}
+
+.colors-green-red,
+.colors-green-red .light,
+.colors-green-red .dark {
+  --pgo-up: var(--pgo-up-green-red);
+  --pgo-down: var(--pgo-down-green-red);
 }
 
 @layer base {

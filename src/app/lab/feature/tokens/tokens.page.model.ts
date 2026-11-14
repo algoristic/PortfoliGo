@@ -1,4 +1,7 @@
-import { ColorScheme } from '@app/shared/data-access/color-scheme/color-scheme-service.utils';
+import {
+  ChangeColors,
+  ColorScheme,
+} from '@app/shared/data-access/color-scheme/color-scheme-service.utils';
 
 export const COLOR_TOKENS = [
   'bg',
@@ -63,4 +66,31 @@ export interface ContrastRow {
   passes: boolean;
 }
 
-export type ThemeMeasurement = Record<ColorScheme, { values: TokenValues; rows: ContrastRow[] }>;
+/** One panel of the page: a colour scheme with one choice of gain and loss colours. */
+export interface TokenPanel {
+  id: string;
+  theme: ColorScheme;
+  changeColors: ChangeColors;
+  /** Full class name of the palette, so that Tailwind and the reader find it. */
+  paletteClass: 'colors-green-red' | 'colors-blue-orange';
+}
+
+/** Panels in the order they render; the contrast check runs for each. */
+export const TOKEN_PANELS: readonly TokenPanel[] = [
+  { id: 'dark', theme: 'dark', changeColors: 'green-red', paletteClass: 'colors-green-red' },
+  { id: 'light', theme: 'light', changeColors: 'green-red', paletteClass: 'colors-green-red' },
+  {
+    id: 'dark-blue-orange',
+    theme: 'dark',
+    changeColors: 'blue-orange',
+    paletteClass: 'colors-blue-orange',
+  },
+  {
+    id: 'light-blue-orange',
+    theme: 'light',
+    changeColors: 'blue-orange',
+    paletteClass: 'colors-blue-orange',
+  },
+];
+
+export type ThemeMeasurement = Record<string, { values: TokenValues; rows: ContrastRow[] }>;

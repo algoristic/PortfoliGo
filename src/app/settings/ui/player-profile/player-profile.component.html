@@ -1,0 +1,48 @@
+@let _name = name();
+@let _seed = seed();
+
+<dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+  <div class="flex flex-col gap-1">
+    <dt class="font-medium" i18n="@@uiSettings-playerProfile-nameLabel">Name</dt>
+    <dd class="flex flex-wrap items-center gap-2">
+      <span class="min-w-0 break-words" data-testid="settings.player.name">{{ _name }}</span>
+      <button
+        appButton
+        type="button"
+        size="sm"
+        variant="ghost"
+        data-testid="settings.player.rename"
+        [disabled]="!_name"
+        (click)="onRename()">
+        <i appIcon="pencil"></i>
+        <span i18n="@@uiSettings-playerProfile-rename">Umbenennen</span>
+      </button>
+    </dd>
+  </div>
+  <div class="flex flex-col gap-1">
+    <dt class="font-medium" i18n="@@uiSettings-playerProfile-seedLabel">Seed</dt>
+    <dd class="flex flex-wrap items-center gap-2">
+      <code
+        class="min-w-0 rounded-sm bg-surface-raised px-1.5 py-0.5 break-all select-all"
+        data-testid="settings.player.seed"
+        >{{ _seed }}</code
+      >
+      <button
+        appButton
+        type="button"
+        size="sm"
+        variant="ghost"
+        data-testid="settings.player.copy-seed"
+        [disabled]="!_seed"
+        [cdkCopyToClipboard]="_seed ?? ''"
+        (cdkCopyToClipboardCopied)="onCopied($event)">
+        <i appIcon="copy"></i>
+        <span i18n="@@uiSettings-playerProfile-copySeed">Seed kopieren</span>
+      </button>
+    </dd>
+  </div>
+</dl>
+<p class="mt-2 text-sm text-fg-muted" i18n="@@uiSettings-playerProfile-seedHint">
+  Mit demselben Seed entsteht dieselbe Welt: gleiche Banken, Wertpapiere und Kursverläufe. Teile
+  ihn, damit andere in deiner Welt spielen können.
+</p>

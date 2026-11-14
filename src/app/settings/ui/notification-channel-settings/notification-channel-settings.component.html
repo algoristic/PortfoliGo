@@ -1,0 +1,87 @@
+<fieldset [disabled]="!channels()" aria-describedby="settings-device-notifications-hint">
+  <legend class="font-medium" i18n="@@uiSettings-notificationChannelSettings-legend">
+    Benachrichtigungen
+  </legend>
+  <p
+    id="settings-device-notifications-hint"
+    class="mt-1 text-sm text-fg-muted"
+    i18n="@@uiSettings-notificationChannelSettings-hint">
+    Im Benachrichtigungszentrum steht jedes Ereignis. Hier wählst du, welche zusätzlich kurz
+    eingeblendet werden und welche der Browser meldet, während die App verborgen ist – das geht nur,
+    wenn du es dem Browser erlaubst.
+  </p>
+  <div class="mt-3 grid gap-4 lg:grid-cols-2">
+    @for (group of groups(); track group.category) {
+      <table
+        class="w-full self-start"
+        [attr.data-testid]="'settings.device.notifications.' + group.category">
+        <caption class="pb-1 text-left text-xs font-medium tracking-wide text-fg-muted uppercase">
+          {{ group.label }}
+        </caption>
+        <thead class="text-xs text-fg-muted">
+          <tr>
+            <th
+              scope="col"
+              class="pb-1 text-left font-normal"
+              i18n="@@uiSettings-notificationChannelSettings-event">
+              Ereignis
+            </th>
+            <th scope="col" class="w-20 pb-1 text-center font-normal">{{ toastLabel }}</th>
+            <th scope="col" class="w-20 pb-1 text-center font-normal">{{ browserLabel }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of group.rows; track row.code) {
+            <tr class="border-t border-border first:border-t-0">
+              <th scope="row" class="py-1.5 pr-2 text-left font-normal text-fg">
+                {{ row.label }}
+              </th>
+              <td class="py-1.5 text-center">
+                <span class="relative inline-flex shrink-0">
+                  <input
+                    type="checkbox"
+                    role="switch"
+                    class="peer absolute inset-0 z-10 m-0 size-full cursor-pointer appearance-none opacity-0 disabled:cursor-default"
+                    [attr.aria-label]="row.toast.label"
+                    [checked]="row.toast.checked"
+                    [attr.data-testid]="
+                      'settings.device.notifications.' + row.code + '.' + row.toast.channel
+                    "
+                    (change)="onToggle(row.toast.channel, row.code, $event)" />
+                  <span
+                    aria-hidden="true"
+                    class="h-6 w-11 rounded-full bg-border transition-colors peer-checked:bg-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent peer-disabled:opacity-50 motion-reduce:transition-none"></span>
+                  <span
+                    aria-hidden="true"
+                    class="absolute top-1 left-1 size-4 rounded-full bg-fg transition-transform peer-checked:translate-x-5 peer-checked:bg-surface peer-disabled:opacity-50 motion-reduce:transition-none"></span>
+                </span>
+              </td>
+              <td class="py-1.5 text-center">
+                @if (row.browser; as browser) {
+                  <span class="relative inline-flex shrink-0">
+                    <input
+                      type="checkbox"
+                      role="switch"
+                      class="peer absolute inset-0 z-10 m-0 size-full cursor-pointer appearance-none opacity-0 disabled:cursor-default"
+                      [attr.aria-label]="browser.label"
+                      [checked]="browser.checked"
+                      [attr.data-testid]="
+                        'settings.device.notifications.' + row.code + '.' + browser.channel
+                      "
+                      (change)="onToggle(browser.channel, row.code, $event)" />
+                    <span
+                      aria-hidden="true"
+                      class="h-6 w-11 rounded-full bg-border transition-colors peer-checked:bg-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent peer-disabled:opacity-50 motion-reduce:transition-none"></span>
+                    <span
+                      aria-hidden="true"
+                      class="absolute top-1 left-1 size-4 rounded-full bg-fg transition-transform peer-checked:translate-x-5 peer-checked:bg-surface peer-disabled:opacity-50 motion-reduce:transition-none"></span>
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</fieldset>

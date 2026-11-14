@@ -14,6 +14,7 @@ import {
   provideRecordingFileDownload,
   RecordingFileDownload,
 } from '@app/shared/data-access/testing/recording-file-download';
+import { VALUE_FLASH_ENABLED } from '@app/shared/ui/value-flash/value-flash.config';
 
 import { installSystemColorScheme, SystemColorScheme } from '../../../../testing/color-scheme';
 import {
@@ -64,7 +65,7 @@ describe('SettingsPage', () => {
   afterEach(() => {
     setHidden(false);
     system.restore();
-    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.remove('dark', 'colors-blue-orange');
   });
 
   async function openApp(url: string): Promise<void> {
@@ -106,6 +107,30 @@ describe('SettingsPage', () => {
     return document.documentElement.classList.contains('dark');
   }
 
+  function isBlueOrange(): boolean {
+    return document.documentElement.classList.contains('colors-blue-orange');
+  }
+
+  function toastTexts(): string[] {
+    return [...document.body.querySelectorAll('[data-testid^="toast."] p')].map(textOf);
+  }
+
+  /** The CDK copies through `execCommand`, which jsdom lacks: the platform boundary. */
+  async function withClipboard(result: boolean, action: () => Promise<void>): Promise<string[]> {
+    const copied: string[] = [];
+    const execCommand = document.execCommand;
+    document.execCommand = (command: string): boolean => {
+      copied.push(`${command}:${[...document.querySelectorAll('textarea')].at(-1)?.value}`);
+      return result;
+    };
+    try {
+      await action();
+    } finally {
+      document.execCommand = execCommand;
+    }
+    return copied;
+  }
+
   function clock(): string {
     return textOf(byTestId(page, 'shell.header.clock'));
   }
@@ -131,6 +156,78 @@ describe('SettingsPage', () => {
     expect(input('settings.player.background-mode.realtime').checked).toBe(true);
   });
 
+  it('shows the complete page: device and player sections with their defaults', () => {
+    // PS US-UI-09: on the device appearance, colours, highlight, shortcuts and notifications.
+    expect(input('settings.device.change-colors.green-red').checked).toBe(true);
+    expect(isBlueOrange()).toBe(false);
+    expect(textOf(byTestId(page, 'settings.device.change-colors.up'))).toBe('+1,23 %');
+    expect(textOf(byTestId(page, 'settings.device.change-colors.down'))).toBe('−0,45 %');
+    expect(input('settings.device.price-highlight').checked).toBe(true);
+    expect(input('settings.device.price-highlight').getAttribute('role')).toBe('switch');
+
+    // TS §12: toast and browser defaults per code, grouped by category.
+    const notification = (code: string, channel: string): HTMLInputElement =>
+      input(`settings.device.notifications.${code}.${channel}`);
+    expect(notification('order-executed', 'toast').checked).toBe(true);
+    expect(notification('order-executed', 'browser').checked).toBe(false);
+    expect(notification('account-uncovered', 'browser').checked).toBe(true);
+    expect(notification('dividend-received', 'toast').checked).toBe(false);
+    expect(notification('backup-reminder', 'toast').checked).toBe(true);
+    expect(queryByTestId(page, 'settings.device.notifications.backup-reminder.browser')).toBeNull();
+    expect(notification('order-rejected', 'browser').getAttribute('aria-label')).toBe(
+      'Order abgelehnt: Browser',
+    );
+    expect(
+      byTestId(page, 'settings.device.notifications.system').contains(
+        notification('backup-reminder', 'toast'),
+      ),
+    ).toBe(true);
+
+    // For the player: name, seed, background, auto-pause, backup.
+    expect(textOf(byTestId(page, 'settings.player.name'))).toBe('Anna');
+    expect(textOf(byTestId(page, 'settings.player.seed'))).toBe('kupfer-falke-731');
+    expect(input('settings.player.background-mode.realtime').checked).toBe(true);
+    expect(input('settings.player.auto-pause.overdraft-limit-exceeded').checked).toBe(true);
+    expect(queryByTestId(page, 'settings.player.export')).not.toBeNull();
+  });
+
+  it('switches the gain and loss colours at once and the price highlight of the app', async () => {
+    await act(() => click(input('settings.device.change-colors.blue-orange')));
+    expect(isBlueOrange()).toBe(true);
+    await act(() => click(input('settings.device.change-colors.green-red')));
+    expect(isBlueOrange()).toBe(false);
+
+    const flashEnabled = TestBed.inject(VALUE_FLASH_ENABLED);
+    expect(flashEnabled()).toBe(true);
+    await act(() => click(input('settings.device.price-highlight')));
+    expect(flashEnabled()).toBe(false);
+  });
+
+  it('renames the player and copies the seed', async () => {
+    await act(() => click(byTestId(page, 'settings.player.rename')));
+    const name = byTestId<HTMLInputElement>(document.body, 'players.rename-dialog.name');
+    expect(name.value).toBe('Anna');
+    typeText(name, 'Anna Depot');
+    await act(() => click(byTestId(document.body, 'players.rename-dialog.submit')));
+    expect(textOf(byTestId(page, 'settings.player.name'))).toBe('Anna Depot');
+    const players = await firstValueFrom(TestBed.inject(PlayersService).loadPlayers());
+    expect(players.map((player) => player.name)).toEqual(['Anna Depot']);
+
+    const copied = await withClipboard(true, () =>
+      act(() => click(byTestId(page, 'settings.player.copy-seed'))),
+    );
+    expect(copied).toEqual(['copy:kupfer-falke-731']);
+    expect(toastTexts()).toContain('Kopiert: Der Seed ist in der Zwischenablage.');
+
+    await withClipboard(false, () => act(() => click(byTestId(page, 'settings.player.copy-seed'))));
+    expect(toastTexts()).toContain(
+      'Das Kopieren hat nicht geklappt. Markiere den Seed und kopiere ihn selbst.',
+    );
+
+    await reload();
+    expect(textOf(byTestId(page, 'settings.player.name'))).toBe('Anna Depot');
+  });
+
   it('switches the appearance and follows the system with system', async () => {
     await act(() => click(input('settings.device.color-scheme.light')));
     expect(isDark()).toBe(false);
@@ -152,12 +249,36 @@ describe('SettingsPage', () => {
 
   it('keeps the device settings after a reload', async () => {
     await act(() => click(input('settings.device.color-scheme.light')));
+    await act(() => click(input('settings.device.change-colors.blue-orange')));
+    await act(() => click(input('settings.device.price-highlight')));
     await act(() => click(input('settings.device.shortcuts')));
+    await act(() => click(input('settings.device.notifications.order-executed.toast')));
+    await act(() => click(input('settings.device.notifications.year-closed.browser')));
 
+    document.documentElement.classList.remove('colors-blue-orange');
     await reload();
     expect(input('settings.device.color-scheme.light').checked).toBe(true);
     expect(isDark()).toBe(false);
+    expect(input('settings.device.change-colors.blue-orange').checked).toBe(true);
+    expect(isBlueOrange()).toBe(true);
+    expect(input('settings.device.price-highlight').checked).toBe(false);
+    expect(TestBed.inject(VALUE_FLASH_ENABLED)()).toBe(false);
     expect(input('settings.device.shortcuts').checked).toBe(false);
+    expect(input('settings.device.notifications.order-executed.toast').checked).toBe(false);
+    expect(input('settings.device.notifications.year-closed.browser').checked).toBe(true);
+    // TS §9.3: only deviations from TS §12 are stored.
+    expect(JSON.parse(localStorage.getItem('pgo.settings') ?? 'null')).toEqual({
+      v: 1,
+      data: {
+        appearance: { colorScheme: 'light', changeColors: 'blue-orange' },
+        motion: { priceHighlight: false },
+        shortcuts: { enabled: false },
+        notifications: {
+          toast: { 'order-executed': false },
+          browser: { 'year-closed': true },
+        },
+      },
+    });
   });
 
   it('ignores the clock shortcuts while they are switched off', async () => {
@@ -277,10 +398,6 @@ describe('SettingsPage', () => {
       return JSON.parse(localStorage.getItem('pgo.backup') ?? 'null');
     }
 
-    function toastTexts(): string[] {
-      return [...document.body.querySelectorAll('[data-testid^="toast."] p')].map(textOf);
-    }
-
     it('saves the export as a file and in the clipboard and notes the time', async () => {
       expect(textOf(byTestId(page, 'settings.player.last-export'))).toBe(
         'Auf diesem Gerät noch nicht exportiert.',
@@ -350,6 +467,7 @@ describe('SettingsPage', () => {
 
     it('imports the exported file as a new player with the same game day and settings', async () => {
       await act(() => click(input('settings.player.background-mode.pause')));
+      await act(() => click(input('settings.player.auto-pause.account-uncovered')));
       await run(200);
       await act(() => click(byTestId(page, 'settings.player.export')));
       await act(() => click(byTestId(document.body, 'players.export-dialog.download')));
@@ -376,6 +494,9 @@ describe('SettingsPage', () => {
       await harness.navigateByUrl(`/game/${importedId}/settings`);
       await run(200);
       expect(input('settings.player.background-mode.pause').checked).toBe(true);
+      // PS US-UI-09: the player settings travel with the export, the seed with the world.
+      expect(input('settings.player.auto-pause.account-uncovered').checked).toBe(true);
+      expect(textOf(byTestId(page, 'settings.player.seed'))).toBe('kupfer-falke-731');
     });
   });
 
@@ -383,10 +504,6 @@ describe('SettingsPage', () => {
     const DAY_MS = 86_400_000;
     const REMINDER =
       'Sicherung empfohlen: Exportiere deinen Spielstand unter Einstellungen → Spieler. So bleibt er erhalten, auch wenn der Browser seine Daten löscht.';
-
-    function toastTexts(): string[] {
-      return [...document.body.querySelectorAll('[data-testid^="toast."] p')].map(textOf);
-    }
 
     it('reminds seven days after the creation, then a day later again, not after an export', async () => {
       expect(toastTexts()).not.toContain(REMINDER);
@@ -413,6 +530,18 @@ describe('SettingsPage', () => {
       await reload();
       expect(toastTexts()).not.toContain(REMINDER);
       wallClock += DAY_MS;
+      await reload();
+      expect(toastTexts()).toContain(REMINDER);
+    });
+
+    it('does not remind while its toast is switched off on this device', async () => {
+      // TS §12: `backup-reminder` is a toast only; switched off, it is neither shown nor noted.
+      await act(() => click(input('settings.device.notifications.backup-reminder.toast')));
+      wallClock += 7 * DAY_MS;
+      await reload();
+      expect(toastTexts()).not.toContain(REMINDER);
+
+      await act(() => click(input('settings.device.notifications.backup-reminder.toast')));
       await reload();
       expect(toastTexts()).toContain(REMINDER);
     });

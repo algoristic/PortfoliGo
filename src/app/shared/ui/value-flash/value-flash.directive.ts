@@ -1,5 +1,6 @@
 import { DestroyRef, Directive, effect, ElementRef, inject, input, Renderer2 } from '@angular/core';
 
+import { VALUE_FLASH_ENABLED } from './value-flash.config';
 import { ValueFlashDirection } from './value-flash.model';
 
 /** How long the background stays before it fades (US-MK-05: a short highlight). */
@@ -13,7 +14,8 @@ const FLASH_CLASSES: Record<ValueFlashDirection, string> = {
 /**
  * Highlights a changed value for a moment (US-MK-05): the background flashes `up` or `down` when
  * the bound number rises or falls, then fades. The first value and unchanged values don't flash;
- * `enabled` switches it off (setting of AP 6.2), and with "reduce motion" it never shows
+ * the device setting (`VALUE_FLASH_ENABLED`, AP 6.2) or `enabled` switch it off, and with "reduce
+ * motion" it never shows
  * (`motion-safe:`). The element should be inline-block or block, so that the background has room.
  */
 @Directive({
@@ -25,6 +27,7 @@ const FLASH_CLASSES: Record<ValueFlashDirection, string> = {
 export class ValueFlashDirective {
   readonly #element = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly #renderer = inject(Renderer2);
+  readonly #globallyEnabled = inject(VALUE_FLASH_ENABLED);
 
   appValueFlash = input.required<number | null | undefined>();
   enabled = input(true);
@@ -35,7 +38,7 @@ export class ValueFlashDirective {
 
   #flash = effect(() => {
     const value = this.appValueFlash();
-    const enabled = this.enabled();
+    const enabled = this.enabled() && this.#globallyEnabled();
     const previous = this.#previous;
     this.#previous = value;
     if (!enabled || !isNumber(value) || !isNumber(previous) || value === previous) {

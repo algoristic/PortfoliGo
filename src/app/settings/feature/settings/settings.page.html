@@ -1,5 +1,10 @@
 @let colorScheme = settingsFacade.colorScheme$ | async;
+@let changeColors = settingsFacade.changeColors$ | async;
+@let priceHighlight = settingsFacade.priceHighlight$ | async;
 @let shortcutsEnabled = settingsFacade.shortcutsEnabled$ | async;
+@let notificationChannels = settingsFacade.effectiveNotificationChannels$ | async;
+@let playerName = sessionFacade.playerName$ | async;
+@let playerSeed = sessionFacade.playerSeed$ | async;
 @let background = clockFacade.background$ | async;
 @let autoPause = notificationsFacade.autoPause$ | async;
 @let backup = playersFacade.backup$ | async;
@@ -12,18 +17,38 @@
     heading="Dieses Gerät"
     i18n-heading="@@featureSettings-settingsPage-deviceHeading"
     data-testid="settings.device">
+    <p class="mb-4 text-sm text-fg-muted" i18n="@@featureSettings-settingsPage-deviceHint">
+      Gilt für alle Spieler in diesem Browser und wird nicht exportiert.
+    </p>
     <app-device-settings
       [colorScheme]="colorScheme"
+      [changeColors]="changeColors"
+      [priceHighlight]="priceHighlight"
       [shortcutsEnabled]="shortcutsEnabled"
       (selectedColorScheme)="onSelectColorScheme($event)"
+      (selectedChangeColors)="onSelectChangeColors($event)"
+      (toggledPriceHighlight)="onTogglePriceHighlight($event)"
       (toggledShortcuts)="onToggleShortcuts($event)"></app-device-settings>
+    <app-notification-channel-settings
+      class="mt-6 border-t border-border pt-4"
+      [channels]="notificationChannels"
+      (toggledChannel)="onToggleNotificationChannel($event)"></app-notification-channel-settings>
   </app-panel>
 
   <app-panel
     heading="Spieler"
     i18n-heading="@@featureSettings-settingsPage-playerHeading"
     data-testid="settings.player">
+    <p class="mb-4 text-sm text-fg-muted" i18n="@@featureSettings-settingsPage-playerHint">
+      Gehört zum Spielstand und wird mit dem Spieler exportiert.
+    </p>
+    <app-player-profile
+      [name]="playerName"
+      [seed]="playerSeed"
+      (clickedRename)="onRename()"
+      (copiedSeed)="onCopiedSeed($event)"></app-player-profile>
     <app-player-settings
+      class="mt-6 border-t border-border pt-4"
       [background]="background"
       (selectedBackground)="onSelectBackground($event)"></app-player-settings>
     <app-auto-pause-settings

@@ -41,6 +41,15 @@ export class PlayersFacade {
     this.#store.dispatch(PlayersActions.clickedRenamePlayer({ playerId }));
   }
 
+  /** Renames the player of the open game (PS US-UI-09). */
+  renameOpenPlayer(): void {
+    this.#store.dispatch(PlayersActions.clickedRenameOpenPlayer());
+  }
+
+  copiedSeed(copied: boolean): void {
+    this.#store.dispatch(PlayersActions.copiedSeed({ copied }));
+  }
+
   deletePlayer(playerId: string): void {
     this.#store.dispatch(PlayersActions.clickedDeletePlayer({ playerId }));
   }

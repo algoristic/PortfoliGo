@@ -15,20 +15,25 @@ import { initialSettingsState, SETTINGS_FEATURE_KEY } from './settings.reducer';
 
 import { SettingsService } from '../../data-access/service/settings.service';
 
-const STORED: Settings = { appearance: { colorScheme: 'light' }, shortcuts: { enabled: false } };
+const STORED: Settings = {
+  appearance: { colorScheme: 'light', changeColors: 'blue-orange' },
+  motion: { priceHighlight: false },
+  shortcuts: { enabled: false },
+  notifications: { toast: { 'order-executed': false }, browser: {} },
+};
 
 describe('SettingsEffects', () => {
   let effects: SettingsEffects;
   let actions$: Subject<Action>;
   let store: MockStore;
   let service: Mocked<Pick<SettingsService, 'load' | 'save'>>;
-  let colorScheme: Mocked<Pick<ColorSchemeService, 'apply'>>;
+  let colorScheme: Mocked<Pick<ColorSchemeService, 'apply' | 'applyChangeColors'>>;
   let toasts: Mocked<Pick<ToastService, 'error'>>;
 
   beforeEach(() => {
     actions$ = new Subject();
     service = { load: vi.fn(), save: vi.fn((settings: Settings) => of(settings)) };
-    colorScheme = { apply: vi.fn() };
+    colorScheme = { apply: vi.fn(), applyChangeColors: vi.fn() };
     toasts = { error: vi.fn() };
     TestBed.configureTestingModule({
       providers: [
@@ -63,12 +68,21 @@ describe('SettingsEffects', () => {
   });
 
   describe('saveSettings$', () => {
-    it('saves all settings of the store after a change', () => {
+    it('saves all settings of the store after every kind of change', () => {
       const subscription = effects.saveSettings$.subscribe();
       setSettings(STORED);
       actions$.next(SettingsActions.toggledShortcuts({ enabled: false }));
+      actions$.next(SettingsActions.selectedChangeColors({ changeColors: 'blue-orange' }));
+      actions$.next(SettingsActions.toggledPriceHighlight({ enabled: false }));
+      actions$.next(
+        SettingsActions.toggledNotificationChannel({
+          channel: 'toast',
+          code: 'order-executed',
+          enabled: false,
+        }),
+      );
       subscription.unsubscribe();
-      expect(service.save).toHaveBeenCalledWith(STORED);
+      expect(service.save.mock.calls).toEqual([[STORED], [STORED], [STORED], [STORED]]);
     });
 
     it('dispatches saveSettingsFailure when saving fails', async () => {
@@ -89,6 +103,18 @@ describe('SettingsEffects', () => {
       actions$.next(SettingsActions.loadSettingsFailure({ error: new Error('x') }));
       subscription.unsubscribe();
       expect(colorScheme.apply.mock.calls).toEqual([['light'], ['dark']]);
+    });
+  });
+
+  describe('applyChangeColors$', () => {
+    it('applies the gain and loss colours after loading, also when loading failed', () => {
+      const subscription = effects.applyChangeColors$.subscribe();
+      setSettings(STORED);
+      actions$.next(SettingsActions.loadedSettings({ settings: STORED }));
+      setSettings(initialSettingsState.settings);
+      actions$.next(SettingsActions.loadSettingsFailure({ error: new Error('x') }));
+      subscription.unsubscribe();
+      expect(colorScheme.applyChangeColors.mock.calls).toEqual([['blue-orange'], ['green-red']]);
     });
   });
 });
