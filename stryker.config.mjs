@@ -50,6 +50,7 @@ const config = {
     'src/app/engine/domain/game-world.ts',
     'src/app/engine/domain/replay.ts',
     'src/app/engine/domain/clock-pacing-logic.ts',
+    'src/app/engine/domain/background-logic.ts',
     'src/app/engine/domain/last-tick-logic.ts',
     'src/app/engine/domain/jump-target-logic.ts',
     'src/app/engine/domain/catch-up-logic.ts',

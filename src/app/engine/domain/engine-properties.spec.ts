@@ -12,6 +12,7 @@ import {
   StandingOrderSpec,
 } from '@app/banking/domain/models/standing-order.model';
 import { dateTimeToTick, GAME_START_TICK } from '@app/clock/domain/calendar-logic';
+import { SPEEDS } from '@app/clock/domain/models/speed.model';
 import { TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
 import {
@@ -33,7 +34,12 @@ import { GameEngine } from './game-engine';
 import { createGameWorld } from './game-world';
 import { CommandResult, GameCommand } from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
-import { BACKGROUND_MODES, GameSnapshot, GameState } from './models/game-state.model';
+import {
+  BACKGROUND_MODES,
+  BACKGROUND_PAUSE_AFTER_MINUTES,
+  GameSnapshot,
+  GameState,
+} from './models/game-state.model';
 import { GameWorld } from './models/game-world.model';
 import { replayCommands } from './replay';
 import { startBankingGame, withBooks, withTestBanks } from './testing/banking-game';
@@ -158,10 +164,15 @@ const arbSavingsPlan = (instruments: readonly string[]): fc.Arbitrary<SavingsPla
 
 const arbCommandBody = (instruments: readonly string[]): fc.Arbitrary<WithoutStamp<GameCommand>> =>
   fc.oneof(
-    fc.record({
-      type: fc.constant('setBackgroundMode' as const),
-      mode: fc.constantFrom(...BACKGROUND_MODES),
-    }),
+    fc.record(
+      {
+        type: fc.constant('setBackgroundMode' as const),
+        mode: fc.constantFrom(...BACKGROUND_MODES),
+        speed: fc.constantFrom(...SPEEDS.map(({ id }) => id)),
+        pauseAfter: fc.constantFrom(null, ...BACKGROUND_PAUSE_AFTER_MINUTES),
+      },
+      { requiredKeys: ['type', 'mode'] },
+    ),
     fc.record({
       type: fc.constant('openAccount' as const),
       bankId: fc.constantFrom('b1', 'b2', 'b3'),

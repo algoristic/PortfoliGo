@@ -4,6 +4,7 @@ import {
   StandingOrderId,
   StandingOrderSpec,
 } from '@app/banking/domain/models/standing-order.model';
+import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { WATCHLIST_COMMAND_ERRORS } from '@app/market/domain/models/watchlist.model';
 import {
@@ -23,7 +24,7 @@ import {
   SavingsPlanSpec,
 } from '@app/trading/domain/models/savings-plan.model';
 
-import { BackgroundMode } from './game-state.model';
+import { BackgroundMode, BackgroundPauseAfter } from './game-state.model';
 
 /**
  * Game commands (TS §8.2) carry the tick after which they take effect: a command with tick T
@@ -34,9 +35,15 @@ interface CommandBase {
   tick: Tick;
 }
 
+/**
+ * Sets the behaviour in the background (TS §3.6). `speed` (`backgroundSpeed`) and `pauseAfter`
+ * (`backgroundPauseAfter`) are optional; a missing one keeps its current value.
+ */
 export interface SetBackgroundModeCommand extends CommandBase {
   type: 'setBackgroundMode';
   mode: BackgroundMode;
+  speed?: SpeedId;
+  pauseAfter?: BackgroundPauseAfter;
 }
 
 /** Opens an account; `depot` opens a depot with its clearing account (US-BK-02). */

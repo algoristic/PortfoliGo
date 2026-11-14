@@ -1,3 +1,5 @@
+import { BackgroundMode } from '@app/engine/domain/models/game-state.model';
+
 import {
   AUTO_PAUSE_CODES,
   AutoPauseCode,
@@ -53,12 +55,20 @@ export function withAutoPause(
 }
 
 /**
- * Whether an auto-pause takes effect (TS §3.6, §12, US-ZT-06): only while the app is visible, live
- * or jumping; never while catching up. Hidden or catching up, the events go into the absence report
- * instead, so that the real time of the idea collection is kept.
+ * Whether an auto-pause takes effect (TS §3.6, §12, US-ZT-06): live or jumping, never while catching
+ * up; while the app is visible, and hidden also in `backgroundMode` `keep-speed` and `custom-speed`
+ * (E-35). Hidden in `realtime` or catching up, the events go into the absence report instead, so
+ * that the real time of the idea collection is kept.
  */
-export function autoPauseApplies(mode: RunMode, visible: boolean): boolean {
-  return visible && mode !== 'catch-up';
+export function autoPauseApplies(
+  mode: RunMode,
+  visible: boolean,
+  backgroundMode: BackgroundMode,
+): boolean {
+  if (mode === 'catch-up') {
+    return false;
+  }
+  return visible || backgroundMode === 'keep-speed' || backgroundMode === 'custom-speed';
 }
 
 /** A notification with this code pauses the game now. */
@@ -67,6 +77,7 @@ export function shouldAutoPause(
   settings: Readonly<AutoPauseSettings>,
   mode: RunMode,
   visible: boolean,
+  backgroundMode: BackgroundMode,
 ): boolean {
-  return autoPauseEnabled(settings, code) && autoPauseApplies(mode, visible);
+  return autoPauseEnabled(settings, code) && autoPauseApplies(mode, visible, backgroundMode);
 }

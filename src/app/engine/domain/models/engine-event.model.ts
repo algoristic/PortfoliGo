@@ -1,13 +1,14 @@
 import { AccountId, DepotId } from '@app/banking/domain/models/account.model';
 import { AccountEventCode } from '@app/banking/domain/models/household.model';
 import { StandingOrderId } from '@app/banking/domain/models/standing-order.model';
+import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { DistributionKind } from '@app/portfolio/domain/models/distribution.model';
 import { Cents, MicroUnits } from '@app/shared/domain/models/money.model';
 import { OrderRejection, OrderSide } from '@app/trading/domain/models/order.model';
 import { SavingsPlanFailure, SavingsPlanId } from '@app/trading/domain/models/savings-plan.model';
 
-import { BackgroundMode } from './game-state.model';
+import { BackgroundMode, BackgroundPauseAfter } from './game-state.model';
 
 /**
  * Events of the engine: codes with parameters, never texts (TS §8.6). They never contain prices
@@ -33,7 +34,13 @@ export type EngineEvent =
     }
   | { type: 'month-ended'; tick: Tick; year: number; month: number }
   | { type: 'year-ended'; tick: Tick; year: number }
-  | { type: 'background-mode-changed'; tick: Tick; mode: BackgroundMode }
+  | {
+      type: 'background-mode-changed';
+      tick: Tick;
+      mode: BackgroundMode;
+      speed: SpeedId;
+      pauseAfter: BackgroundPauseAfter;
+    }
   | {
       /** A balance or limit change uncovered the account or exceeded its limit (TS §7.4). */
       type: AccountEventCode;

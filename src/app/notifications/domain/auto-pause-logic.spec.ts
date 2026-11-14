@@ -1,5 +1,7 @@
 import fc from 'fast-check';
 
+import { BACKGROUND_MODES, BackgroundMode } from '@app/engine/domain/models/game-state.model';
+
 import {
   autoPauseApplies,
   autoPauseEnabled,
@@ -81,37 +83,67 @@ describe('auto-pause-logic', () => {
   });
 
   describe('shouldAutoPause', () => {
-    // TS §12, table "Auto-Pause"
-    it.each<[AutoPauseCode, AutoPauseSettings, RunMode, boolean, boolean]>([
-      ['overdraft-limit-exceeded', {}, 'live', true, true],
-      ['overdraft-limit-exceeded', {}, 'live', false, false],
-      ['overdraft-limit-exceeded', {}, 'catch-up', true, false],
-      ['overdraft-limit-exceeded', {}, 'catch-up', false, false],
-      ['overdraft-limit-exceeded', {}, 'jump', true, true],
-      ['overdraft-limit-exceeded', {}, 'jump', false, false],
-      ['overdraft-limit-exceeded', { 'overdraft-limit-exceeded': false }, 'live', true, false],
-      ['account-uncovered', {}, 'live', true, false],
-      ['account-uncovered', { 'account-uncovered': true }, 'live', true, true],
-      ['month-closed', { 'month-closed': true }, 'catch-up', false, false],
-    ])('%s with %j, %s, visible %s → %s', (code, settings, mode, visible, expected) => {
-      expect(shouldAutoPause(code, settings, mode, visible)).toBe(expected);
-    });
+    // TS §12, table "Auto-Pause"; TS §3.6: hidden only in keep-speed and custom-speed (E-35)
+    it.each<[AutoPauseCode, AutoPauseSettings, RunMode, boolean, BackgroundMode, boolean]>([
+      ['overdraft-limit-exceeded', {}, 'live', true, 'realtime', true],
+      ['overdraft-limit-exceeded', {}, 'live', false, 'realtime', false],
+      ['overdraft-limit-exceeded', {}, 'live', false, 'pause', false],
+      ['overdraft-limit-exceeded', {}, 'live', false, 'keep-speed', true],
+      ['overdraft-limit-exceeded', {}, 'live', false, 'custom-speed', true],
+      ['overdraft-limit-exceeded', {}, 'catch-up', true, 'realtime', false],
+      ['overdraft-limit-exceeded', {}, 'catch-up', false, 'realtime', false],
+      ['overdraft-limit-exceeded', {}, 'catch-up', false, 'keep-speed', false],
+      ['overdraft-limit-exceeded', {}, 'catch-up', true, 'custom-speed', false],
+      ['overdraft-limit-exceeded', {}, 'jump', true, 'realtime', true],
+      ['overdraft-limit-exceeded', {}, 'jump', false, 'realtime', false],
+      ['overdraft-limit-exceeded', {}, 'jump', false, 'pause', false],
+      ['overdraft-limit-exceeded', {}, 'jump', false, 'keep-speed', true],
+      ['overdraft-limit-exceeded', {}, 'jump', false, 'custom-speed', true],
+      [
+        'overdraft-limit-exceeded',
+        { 'overdraft-limit-exceeded': false },
+        'live',
+        true,
+        'realtime',
+        false,
+      ],
+      [
+        'overdraft-limit-exceeded',
+        { 'overdraft-limit-exceeded': false },
+        'live',
+        false,
+        'keep-speed',
+        false,
+      ],
+      ['account-uncovered', {}, 'live', true, 'realtime', false],
+      ['account-uncovered', { 'account-uncovered': true }, 'live', true, 'realtime', true],
+      ['month-closed', { 'month-closed': true }, 'catch-up', false, 'keep-speed', false],
+    ])(
+      '%s with %j, %s, visible %s, %s → %s',
+      (code, settings, mode, visible, backgroundMode, expected) => {
+        expect(shouldAutoPause(code, settings, mode, visible, backgroundMode)).toBe(expected);
+      },
+    );
 
-    it('never pauses while catching up or hidden', () => {
+    it('never pauses while catching up, nor hidden in realtime or pause', () => {
       fc.assert(
         fc.property(
           arbCode,
           arbSettings,
           fc.constantFrom(...RUN_MODES),
           fc.boolean(),
-          (code, settings, mode, visible) => {
-            const pause = shouldAutoPause(code, settings, mode, visible);
-            if (mode === 'catch-up' || !visible) {
+          fc.constantFrom(...BACKGROUND_MODES),
+          (code, settings, mode, visible, backgroundMode) => {
+            const pause = shouldAutoPause(code, settings, mode, visible, backgroundMode);
+            if (
+              mode === 'catch-up' ||
+              (!visible && ['realtime', 'pause'].includes(backgroundMode))
+            ) {
               expect(pause).toBe(false);
             }
             if (pause) {
               expect(autoPauseEnabled(settings, code)).toBe(true);
-              expect(autoPauseApplies(mode, visible)).toBe(true);
+              expect(autoPauseApplies(mode, visible, backgroundMode)).toBe(true);
             }
           },
         ),

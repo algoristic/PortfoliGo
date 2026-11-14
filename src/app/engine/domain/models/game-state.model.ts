@@ -9,6 +9,7 @@ import {
 } from '@app/banking/domain/models/household.model';
 import { Balances } from '@app/banking/domain/models/ledger.model';
 import { StandingOrder } from '@app/banking/domain/models/standing-order.model';
+import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { MarketState } from '@app/market/domain/models/market-state.model';
 import { NotificationState } from '@app/notifications/domain/models/notification.model';
@@ -22,9 +23,16 @@ import { SavingsPlan } from '@app/trading/domain/models/savings-plan.model';
 
 import { SchedulerState } from './scheduled-task.model';
 
-/** Behaviour while the app is hidden or closed (TS §3.6). */
-export const BACKGROUND_MODES = ['realtime', 'pause'] as const;
+/** Behaviour while the app is hidden or closed (TS §3.6, E-35). */
+export const BACKGROUND_MODES = ['realtime', 'pause', 'keep-speed', 'custom-speed'] as const;
 export type BackgroundMode = (typeof BACKGROUND_MODES)[number];
+
+/** Choices of `backgroundPauseAfter` in real-time minutes (TS §3.6); `null` is off. */
+export const BACKGROUND_PAUSE_AFTER_MINUTES = [15, 30, 60, 120, 240, 480] as const;
+export type BackgroundPauseAfter = (typeof BACKGROUND_PAUSE_AFTER_MINUTES)[number] | null;
+
+/** `backgroundSpeed` of a new player, used once the player switches to `custom-speed` (TS §3.6). */
+export const DEFAULT_BACKGROUND_SPEED: SpeedId = '1h';
 
 /** Start conditions of a player (PS US-SP-01), in cents per month where periodic. */
 export interface StartConditions {
@@ -39,6 +47,10 @@ export interface PlayerState {
   /** Bank of the first current account, fixed when the game starts (TS §5.7). */
   homeBankId: string;
   backgroundMode: BackgroundMode;
+  /** Speed while hidden in `backgroundMode` `custom-speed` (TS §3.6). */
+  backgroundSpeed: SpeedId;
+  /** Real-time minutes hidden or closed after which a running game pauses, `null` = off (TS §3.6). */
+  backgroundPauseAfter: BackgroundPauseAfter;
   /** Accounts and depots in the order they were opened; closed ones stay. */
   accounts: Account[];
   depots: Depot[];

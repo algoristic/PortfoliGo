@@ -1,7 +1,7 @@
 import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 
-import { BackgroundMode } from './game-state.model';
+import { BackgroundMode, BackgroundPauseAfter } from './game-state.model';
 
 /** What decides how fast the game runs live (TS §3.5, §3.6). */
 export interface ClockSettings {
@@ -11,6 +11,10 @@ export interface ClockSettings {
   paused: boolean;
   visible: boolean;
   backgroundMode: BackgroundMode;
+  /** Speed while hidden in `custom-speed`. */
+  backgroundSpeed: SpeedId;
+  /** Real-time minutes hidden after which a running game pauses, `null` = off. */
+  backgroundPauseAfter: BackgroundPauseAfter;
 }
 
 /** The part of the `GameEngine` the clock drives. */
@@ -27,4 +31,9 @@ export interface PassResult {
   /** Real time the runner is behind the target at the effective speed. */
   backlogMs: number;
   overloaded: boolean;
+  /**
+   * `true` when the hidden game reached the tick of `backgroundPauseAfter`: the host pauses it like a
+   * pause of the player (TS §3.6).
+   */
+  pauseDue: boolean;
 }

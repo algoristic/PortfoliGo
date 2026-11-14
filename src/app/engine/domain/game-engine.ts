@@ -50,14 +50,19 @@ import { openTaxYear } from '@app/taxes/domain/tax-logic';
 import { SavingsPlanView } from '@app/trading/domain/models/savings-plan.model';
 import { copyPosition } from '@app/trading/domain/position-logic';
 
+import { isBackgroundMode, isBackgroundPauseAfter, isBackgroundSpeed } from './background-logic';
 import { BankCommands, ClosingPreviewResult } from './bank-commands';
 import { AccountBooks, BankingSystem, openAccount } from './banking-system';
 import { DistributionSystem } from './distribution-system';
 import { instrumentSessions, InstrumentSessions } from './instrument-sessions';
-import { CommandResult, GameCommand } from './models/engine-command.model';
+import {
+  CommandResult,
+  GameCommand,
+  SetBackgroundModeCommand,
+} from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
 import {
-  BACKGROUND_MODES,
+  DEFAULT_BACKGROUND_SPEED,
   GameSnapshot,
   GameState,
   PlayerState,
@@ -248,6 +253,8 @@ export class GameEngine {
         start: { ...start },
         homeBankId: homeBank.id,
         backgroundMode: 'realtime',
+        backgroundSpeed: DEFAULT_BACKGROUND_SPEED,
+        backgroundPauseAfter: null,
         ...books,
         depots: [],
         salaryAccountId: salaryAccount.id,
@@ -491,16 +498,7 @@ export class GameEngine {
   #execute(command: GameCommand): CommandResult {
     switch (command.type) {
       case 'setBackgroundMode':
-        if (!BACKGROUND_MODES.includes(command.mode)) {
-          return { ok: false, error: 'invalid-command' };
-        }
-        this.#state.player.backgroundMode = command.mode;
-        this.#emit({
-          type: 'background-mode-changed',
-          tick: this.#state.tick,
-          mode: command.mode,
-        });
-        return { ok: true };
+        return this.#setBackgroundMode(command);
       case 'openAccount':
         if (!OPENABLE_ACCOUNT_KINDS.includes(command.kind)) {
           return { ok: false, error: 'invalid-command' };
@@ -554,6 +552,32 @@ export class GameEngine {
       default:
         return { ok: false, error: 'invalid-command' };
     }
+  }
+
+  /** Sets the behaviour in the background; a missing speed or deadline keeps its value (TS §3.6). */
+  #setBackgroundMode(command: SetBackgroundModeCommand): CommandResult {
+    const player = this.#state.player;
+    const speed = command.speed === undefined ? player.backgroundSpeed : command.speed;
+    const pauseAfter =
+      command.pauseAfter === undefined ? player.backgroundPauseAfter : command.pauseAfter;
+    if (
+      !isBackgroundMode(command.mode) ||
+      !isBackgroundSpeed(speed) ||
+      !isBackgroundPauseAfter(pauseAfter)
+    ) {
+      return { ok: false, error: 'invalid-command' };
+    }
+    player.backgroundMode = command.mode;
+    player.backgroundSpeed = speed;
+    player.backgroundPauseAfter = pauseAfter;
+    this.#emit({
+      type: 'background-mode-changed',
+      tick: this.#state.tick,
+      mode: command.mode,
+      speed,
+      pauseAfter,
+    });
+    return { ok: true };
   }
 
   /**
@@ -812,6 +836,8 @@ function copyPlayer(player: Readonly<PlayerState>): PlayerState {
     start: { ...player.start },
     homeBankId: player.homeBankId,
     backgroundMode: player.backgroundMode,
+    backgroundSpeed: player.backgroundSpeed,
+    backgroundPauseAfter: player.backgroundPauseAfter,
     accounts: player.accounts.map((account) => ({ ...account })),
     depots: player.depots.map((depot) => ({ ...depot })),
     balances: new Map(player.balances),

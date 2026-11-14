@@ -22,6 +22,11 @@ export interface StoredClock {
   paused: boolean;
   /** Wall-clock time of the write in milliseconds since the Unix epoch. */
   lastSeenAt: number;
+  /**
+   * Wall-clock time since which the app is hidden, for `backgroundPauseAfter` (TS §3.6, §9.2);
+   * missing while visible and in records before AP 6.7.
+   */
+  hiddenSince?: number;
   /** Net worth at `tick` for the player list (TS §9.1); missing in records before M3. */
   netWorth?: Cents;
 }

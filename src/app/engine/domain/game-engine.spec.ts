@@ -381,8 +381,112 @@ describe('GameEngine', () => {
       });
       expect(engine.player.backgroundMode).toBe('pause');
       expect(engine.drainEvents()).toEqual([
-        { type: 'background-mode-changed', tick, mode: 'pause' },
+        { type: 'background-mode-changed', tick, mode: 'pause', speed: '1h', pauseAfter: null },
       ]);
+    });
+
+    describe('US-ZT-01, US-UI-09: background settings (TS §3.6, E-35)', () => {
+      it('starts a new player in real time with background speed 1h and no deadline', () => {
+        expect(engine.player.backgroundMode).toBe('realtime');
+        expect(engine.player.backgroundSpeed).toBe('1h');
+        expect(engine.player.backgroundPauseAfter).toBeNull();
+      });
+
+      it('sets the mode with its own speed and deadline and reports all three', () => {
+        const tick = engine.tick;
+        engine.drainEvents();
+        expect(
+          engine.applyCommand({
+            id: 'c1',
+            type: 'setBackgroundMode',
+            mode: 'custom-speed',
+            speed: '1d',
+            pauseAfter: 60,
+            tick,
+          }),
+        ).toEqual({ ok: true });
+        expect(engine.player.backgroundMode).toBe('custom-speed');
+        expect(engine.player.backgroundSpeed).toBe('1d');
+        expect(engine.player.backgroundPauseAfter).toBe(60);
+        expect(engine.drainEvents()).toEqual([
+          {
+            type: 'background-mode-changed',
+            tick,
+            mode: 'custom-speed',
+            speed: '1d',
+            pauseAfter: 60,
+          },
+        ]);
+      });
+
+      it('keeps speed and deadline a command leaves out, and switches the deadline off with null', () => {
+        const tick = engine.tick;
+        engine.applyCommand({
+          id: 'c1',
+          type: 'setBackgroundMode',
+          mode: 'custom-speed',
+          speed: '10min',
+          pauseAfter: 240,
+          tick,
+        });
+        engine.applyCommand({ id: 'c2', type: 'setBackgroundMode', mode: 'keep-speed', tick });
+        expect(engine.player.backgroundMode).toBe('keep-speed');
+        expect(engine.player.backgroundSpeed).toBe('10min');
+        expect(engine.player.backgroundPauseAfter).toBe(240);
+        engine.applyCommand({
+          id: 'c3',
+          type: 'setBackgroundMode',
+          mode: 'realtime',
+          pauseAfter: null,
+          tick,
+        });
+        expect(engine.player.backgroundPauseAfter).toBeNull();
+        expect(engine.player.backgroundSpeed).toBe('10min');
+      });
+
+      it.each([
+        ['an unknown speed', { speed: '1y' }],
+        ['a null speed', { speed: null }],
+        ['a deadline outside the choice', { pauseAfter: 45 }],
+        ['a deadline of 0', { pauseAfter: 0 }],
+        ['a deadline as text', { pauseAfter: '60' }],
+      ])('rejects %s and changes nothing', (_name, fields) => {
+        const tick = engine.tick;
+        engine.drainEvents();
+        const invalid = {
+          id: 'c1',
+          type: 'setBackgroundMode',
+          mode: 'custom-speed',
+          tick,
+          ...fields,
+        } as unknown;
+        expect(engine.applyCommand(invalid as never)).toEqual({
+          ok: false,
+          error: 'invalid-command',
+        });
+        expect(engine.player.backgroundMode).toBe('realtime');
+        expect(engine.player.backgroundSpeed).toBe('1h');
+        expect(engine.player.backgroundPauseAfter).toBeNull();
+        expect(engine.drainEvents()).toEqual([]);
+      });
+
+      it('keeps the settings in the snapshot and after a restore', () => {
+        const tick = engine.tick;
+        engine.applyCommand({
+          id: 'c1',
+          type: 'setBackgroundMode',
+          mode: 'keep-speed',
+          speed: '2h',
+          pauseAfter: 15,
+          tick,
+        });
+        const restored = GameEngine.restore(mini.world, engine.snapshot(), {
+          monthStarts: mini.monthStarts,
+        });
+        expect(restored.player.backgroundMode).toBe('keep-speed');
+        expect(restored.player.backgroundSpeed).toBe('2h');
+        expect(restored.player.backgroundPauseAfter).toBe(15);
+      });
     });
 
     it('rejects a command stamped with another tick', () => {

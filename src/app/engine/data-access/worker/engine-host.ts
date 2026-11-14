@@ -9,7 +9,7 @@ import { UPCOMING_DAYS } from '@app/dashboard/domain/models/upcoming.model';
 import { accountViews, netWorth } from '@app/engine/domain/account-projection';
 import { liveHighLow, WorkShare } from '@app/engine/domain/background-share-logic';
 import { catchUpSeenAt, catchUpTarget } from '@app/engine/domain/catch-up-logic';
-import { ClockPacer } from '@app/engine/domain/clock-pacing-logic';
+import { backgroundClockSettings, ClockPacer } from '@app/engine/domain/clock-pacing-logic';
 import { GameEngine } from '@app/engine/domain/game-engine';
 import { createGameWorld } from '@app/engine/domain/game-world';
 import { InstrumentFacts } from '@app/engine/domain/instrument-figures';
@@ -691,7 +691,7 @@ export class EngineHost {
       speed: stored.clock?.speed ?? this.#options.initialSpeed ?? '1min',
       paused: stored.clock?.paused ?? true,
       visible: this.#visible,
-      backgroundMode: engine.player.backgroundMode,
+      ...backgroundClockSettings(engine.player),
     };
     const game: LoadedGame = {
       playerId: payload.playerId,
@@ -745,11 +745,7 @@ export class EngineHost {
     this.#drainEngineEvents(game, true);
     this.#replay(game, stored, payload.minTick);
     game.replaying = false;
-    game.pacer.update(
-      { backgroundMode: engine.player.backgroundMode },
-      engine.tick,
-      this.#ports.now(),
-    );
+    game.pacer.update(backgroundClockSettings(engine.player), engine.tick, this.#ports.now());
     // The first snapshot of a new player, or the replayed state: the next restore starts here.
     const written = this.#snapshotData(game);
     await storageCall(() => storage.saveSnapshot(game.playerId, written.state, written.options));
@@ -761,9 +757,9 @@ export class EngineHost {
         ? engine.tick
         : catchUpTarget(
             { tick: engine.tick, paused: stored.clock.paused, lastSeenAt: stored.clock.lastSeenAt },
-            engine.player.backgroundMode,
+            engine.player,
             this.#ports.now(),
-          );
+          ).target;
     this.#lastClock = null;
     this.#quotesStale = true;
     this.#charts.forEach((chart) => (chart.sent = null));
@@ -890,7 +886,7 @@ export class EngineHost {
         throw new CommandFailure(result.error);
       }
       game.pacer.update(
-        { backgroundMode: game.engine.player.backgroundMode },
+        backgroundClockSettings(game.engine.player),
         game.engine.tick,
         this.#ports.now(),
       );
@@ -1119,7 +1115,7 @@ export class EngineHost {
     if (
       trigger !== null &&
       !game.replaying &&
-      autoPauseApplies(this.#runMode(game), this.#visible)
+      autoPauseApplies(this.#runMode(game), this.#visible, game.pacer.settings.backgroundMode)
     ) {
       this.#autoPause(game, trigger);
     }
@@ -1137,7 +1133,7 @@ export class EngineHost {
     return (
       game.engine.autoPauseNotification !== null &&
       !game.replaying &&
-      autoPauseApplies(this.#runMode(game), this.#visible)
+      autoPauseApplies(this.#runMode(game), this.#visible, game.pacer.settings.backgroundMode)
     );
   }
 

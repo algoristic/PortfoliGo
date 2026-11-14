@@ -46,6 +46,7 @@ const RULE_SPECS = [
   'src/app/engine/domain/banking-system.spec.ts',
   'src/app/engine/domain/bank-commands.spec.ts',
   'src/app/engine/domain/clock-pacing-logic.spec.ts',
+  'src/app/engine/domain/background-logic.spec.ts',
   'src/app/engine/domain/last-tick-logic.spec.ts',
   'src/app/engine/domain/jump-target-logic.spec.ts',
   'src/app/engine/domain/catch-up-logic.spec.ts',
