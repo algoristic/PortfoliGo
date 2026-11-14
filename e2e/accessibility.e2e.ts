@@ -160,6 +160,8 @@ test.describe('accessibility', () => {
 
   // AP 6.8b: the English texts are longer; axe also checks names, labels and `lang`.
   test('has no serious findings on the main views in English', async ({ page }) => {
+    // Fifteen views with axe and a player with a depot take about 30 s under a full parallel run.
+    test.setTimeout(90_000);
     await page.setViewportSize({ width: 1280, height: 900 });
     const warnings = recordTranslationWarnings(page);
     await storeLanguage(page, 'en');
