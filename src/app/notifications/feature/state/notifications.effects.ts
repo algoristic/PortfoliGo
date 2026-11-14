@@ -1,4 +1,4 @@
-import { inject, Injectable, PendingTasks } from '@angular/core';
+import { DOCUMENT, inject, Injectable, PendingTasks } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { concatLatestFrom } from '@ngrx/operators';
 import { select, Store } from '@ngrx/store';
@@ -9,9 +9,11 @@ import {
   connect,
   defer,
   distinctUntilChanged,
+  EMPTY,
   exhaustMap,
   filter,
   finalize,
+  from,
   map,
   merge,
   mergeMap,
@@ -29,7 +31,13 @@ import { NotificationsRequest } from '@app/engine/data-access/service/engine-ser
 import { EngineService } from '@app/engine/data-access/service/engine.service';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { selectPhase, selectStatus } from '@app/engine/feature/state/session.selectors';
+import { NOTIFICATION_PORT } from '@app/notifications/data-access/notification-port/notification-port';
+import {
+  browserNotificationApplies,
+  browserNotificationTag,
+} from '@app/notifications/domain/browser-notification-logic';
 import { AbsenceReport } from '@app/notifications/domain/models/absence-report.model';
+import { BrowserNotification } from '@app/notifications/domain/models/browser-notification.model';
 import { MarkReadRequest } from '@app/notifications/domain/models/notification.model';
 import { notificationChannelEnabled } from '@app/notifications/domain/notification-channel-logic';
 import {
@@ -53,7 +61,7 @@ import {
   selectInstrumentNames,
   selectLastSeq,
 } from './notifications.selectors';
-import { bundleToastNotifications, toastTone } from './notifications.utils';
+import { bundleNotifications, toastTone } from './notifications.utils';
 
 /** Notifications of one code within this much real time make one toast (US-BN-02, TS §12). */
 export const TOAST_BUNDLE_WINDOW_MS = 1_000;
@@ -66,6 +74,8 @@ export class NotificationsEffects {
   readonly #toastService = inject(ToastService);
   readonly #pendingTasks = inject(PendingTasks);
   readonly #channelSettings$ = inject(NOTIFICATION_CHANNEL_SETTINGS);
+  readonly #notificationPort = inject(NOTIFICATION_PORT);
+  readonly #document = inject(DOCUMENT);
 
   /** Ends what a loaded player started: leaving the game or entering another one. */
   readonly #ended$ = this.#actions$.pipe(
@@ -114,7 +124,7 @@ export class NotificationsEffects {
           notifications$.pipe(buffer(notifications$.pipe(exhaustMap(() => this.#window())))),
         ),
         concatLatestFrom(() => this.#channelSettings$),
-        map(([windows, settings]) => bundleToastNotifications(windows.flat(), settings)),
+        map(([windows, settings]) => bundleNotifications(windows.flat(), settings, 'toast')),
         concatLatestFrom(() => [
           this.#store.pipe(select(selectAccountNames)),
           this.#store.pipe(select(selectInstrumentNames)),
@@ -127,6 +137,42 @@ export class NotificationsEffects {
             );
           }
         }),
+      ),
+    { dispatch: false },
+  );
+
+  /**
+   * Browser notifications while the app is hidden (US-BN-04, TS §12): codes whose browser channel
+   * is on for this device, with the permission granted (`browserNotificationApplies`). One per code
+   * and engine event; its tag makes a newer one of the same code replace the older. Failures of the
+   * platform are dropped: the centre and the absence report still have the notification.
+   */
+  showBrowserNotifications$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(NotificationsActions.receivedNotifications),
+        concatLatestFrom(() => [
+          this.#channelSettings$,
+          this.#store.pipe(select(selectAccountNames)),
+          this.#store.pipe(select(selectInstrumentNames)),
+        ]),
+        map(([{ notifications }, settings, accountNames, instrumentNames]) => {
+          const context = {
+            visible: this.#document.visibilityState !== 'hidden',
+            permission: this.#notificationPort.permission(),
+            settings,
+          };
+          const shown = notifications.filter(({ code }) =>
+            browserNotificationApplies(code, context),
+          );
+          return bundleNotifications(shown, settings, 'browser').map((bundle) =>
+            browserNotification(bundle, accountNames, instrumentNames),
+          );
+        }),
+        mergeMap((browserNotifications) => from(browserNotifications)),
+        mergeMap((notification) =>
+          from(this.#notificationPort.notify(notification)).pipe(catchError(() => EMPTY)),
+        ),
       ),
     { dispatch: false },
   );
@@ -317,6 +363,27 @@ export class NotificationsEffects {
       this.#store.pipe(select(selectLastSeq), distinctUntilChanged(), skip(1)),
     );
   }
+}
+
+/**
+ * A browser notification: the title and text of one notification, or the short name of the code
+ * with the number of several (TS §12).
+ */
+function browserNotification(
+  bundle: NotificationBundle,
+  accountNames: AccountNames,
+  instrumentNames: InstrumentNames,
+): BrowserNotification {
+  const tag = browserNotificationTag(bundle.code);
+  if (bundle.count > 1) {
+    return {
+      title: notificationCodeLabel(bundle.code),
+      body: notificationCountLabel(bundle.severity, bundle.count),
+      tag,
+    };
+  }
+  const { title, text } = notificationText(bundle.latest, accountNames, instrumentNames);
+  return { title, body: text, tag };
 }
 
 /** One notification with its text, several of one code with their number (TS §12). */

@@ -9,6 +9,12 @@
 @let autoPause = notificationsFacade.autoPause$ | async;
 @let backup = playersFacade.backup$ | async;
 @let exporting = playersFacade.exporting$ | async;
+@let installOffer = pwaFacade.installOffer$ | async;
+@let installing = pwaFacade.installing$ | async;
+@let notificationPermission = pwaFacade.notificationPermission$ | async;
+@let requestingPermission = pwaFacade.requestingPermission$ | async;
+@let storage = pwaFacade.storage$ | async;
+@let requestingPersistence = pwaFacade.requestingPersistence$ | async;
 
 <h1 class="text-xl font-semibold" i18n="@@featureSettings-settingsPage-title">Einstellungen</h1>
 
@@ -61,5 +67,21 @@
       [exporting]="exporting"
       (clickedExport)="onExport()"
       (selectedInterval)="onSelectBackupInterval($event)"></app-player-backup>
+  </app-panel>
+
+  <app-panel
+    heading="App"
+    i18n-heading="@@featureSettings-settingsPage-appHeading"
+    data-testid="settings.app">
+    <app-app-settings
+      [installOffer]="installOffer"
+      [installing]="installing"
+      [notificationPermission]="notificationPermission"
+      [requestingPermission]="requestingPermission"
+      [storage]="storage"
+      [requestingPersistence]="requestingPersistence"
+      (clickedInstall)="onInstall()"
+      (clickedRequestNotificationPermission)="onRequestNotificationPermission()"
+      (clickedRequestPersistentStorage)="onRequestPersistentStorage()"></app-app-settings>
   </app-panel>
 </div>

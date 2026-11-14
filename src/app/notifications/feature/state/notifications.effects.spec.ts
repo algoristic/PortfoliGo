@@ -17,6 +17,8 @@ import { emptyMonthlyValues } from '@app/banking/domain/monthly-values-logic';
 import { EngineCommandError, EngineService } from '@app/engine/data-access/service/engine.service';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { selectStatus } from '@app/engine/feature/state/session.selectors';
+import { NOTIFICATION_PORT } from '@app/notifications/data-access/notification-port/notification-port';
+import { FakeNotificationPort } from '@app/notifications/data-access/testing/fake-notification-port';
 import { AbsenceReport } from '@app/notifications/domain/models/absence-report.model';
 import { NotificationChannelSettings } from '@app/notifications/domain/models/notification-channel.model';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
@@ -89,8 +91,10 @@ describe('NotificationsEffects', () => {
   let toasts: Mocked<Pick<ToastService, 'show' | 'error'>>;
   let channelSettings$: BehaviorSubject<NotificationChannelSettings>;
   let store: MockStore;
+  let notificationPort: FakeNotificationPort;
 
   beforeEach(() => {
+    notificationPort = new FakeNotificationPort('granted');
     actions$ = new Subject();
     channelSettings$ = new BehaviorSubject<NotificationChannelSettings>({ toast: {}, browser: {} });
     engine = {
@@ -107,6 +111,7 @@ describe('NotificationsEffects', () => {
         { provide: EngineService, useValue: { ...engine, notification$: NEVER, report$: NEVER } },
         { provide: ToastService, useValue: toasts },
         { provide: NOTIFICATION_CHANNEL_SETTINGS, useValue: channelSettings$ },
+        { provide: NOTIFICATION_PORT, useValue: notificationPort },
         provideMockStore({
           selectors: [
             { selector: selectAccountNames, value: NAMES },
@@ -202,6 +207,68 @@ describe('NotificationsEffects', () => {
       receive(uncovered(2), interest(3));
       vi.advanceTimersByTime(TOAST_BUNDLE_WINDOW_MS);
       expect(toasts.show.mock.calls.map(([tone]) => tone)).toEqual(['warning', 'info']);
+    });
+  });
+
+  describe('showBrowserNotifications$', () => {
+    let subscription: Subscription;
+
+    beforeEach(() => {
+      subscription = effects.showBrowserNotifications$.subscribe();
+    });
+
+    afterEach(() => {
+      subscription.unsubscribe();
+      Reflect.deleteProperty(document, 'visibilityState');
+    });
+
+    function setHidden(): void {
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get: () => 'hidden',
+      });
+    }
+
+    async function receive(...notifications: GameNotification[]): Promise<void> {
+      actions$.next(NotificationsActions.receivedNotifications({ tick: 360, notifications }));
+      await Promise.resolve();
+    }
+
+    it('shows the text of a notification while the app is hidden', async () => {
+      // US-BN-04, TS §12: `account-uncovered` has a browser notification by default.
+      setHidden();
+      await receive(uncovered(1), interest(2));
+      expect(notificationPort.shown).toEqual([
+        {
+          title: 'Konto nicht gedeckt',
+          body: 'Girokonto 0000000001 · Hansebank steht bei -120,00 € (Dispo-Rahmen 5.000,00 €).',
+          tag: 'pgo-account-uncovered',
+        },
+      ]);
+    });
+
+    it('bundles several notifications of one code with their number', async () => {
+      setHidden();
+      await receive(uncovered(1), exceeded(2), uncovered(3));
+      expect(notificationPort.shown.map(({ title, body }) => [title, body])).toEqual([
+        ['Konto nicht gedeckt', '2 Warnungen'],
+        [
+          'Dispo überschritten',
+          'Girokonto 0000000001 · Hansebank steht bei -2.000,00 € und überschreitet den Dispo-Rahmen von 1.000,00 €.',
+        ],
+      ]);
+    });
+
+    it('shows nothing while the app is visible', async () => {
+      await receive(uncovered(1));
+      expect(notificationPort.shown).toEqual([]);
+    });
+
+    it('follows the browser switches of this device', async () => {
+      setHidden();
+      channelSettings$.next({ toast: {}, browser: { 'account-uncovered': false } });
+      await receive(uncovered(1));
+      expect(notificationPort.shown).toEqual([]);
     });
   });
 

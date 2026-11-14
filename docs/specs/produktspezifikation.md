@@ -526,6 +526,7 @@ Als Anwender möchte ich auch dann informiert werden, wenn PortfoliGo in einem H
 - Nach ausdrücklicher Erlaubnis werden ausgewählte Kategorien als System-Benachrichtigung angezeigt, solange die App geöffnet ist.
 - Benachrichtigungen bei geschlossener App sind nur mit einer nativen App möglich (Option N, US-NA-02).
 - Praktisch wirkt das nur am Desktop: Smartphones halten die App im Hintergrund an, und unter iOS gibt es die Erlaubnis nur für installierte Web-Apps.
+- Die Erlaubnis wird in den Einstellungen unter „App“ angefragt und dort angezeigt (erlaubt, noch nicht erlaubt, verweigert, nicht unterstützt); welche Ereignisse kommen, regelt die Spalte „Browser“ unter „Dieses Gerät“. Ein Klick auf die Benachrichtigung holt die App nach vorn (AP 6.3).
 
 ### 7.11 Datensicherung und Oberfläche (EX, UI)
 
@@ -550,6 +551,7 @@ Als Anwender möchte ich vor Datenverlust geschützt werden, damit mein Fortschr
 - Erinnerung an einen Export in einstellbarem Abstand (Echtzeit).
 - Die Erinnerung erscheint beim Spielstart als Hinweis, wenn seit dem letzten Export (oder dem Anlegen) der gewählte Abstand vergangen ist – täglich, alle 3 Tage, wöchentlich (Vorgabe), alle 14 oder 30 Tage oder nie –, und danach frühestens einen Tag später wieder (AP 6.1, TS §9.3).
 - Die App fordert dauerhaften Speicher an und erklärt, warum die Installation als App die Daten zusätzlich schützt.
+- Die Einstellungen zeigen unter „App“ den belegten und verfügbaren Speicher und ob er dauerhaft ist; ist er es nicht, lässt er sich erneut anfragen (AP 6.3).
 
 **US-UI-01 – Erscheinungsbild** · Stufe 1 · M
 Als Anwender möchte ich zwischen dunklem und hellem Erscheinungsbild wählen, damit die App zu meiner Umgebung passt.
@@ -588,6 +590,7 @@ Als Anwender möchte ich PortfoliGo wie eine App installieren und ohne Internet 
 
 - Installierbar als Progressive Web App; nach dem ersten Laden vollständig offline nutzbar.
 - Neue Versionen werden im Hintergrund geladen und beim nächsten Start aktiv; ein Hinweis bietet an, sofort neu zu laden. Vor Version 1.0 weist die App darauf hin, dass ein Update Spielstände ungültig machen kann.
+- Die Einstellungen bieten unter „App“ die Installation an: über den Dialog des Browsers, auf iPhone und iPad mit dem Hinweis „Teilen“ → „Zum Home-Bildschirm“ (AP 6.3).
 
 **US-UI-08 – Rechtliche Hinweise** · Stufe 1 · M
 Als Anwender möchte ich wissen, dass PortfoliGo ein Spiel mit vereinfachten Regeln ist.
@@ -744,6 +747,7 @@ Als Anwender möchte ich die App auf Deutsch oder Englisch nutzen.
 - Kurse ab 10 € mit zwei, von 1 bis 10 € mit drei, unter 1 € mit vier Nachkommastellen. So bleibt der Spread auch bei günstigen Aktien sichtbar.
 - Spielzeit: `Mo., 01.04.2030, 09:41`.
 - Zahlen in Tabellen rechtsbündig mit tabellarischen Ziffern.
+- Speichergrößen dezimal mit höchstens einer Nachkommastelle und der größten Einheit unter 1.000: `512 Byte`, `12,3 kB`, `1,5 MB`, `2 GB` (AP 6.3).
 
 ## 11. Abgrenzung
 

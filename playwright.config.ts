@@ -18,6 +18,10 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:4173/',
     trace: 'retain-on-failure',
     video: 'retain-on-failure',
+    // The service worker of the build (AP 6.3) prefetches the whole app after 30 s at the latest;
+    // in the other journeys that would be load beside the budgets of J10 and a second cache in
+    // front of each reload. Only `e2e/pwa.e2e.ts` allows it.
+    serviceWorkers: 'block',
   },
   webServer: {
     command: 'node e2e/serve.mjs www',

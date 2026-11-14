@@ -38,6 +38,7 @@ Rules for implementing Angular code in this repository, so that generated code l
 | `notifications.md` | `notifications`, `engine/domain/notification-system*` | notifications, auto-pause, absence report (AP 3.6)                                           |
 | `dashboard.md`     | `dashboard`, `engine/domain/upcoming-inputs*`         | dashboard tiles, „Demnächst“, „Erste Schritte“ (AP 5.7b)                                     |
 | `trading.md`       | `trading`, `engine/domain/order-*`                    | order rules, orders in the engine, order commands and projection (AP 5.1)                    |
+| `pwa.md`           | `pwa`, `ngsw-config.json`, manifest, icon script      | service worker, manifest, update notice, installation, storage status (AP 6.3)               |
 | `testing.md`       | `*.spec.ts`, `e2e`, `src/testing`                     | test suites, helpers, fixtures, page tests of the game area (AP 0.5, 2.5)                    |
 
 Rules that apply everywhere:

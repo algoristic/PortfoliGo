@@ -10,6 +10,10 @@ import {
   InProcessEngine,
   provideInProcessEngineWorker,
 } from '@app/engine/data-access/testing/in-process-engine-worker';
+import {
+  FakeNotificationPort,
+  provideFakeNotificationPort,
+} from '@app/notifications/data-access/testing/fake-notification-port';
 import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
 import { PlayersService } from '@app/players/data-access/service/players.service';
 import { providePlayersTestPorts } from '@app/players/data-access/testing/fake-players-ports';
@@ -64,10 +68,13 @@ describe('NotificationsPage', () => {
 
   let locks: FakePlayerLocks;
   let restorePlatform: () => void;
+  /** Browser notifications are allowed on this device (US-BN-04). */
+  let browserNotifications: FakeNotificationPort;
 
   // some tests open the dashboard with its performance chart
   beforeEach(() => {
     restorePlatform = installChartPlatform();
+    browserNotifications = new FakeNotificationPort('granted');
   });
 
   async function open(player: NewPlayer, area = 'notifications'): Promise<void> {
@@ -77,6 +84,7 @@ describe('NotificationsPage', () => {
     harness = await renderRoute('/players', [
       provideInProcessEngineWorker(engine),
       providePlayersTestPorts({ locks }),
+      provideFakeNotificationPort(browserNotifications),
     ]);
     page = harness.fixture.nativeElement;
     playerId = (await firstValueFrom(TestBed.inject(PlayersService).createPlayer(player))).profile
@@ -97,6 +105,7 @@ describe('NotificationsPage', () => {
     harness = await renderRoute(`/game/${playerId}/dashboard`, [
       provideInProcessEngineWorker(engine),
       providePlayersTestPorts({ locks }),
+      provideFakeNotificationPort(browserNotifications),
     ]);
     page = harness.fixture.nativeElement;
   }
@@ -178,6 +187,8 @@ describe('NotificationsPage', () => {
     ).toHaveLength(1);
     expect(toastTexts().some((text) => text.startsWith('Dispo überschritten'))).toBe(false);
     expect(queryByTestId(page, 'shell.header.paused')).toBeNull();
+    // US-BN-04: no browser notification while the app is visible.
+    expect(browserNotifications.shown).toEqual([]);
 
     // US-BN-01: time, category, severity and text; unread highlighted.
     expect(entryText(1, 'title')).toBe('Konto nicht gedeckt');
@@ -251,7 +262,7 @@ describe('NotificationsPage', () => {
     expect(bellLabel()).toBe('Benachrichtigungen, 2 ungelesen');
   });
 
-  it('reports the hidden period when the app is visible again', async () => {
+  it('reports the hidden period when the app is visible again and notified the browser', async () => {
     // US-BN-03, TS §12: hidden, the game runs in real time and does not pause.
     await open(UNCOVERED, 'dashboard');
     await start('1h');
@@ -272,6 +283,15 @@ describe('NotificationsPage', () => {
     expect(minutesOf(clock())).toBeGreaterThan(BANK_RUN_MINUTES);
     expect(textOf(body('notifications.absence-report.warning-count'))).toBe('Warnungen (1)');
     expect(textOf(body('notifications.absence-report.warning-title'))).toBe('Konto nicht gedeckt');
+    // US-BN-04, TS §12: allowed and hidden, the warning also became a browser notification.
+    expect(browserNotifications.shown.map(({ title, tag }) => [title, tag])).toEqual([
+      ['Konto nicht gedeckt', 'pgo-account-uncovered'],
+    ]);
+    expect(
+      browserNotifications.shown[0].body.startsWith(
+        `Girokonto 0000000001 · ${HOME_BANK} steht bei -`,
+      ),
+    ).toBe(true);
     // The living costs lower the net worth.
     expect(textOf(body('notifications.absence-report.net-worth-change'))).toMatch(/^−/);
     expect(textOf(body('notifications.absence-report.flow.living-costs'))).not.toBe('0,00 €');

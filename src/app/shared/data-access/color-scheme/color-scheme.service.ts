@@ -12,7 +12,8 @@ import {
  * Keeps the `dark` class on `<html>` in sync with a colour scheme preference; with `system` it
  * follows `prefers-color-scheme`, also when that changes. Before Angular starts, the inline script
  * in `src/index.html` sets the class from the stored settings (TS §11.5). The same goes for the
- * class of the gain and loss colours (`applyChangeColors`, PS US-UI-02).
+ * class of the gain and loss colours (`applyChangeColors`, PS US-UI-02). The `theme-color` meta
+ * follows the background token, so the frame of the installed app matches (AP 6.3).
  */
 @Injectable()
 export class ColorSchemeService {
@@ -51,6 +52,15 @@ export class ColorSchemeService {
   }
 
   #setDark(isDark: boolean): void {
-    this.#document.documentElement.classList.toggle('dark', isDark);
+    const root = this.#document.documentElement;
+    root.classList.toggle('dark', isDark);
+    // The browser frame of the installed app takes the page background (TS §13).
+    const background = this.#document.defaultView
+      ?.getComputedStyle(root)
+      .getPropertyValue('--pgo-bg')
+      .trim();
+    if (background) {
+      this.#document.querySelector('meta[name="theme-color"]')?.setAttribute('content', background);
+    }
   }
 }

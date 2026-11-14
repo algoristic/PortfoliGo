@@ -1,0 +1,36 @@
+@let _update = update();
+
+@if (_update) {
+  <div
+    role="status"
+    class="fixed inset-x-4 bottom-20 z-50 mx-auto flex max-w-md flex-wrap items-center gap-3 rounded-lg border border-border bg-surface-raised p-3 shadow-lg md:bottom-4"
+    data-testid="pwa.update">
+    <i appIcon="arrow-repeat" class="text-accent"></i>
+    <p class="min-w-0 flex-1 text-sm">
+      @if (_update === 'version-ready') {
+        <span class="block font-medium" i18n="@@uiPwa-updateBanner-versionReady"
+          >Neue Version verfügbar.</span
+        >
+        <span class="text-fg-muted" i18n="@@uiPwa-updateBanner-versionReadyText"
+          >Sie wird beim nächsten Start aktiv. Vor Version 1.0 kann sie Spielstände ungültig
+          machen.</span
+        >
+      } @else {
+        <span class="block font-medium" i18n="@@uiPwa-updateBanner-unrecoverable"
+          >Die gespeicherte Version der App ist beschädigt.</span
+        >
+        <span class="text-fg-muted" i18n="@@uiPwa-updateBanner-unrecoverableText"
+          >Lade die Seite neu, um die aktuelle Version zu laden.</span
+        >
+      }
+    </p>
+    <button
+      appButton
+      variant="primary"
+      type="button"
+      data-testid="pwa.update.reload"
+      (click)="onReload()">
+      <span i18n="@@uiPwa-updateBanner-reload">Neu laden</span>
+    </button>
+  </div>
+}

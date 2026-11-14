@@ -1,0 +1,3 @@
+@let update = pwaFacade.update$ | async;
+
+<app-update-banner [update]="update" (clickedReload)="onReload()"></app-update-banner>

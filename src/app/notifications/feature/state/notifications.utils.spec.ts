@@ -1,7 +1,7 @@
 import { NotificationChannelSettings } from '@app/notifications/domain/models/notification-channel.model';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
 
-import { bundleToastNotifications, toastTone } from './notifications.utils';
+import { bundleNotifications, toastTone } from './notifications.utils';
 
 function uncovered(seq: number): GameNotification {
   return {
@@ -42,19 +42,20 @@ function yearClosed(seq: number): GameNotification {
 /** A device without own settings: the defaults of TS §12. */
 const DEFAULTS: NotificationChannelSettings = { toast: {}, browser: {} };
 
-describe('bundleToastNotifications', () => {
+describe('bundleNotifications', () => {
   // US-BN-02, TS §12: one toast per code within the window, with the number of notifications.
   it('bundles notifications of one code and keeps the newest for the text', () => {
-    expect(bundleToastNotifications([uncovered(1), uncovered(3), uncovered(2)], DEFAULTS)).toEqual([
-      { code: 'account-uncovered', severity: 'warning', count: 3, latest: uncovered(3) },
-    ]);
+    expect(
+      bundleNotifications([uncovered(1), uncovered(3), uncovered(2)], DEFAULTS, 'toast'),
+    ).toEqual([{ code: 'account-uncovered', severity: 'warning', count: 3, latest: uncovered(3) }]);
   });
 
   it('keeps codes apart in the order they first occurred', () => {
     expect(
-      bundleToastNotifications(
+      bundleNotifications(
         [exceeded(2), uncovered(1), exceeded(4), uncovered(3)],
         DEFAULTS,
+        'toast',
       ).map(({ code, severity, count }) => [code, severity, count]),
     ).toEqual([
       ['overdraft-limit-exceeded', 'critical', 2],
@@ -65,11 +66,11 @@ describe('bundleToastNotifications', () => {
   it('leaves out codes without a toast by default', () => {
     // TS §12: `interest-credited` has no toast, `year-closed` has one.
     expect(
-      bundleToastNotifications([interest(1), yearClosed(2), interest(3)], DEFAULTS).map(
+      bundleNotifications([interest(1), yearClosed(2), interest(3)], DEFAULTS, 'toast').map(
         ({ code }) => code,
       ),
     ).toEqual(['year-closed']);
-    expect(bundleToastNotifications([interest(1)], DEFAULTS)).toEqual([]);
+    expect(bundleNotifications([interest(1)], DEFAULTS, 'toast')).toEqual([]);
   });
 
   it('follows the toast switches of the device over the defaults', () => {
@@ -78,10 +79,28 @@ describe('bundleToastNotifications', () => {
       browser: { 'year-closed': true },
     };
     expect(
-      bundleToastNotifications([uncovered(1), interest(2), yearClosed(3)], settings).map(
+      bundleNotifications([uncovered(1), interest(2), yearClosed(3)], settings, 'toast').map(
         ({ code }) => code,
       ),
     ).toEqual(['interest-credited', 'year-closed']);
+  });
+
+  it('bundles by the browser switches for browser notifications', () => {
+    // TS §12: `account-uncovered` has a browser notification by default, `year-closed` has none.
+    const settings: NotificationChannelSettings = {
+      toast: {},
+      browser: { 'year-closed': true, 'overdraft-limit-exceeded': false },
+    };
+    expect(
+      bundleNotifications(
+        [uncovered(1), exceeded(2), yearClosed(3), interest(4), uncovered(5)],
+        settings,
+        'browser',
+      ).map(({ code, count }) => [code, count]),
+    ).toEqual([
+      ['account-uncovered', 2],
+      ['year-closed', 1],
+    ]);
   });
 });
 

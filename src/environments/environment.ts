@@ -8,4 +8,5 @@ export const environment: Environment = {
     maxAge: 50,
   },
   devPages: true,
+  serviceWorker: false,
 };

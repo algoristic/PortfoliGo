@@ -1,4 +1,5 @@
 import {
+  formatBytes,
   formatCents,
   formatCompact,
   formatCompactEuros,
@@ -136,6 +137,24 @@ describe('format', () => {
 
     it('keeps smaller numbers in full', () => {
       expect(formatCompact(12_345)).toBe('12.345');
+    });
+  });
+
+  describe('formatBytes', () => {
+    // PS §10.4: storage sizes in decimal units with at most one decimal place and a
+    // non-breaking space before the unit.
+    it.each([
+      [0, `0${NBSP}Byte`],
+      [512, `512${NBSP}Byte`],
+      [999, `999${NBSP}Byte`],
+      [1_000, `1${NBSP}kB`],
+      [12_345, `12,3${NBSP}kB`],
+      [999_960, `1${NBSP}MB`],
+      [1_500_000, `1,5${NBSP}MB`],
+      [2_000_000_000, `2${NBSP}GB`],
+      [1_234_000_000_000, `1.234${NBSP}GB`],
+    ])('formats %d bytes as %s', (bytes, expected) => {
+      expect(formatBytes(bytes)).toBe(expected);
     });
   });
 

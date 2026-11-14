@@ -10,6 +10,7 @@ import { CLOCK_SHORTCUTS_ENABLED } from '@app/clock/feature/state/clock.config';
 import { provideEngineService } from '@app/engine/data-access/service/engine-service.providers';
 import { NOTIFICATION_CHANNEL_SETTINGS } from '@app/notifications/feature/state/notifications.config';
 import { providePlayersState } from '@app/players/feature/state/players.providers';
+import { providePwaState } from '@app/pwa/feature/state/pwa.providers';
 import { SettingsFacade } from '@app/settings/feature/state/settings.facade';
 import { provideSettingsState } from '@app/settings/feature/state/settings.providers';
 import { provideColorSchemeService } from '@app/shared/data-access/color-scheme/color-scheme-service.providers';
@@ -35,6 +36,7 @@ export function provideAppCore(): Array<Provider | EnvironmentProviders> {
     provideEngineService(),
     providePlayersState(),
     provideSettingsState(),
+    providePwaState(),
     {
       provide: CLOCK_SHORTCUTS_ENABLED,
       useFactory: () => inject(SettingsFacade).shortcutsEnabled$,

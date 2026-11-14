@@ -9473,7 +9473,7 @@
         <source>Fortschritt des Imports</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players/players.page.ts</context>
-          <context context-type="linenumber">58</context>
+          <context context-type="linenumber">60</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-deleteHeading" datatype="html">
@@ -10811,46 +10811,277 @@
           <context context-type="linenumber">39</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featurePwa-pwaEffects-installed" datatype="html">
+        <source>PortfoliGo ist jetzt als App installiert.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/feature/state/pwa.effects.ts</context>
+          <context context-type="linenumber">163</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePwa-pwaEffects-installFailure" datatype="html">
+        <source>Die Installation konnte nicht gestartet werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/feature/state/pwa.effects.ts</context>
+          <context context-type="linenumber">177</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePwa-pwaEffects-permissionFailure" datatype="html">
+        <source>Die Erlaubnis für Benachrichtigungen konnte nicht angefragt werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/feature/state/pwa.effects.ts</context>
+          <context context-type="linenumber">178</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-installHeading" datatype="html">
+        <source> Als App installieren </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">10,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-installed" datatype="html">
+        <source>PortfoliGo ist auf diesem Gerät installiert.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">16,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-installPrompt" datatype="html">
+        <source>Installiert startet PortfoliGo wie eine eigene Anwendung, läuft auch ohne Internet, und der Browser löscht die Spielstände nicht so leicht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">21,25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-installIos" datatype="html">
+        <source>Tippe auf „Teilen“ und dann auf „Zum Home-Bildschirm“. Als App vom Home-Bildschirm gestartet, löscht Safari die Spielstände nicht nach sieben Tagen ohne Besuch.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">27,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-installUnavailable" datatype="html">
+        <source>Der Browser bietet die Installation gerade nicht an. In Chrome und Edge steht sie im Menü unter „App installieren“, in Safari auf dem Mac unter „Ablage“ → „Zum Dock hinzufügen“.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">33,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-install" datatype="html">
+        <source>App installieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">50,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-notificationsHeading" datatype="html">
+        <source> Browser-Benachrichtigungen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">62,64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-notificationsText" datatype="html">
+        <source> Zeigt die Ereignisse, deren Spalte „Browser“ eingeschaltet ist, als Benachrichtigung des Systems, solange PortfoliGo in einem Hintergrund-Tab oder einem anderen Fenster läuft. Auf Smartphones hält das System die App im Hintergrund an; dort erscheinen sie kaum. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">65,69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-permissionLabel" datatype="html">
+        <source>Erlaubnis:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">70,71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-requestNotifications" datatype="html">
+        <source>Benachrichtigungen erlauben</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">84,89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-storageHeading" datatype="html">
+        <source> Speicher </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">94,96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-storageText" datatype="html">
+        <source> Spielstände liegen nur in diesem Browser. Dauerhaft gespeicherte Daten löscht der Browser nicht, wenn der Platz knapp wird; als App installiert sind sie zusätzlich geschützt. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">97,100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-usageLabel" datatype="html">
+        <source>Belegt:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">102,104</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-quotaLabel" datatype="html">
+        <source>Verfügbar:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">116,117</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-persistedLabel" datatype="html">
+        <source> Dauerhaft gespeichert: </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">123,125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-requestPersistence" datatype="html">
+        <source>Dauerhaften Speicher anfragen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.html</context>
+          <context context-type="linenumber">137,142</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-permissionGranted" datatype="html">
+        <source>Erlaubt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.ts</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-permissionDenied" datatype="html">
+        <source>Verweigert – änderbar in den Website-Einstellungen des Browsers</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-permissionDefault" datatype="html">
+        <source>Noch nicht erlaubt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.ts</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-permissionUnsupported" datatype="html">
+        <source>Von diesem Browser nicht unterstützt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-persistedYes" datatype="html">
+        <source>Ja</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.ts</context>
+          <context context-type="linenumber">73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-persistedNo" datatype="html">
+        <source>Nein</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.ts</context>
+          <context context-type="linenumber">74</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-appSettings-persistedUnknown" datatype="html">
+        <source>Unbekannt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/app-settings/app-settings.component.ts</context>
+          <context context-type="linenumber">75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-preReleaseHint-text" datatype="html">
+        <source>Vor Version 1.0 können Updates Spielstände ungültig machen. Exportiere deinen Spielstand regelmäßig.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/pre-release-hint/pre-release-hint.component.html</context>
+          <context context-type="linenumber">4,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-updateBanner-versionReady" datatype="html">
+        <source>Neue Version verfügbar.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/update-banner/update-banner.component.html</context>
+          <context context-type="linenumber">12,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-updateBanner-versionReadyText" datatype="html">
+        <source>Sie wird beim nächsten Start aktiv. Vor Version 1.0 kann sie Spielstände ungültig machen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/update-banner/update-banner.component.html</context>
+          <context context-type="linenumber">15,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-updateBanner-unrecoverable" datatype="html">
+        <source>Die gespeicherte Version der App ist beschädigt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/update-banner/update-banner.component.html</context>
+          <context context-type="linenumber">20,22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-updateBanner-unrecoverableText" datatype="html">
+        <source>Lade die Seite neu, um die aktuelle Version zu laden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/update-banner/update-banner.component.html</context>
+          <context context-type="linenumber">23,28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPwa-updateBanner-reload" datatype="html">
+        <source>Neu laden</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pwa/ui/update-banner/update-banner.component.html</context>
+          <context context-type="linenumber">33,37</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureSettings-settingsRoutes-settingsTitle" datatype="html">
         <source>Einstellungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings.routes.ts</context>
-          <context context-type="linenumber">6</context>
+          <context context-type="linenumber">8</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-title" datatype="html">
         <source>Einstellungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">13,15</context>
+          <context context-type="linenumber">19,21</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-deviceHeading" datatype="html">
         <source>Dieses Gerät</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">17,18</context>
+          <context context-type="linenumber">23,24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-deviceHint" datatype="html">
         <source> Gilt für alle Spieler in diesem Browser und wird nicht exportiert. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">21,24</context>
+          <context context-type="linenumber">27,30</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-playerHeading" datatype="html">
         <source>Spieler</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">40</context>
+          <context context-type="linenumber">46</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-playerHint" datatype="html">
         <source> Gehört zum Spielstand und wird mit dem Spieler exportiert. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">43,46</context>
+          <context context-type="linenumber">49,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureSettings-settingsPage-appHeading" datatype="html">
+        <source>App</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsEffects-saveFailure" datatype="html">

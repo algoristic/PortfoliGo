@@ -12,6 +12,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
 import { map } from 'rxjs';
 
+import { PreReleaseHintComponent } from '@app/pwa/ui/pre-release-hint/pre-release-hint.component';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
 import { focusIfLost } from '@app/shared/ui/focus/focus-if-lost';
@@ -35,6 +36,7 @@ import { PlayersFacade } from '../state/players.facade';
     SkeletonComponent,
     PlayerListComponent,
     FormatPercentPipe,
+    PreReleaseHintComponent,
   ],
   templateUrl: './players.page.html',
   host: { class: 'block' },

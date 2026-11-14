@@ -13,9 +13,19 @@ export interface PlayerLock {
 
 /** Port for the exclusive lock of a player (TS §9.4); a fake in tests. */
 export interface PlayerLocks {
-  /** Takes the lock if it is free; `null` when another tab holds it. Never waits for it. */
+  /**
+   * Takes the lock if it is free or becomes free within a short grace period; `null` when another
+   * tab holds it.
+   */
   acquire(playerId: string): Promise<PlayerLock | null>;
 }
+
+/**
+ * How long `WebPlayerLocks` waits for a held lock. A reloaded page starts before the worker of the
+ * old one has ended and released its lock; from the cache of the service worker it starts fast
+ * enough to meet that lock (AP 6.3). Another tab keeps it longer.
+ */
+export const PLAYER_LOCK_WAIT_MS = 2_000;
 
 /** Web Locks (`navigator.locks`), available in windows and workers. */
 export class WebPlayerLocks implements PlayerLocks {
@@ -28,15 +38,18 @@ export class WebPlayerLocks implements PlayerLocks {
   acquire(playerId: string): Promise<PlayerLock | null> {
     return new Promise<PlayerLock | null>((resolve, reject) => {
       this.#locks
-        .request(playerLockName(playerId), { ifAvailable: true }, (lock) => {
-          if (lock === null) {
-            resolve(null);
-            return undefined;
-          }
+        .request(
+          playerLockName(playerId),
+          { signal: AbortSignal.timeout(PLAYER_LOCK_WAIT_MS) },
           // The lock is held until the promise returned here settles.
-          return new Promise<void>((release) => resolve({ release: () => release() }));
-        })
-        .catch(reject);
+          () => new Promise<void>((release) => resolve({ release: () => release() })),
+        )
+        .catch((error: unknown) =>
+          error instanceof DOMException &&
+          (error.name === 'TimeoutError' || error.name === 'AbortError')
+            ? resolve(null)
+            : reject(error),
+        );
     });
   }
 }

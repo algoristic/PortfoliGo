@@ -8,6 +8,8 @@ import { NotificationsFacade } from '@app/notifications/feature/state/notificati
 import { BackupIntervalDays } from '@app/players/domain/models/backup.model';
 import { PlayersFacade } from '@app/players/feature/state/players.facade';
 import { PlayerBackupComponent } from '@app/players/ui/player-backup/player-backup.component';
+import { PwaFacade } from '@app/pwa/feature/state/pwa.facade';
+import { AppSettingsComponent } from '@app/pwa/ui/app-settings/app-settings.component';
 import { ChangeColorSetting, ColorSchemeSetting } from '@app/settings/domain/models/settings.model';
 import { AutoPauseSettingsComponent } from '@app/settings/ui/auto-pause-settings/auto-pause-settings.component';
 import { AutoPauseToggle } from '@app/settings/ui/auto-pause-settings/auto-pause-settings.model';
@@ -23,7 +25,8 @@ import { SettingsFacade } from '../state/settings.facade';
 /**
  * Settings of this device and of the player (PS US-UI-09): appearance, gain and loss colours,
  * price highlight, shortcuts and notifications per code on the device; name, seed (US-SP-03),
- * background behaviour, auto-pause (US-ZT-06) and the export (US-EX-01) of the player.
+ * background behaviour, auto-pause (US-ZT-06) and the export (US-EX-01) of the player; the app
+ * itself: installation (US-UI-07), notification permission (US-BN-04) and storage (US-EX-03).
  */
 @Component({
   selector: 'app-settings-page',
@@ -36,6 +39,7 @@ import { SettingsFacade } from '../state/settings.facade';
     PlayerSettingsComponent,
     AutoPauseSettingsComponent,
     PlayerBackupComponent,
+    AppSettingsComponent,
   ],
   templateUrl: './settings.page.html',
   host: { class: 'block' },
@@ -46,6 +50,7 @@ export class SettingsPage {
   clockFacade = inject(ClockFacade);
   notificationsFacade = inject(NotificationsFacade);
   playersFacade = inject(PlayersFacade);
+  pwaFacade = inject(PwaFacade);
 
   onSelectColorScheme(colorScheme: ColorSchemeSetting): void {
     this.settingsFacade.selectColorScheme(colorScheme);
@@ -89,5 +94,17 @@ export class SettingsPage {
 
   onSelectBackupInterval(intervalDays: BackupIntervalDays | null): void {
     this.playersFacade.selectBackupInterval(intervalDays);
+  }
+
+  onInstall(): void {
+    this.pwaFacade.install();
+  }
+
+  onRequestNotificationPermission(): void {
+    this.pwaFacade.requestNotificationPermission();
+  }
+
+  onRequestPersistentStorage(): void {
+    this.pwaFacade.requestPersistentStorage();
   }
 }

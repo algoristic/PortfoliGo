@@ -2,6 +2,8 @@ const LOCALE = 'de-DE';
 const HYPHEN_MINUS = '-';
 /** Typographic minus sign (U+2212) for changes, as required by PS §10.4. */
 const MINUS_SIGN = '\u2212';
+/** Intl writes `GB` with a non-breaking space but `Byte` to `MB` with a normal one. */
+const NO_BREAK_SPACE = '\u00a0';
 
 const formats = new Map<string, Intl.NumberFormat>();
 const dateTimeFormat = new Intl.DateTimeFormat(LOCALE, {
@@ -127,6 +129,39 @@ export function formatCompactEuros(euros: number): string {
       maximumFractionDigits: 1,
     }).format(euros),
   );
+}
+
+/** Byte units of `formatBytes`, decimal like the browsers' storage figures. */
+const BYTE_UNITS = [
+  { unit: 'byte', size: 1, fractionDigits: 0 },
+  { unit: 'kilobyte', size: 1e3, fractionDigits: 1 },
+  { unit: 'megabyte', size: 1e6, fractionDigits: 1 },
+  { unit: 'gigabyte', size: 1e9, fractionDigits: 1 },
+] as const;
+
+/**
+ * A size in bytes with the largest decimal unit that keeps the number below 1.000 after rounding,
+ * at most one decimal place (PS §10.4), e.g. `512` → `512 Byte`, `1_234_567` → `1,2 MB`.
+ */
+export function formatBytes(bytes: number): string {
+  const magnitude = Math.abs(bytes);
+  let index = 0;
+  while (index < BYTE_UNITS.length - 1 && magnitude >= BYTE_UNITS[index + 1].size) {
+    index++;
+  }
+  const { size, fractionDigits } = BYTE_UNITS[index];
+  const factor = 10 ** fractionDigits;
+  if (index < BYTE_UNITS.length - 1 && Math.round((magnitude / size) * factor) >= 1000 * factor) {
+    index++;
+  }
+  const chosen = BYTE_UNITS[index];
+  return numberFormat({
+    style: 'unit',
+    unit: chosen.unit,
+    maximumFractionDigits: chosen.fractionDigits,
+  })
+    .format(bytes / chosen.size)
+    .replace(' ', NO_BREAK_SPACE);
 }
 
 /**

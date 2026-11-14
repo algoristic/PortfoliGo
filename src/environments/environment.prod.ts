@@ -5,4 +5,5 @@ export const environment: Environment = {
   storeDevtools: null,
   // The lab is open to all visitors for now.
   devPages: true,
+  serviceWorker: true,
 };

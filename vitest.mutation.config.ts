@@ -110,6 +110,8 @@ const RULE_SPECS = [
   'src/app/notifications/domain/notification-page-logic.spec.ts',
   'src/app/notifications/domain/absence-report-logic.spec.ts',
   'src/app/notifications/domain/notification-channel-logic.spec.ts',
+  'src/app/notifications/domain/browser-notification-logic.spec.ts',
+  'src/app/pwa/domain/pwa-logic.spec.ts',
   'src/app/settings/domain/settings-logic.spec.ts',
   'src/app/engine/domain/notification-system.spec.ts',
   'src/app/persistence/util/tagged-json.spec.ts',

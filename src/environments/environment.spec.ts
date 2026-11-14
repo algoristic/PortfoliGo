@@ -6,5 +6,9 @@ describe('environment', () => {
       expect(productionEnvironment.production).toBe(true);
       expect(productionEnvironment.storeDevtools).toBeNull();
     });
+
+    it('registers the service worker', () => {
+      expect(productionEnvironment.serviceWorker).toBe(true);
+    });
   });
 });

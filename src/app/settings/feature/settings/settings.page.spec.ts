@@ -6,10 +6,23 @@ import {
   InProcessEngine,
   provideInProcessEngineWorker,
 } from '@app/engine/data-access/testing/in-process-engine-worker';
+import {
+  FakeNotificationPort,
+  provideFakeNotificationPort,
+} from '@app/notifications/data-access/testing/fake-notification-port';
 import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
 import { PlayersService } from '@app/players/data-access/service/players.service';
-import { providePlayersTestPorts } from '@app/players/data-access/testing/fake-players-ports';
+import {
+  FakeStoragePersistence,
+  providePlayersTestPorts,
+} from '@app/players/data-access/testing/fake-players-ports';
 import { NewPlayer } from '@app/players/domain/models/player.model';
+import {
+  FakeInstallPrompt,
+  FakeStorageEstimate,
+  providePwaTestPorts,
+} from '@app/pwa/data-access/testing/fake-pwa-ports';
+import { PlatformInfo } from '@app/pwa/domain/models/pwa.model';
 import {
   provideRecordingFileDownload,
   RecordingFileDownload,
@@ -47,11 +60,22 @@ describe('SettingsPage', () => {
   let downloads: RecordingFileDownload;
   /** Wall clock of the `PlayersService` (creation, export and reminder times). */
   let wallClock: number;
+  // Platform ports of the section „App“ (US-UI-07, US-BN-04, US-EX-03).
+  let platform: PlatformInfo;
+  let install: FakeInstallPrompt;
+  let storage: FakeStorageEstimate;
+  let persistence: FakeStoragePersistence;
+  let notifications: FakeNotificationPort;
 
   beforeEach(async () => {
     localStorage.clear();
     wallClock = Date.UTC(2026, 10, 13, 12);
     downloads = new RecordingFileDownload();
+    platform = { standalone: false, ios: false };
+    install = new FakeInstallPrompt();
+    storage = new FakeStorageEstimate(1_500_000, 2_000_000_000);
+    persistence = new FakeStoragePersistence(true);
+    notifications = new FakeNotificationPort('default', 'granted');
     document.documentElement.classList.remove('dark');
     system = installSystemColorScheme(false);
     locks = new FakePlayerLocks();
@@ -71,8 +95,10 @@ describe('SettingsPage', () => {
   async function openApp(url: string): Promise<void> {
     harness = await renderRoute(url, [
       provideInProcessEngineWorker(engine),
-      providePlayersTestPorts({ locks, clock: () => wallClock }),
+      providePlayersTestPorts({ locks, clock: () => wallClock, persistence }),
       provideRecordingFileDownload(downloads),
+      providePwaTestPorts({ platform, install, storage }),
+      provideFakeNotificationPort(notifications),
     ]);
     page = harness.fixture.nativeElement;
   }
@@ -551,6 +577,73 @@ describe('SettingsPage', () => {
       wallClock += 30 * DAY_MS;
       await reload();
       expect(toastTexts()).not.toContain(REMINDER);
+    });
+  });
+  describe('app (US-UI-07, US-BN-04, US-EX-03, TS §13)', () => {
+    function text(testId: string): string {
+      return textOf(byTestId(page, testId));
+    }
+
+    it('shows storage, permission and the hint before 1.0 and asks for both', async () => {
+      // Formatted by PS §10.4: 1.500.000 of 2.000.000.000 bytes.
+      expect(text('settings.app.storage-usage')).toBe('1,5 MB');
+      expect(text('settings.app.storage-quota')).toBe('2 GB');
+      expect(text('settings.app.storage-ratio')).toBe('0,1 %');
+      expect(text('settings.app.storage-persisted')).toBe('Nein');
+      expect(text('settings.app.notification-permission')).toBe('Noch nicht erlaubt');
+      expect(text('pwa.pre-release-hint')).toBe(
+        'Vor Version 1.0 können Updates Spielstände ungültig machen. Exportiere deinen Spielstand regelmäßig.',
+      );
+
+      storage.usage = 2_500_000;
+      await act(() => click(byTestId(page, 'settings.app.request-persistence')));
+      expect(persistence.requests).toBe(1);
+      expect(text('settings.app.storage-persisted')).toBe('Ja');
+      expect(text('settings.app.storage-usage')).toBe('2,5 MB');
+      expect(queryByTestId(page, 'settings.app.request-persistence')).toBeNull();
+
+      await act(() => click(byTestId(page, 'settings.app.request-notifications')));
+      expect(notifications.requests).toBe(1);
+      expect(text('settings.app.notification-permission')).toBe('Erlaubt');
+      expect(queryByTestId(page, 'settings.app.request-notifications')).toBeNull();
+    });
+
+    it('offers the dialog of the browser once it is there and then shows the app as installed', async () => {
+      expect(text('settings.app.install-status')).toContain(
+        'Der Browser bietet die Installation gerade nicht an.',
+      );
+      expect(queryByTestId(page, 'settings.app.install')).toBeNull();
+
+      await act(() => install.offer());
+      await act(() => click(byTestId(page, 'settings.app.install')));
+      expect(install.prompts).toBe(1);
+      expect(text('settings.app.install-status')).toBe(
+        'PortfoliGo ist auf diesem Gerät installiert.',
+      );
+      expect(toastTexts()).toContain('PortfoliGo ist jetzt als App installiert.');
+    });
+
+    it('explains the share menu on iOS and nothing more in the installed app', async () => {
+      platform = { standalone: false, ios: true };
+      await reload();
+      expect(text('settings.app.install-status')).toContain(
+        'Tippe auf „Teilen“ und dann auf „Zum Home-Bildschirm“.',
+      );
+
+      platform = { standalone: true, ios: true };
+      await reload();
+      expect(text('settings.app.install-status')).toBe(
+        'PortfoliGo ist auf diesem Gerät installiert.',
+      );
+    });
+
+    it('names a denied permission and has no button for it', async () => {
+      notifications = new FakeNotificationPort('denied');
+      await reload();
+      expect(text('settings.app.notification-permission')).toBe(
+        'Verweigert – änderbar in den Website-Einstellungen des Browsers',
+      );
+      expect(queryByTestId(page, 'settings.app.request-notifications')).toBeNull();
     });
   });
 });

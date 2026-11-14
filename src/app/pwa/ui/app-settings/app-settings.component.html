@@ -1,0 +1,142 @@
+@let offer = installOffer();
+@let permission = notificationPermission();
+@let _storage = storage();
+
+<section aria-labelledby="settings-app-install-heading">
+  <h3
+    id="settings-app-install-heading"
+    class="font-medium"
+    i18n="@@uiPwa-appSettings-installHeading">
+    Als App installieren
+  </h3>
+  <p class="mt-1 text-sm text-fg-muted" data-testid="settings.app.install-status">
+    @switch (offer) {
+      @case ('installed') {
+        <span i18n="@@uiPwa-appSettings-installed"
+          >PortfoliGo ist auf diesem Gerät installiert.</span
+        >
+      }
+      @case ('prompt') {
+        <span i18n="@@uiPwa-appSettings-installPrompt"
+          >Installiert startet PortfoliGo wie eine eigene Anwendung, läuft auch ohne Internet, und
+          der Browser löscht die Spielstände nicht so leicht.</span
+        >
+      }
+      @case ('ios-share') {
+        <span i18n="@@uiPwa-appSettings-installIos"
+          >Tippe auf „Teilen“ und dann auf „Zum Home-Bildschirm“. Als App vom Home-Bildschirm
+          gestartet, löscht Safari die Spielstände nicht nach sieben Tagen ohne Besuch.</span
+        >
+      }
+      @default {
+        <span i18n="@@uiPwa-appSettings-installUnavailable"
+          >Der Browser bietet die Installation gerade nicht an. In Chrome und Edge steht sie im Menü
+          unter „App installieren“, in Safari auf dem Mac unter „Ablage“ → „Zum Dock
+          hinzufügen“.</span
+        >
+      }
+    }
+  </p>
+  @if (offer === 'prompt') {
+    <button
+      appButton
+      variant="primary"
+      type="button"
+      class="mt-3"
+      data-testid="settings.app.install"
+      [disabled]="installing()"
+      (click)="onInstall()">
+      <i appIcon="download"></i>
+      <span i18n="@@uiPwa-appSettings-install">App installieren</span>
+    </button>
+  }
+</section>
+
+<section
+  class="mt-6 border-t border-border pt-4"
+  aria-labelledby="settings-app-notifications-heading">
+  <h3
+    id="settings-app-notifications-heading"
+    class="font-medium"
+    i18n="@@uiPwa-appSettings-notificationsHeading">
+    Browser-Benachrichtigungen
+  </h3>
+  <p class="mt-1 text-sm text-fg-muted" i18n="@@uiPwa-appSettings-notificationsText">
+    Zeigt die Ereignisse, deren Spalte „Browser“ eingeschaltet ist, als Benachrichtigung des
+    Systems, solange PortfoliGo in einem Hintergrund-Tab oder einem anderen Fenster läuft. Auf
+    Smartphones hält das System die App im Hintergrund an; dort erscheinen sie kaum.
+  </p>
+  <p class="mt-2 flex flex-wrap gap-x-2 text-sm">
+    <span i18n="@@uiPwa-appSettings-permissionLabel">Erlaubnis:</span>
+    <span class="font-medium" data-testid="settings.app.notification-permission">{{
+      permissionText()
+    }}</span>
+  </p>
+  @if (permission === 'default') {
+    <button
+      appButton
+      type="button"
+      class="mt-3"
+      data-testid="settings.app.request-notifications"
+      [disabled]="requestingPermission()"
+      (click)="onRequestNotificationPermission()">
+      <i appIcon="bell"></i>
+      <span i18n="@@uiPwa-appSettings-requestNotifications">Benachrichtigungen erlauben</span>
+    </button>
+  }
+</section>
+
+<section class="mt-6 border-t border-border pt-4" aria-labelledby="settings-app-storage-heading">
+  <h3
+    id="settings-app-storage-heading"
+    class="font-medium"
+    i18n="@@uiPwa-appSettings-storageHeading">
+    Speicher
+  </h3>
+  <p class="mt-1 text-sm text-fg-muted" i18n="@@uiPwa-appSettings-storageText">
+    Spielstände liegen nur in diesem Browser. Dauerhaft gespeicherte Daten löscht der Browser nicht,
+    wenn der Platz knapp wird; als App installiert sind sie zusätzlich geschützt.
+  </p>
+  <dl class="mt-2 flex flex-col gap-1 text-sm">
+    <div class="flex flex-wrap gap-x-2">
+      <dt class="text-fg-muted" i18n="@@uiPwa-appSettings-usageLabel">Belegt:</dt>
+      <dd class="tabular-nums">
+        <span data-testid="settings.app.storage-usage">{{ _storage?.usage | formatBytes }}</span>
+        @if (usageRatio() !== null) {
+          <span class="text-fg-muted">
+            (<span data-testid="settings.app.storage-ratio">{{
+              usageRatio() | formatPercent: 1
+            }}</span
+            >)</span
+          >
+        }
+      </dd>
+    </div>
+    <div class="flex flex-wrap gap-x-2">
+      <dt class="text-fg-muted" i18n="@@uiPwa-appSettings-quotaLabel">Verfügbar:</dt>
+      <dd class="tabular-nums" data-testid="settings.app.storage-quota">
+        {{ _storage?.quota | formatBytes }}
+      </dd>
+    </div>
+    <div class="flex flex-wrap gap-x-2">
+      <dt class="text-fg-muted" i18n="@@uiPwa-appSettings-persistedLabel">
+        Dauerhaft gespeichert:
+      </dt>
+      <dd data-testid="settings.app.storage-persisted">{{ persistedText() }}</dd>
+    </div>
+  </dl>
+  @if (_storage?.persisted === false) {
+    <button
+      appButton
+      type="button"
+      class="mt-3"
+      data-testid="settings.app.request-persistence"
+      [disabled]="requestingPersistence()"
+      (click)="onRequestPersistentStorage()">
+      <i appIcon="shield-check"></i>
+      <span i18n="@@uiPwa-appSettings-requestPersistence">Dauerhaften Speicher anfragen</span>
+    </button>
+  }
+</section>
+
+<app-pre-release-hint class="mt-6 border-t border-border pt-4"></app-pre-release-hint>
