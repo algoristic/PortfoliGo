@@ -1,0 +1,8 @@
+@let _text = text();
+
+<app-help-hint
+  [term]="_text.term"
+  [text]="_text.short"
+  [link]="glossaryLink()"
+  [fragment]="termId()"
+  [testId]="testId()"></app-help-hint>

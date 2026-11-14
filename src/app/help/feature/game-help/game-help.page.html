@@ -1,0 +1,8 @@
+@let termId = helpFacade.glossaryTermId$ | async;
+
+<h1 class="text-xl font-semibold" i18n="@@featureHelp-gameHelpPage-title">Glossar</h1>
+<p class="mt-1 text-sm text-fg-muted" i18n="@@featureHelp-gameHelpPage-intro">
+  Die Fachbegriffe des Spiels, so wie sie in PortfoliGo gelten. Manche Regeln sind gegenüber der
+  Wirklichkeit vereinfacht.
+</p>
+<app-glossary class="mt-4 max-w-3xl" [termId]="termId"></app-glossary>

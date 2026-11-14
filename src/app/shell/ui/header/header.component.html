@@ -19,19 +19,34 @@
     }
 
     <div class="ml-auto flex items-center gap-1">
-      @if (!compact()) {
-        <label class="relative mr-2 block">
-          <span class="sr-only">{{ searchLabel }}</span>
-          <i
-            appIcon="search"
-            class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-muted"></i>
-          <input
-            type="search"
-            [disabled]="true"
-            class="h-9 w-56 rounded-md border border-border bg-bg pr-3 pl-9 text-sm text-fg placeholder:text-fg-muted disabled:cursor-not-allowed"
-            data-testid="shell.header.search"
-            [attr.placeholder]="searchLabel + ' …'" />
-        </label>
+      @if (compact()) {
+        <button
+          appIconButton
+          type="button"
+          data-testid="shell.header.command-palette"
+          [label]="searchLabel"
+          (click)="onOpenCommandPalette()">
+          <i appIcon="search"></i>
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="mr-2 flex h-9 w-56 items-center gap-2 rounded-md border border-border bg-bg px-3 text-sm text-fg-muted hover:text-fg"
+          aria-haspopup="dialog"
+          data-testid="shell.header.command-palette"
+          [attr.aria-keyshortcuts]="shortcutsEnabled() ? 'Control+K Meta+K' : null"
+          (click)="onOpenCommandPalette()">
+          <i appIcon="search"></i>
+          <span class="flex-1 text-left">{{ searchLabel }} …</span>
+          @if (shortcutsEnabled()) {
+            <!-- aria-keyshortcuts names the shortcut; the name stays the visible label. -->
+            <kbd
+              aria-hidden="true"
+              class="rounded-sm border border-border bg-surface-raised px-1.5 font-sans text-xs text-fg"
+              >{{ shortcutKeyLabel }}</kbd
+            >
+          }
+        </button>
       }
 
       <a
@@ -103,10 +118,17 @@
           <div
             ngMenuItem
             appMenuItem
-            value="export"
-            [disabled]="true"
-            data-testid="shell.header.player-menu.export">
-            <i appIcon="box-arrow-up"></i>
+            value="help"
+            [active]="isHelpActive()"
+            data-testid="shell.header.player-menu.help">
+            <i appIcon="book" [class.text-fg-muted]="!isHelpActive()"></i>
+            <span class="flex-1" i18n="@@uiShell-header-help">Glossar</span>
+            @if (isHelpActive()) {
+              <i appIcon="check2"></i>
+            }
+          </div>
+          <div ngMenuItem appMenuItem value="export" data-testid="shell.header.player-menu.export">
+            <i appIcon="box-arrow-up" class="text-fg-muted"></i>
             <ng-container i18n="@@uiShell-header-export">Exportieren</ng-container>
           </div>
         </div>

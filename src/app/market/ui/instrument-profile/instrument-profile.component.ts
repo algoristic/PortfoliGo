@@ -1,6 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
+import { TermHintComponent } from '@app/help/ui/term-hint/term-hint.component';
 import { FormatCompactEurosPipe } from '@app/shared/ui/pipes/format-compact-euros/format-compact-euros.pipe';
 import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
 import { FormatPercentPipe } from '@app/shared/ui/pipes/format-percent/format-percent.pipe';
@@ -38,7 +39,13 @@ interface ProfileFact {
  */
 @Component({
   selector: 'app-instrument-profile',
-  imports: [RouterModule, FormatCompactEurosPipe, FormatNumberPipe, FormatPercentPipe],
+  imports: [
+    RouterModule,
+    TermHintComponent,
+    FormatCompactEurosPipe,
+    FormatNumberPipe,
+    FormatPercentPipe,
+  ],
   templateUrl: './instrument-profile.component.html',
   host: { class: 'block' },
 })

@@ -1,6 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 
 import { FormatGameTimePipe } from '@app/clock/ui/pipes/format-game-time/format-game-time.pipe';
+import { TermHintComponent } from '@app/help/ui/term-hint/term-hint.component';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { FormatPricePipe } from '@app/shared/ui/pipes/format-price/format-price.pipe';
 import { FormatQuantityPipe } from '@app/shared/ui/pipes/format-quantity/format-quantity.pipe';
@@ -14,7 +15,13 @@ import { LotRow } from '../models/position-detail-view.model';
  */
 @Component({
   selector: 'app-lot-list',
-  imports: [FormatCentsPipe, FormatGameTimePipe, FormatPricePipe, FormatQuantityPipe],
+  imports: [
+    TermHintComponent,
+    FormatCentsPipe,
+    FormatGameTimePipe,
+    FormatPricePipe,
+    FormatQuantityPipe,
+  ],
   templateUrl: './lot-list.component.html',
   host: { class: 'block' },
 })

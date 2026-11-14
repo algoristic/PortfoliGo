@@ -35,7 +35,9 @@
       [activePath]="activeNavPath"
       [netWorth]="netWorth"
       [unreadCount]="unread"
-      (selectedPlayerMenuAction)="onSelectPlayerMenuAction($event)">
+      [shortcutsEnabled]="shortcutsEnabled ?? true"
+      (selectedPlayerMenuAction)="onSelectPlayerMenuAction($event)"
+      (clickedCommandPalette)="shellFacade.openCommandPalette()">
       @if (!isDesktop()) {
         <app-market-status
           headerStatus

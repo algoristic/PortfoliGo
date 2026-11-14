@@ -11,6 +11,7 @@ import { ClockControlsComponent } from '@app/clock/ui/clock-controls/clock-contr
 import { MarketStatusComponent } from '@app/clock/ui/market-status/market-status.component';
 import { SessionFacade } from '@app/engine/feature/state/session.facade';
 import { NotificationsFacade } from '@app/notifications/feature/state/notifications.facade';
+import { PlayersFacade } from '@app/players/feature/state/players.facade';
 import { focusIfLost } from '@app/shared/ui/focus/focus-if-lost';
 import { NavItem } from '@app/shared/ui/nav-link/nav-item.model';
 
@@ -44,6 +45,7 @@ export class ShellPage {
   clockFacade = inject(ClockFacade);
   bankingFacade = inject(BankingFacade);
   notificationsFacade = inject(NotificationsFacade);
+  readonly #playersFacade = inject(PlayersFacade);
   readonly #breakpointObserver = inject(BreakpointObserver);
   readonly #injector = inject(Injector);
   readonly #router = inject(Router);
@@ -140,8 +142,11 @@ export class ShellPage {
       case 'about':
         void this.#router.navigate(['about'], { relativeTo: this.#route });
         break;
+      case 'help':
+        void this.#router.navigate(['help'], { relativeTo: this.#route });
+        break;
       case 'export':
-        // Export follows in AP 6.1; the menu item is disabled until then.
+        this.#playersFacade.exportPlayer();
         break;
     }
   }

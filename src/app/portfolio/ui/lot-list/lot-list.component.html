@@ -1,6 +1,13 @@
 @let _lots = lots();
 @let _showDepot = showDepot();
 
+<p class="mb-2 flex items-center gap-1 text-xs text-fg-muted">
+  <span i18n="@@uiPortfolio-lotList-fifo"
+    >Verkauft wird nach FIFO: die ältesten Stücke zuerst.</span
+  >
+  <app-term-hint termId="lot-fifo"></app-term-hint>
+</p>
+
 @if (compact()) {
   <ul class="flex flex-col gap-3" data-testid="portfolio.position.lots" [attr.aria-label]="label">
     @for (lot of _lots; track lot.key) {

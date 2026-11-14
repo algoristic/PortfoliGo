@@ -230,12 +230,15 @@
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div class="flex flex-col gap-1">
-          <label
-            class="font-medium"
-            for="trading-order-ticket-type"
-            i18n="@@uiTrading-formOrderTicket-type"
-            >Orderart</label
-          >
+          <div class="flex items-center gap-1">
+            <label
+              class="font-medium"
+              for="trading-order-ticket-type"
+              i18n="@@uiTrading-formOrderTicket-type"
+              >Orderart</label
+            >
+            <app-term-hint termId="order-types"></app-term-hint>
+          </div>
           <select
             id="trading-order-ticket-type"
             class="h-10 rounded-md border border-border bg-surface px-2 text-fg"
@@ -248,12 +251,15 @@
         </div>
 
         <div class="flex flex-col gap-1">
-          <label
-            class="font-medium"
-            for="trading-order-ticket-validity"
-            i18n="@@uiTrading-formOrderTicket-validity"
-            >Gültigkeit</label
-          >
+          <div class="flex items-center gap-1">
+            <label
+              class="font-medium"
+              for="trading-order-ticket-validity"
+              i18n="@@uiTrading-formOrderTicket-validity"
+              >Gültigkeit</label
+            >
+            <app-term-hint termId="validity"></app-term-hint>
+          </div>
           <select
             id="trading-order-ticket-validity"
             class="h-10 rounded-md border border-border bg-surface px-2 text-fg"

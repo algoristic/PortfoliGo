@@ -1,0 +1,59 @@
+@let _targetId = targetId();
+
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col gap-1">
+    <label class="relative block max-w-md">
+      <span class="sr-only">{{ searchLabel }}</span>
+      <i
+        appIcon="search"
+        class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-fg-muted"></i>
+      <input
+        type="search"
+        class="h-10 w-full rounded-md border border-border bg-bg pr-3 pl-9 text-sm text-fg placeholder:text-fg-muted"
+        data-testid="help.glossary.search"
+        [value]="query()"
+        [attr.placeholder]="searchLabel + ' …'"
+        (input)="onSearch($event)" />
+    </label>
+    <p role="status" class="text-sm text-fg-muted" data-testid="help.glossary.result">
+      {{ resultText() }}
+    </p>
+  </div>
+
+  @for (group of groups(); track group.category) {
+    <section
+      class="flex flex-col gap-3"
+      [attr.aria-labelledby]="'glossary-group-' + group.category">
+      <h2 class="text-lg font-semibold" [id]="'glossary-group-' + group.category">
+        {{ group.label }}
+      </h2>
+      @for (entry of group.entries; track entry.id) {
+        <article
+          class="scroll-mt-32 rounded-lg border border-border bg-surface p-4 aria-[current=location]:border-accent"
+          [attr.aria-current]="entry.id === _targetId ? 'location' : null"
+          [id]="entry.anchorId"
+          [attr.data-testid]="'help.glossary.' + entry.id">
+          <h3 class="text-base font-semibold focus:outline-none" tabindex="-1">
+            {{ entry.term }}
+          </h3>
+          <p class="mt-1 text-sm" [attr.data-testid]="'help.glossary.' + entry.id + '.short'">
+            {{ entry.short }}
+          </p>
+          <p class="mt-2 text-sm text-fg-muted">{{ entry.details }}</p>
+          <p class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm">
+            <span class="text-fg-muted" i18n="@@uiHelp-glossary-related">Siehe auch:</span>
+            @for (related of entry.related; track related.id) {
+              <a
+                class="text-accent underline"
+                [routerLink]="[]"
+                [fragment]="related.id"
+                [attr.data-testid]="'help.glossary.' + entry.id + '.related.' + related.id"
+                >{{ related.term }}</a
+              >
+            }
+          </p>
+        </article>
+      }
+    </section>
+  }
+</div>

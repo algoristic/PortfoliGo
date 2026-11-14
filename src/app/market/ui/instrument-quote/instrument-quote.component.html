@@ -56,8 +56,9 @@
     <dl class="grid grid-cols-3 gap-x-6 gap-y-1 text-sm">
       <dt class="text-xs font-medium text-fg-muted" i18n="@@uiMarket-instrumentQuote-bid">Geld</dt>
       <dt class="text-xs font-medium text-fg-muted" i18n="@@uiMarket-instrumentQuote-ask">Brief</dt>
-      <dt class="text-xs font-medium text-fg-muted" i18n="@@uiMarket-instrumentQuote-spread">
-        Spread
+      <dt class="flex items-center gap-1 text-xs font-medium text-fg-muted">
+        <span i18n="@@uiMarket-instrumentQuote-spread">Spread</span>
+        <app-term-hint termId="spread"></app-term-hint>
       </dt>
       <dd class="font-medium tabular-nums" data-testid="market.instrument.bid">
         {{ _head.bid | formatFixedPrice: _head.priceDecimals }}

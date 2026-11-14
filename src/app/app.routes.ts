@@ -26,6 +26,12 @@ export const routes: Routes = [
     },
   },
   {
+    path: 'help',
+    loadChildren: async () => {
+      return (await import('@app/help/feature/help.routes')).helpRoutes;
+    },
+  },
+  {
     path: 'game/:playerId',
     loadChildren: async () => {
       return (await import('@app/shell/feature/shell.routes')).shellRoutes;

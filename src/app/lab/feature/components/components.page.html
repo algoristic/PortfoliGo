@@ -187,6 +187,20 @@
     </app-tabs>
   </app-panel>
 
+  <app-panel heading="Kontext-Hilfe" i18n-heading="@@featureLab-componentsPage-helpHint">
+    <p class="flex items-center gap-1 text-sm">
+      <span i18n="@@featureLab-componentsPage-helpHintLabel">Spread</span>
+      <app-help-hint
+        term="Spread"
+        i18n-term="@@featureLab-componentsPage-helpHintTerm"
+        text="Der Abstand zwischen Brief (Kaufkurs) und Geld (Verkaufskurs)."
+        i18n-text="@@featureLab-componentsPage-helpHintText"
+        link="/help"
+        fragment="spread"
+        testId="lab.components.help-hint"></app-help-hint>
+    </p>
+  </app-panel>
+
   <app-panel heading="Leerzustand" i18n-heading="@@featureLab-componentsPage-emptyState">
     <app-empty-state
       icon="star"

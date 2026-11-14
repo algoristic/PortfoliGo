@@ -16,7 +16,7 @@ const MAX_BADGE_COUNT = 99;
 
 /**
  * Header of the game area with the net worth from `md` on and the bell with the number of unread
- * notifications (TS §11.4); the search is a placeholder until AP 4.4. The shell projects
+ * notifications (TS §11.4); „Suchen“ opens the command palette (PS US-UI-05). The shell projects
  * the clock bar (`headerBar`, second row) and on phones the market status (`headerStatus`, next
  * to the brand).
  */
@@ -43,11 +43,15 @@ export class HeaderComponent {
   netWorth = input<Cents | null>();
   /** Unread notifications (TS §12); `null` until the first projection of the loaded player. */
   unreadCount = input<number | null>();
+  /** Shows `Strg K` on the search button while the shortcuts are on (TS §11.10). */
+  shortcutsEnabled = input(true);
 
   selectedPlayerMenuAction = output<PlayerMenuAction>();
+  clickedCommandPalette = output<void>();
 
   isSettingsActive = computed(() => this.activePath() === 'settings');
   isAboutActive = computed(() => this.activePath() === 'about');
+  isHelpActive = computed(() => this.activePath() === 'help');
   unreadBadge = computed(() => {
     const count = this.unreadCount() ?? 0;
     if (count <= 0) {
@@ -64,8 +68,13 @@ export class HeaderComponent {
 
   netWorthLabel = $localize`:@@uiShell-header-netWorthLabel:Gesamtvermögen`;
   searchLabel = $localize`:@@uiShell-header-searchLabel:Suchen`;
+  shortcutKeyLabel = $localize`:@@uiShell-header-shortcutKey:Strg K`;
   notificationsLabel = $localize`:@@uiShell-header-notificationsLabel:Benachrichtigungen`;
   playerMenuLabel = $localize`:@@uiShell-header-playerMenuLabel:Spielermenü`;
+
+  onOpenCommandPalette(): void {
+    this.clickedCommandPalette.emit();
+  }
 
   onSelectPlayerMenuAction(action: PlayerMenuAction | undefined): void {
     if (action !== undefined) {

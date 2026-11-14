@@ -11,4 +11,6 @@ import { RouterModule } from '@angular/router';
 export class DisclaimerHintComponent {
   /** Router link of the page „Über PortfoliGo“. */
   aboutLink = input.required<string>();
+  /** Router link of the glossary (PS US-UI-06). */
+  glossaryLink = input.required<string>();
 }

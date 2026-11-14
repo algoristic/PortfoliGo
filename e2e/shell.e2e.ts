@@ -46,7 +46,7 @@ test.describe('game area on a desktop', () => {
       'page',
     );
     await expect(page.getByTestId('shell.bottom-nav.more')).toHaveCount(0);
-    await expect(page.getByTestId('shell.header.search')).toBeVisible();
+    await expect(page.getByTestId('shell.header.command-palette')).toContainText('Suchen');
     await expect(page.getByTestId('shell.header.net-worth')).toBeVisible();
 
     await page.getByTestId('shell.side-nav.notifications').click();

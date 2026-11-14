@@ -81,6 +81,12 @@ export const shellRoutes: Routes = [
           return (await import('@app/about/feature/about.routes')).gameAboutRoutes;
         },
       },
+      {
+        path: 'help',
+        loadChildren: async () => {
+          return (await import('@app/help/feature/help.routes')).gameHelpRoutes;
+        },
+      },
     ],
   },
 ];

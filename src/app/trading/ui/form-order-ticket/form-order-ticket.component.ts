@@ -3,6 +3,7 @@ import { form, FormField, FormRoot } from '@angular/forms/signals';
 
 import { dateTimeToTick } from '@app/clock/domain/calendar-logic';
 import { toDateInputValue } from '@app/clock/domain/game-time-input';
+import { TermHintComponent } from '@app/help/ui/term-hint/term-hint.component';
 import { AmountInputComponent } from '@app/shared/ui/amount-input/amount-input.component';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { DialogComponent } from '@app/shared/ui/dialog/dialog.component';
@@ -48,6 +49,7 @@ interface TicketStart {
 @Component({
   selector: 'app-form-order-ticket',
   imports: [
+    TermHintComponent,
     AmountInputComponent,
     ButtonDirective,
     DialogComponent,

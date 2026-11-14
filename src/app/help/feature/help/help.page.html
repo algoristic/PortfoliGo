@@ -1,0 +1,18 @@
+@let termId = helpFacade.glossaryTermId$ | async;
+
+<main class="mx-auto flex min-h-dvh max-w-3xl flex-col gap-4 px-4 py-8">
+  <a
+    class="flex items-center gap-1 self-start text-sm text-fg-muted underline hover:text-fg"
+    routerLink="/players"
+    data-testid="help.back"
+    ><i appIcon="arrow-left"></i
+    ><span i18n="@@featureHelp-helpPage-back">Zur Spielerauswahl</span></a
+  >
+  <p class="text-lg font-semibold text-accent">PortfoliGo</p>
+  <h1 class="text-2xl font-semibold" i18n="@@featureHelp-helpPage-title">Glossar</h1>
+  <p class="text-sm text-fg-muted" i18n="@@featureHelp-helpPage-intro">
+    Die Fachbegriffe des Spiels, so wie sie in PortfoliGo gelten. Manche Regeln sind gegenüber der
+    Wirklichkeit vereinfacht.
+  </p>
+  <app-glossary class="mt-2" [termId]="termId"></app-glossary>
+</main>

@@ -1,5 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 
+import { TermHintComponent } from '@app/help/ui/term-hint/term-hint.component';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { FormatPercentPipe } from '@app/shared/ui/pipes/format-percent/format-percent.pipe';
 import { FormatSignedCentsPipe } from '@app/shared/ui/pipes/format-signed-cents/format-signed-cents.pipe';
@@ -13,7 +14,7 @@ import { SAVER_ALLOWANCE } from '@app/taxes/domain/tax-logic';
  */
 @Component({
   selector: 'app-tax-year',
-  imports: [FormatCentsPipe, FormatPercentPipe, FormatSignedCentsPipe],
+  imports: [TermHintComponent, FormatCentsPipe, FormatPercentPipe, FormatSignedCentsPipe],
   templateUrl: './tax-year.component.html',
   host: { class: 'block' },
 })

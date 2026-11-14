@@ -1,5 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 
+import { TermHintComponent } from '@app/help/ui/term-hint/term-hint.component';
 import { PerformanceFigures, PeriodReturns } from '@app/portfolio/domain/models/performance.model';
 import { PanelComponent } from '@app/shared/ui/panel/panel.component';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
@@ -22,6 +23,7 @@ interface ReturnRow {
 @Component({
   selector: 'app-performance-figures',
   imports: [
+    TermHintComponent,
     PanelComponent,
     SkeletonComponent,
     FormatCentsPipe,

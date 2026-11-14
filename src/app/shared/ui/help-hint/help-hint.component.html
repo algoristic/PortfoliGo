@@ -1,0 +1,57 @@
+<button
+  #origin
+  cdkOverlayOrigin
+  #overlayOrigin="cdkOverlayOrigin"
+  type="button"
+  class="inline-flex size-6 items-center justify-center rounded-full text-sm text-fg-muted hover:bg-surface-raised hover:text-fg"
+  aria-haspopup="dialog"
+  [attr.aria-label]="buttonLabel()"
+  [attr.title]="buttonLabel()"
+  [attr.aria-expanded]="expanded()"
+  [attr.data-testid]="testId()"
+  (click)="onToggle()">
+  <i appIcon="question-circle"></i>
+</button>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="overlayOrigin"
+  [cdkConnectedOverlayOpen]="expanded()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayViewportMargin]="8"
+  [cdkConnectedOverlayPush]="true"
+  (overlayOutsideClick)="onOutsideClick($event)"
+  (detach)="onClose()">
+  <div
+    role="dialog"
+    cdkTrapFocus
+    class="flex w-72 max-w-full flex-col gap-2 rounded-md border border-border bg-surface-raised p-3 text-sm font-normal text-fg shadow-lg"
+    [cdkTrapFocusAutoCapture]="true"
+    [attr.aria-label]="term()"
+    [attr.data-testid]="testId() + '.popover'">
+    <div class="flex items-start justify-between gap-2">
+      <p class="font-semibold">{{ term() }}</p>
+      <button
+        appIconButton
+        type="button"
+        size="sm"
+        class="-mt-1 -mr-1"
+        [label]="closeLabel"
+        [attr.data-testid]="testId() + '.close'"
+        (click)="onClose()">
+        <i appIcon="x-lg"></i>
+      </button>
+    </div>
+    <p [attr.data-testid]="testId() + '.text'">{{ text() }}</p>
+    @if (link(); as _link) {
+      <a
+        class="self-start text-accent underline"
+        [routerLink]="_link"
+        [fragment]="fragment()"
+        [attr.data-testid]="testId() + '.link'"
+        (click)="onClose()"
+        ><span i18n="@@uiShared-helpHint-more">Mehr im Glossar</span></a
+      >
+    }
+  </div>
+</ng-template>

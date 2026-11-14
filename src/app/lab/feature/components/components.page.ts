@@ -22,6 +22,7 @@ import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { BUTTON_VARIANTS } from '@app/shared/ui/button/button.model';
 import { openConfirmDialog } from '@app/shared/ui/dialog-confirm/dialog-confirm.utils';
 import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
+import { HelpHintComponent } from '@app/shared/ui/help-hint/help-hint.component';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { IconButtonDirective } from '@app/shared/ui/icon-button/icon-button.directive';
 import { MenuItemDirective } from '@app/shared/ui/menu/menu-item.directive';
@@ -55,6 +56,7 @@ import { formatCents } from '@app/shared/util/format';
     FormatNumberPipe,
     FormatPricePipe,
     FormField,
+    HelpHintComponent,
     IconButtonDirective,
     IconDirective,
     Menu,

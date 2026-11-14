@@ -59,7 +59,7 @@ test.describe('accessibility', () => {
       // The appearance is a setting (dark by default, E-06); the system follows the same scheme.
       await storeColorScheme(page, colorScheme);
       await page.emulateMedia({ colorScheme });
-      for (const path of ['#/players', '#/players/new', '#/about', '#/lab/components']) {
+      for (const path of ['#/players', '#/players/new', '#/about', '#/help', '#/lab/components']) {
         await page.goto(path);
         await page.waitForLoadState('networkidle');
         await expectAccessible(page);
@@ -90,6 +90,7 @@ test.describe('accessibility', () => {
         'notifications',
         'settings',
         'about',
+        'help',
       ]) {
         await open(page, `${game}/${view}`);
         await expectAccessible(page);
@@ -135,6 +136,18 @@ test.describe('accessibility', () => {
       await open(page, `${game}/settings`);
       await page.getByTestId('settings.player.export').click();
       await expect(page.getByTestId('players.export-dialog.file-name')).toBeVisible();
+      await expectAccessible(page);
+      await page.keyboard.press('Escape');
+
+      // Context help and command palette (PS US-UI-05, US-UI-06).
+      await open(page, `${game}/taxes`);
+      await page.getByTestId('help.hint.saver-allowance').click();
+      await expect(page.getByTestId('help.hint.saver-allowance.popover')).toBeVisible();
+      await expectAccessible(page);
+      await page.keyboard.press('Escape');
+      await page.keyboard.press('ControlOrMeta+k');
+      await page.getByTestId('shell.command-palette.input').fill('kauf');
+      await expect(page.getByRole('option').first()).toBeVisible();
       await expectAccessible(page);
       await page.keyboard.press('Escape');
 
@@ -188,6 +201,11 @@ test.describe('accessibility on a phone', { tag: ['@mobile', '@phone'] }, () => 
       await open(page, `${game}/markets/${INSTRUMENT}`);
       await expectAccessible(page);
       await open(page, `${game}/about`);
+      await expectAccessible(page);
+      await open(page, `${game}/help`);
+      await expectAccessible(page);
+      await page.getByTestId('shell.header.command-palette').click();
+      await expect(page.getByTestId('shell.command-palette.input')).toBeFocused();
       await expectAccessible(page);
     });
   }
@@ -285,6 +303,67 @@ test.describe('keyboard', () => {
     await tabTo(page, page.getByTestId('shell.side-nav.orders'), { backward: true });
     await page.keyboard.press('Enter');
     await expect(page.getByTestId('trading.open-orders.row')).toHaveCount(1);
+  });
+});
+
+test.describe('keyboard with the command palette and the context help', () => {
+  test.skip(
+    ({ browserName }) => browserName === 'webkit',
+    'Safari moves the focus with Tab only to form controls unless the user changes a setting',
+  );
+
+  test('runs actions from the palette and reads a term in the glossary', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await createPlayer(page, 'Anna');
+    await expectGameReady(page);
+    await expect(page.getByTestId('shell.content')).toBeFocused();
+
+    // Ctrl/Cmd+K, a query, Enter: the palette navigates and gives the focus back.
+    await page.keyboard.press('ControlOrMeta+k');
+    const input = page.getByTestId('shell.command-palette.input');
+    await expect(input).toBeFocused();
+    await page.keyboard.type('steuer');
+    await expect(input).toHaveAttribute('aria-activedescendant', /page-taxes$/);
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/taxes$/);
+    await expect(input).toHaveCount(0);
+
+    // An action: the game runs, then pauses again.
+    for (const query of ['weiter', 'pause']) {
+      await page.keyboard.press('ControlOrMeta+k');
+      await expect(input).toBeFocused();
+      await page.keyboard.type(query);
+      await expect(input).toHaveAttribute('aria-activedescendant', /toggle-pause$/);
+      await page.keyboard.press('Enter');
+      await expect(input).toHaveCount(0);
+      if (query === 'weiter') {
+        await expect(getPausedBadge(page)).toBeHidden();
+      } else {
+        await expect(getPausedBadge(page)).toBeVisible();
+      }
+    }
+
+    // The arrow keys move the active option; Escape closes without running anything.
+    await page.keyboard.press('ControlOrMeta+k');
+    await expect(input).toBeFocused();
+    const first = await input.getAttribute('aria-activedescendant');
+    await page.keyboard.press('ArrowDown');
+    await expect(input).not.toHaveAttribute('aria-activedescendant', first ?? '');
+    await page.keyboard.press('Escape');
+    await expect(input).toHaveCount(0);
+    await expect(page).toHaveURL(/\/taxes$/);
+
+    // The context help: Tab to „?“, Enter opens it, Tab reaches the link into the glossary.
+    const hint = page.getByTestId('help.hint.saver-allowance');
+    await tabTo(page, hint);
+    await expectFocusRing(hint);
+    await page.keyboard.press('Enter');
+    const link = page.getByTestId('help.hint.saver-allowance.link');
+    await tabTo(page, link);
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/help#saver-allowance$/);
+    await expect(page.getByTestId('help.glossary.saver-allowance').locator('h3')).toBeFocused();
+    await expect(page.getByTestId('help.glossary.saver-allowance')).toBeInViewport();
   });
 });
 

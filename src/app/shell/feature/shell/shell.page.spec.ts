@@ -136,7 +136,10 @@ describe('ShellPage', () => {
       expect(document.title).toBe('Übersicht · PortfoliGo');
       expect(current('shell.bottom-nav.dashboard')).toBe('page');
       expect(queryByTestId(page, 'shell.side-nav.dashboard')).toBeNull();
-      expect(queryByTestId(page, 'shell.header.search')).toBeNull();
+      // on phones the search is an icon button that opens the command palette
+      expect(byTestId(page, 'shell.header.command-palette').getAttribute('aria-label')).toBe(
+        'Suchen',
+      );
     });
 
     it('navigates with the bottom navigation', async () => {
@@ -187,12 +190,28 @@ describe('ShellPage', () => {
       expect(url()).toMatch(/^\/game\/p-[0-9a-f]+\/about$/);
     });
 
-    it('offers the export only as a disabled entry', async () => {
+    it('exports the player through the player menu', async () => {
       await act(() => click(byTestId(page, 'shell.header.player-menu')));
       const exportItem = byTestId(page, 'shell.header.player-menu.export');
-      expect(exportItem.getAttribute('aria-disabled')).toBe('true');
+      expect(exportItem.getAttribute('aria-disabled')).not.toBe('true');
       await act(() => click(exportItem));
+      // TS §10.1: <name>-<game date of the export tick>.pgo
+      expect(textOf(byTestId(document.body, 'players.export-dialog.file-name'))).toBe(
+        'Anna-2030-04-01.pgo',
+      );
+      await act(() => click(byTestId(document.body, 'players.export-dialog.close')));
+      expect(queryByTestId(document.body, 'players.export-dialog.file-name')).toBeNull();
       expect(url()).toMatch(/\/dashboard$/);
+    });
+
+    it('opens the glossary in the game through the player menu', async () => {
+      await act(() => click(byTestId(page, 'shell.header.player-menu')));
+      await act(() => click(byTestId(page, 'shell.header.player-menu.help')));
+      expect(url()).toMatch(/^\/game\/p-[0-9a-f]+\/help$/);
+      expect(document.title).toBe('Glossar · PortfoliGo');
+      expect(current('shell.header.player-menu.help')).toBe('page');
+      expect(queryByTestId(page, 'help.glossary.spread')).not.toBeNull();
+      expect(clock()).toBe(GAME_START_TEXT);
     });
 
     it('moves the focus to the content with the skip link', async () => {
@@ -214,7 +233,10 @@ describe('ShellPage', () => {
     it('shows the side navigation and the full header instead of the bottom navigation', () => {
       expect(current('shell.side-nav.dashboard')).toBe('page');
       expect(queryByTestId(page, 'shell.bottom-nav.dashboard')).toBeNull();
-      expect(queryByTestId(page, 'shell.header.search')).not.toBeNull();
+      expect(textOf(byTestId(page, 'shell.header.command-palette'))).toContain('Strg K');
+      expect(byTestId(page, 'shell.header.command-palette').getAttribute('aria-keyshortcuts')).toBe(
+        'Control+K Meta+K',
+      );
       expect(queryByTestId(page, 'shell.header.net-worth')).not.toBeNull();
     });
 

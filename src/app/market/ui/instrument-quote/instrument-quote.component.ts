@@ -2,6 +2,7 @@ import { Component, computed, input } from '@angular/core';
 
 import { exchangeChangeText } from '@app/clock/ui/labels/region-labels';
 import { FormatGameWeekdayTimePipe } from '@app/clock/ui/pipes/format-game-weekday-time/format-game-weekday-time.pipe';
+import { TermHintComponent } from '@app/help/ui/term-hint/term-hint.component';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { FormatFixedPricePipe } from '@app/shared/ui/pipes/format-fixed-price/format-fixed-price.pipe';
@@ -33,6 +34,7 @@ const DIRECTION_CLASSES: Record<ChangeDirection, string> = {
 @Component({
   selector: 'app-instrument-quote',
   imports: [
+    TermHintComponent,
     BadgeComponent,
     IconDirective,
     FormatFixedPricePipe,

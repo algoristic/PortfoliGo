@@ -83,6 +83,10 @@ export class DeviceSettingsComponent {
     },
     { key: '+', label: $localize`:@@uiSettings-deviceSettings-faster:schneller` },
     { key: '−', label: $localize`:@@uiSettings-deviceSettings-slower:langsamer` },
+    {
+      key: $localize`:@@uiSettings-deviceSettings-paletteKey:Strg/⌘ + K`,
+      label: $localize`:@@uiSettings-deviceSettings-commandPalette:Befehlspalette öffnen`,
+    },
   ];
 
   onSelectColorScheme(colorScheme: ColorSchemeSetting): void {

@@ -41,7 +41,14 @@
         <source>Rechtliches und Lizenzen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/about/ui/disclaimer-hint/disclaimer-hint.component.html</context>
-          <context context-type="linenumber">10,13</context>
+          <context context-type="linenumber">10,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiAbout-disclaimerHint-glossary" datatype="html">
+        <source>Glossar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/about/ui/disclaimer-hint/disclaimer-hint.component.html</context>
+          <context context-type="linenumber">16,19</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiAbout-legalNotice-disclaimerHeading" datatype="html">
@@ -1162,35 +1169,35 @@
         <source>Dispo-Rahmen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/account-card/account-card.component.html</context>
-          <context context-type="linenumber">46,47</context>
+          <context context-type="linenumber">47,48</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-accountCard-available" datatype="html">
         <source>Verfügbar</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/account-card/account-card.component.html</context>
-          <context context-type="linenumber">50,51</context>
+          <context context-type="linenumber">53,54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-accountCard-depot" datatype="html">
         <source>Depot <x id="INTERPOLATION" equiv-text="{{ _account.depot.number }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/account-card/account-card.component.html</context>
-          <context context-type="linenumber">59,60</context>
+          <context context-type="linenumber">62,63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-accountCard-statement" datatype="html">
         <source>Kontoauszug</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/account-card/account-card.component.html</context>
-          <context context-type="linenumber">74,78</context>
+          <context context-type="linenumber">77,81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-accountCard-statementLabel" datatype="html">
         <source>Kontoauszug <x id="kind" equiv-text="accountKindLabel(this.account().kind)"/> <x id="number" equiv-text="this.account().number"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/account-card/account-card.component.ts</context>
-          <context context-type="linenumber">41</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-accountConditions-accountFee" datatype="html">
@@ -3498,32 +3505,46 @@
           <context context-type="linenumber">90,95</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-twrTerm" datatype="html">
+        <source>Zeitgewichtete Rendite</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
+          <context context-type="linenumber">97,98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-benchmarkTerm" datatype="html">
+        <source>Benchmark</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
+          <context context-type="linenumber">101,102</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiDashboard-performanceFigures-skipped" datatype="html">
         <source> <x id="INTERPOLATION" equiv-text="{{ _figures.skippedDays }}"/> Tage mit Vermögen von höchstens 0 € zählen nicht zur Rendite. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
-          <context context-type="linenumber">100,103</context>
+          <context context-type="linenumber">110,113</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiDashboard-performanceFigures-heading" datatype="html">
         <source>Performance</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.ts</context>
-          <context context-type="linenumber">55</context>
+          <context context-type="linenumber">57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiDashboard-performanceFigures-portfolio" datatype="html">
         <source>Dein Vermögen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.ts</context>
-          <context context-type="linenumber">56</context>
+          <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiDashboard-performanceFigures-benchmark" datatype="html">
         <source>Benchmark</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.ts</context>
-          <context context-type="linenumber">57</context>
+          <context context-type="linenumber">59</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiDashboard-recentNotifications-all" datatype="html">
@@ -3701,6 +3722,1309 @@
           <context context-type="linenumber">264</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureHelp-gameHelpPage-title" datatype="html">
+        <source>Glossar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/feature/game-help/game-help.page.html</context>
+          <context context-type="linenumber">3,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureHelp-gameHelpPage-intro" datatype="html">
+        <source> Die Fachbegriffe des Spiels, so wie sie in PortfoliGo gelten. Manche Regeln sind gegenüber der Wirklichkeit vereinfacht.
+</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/feature/game-help/game-help.page.html</context>
+          <context context-type="linenumber">5,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureHelp-helpRoutes-glossaryTitle" datatype="html">
+        <source>Glossar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/feature/help.routes.ts</context>
+          <context context-type="linenumber">5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureHelp-helpPage-back" datatype="html">
+        <source>Zur Spielerauswahl</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/feature/help/help.page.html</context>
+          <context context-type="linenumber">9,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureHelp-helpPage-title" datatype="html">
+        <source>Glossar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/feature/help/help.page.html</context>
+          <context context-type="linenumber">12,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureHelp-helpPage-intro" datatype="html">
+        <source> Die Fachbegriffe des Spiels, so wie sie in PortfoliGo gelten. Manche Regeln sind gegenüber der Wirklichkeit vereinfacht. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/feature/help/help.page.html</context>
+          <context context-type="linenumber">14,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossary-related" datatype="html">
+        <source>Siehe auch:</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/glossary/glossary.component.html</context>
+          <context context-type="linenumber">44,45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossary-noHits" datatype="html">
+        <source>Kein Begriff gefunden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/glossary/glossary.component.ts</context>
+          <context context-type="linenumber">93</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossary-oneHit" datatype="html">
+        <source>1 Begriff gefunden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/glossary/glossary.component.ts</context>
+          <context context-type="linenumber">96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossary-hits" datatype="html">
+        <source><x id="count" equiv-text="count"/> Begriffe gefunden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/glossary/glossary.component.ts</context>
+          <context context-type="linenumber">97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossary-searchLabel" datatype="html">
+        <source>Begriffe durchsuchen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/glossary/glossary.component.ts</context>
+          <context context-type="linenumber">100</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-depot-term" datatype="html">
+        <source>Depot</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-depot-keywords" datatype="html">
+        <source>Wertpapierdepot</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-depot-short" datatype="html">
+        <source>Das Konto für deine Wertpapiere bei einer Bank. Jedes Depot hat ein eigenes Verrechnungskonto, über das Käufe, Verkäufe und Erträge laufen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-depot-details" datatype="html">
+        <source>Du kannst bei jeder Bank beliebig viele Depots sofort und kostenlos eröffnen. Ein Depot lässt sich nur schließen, wenn es leer ist und keine offenen Orders oder Sparpläne hat.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-clearingAccount-term" datatype="html">
+        <source>Verrechnungskonto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-clearingAccount-keywords" datatype="html">
+        <source>Abrechnungskonto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-clearingAccount-short" datatype="html">
+        <source>Das Geldkonto eines Depots: Käufe werden davon bezahlt, Verkaufserlöse, Dividenden und Ausschüttungen gehen darauf.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-clearingAccount-details" datatype="html">
+        <source>Es hat keinen Dispo. Ins Minus kommt es nur durch Belastungen der Bank wie Depotgebühr oder Zinsen, nie durch einen Kauf. Solange es im Minus ist, sind neue Kauforders gesperrt und es fallen Sollzinsen an. Guthaben verzinst die Bank je nach Konditionen monatlich.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-currentAccount-term" datatype="html">
+        <source>Girokonto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-currentAccount-keywords" datatype="html">
+        <source>Konto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-currentAccount-short" datatype="html">
+        <source>Das Konto für den Alltag: Hier gehen Gehalt und Lebenshaltungskosten ein und ab.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">28</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-currentAccount-details" datatype="html">
+        <source>Ein Girokonto bringt keine Zinsen und kostet je nach Bank eine monatliche Kontoführungsgebühr; manche Banken erlassen sie ab einem Geldeingang von außen (Gehalt oder Startkapital). Broker bieten keine Girokonten an.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-savingsAccount-term" datatype="html">
+        <source>Tagesgeld</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-savingsAccount-keywords" datatype="html">
+        <source>Tagesgeldkonto Zinsen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-savingsAccount-short" datatype="html">
+        <source>Ein verzinstes Konto, auf das du jederzeit Geld überweisen und von dem du es jederzeit abziehen kannst.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-savingsAccount-details" datatype="html">
+        <source>Die Zinsen auf das Guthaben zahlt die Bank je nach Konditionen monatlich oder vierteljährlich aus; sie zählen zu den Kapitalerträgen. Direktbanken zahlen meist mehr als Filialbanken.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-salaryAccount-term" datatype="html">
+        <source>Gehaltskonto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-salaryAccount-keywords" datatype="html">
+        <source>Gehalt Lebenshaltung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-salaryAccount-short" datatype="html">
+        <source>Das Girokonto, auf dem dein Nettogehalt eingeht und von dem die Lebenshaltungskosten abgehen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-salaryAccount-details" datatype="html">
+        <source>Das Gehalt kommt am letzten, die Lebenshaltung geht am ersten Bankarbeitstag des Monats ab, jeweils um 06:00 Uhr. Du kannst das Gehaltskonto wechseln; der Dispo-Rahmen folgt den Gehaltseingängen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-overdraft-term" datatype="html">
+        <source>Dispo</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-overdraft-keywords" datatype="html">
+        <source>Dispositionskredit Dispo-Rahmen Dispozins</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-overdraft-short" datatype="html">
+        <source>Der Rahmen, um den du dein Girokonto überziehen darfst. Für den genutzten Betrag zahlst du Dispozinsen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-overdraft-details" datatype="html">
+        <source>Der Rahmen richtet sich nach den Gehaltseingängen bei der Bank in den letzten drei vollen Monaten und wird am ersten Bankarbeitstag jedes Monats angepasst. Er liegt auf dem Girokonto der Bank mit den meisten Gehaltseingängen. Die Zinsen werden taggenau berechnet und monatlich belastet.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-toleratedOverdraft-term" datatype="html">
+        <source>Geduldete Überziehung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-toleratedOverdraft-keywords" datatype="html">
+        <source>Überziehung über den Dispo</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-toleratedOverdraft-short" datatype="html">
+        <source>Ein Minus über den Dispo-Rahmen hinaus. Es hat keine Obergrenze, kostet aber einen Zinsaufschlag.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-toleratedOverdraft-details" datatype="html">
+        <source>Dazu kommt es nur durch Belastungen der Bank, etwa die Lebenshaltung; eigene Überweisungen und Daueraufträge gehen nur bis zum verfügbaren Betrag. Auf den Teil über dem Rahmen gilt der Dispozins plus Aufschlag. Das Spiel pausiert dann standardmäßig (Auto-Pause).</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-standingOrder-term" datatype="html">
+        <source>Dauerauftrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-standingOrder-keywords" datatype="html">
+        <source>Überweisung monatlich</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-standingOrder-short" datatype="html">
+        <source>Eine Überweisung, die jeden Monat am gleichen Tag automatisch zwischen zwei deiner Konten läuft.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-standingOrder-details" datatype="html">
+        <source>Du wählst einen Tag zwischen 1 und 28; ist er kein Bankarbeitstag, läuft der Auftrag am nächsten. Er läuft um 06:00 Uhr nach Gehalt, Zinsen und Lebenshaltung. Reicht das verfügbare Geld nicht, fällt er für diesen Monat ganz aus.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-orderTypes-term" datatype="html">
+        <source>Orderarten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-orderTypes-keywords" datatype="html">
+        <source>Ordertyp Orderart</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-orderTypes-short" datatype="html">
+        <source>Market kauft oder verkauft sofort, Limit nur zu einem Preis, den du festlegst, Stop erst ab einer Kursschwelle, Stop-Limit verbindet beides.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-orderTypes-details" datatype="html">
+        <source>Orders kannst du jederzeit erteilen. Ausgeführt werden sie nur, solange die Börse des Instruments geöffnet ist; das Spiel prüft sie jede Spielminute. Teilausführungen gibt es nicht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-marketOrder-term" datatype="html">
+        <source>Market-Order</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-marketOrder-keywords" datatype="html">
+        <source>Bestens Billigst</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-marketOrder-short" datatype="html">
+        <source>Wird sofort ausgeführt: ein Kauf zum Briefkurs, ein Verkauf zum Geldkurs. Bei geschlossener Börse zur nächsten Eröffnung.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-marketOrder-details" datatype="html">
+        <source>Du weißt vorher nicht genau, zu welchem Kurs ausgeführt wird. Bei einem Kauf reserviert das Spiel deshalb den geschätzten Kurswert mit 5 % Puffer.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-limitOrder-term" datatype="html">
+        <source>Limit-Order</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">82</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-limitOrder-keywords" datatype="html">
+        <source>Limit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-limitOrder-short" datatype="html">
+        <source>Kauft nur, wenn der Briefkurs höchstens beim Limit liegt, und verkauft nur, wenn der Geldkurs mindestens das Limit erreicht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-limitOrder-details" datatype="html">
+        <source>Ausgeführt wird zum aktuellen Brief- bzw. Geldkurs, also zum Limit oder besser. Erreicht der Kurs das Limit nie, bleibt die Order bis zum Ende ihrer Gültigkeit offen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-stopOrder-term" datatype="html">
+        <source>Stop-Order</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-stopOrder-keywords" datatype="html">
+        <source>Stop-Loss Stop Buy</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-stopOrder-short" datatype="html">
+        <source>Wird zur Market-Order, sobald der Kurs die Stop-Schwelle erreicht: ein Kauf, wenn der Brief auf den Stop steigt, ein Verkauf, wenn der Geld auf den Stop fällt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-stopOrder-details" datatype="html">
+        <source>Ein Verkaufs-Stop begrenzt Verluste (Stop-Loss). Öffnet die Börse mit einer Kurslücke unter dem Stop, wird zum Eröffnungskurs verkauft, also auch deutlich unter dem Stop.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-stopLimitOrder-term" datatype="html">
+        <source>Stop-Limit-Order</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-stopLimitOrder-keywords" datatype="html">
+        <source>Stop Limit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-stopLimitOrder-short" datatype="html">
+        <source>Wird beim Erreichen der Stop-Schwelle zu einer Limit-Order mit dem Limit, das du festgelegt hast.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">98</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-stopLimitOrder-details" datatype="html">
+        <source>So schützt du dich vor einer Ausführung weit unter dem Stop. Dafür kann es passieren, dass die Order nach dem Auslösen gar nicht ausgeführt wird.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">99</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-validity-term" datatype="html">
+        <source>Gültigkeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">103</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-validity-keywords" datatype="html">
+        <source>gültig bis Tagesende Widerruf</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">104</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-validity-short" datatype="html">
+        <source>Wie lange eine Order aktiv bleibt: bis Tagesende, bis zu einem Datum oder bis auf Widerruf.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">105</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-validity-details" datatype="html">
+        <source>„Bis Tagesende“ endet mit dem nächsten Handelsschluss der Börse, „bis Datum“ um 24:00 Uhr des Datums. Auch „bis auf Widerruf“ endet spätestens nach einem Jahr. Danach verfällt die Order und die Reservierung wird frei.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">106</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-reservation-term" datatype="html">
+        <source>Reservierung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-reservation-keywords" datatype="html">
+        <source>reserviert verfügbar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-reservation-short" datatype="html">
+        <source>Geld, das eine offene Kauforder auf dem Verrechnungskonto vormerkt. Es steht für andere Zahlungen nicht mehr zur Verfügung.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">112</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-reservation-details" datatype="html">
+        <source>Limit-Orders reservieren Limit mal Stück plus Kosten, Market- und Stop-Orders den geschätzten Kurswert mit 5 % Puffer plus Kosten, Betragsorders den Betrag. Wird die Order ausgeführt, storniert oder läuft sie ab, wird die Reservierung frei.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">113</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-spread-term" datatype="html">
+        <source>Spread</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">117</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-spread-keywords" datatype="html">
+        <source>Geldkurs Briefkurs Geld Brief Bid Ask</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">118</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-spread-short" datatype="html">
+        <source>Der Abstand zwischen Brief (Kaufkurs) und Geld (Verkaufskurs). Wer kauft und gleich wieder verkauft, verliert ihn.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">119</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-spread-details" datatype="html">
+        <source>Kleine, schwankende Werte haben einen größeren Spread als große, ruhige; ist die Börse des Basiswerts geschlossen, wird er breiter. Neobroker handeln über einen Market Maker und schlagen auf Geld und Brief einen kleinen Aufschlag auf. Positionen bewertet das Spiel zum Geldkurs.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">120</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-fractionalShares-term" datatype="html">
+        <source>Bruchstücke</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">124</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-fractionalShares-keywords" datatype="html">
+        <source>Bruchteile Teilstücke</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">125</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-fractionalShares-short" datatype="html">
+        <source>Anteile einer Aktie oder eines ETFs unter einem ganzen Stück, zum Beispiel 0,25 Stück.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">126</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-fractionalShares-details" datatype="html">
+        <source>Sparpläne kaufen immer Bruchstücke. Einzelne Orders mit Bruchstücken bieten nur die Neobroker an; verkaufen kannst du Bruchstücke bei jeder Bank.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">127</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-savingsPlan-term" datatype="html">
+        <source>Sparplan</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">131</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-savingsPlan-keywords" datatype="html">
+        <source>Sparrate</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">132</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-savingsPlan-short" datatype="html">
+        <source>Kauft jeden Monat am gewählten Tag automatisch für einen festen Betrag ein ETF oder eine Aktie.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">133</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-savingsPlan-details" datatype="html">
+        <source>Ausgeführt wird zum Handelsbeginn der Börse am Ausführungstag (1 bis 28) oder am nächsten Handelstag, immer in Bruchstücken. Das Geld kommt vom Verrechnungskonto des Depots; reicht es nicht, fällt die Ausführung aus. Nicht jedes Wertpapier ist sparplanfähig.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">134</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-orderFee-term" datatype="html">
+        <source>Ordergebühr und Börsenentgelt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">138</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-orderFee-keywords" datatype="html">
+        <source>Orderentgelt Börsengebühr Kosten Transaktionskosten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">139</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-orderFee-short" datatype="html">
+        <source>Die Kosten einer Order: das Orderentgelt der Bank (fest, prozentual oder beides) und ein festes Börsenentgelt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">140</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-orderFee-details" datatype="html">
+        <source>Die Kosten zeigt das Order-Ticket vor dem Absenden. Sie erhöhen beim Kauf die Anschaffungskosten und mindern beim Verkauf den Erlös. Sparpläne haben eigene Kosten und kein Börsenentgelt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">141</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-custodyFee-term" datatype="html">
+        <source>Depotgebühr</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">145</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-custodyFee-keywords" datatype="html">
+        <source>Depotkosten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">146</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-custodyFee-short" datatype="html">
+        <source>Eine jährliche Gebühr mancher Banken für das Führen des Depots, oft ein Prozentsatz des Depotwerts mit Mindestbetrag.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">147</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-custodyFee-details" datatype="html">
+        <source>Sie wird vierteljährlich am ersten Bankarbeitstag für das abgelaufene Quartal vom Verrechnungskonto abgebucht, auch wenn es dadurch ins Minus geht. Viele Direktbanken und Broker verlangen keine.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">148</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-ter-term" datatype="html">
+        <source>TER</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">152</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-ter-keywords" datatype="html">
+        <source>Total Expense Ratio Laufende Kosten Gesamtkostenquote</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">153</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-ter-short" datatype="html">
+        <source>Die laufenden Kosten eines ETFs pro Jahr in Prozent. Sie werden nicht abgebucht, sondern stecken im Kurs.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">154</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-ter-details" datatype="html">
+        <source>Das Spiel zieht die TER Tag für Tag anteilig vom Fondswert ab. Ein ETF mit 0,2 % TER bleibt so im Jahr um etwa 0,2 % hinter seinem Index zurück.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">155</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-dividend-term" datatype="html">
+        <source>Dividende</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">159</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-dividend-keywords" datatype="html">
+        <source>Gewinnausschüttung Dividendenrendite</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">160</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-dividend-short" datatype="html">
+        <source>Ein Teil des Unternehmensgewinns, den eine Aktie an ihre Aktionäre auszahlt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">161</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-dividend-details" datatype="html">
+        <source>Die Dividende wird 20 Handelstage vor dem Ex-Tag angekündigt. Gutgeschrieben wird sie auf dem Verrechnungskonto, versteuert wie alle Kapitalerträge. Je nach Region zahlen Unternehmen jährlich, halbjährlich oder vierteljährlich.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">162</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-exDate-term" datatype="html">
+        <source>Ex-Tag und Zahltag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">166</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-exDate-keywords" datatype="html">
+        <source>Ex-Datum Stichtag Zahltag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">167</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-exDate-short" datatype="html">
+        <source>Am Ex-Tag wird der Kurs um die Dividende abgeschlagen; die Dividende bekommt, wer die Aktie am Vortag zum Handelsschluss hielt. Gezahlt wird zwei Bankarbeitstage später.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">168</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-exDate-details" datatype="html">
+        <source>Ein Kauf am Ex-Tag bekommt die Dividende also nicht mehr, ein Verkauf am Ex-Tag behält sie. Bruchstücke erhalten sie anteilig.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">169</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-etf-term" datatype="html">
+        <source>ETF</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">173</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-etf-keywords" datatype="html">
+        <source>Exchange Traded Fund Indexfonds Fonds</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">174</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-etf-short" datatype="html">
+        <source>Ein börsengehandelter Fonds, der einen Index nachbildet. Mit einem Kauf legst du in alle Werte des Index zugleich an.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">175</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-etf-details" datatype="html">
+        <source>Der Kurs folgt dem Index abzüglich der TER und einer kleinen Abweichung je nach Nachbildung. Außerhalb der Handelszeit zeigt das Spiel einen indikativen Wert.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">176</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-distribution-term" datatype="html">
+        <source>Ausschüttung und Thesaurierung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">180</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-distribution-keywords" datatype="html">
+        <source>ausschüttend thesaurierend Ertragsverwendung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">181</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-distribution-short" datatype="html">
+        <source>Ein ausschüttender ETF zahlt die Dividenden seiner Werte aus, ein thesaurierender legt sie sofort wieder an.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">182</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-distribution-details" datatype="html">
+        <source>Vor Kosten und Steuern bringen beide fast dasselbe. Ausschüttungen landen auf dem Verrechnungskonto und werden sofort versteuert; ihre Höhe kündigt der Fonds nicht vorher an.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">183</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-index-term" datatype="html">
+        <source>Index</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">187</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-index-keywords" datatype="html">
+        <source>Kursindex Performanceindex Leitindex</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">188</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-index-short" datatype="html">
+        <source>Eine Kennzahl für die Entwicklung einer Gruppe von Aktien, gewichtet nach ihrem Börsenwert. Ein Kursindex zeigt nur die Kurse, ein Performanceindex rechnet die Dividenden wieder ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">189</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-index-details" datatype="html">
+        <source>Die Gewichte einzelner Werte sind begrenzt, und die Zusammensetzung bleibt im Spiel fest. Einen Index selbst kannst du nicht kaufen, wohl aber einen ETF darauf.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">190</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-capitalGainsTax-term" datatype="html">
+        <source>Abgeltungsteuer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">194</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-capitalGainsTax-keywords" datatype="html">
+        <source>Kapitalertragsteuer Steuer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">195</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-capitalGainsTax-short" datatype="html">
+        <source>Im Spiel gelten pauschal 25 % auf Kapitalerträge über dem Sparerpauschbetrag, ohne Solidaritätszuschlag und Kirchensteuer.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">196</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-capitalGainsTax-details" datatype="html">
+        <source>Kapitalerträge sind Zinsen, Dividenden, Ausschüttungen und Kursgewinne abzüglich Kursverluste. Die Bank behält die Steuer bei jedem Ertrag sofort ein und erstattet sie sofort, wenn ein späterer Verlust sie mindert.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">197</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-saverAllowance-term" datatype="html">
+        <source>Sparerpauschbetrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">201</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-saverAllowance-keywords" datatype="html">
+        <source>Freibetrag Freistellungsauftrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">202</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-saverAllowance-short" datatype="html">
+        <source>Bis 1.000 € Kapitalerträge im Jahr bleiben steuerfrei. Was du davon nicht nutzt, verfällt am Jahresende.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">203</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-saverAllowance-details" datatype="html">
+        <source>Im Spiel gilt er automatisch für alle Banken zusammen, ein Freistellungsauftrag ist nicht nötig.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">204</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-lossPot-term" datatype="html">
+        <source>Verlusttopf</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">208</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-lossPot-keywords" datatype="html">
+        <source>Verlustvortrag Verlustverrechnung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">209</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-lossPot-short" datatype="html">
+        <source>Verluste werden mit späteren Erträgen verrechnet. Bleibt das Jahr im Minus, wird der Verlust ins nächste Jahr vorgetragen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">210</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-lossPot-details" datatype="html">
+        <source>Vereinfacht gibt es im Spiel einen einzigen Topf für alle Erträge über alle Banken: Auch Aktienverluste mindern die Steuer auf Zinsen und Dividenden. Der Vortrag verfällt nicht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">211</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-lotFifo-term" datatype="html">
+        <source>Lot und FIFO</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">215</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-lotFifo-keywords" datatype="html">
+        <source>Lots First in first out Einstandskurs Anschaffungskosten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">216</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-lotFifo-short" datatype="html">
+        <source>Jeder Kauf ist ein Lot mit eigenen Anschaffungskosten. Verkauft wird nach FIFO: die zuerst gekauften Stücke zuerst.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">217</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-lotFifo-details" datatype="html">
+        <source>Die Anschaffungskosten enthalten die Kaufkosten, der Einstandskurs ist Anschaffungskosten durch Stück. Der realisierte Gewinn ist der Erlös nach Kosten minus die Anschaffungskosten der verkauften Stücke.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">218</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-netWorth-term" datatype="html">
+        <source>Gesamtvermögen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">222</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-netWorth-keywords" datatype="html">
+        <source>Vermögen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">223</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-netWorth-short" datatype="html">
+        <source>Alle Kontostände (ein Minus zählt negativ) plus der Wert deiner Wertpapiere zum Geldkurs.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">224</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-netWorth-details" datatype="html">
+        <source>Gehalt und Lebenshaltung verändern es genauso wie Kursbewegungen. Wie gut du angelegt hast, zeigt deshalb die zeitgewichtete Rendite.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">225</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-twr-term" datatype="html">
+        <source>Zeitgewichtete Rendite</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">229</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-twr-keywords" datatype="html">
+        <source>TWR Rendite Performance</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">230</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-twr-short" datatype="html">
+        <source>Die Rendite deines Vermögens ohne den Einfluss von Gehalt und Lebenshaltung. Sie misst nur, wie sich dein angelegtes Geld entwickelt hat.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">231</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-twr-details" datatype="html">
+        <source>Das Spiel rechnet für jeden Tag die Rendite nach den Zu- und Abflüssen und verkettet die Tage. Zinsen, Gebühren, Steuern und Dividenden zählen zur Rendite. Aufs Jahr umgerechnet wird sie erst nach 365 Tagen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">232</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-benchmark-term" datatype="html">
+        <source>Benchmark</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">236</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-benchmark-keywords" datatype="html">
+        <source>Vergleich Vergleichsindex Ohne Anlegen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">237</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-benchmark-short" datatype="html">
+        <source>Ein Vergleichsdepot, das alles Geld ohne Kosten und Steuern in den Welt-Performanceindex steckt. Daran siehst du, ob du besser warst als der Markt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">238</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-benchmark-details" datatype="html">
+        <source>Startkapital und jeder Nettozufluss werden zum Tagesschluss gekauft. Die zweite Vergleichsgröße „Ohne Anlegen“ zeigt, was du hättest, wenn alles auf dem Gehaltskonto geblieben wäre.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">239</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-volatility-term" datatype="html">
+        <source>Volatilität</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">243</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-volatility-keywords" datatype="html">
+        <source>Schwankung Risiko</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">244</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-volatility-short" datatype="html">
+        <source>Wie stark ein Kurs schwankt: die Standardabweichung der täglichen Renditen der letzten 252 Handelstage, auf ein Jahr hochgerechnet.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">245</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-volatility-details" datatype="html">
+        <source>Höhere Volatilität heißt größere Ausschläge in beide Richtungen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">246</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-beta-term" datatype="html">
+        <source>Beta</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">250</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-beta-keywords" datatype="html">
+        <source>Marktrisiko</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">251</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-beta-short" datatype="html">
+        <source>Wie stark ein Wert im Schnitt mit dem Markt mitgeht. Beta 1 bewegt sich wie der Welt-Kursindex, 1,5 um die Hälfte stärker, 0,5 halb so stark.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">252</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-beta-details" datatype="html">
+        <source>Berechnet aus den täglichen Renditen der letzten 252 Handelstage im Vergleich zum Welt-Kursindex.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">253</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-marketCap-term" datatype="html">
+        <source>Marktkapitalisierung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">257</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-marketCap-keywords" datatype="html">
+        <source>Börsenwert Marktwert</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">258</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-marketCap-short" datatype="html">
+        <source>Der Börsenwert eines Unternehmens: Anzahl der Aktien mal Kurs.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">259</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-marketCap-details" datatype="html">
+        <source>Nach dem Börsenwert der frei handelbaren Aktien richten sich die Gewichte in den Indizes. ETFs zeigen stattdessen ihr Fondsvolumen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">260</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-savingsRate-term" datatype="html">
+        <source>Sparquote</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">264</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-savingsRate-keywords" datatype="html">
+        <source>sparen Einnahmen Ausgaben</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">265</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-savingsRate-short" datatype="html">
+        <source>Der Anteil deiner Einnahmen in einem Monat, der nach allen Ausgaben übrig bleibt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">266</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-savingsRate-details" datatype="html">
+        <source>Einnahmen sind Einkommen, Zinsen und Dividenden, Ausgaben sind Lebenshaltung, Gebühren, Sollzinsen und Steuern. Überweisungen zwischen deinen Konten zählen nicht. Die Quote kann negativ sein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">267</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-tradingHours-term" datatype="html">
+        <source>Handelszeiten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">271</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-tradingHours-keywords" datatype="html">
+        <source>Börsenzeiten Börse geöffnet geschlossen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">272</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-tradingHours-short" datatype="html">
+        <source>Börsen handeln nur zu festen Zeiten an Werktagen: Asien-Pazifik 01:00–07:00, Europa 09:00–17:30, Nordamerika 15:30–22:00 Uhr Spielzeit.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">273</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-tradingHours-details" datatype="html">
+        <source>Schwellenländer haben je Börse eigene Zeiten. Am Wochenende ist alles geschlossen, Feiertage gibt es im Spiel nicht. Außerhalb der Handelszeit nimmt die Bank Orders an und führt sie zur nächsten Eröffnung aus.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">274</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-gameSpeed-term" datatype="html">
+        <source>Spielgeschwindigkeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">278</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-gameSpeed-keywords" datatype="html">
+        <source>Geschwindigkeit Tempo schneller langsamer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">279</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-gameSpeed-short" datatype="html">
+        <source>Wie schnell die Spielzeit läuft: von Echtzeit bis zu einer Woche pro Sekunde. Mit der Pause hält sie an.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">280</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-gameSpeed-details" datatype="html">
+        <source>Das Spiel beginnt am Montag, 01.04.2030, pausiert. Bei hohen Geschwindigkeiten laufen Gehalt, Zinsen, Orders und Kurse genauso ab wie in Echtzeit, nur schneller.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">281</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-jump-term" datatype="html">
+        <source>Vorspulen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">285</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-jump-keywords" datatype="html">
+        <source>Sprung springen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">286</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-jump-short" datatype="html">
+        <source>Lässt die Spielzeit im Schnelldurchlauf bis zur nächsten Börsenöffnung, zum nächsten Monatsanfang oder zu einem Datum laufen, höchstens ein Jahr.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">287</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-jump-details" datatype="html">
+        <source>Alles wird dabei wie im normalen Spielverlauf verarbeitet. Du kannst das Vorspulen abbrechen; eine Auto-Pause beendet es.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">288</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-autoPause-term" datatype="html">
+        <source>Auto-Pause</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">292</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-autoPause-keywords" datatype="html">
+        <source>automatische Pause</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">293</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-autoPause-short" datatype="html">
+        <source>Das Spiel hält bei wichtigen Ereignissen von selbst an, standardmäßig, wenn der Dispo-Rahmen überschritten wird.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">294</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-autoPause-details" datatype="html">
+        <source>In den Einstellungen legst du je Ereignis fest, ob es pausiert. Die Auto-Pause greift auch beim Vorspulen, nie aber bei der Nachberechnung nach dem Öffnen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">295</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-backgroundModes-term" datatype="html">
+        <source>Verhalten im Hintergrund</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">299</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-backgroundModes-keywords" datatype="html">
+        <source>Hintergrund Hintergrundmodus Nachberechnung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">300</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-backgroundModes-short" datatype="html">
+        <source>Was die Spielzeit tut, wenn du die App verlässt: in Echtzeit weiterlaufen, pausieren, mit der gewählten oder einer eigenen Geschwindigkeit weiterlaufen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">301</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-backgroundModes-details" datatype="html">
+        <source>Ist die App geschlossen, läuft die Zeit außer im Modus „Pausieren“ in Echtzeit weiter und wird beim nächsten Öffnen nachberechnet. Optional pausiert das Spiel nach einer Frist im Hintergrund.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">302</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-category-accounts" datatype="html">
+        <source>Konten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">310</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-category-orders" datatype="html">
+        <source>Orders und Handel</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">312</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-category-costs" datatype="html">
+        <source>Kosten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">314</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-category-income" datatype="html">
+        <source>Erträge, ETFs und Indizes</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">316</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-category-taxes" datatype="html">
+        <source>Steuern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">318</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-category-performance" datatype="html">
+        <source>Vermögen und Kennzahlen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">320</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiHelp-glossaryTexts-category-time" datatype="html">
+        <source>Spielzeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/help/ui/labels/glossary-texts.ts</context>
+          <context context-type="linenumber">322</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureLab-componentsPage-title" datatype="html">
         <source>UI-Bausteine</source>
         <context-group purpose="location">
@@ -3827,39 +5151,67 @@
           <context context-type="linenumber">179,181</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureLab-componentsPage-helpHint" datatype="html">
+        <source>Kontext-Hilfe</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">190</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-helpHintLabel" datatype="html">
+        <source>Spread</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">192,195</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-helpHintTerm" datatype="html">
+        <source>Spread</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">195</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureLab-componentsPage-helpHintText" datatype="html">
+        <source>Der Abstand zwischen Brief (Kaufkurs) und Geld (Verkaufskurs).</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
+          <context context-type="linenumber">196,197</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureLab-componentsPage-emptyState" datatype="html">
         <source>Leerzustand</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">190</context>
+          <context context-type="linenumber">204</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-emptyHeading" datatype="html">
         <source>Noch keine Watchlist</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">193,194</context>
+          <context context-type="linenumber">207,208</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-emptyText" datatype="html">
         <source>Füge Instrumente hinzu, um sie hier zu verfolgen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">195,196</context>
+          <context context-type="linenumber">209,210</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-amountInput" datatype="html">
         <source>Betragseingabe</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">199</context>
+          <context context-type="linenumber">213</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-amountLabel" datatype="html">
         <source>Startkapital</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">205,208</context>
+          <context context-type="linenumber">219,222</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-amountValue" datatype="html">
@@ -3868,140 +5220,140 @@
             }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">221,225</context>
+          <context context-type="linenumber">235,239</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-charts" datatype="html">
         <source>Sparkline und Donut</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">231</context>
+          <context context-type="linenumber">245</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-sparklineRising" datatype="html">
         <source>Kursverlauf steigend</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">238,239</context>
+          <context context-type="linenumber">252,253</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-donutLabel" datatype="html">
         <source>Aufteilung nach Anlageklasse</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">251,252</context>
+          <context context-type="linenumber">265,266</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-colorPickerLabel" datatype="html">
         <source>Farbe</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">267</context>
+          <context context-type="linenumber">281</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-overlays" datatype="html">
         <source>Toasts und Dialoge</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">277</context>
+          <context context-type="linenumber">291</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-openConfirm" datatype="html">
         <source> Bestätigungsdialog öffnen </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">295,297</context>
+          <context context-type="linenumber">309,311</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-confirmed" datatype="html">
         <source>Bestätigt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">300,302</context>
+          <context context-type="linenumber">314,316</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-declined" datatype="html">
         <source>Abgebrochen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
-          <context context-type="linenumber">302,305</context>
+          <context context-type="linenumber">316,319</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tabOverview" datatype="html">
         <source>Übersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">102</context>
+          <context context-type="linenumber">104</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tabChart" datatype="html">
         <source>Chart</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">103</context>
+          <context context-type="linenumber">105</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tabProfile" datatype="html">
         <source>Profil</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">104</context>
+          <context context-type="linenumber">106</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navSimulation" datatype="html">
         <source>Simulation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">112</context>
+          <context context-type="linenumber">114</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navComponents" datatype="html">
         <source>UI-Bausteine</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">117</context>
+          <context context-type="linenumber">119</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navTokens" datatype="html">
         <source>Design-Tokens</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">122</context>
+          <context context-type="linenumber">124</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-toastMessage" datatype="html">
         <source>Beispielhinweis</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">136</context>
+          <context context-type="linenumber">138</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-confirmHeading" datatype="html">
         <source>Spieler löschen?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">137</context>
+          <context context-type="linenumber">139</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-confirmMessage" datatype="html">
         <source>Der Spieler wird endgültig gelöscht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">138</context>
+          <context context-type="linenumber">140</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-confirmLabel" datatype="html">
         <source>Löschen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">139</context>
+          <context context-type="linenumber">141</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-navLabel" datatype="html">
         <source>Beispielnavigation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
-          <context context-type="linenumber">140</context>
+          <context context-type="linenumber">142</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-labRoutes-simulationTitle" datatype="html">
@@ -6748,126 +8100,126 @@
         <source>TER</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
-          <context context-type="linenumber">59,62</context>
+          <context context-type="linenumber">59,61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-fundVolume" datatype="html">
         <source>Fondsvolumen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
-          <context context-type="linenumber">67,69</context>
+          <context context-type="linenumber">68,70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-constituents" datatype="html">
         <source>Zahl der Werte</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
-          <context context-type="linenumber">78,81</context>
+          <context context-type="linenumber">79,82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-cap" datatype="html">
         <source>Höchstgewicht je Wert</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
-          <context context-type="linenumber">87,88</context>
+          <context context-type="linenumber">88,89</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-noCap" datatype="html">
         <source>keine Kappung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
-          <context context-type="linenumber">90,92</context>
+          <context context-type="linenumber">91,93</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-indices" datatype="html">
         <source> Indexzugehörigkeit </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
-          <context context-type="linenumber">115,117</context>
+          <context context-type="linenumber">116,118</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-noIndices" datatype="html">
         <source> Die Aktie gehört zu keinem Index. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
-          <context context-type="linenumber">133,137</context>
+          <context context-type="linenumber">134,138</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-sector" datatype="html">
         <source>Sektor</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
-          <context context-type="linenumber">124</context>
+          <context context-type="linenumber">131</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-industry" datatype="html">
         <source>Branche</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
-          <context context-type="linenumber">125</context>
+          <context context-type="linenumber">132</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-country" datatype="html">
         <source>Land</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
-          <context context-type="linenumber">126</context>
+          <context context-type="linenumber">133</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-size" datatype="html">
         <source>Größe</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
-          <context context-type="linenumber">127</context>
+          <context context-type="linenumber">134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-style" datatype="html">
         <source>Stil</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
-          <context context-type="linenumber">128</context>
+          <context context-type="linenumber">135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-riskClass" datatype="html">
         <source>Risikoklasse</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
-          <context context-type="linenumber">129</context>
+          <context context-type="linenumber">136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-founded" datatype="html">
         <source>Gegründet</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
-          <context context-type="linenumber">130</context>
+          <context context-type="linenumber">137</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-distribution" datatype="html">
         <source>Ertragsverwendung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
-          <context context-type="linenumber">131</context>
+          <context context-type="linenumber">138</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-replication" datatype="html">
         <source>Replikation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
-          <context context-type="linenumber">132</context>
+          <context context-type="linenumber">139</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-issuer" datatype="html">
         <source>Emittent</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
-          <context context-type="linenumber">133</context>
+          <context context-type="linenumber">140</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-variant" datatype="html">
         <source>Art</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.ts</context>
-          <context context-type="linenumber">134</context>
+          <context context-type="linenumber">141</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentQuote-bid" datatype="html">
@@ -6885,73 +8237,73 @@
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentQuote-spread" datatype="html">
-        <source> Spread </source>
+        <source>Spread</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.html</context>
-          <context context-type="linenumber">60,62</context>
+          <context context-type="linenumber">60,61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentQuote-inavTitle" datatype="html">
         <source>Indikativer Nettoinventarwert</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.html</context>
-          <context context-type="linenumber">83,84</context>
+          <context context-type="linenumber">84,85</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentQuote-inav" datatype="html">
         <source>iNAV</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.html</context>
-          <context context-type="linenumber">86,89</context>
+          <context context-type="linenumber">87,90</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentQuote-inavAsOf" datatype="html">
         <source>Stand</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.html</context>
-          <context context-type="linenumber">94,95</context>
+          <context context-type="linenumber">95,96</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentQuote-closedNote" datatype="html">
         <source>Börse geschlossen – der Kurs steht still, bis die Börse wieder öffnet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.html</context>
-          <context context-type="linenumber">120,124</context>
+          <context context-type="linenumber">121,125</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentQuote-open" datatype="html">
         <source>Geöffnet</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.ts</context>
-          <context context-type="linenumber">71</context>
+          <context context-type="linenumber">73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentQuote-closed" datatype="html">
         <source>Geschlossen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.ts</context>
-          <context context-type="linenumber">72</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentQuote-last" datatype="html">
         <source>Letzter Kurs</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.ts</context>
-          <context context-type="linenumber">73</context>
+          <context context-type="linenumber">75</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentQuote-level" datatype="html">
         <source>Stand</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.ts</context>
-          <context context-type="linenumber">74</context>
+          <context context-type="linenumber">76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentQuote-change" datatype="html">
         <source>Veränderung zum Vortag</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-quote/instrument-quote.component.ts</context>
-          <context context-type="linenumber">75</context>
+          <context context-type="linenumber">77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-companyProfileText-focusMemoryChips" datatype="html">
@@ -10573,74 +11925,81 @@
           <context context-type="linenumber">64</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiPortfolio-lotList-fifo" datatype="html">
+        <source>Verkauft wird nach FIFO: die ältesten Stücke zuerst.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/lot-list/lot-list.component.html</context>
+          <context context-type="linenumber">6,8</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiPortfolio-lotList-cardDepot" datatype="html">
         <source>Depot</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/lot-list/lot-list.component.html</context>
-          <context context-type="linenumber">15,16</context>
+          <context context-type="linenumber">22,23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-lotList-cardQuantity" datatype="html">
         <source>Stück</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/lot-list/lot-list.component.html</context>
-          <context context-type="linenumber">20,21</context>
+          <context context-type="linenumber">27,28</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-lotList-cardCostPerShare" datatype="html">
         <source>Einstandskurs</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/lot-list/lot-list.component.html</context>
-          <context context-type="linenumber">24,26</context>
+          <context context-type="linenumber">31,33</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-lotList-cardCost" datatype="html">
         <source>Einstandswert</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/lot-list/lot-list.component.html</context>
-          <context context-type="linenumber">30,31</context>
+          <context context-type="linenumber">37,38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-lotList-bought" datatype="html">
         <source> Kauf </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/lot-list/lot-list.component.html</context>
-          <context context-type="linenumber">50,52</context>
+          <context context-type="linenumber">57,59</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-lotList-depot" datatype="html">
         <source> Depot </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/lot-list/lot-list.component.html</context>
-          <context context-type="linenumber">54,56</context>
+          <context context-type="linenumber">61,63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-lotList-quantity" datatype="html">
         <source> Stück </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/lot-list/lot-list.component.html</context>
-          <context context-type="linenumber">61,64</context>
+          <context context-type="linenumber">68,71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-lotList-costPerShare" datatype="html">
         <source> Einstandskurs </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/lot-list/lot-list.component.html</context>
-          <context context-type="linenumber">67,70</context>
+          <context context-type="linenumber">74,77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-lotList-cost" datatype="html">
         <source> Einstandswert </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/lot-list/lot-list.component.html</context>
-          <context context-type="linenumber">73,75</context>
+          <context context-type="linenumber">80,82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-lotList-label" datatype="html">
         <source>Lots</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/lot-list/lot-list.component.ts</context>
-          <context context-type="linenumber">27</context>
+          <context context-type="linenumber">34</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-portfolioSummary-value" datatype="html">
@@ -11315,8 +12674,8 @@
           <context context-type="linenumber">97,98</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="uiSettings-deviceSettings-shortcutsHint" datatype="html">
-        <source> Steuern die Spielzeit ohne Maus. Sie greifen nicht, solange ein Eingabefeld oder Bedienelement den Fokus hat. </source>
+      <trans-unit id="uiSettings-deviceSettings-shortcutsHintPalette" datatype="html">
+        <source> Steuern die Spielzeit und öffnen die Befehlspalette ohne Maus. Die Kürzel ohne Strg greifen nicht, solange ein Eingabefeld oder Bedienelement den Fokus hat. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
           <context context-type="linenumber">117,120</context>
@@ -11411,6 +12770,20 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
           <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-deviceSettings-paletteKey" datatype="html">
+        <source>Strg/⌘ + K</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
+          <context context-type="linenumber">87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-deviceSettings-commandPalette" datatype="html">
+        <source>Befehlspalette öffnen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
+          <context context-type="linenumber">88</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-notificationChannelSettings-legend" datatype="html">
@@ -11645,6 +13018,27 @@
           <context context-type="linenumber">24</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiShared-helpHint-more" datatype="html">
+        <source>Mehr im Glossar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/ui/help-hint/help-hint.component.html</context>
+          <context context-type="linenumber">53,57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShared-helpHint-buttonLabel" datatype="html">
+        <source>Erklärung: <x id="term" equiv-text="this.term()"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/ui/help-hint/help-hint.component.ts</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShared-helpHint-close" datatype="html">
+        <source>Schließen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shared/ui/help-hint/help-hint.component.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiShared-toastContainer-toneInfo" datatype="html">
         <source>Hinweis:</source>
         <context-group purpose="location">
@@ -11680,74 +13074,452 @@
           <context context-type="linenumber">42</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureShell-dialogCommandPalette-keys" datatype="html">
+        <source>Pfeiltasten wählen, Enter führt aus, Esc schließt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/dialog-command-palette/dialog-command-palette.component.html</context>
+          <context context-type="linenumber">68,72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-dialogCommandPalette-noHits" datatype="html">
+        <source>Keine Treffer.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/dialog-command-palette/dialog-command-palette.component.ts</context>
+          <context context-type="linenumber">69</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-dialogCommandPalette-oneHit" datatype="html">
+        <source>1 Treffer.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/dialog-command-palette/dialog-command-palette.component.ts</context>
+          <context context-type="linenumber">72</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-dialogCommandPalette-hits" datatype="html">
+        <source><x id="count" equiv-text="count"/> Treffer.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/dialog-command-palette/dialog-command-palette.component.ts</context>
+          <context context-type="linenumber">73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-dialogCommandPalette-inputLabel" datatype="html">
+        <source>Seite, Aktion oder Wertpapier suchen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/dialog-command-palette/dialog-command-palette.component.ts</context>
+          <context context-type="linenumber">76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-dialogCommandPalette-close" datatype="html">
+        <source>Schließen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/dialog-command-palette/dialog-command-palette.component.ts</context>
+          <context context-type="linenumber">77</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-dialogCommandPalette-groupPage" datatype="html">
+        <source>Seite</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/dialog-command-palette/dialog-command-palette.component.ts</context>
+          <context context-type="linenumber">79</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-dialogCommandPalette-groupAction" datatype="html">
+        <source>Aktion</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/dialog-command-palette/dialog-command-palette.component.ts</context>
+          <context context-type="linenumber">80</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-dialogCommandPalette-groupInstrument" datatype="html">
+        <source>Wertpapier</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/dialog-command-palette/dialog-command-palette.component.ts</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureShell-shellPage-navDashboard" datatype="html">
         <source>Übersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">57</context>
+          <context context-type="linenumber">59</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navMarkets" datatype="html">
         <source>Märkte</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">62</context>
+          <context context-type="linenumber">64</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navPortfolio" datatype="html">
         <source>Depot</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navAccounts" datatype="html">
         <source>Konten &amp; Banken</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">72</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navOrders" datatype="html">
         <source>Orders</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">77</context>
+          <context context-type="linenumber">79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navTaxes" datatype="html">
         <source>Steuern</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">82</context>
+          <context context-type="linenumber">84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navNotifications" datatype="html">
         <source>Benachrichtigungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">87</context>
+          <context context-type="linenumber">89</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-navSettings" datatype="html">
         <source>Einstellungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">92</context>
+          <context context-type="linenumber">94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-skipToContent" datatype="html">
         <source>Zum Inhalt springen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">108</context>
+          <context context-type="linenumber">110</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureShell-shellPage-gameReady" datatype="html">
         <source>Das Spiel ist bereit.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/feature/shell/shell.page.ts</context>
-          <context context-type="linenumber">109</context>
+          <context context-type="linenumber">111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-resume" datatype="html">
+        <source>Weiter</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-pause" datatype="html">
+        <source>Pause</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-pauseKeywords" datatype="html">
+        <source>Pause Weiter Spielzeit Uhr anhalten fortsetzen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-jump" datatype="html">
+        <source>Vorspulen …</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-jumpKeywords" datatype="html">
+        <source>Sprung Zeit überspringen Monatsanfang Börsenöffnung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-transfer" datatype="html">
+        <source>Überweisen …</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">79</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-transferKeywords" datatype="html">
+        <source>Überweisung Geld Konto</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-openAccount" datatype="html">
+        <source>Konto eröffnen …</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-openAccountKeywords" datatype="html">
+        <source>Depot Girokonto Tagesgeld neu</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">96</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-export" datatype="html">
+        <source>Spielstand exportieren …</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">103</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-exportKeywords" datatype="html">
+        <source>Export sichern Sicherung Backup</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">107</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-dashboard" datatype="html">
+        <source>Übersicht</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">120</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-dashboardKeywords" datatype="html">
+        <source>Dashboard Start Gesamtvermögen Rendite</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">121</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-markets" datatype="html">
+        <source>Märkte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">126</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-marketsKeywords" datatype="html">
+        <source>Börse Indizes Kurse</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">127</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-screener" datatype="html">
+        <source>Screener</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">132</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-screenerKeywords" datatype="html">
+        <source>Aktien ETFs suchen filtern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">133</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-watchlist" datatype="html">
+        <source>Watchlist</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">138</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-watchlistKeywords" datatype="html">
+        <source>Beobachtungsliste Merkliste</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">139</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-portfolio" datatype="html">
+        <source>Depot</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">144</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-portfolioKeywords" datatype="html">
+        <source>Portfolio Positionen Wertpapiere</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">145</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-accounts" datatype="html">
+        <source>Konten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">150</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-accountsKeywords" datatype="html">
+        <source>Girokonto Tagesgeld Daueraufträge Monatsübersicht Erträge Kosten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">151</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-banks" datatype="html">
+        <source>Bankenvergleich</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">156</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-banksKeywords" datatype="html">
+        <source>Banken Konditionen Gebühren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">157</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-orders" datatype="html">
+        <source>Orders</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">162</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-ordersKeywords" datatype="html">
+        <source>Orderbuch Sparpläne Historie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">163</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-taxes" datatype="html">
+        <source>Steuern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">168</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-taxesKeywords" datatype="html">
+        <source>Sparerpauschbetrag Verlusttopf Abgeltungsteuer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">169</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-notifications" datatype="html">
+        <source>Benachrichtigungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">174</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-notificationsKeywords" datatype="html">
+        <source>Meldungen Nachrichten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">175</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-settings" datatype="html">
+        <source>Einstellungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">180</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-settingsKeywords" datatype="html">
+        <source>Tastenkürzel Farben Hintergrund Auto-Pause Seed</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">181</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-help" datatype="html">
+        <source>Glossar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">186</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-helpKeywords" datatype="html">
+        <source>Hilfe Begriffe Erklärungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">187</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-about" datatype="html">
+        <source>Über PortfoliGo</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">192</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-aboutKeywords" datatype="html">
+        <source>Lizenzen Version Rechtliches Hinweis</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">193</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-speed" datatype="html">
+        <source>Geschwindigkeit <x id="speed" equiv-text="speedLabel(id)"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">211</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-speedCurrent" datatype="html">
+        <source>aktuell</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">212</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-speedKeywords" datatype="html">
+        <source>Tempo schneller langsamer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">215</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-switchPlayer" datatype="html">
+        <source>Spieler wechseln</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">225</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-switchPlayerKeywords" datatype="html">
+        <source>Spielerauswahl beenden</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">229</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-buyKeywords" datatype="html">
+        <source>Kaufen Order Ticket</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">237</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-commandPalette-buy" datatype="html">
+        <source><x id="name" equiv-text="instrument.name"/> kaufen …</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/command-palette.utils.ts</context>
+          <context context-type="linenumber">259</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureShell-shellEffects-commandPaletteLabel" datatype="html">
+        <source>Befehlspalette</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/feature/state/shell.effects.ts</context>
+          <context context-type="linenumber">93</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-bottomNav-navLabel" datatype="html">
@@ -11768,63 +13540,77 @@
         <source>Spieler wechseln</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.html</context>
-          <context context-type="linenumber">77,79</context>
+          <context context-type="linenumber">92,94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-settings" datatype="html">
         <source>Einstellungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.html</context>
-          <context context-type="linenumber">86,87</context>
+          <context context-type="linenumber">101,102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-about" datatype="html">
         <source>Über PortfoliGo</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.html</context>
-          <context context-type="linenumber">98,99</context>
+          <context context-type="linenumber">113,114</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-header-help" datatype="html">
+        <source>Glossar</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/header/header.component.html</context>
+          <context context-type="linenumber">125,126</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-export" datatype="html">
         <source>Exportieren</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.html</context>
-          <context context-type="linenumber">110,112</context>
+          <context context-type="linenumber">132,134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-notificationsUnreadLabel" datatype="html">
         <source>Benachrichtigungen, <x id="count" equiv-text="count"/> ungelesen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">61</context>
+          <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-netWorthLabel" datatype="html">
         <source>Gesamtvermögen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-searchLabel" datatype="html">
         <source>Suchen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-header-shortcutKey" datatype="html">
+        <source>Strg K</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
+          <context context-type="linenumber">71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-notificationsLabel" datatype="html">
         <source>Benachrichtigungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-header-playerMenuLabel" datatype="html">
         <source>Spielermenü</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/header/header.component.ts</context>
-          <context context-type="linenumber">68</context>
+          <context context-type="linenumber">73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-sessionOverlay-lockedHeading" datatype="html">
@@ -12017,59 +13803,59 @@
         </context-group>
       </trans-unit>
       <trans-unit id="uiTaxes-taxYear-lossCarryForwardIn" datatype="html">
-        <source> Verlustvortrag aus dem Vorjahr </source>
+        <source>Verlustvortrag aus dem Vorjahr</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/taxes/ui/tax-year/tax-year.component.html</context>
-          <context context-type="linenumber">53,55</context>
+          <context context-type="linenumber">53,54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTaxes-taxYear-allowanceOf" datatype="html">
         <source>von <x id="INTERPOLATION" equiv-text="{{ allowance | formatCents }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/taxes/ui/tax-year/tax-year.component.html</context>
-          <context context-type="linenumber">67,68</context>
+          <context context-type="linenumber">70,71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTaxes-taxYear-paid" datatype="html">
         <source>Einbehaltene Steuer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/taxes/ui/tax-year/tax-year.component.html</context>
-          <context context-type="linenumber">84,85</context>
+          <context context-type="linenumber">87,88</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTaxes-taxYear-refunded" datatype="html">
         <source>Erstattete Steuer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/taxes/ui/tax-year/tax-year.component.html</context>
-          <context context-type="linenumber">88,89</context>
+          <context context-type="linenumber">91,92</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTaxes-taxYear-withheld" datatype="html">
         <source> Steuer des Jahres </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/taxes/ui/tax-year/tax-year.component.html</context>
-          <context context-type="linenumber">93,96</context>
+          <context context-type="linenumber">96,99</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTaxes-taxYear-lossCarryForwardOutCurrent" datatype="html">
         <source>Verlustvortrag, wenn das Jahr jetzt endete</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/taxes/ui/tax-year/tax-year.component.html</context>
-          <context context-type="linenumber">103,106</context>
+          <context context-type="linenumber">106,109</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTaxes-taxYear-lossCarryForwardOut" datatype="html">
         <source>Verlustvortrag ins Folgejahr</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/taxes/ui/tax-year/tax-year.component.html</context>
-          <context context-type="linenumber">107,111</context>
+          <context context-type="linenumber">110,114</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTaxes-taxYear-allowanceLabel" datatype="html">
         <source>Genutzter Sparerpauschbetrag</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/taxes/ui/tax-year/tax-year.component.ts</context>
-          <context context-type="linenumber">28</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureTrading-dialogSavingsPlan-instrument" datatype="html">
@@ -12833,203 +14619,203 @@
         <source>Orderart</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">237,240</context>
+          <context context-type="linenumber">238,240</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-validity" datatype="html">
         <source>Gültigkeit</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">255,258</context>
+          <context context-type="linenumber">259,261</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-stop" datatype="html">
         <source>Stop-Kurs (€)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">274,277</context>
+          <context context-type="linenumber">280,283</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-limit" datatype="html">
         <source>Limit (€)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">302,305</context>
+          <context context-type="linenumber">308,311</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-date" datatype="html">
         <source>Gültig bis</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">330,333</context>
+          <context context-type="linenumber">336,339</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-preview" datatype="html">
         <source>Kostenvorschau</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">361,364</context>
+          <context context-type="linenumber">367,370</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-previewAsk" datatype="html">
         <source>Kurs (Brief, geschätzt)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">368,370</context>
+          <context context-type="linenumber">374,376</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-previewBid" datatype="html">
         <source>Kurs (Geld, geschätzt)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">372,375</context>
+          <context context-type="linenumber">378,381</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-previewQuantity" datatype="html">
         <source>Stück</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">379,380</context>
+          <context context-type="linenumber">385,386</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-marketValue" datatype="html">
         <source>Kurswert</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">383,384</context>
+          <context context-type="linenumber">389,390</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-orderFee" datatype="html">
         <source>Orderentgelt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">387,388</context>
+          <context context-type="linenumber">393,394</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-exchangeFee" datatype="html">
         <source> Fremdkosten (Börsenentgelt) </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">392,394</context>
+          <context context-type="linenumber">398,400</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-debit" datatype="html">
         <source>Gesamtbetrag</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">399,401</context>
+          <context context-type="linenumber">405,407</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-credit" datatype="html">
         <source>Erlös nach Kosten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">402,404</context>
+          <context context-type="linenumber">408,410</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-reservation" datatype="html">
         <source> Reservierung </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">412,414</context>
+          <context context-type="linenumber">418,420</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-available" datatype="html">
         <source> Verfügbar (nach Reservierungen) </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">418,420</context>
+          <context context-type="linenumber">424,426</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-shortfall" datatype="html">
         <source>Fehlbetrag</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">424,425</context>
+          <context context-type="linenumber">430,431</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-gain" datatype="html">
         <source> Voraussichtlicher Gewinn/Verlust </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">431,433</context>
+          <context context-type="linenumber">437,439</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-tax" datatype="html">
         <source>Steuer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">437,438</context>
+          <context context-type="linenumber">443,444</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-refund" datatype="html">
         <source> Steuererstattung </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">443,445</context>
+          <context context-type="linenumber">449,451</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-net" datatype="html">
         <source> Gutschrift nach Kosten und Steuern </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">450,452</context>
+          <context context-type="linenumber">456,458</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-bufferNote" datatype="html">
         <source>Market- und Stop-Kauforders reservieren 5 % mehr als den geschätzten Kurswert, weil sich der Kurs bis zur Ausführung ändern kann.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">460,463</context>
+          <context context-type="linenumber">466,469</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-previewEmpty" datatype="html">
         <source> Die Vorschau erscheint, sobald Stückzahl bzw. Betrag und die Kurse der Orderart feststehen. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">467,471</context>
+          <context context-type="linenumber">473,477</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-decline" datatype="html">
         <source> Abbrechen </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">481,483</context>
+          <context context-type="linenumber">487,489</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-submitBuy" datatype="html">
         <source>Kaufen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">485,487</context>
+          <context context-type="linenumber">491,493</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-submitSell" datatype="html">
         <source>Verkaufen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">487,490</context>
+          <context context-type="linenumber">493,496</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-depotOption" datatype="html">
         <source>Depot <x id="number" equiv-text="depot.number"/> · <x id="bank" equiv-text="depot.bankName"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.ts</context>
-          <context context-type="linenumber">110</context>
+          <context context-type="linenumber">112</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-buyHeading" datatype="html">
         <source><x id="name" equiv-text="name"/> kaufen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.ts</context>
-          <context context-type="linenumber">142</context>
+          <context context-type="linenumber">144</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-sellHeading" datatype="html">
         <source><x id="name" equiv-text="name"/> verkaufen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.ts</context>
-          <context context-type="linenumber">143</context>
+          <context context-type="linenumber">145</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderBookRows-depot" datatype="html">

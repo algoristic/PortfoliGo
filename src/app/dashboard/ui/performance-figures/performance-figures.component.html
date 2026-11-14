@@ -92,6 +92,16 @@
       Kosten und Steuern in den Weltindex an und ist deshalb kaum zu schlagen. „Ohne Anlegen“ zeigt,
       was du hättest, wäre alles auf dem Gehaltskonto geblieben.
     </p>
+    <p class="mt-2 flex flex-wrap items-center gap-x-4 text-xs text-fg-muted">
+      <span class="inline-flex items-center gap-1"
+        ><span i18n="@@uiDashboard-performanceFigures-twrTerm">Zeitgewichtete Rendite</span
+        ><app-term-hint termId="twr"></app-term-hint
+      ></span>
+      <span class="inline-flex items-center gap-1"
+        ><span i18n="@@uiDashboard-performanceFigures-benchmarkTerm">Benchmark</span
+        ><app-term-hint termId="benchmark"></app-term-hint
+      ></span>
+    </p>
     @if (_figures.skippedDays > 0) {
       <p
         class="mt-2 text-xs text-warning"

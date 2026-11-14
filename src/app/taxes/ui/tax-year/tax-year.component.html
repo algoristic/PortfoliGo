@@ -49,8 +49,9 @@
       data-testid="taxes.year.income">
       {{ _summary.income | formatSignedCents }}
     </dd>
-    <dt class="text-fg-muted" i18n="@@uiTaxes-taxYear-lossCarryForwardIn">
-      Verlustvortrag aus dem Vorjahr
+    <dt class="flex items-center gap-1 text-fg-muted">
+      <span i18n="@@uiTaxes-taxYear-lossCarryForwardIn">Verlustvortrag aus dem Vorjahr</span>
+      <app-term-hint termId="loss-pot"></app-term-hint>
     </dt>
     <dd class="text-right tabular-nums" data-testid="taxes.year.loss-carry-forward-in">
       {{ _summary.lossCarryForwardIn | formatCents }}
@@ -59,7 +60,9 @@
 
   <div class="mt-4">
     <p class="flex flex-wrap justify-between gap-x-3 text-sm">
-      <span class="text-fg-muted">{{ allowanceLabel }}</span>
+      <span class="inline-flex items-center gap-1 text-fg-muted"
+        >{{ allowanceLabel }}<app-term-hint termId="saver-allowance"></app-term-hint
+      ></span>
       <span class="inline-flex flex-wrap gap-x-1 tabular-nums">
         <span data-testid="taxes.year.used-allowance">{{
           _summary.usedAllowance | formatCents

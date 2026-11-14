@@ -51,13 +51,14 @@
         </dd>
       </div>
       <div class="flex justify-between gap-3 border-b border-border pb-1">
-        <dt class="text-fg-muted">
+        <dt class="flex items-center gap-1 text-fg-muted">
           <abbr
             title="Laufende Kosten pro Jahr (Total Expense Ratio)"
             i18n-title="@@uiMarket-instrumentProfile-terTitle"
             i18n="@@uiMarket-instrumentProfile-ter"
             >TER</abbr
           >
+          <app-term-hint termId="ter"></app-term-hint>
         </dt>
         <dd class="text-right font-medium tabular-nums" data-testid="market.instrument.profile.ter">
           {{ _profile.ter | formatPercent: 2 }}

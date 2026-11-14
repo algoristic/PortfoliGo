@@ -43,7 +43,10 @@
 
   @if (_account.overdraftLimit !== null) {
     <dl class="grid grid-cols-2 gap-x-3 gap-y-1 text-sm">
-      <dt class="text-fg-muted" i18n="@@uiBanking-accountCard-overdraftLimit">Dispo-Rahmen</dt>
+      <dt class="flex items-center gap-1 text-fg-muted">
+        <span i18n="@@uiBanking-accountCard-overdraftLimit">Dispo-Rahmen</span>
+        <app-term-hint termId="overdraft"></app-term-hint>
+      </dt>
       <dd class="text-right tabular-nums" data-testid="banking.accounts.card.overdraft-limit">
         {{ _account.overdraftLimit | formatCents }}
       </dd>
