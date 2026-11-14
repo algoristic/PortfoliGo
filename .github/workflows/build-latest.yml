@@ -22,8 +22,8 @@ jobs:
         run: npx prettier --check .
       - name: Lint
         run: npx ng lint
-      # TS §11.9: reports missing translations; fails only on a stale `messages.en.json` until
-      # AP 6.8b adds `--strict`.
+      # TS §11.9: fails on a missing, outdated or invalid English translation and on a stale
+      # `messages.en.json` (`--strict` since AP 6.8b).
       - name: Translations
         run: npm run i18n:check
       - name: Types

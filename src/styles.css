@@ -118,6 +118,15 @@
     outline-offset: 2px;
   }
 
+  /*
+   * Rows of a vertical CDK virtual list are as wide as the list: the CDK positions the wrapper
+   * absolutely, so it would grow with the longest text and the rows would scroll sideways instead
+   * of truncating it (statement, screener).
+   */
+  .cdk-virtual-scroll-orientation-vertical .cdk-virtual-scroll-content-wrapper {
+    width: 100%;
+  }
+
   /* Angular Aria marks open menus with `data-visible`; closed menus stay in the DOM. */
   [ngMenu]:not([data-visible='true']) {
     display: none;

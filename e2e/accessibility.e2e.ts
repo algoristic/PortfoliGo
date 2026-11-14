@@ -3,11 +3,11 @@ import { Locator, Page } from '@playwright/test';
 import { expect, expectAccessible, test } from './fixtures';
 import { expectGameReady, getPausedBadge } from './game.po';
 import { createPlayer } from './players.po';
-import { storeColorScheme } from './settings.po';
+import { recordTranslationWarnings, storeColorScheme, storeLanguage } from './settings.po';
 
 // Accessibility of the main views, dialogs and menus in both colour schemes (NF-09, US-UI-04,
-// AP 6.5): axe without serious or critical findings, the central flow with the keyboard only and
-// the accessibility tree of a few core elements (TS §11.10).
+// AP 6.5) and in English (US-UI-11, AP 6.8b): axe without serious or critical findings, the
+// central flow with the keyboard only and the accessibility tree of a few core elements (TS §11.10).
 
 const COLOR_SCHEMES = ['light', 'dark'] as const;
 
@@ -158,6 +158,54 @@ test.describe('accessibility', () => {
     });
   }
 
+  // AP 6.8b: the English texts are longer; axe also checks names, labels and `lang`.
+  test('has no serious findings on the main views in English', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const warnings = recordTranslationWarnings(page);
+    await storeLanguage(page, 'en');
+    await page.goto('#/players');
+    await expect(page.getByRole('heading', { level: 1, name: 'Choose player' })).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expectAccessible(page);
+    const game = await createPlayer(page, 'Anna');
+    await expectGameReady(page);
+    await expectAccessible(page);
+    for (const view of [
+      'markets',
+      'markets/screener',
+      'portfolio',
+      'accounts',
+      'accounts/acc-1',
+      'banks',
+      'orders',
+      'taxes',
+      'notifications',
+      'settings',
+      'help',
+      'about',
+    ]) {
+      await open(page, `${game}/${view}`);
+      await expectAccessible(page);
+    }
+
+    // The order ticket after opening a brokerage account from the hint of „Buy“.
+    await open(page, `${game}/markets/${INSTRUMENT}`);
+    await expectAccessible(page);
+    await page.getByTestId('trading.trade-actions.buy').click();
+    await page.getByTestId('dialog-confirm.confirm').click();
+    await expect(page.getByTestId('banking.open-account-dialog.kind.depot')).toBeChecked();
+    await page.getByTestId('banking.open-account-dialog.submit').click();
+    await expect(page.getByTestId('banking.open-account-dialog.submit')).toHaveCount(0);
+    await page.getByTestId('trading.trade-actions.buy').click();
+    await page.getByTestId('trading.order-ticket.quantity').fill('1');
+    await expect(
+      page.getByRole('dialog').getByRole('region', { name: 'Cost preview' }),
+    ).toBeVisible();
+    await expectAccessible(page);
+    await page.getByTestId('trading.order-ticket.decline').click();
+    expect(warnings).toEqual([]);
+  });
+
   test('has no serious findings with blue and orange for gains and losses', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem(
@@ -209,6 +257,35 @@ test.describe('accessibility on a phone', { tag: ['@mobile', '@phone'] }, () => 
       await expectAccessible(page);
     });
   }
+});
+
+test.describe('accessibility on a phone in English', { tag: ['@mobile', '@phone'] }, () => {
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'axe results do not depend on the engine',
+  );
+
+  test('has no serious findings at 360 px in English', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 740 });
+    const warnings = recordTranslationWarnings(page);
+    await storeLanguage(page, 'en');
+    const game = await createPlayer(page, 'Anna');
+    await expectGameReady(page);
+    await expectAccessible(page);
+    await page.getByTestId('shell.bottom-nav.more').click();
+    await expect(page.getByTestId('shell.bottom-nav.more.settings')).toBeVisible();
+    await expectAccessible(page);
+    await page.keyboard.press('Escape');
+    for (const view of [`markets/${INSTRUMENT}`, 'portfolio', 'accounts', 'orders', 'settings']) {
+      await open(page, `${game}/${view}`);
+      await expectAccessible(page);
+      // Longer English texts must not widen the page.
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+        360,
+      );
+    }
+    expect(warnings).toEqual([]);
+  });
 });
 
 test.describe('keyboard', () => {

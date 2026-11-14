@@ -21,6 +21,6 @@ export class BadgeComponent {
 
   classes = computed(
     () =>
-      `inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium tabular-nums ${TONE_CLASSES[this.tone()]}`,
+      `inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium whitespace-nowrap tabular-nums ${TONE_CLASSES[this.tone()]}`,
   );
 }

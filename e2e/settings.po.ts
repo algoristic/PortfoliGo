@@ -54,3 +54,24 @@ export interface RootClasses {
   /** Every class `<html>` had after a change, from the inline script on. */
   changes: string[];
 }
+
+/** Stores the language in `pgo.settings` before every document of the page loads (E-36). */
+export async function storeLanguage(page: Page, language: 'de' | 'en'): Promise<void> {
+  await page.addInitScript((value) => {
+    localStorage.setItem(
+      'pgo.settings',
+      JSON.stringify({ v: 1, data: { locale: { language: value } } }),
+    );
+  }, language);
+}
+
+/** Collects the console warnings about translations (`$localize` reports missing ones). */
+export function recordTranslationWarnings(page: Page): string[] {
+  const warnings: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'warning' && /translation/i.test(message.text())) {
+      warnings.push(message.text());
+    }
+  });
+  return warnings;
+}

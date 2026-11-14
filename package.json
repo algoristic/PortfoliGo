@@ -18,7 +18,7 @@
     "verify": "prettier --check . && ng lint && npm run i18n:check && npm run typecheck && npm test && npm run test:calibration && npm run test:perf && npm run test:mutation && npm run build && npm run budget && npm run test:e2e",
     "translate": "ng extract-i18n && node tools/i18n.mjs merge",
     "i18n:build": "node tools/i18n.mjs build",
-    "i18n:check": "node tools/i18n.mjs check",
+    "i18n:check": "node tools/i18n.mjs check --strict",
     "lint": "ng lint --fix",
     "format": "npx prettier --write ."
   },

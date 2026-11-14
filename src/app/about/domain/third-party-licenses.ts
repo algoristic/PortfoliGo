@@ -31,7 +31,7 @@ export const THIRD_PARTY_LICENSES: readonly ThirdPartyLicense[] = [
   },
   {
     id: 'angular-components',
-    name: 'Angular CDK und Angular Aria',
+    name: 'Angular CDK, Angular Aria',
     packages: ['@angular/cdk', '@angular/aria'],
     license: 'MIT',
     copyright: 'Copyright (c) 2026 Google LLC',

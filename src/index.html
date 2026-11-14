@@ -8,7 +8,7 @@
 
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
-    <link rel="manifest" href="manifest.webmanifest" />
+    <link id="manifest" rel="manifest" href="manifest.webmanifest" />
 
     <!-- The background of the dark default (E-06); the ColorSchemeService follows the setting. -->
     <meta name="theme-color" content="#0b0f14" />
@@ -30,6 +30,7 @@
       anything else keeps green and red (PS US-UI-02). The settings slice takes over with the
       `ColorSchemeService`. `data.locale.language` "en" sets `<html lang="en">`, anything else keeps
       German (E-36); `main.ts` confirms it once the translations are loaded (`language-start.ts`).
+      English also links the English manifest (TS §13); both have the same `id`, so it stays one app.
     -->
     <script>
       (function () {
@@ -43,6 +44,9 @@
           }
         } catch (error) {}
         document.documentElement.lang = language;
+        if (language === 'en') {
+          document.getElementById('manifest').setAttribute('href', 'manifest.en.webmanifest');
+        }
         try {
           var entry = JSON.parse(localStorage.getItem('pgo.settings'));
           if (entry && entry.v === 1) {

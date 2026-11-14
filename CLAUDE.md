@@ -40,7 +40,7 @@ Rules for implementing Angular code in this repository, so that generated code l
 | `trading.md`       | `trading`, `engine/domain/order-*`                    | order rules, orders in the engine, order commands and projection (AP 5.1)                    |
 | `about.md`         | `about`                                               | about page, legal notes, licences, `APP_VERSION`, disclaimer hint (AP 6.5)                   |
 | `help.md`          | `help`, `shared/ui/help-hint`                         | glossary data and texts, glossary pages, context help (AP 6.5)                               |
-| `pwa.md`           | `pwa`, `ngsw-config.json`, manifest, icon script      | service worker, manifest, update notice, installation, storage status (AP 6.3)               |
+| `pwa.md`           | `pwa`, `ngsw-config.json`, manifest, icon script      | service worker, manifest per language, update notice, installation, storage (AP 6.3, 6.8b)   |
 | `testing.md`       | `*.spec.ts`, `e2e`, `src/testing`                     | test suites, helpers, fixtures, page tests of the game area (AP 0.5, 2.5)                    |
 
 Rules that apply everywhere:
@@ -350,7 +350,11 @@ The source locale is **German** (`de`).
   - Never reuse an ID for a different text.
 - In TypeScript, create class-field labels: ``label = $localize`:@@featureX-xPage-label:Text`;``
 - In templates: `<span i18n="@@uiOrders-orderItem-title">Titel</span>`, `<ng-container i18n="@@…">`, and `i18n-<attr>="@@…"` for attributes (e.g. `i18n-label`).
-- After adding or changing texts, run `npm run translate` and keep the updated `messages.xlf`, `src/locale/messages.en.xlf` and `src/assets/i18n/messages.en.json` in the change. English translations go into `src/locale/messages.en.xlf` (`<target>`); then `npm run i18n:build`.
+- Every text has an English translation (TS §11.9, E-36); `npm run i18n:check` (strict, in `npm run verify` and the CI gate) fails on a missing, outdated or invalid one. After adding or changing texts:
+  1. `npm run translate` (`ng extract-i18n`, then new and changed units go into `src/locale/messages.en.xlf`; a changed German text gets `state="needs-review-translation"`);
+  2. write or review the `<target>` of each new or flagged unit in `src/locale/messages.en.xlf` (`state="translated"`), following the term list DE → EN in TS §11.9 and keeping every `<x id>` and ICU case of the source;
+  3. `npm run i18n:build` writes `src/assets/i18n/messages.en.json`, `npm run i18n:check` must report 0 findings;
+  4. keep `messages.xlf`, `src/locale/messages.en.xlf` and `src/assets/i18n/messages.en.json` in the change.
 
 ## 6. State management (NgRx)
 

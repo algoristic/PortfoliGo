@@ -49,6 +49,34 @@ test.describe('PWA', () => {
     await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute('content', /^#/);
   });
 
+  // TS §13: English links its own manifest with the same identity, so it stays one installed app.
+  test('links the English manifest when the language is English', async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem(
+        'pgo.settings',
+        JSON.stringify({ v: 1, data: { locale: { language: 'en' } } }),
+      );
+    });
+    await page.goto('#/players');
+    await expect(page.getByRole('heading', { level: 1, name: 'Choose player' })).toBeVisible();
+    const href = await page.locator('link[rel="manifest"]').getAttribute('href');
+    expect(href).toBe('manifest.en.webmanifest');
+    const english = await page.request.get(new URL(href ?? '', page.url()).href);
+    expect(english.status()).toBe(200);
+    expect(english.headers()['content-type']).toContain('application/manifest+json');
+    const german = await page.request.get(new URL('manifest.webmanifest', page.url()).href);
+    const { description, lang, ...identity } = await english.json();
+    const {
+      description: germanDescription,
+      lang: germanLang,
+      ...germanIdentity
+    } = await german.json();
+    expect([lang, germanLang]).toEqual(['en', 'de']);
+    expect(description).toBe('Stock market and personal finance simulation in your browser');
+    expect(germanDescription).toBe('Börsen- und Finanzsimulation im Browser');
+    expect(identity).toEqual(germanIdentity);
+  });
+
   test('starts and plays offline after the first visit', async ({ page, context }) => {
     test.setTimeout(90_000);
     const game = await createPlayer(page, 'Anna');
