@@ -1,0 +1,79 @@
+@let _detail = detail();
+
+<dl class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+    <dt class="text-xs font-medium text-fg-muted" i18n="@@uiPortfolio-positionSummary-quantity">
+      Stück
+    </dt>
+    <dd class="text-xl font-semibold tabular-nums" data-testid="portfolio.position.quantity">
+      {{ _detail.quantity | formatQuantity }}
+    </dd>
+  </div>
+  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+    <dt class="text-xs font-medium text-fg-muted" i18n="@@uiPortfolio-positionSummary-averageCost">
+      Einstandskurs
+    </dt>
+    <dd class="text-xl font-semibold tabular-nums" data-testid="portfolio.position.average-cost">
+      {{ _detail.averageCost | formatPrice }}
+    </dd>
+  </div>
+  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+    <dt class="text-xs font-medium text-fg-muted" i18n="@@uiPortfolio-positionSummary-cost">
+      Einstandswert
+    </dt>
+    <dd class="text-xl font-semibold tabular-nums" data-testid="portfolio.position.cost">
+      {{ _detail.cost | formatCents }}
+    </dd>
+  </div>
+  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+    <dt class="text-xs font-medium text-fg-muted" i18n="@@uiPortfolio-positionSummary-value">
+      Wert
+    </dt>
+    <dd class="text-xl font-semibold tabular-nums">
+      <span class="px-0.5" data-testid="portfolio.position.value" [appValueFlash]="_detail.value">{{
+        _detail.value | formatCents
+      }}</span>
+    </dd>
+  </div>
+  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+    <dt class="text-xs font-medium text-fg-muted" i18n="@@uiPortfolio-positionSummary-gain">
+      Gewinn/Verlust
+    </dt>
+    <dd class="flex flex-col gap-1">
+      @if (_detail.gain !== null) {
+        <app-price-change
+          class="text-xl font-semibold"
+          data-testid="portfolio.position.gain"
+          mode="cents"
+          [showArrow]="false"
+          [value]="_detail.gain"></app-price-change>
+      } @else {
+        <span class="text-xl font-semibold" data-testid="portfolio.position.gain">–</span>
+      }
+      @if (_detail.gainRatio !== null) {
+        <app-price-change
+          class="text-sm"
+          data-testid="portfolio.position.gain-ratio"
+          [value]="_detail.gainRatio"></app-price-change>
+      }
+    </dd>
+  </div>
+  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+    <dt class="text-xs font-medium text-fg-muted" i18n="@@uiPortfolio-positionSummary-realizedGain">
+      Realisiert
+    </dt>
+    <dd class="text-xl font-semibold tabular-nums" data-testid="portfolio.position.realized-gain">
+      {{ _detail.realizedGain | formatSignedCents }}
+    </dd>
+  </div>
+  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+    <dt
+      class="text-xs font-medium text-fg-muted"
+      i18n="@@uiPortfolio-positionSummary-distributions">
+      Dividenden und Ausschüttungen
+    </dt>
+    <dd class="text-xl font-semibold tabular-nums" data-testid="portfolio.position.distributions">
+      {{ _detail.distributions | formatCents }}
+    </dd>
+  </div>
+</dl>

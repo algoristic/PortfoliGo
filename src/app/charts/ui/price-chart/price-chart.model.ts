@@ -67,3 +67,18 @@ export interface PriceChartCrosshair {
   candle: Candle;
   overlays: { id: string; value: number }[];
 }
+
+export const PRICE_CHART_MARKER_KINDS = ['buy', 'sell'] as const;
+export type PriceChartMarkerKind = (typeof PRICE_CHART_MARKER_KINDS)[number];
+
+/**
+ * A marker on the candle that starts at `tick` (own trades, US-PF-06): purchases as an arrow up
+ * below the candle in the `up` colour, sales as an arrow down above it in the `down` colour, each
+ * with a short `text`. Ticks must be candle starts, in ascending order.
+ */
+export interface PriceChartMarker {
+  id: string;
+  tick: Tick;
+  kind: PriceChartMarkerKind;
+  text: string;
+}

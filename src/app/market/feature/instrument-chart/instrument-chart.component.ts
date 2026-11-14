@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 import { DEFAULT_INDICATOR_SPECS } from '@app/analysis/domain/indicator-logic';
@@ -8,10 +8,12 @@ import { ChartColor } from '@app/charts/ui/models/chart-color.model';
 import { PriceChartComponent } from '@app/charts/ui/price-chart/price-chart.component';
 import {
   PriceChartCrosshair,
+  PriceChartMarker,
   PriceChartOverlay,
 } from '@app/charts/ui/price-chart/price-chart.model';
 import { dayStartTick } from '@app/clock/domain/calendar-logic';
 import { ChartIndicatorSet } from '@app/market/domain/chart-indicator-logic';
+import { ChartTrade, tradeMarkers } from '@app/market/domain/chart-marker-logic';
 import { chosenChartDay } from '@app/market/domain/chart-view-logic';
 import { IndicatorLines } from '@app/market/domain/models/chart.model';
 import { CandleReadoutComponent } from '@app/market/ui/candle-readout/candle-readout.component';
@@ -39,7 +41,8 @@ const BOLLINGER_LINES = ['middle', 'upper', 'lower'] as const;
  * Live chart of the instrument in the route (US-CH-01, US-CH-02): period, chart type, 1T day
  * navigation, indicators, the price chart and the crosshair readout. The candles come from the
  * market slice (TS §11.3); the indicators are computed here from the shown candles and continued
- * incrementally on live updates (`ChartIndicatorSet`, TS §11.7).
+ * incrementally on live updates (`ChartIndicatorSet`, TS §11.7). `trades` marks own purchases
+ * and sales on their candles (position detail, US-PF-06).
  */
 @Component({
   selector: 'app-instrument-chart',
@@ -58,6 +61,9 @@ export class InstrumentChartComponent {
   facade = inject(MarketFacade);
 
   readonly #indicatorSet = new ChartIndicatorSet();
+
+  /** Own trades of the instrument to mark on the candles they executed in. */
+  trades = input<readonly ChartTrade[]>([]);
 
   crosshair = signal<PriceChartCrosshair | null>(null);
   editing = signal<IndicatorEdit | null>(null);
@@ -102,9 +108,21 @@ export class InstrumentChartComponent {
       };
     });
   });
+  markers = computed((): PriceChartMarker[] => {
+    const chart = this.chart();
+    return chart === null
+      ? []
+      : tradeMarkers(this.trades(), chart.candles, chart.interval).map((marker) => ({
+          ...marker,
+          kind: marker.side,
+          text: marker.side === 'buy' ? this.buyMarker : this.sellMarker,
+        }));
+  });
   canAddIndicator = computed(() => (this.chart()?.indicators.length ?? 0) < MAX_CHART_INDICATORS);
 
   chartLabel = $localize`:@@featureMarket-instrumentChart-chartLabel:Kursverlauf`;
+  buyMarker = $localize`:@@featureMarket-instrumentChart-buyMarker:K`;
+  sellMarker = $localize`:@@featureMarket-instrumentChart-sellMarker:V`;
 
   onMoveCrosshair(crosshair: PriceChartCrosshair | null): void {
     this.crosshair.set(crosshair);

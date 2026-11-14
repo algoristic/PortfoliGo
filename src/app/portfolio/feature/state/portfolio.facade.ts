@@ -13,6 +13,7 @@ export class PortfolioFacade {
 
   loaded$ = this.#store.pipe(select(PortfolioSelectors.selectPortfolioLoaded));
   view$ = this.#store.pipe(select(PortfolioSelectors.selectPortfolioView));
+  positionDetail$ = this.#store.pipe(select(PortfolioSelectors.selectPositionDetailView));
 
   enterPortfolioPage(): void {
     this.#store.dispatch(PortfolioActions.enterPortfolioPage());

@@ -19,6 +19,7 @@ import type {
   IChartApi,
   IRange,
   ISeriesApi,
+  ISeriesMarkersPluginApi,
   ChartOptions as LibraryChartOptions,
   LineData,
   LogicalRange,
@@ -38,6 +39,7 @@ import { PRICE_CHART_LIBRARY, PriceChartLibrary } from './price-chart.config';
 import {
   PriceChartColors,
   PriceChartCrosshair,
+  PriceChartMarker,
   PriceChartOverlay,
   PriceChartOverlayPoint,
   PriceChartRange,
@@ -106,6 +108,7 @@ function overlayPoint(point: PriceChartOverlayPoint): LineData {
     '[attr.data-overlay-points]': 'overlayPoints()',
     '[attr.data-overlay-colors]': 'overlayColors()',
     '[attr.data-overlay-fills]': 'overlayFills()',
+    '[attr.data-markers]': 'markerTicks()',
   },
 })
 export class PriceChartComponent {
@@ -118,6 +121,8 @@ export class PriceChartComponent {
   candles = input.required<readonly Candle[]>();
   chartType = input<PriceChartType>('candles');
   overlays = input<readonly PriceChartOverlay[]>([]);
+  /** Markers on candles, e.g. own trades (US-PF-06). */
+  markers = input<readonly PriceChartMarker[]>([]);
   /** Shows a placeholder over the chart while candles load. */
   loading = input(false);
   /** Accessible name of the chart. */
@@ -153,7 +158,17 @@ export class PriceChartComponent {
       .join(' '),
   );
 
+  /** `kind:tick` per marker, for tests. */
+  markerTicks = computed(() =>
+    this.markers()
+      .map((marker) => `${marker.kind}:${marker.tick}`)
+      .join(' '),
+  );
+
   #handle = signal<ChartHandle | undefined>(undefined);
+  /** Counts the price series created, so that the markers follow a new series. */
+  #seriesVersion = signal(0);
+  #markersPlugin?: ISeriesMarkersPluginApi<Time>;
   #colors = signal<PriceChartColors | undefined>(undefined);
   #series?: ISeriesApi<SeriesType>;
   #seriesType?: PriceChartType;
@@ -191,6 +206,14 @@ export class PriceChartComponent {
       const colors = this.#colors();
       if (handle !== undefined && colors !== undefined) {
         this.#renderOverlays(handle, colors, this.overlays());
+      }
+    });
+    effect(() => {
+      const handle = this.#handle();
+      const colors = this.#colors();
+      this.#seriesVersion();
+      if (handle !== undefined && colors !== undefined) {
+        this.#renderMarkers(handle, colors, this.markers());
       }
     });
   }
@@ -245,6 +268,7 @@ export class PriceChartComponent {
       chart.unsubscribeCrosshairMove(onCrosshairMove);
       chart.remove();
       this.#series = undefined;
+      this.#markersPlugin = undefined;
       this.#overlaySeries.clear();
     });
 
@@ -282,6 +306,8 @@ export class PriceChartComponent {
       }
       this.#series = addPriceSeries(chart, library, chartType);
       this.#seriesType = chartType;
+      this.#markersPlugin = undefined;
+      this.#seriesVersion.update((version) => version + 1);
     }
     const series = this.#series;
     if (series === undefined) {
@@ -345,6 +371,32 @@ export class PriceChartComponent {
       }
       current.overlay = overlay;
     }
+  }
+
+  #renderMarkers(
+    { library }: ChartHandle,
+    colors: PriceChartColors,
+    markers: readonly PriceChartMarker[],
+  ): void {
+    const series = this.#series;
+    if (series === undefined) {
+      return;
+    }
+    const data = markers.map((marker) => ({
+      id: marker.id,
+      time: tickToChartTime(marker.tick) as UTCTimestamp,
+      position: marker.kind === 'buy' ? ('belowBar' as const) : ('aboveBar' as const),
+      shape: marker.kind === 'buy' ? ('arrowUp' as const) : ('arrowDown' as const),
+      color: marker.kind === 'buy' ? colors.up : colors.down,
+      text: marker.text,
+    }));
+    if (this.#markersPlugin === undefined) {
+      if (data.length > 0) {
+        this.#markersPlugin = library.createSeriesMarkers(series, data);
+      }
+      return;
+    }
+    this.#markersPlugin.setMarkers(data);
   }
 
   /** Attaches, updates or detaches the fill between an overlay and its `fillTo` line. */

@@ -3,6 +3,7 @@ import { Dictionary } from '@ngrx/entity';
 import { DepotId } from '@app/banking/domain/models/account.model';
 import { AccountEntry } from '@app/banking/feature/state/banking.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import { OrderView } from '@app/engine/domain/models/trading-view.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
 import {
   assetClassAllocation,
@@ -11,6 +12,7 @@ import {
 } from '@app/portfolio/domain/allocation-logic';
 import { AllocationHolding } from '@app/portfolio/domain/models/allocation.model';
 import { HeldPosition } from '@app/portfolio/domain/models/portfolio.model';
+import { positionDetail, positionTrades } from '@app/portfolio/domain/position-detail-logic';
 import {
   combinePositions,
   positionOverview,
@@ -23,6 +25,7 @@ import { LoadedComposition } from './portfolio.model';
 import { PortfolioState } from './portfolio.reducer';
 
 import { PortfolioView } from '../../ui/models/portfolio-view.model';
+import { PositionDetailView } from '../../ui/models/position-detail-view.model';
 
 /** IDs of the instruments held in the depots, in order of appearance, without duplicates. */
 export function heldInstrumentIds(depots: readonly DepotEntry[]): string[] {
@@ -168,5 +171,75 @@ function allocationOf(
     regions: regionAllocation(holdings),
     sectors: sectorAllocation(holdings),
     lookThroughPending: pending,
+  };
+}
+
+/** „<number> · <bank>“ of a depot; the number alone until the banks are loaded. */
+export function depotLabel(depot: Pick<DepotEntry, 'number' | 'bank'>): string {
+  return depot.bank === null ? depot.number : `${depot.number} · ${depot.bank.name}`;
+}
+
+/**
+ * The position detail (US-PF-06) of the instrument `instrumentId` in the depot chosen on the
+ * depot page, or in all open depots: head figures at the bid without mark-up, lots, realized gain,
+ * distributions and the executions the order history keeps; the depot of lots and trades is named
+ * only when several depots are shown. `null` while the instrument is unknown.
+ */
+export function positionDetailView(
+  instrumentId: string | undefined,
+  openDepots: readonly DepotEntry[],
+  orders: readonly OrderView[],
+  instruments: Dictionary<Instrument>,
+  quotes: Dictionary<SeriesQuote>,
+  depotId: DepotId | null,
+): PositionDetailView | null {
+  const instrument = instrumentId === undefined ? undefined : instruments[instrumentId];
+  if (instrumentId === undefined || instrument === undefined) {
+    return null;
+  }
+  const shown = shownDepots(openDepots, depotId);
+  const single = shown.length === 1 && depotId !== null ? shown[0] : null;
+  const labels = new Map(openDepots.map((depot) => [depot.depotId, depotLabel(depot)]));
+  const depotOf = (id: DepotId): string | null =>
+    shown.length > 1 ? (labels.get(id) ?? id) : null;
+  const detail = positionDetail(
+    shown.flatMap((depot) =>
+      depot.positions
+        .filter((position) => position.instrumentId === instrumentId)
+        .map((position) => ({ ...position, depotId: depot.depotId })),
+    ),
+    instrument.name,
+    quotes[instrument.series]?.bid ?? null,
+  );
+  const trades = positionTrades(orders, instrumentId, single === null ? null : [single.depotId]);
+  return {
+    instrumentId,
+    name: instrument.name,
+    depots: openDepots.map((depot) => ({
+      depotId: depot.depotId,
+      number: depot.number,
+      bankName: depot.bank?.name ?? null,
+    })),
+    depotId: single?.depotId ?? null,
+    detail,
+    lots: (detail?.lots ?? []).map((lot, index) => ({
+      key: `${lot.depotId}:${lot.buyTick}:${index}`,
+      depot: depotOf(lot.depotId),
+      buyTick: lot.buyTick,
+      quantity: lot.quantity,
+      cost: lot.cost,
+      costPerShare: lot.costPerShare,
+    })),
+    trades: trades.map((trade) => ({
+      orderId: trade.orderId,
+      depot: depotOf(trade.depotId),
+      side: trade.side,
+      tick: trade.tick,
+      quantity: trade.quantity,
+      price: trade.price,
+      costs: trade.costs,
+      total: trade.total,
+    })),
+    chartTrades: trades.map(({ orderId, tick, side }) => ({ id: orderId, tick, side })).reverse(),
   };
 }

@@ -38,7 +38,7 @@
         <a
           class="block truncate font-medium hover:underline"
           data-testid="portfolio.positions.row.name"
-          [routerLink]="['../markets', row.instrumentId]"
+          [routerLink]="[row.instrumentId]"
           >{{ row.name }}</a
         >
         <dl class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
@@ -191,7 +191,7 @@
               <a
                 class="font-medium hover:underline"
                 data-testid="portfolio.positions.row.name"
-                [routerLink]="['../markets', row.instrumentId]"
+                [routerLink]="[row.instrumentId]"
                 >{{ row.name }}</a
               >
             </th>

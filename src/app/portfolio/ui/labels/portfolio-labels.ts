@@ -7,6 +7,7 @@ import {
   UNASSIGNED,
 } from '@app/portfolio/domain/models/allocation.model';
 import { PositionSortKey } from '@app/portfolio/domain/models/portfolio.model';
+import { OrderSide } from '@app/trading/domain/models/order.model';
 
 export function assetClassLabel(assetClass: AssetClass): string {
   switch (assetClass) {
@@ -51,4 +52,11 @@ export function positionColumnLabel(key: PositionSortKey): string {
     case 'share':
       return $localize`:@@uiPortfolio-portfolioLabels-share:Anteil`;
   }
+}
+
+/** Kind of a trade in the position detail (US-PF-06). */
+export function tradeSideLabel(side: OrderSide): string {
+  return side === 'buy'
+    ? $localize`:@@uiPortfolio-portfolioLabels-purchase:Kauf`
+    : $localize`:@@uiPortfolio-portfolioLabels-sale:Verkauf`;
 }

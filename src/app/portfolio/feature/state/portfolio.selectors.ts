@@ -6,14 +6,21 @@ import {
   selectInstrumentsLoaded,
   selectMarketDay,
   selectQuoteEntities,
+  selectRouteInstrumentId,
 } from '@app/market/feature/state/market.selectors';
 import {
   selectOpenDepots,
+  selectOrders,
   selectTradingLoaded,
 } from '@app/trading/feature/state/trading.selectors';
 
 import { PORTFOLIO_FEATURE_KEY, PortfolioState } from './portfolio.reducer';
-import { heldSeries, missingCompositionIds, portfolioView } from './portfolio.utils';
+import {
+  heldSeries,
+  missingCompositionIds,
+  portfolioView,
+  positionDetailView,
+} from './portfolio.utils';
 
 const selectState = createFeatureSelector<PortfolioState>(PORTFOLIO_FEATURE_KEY);
 
@@ -54,4 +61,18 @@ export const selectPortfolioView = createSelector(
   selectQuoteEntities,
   selectState,
   portfolioView,
+);
+
+/**
+ * The position detail of the instrument in the route (US-PF-06) in the depot chosen on the depot
+ * page; follows the quotes. `null` while the instrument is unknown.
+ */
+export const selectPositionDetailView = createSelector(
+  selectRouteInstrumentId,
+  selectOpenDepots,
+  selectOrders,
+  selectInstrumentEntities,
+  selectQuoteEntities,
+  selectPortfolioDepotId,
+  positionDetailView,
 );

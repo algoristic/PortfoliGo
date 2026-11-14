@@ -1,0 +1,115 @@
+@let _summary = summary();
+@let _current = current();
+@let _ratio = allowanceRatio();
+
+<section
+  class="rounded-lg border bg-surface p-4"
+  data-testid="taxes.year"
+  [class]="_current ? 'border-accent' : 'border-border'"
+  [attr.data-year]="_summary.year"
+  [attr.aria-labelledby]="'taxes-year-' + _summary.year">
+  <h2
+    class="flex flex-wrap items-baseline gap-x-2 text-lg font-semibold"
+    [id]="'taxes-year-' + _summary.year">
+    <span data-testid="taxes.year.year">{{ _summary.year }}</span>
+    @if (_current) {
+      <span
+        class="text-sm font-normal text-accent"
+        data-testid="taxes.year.current"
+        i18n="@@uiTaxes-taxYear-current"
+        >laufendes Jahr, bisher</span
+      >
+    }
+  </h2>
+
+  <dl class="mt-3 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm">
+    <dt class="text-fg-muted" i18n="@@uiTaxes-taxYear-interest">Zinsen</dt>
+    <dd class="text-right tabular-nums" data-testid="taxes.year.interest">
+      {{ _summary.interest | formatCents }}
+    </dd>
+    <dt class="text-fg-muted" i18n="@@uiTaxes-taxYear-distributions">
+      Dividenden und Ausschüttungen
+    </dt>
+    <dd class="text-right tabular-nums" data-testid="taxes.year.distributions">
+      {{ _summary.distributions | formatCents }}
+    </dd>
+    <dt class="text-fg-muted" i18n="@@uiTaxes-taxYear-gains">Gewinne aus Verkäufen</dt>
+    <dd class="text-right tabular-nums" data-testid="taxes.year.gains">
+      {{ _summary.gains | formatCents }}
+    </dd>
+    <dt class="text-fg-muted" i18n="@@uiTaxes-taxYear-losses">Verluste aus Verkäufen</dt>
+    <dd class="text-right tabular-nums" data-testid="taxes.year.losses">
+      {{ _summary.losses | formatCents }}
+    </dd>
+    <dt class="border-t border-border pt-1 font-medium" i18n="@@uiTaxes-taxYear-income">
+      Kapitalerträge
+    </dt>
+    <dd
+      class="border-t border-border pt-1 text-right font-medium tabular-nums"
+      data-testid="taxes.year.income">
+      {{ _summary.income | formatSignedCents }}
+    </dd>
+    <dt class="text-fg-muted" i18n="@@uiTaxes-taxYear-lossCarryForwardIn">
+      Verlustvortrag aus dem Vorjahr
+    </dt>
+    <dd class="text-right tabular-nums" data-testid="taxes.year.loss-carry-forward-in">
+      {{ _summary.lossCarryForwardIn | formatCents }}
+    </dd>
+  </dl>
+
+  <div class="mt-4">
+    <p class="flex flex-wrap justify-between gap-x-3 text-sm">
+      <span class="text-fg-muted">{{ allowanceLabel }}</span>
+      <span class="inline-flex flex-wrap gap-x-1 tabular-nums">
+        <span data-testid="taxes.year.used-allowance">{{
+          _summary.usedAllowance | formatCents
+        }}</span>
+        <span i18n="@@uiTaxes-taxYear-allowanceOf">von {{ allowance | formatCents }}</span>
+      </span>
+    </p>
+    <div
+      role="progressbar"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      class="mt-1 h-2 w-full overflow-hidden rounded-full bg-surface-raised"
+      data-testid="taxes.year.allowance-bar"
+      [attr.aria-valuenow]="_ratio * 100"
+      [attr.aria-valuetext]="_ratio | formatPercent: 0"
+      [attr.aria-label]="allowanceLabel">
+      <div class="h-full bg-accent" [style.width.%]="_ratio * 100"></div>
+    </div>
+  </div>
+
+  <dl class="mt-4 grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm">
+    <dt class="text-fg-muted" i18n="@@uiTaxes-taxYear-paid">Einbehaltene Steuer</dt>
+    <dd class="text-right tabular-nums" data-testid="taxes.year.paid">
+      {{ _summary.paid | formatCents }}
+    </dd>
+    <dt class="text-fg-muted" i18n="@@uiTaxes-taxYear-refunded">Erstattete Steuer</dt>
+    <dd class="text-right tabular-nums" data-testid="taxes.year.refunded">
+      {{ _summary.refunded | formatCents }}
+    </dd>
+    <dt class="border-t border-border pt-1 font-medium" i18n="@@uiTaxes-taxYear-withheld">
+      Steuer des Jahres
+    </dt>
+    <dd
+      class="border-t border-border pt-1 text-right font-medium tabular-nums"
+      data-testid="taxes.year.withheld">
+      {{ _summary.withheld | formatCents }}
+    </dd>
+    <dt class="text-fg-muted">
+      @if (_current) {
+        <ng-container i18n="@@uiTaxes-taxYear-lossCarryForwardOutCurrent"
+          >Verlustvortrag, wenn das Jahr jetzt endete</ng-container
+        >
+      } @else {
+        <ng-container i18n="@@uiTaxes-taxYear-lossCarryForwardOut"
+          >Verlustvortrag ins Folgejahr</ng-container
+        >
+      }
+    </dt>
+    <dd class="text-right tabular-nums" data-testid="taxes.year.loss-carry-forward-out">
+      {{ _summary.lossCarryForwardOut | formatCents }}
+    </dd>
+  </dl>
+</section>

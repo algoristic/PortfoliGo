@@ -39,7 +39,7 @@ Rules for implementing Angular code in this repository, so that generated code l
 | `trading.md`       | `trading`, `engine/domain/order-*`                    | order rules, orders in the engine, order commands and projection (AP 5.1)                    |
 | `testing.md`       | `*.spec.ts`, `e2e`, `src/testing`                     | test suites, helpers, fixtures, page tests of the game area (AP 0.5, 2.5)                    |
 
-`dashboard`, `portfolio` and `trading` hold only placeholder pages so far.
+`dashboard` holds only a placeholder page so far.
 
 Rules that apply everywhere:
 

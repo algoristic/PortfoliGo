@@ -1,10 +1,34 @@
+@let overview = facade.taxOverview$ | async;
+
 <h1 class="text-xl font-semibold" i18n="@@featureTaxes-taxesPage-title">Steuern</h1>
 
-<app-panel class="mt-4">
-  <app-empty-state
-    icon="receipt"
-    heading="Noch keine Inhalte"
-    i18n-heading="@@featureTaxes-taxesPage-emptyHeading"
-    text="Diese Ansicht entsteht in AP 5.5."
-    i18n-text="@@featureTaxes-taxesPage-emptyText"></app-empty-state>
+<app-panel class="mt-4" data-testid="taxes.rules" [heading]="rulesHeading">
+  <ul class="flex list-disc flex-col gap-1 pl-5 text-sm text-fg-muted">
+    <li i18n="@@featureTaxes-taxesPage-ruleRate">
+      Auf Kapitalerträge fallen {{ taxRate | formatPercent: 0 }} Steuer an, soweit sie im Jahr den
+      Sparerpauschbetrag von {{ allowance | formatCents }} übersteigen.
+    </li>
+    <li i18n="@@featureTaxes-taxesPage-rulePool">
+      Zinsen, Dividenden, Ausschüttungen sowie Gewinne und Verluste aus Verkäufen landen in einem
+      gemeinsamen Topf, über alle Banken hinweg.
+    </li>
+    <li i18n="@@featureTaxes-taxesPage-ruleWithholding">
+      Die Steuer wird sofort bei jedem Ertrag einbehalten; ein späterer Verlust im selben Jahr
+      erstattet sie wieder.
+    </li>
+    <li i18n="@@featureTaxes-taxesPage-ruleCarryForward">
+      Bleibt das Jahr im Minus, geht der Verlust als Verlustvortrag ins nächste Jahr. Ein nicht
+      genutzter Sparerpauschbetrag verfällt am Jahresende.
+    </li>
+  </ul>
 </app-panel>
+
+@if (overview === null || overview.length === 0) {
+  <app-skeleton class="mt-4 h-48" [block]="true"></app-skeleton>
+} @else {
+  <div class="mt-4 grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+    @for (summary of overview; track summary.year; let first = $first) {
+      <app-tax-year [summary]="summary" [current]="first"></app-tax-year>
+    }
+  </div>
+}

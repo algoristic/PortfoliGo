@@ -1,0 +1,107 @@
+@let loaded = portfolioFacade.loaded$ | async;
+@let view = portfolioFacade.positionDetail$ | async;
+@let head = marketFacade.instrumentHead$ | async;
+@let instrumentDetail = marketFacade.instrumentDetail$ | async;
+@let trade = tradingFacade.routeInstrumentTrade$ | async;
+
+<a
+  class="mb-3 inline-flex items-center gap-1 text-sm text-fg-muted hover:text-fg hover:underline"
+  routerLink=".."
+  data-testid="portfolio.position.back">
+  <i appIcon="arrow-left"></i>
+  <span i18n="@@featurePortfolio-positionPage-back">Zum Depot</span>
+</a>
+
+@if (instrumentDetail?.notFound) {
+  <app-empty-state
+    icon="search"
+    data-testid="portfolio.position.not-found"
+    [heading]="notFoundHeading"
+    [text]="notFoundText"></app-empty-state>
+} @else {
+  @if (head) {
+    <app-instrument-quote [head]="head"></app-instrument-quote>
+  } @else {
+    <h1 class="text-xl font-semibold" i18n="@@featurePortfolio-positionPage-title">Position</h1>
+    <app-skeleton class="mt-2 w-64" [lines]="2"></app-skeleton>
+  }
+
+  <div class="mt-4 flex flex-wrap items-end justify-between gap-3">
+    @if (trade && view) {
+      <app-trade-actions
+        [view]="trade"
+        (clickedBuy)="onBuy(view.instrumentId, view.depotId)"
+        (clickedSell)="onSell(view.instrumentId, view.depotId)"></app-trade-actions>
+    }
+    @if (view && view.depots.length > 1) {
+      <label class="flex flex-col gap-1 text-xs text-fg-muted">
+        {{ depotLabel }}
+        <select
+          class="rounded-md border border-border bg-surface px-2 py-1.5 text-sm text-fg"
+          data-testid="portfolio.position.depot"
+          (change)="onSelectDepot($event)">
+          <option
+            [value]="allDepots"
+            [selected]="view.depotId === null"
+            i18n="@@featurePortfolio-positionPage-allDepots">
+            Alle Depots
+          </option>
+          @for (depot of view.depots; track depot.depotId) {
+            <option [value]="depot.depotId" [selected]="view.depotId === depot.depotId">
+              {{ depot.number }}{{ depot.bankName === null ? '' : ' · ' + depot.bankName }}
+            </option>
+          }
+        </select>
+      </label>
+    }
+  </div>
+
+  @if (!loaded || !view) {
+    <app-skeleton class="mt-4 h-32" [block]="true"></app-skeleton>
+  } @else {
+    @if (view.detail; as detail) {
+      <app-position-summary class="mt-4" [detail]="detail"></app-position-summary>
+    } @else {
+      <app-panel class="mt-4">
+        <app-empty-state
+          icon="briefcase"
+          data-testid="portfolio.position.empty"
+          [heading]="noPositionHeading"
+          [text]="noPositionText">
+          <a
+            appButton
+            data-testid="portfolio.position.instrument"
+            [routerLink]="['../../markets', view.instrumentId]">
+            <i appIcon="graph-up"></i>
+            <span i18n="@@featurePortfolio-positionPage-toInstrument">Zur Instrumentseite</span>
+          </a>
+        </app-empty-state>
+      </app-panel>
+    }
+
+    <div class="mt-4 grid grid-cols-1 items-start gap-4">
+      <app-panel class="min-w-0" [heading]="chartHeading">
+        <app-instrument-chart [trades]="view.chartTrades"></app-instrument-chart>
+      </app-panel>
+
+      @if (view.detail) {
+        <app-panel class="min-w-0" [heading]="lotsHeading">
+          <app-lot-list [lots]="view.lots" [compact]="!wide()"></app-lot-list>
+        </app-panel>
+      }
+
+      <app-panel class="min-w-0" [heading]="tradesHeading">
+        @if (view.trades.length > 0) {
+          <app-trade-list [trades]="view.trades" [compact]="!wide()"></app-trade-list>
+        } @else {
+          <p
+            class="text-sm text-fg-muted"
+            data-testid="portfolio.position.trades.empty"
+            i18n="@@featurePortfolio-positionPage-noTrades">
+            Die Orderhistorie enthält keine Ausführungen dieses Wertpapiers.
+          </p>
+        }
+      </app-panel>
+    </div>
+  }
+}

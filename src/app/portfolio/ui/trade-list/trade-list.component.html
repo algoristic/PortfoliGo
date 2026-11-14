@@ -1,0 +1,139 @@
+@let _rows = rows();
+@let _showDepot = showDepot();
+
+@if (compact()) {
+  <ul class="flex flex-col gap-3" data-testid="portfolio.position.trades" [attr.aria-label]="label">
+    @for (trade of _rows; track trade.orderId) {
+      <li
+        class="rounded-lg border border-border bg-surface p-3"
+        data-testid="portfolio.position.trades.row"
+        [attr.data-side]="trade.side">
+        <p class="flex flex-wrap justify-between gap-x-3">
+          <span class="font-medium" data-testid="portfolio.position.trades.row.side">{{
+            trade.sideLabel
+          }}</span>
+          <span
+            class="text-sm text-fg-muted tabular-nums"
+            data-testid="portfolio.position.trades.row.time"
+            >{{ trade.tick | formatGameTime }}</span
+          >
+        </p>
+        <dl class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+          @if (trade.depot !== null) {
+            <dt class="text-fg-muted" i18n="@@uiPortfolio-tradeList-cardDepot">Depot</dt>
+            <dd class="text-right break-words" data-testid="portfolio.position.trades.row.depot">
+              {{ trade.depot }}
+            </dd>
+          }
+          <dt class="text-fg-muted" i18n="@@uiPortfolio-tradeList-cardQuantity">Stück</dt>
+          <dd class="text-right tabular-nums" data-testid="portfolio.position.trades.row.quantity">
+            {{ trade.quantity | formatQuantity }}
+          </dd>
+          <dt class="text-fg-muted" i18n="@@uiPortfolio-tradeList-cardPrice">Kurs</dt>
+          <dd class="text-right tabular-nums" data-testid="portfolio.position.trades.row.price">
+            {{ trade.price | formatPrice }}
+          </dd>
+          <dt class="text-fg-muted" i18n="@@uiPortfolio-tradeList-cardCosts">Kosten</dt>
+          <dd class="text-right tabular-nums" data-testid="portfolio.position.trades.row.costs">
+            {{ trade.costs | formatCents }}
+          </dd>
+          <dt class="text-fg-muted" i18n="@@uiPortfolio-tradeList-cardTotal">Betrag</dt>
+          <dd class="text-right tabular-nums" data-testid="portfolio.position.trades.row.total">
+            {{ trade.total | formatCents }}
+          </dd>
+        </dl>
+      </li>
+    }
+  </ul>
+} @else {
+  <div
+    class="overflow-x-auto rounded-lg border border-border bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+    role="region"
+    tabindex="0"
+    data-testid="portfolio.position.trades"
+    [attr.aria-label]="label">
+    <table class="w-full border-collapse text-sm">
+      <caption class="sr-only">{{ label }}</caption>
+      <thead>
+        <tr class="border-b border-border text-left align-bottom">
+          <th scope="col" class="px-3 py-2 font-medium" i18n="@@uiPortfolio-tradeList-time">
+            Ausführung
+          </th>
+          <th scope="col" class="px-3 py-2 font-medium" i18n="@@uiPortfolio-tradeList-side">Art</th>
+          @if (_showDepot) {
+            <th scope="col" class="px-3 py-2 font-medium" i18n="@@uiPortfolio-tradeList-depot">
+              Depot
+            </th>
+          }
+          <th
+            scope="col"
+            class="px-3 py-2 text-right font-medium"
+            i18n="@@uiPortfolio-tradeList-quantity">
+            Stück
+          </th>
+          <th
+            scope="col"
+            class="px-3 py-2 text-right font-medium"
+            i18n="@@uiPortfolio-tradeList-price">
+            Kurs
+          </th>
+          <th
+            scope="col"
+            class="px-3 py-2 text-right font-medium"
+            i18n="@@uiPortfolio-tradeList-costs">
+            Kosten
+          </th>
+          <th
+            scope="col"
+            class="px-3 py-2 text-right font-medium"
+            i18n="@@uiPortfolio-tradeList-total">
+            Betrag
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (trade of _rows; track trade.orderId) {
+          <tr
+            class="border-b border-border last:border-b-0"
+            data-testid="portfolio.position.trades.row"
+            [attr.data-side]="trade.side">
+            <th
+              scope="row"
+              class="px-3 py-2 text-left font-normal whitespace-nowrap tabular-nums"
+              data-testid="portfolio.position.trades.row.time">
+              {{ trade.tick | formatGameTime }}
+            </th>
+            <td class="px-3 py-2" data-testid="portfolio.position.trades.row.side">
+              {{ trade.sideLabel }}
+            </td>
+            @if (_showDepot) {
+              <td class="px-3 py-2" data-testid="portfolio.position.trades.row.depot">
+                {{ trade.depot }}
+              </td>
+            }
+            <td
+              class="px-3 py-2 text-right whitespace-nowrap tabular-nums"
+              data-testid="portfolio.position.trades.row.quantity">
+              {{ trade.quantity | formatQuantity }}
+            </td>
+            <td
+              class="px-3 py-2 text-right whitespace-nowrap tabular-nums"
+              data-testid="portfolio.position.trades.row.price">
+              {{ trade.price | formatPrice }}
+            </td>
+            <td
+              class="px-3 py-2 text-right whitespace-nowrap tabular-nums"
+              data-testid="portfolio.position.trades.row.costs">
+              {{ trade.costs | formatCents }}
+            </td>
+            <td
+              class="px-3 py-2 text-right whitespace-nowrap tabular-nums"
+              data-testid="portfolio.position.trades.row.total">
+              {{ trade.total | formatCents }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
