@@ -477,6 +477,14 @@ export class EngineService implements OnDestroy {
   }
 
   /**
+   * Export file of the loaded player (TS §10.2) with the profile name `name`: file name and text
+   * (base64 of gzip) as the worker built them.
+   */
+  exportPlayer(name: string): Observable<EngineReplies['exportPlayer']> {
+    return this.#request('exportPlayer', { name });
+  }
+
+  /**
    * Quotes of `series` (TS §8.4) as the worker sends them, at most four times per second. The
    * worker gets one `subscribe` per series however many views watch it, and the `unsubscribe` when
    * the last of them unsubscribes.

@@ -6,6 +6,8 @@ import {
   weekdayOfDay,
 } from '@app/clock/domain/calendar-logic';
 import { CalendarDate, SATURDAY, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
+import { marketChecksum } from '@app/market/domain/market-checksum';
+import { advanceMarket, createMarketState } from '@app/market/domain/market-step';
 import { seriesCount } from '@app/market/domain/series';
 
 import { GameEngine } from './game-engine';
@@ -597,6 +599,23 @@ describe('GameEngine', () => {
       } as unknown as TaskSpec);
       const restored = GameEngine.restore(mini.world, snapshot, { monthStarts: mini.monthStarts });
       expect(() => restored.step()).toThrow(/unknown-task/);
+    });
+  });
+
+  describe('marketAtDayStart', () => {
+    it('is the market at 00:00 of the running day, a step behind the state at 14:30', () => {
+      // Wednesday, 05.06.2030, a market day.
+      const tick = at({ year: 2030, month: 6, day: 5 }, 14, 30);
+      engine.runUntil(tick);
+      const day = dayIndex(tick);
+      const reference = createMarketState(mini.world.context);
+      advanceMarket(mini.world.context, reference, day);
+      const market = engine.marketAtDayStart();
+      expect(market.day).toBe(day);
+      expect(marketChecksum(market)).toBe(marketChecksum(reference));
+      expect(engine.snapshot().market.day).toBe(day + 1);
+      advanceMarket(mini.world.context, market, day + 1);
+      expect(marketChecksum(market)).toBe(marketChecksum(engine.snapshot().market));
     });
   });
 

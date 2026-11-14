@@ -331,6 +331,11 @@ export interface EngineCommandPayloads {
   changeSavingsPlan: { savingsPlanId: SavingsPlanId; change: SavingsPlanChange };
   setSavingsPlanPaused: { savingsPlanId: SavingsPlanId; paused: boolean };
   deleteSavingsPlan: { savingsPlanId: SavingsPlanId };
+  /**
+   * Export file of the loaded player (TS §10.2); `name` is the profile name, which only the UI
+   * knows (TS §9.1). Not during a jump or the catch-up (`busy`).
+   */
+  exportPlayer: { name: string };
 }
 
 export const ENGINE_COMMAND_TYPES = [
@@ -365,12 +370,24 @@ export const ENGINE_COMMAND_TYPES = [
   'changeSavingsPlan',
   'setSavingsPlanPaused',
   'deleteSavingsPlan',
+  'exportPlayer',
 ] as const satisfies readonly (keyof EngineCommandPayloads)[];
 export type EngineCommandType = (typeof ENGINE_COMMAND_TYPES)[number];
 
 export type EngineCommandMessage = {
   [K in EngineCommandType]: EngineMessage<K, EngineCommandPayloads[K]>;
 }[EngineCommandType];
+
+/**
+ * An export file (TS §10.1, §10.2): `content` is the file's text, base64(gzip(JSON)), `fileName`
+ * `<name>-<game date>.pgo`, `tick` the export tick and `exportedAt` the wall clock as ISO 8601.
+ */
+export interface ExportedPlayer {
+  fileName: string;
+  content: string;
+  tick: Tick;
+  exportedAt: string;
+}
 
 export interface LoadedPlayer {
   playerId: string;
@@ -530,6 +547,7 @@ export interface EngineReplies {
   changeSavingsPlan: GameCommandReply;
   setSavingsPlanPaused: GameCommandReply;
   deleteSavingsPlan: GameCommandReply;
+  exportPlayer: ExportedPlayer;
 }
 
 /** Error codes of replies (TS §8.3); the UI turns them into texts. */

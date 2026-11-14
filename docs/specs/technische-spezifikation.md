@@ -1960,7 +1960,7 @@ Beispiel: Depot A hält nach dem Verkauf von 4 Stück aus der Teilverkaufstabell
 
 - **Spielkommandos** ändern den Spielerzustand (Banking, Handel, Sparpläne, `updateWatchlist`, `setAutoPause`, `setBackgroundMode`, `markNotificationsRead`). Nur sie laufen über das Write-ahead-Protokoll und das Kommando-Log (§8.5).
 - **Uhr und Sitzung** (`loadPlayer`, `unloadPlayer`, `setSpeed`, `pause`, `resume`, `setVisibility`, `setFrozen`, `jumpTo`, `cancelJump`) ändern nur den Uhrzustand in `runtime`.
-- **Abfragen und Abos** (`query`, `subscribe`, `unsubscribe`) schreiben nichts und halten den Takt nicht an.
+- **Abfragen und Abos** (`query`, `subscribe`, `unsubscribe`, seit AP 6.1 auch `exportPlayer`, §10.2) schreiben nichts und halten den Takt nicht an.
 - Der Name gehört zum Profil und wird nur über den `PlayersService` geändert; ein Engine-Kommando zum Umbenennen gibt es nicht (§9.1).
 
 **Abfragegrenze:** Die Abfrage-API der Engine beschneidet jede Antwort zentral auf Werte bis zum aktuellen Tick (§4.5, Regel 7) – auch Kerzen aus dem Store `candles`, der nach einer Wiederherstellung Tage nach dem aktuellen Tick enthalten kann (§9.2).
@@ -2487,11 +2487,12 @@ Inhalt: base64( gzip( UTF-8( JSON ) ) )
   "formatVersion": 1,
   "appVersion": "1.0.0",
   "simVersion": 1,
+  "schemaVersion": 7,
   "exportedAt": "2026-11-09T09:41:00.000Z",
   "player": {
     "name": "Mein Depot",
     "seed": "kupfer-falke-731",
-    "startConditions": { "startCapital": 1000000, "monthlyIncome": 250000, "livingCosts": 180000 }
+    "startConditions": { "startCapital": 1000000, "netIncome": 250000, "livingCosts": 180000 }
   },
   "clock": {
     "tick": 5432160,
@@ -2499,31 +2500,72 @@ Inhalt: base64( gzip( UTF-8( JSON ) ) )
     "paused": false,
     "lastSeenAt": "2026-11-09T09:41:00.000Z"
   },
-  "state": { "schemaVersion": 1 },
-  "market": { "schemaVersion": 1 },
+  "state": { "tick": 5432160, "player": { "…": "…" }, "scheduler": { "…": "…" }, "commandIds": [] },
+  "market": { "day": 3772, "phase": "normal", "logClose": { "$f64": [4.61, "…"] }, "…": "…" },
   "marketChecksum": "…",
   "transactions": [],
-  "orders": [],
   "notifications": [],
-  "series": {},
+  "series": { "performance": [] },
   "checksum": "sha256:…"
 }
 ```
 
-- Beträge in Cent (`1000000` = 10.000,00 €).
-- `state` ist der Spielerzustand (Konten, Positionen und Lots, offene Orders, Sparpläne, Steuerstatus, Watchlist, Auto-Pause, Verhalten im Hintergrund).
-- `market` ist der Marktzustand zu Beginn des Export-Tags, 00:00 Uhr (Faktoren, Instrumente, Index- und ETF-Zustände, Phase; deutlich unter 1 MB). Die Stützpunkte des laufenden Tags fehlen, weil sie dessen Schlusskurse verrieten; der Import zieht sie aus denselben Strömen neu. Die Welt selbst und alle Kerzen fehlen ebenfalls – sie entstehen aus dem Seed neu.
-- `marketChecksum` ist die Prüfsumme des Marktzustands, `checksum` die SHA-256-Summe des kanonischen JSON ohne dieses Feld.
-- **Ergänzungen (E-10, entschieden 14.11.2026):** Das JSON wird vor der base64-Kodierung mit `CompressionStream('gzip')` komprimiert – schon in Formatversion 1, weil alle Zielbrowser (§1.3) die API haben und Exporte langer Spiele sonst mehrere MB groß sind (Zwischenablage, US-EX-01). `commands` entfällt; dafür muss `state` den Spielerzustand vollständig enthalten (prüft AP 6.1). Ein importierter Spieler startet pausiert wie ein neuer (§10.3).
+- Beträge in Cent (`1000000` = 10.000,00 €). Zeiten (`exportedAt`, `lastSeenAt`) als ISO 8601 in UTC.
+- **Umsetzung (AP 6.1):** Typen in `players/domain/models/player-export.model.ts` (`PlayerExport`, `EXPORT_FORMAT`, `EXPORT_FORMAT_VERSION`, `IMPORT_ERRORS`), Aufbau, Kodierung und Prüfung in `players/domain/player-export-logic.ts` (`buildPlayerExport`, `exportFileName`, `encodePlayerExport`, `decodePlayerExport`), Typ-Guards in `player-export.utils.ts` (`isPlayerExport`), die generischen Bausteine in `persistence/util` (`tagged-json.ts`, `canonical-json.ts`, `sha256.ts`, `text-codec.ts`). Alle sind framework-frei; Worker und UI können sie nutzen.
+- **Felder:**
+
+  | Feld             | Inhalt                                                                                                                                                                                       |
+  | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `format`         | immer `portfoligo/player`                                                                                                                                                                    |
+  | `formatVersion`  | 1 (§15)                                                                                                                                                                                      |
+  | `appVersion`     | `version` aus `package.json`; der Worker bekommt sie als Host-Option `appVersion` (`engine.worker.ts`)                                                                                       |
+  | `simVersion`     | `SIM_VERSION`                                                                                                                                                                                |
+  | `schemaVersion`  | `SCHEMA_VERSION`; sie gilt für `state` und `market` zugleich (§15), deshalb steht sie einmal auf oberster Ebene statt in beiden                                                              |
+  | `exportedAt`     | Wanduhr des Exports                                                                                                                                                                          |
+  | `player`         | Profilangaben: `name` (den Namen kennt nur die UI, sie gibt ihn mit `exportPlayer` mit, §9.1), `seed`, `startConditions` (`StartConditions`: `startCapital`, `netIncome`, `livingCosts`)     |
+  | `clock`          | `tick`, `speed`, `paused`, `lastSeenAt` (= `exportedAt`); `hiddenSince` fehlt, weil der Import pausiert startet und nicht nachberechnet (§10.3)                                              |
+  | `state`          | der Spielzustand am Export-Tick ohne Markt: `tick`, `player` (`PlayerState` vollständig), `scheduler` (geplante Aufgaben) und `commandIds` (§8.5)                                            |
+  | `market`         | Marktzustand zu Beginn des Export-Tags, 00:00 Uhr (`MarketState`: Faktoren, `U_i`, letzte Log-Schlusskurse, Dividenden, Index- und ETF-Zustände, Phase; `market.day` = Tag von `state.tick`) |
+  | `marketChecksum` | `marketChecksum(market)` (32 Hex-Zeichen, dieselbe Prüfsumme wie Golden Master und Wiederherstellung, §4.6)                                                                                  |
+  | `transactions`   | das Hauptbuch bis zum Export-Tick, nach laufender Nummer (§7.2)                                                                                                                              |
+  | `notifications`  | die aufbewahrten Benachrichtigungen (§9.1, höchstens 1.000) bis zum Export-Tick                                                                                                              |
+  | `series`         | `{ performance }`: die Tagespunkte der abgeschlossenen Tage seit Spielstart (§7.9, Store `series`)                                                                                           |
+  | `checksum`       | `sha256:` und SHA-256 (64 Hex-Zeichen, klein) des kanonischen JSON ohne dieses Feld                                                                                                          |
+
+- **`state` vollständig (E-10, ohne `commands`):** `GameEngine.restore` braucht `tick`, `market`, `player`, `scheduler` und `commandIds` (`GameSnapshot`). `state` enthält alle außer `market`, und `market` folgt aus dem exportierten Marktzustand durch den Tagesschritt des Export-Tags (`advanceMarket` bis Tag + 1, bitgleich, Test in `game-engine.spec.ts`). Der Spielerzustand umfasst Konten, Salden, Positionen und Lots, offene Orders und Orderhistorie (`orders`, `orderHistory`), Sparpläne, Daueraufträge, Steuerjahre, Monatswerte, Performance, Watchlist, Benachrichtigungsstatus mit Auto-Pause und die Hintergrund-Einstellungen (AP 6.7). Der geplante Aufgabenplan steht mit im Export, statt beim Import aus Zustand und Markt neu abgeleitet zu werden: Er hält z. B. Orderabläufe, Ausschüttungstermine und die Eröffnungen des Export-Tags mit ihren Ex-Dividenden; ein Neuaufbau wäre eine zweite, fehleranfällige Quelle derselben Regeln. Er verrät keine Kurse des laufenden Tags.
+- **Ohne:** die Welt, alle Kerzen und die Marktzustände zu Monatsbeginn (sie entstehen aus dem Seed neu, §10.3), die Stützpunkte des laufenden Tags (sie verrieten dessen Schlusskurse; der Import zieht sie aus denselben Strömen neu), der Store `orders` (er wird nicht genutzt; die Orderhistorie steht im Spielerzustand, §7.5) und das Kommando-Log.
+- **Kodierung von `state` und `market` (`tagged-json.ts`):** JSON kennt weder `Map` (`player.balances`) noch typisierte Arrays (`market`) noch `NaN`, `±Infinity` und `-0` (`market.dividendCents` ist `NaN` bis zur Ankündigung; `-0` und `0` ergeben verschiedene Marktprüfsummen). Solche Werte werden zu Objekten mit genau einem reservierten Schlüssel: `{ "$map": [[schlüssel, wert], …] }`, `{ "$f64": [zahl | { "$num": … }, …] }`, `{ "$i32": [ganzzahl, …] }`, `{ "$num": "NaN" | "Infinity" | "-Infinity" | "-0" }`. Gewöhnliche Objekte dürfen deshalb keine Schlüssel mit `$` haben; andere Typen (`Set`, `Date`, andere typisierte Arrays, Klasseninstanzen) lehnt die Kodierung ab. Endliche Zahlen schreibt JSON mit der kürzesten Darstellung, die dieselbe Zahl zurückliest – die Rundreise ist bitgleich (fast-check-Eigenschaft).
+- **Kanonisches JSON (`canonical-json.ts`):** ohne Leerraum, Schlüssel auf jeder Ebene nach UTF-16-Codeeinheiten sortiert, Arrays in ihrer Reihenfolge, Zeichenketten und Zahlen wie `JSON.stringify` (in allen Engines gleich). Die Prüfsumme hängt so nicht von der Schlüsselreihenfolge der Datei ab. Die Datei selbst schreibt die Felder in der Reihenfolge der Tabelle, `checksum` zuletzt.
+- **Prüfsumme:** SHA-256 über das UTF-8 des kanonischen JSON (`crypto.subtle.digest`, in Worker, Fenster und Node vorhanden). Beispiele: `{"b":1,"a":[true,null],"c":{"z":"x","y":2.5}}` → kanonisch `{"a":[true,null],"b":1,"c":{"y":2.5,"z":"x"}}`; SHA-256 von `abc` = `ba7816bf…f20015ad` (FIPS 180-2).
+- **gzip und base64 (`text-codec.ts`):** `CompressionStream('gzip')` bzw. `DecompressionStream`, base64 ohne Zeilenumbrüche. Beim Lesen wird Leerraum ignoriert (eingefügter Text darf umbrochen sein).
+- **Dateiname (`exportFileName`):** `<name>-<JJJJ-MM-TT>.pgo` mit dem Spieldatum des Export-Ticks. Jede Folge von Zeichen außer Buchstaben, Ziffern, `_` und `-` wird zu einem `-`, `-` an den Enden entfällt, höchstens 40 Zeichen; bleibt nichts, heißt der Teil `portfoligo`.
+
+  | Name             | Spielzeit        | Dateiname                                            |
+  | ---------------- | ---------------- | ---------------------------------------------------- |
+  | `Mein Depot`     | 15.04.2031 09:30 | `Mein-Depot-2031-04-15.pgo`                          |
+  | `Ölrausch / 2`   | 31.12.2030 23:59 | `Ölrausch-2-2030-12-31.pgo`                          |
+  | `  ../a:b*c?  `  | 01.04.2030 00:00 | `a-b-c-2030-04-01.pgo`                               |
+  | `Börse_2030-neu` | 01.04.2030 00:00 | `Börse_2030-neu-2030-04-01.pgo`                      |
+  | `***`            | 01.04.2030 00:00 | `portfoligo-2030-04-01.pgo`                          |
+  | 39 × `x` + ` y`  | 01.04.2030 00:00 | 39 × `x` + `-2030-04-01.pgo` (`-` am Ende fällt weg) |
+  | 45 × `é`         | 01.04.2030 00:00 | 40 × `é` + `-2030-04-01.pgo`                         |
+
+- **Größe (gemessen AP 6.1):** Die Fixture (Mini-Welt, sechs Wochen) hat 22 kB JSON und 8 kB Datei. In der Standardwelt (`golden-1`, ein Spieler ohne Handel mit Gehalt und Lebenshaltung) sind es nach einem Spieljahr 118 kB JSON und 23 kB Datei, nach fünf Spieljahren 513 kB und 68 kB: `market` rund 16 kB, `state` 6–18 kB, je Spieljahr rund 84 kB Tagesreihen, 8 kB Hauptbuch (rund 36 Buchungen, je rund 220 Byte) und 3 kB Benachrichtigungen. 50 Spieljahre ergeben so rund 5 MB JSON und rund 0,6 MB Datei; wer viel handelt, hat mehr Buchungen (§10.4).
+- **Fixture je Formatversion:** `players/domain/testing/export-v1.ts` (`EXPORT_V1_CONTENT`, `EXPORT_V1_FILE_NAME`) ist eine eingefrorene Datei der Formatversion 1, erzeugt aus `exportFixtureContent()` (`testing/export-fixture.ts`: Mini-Welt `mini-1`, Watchlist, eigene Hintergrund-Einstellungen, Depot, Marktkauf, wartende Limit-Order, Export am Mi. 15.05.2030 14:37). `player-export-fixture.spec.ts` prüft, dass sie mit den aktuellen Versionen lesbar ist und dieselbe Struktur hat wie ein frischer Export desselben Spiels. Vor 1.0 macht eine neue `SIM_VERSION` oder `SCHEMA_VERSION` sie unlesbar; dann wird sie mit `UPDATE_EXPORT_FIXTURE=1 npx vitest run src/app/players/domain/player-export-fixture.spec.ts` neu erzeugt. Ab 1.0 bleibt sie unverändert, eine neue Formatversion bekommt eine eigene Fixture daneben.
+- **Ergänzungen (E-10, entschieden 14.11.2026):** Das JSON wird vor der base64-Kodierung mit `CompressionStream('gzip')` komprimiert – schon in Formatversion 1, weil alle Zielbrowser (§1.3) die API haben und Exporte langer Spiele sonst mehrere MB groß sind (Zwischenablage, US-EX-01). `commands` entfällt; dafür enthält `state` den Spielzustand vollständig (siehe oben). Ein importierter Spieler startet pausiert wie ein neuer (§10.3).
 
 ### 10.2 Export
 
-UI → `exportPlayer` → der Worker schreibt ausstehende Daten, baut das JSON in fester Schlüsselreihenfolge und berechnet die Prüfsumme → die UI kodiert base64 und bietet Download (Blob) und Zwischenablage (CDK Clipboard) an. Der Zeitpunkt wird in `pgo.backup` vermerkt.
+UI → `exportPlayer({ name })` → der Worker nimmt Zustand, Marktzustand zu Tagesbeginn, Uhr und die noch nicht geschriebenen Journal-Datensätze in einem Zug (wie der Kontoauszug), liest die gespeicherten Transaktionen, Benachrichtigungen und Tagespunkte, lässt Datensätze nach dem Export-Tick weg, baut das JSON, berechnet die Prüfsumme und kodiert gzip und base64 → Antwort `{ fileName, content, tick, exportedAt }` → die UI bietet Download (Blob) und Zwischenablage (CDK Clipboard) an. Der Zeitpunkt wird in `pgo.backup` vermerkt.
+
+- **Umsetzung (AP 6.1):** `exportPlayer` (Payload `name`, Typ `ExportedPlayer` in `engine-service.model.ts`, `EngineService.exportPlayer(name)`) schreibt nichts und hält den Takt nicht an: Das Spiel läuft weiter, während der Worker liest; maßgeblich ist der Stand beim Eingang. Während Vorspulen und Nachberechnung antwortet es mit `busy`, ohne Spieler mit `player-not-loaded`, bei einem Lesefehler mit `storage-failed`.
+- **Marktzustand zu Tagesbeginn:** `GameEngine.marketAtDayStart()` = `marketStateAt(context, history, tag)` (`market/domain/market-history.ts`): der Monatsbeginn-Eintrag vor dem Tag und die Tagesschritte bis zum Tag (ohne dessen eigenen Schritt), bitgleich mit dem ununterbrochenen Lauf. Der Marktzustand der Engine steht nach dem Tageswechsel um 00:00 schon auf dem Folgetag (er enthält die Schlusskurse des laufenden Tags) und ist deshalb nicht der exportierte.
+- **Wo kodiert wird:** im Worker. Er hat den Zustand ohnehin; JSON-Aufbau, Kanonisierung, SHA-256 und gzip großer Spielstände blockieren so nie die Oberfläche, und über `postMessage` geht eine Zeichenkette statt eines tiefen Objekts. Die Funktionen sind framework-frei, der Import (§10.3) kann dieselben im Worker nutzen.
 
 ### 10.3 Import
 
-1. Datei oder Text einlesen, base64 dekodieren, JSON parsen.
-2. Prüfen: `format`, `formatVersion`, `simVersion`, `checksum`, Struktur (handgeschriebene Typ-Guards, keine Schema-Bibliothek).
+1. Datei oder Text einlesen, base64 und gzip dekodieren, JSON parsen.
+2. Prüfen (`decodePlayerExport`, AP 6.1) in dieser Reihenfolge, mit den Fehlercodes `IMPORT_ERRORS`: Kodierung (`invalid-encoding`), JSON und `format` (`invalid-format`), `formatVersion` (`unsupported-format-version`), `checksum` (`checksum-mismatch`), `simVersion` (`sim-version-mismatch`), `schemaVersion` (`schema-version-mismatch`), Struktur nach dem Zurückwandeln der markierten Werte (`invalid-structure`; handgeschriebene Typ-Guards `isPlayerExport`, keine Schema-Bibliothek). Die Prüfsumme kommt vor den Versionen, damit eine beschädigte Datei nicht als „andere Version“ gemeldet wird. Die Guards prüfen Felder, Typen und Zusammenhang (`clock.tick` = `state.tick`, `market.day` = dessen Tag, Journal nicht nach dem Export-Tick) bis zu den Datensätzen der Listen; Spielregeln (Salden gegen Hauptbuch, gültige Orders) prüfen sie nicht.
 3. Der Worker legt einen neuen Spieler an (neue ID, Name mit Zusatz „(Import)"), erzeugt die Welt und die Marktzustände zu Monatsbeginn (§6.8), übernimmt den Marktzustand vom Beginn des Export-Tags, rechnet den Markt bis zum Export-Tick vor und übernimmt den Spielerzustand. **Der Spieler ist sofort spielbar.**
 4. Im Hintergrund rechnet der Worker die Tagesschritte von der Epoche bis zum Export-Tag nach (Standardwelt: gemessen rund 45 ms je Spieljahr, für 70 Spieljahre plus Vorlauf also rund 3,6 s). Daraus entstehen Eröffnung und Schluss aller Tageskerzen sowie der Marktzustand für den Prüfsummenvergleich; Hoch und Tief ergänzt anschließend der Hintergrundauftrag aus §6.8. Bis dahin zeigen Charts für fehlende Zeiträume einen Hinweis.
 5. Danach vergleicht der Worker den Marktzustand des Laufs mit `marketChecksum`. Eine Abweichung deutet auf eine Determinismus-Lücke hin; der Anwender wird informiert, das Spiel läuft mit dem exportierten Marktzustand weiter.
@@ -2562,7 +2604,7 @@ src/
     ├── notifications/      # domain · feature · ui · data-access: Plattform-Port
     ├── dashboard/          # feature
     ├── settings/           # feature · data-access
-    ├── persistence/        # data-access: IndexedDB-Schema und -Service, LocalStorageService
+    ├── persistence/        # data-access: IndexedDB-Schema und -Service, LocalStorageService · util: JSON-Kodierung, SHA-256, gzip/base64 (Export)
     ├── shared/             # ui: Design-System-Komponenten, Pipes, Formular-Schemas · util: Formatierung · domain: Geld, Mengen, Preisraster · data-access: Farbschema
     └── lab/                # domain: Labor-Simulation, Statistik · data-access: Labor-Worker · feature: Labor und Entwicklerseiten · ui
 ```

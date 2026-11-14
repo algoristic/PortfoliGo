@@ -110,6 +110,11 @@ const RULE_SPECS = [
   'src/app/notifications/domain/notification-page-logic.spec.ts',
   'src/app/notifications/domain/absence-report-logic.spec.ts',
   'src/app/engine/domain/notification-system.spec.ts',
+  'src/app/persistence/util/tagged-json.spec.ts',
+  'src/app/persistence/util/canonical-json.spec.ts',
+  'src/app/persistence/util/text-codec.spec.ts',
+  'src/app/players/domain/player-export-logic.spec.ts',
+  'src/app/players/domain/player-export.utils.spec.ts',
 ];
 
 export default mergeConfig(

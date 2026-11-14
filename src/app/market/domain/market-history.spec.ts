@@ -3,9 +3,11 @@ import fc from 'fast-check';
 import { dateTimeToTick, dayIndex } from '@app/clock/domain/calendar-logic';
 
 import { isMarketDay } from './market-calendar';
+import { marketChecksum } from './market-checksum';
 import { MarketContext } from './market-context';
 import {
   createFactorHistory,
+  marketStateAt,
   recomputeFactorDays,
   recomputeInstrumentHistory,
   recomputeSupportDays,
@@ -138,6 +140,33 @@ describe('market history', () => {
         });
       }
       expect(exDates).toBeGreaterThan(0);
+    });
+  });
+
+  describe('marketStateAt', () => {
+    it('equals the state of an uninterrupted run at 00:00 of the day', () => {
+      fc.assert(
+        fc.property(fc.integer({ min: 0, max: TO_DAY }), (day) => {
+          const months = history.monthStarts.length;
+          const state = marketStateAt(context, history, day);
+          const reference = createMarketState(context);
+          advanceMarket(context, reference, day);
+          expect(state.day).toBe(day);
+          expect(marketChecksum(state)).toBe(marketChecksum(reference));
+          expect(history.monthStarts).toHaveLength(months);
+        }),
+        { numRuns: 10 },
+      );
+    });
+
+    it('lacks the support points of the day itself', () => {
+      // Monday, 14.03.2022: its closes come only with its own day step, the state holds Friday's.
+      const day = TO_DAY - 1;
+      const friday = day - 3;
+      expect([isMarketDay(day), isMarketDay(friday)]).toEqual([true, true]);
+      const state = marketStateAt(context, history, day);
+      expect(Array.from(state.logClose)).not.toEqual(Array.from(days.get(day)?.logClose ?? []));
+      expect(Array.from(state.logClose)).toEqual(Array.from(days.get(friday)?.logClose ?? []));
     });
   });
 });

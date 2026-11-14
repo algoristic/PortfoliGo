@@ -4,7 +4,7 @@ import { stepInstrument } from './instrument-step';
 import { isMarketDay } from './market-calendar';
 import { MarketContext } from './market-context';
 import { restoreMarket } from './market-snapshot';
-import { createMarketDay, createMarketState, stepFactorDay } from './market-step';
+import { advanceMarket, createMarketDay, createMarketState, stepFactorDay } from './market-step';
 import { MarketDay } from './models/market-day.model';
 import { FactorHistory, FactorStateEntry, MarketState } from './models/market-state.model';
 
@@ -68,6 +68,21 @@ export function monthStartEntry(history: FactorHistory, day: number): FactorStat
     throw new RangeError(`market history: no state before day ${day}`);
   }
   return history.monthStarts[index];
+}
+
+/**
+ * Complete market state at 00:00 of `day` (TS §6.8, §10.1): before the day step of `day`, so
+ * without its support points. Day steps from the closest month start, bit for bit equal to the
+ * state the original run had then; the history stays unchanged.
+ */
+export function marketStateAt(
+  context: MarketContext,
+  history: FactorHistory,
+  day: number,
+): MarketState {
+  const state = restoreMarket(monthStartEntry(history, day));
+  advanceMarket(context, state, day);
+  return state;
 }
 
 function recomputeDays(

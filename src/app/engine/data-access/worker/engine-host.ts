@@ -67,6 +67,11 @@ import {
 } from '@app/notifications/domain/notification-page-logic';
 import { oldestKeptSeq, unreadCount } from '@app/notifications/domain/read-state-logic';
 import { PlayerLock } from '@app/persistence/data-access/locks/player-locks';
+import {
+  buildPlayerExport,
+  encodePlayerExport,
+  exportFileName,
+} from '@app/players/domain/player-export-logic';
 import { DailyPoint, PerformanceState } from '@app/portfolio/domain/models/performance.model';
 import { MAX_POSITION_TRADES } from '@app/portfolio/domain/models/position-detail.model';
 import { DEFAULT_HISTORY_POINTS, thinPoints } from '@app/portfolio/domain/performance-logic';
@@ -109,6 +114,7 @@ import {
   EngineQueryResult,
   EngineReplies,
   ExchangeInfo,
+  ExportedPlayer,
   LoadPlayerPayload,
   NotificationsProjection,
   NotificationsQuery,
@@ -148,6 +154,8 @@ interface BatchRun {
 
 interface LoadedGame {
   playerId: string;
+  /** Seed of the world, for the export (TS §10.1). */
+  seed: string;
   engine: GameEngine;
   pacer: ClockPacer;
   sessions: readonly TradingHours[];
@@ -285,6 +293,9 @@ type Handlers = {
     id: string,
   ) => EngineReplies[K] | Promise<EngineReplies[K]>;
 };
+
+/** `appVersion` of exports when the host is given none (tests). */
+export const DEFAULT_APP_VERSION = '0.0.0';
 
 /** Standard world of a seed (TS §5.1). */
 export function generateStandardWorld(seed: string): GeneratedWorld {
@@ -546,6 +557,7 @@ export class EngineHost {
         }))
       ).tick,
     }),
+    exportPlayer: ({ name }) => this.#export(name),
   };
 
   #queue: Promise<void> = Promise.resolve();
@@ -712,6 +724,7 @@ export class EngineHost {
     };
     const game: LoadedGame = {
       playerId: payload.playerId,
+      seed: payload.seed,
       engine,
       pacer: new ClockPacer(settings, engine.tick, now, this.#loadedHiddenSince(stored, now)),
       sessions: world.exchanges.map(({ open, close }) => ({ open, close })),
@@ -834,6 +847,59 @@ export class EngineHost {
       return null;
     }
     return Math.min(nowMs, stored.clock?.hiddenSince ?? stored.clock?.lastSeenAt ?? nowMs);
+  }
+
+  /**
+   * Export file of the loaded player (TS §10.2). State, market at the start of the day, clock and
+   * the journal records not yet stored are taken at once, like the statement does; the game runs on
+   * while the stored records are read, and records after the export tick are left out.
+   */
+  async #export(name: string): Promise<ExportedPlayer> {
+    const game = this.#requireIdle();
+    this.#drainEngineEvents(game, this.#liveHighLow(game));
+    const { engine } = game;
+    const snapshot = engine.snapshot();
+    const market = engine.marketAtDayStart();
+    const { speed, paused } = game.pacer.settings;
+    const exportedAtMs = this.#ports.now();
+    const unsavedTransactions = game.unsavedTransactions.slice();
+    const unsavedNotifications = game.unsavedNotifications.slice();
+    const unsavedPoints = game.unsavedPoints.slice();
+    const { storage } = this.#ports;
+    const { performance } = snapshot.player;
+    let stored: [Transaction[], GameNotification[], DailyPoint[]];
+    try {
+      stored = await Promise.all([
+        storage.loadTransactions(game.playerId),
+        storage.loadNotifications(game.playerId),
+        storage.loadDailyPoints(
+          game.playerId,
+          dayIndex(performance.startTick),
+          performance.day - 1,
+        ),
+      ]);
+    } catch (error) {
+      throw new CommandFailure('storage-failed', errorMessage(error));
+    }
+    const content = buildPlayerExport({
+      appVersion: this.#options.appVersion ?? DEFAULT_APP_VERSION,
+      exportedAtMs,
+      name,
+      seed: game.seed,
+      speed,
+      paused,
+      snapshot,
+      market,
+      transactions: [stored[0], unsavedTransactions],
+      notifications: [stored[1], unsavedNotifications],
+      points: [stored[2], unsavedPoints],
+    });
+    return {
+      fileName: exportFileName(name, snapshot.tick),
+      content: await encodePlayerExport(content),
+      tick: snapshot.tick,
+      exportedAt: content.exportedAt,
+    };
   }
 
   /** Saves the game (snapshot with clock and candles) and releases the lock (TS §8.2). */

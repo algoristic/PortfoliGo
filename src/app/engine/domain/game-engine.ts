@@ -25,7 +25,7 @@ import { UpcomingEvent } from '@app/dashboard/domain/models/upcoming.model';
 import { upcoming } from '@app/dashboard/domain/upcoming-logic';
 import { paymentDay } from '@app/market/domain/dividend-logic';
 import { marketChecksum } from '@app/market/domain/market-checksum';
-import { createFactorHistory } from '@app/market/domain/market-history';
+import { createFactorHistory, marketStateAt } from '@app/market/domain/market-history';
 import { restoreMarket, snapshotMarket } from '@app/market/domain/market-snapshot';
 import { advanceMarket, createMarketDay, createMarketState } from '@app/market/domain/market-step';
 import { MarketDay } from '@app/market/domain/models/market-day.model';
@@ -493,6 +493,14 @@ export class GameEngine {
   /** Market states at the month starts after `day`, for the host to store (TS §6.8, E-08). */
   monthStartsAfter(day: number): FactorStateEntry[] {
     return this.#history.monthStarts.filter((entry) => entry.day > day);
+  }
+
+  /**
+   * Market state at 00:00 of the current game day (TS §10.1), for the export: without the support
+   * points of the running day, which would reveal its closes.
+   */
+  marketAtDayStart(): MarketState {
+    return marketStateAt(this.world.context, this.#history, dayIndex(this.tick));
   }
 
   #execute(command: GameCommand): CommandResult {

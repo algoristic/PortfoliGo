@@ -265,4 +265,6 @@ export interface EngineHostOptions {
    * takes seconds even for the mini world.
    */
   candleBackfillFrom?: Tick | null;
+  /** App version written into exports (TS §10.1, §15; `package.json`); defaults to `0.0.0`. */
+  appVersion?: string;
 }
