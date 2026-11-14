@@ -203,6 +203,7 @@ describe('MarketEffects', () => {
   });
 
   afterEach(() => {
+    store.resetSelectors();
     localStorage.clear();
     subscription?.unsubscribe();
     subscription = undefined;

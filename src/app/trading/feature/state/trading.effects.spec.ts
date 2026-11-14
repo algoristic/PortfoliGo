@@ -59,6 +59,10 @@ describe('TradingEffects', () => {
     effects = TestBed.inject(TradingEffects);
   });
 
+  afterEach(() => {
+    TestBed.inject(MockStore).resetSelectors();
+  });
+
   describe('watchTrading$', () => {
     it('takes the last full trading part before the reply to loadPlayer and every one after it', async () => {
       const profile = { id: 'p-b' } as PlayerProfile;

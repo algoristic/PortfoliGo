@@ -1,10 +1,12 @@
 @let rows = facade.watchlistRows$ | async;
 @let known = facade.watchlistKnown$ | async;
+@let saving = facade.watchlistSaving$ | async;
 
 <app-panel>
   @if (rows && rows.length > 0) {
     <app-watchlist-list
       [rows]="rows"
+      [saving]="saving ?? false"
       (droppedItem)="onDrop($event, rows)"
       (movedItem)="onMove($event, rows)"
       (clickedRemove)="onRemove($event)"></app-watchlist-list>

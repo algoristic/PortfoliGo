@@ -89,6 +89,10 @@ describe('BankingEffects', () => {
     store = TestBed.inject(MockStore);
   });
 
+  afterEach(() => {
+    store.resetSelectors();
+  });
+
   describe('watchProjection$', () => {
     it('takes the last full projection before the reply to loadPlayer and every one after it', async () => {
       const profile = { id: 'p-b' } as PlayerProfile;

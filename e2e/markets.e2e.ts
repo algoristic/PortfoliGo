@@ -151,6 +151,8 @@ test.describe('markets', () => {
     await dragRow(page, 0, 2);
     const reordered = [ids[1], ids[2], ids[0]];
     await expect.poll(() => watchlistIds(page)).toEqual(reordered);
+    // The list shows the new order at once; reload only after the engine wrote and confirmed it.
+    await expect(page.getByTestId('market.watchlist.list')).toHaveAttribute('aria-busy', 'false');
 
     await page.reload();
     await expectGameReady(page);

@@ -66,6 +66,10 @@ describe('ClockEffects', () => {
     store = TestBed.inject(MockStore);
   });
 
+  afterEach(() => {
+    store.resetSelectors();
+  });
+
   function setClock(clock: ClockPayload | null): void {
     store.setState({ [CLOCK_FEATURE_KEY]: { ...initialClockState, clock } });
   }

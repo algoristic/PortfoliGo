@@ -88,6 +88,10 @@ describe('AbsenceReportEffects', () => {
     received = [];
   });
 
+  afterEach(() => {
+    store.resetSelectors();
+  });
+
   it('opens the dialog of a report once the game is ready and reports its closing', () => {
     const subscription = effects.openAbsenceReport$.subscribe((action) => received.push(action));
     const first = report(10, 20);

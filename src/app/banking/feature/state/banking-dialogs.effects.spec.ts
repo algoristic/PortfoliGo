@@ -133,6 +133,10 @@ describe('BankingDialogEffects', () => {
     store = TestBed.inject(MockStore);
   });
 
+  afterEach(() => {
+    store.resetSelectors();
+  });
+
   describe('openAccountDialog$', () => {
     it('preselects the clicked bank and opens what the dialog returns', async () => {
       closeWith({ bankId: BROKER.id, kind: 'depot' });

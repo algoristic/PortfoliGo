@@ -53,6 +53,8 @@ export class WatchlistListComponent {
 
   rows = input.required<readonly WatchlistRowView[]>();
   flashEnabled = input(true);
+  /** The shown order is not yet confirmed by the engine; exposed as `aria-busy`. */
+  saving = input(false);
 
   droppedItem = output<WatchlistMove>();
   movedItem = output<WatchlistMove>();

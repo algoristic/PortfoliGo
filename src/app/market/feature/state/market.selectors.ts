@@ -258,6 +258,12 @@ export const selectWatchlistIds = createSelector(
   (watchlist): readonly string[] => watchlist.requested ?? watchlist.ids ?? [],
 );
 
+/** A requested list is not yet confirmed by the engine (written ahead and applied). */
+export const selectWatchlistSaving = createSelector(
+  selectWatchlist,
+  (watchlist) => watchlist.requested !== null,
+);
+
 /** The list arrived with the projection; changes before would replace an unknown list. */
 export const selectWatchlistKnown = createSelector(
   selectWatchlist,

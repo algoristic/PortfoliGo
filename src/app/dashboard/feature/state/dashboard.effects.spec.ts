@@ -35,6 +35,10 @@ describe('DashboardEffects', () => {
     effects = TestBed.inject(DashboardEffects);
   });
 
+  afterEach(() => {
+    store.resetSelectors();
+  });
+
   function stored(): unknown {
     return JSON.parse(localStorage.getItem('pgo.ui.firstSteps') ?? 'null');
   }

@@ -35,6 +35,7 @@ export class MarketFacade {
   screenerRows$ = this.#store.pipe(select(MarketSelectors.selectScreenerRows));
   watchlistRows$ = this.#store.pipe(select(MarketSelectors.selectWatchlistRows));
   watchlistKnown$ = this.#store.pipe(select(MarketSelectors.selectWatchlistKnown));
+  watchlistSaving$ = this.#store.pipe(select(MarketSelectors.selectWatchlistSaving));
   watchlistMembership$ = this.#store.pipe(select(MarketSelectors.selectWatchlistMembership));
   routeInstrumentWatchlist$ = this.#store.pipe(
     select(MarketSelectors.selectRouteInstrumentWatchlist),

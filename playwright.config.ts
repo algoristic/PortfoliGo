@@ -10,6 +10,9 @@ export default defineConfig({
   forbidOnly: isCi,
   retries: 0,
   workers: isCi ? 2 : undefined,
+  // Journeys with several jumps, reloads and axe runs take 20–35 s on the two shared vCPUs of a
+  // CI runner; locally the default of 30 s stays as a check that they don't get slower.
+  timeout: isCi ? 60_000 : 30_000,
   reporter: isCi ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: 'http://127.0.0.1:4173/',

@@ -5,6 +5,7 @@
   cdkDropList
   cdkDropListLockAxis="y"
   data-testid="market.watchlist.list"
+  [attr.aria-busy]="saving()"
   [attr.aria-label]="label"
   (cdkDropListDropped)="onDrop($event)">
   @for (row of _views; track row.id; let index = $index, first = $first, last = $last) {

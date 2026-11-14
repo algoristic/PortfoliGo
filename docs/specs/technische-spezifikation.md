@@ -3100,6 +3100,8 @@ GitHub Actions mit Node aus `.nvmrc`. Die Prüfungen liegen in zwei wiederverwen
 
 Die Jobs eines Workflows laufen parallel; der längste Pfad ist jeweils `build` und danach `e2e`. Lokal bleibt `npm run verify` die Definition of Done mit allen Suiten (§14.1).
 
+**Unterschiede zwischen lokal und CI:** In der CI ist `CI=true` gesetzt. Das schaltet den Build-Cache von `ng test` ab, und Vitest ordnet die Spec-Dateien dann anders als lokal mit dem Cache. Die Suite `angular` läuft deshalb isoliert (`"isolate": true` in `angular.json`; ohne diese Einstellung teilen sich die Dateien eines Workers den Modulzustand). Specs mit `provideMockStore` setzen die überschriebenen Selektoren in `afterEach` mit `store.resetSelectors()` zurück, weil `MockStore` die Ergebnisse an den modulweiten Selektoren festsetzt. Wie die CI prüft man lokal mit `CI=true npm run verify`. Die Systemtests haben in der CI 60 s je Test statt 30 s (`playwright.config.ts`), weil zwei Worker sich zwei vCPUs teilen und lange Abläufe dort etwa dreimal so lange dauern.
+
 ## 15. Versionierung und Kompatibilität
 
 | Version         | Bedeutung                              | Erhöhen bei                                                                                             |

@@ -143,6 +143,10 @@ describe('TradingDialogEffects', () => {
     effects = TestBed.inject(TradingDialogEffects);
   });
 
+  afterEach(() => {
+    store.resetSelectors();
+  });
+
   it('watches the quote while the ticket is open and places its order', () => {
     closeWith(ORDER);
     expect(emitted(TradingActions.clickedSell({ instrumentId: SHARE.id }))).toEqual([

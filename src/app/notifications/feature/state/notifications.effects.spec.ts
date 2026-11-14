@@ -109,6 +109,7 @@ describe('NotificationsEffects', () => {
   });
 
   afterEach(() => {
+    store.resetSelectors();
     vi.useRealTimers();
   });
 

@@ -44,6 +44,10 @@ describe('SettingsEffects', () => {
     store = TestBed.inject(MockStore);
   });
 
+  afterEach(() => {
+    store.resetSelectors();
+  });
+
   function setSettings(settings: Settings): void {
     store.setState({ [SETTINGS_FEATURE_KEY]: { ...initialSettingsState, settings } });
   }

@@ -118,6 +118,10 @@ export default mergeConfig(
       include: RULE_SPECS,
       env: { FC_SEED: '20261112', FC_NUM_RUNS: '30' },
       ...simulating,
+      // Instrumented code with per-test coverage runs several times slower than in `logic`; the
+      // dividend table of `instrument-figures.spec.ts` (8.5 s uninstrumented) timed out at 30 s in
+      // the dry run on GitHub. Stryker sets its own budget per mutant from the dry run.
+      testTimeout: 120_000,
     },
   },
 );

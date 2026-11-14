@@ -58,6 +58,10 @@ describe('PortfolioEffects', () => {
     effects = TestBed.inject(PortfolioEffects);
   });
 
+  afterEach(() => {
+    store.resetSelectors();
+  });
+
   describe('loadPerformanceHistory$', () => {
     // 15.05.2031 (day 4152 since 01.01.2020): one month back is 15.04.2031, `max` asks for all.
     const DAY = 4_152;
