@@ -35,6 +35,10 @@ const reducer = createReducer(
       appearance: { ...state.settings.appearance, colorScheme },
     },
   })),
+  on(SettingsActions.selectedLanguage, (state, { language }) => ({
+    ...state,
+    settings: { ...state.settings, locale: { ...state.settings.locale, language } },
+  })),
   on(SettingsActions.selectedChangeColors, (state, { changeColors }) => ({
     ...state,
     settings: {

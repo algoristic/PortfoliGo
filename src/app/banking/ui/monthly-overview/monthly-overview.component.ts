@@ -4,6 +4,8 @@ import { savingsRate } from '@app/banking/domain/monthly-values-logic';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { formatCents, formatOptional, formatPercent } from '@app/shared/util/format';
 
+import { perLocale } from '@app/shared/util/locale';
+
 import {
   MONTHLY_OVERVIEW_COLUMNS,
   MonthlyOverviewColumnId,
@@ -11,11 +13,14 @@ import {
   MonthlyOverviewRowView,
 } from './monthly-overview.model';
 
-const monthFormat = new Intl.DateTimeFormat('de-DE', {
-  timeZone: 'UTC',
-  month: 'long',
-  year: 'numeric',
-});
+const monthFormat = perLocale(
+  (locale) =>
+    new Intl.DateTimeFormat(locale, {
+      timeZone: 'UTC',
+      month: 'long',
+      year: 'numeric',
+    }),
+);
 
 /**
  * Where the money of each month went (US-EK-03, AP 3.5): income, living costs, fees, interest,
@@ -47,7 +52,7 @@ export class MonthlyOverviewComponent {
       };
       return {
         id: `${month.year}-${String(month.month).padStart(2, '0')}`,
-        label: monthFormat.format(Date.UTC(month.year, month.month - 1, 1)),
+        label: monthFormat().format(Date.UTC(month.year, month.month - 1, 1)),
         running,
         cells: MONTHLY_OVERVIEW_COLUMNS.map((id) => ({ id, value: cells[id] })),
       };

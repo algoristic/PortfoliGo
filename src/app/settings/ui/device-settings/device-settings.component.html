@@ -1,3 +1,31 @@
+<fieldset class="mb-6" aria-describedby="settings-device-language-hint">
+  <legend class="mb-2 font-medium" i18n="@@uiSettings-deviceSettings-languageLegend"
+    >Sprache</legend
+  >
+  <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+    @for (option of languageOptions(); track option.id) {
+      <label
+        class="flex cursor-pointer items-center gap-3 rounded-md border border-border p-3 has-checked:border-accent has-checked:bg-surface-raised">
+        <input
+          type="radio"
+          name="language"
+          [value]="option.id"
+          [checked]="option.checked"
+          [attr.data-testid]="'settings.device.language.' + option.id"
+          (change)="onSelectLanguage(option.id)" />
+        <span class="font-medium" [attr.lang]="option.id">{{ option.label }}</span>
+      </label>
+    }
+  </div>
+  <p
+    id="settings-device-language-hint"
+    class="mt-2 text-sm text-fg-muted"
+    i18n="@@uiSettings-deviceSettings-languageHint">
+    Die App wird beim Wechsel neu geladen. Zahlen und Daten folgen der Sprache, Beträge bleiben in
+    Euro.
+  </p>
+</fieldset>
+
 <fieldset>
   <legend class="mb-2 font-medium" i18n="@@uiSettings-deviceSettings-colorSchemeLegend">
     Erscheinungsbild

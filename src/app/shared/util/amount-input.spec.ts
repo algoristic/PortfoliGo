@@ -1,6 +1,7 @@
 import fc from 'fast-check';
 
 import { AmountInputResult, formatAmountInput, parseAmountInput } from './amount-input';
+import { setFormatLanguage } from './locale';
 
 const NBSP = ' ';
 /** Largest amount with 13 integer digits: 9.999.999.999.999,99 €. */
@@ -95,6 +96,56 @@ describe('amount-input', () => {
           expect(parseAmountInput(`${euros},${rest}`)).toEqual(amount(cents));
         }),
       );
+    });
+  });
+
+  // TS §11.9: in English commas group thousands and a dot separates the cents (E-36)
+  describe('in English', () => {
+    afterEach(() => setFormatLanguage('de'));
+
+    it.each<[string, AmountInputResult]>([
+      ['10,000', amount(1_000_000)],
+      ['10000.5', amount(1_000_050)],
+      ['1,234.56', amount(123_456)],
+      ['1,234,567.8', amount(123_456_780)],
+      ['.5', amount(50)],
+      ['-3.2', amount(-320)],
+      ['2,500 €', amount(250_000)],
+      ['', EMPTY],
+      ['1.234,56', INVALID],
+      ['10,00', INVALID],
+      ['1.2.3', INVALID],
+      ['1,0000', INVALID],
+    ])('reads %j as %j', (text, expected) => {
+      setFormatLanguage('en');
+      expect(parseAmountInput(text)).toEqual(expected);
+    });
+
+    it.each([
+      [1_000_000, '10,000'],
+      [123_456, '1,234.56'],
+      [50, '0.50'],
+      [-320, '-3.20'],
+    ])('shows %d cents as %s', (cents, expected) => {
+      setFormatLanguage('en');
+      expect(formatAmountInput(cents)).toBe(expected);
+    });
+
+    it('reads every formatted amount back to the same cents', () => {
+      setFormatLanguage('en');
+      fc.assert(
+        fc.property(
+          fc.bigInt({ min: BigInt(-MAX_CENTS), max: BigInt(MAX_CENTS) }).map(Number),
+          (cents) => {
+            expect(parseAmountInput(formatAmountInput(cents))).toEqual(amount(cents || 0));
+          },
+        ),
+      );
+    });
+
+    it('reads with explicit separators regardless of the language', () => {
+      expect(parseAmountInput('1,234.56', { group: ',', decimal: '.' })).toEqual(amount(123_456));
+      expect(parseAmountInput('1.234,56', { group: '.', decimal: ',' })).toEqual(amount(123_456));
     });
   });
 });

@@ -132,6 +132,7 @@ const config = {
     'src/app/players/domain/backup-logic.ts',
     'src/app/shared/util/search-ranking.ts',
     'src/app/shell/domain/command-palette-logic.ts',
+    'src/app/shared/util/locale.ts',
   ],
   coverageAnalysis: 'perTest',
   ignoreStatic: true,

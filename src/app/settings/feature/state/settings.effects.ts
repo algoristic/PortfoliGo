@@ -5,6 +5,7 @@ import { select, Store } from '@ngrx/store';
 import { catchError, concatMap, ignoreElements, map, of, switchMap, tap } from 'rxjs';
 
 import { isQuotaExceeded } from '@app/persistence/util/quota';
+import { APP_RELOAD } from '@app/shared/data-access/app-reload/app-reload';
 import { ColorSchemeService } from '@app/shared/data-access/color-scheme/color-scheme.service';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
@@ -20,6 +21,7 @@ export class SettingsEffects {
   readonly #settingsService = inject(SettingsService);
   readonly #colorSchemeService = inject(ColorSchemeService);
   readonly #toastService = inject(ToastService);
+  readonly #appReload = inject(APP_RELOAD);
 
   loadSettings$ = createEffect(() =>
     this.#actions$.pipe(
@@ -51,6 +53,32 @@ export class SettingsEffects {
         ),
       ),
     ),
+  );
+
+  /**
+   * A new language needs a new start (TS §11.9): `main.ts` loads its translations before the app.
+   * The app reloads only once the setting is saved; otherwise the failure toast explains it.
+   */
+  saveLanguage$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(SettingsActions.selectedLanguage),
+      concatLatestFrom(() => this.#store.pipe(select(SettingsSelectors.selectSettings))),
+      concatMap(([, settings]) =>
+        this.#settingsService.save(settings).pipe(
+          map(() => SettingsActions.saveLanguageSuccess()),
+          catchError((error: unknown) => of(SettingsActions.saveSettingsFailure({ error }))),
+        ),
+      ),
+    ),
+  );
+
+  reloadForLanguage$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(SettingsActions.saveLanguageSuccess),
+        tap(() => this.#appReload.reload()),
+      ),
+    { dispatch: false },
   );
 
   /** Takes over the `dark` class from the inline script in `src/index.html` (TS §11.5). */

@@ -1,3 +1,5 @@
+import { setFormatLanguage } from '@app/shared/util/locale';
+
 import { dateTimeToTick, GAME_START_TICK } from './calendar-logic';
 import { formatGameDate, formatGameTime, formatGameWeekdayTime } from './game-time-format';
 
@@ -26,6 +28,22 @@ describe('game-time-format', () => {
     it('formats the date only', () => {
       const tick = dateTimeToTick({ year: 2030, month: 4, day: 1, hour: 23, minute: 59 });
       expect(formatGameDate(tick)).toBe('01.04.2030');
+    });
+  });
+
+  // TS §11.9: format table, column English (`en-GB`, E-36); game time stays UTC.
+  describe('in English', () => {
+    afterEach(() => setFormatLanguage('de'));
+
+    it('formats weekday, date and time the British way', () => {
+      setFormatLanguage('en');
+      const tick = dateTimeToTick({ year: 2030, month: 4, day: 1, hour: 9, minute: 41 });
+      expect(formatGameTime(tick)).toBe('Mon, 01/04/2030, 09:41');
+      expect(formatGameWeekdayTime(tick)).toBe('Mon 09:41');
+      expect(formatGameDate(tick)).toBe('01/04/2030');
+      expect(
+        formatGameTime(dateTimeToTick({ year: 2032, month: 2, day: 29, hour: 17, minute: 5 })),
+      ).toBe('Sun, 29/02/2032, 17:05');
     });
   });
 });

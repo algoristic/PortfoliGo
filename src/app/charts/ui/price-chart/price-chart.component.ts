@@ -33,6 +33,7 @@ import { Candle } from '@app/market/domain/models/candle.model';
 import { priceDecimals } from '@app/shared/domain/price-step-logic';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
 import { formatNumber } from '@app/shared/util/format';
+import { formatLocale } from '@app/shared/util/locale';
 
 import { BandFillPrimitive } from './band-fill.primitive';
 import { PRICE_CHART_LIBRARY, PriceChartLibrary } from './price-chart.config';
@@ -232,7 +233,7 @@ export class PriceChartComponent {
     const chart = library.createChart(element, {
       autoSize: true,
       localization: {
-        locale: 'de-DE',
+        locale: formatLocale(),
         timeFormatter: (time: unknown) => (typeof time === 'number' ? formatChartTime(time) : ''),
         priceFormatter: (price: number) => formatNumber(price, priceDecimals(price)),
       },

@@ -2,9 +2,10 @@ import fc from 'fast-check';
 
 import { NOTIFICATION_CODES } from '@app/notifications/domain/models/notification.model';
 import { withNotificationChannel } from '@app/notifications/domain/notification-channel-logic';
+import { LANGUAGES } from '@app/shared/util/locale';
 
 import { CHANGE_COLOR_SETTINGS, COLOR_SCHEME_SETTINGS, Settings } from './models/settings.model';
-import { parseSettings } from './settings-logic';
+import { languageOfSettings, parseSettings } from './settings-logic';
 
 const arbChanges = fc.array(
   fc.tuple(
@@ -18,12 +19,14 @@ const arbSettings: fc.Arbitrary<Settings> = fc
   .record({
     colorScheme: fc.constantFrom(...COLOR_SCHEME_SETTINGS),
     changeColors: fc.constantFrom(...CHANGE_COLOR_SETTINGS),
+    language: fc.constantFrom(...LANGUAGES),
     priceHighlight: fc.boolean(),
     shortcuts: fc.boolean(),
     changes: arbChanges,
   })
-  .map(({ colorScheme, changeColors, priceHighlight, shortcuts, changes }) => ({
+  .map(({ colorScheme, changeColors, language, priceHighlight, shortcuts, changes }) => ({
     appearance: { colorScheme, changeColors },
+    locale: { language },
     motion: { priceHighlight },
     shortcuts: { enabled: shortcuts },
     notifications: changes.reduce(
@@ -32,10 +35,11 @@ const arbSettings: fc.Arbitrary<Settings> = fc
     ),
   }));
 
-// TS §9.3: PS US-UI-01, E-06 dark; US-UI-02 green and red; US-MK-05 highlight on; TS §11.10
-// shortcuts on; TS §12 toasts and browser notifications as in the table.
+// TS §9.3: PS US-UI-01, E-06 dark; US-UI-02 green and red; US-UI-11, E-36 German; US-MK-05
+// highlight on; TS §11.10 shortcuts on; TS §12 toasts and browser notifications as in the table.
 const DEFAULTS: Settings = {
   appearance: { colorScheme: 'dark', changeColors: 'green-red' },
+  locale: { language: 'de' },
   motion: { priceHighlight: true },
   shortcuts: { enabled: true },
   notifications: { toast: {}, browser: {} },
@@ -58,12 +62,13 @@ describe('parseSettings', () => {
     ['an empty object', {}],
     [
       'sections that are no objects',
-      { appearance: 'light', motion: [], shortcuts: false, notifications: 'off' },
+      { appearance: 'light', locale: 'en', motion: [], shortcuts: false, notifications: 'off' },
     ],
     [
       'unknown values',
       {
         appearance: { colorScheme: 'blue', changeColors: 'red-green' },
+        locale: { language: 'fr' },
         motion: { priceHighlight: 'no' },
         shortcuts: { enabled: 'no' },
         notifications: { toast: { 'order-executed': 0 }, browser: ['order-executed'] },
@@ -88,6 +93,7 @@ describe('parseSettings', () => {
     expect(
       parseSettings({
         appearance: { colorScheme: 'Dunkel', changeColors: 'blue-orange' },
+        locale: { language: 'en' },
         motion: { priceHighlight: false },
         shortcuts: { enabled: 1 },
         notifications: {
@@ -97,6 +103,7 @@ describe('parseSettings', () => {
       }),
     ).toEqual({
       appearance: { colorScheme: 'dark', changeColors: 'blue-orange' },
+      locale: { language: 'en' },
       motion: { priceHighlight: false },
       shortcuts: { enabled: true },
       notifications: {
@@ -123,6 +130,7 @@ describe('parseSettings', () => {
         const settings = parseSettings(data);
         expect(COLOR_SCHEME_SETTINGS).toContain(settings.appearance.colorScheme);
         expect(CHANGE_COLOR_SETTINGS).toContain(settings.appearance.changeColors);
+        expect(LANGUAGES).toContain(settings.locale.language);
         expect(typeof settings.motion.priceHighlight).toBe('boolean');
         expect(typeof settings.shortcuts.enabled).toBe('boolean');
         for (const channel of ['toast', 'browser'] as const) {
@@ -132,5 +140,21 @@ describe('parseSettings', () => {
         }
       }),
     );
+  });
+});
+
+describe('languageOfSettings', () => {
+  // TS §9.3: `locale.language` is `de` or `en`, anything else is German (E-36)
+  it.each([
+    [{ locale: { language: 'en' } }, 'en'],
+    [{ locale: { language: 'de' } }, 'de'],
+    [{ locale: { language: 'EN' } }, 'de'],
+    [{ locale: { language: 'en-GB' } }, 'de'],
+    [{ locale: 'en' }, 'de'],
+    [{ appearance: { colorScheme: 'light' } }, 'de'],
+    [null, 'de'],
+    [undefined, 'de'],
+  ])('reads %j as %s', (data, language) => {
+    expect(languageOfSettings(data)).toBe(language);
   });
 });

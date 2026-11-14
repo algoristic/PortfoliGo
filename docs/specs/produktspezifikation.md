@@ -752,6 +752,7 @@ Als Anwender möchte ich die App auf Deutsch oder Englisch nutzen.
 - Spielzeit: `Mo., 01.04.2030, 09:41`.
 - Zahlen in Tabellen rechtsbündig mit tabellarischen Ziffern.
 - Speichergrößen dezimal mit höchstens einer Nachkommastelle und der größten Einheit unter 1.000: `512 Byte`, `12,3 kB`, `1,5 MB`, `2 GB` (AP 6.3).
+- Auf Englisch (US-UI-11, E-36) gelten britische Formate in Euro und UTC: `€1,234.56`, `+1.23%`, `Mon, 01/04/2030, 09:41`; Eingaben mit Punkt als Dezimaltrennzeichen. Die Formattabelle beider Sprachen steht in TS §11.9 (AP 6.8a).
 
 ## 11. Abgrenzung
 

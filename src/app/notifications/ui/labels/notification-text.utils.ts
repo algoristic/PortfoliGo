@@ -13,6 +13,8 @@ import {
   formatQuantity,
 } from '@app/shared/util/format';
 
+import { perLocale } from '@app/shared/util/locale';
+
 import {
   notificationCodeLabel,
   orderRejectionLabel,
@@ -34,11 +36,14 @@ export type InstrumentNames = ReadonlyMap<string, string>;
 
 const NO_INSTRUMENT_NAMES: InstrumentNames = new Map();
 
-const monthFormat = new Intl.DateTimeFormat('de-DE', {
-  timeZone: 'UTC',
-  month: 'long',
-  year: 'numeric',
-});
+const monthFormat = perLocale(
+  (locale) =>
+    new Intl.DateTimeFormat(locale, {
+      timeZone: 'UTC',
+      month: 'long',
+      year: 'numeric',
+    }),
+);
 
 /**
  * Title and text of a notification from its code and parameters (TS §8.6, §12): the engine sends
@@ -115,7 +120,7 @@ export function notificationText(
     }
     case 'month-closed': {
       const { year, month, values } = notification.params;
-      const monthName = monthFormat.format(Date.UTC(year, month - 1, 1));
+      const monthName = monthFormat().format(Date.UTC(year, month - 1, 1));
       const rate = formatOptional(savingsRate(values), (ratio) => formatPercent(ratio, 1));
       return {
         title: $localize`:@@uiNotifications-notificationText-monthClosedTitle:Monatsabschluss ${monthName}:month:`,

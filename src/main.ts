@@ -1,8 +1,14 @@
 /// <reference types="@angular/localize" />
 
-import { bootstrapApplication } from '@angular/platform-browser';
+import { loadTranslations } from '@angular/localize';
 
-import { AppComponent } from './app/app.component';
-import { appConfig } from './app/app.config';
+import { startLanguage } from './app/settings/data-access/language/language-start';
 
-bootstrapApplication(AppComponent, appConfig);
+// The language comes first (TS §11.9, E-36): `$localize` in module constants runs when a module is
+// imported, so the app is imported only after the translations are loaded.
+startLanguage({
+  storage: () => window.localStorage,
+  fetch: (url) => window.fetch(url, { cache: 'no-cache' }),
+  loadTranslations,
+  root: document.documentElement,
+}).then(() => import('./bootstrap'));

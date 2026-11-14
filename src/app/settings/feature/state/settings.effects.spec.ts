@@ -6,6 +6,7 @@ import { firstValueFrom, of, Subject, throwError } from 'rxjs';
 import type { Mocked } from 'vitest';
 
 import { Settings } from '@app/settings/domain/models/settings.model';
+import { APP_RELOAD, AppReloadPort } from '@app/shared/data-access/app-reload/app-reload';
 import { ColorSchemeService } from '@app/shared/data-access/color-scheme/color-scheme.service';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
@@ -17,6 +18,7 @@ import { SettingsService } from '../../data-access/service/settings.service';
 
 const STORED: Settings = {
   appearance: { colorScheme: 'light', changeColors: 'blue-orange' },
+  locale: { language: 'en' },
   motion: { priceHighlight: false },
   shortcuts: { enabled: false },
   notifications: { toast: { 'order-executed': false }, browser: {} },
@@ -29,12 +31,14 @@ describe('SettingsEffects', () => {
   let service: Mocked<Pick<SettingsService, 'load' | 'save'>>;
   let colorScheme: Mocked<Pick<ColorSchemeService, 'apply' | 'applyChangeColors'>>;
   let toasts: Mocked<Pick<ToastService, 'error'>>;
+  let appReload: Mocked<AppReloadPort>;
 
   beforeEach(() => {
     actions$ = new Subject();
     service = { load: vi.fn(), save: vi.fn((settings: Settings) => of(settings)) };
     colorScheme = { apply: vi.fn(), applyChangeColors: vi.fn() };
     toasts = { error: vi.fn() };
+    appReload = { reload: vi.fn() };
     TestBed.configureTestingModule({
       providers: [
         SettingsEffects,
@@ -43,6 +47,7 @@ describe('SettingsEffects', () => {
         { provide: SettingsService, useValue: service },
         { provide: ColorSchemeService, useValue: colorScheme },
         { provide: ToastService, useValue: toasts },
+        { provide: APP_RELOAD, useValue: appReload },
       ],
     });
     effects = TestBed.inject(SettingsEffects);
@@ -91,6 +96,35 @@ describe('SettingsEffects', () => {
       const result = firstValueFrom(effects.saveSettings$);
       actions$.next(SettingsActions.selectedColorScheme({ colorScheme: 'light' }));
       expect(await result).toEqual(SettingsActions.saveSettingsFailure({ error }));
+    });
+  });
+
+  describe('saveLanguage$', () => {
+    it('saves all settings and then reports success', async () => {
+      setSettings(STORED);
+      const result = firstValueFrom(effects.saveLanguage$);
+      actions$.next(SettingsActions.selectedLanguage({ language: 'en' }));
+      expect(await result).toEqual(SettingsActions.saveLanguageSuccess());
+      expect(service.save.mock.calls).toEqual([[STORED]]);
+    });
+
+    it('dispatches saveSettingsFailure instead of reloading when saving fails', async () => {
+      const error = new DOMException('full', 'QuotaExceededError');
+      service.save.mockReturnValue(throwError(() => error));
+      const result = firstValueFrom(effects.saveLanguage$);
+      actions$.next(SettingsActions.selectedLanguage({ language: 'en' }));
+      expect(await result).toEqual(SettingsActions.saveSettingsFailure({ error }));
+    });
+  });
+
+  describe('reloadForLanguage$', () => {
+    it('reloads the app once the language is saved', () => {
+      const subscription = effects.reloadForLanguage$.subscribe();
+      actions$.next(SettingsActions.selectedLanguage({ language: 'en' }));
+      expect(appReload.reload).not.toHaveBeenCalled();
+      actions$.next(SettingsActions.saveLanguageSuccess());
+      subscription.unsubscribe();
+      expect(appReload.reload).toHaveBeenCalledOnce();
     });
   });
 

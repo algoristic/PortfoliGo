@@ -28,12 +28,21 @@
       `SETTINGS_VERSION`): `data.appearance.colorScheme` is "light", "system" or anything else (dark,
       the default of E-06); `data.appearance.changeColors` "blue-orange" sets `colors-blue-orange`,
       anything else keeps green and red (PS US-UI-02). The settings slice takes over with the
-      `ColorSchemeService`.
+      `ColorSchemeService`. `data.locale.language` "en" sets `<html lang="en">`, anything else keeps
+      German (E-36); `main.ts` confirms it once the translations are loaded (`language-start.ts`).
     -->
     <script>
       (function () {
         var scheme = 'dark';
         var changeColors = 'green-red';
+        var language = 'de';
+        try {
+          var stored = JSON.parse(localStorage.getItem('pgo.settings'));
+          if (stored && stored.v === 1 && stored.data.locale.language === 'en') {
+            language = 'en';
+          }
+        } catch (error) {}
+        document.documentElement.lang = language;
         try {
           var entry = JSON.parse(localStorage.getItem('pgo.settings'));
           if (entry && entry.v === 1) {

@@ -80,7 +80,8 @@ Rules that apply everywhere:
 | Dev server        | `npm start` (port 4711); `ng serve --ssl --host 0.0.0.0` for phones (HTTPS-only browser APIs)                                   |
 | Single spec file  | logic: `npx vitest run src/app/<path>/<name>.spec.ts`; Angular: `ng test --watch=false --include src/app/<path>/<name>.spec.ts` |
 | Tests by name     | `npx vitest run --project logic -t '<regex>'`; `ng test --watch=false --filter '<regex>'`                                       |
-| Extract i18n      | `npm run translate` → root `messages.xlf`                                                                                       |
+| Extract i18n      | `npm run translate` → root `messages.xlf`, then merged into `src/locale/messages.en.xlf` and `src/assets/i18n/messages.en.json` |
+| Translations      | `npm run i18n:check` (missing/outdated/obsolete; `--strict` = gate from AP 6.8b); `npm run i18n:build` after editing the `.xlf` |
 
 Specs of `domain` and `util` run with plain Vitest under Node (`vitest.config.ts`), all others with Vitest under jsdom through `ng test` (`@angular/build:unit-test`, setup in `src/test-setup.ts`); system tests run with Playwright (§10, TS §14.1).
 
@@ -349,7 +350,7 @@ The source locale is **German** (`de`).
   - Never reuse an ID for a different text.
 - In TypeScript, create class-field labels: ``label = $localize`:@@featureX-xPage-label:Text`;``
 - In templates: `<span i18n="@@uiOrders-orderItem-title">Titel</span>`, `<ng-container i18n="@@…">`, and `i18n-<attr>="@@…"` for attributes (e.g. `i18n-label`).
-- After adding or changing texts, run `ng extract-i18n` and keep the updated source `messages.xlf` in the change.
+- After adding or changing texts, run `npm run translate` and keep the updated `messages.xlf`, `src/locale/messages.en.xlf` and `src/assets/i18n/messages.en.json` in the change. English translations go into `src/locale/messages.en.xlf` (`<target>`); then `npm run i18n:build`.
 
 ## 6. State management (NgRx)
 
@@ -734,7 +735,8 @@ Whoever plans an AP (or a new page or ui component) names its tests right away:
 | Types of specs and e2e         | `npm run typecheck`; `ng build` type-checks the app                                                                             |
 | Lint (and fix)                 | `ng lint --fix`                                                                                                                 |
 | Format                         | `npx prettier --write <files>`                                                                                                  |
-| Extract i18n                   | `ng extract-i18n`                                                                                                               |
+| Extract i18n                   | `npm run translate` (`ng extract-i18n` + merge into the English translation)                                                    |
+| Check translations             | `npm run i18n:check`                                                                                                            |
 
 ## 12. Patterns to avoid
 

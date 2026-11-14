@@ -9,9 +9,13 @@ import {
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { formatCents } from '@app/shared/util/format';
 
+import { perLocale } from '@app/shared/util/locale';
+
 import { IncomeCostsYearView } from './income-costs.model';
 
-const monthFormat = new Intl.DateTimeFormat('de-DE', { timeZone: 'UTC', month: 'long' });
+const monthFormat = perLocale(
+  (locale) => new Intl.DateTimeFormat(locale, { timeZone: 'UTC', month: 'long' }),
+);
 
 /**
  * What investments and accounts earn and cost (US-PF-07, AP 5.7): per year the dividends and the
@@ -33,7 +37,7 @@ export class IncomeCostsComponent {
       running: year.running,
       months: year.months.map(({ month, dividends, creditInterest }) => ({
         id: String(month.month).padStart(2, '0'),
-        label: monthFormat.format(Date.UTC(month.year, month.month - 1, 1)),
+        label: monthFormat().format(Date.UTC(month.year, month.month - 1, 1)),
         dividends: formatCents(dividends),
         creditInterest: formatCents(creditInterest),
       })),

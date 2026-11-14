@@ -20,11 +20,12 @@ import { NotificationChannelToggle } from '@app/settings/ui/notification-channel
 import { PlayerProfileComponent } from '@app/settings/ui/player-profile/player-profile.component';
 import { PlayerSettingsComponent } from '@app/settings/ui/player-settings/player-settings.component';
 import { PanelComponent } from '@app/shared/ui/panel/panel.component';
+import { Language } from '@app/shared/util/locale';
 
 import { SettingsFacade } from '../state/settings.facade';
 
 /**
- * Settings of this device and of the player (PS US-UI-09): appearance, gain and loss colours,
+ * Settings of this device and of the player (PS US-UI-09): language (US-UI-11), appearance, gain and loss colours,
  * price highlight, shortcuts and notifications per code on the device; name, seed (US-SP-03),
  * background behaviour, auto-pause (US-ZT-06) and the export (US-EX-01) of the player; the app
  * itself: installation (US-UI-07), notification permission (US-BN-04) and storage (US-EX-03).
@@ -53,6 +54,10 @@ export class SettingsPage {
   notificationsFacade = inject(NotificationsFacade);
   playersFacade = inject(PlayersFacade);
   pwaFacade = inject(PwaFacade);
+
+  onSelectLanguage(language: Language): void {
+    this.settingsFacade.selectLanguage(language);
+  }
 
   onSelectColorScheme(colorScheme: ColorSchemeSetting): void {
     this.settingsFacade.selectColorScheme(colorScheme);

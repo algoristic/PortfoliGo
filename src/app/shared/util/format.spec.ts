@@ -14,6 +14,7 @@ import {
   formatSignedPrice,
   MISSING_VALUE,
 } from './format';
+import { setFormatLanguage } from './locale';
 
 // Intl separates the number and the unit with a non-breaking space.
 const NBSP = ' ';
@@ -176,6 +177,56 @@ describe('format', () => {
       for (const value of [null, undefined, NaN, Infinity, -Infinity]) {
         expect(formatOptional(value, formatNumber)).toBe(MISSING_VALUE);
       }
+    });
+  });
+
+  // TS §11.9: format table, column English (`en-GB`, E-36); currency EUR in both languages.
+  describe('in English', () => {
+    afterEach(() => setFormatLanguage('de'));
+
+    it.each<[string, () => string, string]>([
+      ['formatCents(123456)', () => formatCents(123456), '€1,234.56'],
+      ['formatCents(-5)', () => formatCents(-5), '-€0.05'],
+      ['formatPrice(123.4)', () => formatPrice(123.4), '€123.40'],
+      ['formatPrice(8.002, 3)', () => formatPrice(8.002, 3), '€8.002'],
+      ['formatPrice(0.5, 4)', () => formatPrice(0.5, 4), '€0.5000'],
+      ['formatPercent(0.025)', () => formatPercent(0.025), '2.50%'],
+      ['formatPercent(-0.1234, 1)', () => formatPercent(-0.1234, 1), `${MINUS}12.3%`],
+      ['formatPercent(-42.114, 1)', () => formatPercent(-42.114, 1), `${MINUS}4,211.4%`],
+      ['formatSignedPercent(0.025)', () => formatSignedPercent(0.025), '+2.50%'],
+      ['formatSignedPercent(-0.025)', () => formatSignedPercent(-0.025), `${MINUS}2.50%`],
+      ['formatSignedPrice(0.125, 3)', () => formatSignedPrice(0.125, 3), '+€0.125'],
+      ['formatSignedPrice(-1.2)', () => formatSignedPrice(-1.2), `${MINUS}€1.20`],
+      ['formatSignedCents(31240)', () => formatSignedCents(31_240), '+€312.40'],
+      ['formatSignedCents(-4510)', () => formatSignedCents(-4_510), `${MINUS}€45.10`],
+      ['formatNumber(12345.6)', () => formatNumber(12_345.6), '12,346'],
+      ['formatNumber(1234.5678, 2)', () => formatNumber(1_234.5678, 2), '1,234.57'],
+      ['formatQuantity(1234567)', () => formatQuantity(1_234_567), '1.234567'],
+      ['formatQuantity(500000)', () => formatQuantity(500_000), '0.5'],
+      ['formatCompact(1234567)', () => formatCompact(1_234_567), '1.2m'],
+      ['formatCompact(12345)', () => formatCompact(12_345), '12.3k'],
+      ['formatCompactEuros(1234000000)', () => formatCompactEuros(1_234_000_000), '€1.2bn'],
+      ['formatCompactEuros(850000000)', () => formatCompactEuros(850_000_000), '€850m'],
+      ['formatCompactEuros(-3000000000)', () => formatCompactEuros(-3_000_000_000), `${MINUS}€3bn`],
+      ['formatBytes(512)', () => formatBytes(512), `512${NBSP}byte`],
+      ['formatBytes(12345)', () => formatBytes(12_345), `12.3${NBSP}kB`],
+      ['formatBytes(1500000)', () => formatBytes(1_500_000), `1.5${NBSP}MB`],
+      ['formatBytes(2000000000)', () => formatBytes(2_000_000_000), `2${NBSP}GB`],
+      [
+        'formatDateTime(12.11.2026 14:30 local)',
+        () => formatDateTime(new Date(2026, 10, 12, 14, 30).getTime()),
+        '12/11/2026, 14:30',
+      ],
+    ])('formats %s', (_call, format, expected) => {
+      setFormatLanguage('en');
+      expect(format()).toBe(expected);
+    });
+
+    it('switches back to German formats', () => {
+      setFormatLanguage('en');
+      expect(formatCents(123456)).toBe('€1,234.56');
+      setFormatLanguage('de');
+      expect(formatCents(123456)).toBe(`1.234,56${NBSP}€`);
     });
   });
 });

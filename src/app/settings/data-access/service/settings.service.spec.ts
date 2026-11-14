@@ -6,10 +6,11 @@ import { Settings } from '@app/settings/domain/models/settings.model';
 import { provideSettingsService } from './settings-service.providers';
 import { SettingsService } from './settings.service';
 
-// TS §9.3: PS US-UI-01, E-06 dark; US-UI-02 green and red; US-MK-05 highlight on; TS §11.10
-// shortcuts on; no own toast or browser setting (the table of TS §12 applies).
+// TS §9.3: PS US-UI-01, E-06 dark; US-UI-02 green and red; US-UI-11, E-36 German; US-MK-05
+// highlight on; TS §11.10 shortcuts on; no own toast or browser setting (the table of TS §12 applies).
 const DEFAULTS: Settings = {
   appearance: { colorScheme: 'dark', changeColors: 'green-red' },
+  locale: { language: 'de' },
   motion: { priceHighlight: true },
   shortcuts: { enabled: true },
   notifications: { toast: {}, browser: {} },
@@ -38,6 +39,7 @@ describe('SettingsService', () => {
         v: 1,
         data: {
           appearance: { colorScheme: 'light', changeColors: 'blue-orange' },
+          locale: { language: 'en' },
           motion: { priceHighlight: false },
           shortcuts: { enabled: false },
           notifications: { toast: { 'order-executed': false }, browser: { 'year-closed': true } },
@@ -46,6 +48,7 @@ describe('SettingsService', () => {
 
       expect(await firstValueFrom(service.load())).toEqual({
         appearance: { colorScheme: 'light', changeColors: 'blue-orange' },
+        locale: { language: 'en' },
         motion: { priceHighlight: false },
         shortcuts: { enabled: false },
         notifications: { toast: { 'order-executed': false }, browser: { 'year-closed': true } },
@@ -98,6 +101,7 @@ describe('SettingsService', () => {
     it('stores the settings as version 1, which load reads back', async () => {
       const settings: Settings = {
         appearance: { colorScheme: 'system', changeColors: 'blue-orange' },
+        locale: { language: 'en' },
         motion: { priceHighlight: false },
         shortcuts: { enabled: false },
         notifications: {

@@ -15,8 +15,10 @@
     "e2e": "ng build && npm run test:e2e",
     "test:e2e": "playwright test --project=chromium --project=chromium-intl --project=mobile-chromium --grep-invert @budget && playwright test --project=chromium --grep @budget --workers=1",
     "budget": "node tools/check-bundle-budget.mjs www",
-    "verify": "prettier --check . && ng lint && npm run typecheck && npm test && npm run test:calibration && npm run test:perf && npm run test:mutation && npm run build && npm run budget && npm run test:e2e",
-    "translate": "ng extract-i18n",
+    "verify": "prettier --check . && ng lint && npm run i18n:check && npm run typecheck && npm test && npm run test:calibration && npm run test:perf && npm run test:mutation && npm run build && npm run budget && npm run test:e2e",
+    "translate": "ng extract-i18n && node tools/i18n.mjs merge",
+    "i18n:build": "node tools/i18n.mjs build",
+    "i18n:check": "node tools/i18n.mjs check",
     "lint": "ng lint --fix",
     "format": "npx prettier --write ."
   },

@@ -1,5 +1,6 @@
 import { registerLocaleData } from '@angular/common';
 import localeDe from '@angular/common/locales/de';
+import localeEnGb from '@angular/common/locales/en-GB';
 import { EnvironmentProviders, inject, LOCALE_ID, Provider } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { provideEffects } from '@ngrx/effects';
@@ -17,11 +18,15 @@ import { provideSettingsState } from '@app/settings/feature/state/settings.provi
 import { provideColorSchemeService } from '@app/shared/data-access/color-scheme/color-scheme-service.providers';
 import { provideToastService } from '@app/shared/ui/toast/toast-service.providers';
 import { VALUE_FLASH_ENABLED } from '@app/shared/ui/value-flash/value-flash.config';
+import { formatLanguage, Language } from '@app/shared/util/locale';
 import { providePageTitleStrategy } from '@app/shell/feature/page-title/page-title.providers';
 
 import { version } from '../../package.json';
 
+// Angular's locale per language (TS §11.9, E-36): the language `main.ts` set before the start.
 registerLocaleData(localeDe);
+registerLocaleData(localeEnGb);
+const LOCALE_IDS: Record<Language, string> = { de: 'de', en: 'en-GB' };
 
 /**
  * App-wide providers besides the router configuration and the devtools. Page tests use the same
@@ -33,7 +38,7 @@ export function provideAppCore(): Array<Provider | EnvironmentProviders> {
     provideStore({ router: routerReducer }),
     provideEffects(),
     provideRouterStore(),
-    { provide: LOCALE_ID, useValue: 'de' },
+    { provide: LOCALE_ID, useFactory: () => LOCALE_IDS[formatLanguage()] },
     { provide: APP_VERSION, useValue: version },
     provideColorSchemeService(),
     provideToastService(),

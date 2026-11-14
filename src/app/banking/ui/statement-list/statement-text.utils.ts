@@ -12,15 +12,20 @@ import { Tick, TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
 import { priceDecimals } from '@app/shared/domain/price-step-logic';
 import { formatPrice, formatQuantity } from '@app/shared/util/format';
 
+import { perLocale } from '@app/shared/util/locale';
+
 import { StatementEntryText } from './statement-list.model';
 
 import { accountKindLabel, transactionTypeLabel } from '../labels/banking-labels';
 
-const monthFormat = new Intl.DateTimeFormat('de-DE', {
-  timeZone: 'UTC',
-  month: 'long',
-  year: 'numeric',
-});
+const monthFormat = perLocale(
+  (locale) =>
+    new Intl.DateTimeFormat(locale, {
+      timeZone: 'UTC',
+      month: 'long',
+      year: 'numeric',
+    }),
+);
 
 /** Names of the securities by instrument ID (from the market slice). */
 export type InstrumentNames = ReadonlyMap<string, string>;
@@ -161,7 +166,7 @@ function monthText(params: TextParams, text: (month: string) => string): Stateme
   const month = parseMonth(params['month']);
   return month === null
     ? null
-    : plain(text(monthFormat.format(Date.UTC(month.year, month.month - 1, 1))));
+    : plain(text(monthFormat().format(Date.UTC(month.year, month.month - 1, 1))));
 }
 
 /**

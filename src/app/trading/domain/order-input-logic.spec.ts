@@ -74,3 +74,53 @@ describe('formatPriceInput', () => {
     );
   });
 });
+
+// TS §11.9: in English commas group thousands and a dot separates the decimal places (E-36).
+describe('in English', () => {
+  const EN = { group: ',', decimal: '.' };
+
+  it.each([
+    ['1,000', 1_000_000_000],
+    ['0.5', 500_000],
+    ['.5', 500_000],
+    ['2.123456', 2_123_456],
+  ])('reads the quantity %j as %d millionths', (text, value) => {
+    expect(parseQuantityInput(text, EN)).toEqual({ kind: 'value', value });
+  });
+
+  it.each(['1.000.0', '0,5', '1,00', '1.0000001'])('rejects the quantity %j', (text) => {
+    expect(parseQuantityInput(text, EN)).toEqual({ kind: 'invalid' });
+  });
+
+  it.each([
+    ['99.9', 99.9],
+    ['1,234.50', 1234.5],
+    ['0.0125', 0.0125],
+  ])('reads the price %j as %d €', (text, value) => {
+    expect(parsePriceInput(text, EN)).toEqual({ kind: 'value', value });
+  });
+
+  it('rejects a German price', () => {
+    expect(parsePriceInput('99,90', EN)).toEqual({ kind: 'invalid' });
+  });
+
+  it.each([
+    [99.5, '99.50'],
+    [1234.5, '1234.50'],
+    [0.0125, '0.0125'],
+  ])('shows %d € as %j', (price, text) => {
+    expect(formatPriceInput(price, EN)).toBe(text);
+  });
+
+  it('reads back every price with up to four decimal places', () => {
+    fc.assert(
+      fc.property(fc.integer({ min: 1, max: 999_999_999 }), (units) => {
+        const price = units / 10_000;
+        expect(parsePriceInput(formatPriceInput(price, EN), EN)).toEqual({
+          kind: 'value',
+          value: price,
+        });
+      }),
+    );
+  });
+});

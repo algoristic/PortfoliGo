@@ -1,13 +1,21 @@
 import { Component, computed, input, output } from '@angular/core';
 
 import { ChangeColorSetting, ColorSchemeSetting } from '@app/settings/domain/models/settings.model';
-
 import { PriceChangeComponent } from '@app/shared/ui/price-change/price-change.component';
+import { Language } from '@app/shared/util/locale';
 
-import { ChangeColorOption, ColorSchemeOption, ShortcutEntry } from './device-settings.model';
+import {
+  ChangeColorOption,
+  ColorSchemeOption,
+  LanguageOption,
+  ShortcutEntry,
+} from './device-settings.model';
+
+/** Names of the languages in their own language (PS US-UI-11). */
+const LANGUAGE_NAMES: Record<Language, string> = { de: 'Deutsch', en: 'English' };
 
 /**
- * Settings of this device (PS US-UI-09): appearance (US-UI-01), gain and loss colours (US-UI-02),
+ * Settings of this device (PS US-UI-09): language (US-UI-11), appearance (US-UI-01), gain and loss colours (US-UI-02),
  * price highlight (US-MK-05) and shortcuts (US-ZT-02).
  */
 @Component({
@@ -17,6 +25,7 @@ import { ChangeColorOption, ColorSchemeOption, ShortcutEntry } from './device-se
   host: { class: 'block' },
 })
 export class DeviceSettingsComponent {
+  language = input<Language | null>();
   colorScheme = input<ColorSchemeSetting | null>();
   changeColors = input<ChangeColorSetting | null>();
   priceHighlight = input<boolean | null>();
@@ -26,10 +35,19 @@ export class DeviceSettingsComponent {
   sampleGain = 0.0123;
   sampleLoss = -0.0045;
 
+  selectedLanguage = output<Language>();
   selectedColorScheme = output<ColorSchemeSetting>();
   selectedChangeColors = output<ChangeColorSetting>();
   toggledPriceHighlight = output<boolean>();
   toggledShortcuts = output<boolean>();
+
+  languageOptions = computed(() =>
+    (Object.keys(LANGUAGE_NAMES) as Language[]).map((id): LanguageOption => ({
+      id,
+      label: LANGUAGE_NAMES[id],
+      checked: id === this.language(),
+    })),
+  );
 
   colorSchemeOptions = computed(() =>
     (
@@ -88,6 +106,10 @@ export class DeviceSettingsComponent {
       label: $localize`:@@uiSettings-deviceSettings-commandPalette:Befehlspalette öffnen`,
     },
   ];
+
+  onSelectLanguage(language: Language): void {
+    this.selectedLanguage.emit(language);
+  }
 
   onSelectColorScheme(colorScheme: ColorSchemeSetting): void {
     this.selectedColorScheme.emit(colorScheme);

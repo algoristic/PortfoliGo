@@ -4,6 +4,7 @@ import {
   BrowserNotification,
   NotificationPermissionState,
 } from '@app/notifications/domain/models/browser-notification.model';
+import { formatLanguage } from '@app/shared/util/locale';
 
 /**
  * Platform port for system notifications (TS §12, §13, E-05). The web implementation is
@@ -61,12 +62,17 @@ export class WebNotificationPort implements NotificationPort {
         body,
         tag,
         icon,
-        lang: 'de',
+        lang: formatLanguage(),
         data: { onActionClick: { default: { operation: 'focusLastFocusedOrOpen', url: '' } } },
       });
       return;
     }
-    const notification = new window.Notification(title, { body, tag, icon, lang: 'de' });
+    const notification = new window.Notification(title, {
+      body,
+      tag,
+      icon,
+      lang: formatLanguage(),
+    });
     notification.onclick = () => {
       window.focus();
       notification.close();

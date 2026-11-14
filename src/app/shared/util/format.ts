@@ -1,4 +1,7 @@
-const LOCALE = 'de-DE';
+import { formatLocale, perLocale } from './locale';
+
+// Every format follows the language of `locale.ts` (TS §11.9); the examples below are German.
+
 const HYPHEN_MINUS = '-';
 /** Typographic minus sign (U+2212) for changes, as required by PS §10.4. */
 const MINUS_SIGN = '\u2212';
@@ -6,13 +9,16 @@ const MINUS_SIGN = '\u2212';
 const NO_BREAK_SPACE = '\u00a0';
 
 const formats = new Map<string, Intl.NumberFormat>();
-const dateTimeFormat = new Intl.DateTimeFormat(LOCALE, {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
-});
+const dateTimeFormat = perLocale(
+  (locale) =>
+    new Intl.DateTimeFormat(locale, {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+);
 
 /** Shown instead of a missing or non-finite value. */
 export const MISSING_VALUE = '–';
@@ -166,10 +172,10 @@ export function formatBytes(bytes: number): string {
 
 /**
  * Date and time of a wall-clock instant (ms since the Unix epoch) in the browser's time zone,
- * e.g. `12.11.2026, 14:30`. Game times use `formatGameTime` (`clock/domain`) instead.
+ * e.g. `12.11.2026, 14:30` (English `12/11/2026, 14:30`). Game times use `formatGameTime` (`clock/domain`) instead.
  */
 export function formatDateTime(epochMs: number): string {
-  return dateTimeFormat.format(epochMs);
+  return dateTimeFormat().format(epochMs);
 }
 
 function withMinusSign(formatted: string): string {
@@ -185,10 +191,11 @@ function percentOptions(fractionDigits: number): Intl.NumberFormatOptions {
 }
 
 function numberFormat(options: Intl.NumberFormatOptions): Intl.NumberFormat {
-  const key = JSON.stringify(options);
+  const locale = formatLocale();
+  const key = `${locale} ${JSON.stringify(options)}`;
   let format = formats.get(key);
   if (!format) {
-    format = new Intl.NumberFormat(LOCALE, options);
+    format = new Intl.NumberFormat(locale, options);
     formats.set(key, format);
   }
   return format;

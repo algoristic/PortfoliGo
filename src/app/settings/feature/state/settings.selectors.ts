@@ -11,6 +11,10 @@ export const selectColorScheme = createSelector(
   selectSettings,
   (settings) => settings.appearance.colorScheme,
 );
+export const selectLanguage = createSelector(
+  selectSettings,
+  (settings) => settings.locale.language,
+);
 export const selectShortcutsEnabled = createSelector(
   selectSettings,
   (settings) => settings.shortcuts.enabled,

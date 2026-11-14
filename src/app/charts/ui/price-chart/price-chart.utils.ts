@@ -3,12 +3,13 @@ import { formatGameTime } from '@app/clock/domain/game-time-format';
 import { GAME_SECONDS_PER_TICK, Tick } from '@app/clock/domain/models/time.model';
 import { Candle } from '@app/market/domain/models/candle.model';
 
+import { perLocale } from '@app/shared/util/locale';
+
 import { PriceChartCandle, PriceChartColors, PriceChartLinePoint } from './price-chart.model';
 
 import { CHART_COLORS, ChartColor } from '../models/chart-color.model';
 
 const MS_PER_SECOND = 1000;
-const LOCALE = 'de-DE';
 
 // Tick 0 is 01.01.2020 00:00 of the Gregorian game calendar; as UTC, every tick maps to a real
 // timestamp, so the chart library's date logic (month and year boundaries) applies unchanged.
@@ -21,18 +22,28 @@ const TICK_MARK_YEAR = 0;
 const TICK_MARK_MONTH = 1;
 const TICK_MARK_DAY = 2;
 
-const yearFormat = new Intl.DateTimeFormat(LOCALE, { timeZone: 'UTC', year: 'numeric' });
-const monthFormat = new Intl.DateTimeFormat(LOCALE, { timeZone: 'UTC', month: 'short' });
-const dayFormat = new Intl.DateTimeFormat(LOCALE, {
-  timeZone: 'UTC',
-  day: '2-digit',
-  month: '2-digit',
-});
-const timeFormat = new Intl.DateTimeFormat(LOCALE, {
-  timeZone: 'UTC',
-  hour: '2-digit',
-  minute: '2-digit',
-});
+const yearFormat = perLocale(
+  (locale) => new Intl.DateTimeFormat(locale, { timeZone: 'UTC', year: 'numeric' }),
+);
+const monthFormat = perLocale(
+  (locale) => new Intl.DateTimeFormat(locale, { timeZone: 'UTC', month: 'short' }),
+);
+const dayFormat = perLocale(
+  (locale) =>
+    new Intl.DateTimeFormat(locale, {
+      timeZone: 'UTC',
+      day: '2-digit',
+      month: '2-digit',
+    }),
+);
+const timeFormat = perLocale(
+  (locale) =>
+    new Intl.DateTimeFormat(locale, {
+      timeZone: 'UTC',
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+);
 
 /** Chart time (seconds, UTC) of a game tick. */
 export function tickToChartTime(tick: Tick): number {
@@ -53,13 +64,13 @@ export function formatTickMark(time: number, tickMarkType: number): string {
   const ms = time * MS_PER_SECOND;
   switch (tickMarkType) {
     case TICK_MARK_YEAR:
-      return yearFormat.format(ms);
+      return yearFormat().format(ms);
     case TICK_MARK_MONTH:
-      return monthFormat.format(ms);
+      return monthFormat().format(ms);
     case TICK_MARK_DAY:
-      return dayFormat.format(ms);
+      return dayFormat().format(ms);
     default:
-      return timeFormat.format(ms);
+      return timeFormat().format(ms);
   }
 }
 

@@ -5,6 +5,7 @@ import { initialSettingsState, settingsReducer, SettingsState } from './settings
 
 const LOADED_SETTINGS: Settings = {
   appearance: { colorScheme: 'system', changeColors: 'blue-orange' },
+  locale: { language: 'en' },
   motion: { priceHighlight: false },
   shortcuts: { enabled: false },
   notifications: { toast: { 'order-executed': false }, browser: {} },
@@ -68,9 +69,11 @@ describe('settingsReducer', () => {
     const error = new Error('SecurityError');
     const state = settingsReducer(undefined, SettingsActions.loadSettingsFailure({ error }));
     expect(state.loaded).toBe(true);
-    // TS §9.3: dark (E-06), green and red, highlight and shortcuts on, TS §12 for notifications.
+    // TS §9.3: dark (E-06), green and red, German (E-36), highlight and shortcuts on, TS §12 for
+    // notifications.
     expect(state.settings).toEqual<Settings>({
       appearance: { colorScheme: 'dark', changeColors: 'green-red' },
+      locale: { language: 'de' },
       motion: { priceHighlight: true },
       shortcuts: { enabled: true },
       notifications: { toast: {}, browser: {} },

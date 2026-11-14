@@ -1534,49 +1534,49 @@
         <source>Orderentgelte (inkl. Börsenentgelt)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
-          <context context-type="linenumber">57</context>
+          <context context-type="linenumber">61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-incomeCosts-savingsPlanFees" datatype="html">
         <source>Sparplankosten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
-          <context context-type="linenumber">59</context>
+          <context context-type="linenumber">63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-incomeCosts-accountFees" datatype="html">
         <source>Kontoführung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
-          <context context-type="linenumber">61</context>
+          <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-incomeCosts-custodyFees" datatype="html">
         <source>Depotgebühren</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-incomeCosts-debitInterest" datatype="html">
         <source>Soll- und Dispozinsen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-incomeCosts-spreadCosts" datatype="html">
         <source>Spread</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-incomeCosts-terCosts" datatype="html">
         <source>Laufende Fondskosten (TER)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
-          <context context-type="linenumber">69</context>
+          <context context-type="linenumber">73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-bankConditionsText-free" datatype="html">
@@ -1927,63 +1927,63 @@
         <source>Monatsübersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/monthly-overview/monthly-overview.component.ts</context>
-          <context context-type="linenumber">57</context>
+          <context context-type="linenumber">62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-monthlyOverview-income" datatype="html">
         <source>Einkommen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/monthly-overview/monthly-overview.component.ts</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-monthlyOverview-livingCosts" datatype="html">
         <source>Lebenshaltung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/monthly-overview/monthly-overview.component.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-monthlyOverview-fees" datatype="html">
         <source>Gebühren</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/monthly-overview/monthly-overview.component.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-monthlyOverview-creditInterest" datatype="html">
         <source>Habenzinsen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/monthly-overview/monthly-overview.component.ts</context>
-          <context context-type="linenumber">69</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-monthlyOverview-debitInterest" datatype="html">
         <source>Soll- und Dispozinsen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/monthly-overview/monthly-overview.component.ts</context>
-          <context context-type="linenumber">71</context>
+          <context context-type="linenumber">76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-monthlyOverview-taxes" datatype="html">
         <source>Steuern</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/monthly-overview/monthly-overview.component.ts</context>
-          <context context-type="linenumber">73</context>
+          <context context-type="linenumber">78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-monthlyOverview-dividends" datatype="html">
         <source>Erträge</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/monthly-overview/monthly-overview.component.ts</context>
-          <context context-type="linenumber">75</context>
+          <context context-type="linenumber">80</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-monthlyOverview-savingsRate" datatype="html">
         <source>Sparquote</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/monthly-overview/monthly-overview.component.ts</context>
-          <context context-type="linenumber">77</context>
+          <context context-type="linenumber">82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-standingOrderSchema-fromRequired" datatype="html">
@@ -2326,154 +2326,154 @@
         <source>Startkapital</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">45</context>
+          <context context-type="linenumber">50</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-salary" datatype="html">
         <source>Gehalt <x id="month" equiv-text="month"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">55</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-livingCosts" datatype="html">
         <source>Lebenshaltung <x id="month" equiv-text="month"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">58</context>
+          <context context-type="linenumber">63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-accountFee" datatype="html">
         <source>Kontoführung <x id="month" equiv-text="month"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-creditInterest" datatype="html">
         <source>Habenzinsen <x id="period" equiv-text="period"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">72</context>
+          <context context-type="linenumber">77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-overdraftInterest" datatype="html">
         <source>Dispozinsen <x id="period" equiv-text="period"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">78</context>
+          <context context-type="linenumber">83</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-debitInterest" datatype="html">
         <source>Sollzinsen <x id="period" equiv-text="period"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">84</context>
+          <context context-type="linenumber">89</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-dividend" datatype="html">
         <source>Dividende <x id="instrument" equiv-text="name"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">97</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-fundDistribution" datatype="html">
         <source>Ausschüttung <x id="instrument" equiv-text="name"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">104</context>
+          <context context-type="linenumber">109</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-tax" datatype="html">
         <source>Abgeltungsteuer <x id="instrument" equiv-text="name"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">110</context>
+          <context context-type="linenumber">115</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-taxRefund" datatype="html">
         <source>Steuererstattung <x id="instrument" equiv-text="name"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">117</context>
+          <context context-type="linenumber">122</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-sell" datatype="html">
         <source>Verkauf <x id="instrument" equiv-text="instrument"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">139</context>
+          <context context-type="linenumber">144</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-savingsPlanBuy" datatype="html">
         <source>Sparplan-Kauf <x id="instrument" equiv-text="instrument"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">141</context>
+          <context context-type="linenumber">146</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-buy" datatype="html">
         <source>Kauf <x id="instrument" equiv-text="instrument"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">142</context>
+          <context context-type="linenumber">147</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-tradeDetail" datatype="html">
         <source><x id="quantity" equiv-text="shares"/> Stück zu <x id="price" equiv-text="at"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">151</context>
+          <context context-type="linenumber">156</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-closingRemainderTo" datatype="html">
         <source>Restguthaben an <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">206</context>
+          <context context-type="linenumber">211</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-closingRemainderFrom" datatype="html">
         <source>Restguthaben von <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">207</context>
+          <context context-type="linenumber">212</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-closingRemainderDetail" datatype="html">
         <source>Kontoauflösung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">208</context>
+          <context context-type="linenumber">213</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-standingOrderTo" datatype="html">
         <source>Dauerauftrag an <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">216</context>
+          <context context-type="linenumber">221</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-standingOrderFrom" datatype="html">
         <source>Dauerauftrag von <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">217</context>
+          <context context-type="linenumber">222</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-transferTo" datatype="html">
         <source>Überweisung an <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">223</context>
+          <context context-type="linenumber">228</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-transferFrom" datatype="html">
         <source>Überweisung von <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">224</context>
+          <context context-type="linenumber">229</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiCharts-chartColorPicker-chart1" datatype="html">
@@ -3026,7 +3026,7 @@
         <source>Cashflow <x id="month" equiv-text="month"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/ui/cashflow/cashflow.component.ts</context>
-          <context context-type="linenumber">36</context>
+          <context context-type="linenumber">41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiDashboard-dividendCalendar-emptyHeading" datatype="html">
@@ -10517,196 +10517,196 @@
         <source><x id="account" equiv-text="name"/> steht bei <x id="balance" equiv-text="amount"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-accountUncoveredWithLimit" datatype="html">
         <source><x id="account" equiv-text="name"/> steht bei <x id="balance" equiv-text="amount"/> (Dispo-Rahmen <x id="limit" equiv-text="formatCents(limit)"/>).</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-overdraftWithoutLimit" datatype="html">
         <source><x id="account" equiv-text="name"/> steht bei <x id="balance" equiv-text="amount"/> und hat keinen Dispo-Rahmen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">77</context>
+          <context context-type="linenumber">82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-overdraftLimitExceeded" datatype="html">
         <source><x id="account" equiv-text="name"/> steht bei <x id="balance" equiv-text="amount"/> und überschreitet den Dispo-Rahmen von <x id="limit" equiv-text="formatCents(limit)"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">78</context>
+          <context context-type="linenumber">83</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-standingOrderFailed" datatype="html">
         <source><x id="amount" equiv-text="formatCents(amount)"/> von <x id="from" equiv-text="account(fromAccountId)"/> an <x id="to" equiv-text="account(toAccountId)"/> wurden nicht überwiesen: verfügbar waren nur <x id="available" equiv-text="formatCents(available)"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">85</context>
+          <context context-type="linenumber">90</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-interestWithTax" datatype="html">
         <source><x id="amount" equiv-text="interest"/> Habenzinsen auf <x id="account" equiv-text="name"/>, davon <x id="tax" equiv-text="formatCents(tax)"/> Steuer einbehalten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">95</context>
+          <context context-type="linenumber">100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-interestWithRefund" datatype="html">
         <source><x id="amount" equiv-text="interest"/> Habenzinsen auf <x id="account" equiv-text="name"/>, dazu <x id="tax" equiv-text="formatCents(-tax)"/> Steuer erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">101</context>
+          <context context-type="linenumber">106</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-interest" datatype="html">
         <source><x id="amount" equiv-text="interest"/> Habenzinsen auf <x id="account" equiv-text="name"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">106</context>
+          <context context-type="linenumber">111</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-taxRefund" datatype="html">
         <source><x id="amount" equiv-text="formatCents(amount)"/> Steuer auf <x id="account" equiv-text="account(accountId)"/> erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">113</context>
+          <context context-type="linenumber">118</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-monthClosedTitle" datatype="html">
         <source>Monatsabschluss <x id="month" equiv-text="monthName"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">121</context>
+          <context context-type="linenumber">126</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-monthClosed" datatype="html">
         <source>Einnahmen <x id="earnings" equiv-text="formatCents(monthlyEarnings(values))"/>, Ausgaben <x id="spending" equiv-text="formatCents(monthlySpending(values))"/>, Sparquote <x id="rate" equiv-text="rate"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">122</context>
+          <context context-type="linenumber">127</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-yearClosedTitle" datatype="html">
         <source>Steuerjahr <x id="year" equiv-text="year"/> abgeschlossen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">128</context>
+          <context context-type="linenumber">133</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-yearClosed" datatype="html">
         <source>Steuerpflichtige Kapitalerträge <x id="income" equiv-text="formatCents(taxableIncome)"/>, einbehaltene Steuer <x id="tax" equiv-text="formatCents(taxWithheld)"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">129</context>
+          <context context-type="linenumber">134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-fundDistributionTitle" datatype="html">
         <source>Ausschüttung erhalten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">141</context>
+          <context context-type="linenumber">146</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-dividend" datatype="html">
         <source>Dividende von <x id="amount" equiv-text="gross"/> für <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> auf <x id="account" equiv-text="target"/> gutgeschrieben</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">144</context>
+          <context context-type="linenumber">149</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-fundDistribution" datatype="html">
         <source>Ausschüttung von <x id="amount" equiv-text="gross"/> für <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> auf <x id="account" equiv-text="target"/> gutgeschrieben</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">145</context>
+          <context context-type="linenumber">150</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-distributionWithTax" datatype="html">
         <source><x id="credited" equiv-text="credited"/>, davon <x id="tax" equiv-text="formatCents(tax)"/> Steuer einbehalten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">149</context>
+          <context context-type="linenumber">154</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-distributionWithRefund" datatype="html">
         <source><x id="credited" equiv-text="credited"/>, dazu <x id="tax" equiv-text="formatCents(-tax)"/> Steuer erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">155</context>
+          <context context-type="linenumber">160</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedBuy" datatype="html">
         <source>Kauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, belastet <x id="total" equiv-text="amount"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">169</context>
+          <context context-type="linenumber">174</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedSellWithTax" datatype="html">
         <source>Verkauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, gutgeschrieben <x id="total" equiv-text="amount"/>, davon <x id="tax" equiv-text="formatCents(tax)"/> Steuer einbehalten.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">175</context>
+          <context context-type="linenumber">180</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedSellWithRefund" datatype="html">
         <source>Verkauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, gutgeschrieben <x id="total" equiv-text="amount"/>, dazu <x id="tax" equiv-text="formatCents(-tax)"/> Steuer erstattet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">181</context>
+          <context context-type="linenumber">186</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExecutedSell" datatype="html">
         <source>Verkauf von <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/>, gutgeschrieben <x id="total" equiv-text="amount"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">186</context>
+          <context context-type="linenumber">191</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderRejectedBuy" datatype="html">
         <source>Kauforder für <x id="instrument" equiv-text="name"/> abgelehnt: <x id="reason" equiv-text="why"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">197</context>
+          <context context-type="linenumber">202</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderRejectedSell" datatype="html">
         <source>Verkaufsorder für <x id="instrument" equiv-text="name"/> abgelehnt: <x id="reason" equiv-text="why"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">198</context>
+          <context context-type="linenumber">203</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExpiredBuy" datatype="html">
         <source>Die Kauforder für <x id="instrument" equiv-text="name"/> ist verfallen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">208</context>
+          <context context-type="linenumber">213</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-orderExpiredSell" datatype="html">
         <source>Die Verkaufsorder für <x id="instrument" equiv-text="name"/> ist verfallen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">209</context>
+          <context context-type="linenumber">214</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-savingsPlanExecuted" datatype="html">
         <source>Sparplan: <x id="quantity" equiv-text="shares"/> Stück <x id="instrument" equiv-text="name"/> zu <x id="price" equiv-text="at"/> gekauft, belastet <x id="total" equiv-text="formatCents(total)"/>.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">219</context>
+          <context context-type="linenumber">224</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-savingsPlanFailed" datatype="html">
         <source>Sparplan über <x id="amount" equiv-text="formatCents(amount)"/> für <x id="instrument" equiv-text="name"/> nicht ausgeführt: <x id="reason" equiv-text="why"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-text.utils.ts</context>
-          <context context-type="linenumber">228</context>
+          <context context-type="linenumber">233</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationFilter-category" datatype="html">
@@ -12566,56 +12566,56 @@
         <source>Einstellungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">19,21</context>
+          <context context-type="linenumber">20,22</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-deviceHeading" datatype="html">
         <source>Dieses Gerät</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">23,24</context>
+          <context context-type="linenumber">24,25</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-deviceHint" datatype="html">
         <source> Gilt für alle Spieler in diesem Browser und wird nicht exportiert. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">27,30</context>
+          <context context-type="linenumber">28,31</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-playerHeading" datatype="html">
         <source>Spieler</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">46</context>
+          <context context-type="linenumber">49</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-playerHint" datatype="html">
         <source> Gehört zum Spielstand und wird mit dem Spieler exportiert. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">49,52</context>
+          <context context-type="linenumber">52,55</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-appHeading" datatype="html">
         <source>App</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">74</context>
+          <context context-type="linenumber">77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsEffects-saveFailureStorageFull" datatype="html">
         <source>Die Einstellung gilt nur bis zum Neuladen, weil der Speicher voll ist. Exportiere deinen Spielstand und lösche alte Spieler; den belegten Speicher zeigen die Einstellungen unter „App“.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/state/settings.effects.ts</context>
-          <context context-type="linenumber">93</context>
+          <context context-type="linenumber">121</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsEffects-saveFailure" datatype="html">
         <source>Die Einstellung gilt nur bis zum Neuladen, weil sie auf diesem Gerät nicht gespeichert werden konnte.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/state/settings.effects.ts</context>
-          <context context-type="linenumber">94</context>
+          <context context-type="linenumber">122</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-autoPauseSettings-legend" datatype="html">
@@ -12632,158 +12632,172 @@
           <context context-type="linenumber">9,14</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiSettings-deviceSettings-languageLegend" datatype="html">
+        <source>Sprache</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
+          <context context-type="linenumber">3,5</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-deviceSettings-languageHint" datatype="html">
+        <source> Die App wird beim Wechsel neu geladen. Zahlen und Daten folgen der Sprache, Beträge bleiben in Euro. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
+          <context context-type="linenumber">24,30</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-colorSchemeLegend" datatype="html">
         <source> Erscheinungsbild </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
-          <context context-type="linenumber">3,5</context>
+          <context context-type="linenumber">31,33</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-changeColorsLegend" datatype="html">
         <source> Farben für Gewinn und Verlust </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
-          <context context-type="linenumber">29,31</context>
+          <context context-type="linenumber">57,59</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-changeColorsHint" datatype="html">
         <source>Vorzeichen und Pfeil zeigen die Richtung immer zusätzlich an. Beispiel:</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
-          <context context-type="linenumber">51,54</context>
+          <context context-type="linenumber">79,82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-priceHighlightLabel" datatype="html">
         <source>Kursänderungen hervorheben</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
-          <context context-type="linenumber">67,69</context>
+          <context context-type="linenumber">95,97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-priceHighlightHint" datatype="html">
         <source> Geänderte Kurse leuchten kurz in der Farbe für Gewinn oder Verlust auf. Ist auf dem Gerät „Bewegung reduzieren“ eingestellt, entfällt das immer. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
-          <context context-type="linenumber">90,95</context>
+          <context context-type="linenumber">118,123</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-shortcutsLabel" datatype="html">
         <source>Tastenkürzel</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
-          <context context-type="linenumber">97,98</context>
+          <context context-type="linenumber">125,126</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-shortcutsHintPalette" datatype="html">
         <source> Steuern die Spielzeit und öffnen die Befehlspalette ohne Maus. Die Kürzel ohne Strg greifen nicht, solange ein Eingabefeld oder Bedienelement den Fokus hat. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.html</context>
-          <context context-type="linenumber">117,120</context>
+          <context context-type="linenumber">145,148</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-colorSchemeDark" datatype="html">
         <source>Dunkel</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">39</context>
+          <context context-type="linenumber">57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-colorSchemeDarkHint" datatype="html">
         <source>Standard</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">40</context>
+          <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-colorSchemeLight" datatype="html">
         <source>Hell</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">44</context>
+          <context context-type="linenumber">62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-colorSchemeSystem" datatype="html">
         <source>System</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">49</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-colorSchemeSystemHint" datatype="html">
         <source>wie das Gerät</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-changeColorsGreenRed" datatype="html">
         <source>Grün und Rot</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">64</context>
+          <context context-type="linenumber">82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-changeColorsGreenRedHint" datatype="html">
         <source>Standard</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">83</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-changeColorsBlueOrange" datatype="html">
         <source>Blau und Orange</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">69</context>
+          <context context-type="linenumber">87</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-changeColorsBlueOrangeHint" datatype="html">
         <source>bei Rot-Grün-Sehschwäche</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">70</context>
+          <context context-type="linenumber">88</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-spaceKey" datatype="html">
         <source>Leertaste</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">81</context>
+          <context context-type="linenumber">99</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-togglePause" datatype="html">
         <source>Pause oder weiter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">82</context>
+          <context context-type="linenumber">100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-faster" datatype="html">
         <source>schneller</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">84</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-slower" datatype="html">
         <source>langsamer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">85</context>
+          <context context-type="linenumber">103</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-paletteKey" datatype="html">
         <source>Strg/⌘ + K</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">87</context>
+          <context context-type="linenumber">105</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-commandPalette" datatype="html">
         <source>Befehlspalette öffnen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/device-settings/device-settings.component.ts</context>
-          <context context-type="linenumber">88</context>
+          <context context-type="linenumber">106</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-notificationChannelSettings-legend" datatype="html">

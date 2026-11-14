@@ -24,6 +24,10 @@ import {
 } from '@app/pwa/data-access/testing/fake-pwa-ports';
 import { PlatformInfo } from '@app/pwa/domain/models/pwa.model';
 import {
+  provideRecordingAppReload,
+  RecordingAppReload,
+} from '@app/shared/data-access/testing/recording-app-reload';
+import {
   provideRecordingFileDownload,
   RecordingFileDownload,
 } from '@app/shared/data-access/testing/recording-file-download';
@@ -58,6 +62,7 @@ describe('SettingsPage', () => {
   let system: SystemColorScheme;
   let playerId: string;
   let downloads: RecordingFileDownload;
+  let appReload: RecordingAppReload;
   /** Wall clock of the `PlayersService` (creation, export and reminder times). */
   let wallClock: number;
   // Platform ports of the section „App“ (US-UI-07, US-BN-04, US-EX-03).
@@ -71,6 +76,7 @@ describe('SettingsPage', () => {
     localStorage.clear();
     wallClock = Date.UTC(2026, 10, 13, 12);
     downloads = new RecordingFileDownload();
+    appReload = new RecordingAppReload();
     platform = { standalone: false, ios: false };
     install = new FakeInstallPrompt();
     storage = new FakeStorageEstimate(1_500_000, 2_000_000_000);
@@ -97,6 +103,7 @@ describe('SettingsPage', () => {
       provideInProcessEngineWorker(engine),
       providePlayersTestPorts({ locks, clock: () => wallClock, persistence }),
       provideRecordingFileDownload(downloads),
+      provideRecordingAppReload(appReload),
       providePwaTestPorts({ platform, install, storage }),
       provideFakeNotificationPort(notifications),
     ]);
@@ -297,6 +304,7 @@ describe('SettingsPage', () => {
       v: 1,
       data: {
         appearance: { colorScheme: 'light', changeColors: 'blue-orange' },
+        locale: { language: 'de' },
         motion: { priceHighlight: false },
         shortcuts: { enabled: false },
         notifications: {
@@ -304,6 +312,33 @@ describe('SettingsPage', () => {
           browser: { 'year-closed': true },
         },
       },
+    });
+  });
+
+  // PS US-UI-11, TS §11.9: German by default; a change is saved and reloads the app.
+  it('saves a new language and reloads the app for it', async () => {
+    expect(input('settings.device.language.de').checked).toBe(true);
+    expect(input('settings.device.language.en').checked).toBe(false);
+    // The names of the languages in their own language.
+    expect(input('settings.device.language.de').closest('label')?.textContent?.trim()).toBe(
+      'Deutsch',
+    );
+    expect(input('settings.device.language.en').closest('label')?.textContent?.trim()).toBe(
+      'English',
+    );
+
+    await act(() => click(input('settings.device.language.en')));
+    expect(appReload.reloads).toBe(1);
+    expect(JSON.parse(localStorage.getItem('pgo.settings') ?? 'null').data.locale).toEqual({
+      language: 'en',
+    });
+
+    await reload();
+    expect(input('settings.device.language.en').checked).toBe(true);
+    await act(() => click(input('settings.device.language.de')));
+    expect(appReload.reloads).toBe(2);
+    expect(JSON.parse(localStorage.getItem('pgo.settings') ?? 'null').data.locale).toEqual({
+      language: 'de',
     });
   });
 

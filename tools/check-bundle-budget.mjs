@@ -1,6 +1,8 @@
 // Checks the initial bundle against the budget of TS §14.3 (< 300 kB gzip). Angular's own budgets
 // measure uncompressed sizes, so this script gzips the scripts and styles that `index.html` loads
-// up front, including the chunks it preloads.
+// up front, including the chunks it preloads. Since AP 6.8a `main.ts` only prepares the language
+// and imports the app dynamically (TS §11.9), so the chunks `main` imports and everything they
+// import statically count as well.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
@@ -12,6 +14,22 @@ const html = readFileSync(join(root, 'index.html'), 'utf8');
 const files = new Set();
 for (const match of html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)="([^"]+\.(?:js|css))"/g)) {
   files.add(match[1]);
+}
+const STATIC_IMPORT = /(?:from|import)\s*["'`]\.\/([^"'`]+\.js)["'`]/g;
+const DYNAMIC_IMPORT = /import\(\s*["'`]\.\/([^"'`]+\.js)["'`]\s*\)/g;
+const queue = [...files].filter((file) => file.endsWith('.js'));
+for (const file of queue) {
+  const code = readFileSync(join(root, file), 'utf8');
+  const imports = [...code.matchAll(STATIC_IMPORT)];
+  if (/^main-[^/]*\.js$/.test(file)) {
+    imports.push(...code.matchAll(DYNAMIC_IMPORT));
+  }
+  for (const [, imported] of imports) {
+    if (!files.has(imported)) {
+      files.add(imported);
+      queue.push(imported);
+    }
+  }
 }
 
 let total = 0;
