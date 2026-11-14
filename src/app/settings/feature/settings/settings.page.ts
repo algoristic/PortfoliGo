@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 
 import { ClockFacade } from '@app/clock/feature/state/clock.facade';
-import { BackgroundMode } from '@app/engine/domain/models/game-state.model';
+import { BackgroundSettingsChange } from '@app/engine/domain/models/game-state.model';
 import { NotificationsFacade } from '@app/notifications/feature/state/notifications.facade';
 import { ColorSchemeSetting } from '@app/settings/domain/models/settings.model';
 import { AutoPauseSettingsComponent } from '@app/settings/ui/auto-pause-settings/auto-pause-settings.component';
@@ -41,8 +41,8 @@ export class SettingsPage {
     this.settingsFacade.setShortcutsEnabled(enabled);
   }
 
-  onSelectBackgroundMode(mode: BackgroundMode): void {
-    this.clockFacade.setBackgroundMode(mode);
+  onSelectBackground(change: BackgroundSettingsChange): void {
+    this.clockFacade.setBackground(change);
   }
 
   onToggleAutoPause({ code, enabled }: AutoPauseToggle): void {

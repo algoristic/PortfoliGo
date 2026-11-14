@@ -53,7 +53,7 @@ flowchart TD
 | M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Daueraufträge, Sparpläne, Steuern, Depot, Dashboard mit Benchmark      | 10  |
 | M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen, Hintergrundmodi, Deutsch und Englisch | 9   |
 
-**Empfohlene Reihenfolge:** M3, M4 und M5 sind abgeschlossen (M5 mit der einmaligen Erhöhung von `SCHEMA_VERSION` auf 6, §5, M5). Als Nächstes folgt M6 mit AP 6.7 (weitere Modi für das Verhalten im Hintergrund; seine Abhängigkeiten AP 2.6 und AP 3.6 sind fertig), danach AP 6.1 (Export und Import), damit Formatversion 1 des Exports die neuen Spielereinstellungen gleich enthält. E-35 und die Ergänzungen zu E-10 sind entschieden (14.11.2026, §3). Die Sprachumschaltung (AP 6.8a, AP 6.8b) folgt nach AP 6.2; die Übersetzung kommt zuletzt, wenn alle Texte von M6 stehen. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
+**Empfohlene Reihenfolge:** M3, M4 und M5 sind abgeschlossen (M5 mit der einmaligen Erhöhung von `SCHEMA_VERSION` auf 6, §5, M5). In M6 ist AP 6.7 (weitere Modi für das Verhalten im Hintergrund, `SCHEMA_VERSION` 7) fertig; als Nächstes folgt AP 6.1 (Export und Import), damit Formatversion 1 des Exports die neuen Spielereinstellungen gleich enthält. E-35 und die Ergänzungen zu E-10 sind entschieden (14.11.2026, §3). Die Sprachumschaltung (AP 6.8a, AP 6.8b) folgt nach AP 6.2; die Übersetzung kommt zuletzt, wenn alle Texte von M6 stehen. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
 
 ## 2. Arbeitsweise in Sessions
 
@@ -173,7 +173,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 6.4  | Performance und Robustheit                       | offen  | 6.1, 1.9c, 6.7       |
 | 6.5  | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3                  |
 | 6.6  | Release 1.0                                      | offen  | 6.4, 6.5, 3.5, 6.8b  |
-| 6.7  | Verhalten im Hintergrund: weitere Modi           | offen  | 2.6, 3.6             |
+| 6.7  | Verhalten im Hintergrund: weitere Modi           | fertig | 2.6, 3.6             |
 | 6.8a | Sprachumschaltung: Mechanik                      | offen  | 6.2                  |
 | 6.8b | Englische Übersetzung                            | offen  | 6.8a, 6.5, 6.7       |
 
@@ -337,7 +337,7 @@ flowchart TD
   AP6_8b --> AP6_6
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_1,AP5_2,AP5_3,AP5_4,AP5_5,AP5_6a,AP5_6b,AP5_7,AP5_8,AP5_9 done
+  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_1,AP5_2,AP5_3,AP5_4,AP5_5,AP5_6a,AP5_6b,AP5_7,AP5_8,AP5_9,AP6_7 done
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6

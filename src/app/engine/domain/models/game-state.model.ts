@@ -34,6 +34,17 @@ export type BackgroundPauseAfter = (typeof BACKGROUND_PAUSE_AFTER_MINUTES)[numbe
 /** `backgroundSpeed` of a new player, used once the player switches to `custom-speed` (TS §3.6). */
 export const DEFAULT_BACKGROUND_SPEED: SpeedId = '1h';
 
+/** The player's behaviour in the background (TS §3.6): `backgroundMode`, `backgroundSpeed`, `backgroundPauseAfter`. */
+export interface BackgroundSettings {
+  mode: BackgroundMode;
+  speed: SpeedId;
+  pauseAfter: BackgroundPauseAfter;
+}
+
+/** A change of the background settings as `setBackgroundMode` takes it: missing fields keep their value. */
+export type BackgroundSettingsChange = Pick<BackgroundSettings, 'mode'> &
+  Partial<Omit<BackgroundSettings, 'mode'>>;
+
 /** Start conditions of a player (PS US-SP-01), in cents per month where periodic. */
 export interface StartConditions {
   startCapital: Cents;

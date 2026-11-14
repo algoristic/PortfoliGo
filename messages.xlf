@@ -2487,28 +2487,28 @@
         <source>Das geht gerade nicht, weil die Spielzeit noch berechnet wird.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
-          <context context-type="linenumber">291</context>
+          <context context-type="linenumber">296</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureClock-clockEffects-invalidJumpTarget" datatype="html">
         <source>Zu diesem Zeitpunkt kann nicht vorgespult werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
-          <context context-type="linenumber">294</context>
+          <context context-type="linenumber">299</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureClock-clockEffects-commandFailure" datatype="html">
         <source>Die Spielzeit konnte nicht gesteuert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
-          <context context-type="linenumber">296</context>
+          <context context-type="linenumber">301</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureClock-clockEffects-backgroundModeFailure" datatype="html">
         <source>Das Verhalten im Hintergrund konnte nicht geändert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
-          <context context-type="linenumber">303</context>
+          <context context-type="linenumber">308</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-jumpingTo" datatype="html">
@@ -2543,161 +2543,105 @@
         <source>Pausiert: <x id="reason" equiv-text="notificationCodeLabel(code)"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">106</context>
+          <context context-type="linenumber">107</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-clockLabel" datatype="html">
         <source>Spielzeit</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">131</context>
+          <context context-type="linenumber">132</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-paused" datatype="html">
         <source>Pausiert</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">132</context>
+          <context context-type="linenumber">133</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-pause" datatype="html">
         <source>Pause (Leertaste)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">133</context>
+          <context context-type="linenumber">134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-resume" datatype="html">
         <source>Weiter (Leertaste)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">134</context>
+          <context context-type="linenumber">135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-faster" datatype="html">
         <source>Schneller (+)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">135</context>
+          <context context-type="linenumber">136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-slower" datatype="html">
         <source>Langsamer (−)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">136</context>
+          <context context-type="linenumber">137</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-pauseWithoutShortcut" datatype="html">
         <source>Pause</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">137</context>
+          <context context-type="linenumber">138</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-resumeWithoutShortcut" datatype="html">
         <source>Weiter</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">138</context>
+          <context context-type="linenumber">139</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-fasterWithoutShortcut" datatype="html">
         <source>Schneller</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">139</context>
+          <context context-type="linenumber">140</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-slowerWithoutShortcut" datatype="html">
         <source>Langsamer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">140</context>
+          <context context-type="linenumber">141</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-speedMenu" datatype="html">
         <source>Geschwindigkeit</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">141</context>
+          <context context-type="linenumber">142</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-jump" datatype="html">
         <source>Vorspulen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">142</context>
+          <context context-type="linenumber">143</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-jumpProgress" datatype="html">
         <source>Fortschritt des Vorspulens</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">143</context>
+          <context context-type="linenumber">144</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-overloadedHint" datatype="html">
         <source>Das Gerät kann die gewählte Geschwindigkeit gerade nicht halten. Es wird keine Spielzeit übersprungen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">144</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-clockControls-speedRealtime" datatype="html">
-        <source>Echtzeit</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">194</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-clockControls-speed1min" datatype="html">
-        <source>1 min/s</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">196</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-clockControls-speed10min" datatype="html">
-        <source>10 min/s</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">198</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-clockControls-speed1h" datatype="html">
-        <source>1 h/s</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">200</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-clockControls-speed2h" datatype="html">
-        <source>2 h/s</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">202</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-clockControls-speed4h" datatype="html">
-        <source>4 h/s</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">204</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-clockControls-speed1d" datatype="html">
-        <source>1 d/s</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">206</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="uiClock-clockControls-speed1w" datatype="html">
-        <source>1 w/s</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/clock/ui/clock-controls/clock-controls.component.ts</context>
-          <context context-type="linenumber">208</context>
+          <context context-type="linenumber">145</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-marketStatus-openUntil" datatype="html">
@@ -2782,6 +2726,62 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/ui/labels/region-labels.ts</context>
           <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speedRealtime" datatype="html">
+        <source>Echtzeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/speed-labels.ts</context>
+          <context context-type="linenumber">9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed1min" datatype="html">
+        <source>1 min/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/speed-labels.ts</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed10min" datatype="html">
+        <source>10 min/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/speed-labels.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed1h" datatype="html">
+        <source>1 h/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/speed-labels.ts</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed2h" datatype="html">
+        <source>2 h/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/speed-labels.ts</context>
+          <context context-type="linenumber">17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed4h" datatype="html">
+        <source>4 h/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/speed-labels.ts</context>
+          <context context-type="linenumber">19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed1d" datatype="html">
+        <source>1 d/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/speed-labels.ts</context>
+          <context context-type="linenumber">21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiClock-clockControls-speed1w" datatype="html">
+        <source>1 w/s</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/ui/labels/speed-labels.ts</context>
+          <context context-type="linenumber">23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-marketStatus-heading" datatype="html">
@@ -3523,35 +3523,35 @@
         <source>Der Spielstand konnte gerade nicht gespeichert werden. PortfoliGo versucht es weiter.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">169</context>
+          <context context-type="linenumber">188</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-unloadFailure" datatype="html">
         <source>Der Spielstand konnte beim Verlassen nicht gespeichert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">182</context>
+          <context context-type="linenumber">201</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-playerNotFound" datatype="html">
         <source>Diesen Spieler gibt es nicht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">225</context>
+          <context context-type="linenumber">244</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-playerOutdated" datatype="html">
         <source>Dieser Spieler stammt aus einer älteren Version von PortfoliGo und kann nur noch gelöscht werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">227</context>
+          <context context-type="linenumber">246</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-playerUnavailable" datatype="html">
         <source>Der Spieler konnte nicht geöffnet werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">229</context>
+          <context context-type="linenumber">248</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-title" datatype="html">
@@ -5887,21 +5887,21 @@
         <source>Deine Watchlist ist leer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/watchlist/watchlist.page.html</context>
-          <context context-type="linenumber">14,15</context>
+          <context context-type="linenumber">16,17</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-watchlistPage-emptyListText" datatype="html">
         <source>Markiere Wertpapiere im Screener oder auf ihrer Seite mit dem Stern, um ihre Kurse hier zu verfolgen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/watchlist/watchlist.page.html</context>
-          <context context-type="linenumber">16,17</context>
+          <context context-type="linenumber">18,19</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-watchlistPage-openScreener" datatype="html">
         <source>Zum Screener</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/watchlist/watchlist.page.html</context>
-          <context context-type="linenumber">24,29</context>
+          <context context-type="linenumber">26,31</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-watchlistPage-moved" datatype="html">
@@ -8379,35 +8379,35 @@
         <source>Nach oben: <x id="name" equiv-text="row.name"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/watchlist-list/watchlist-list.component.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-watchlistList-moveDown" datatype="html">
         <source>Nach unten: <x id="name" equiv-text="row.name"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/watchlist-list/watchlist-list.component.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-watchlistList-remove" datatype="html">
         <source>Von der Watchlist entfernen: <x id="name" equiv-text="row.name"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/watchlist-list/watchlist-list.component.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-watchlistList-label" datatype="html">
         <source>Watchlist</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/watchlist-list/watchlist-list.component.ts</context>
-          <context context-type="linenumber">71</context>
+          <context context-type="linenumber">73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-watchlistList-drag" datatype="html">
         <source>Zum Verschieben ziehen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/watchlist-list/watchlist-list.component.ts</context>
-          <context context-type="linenumber">72</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-watchlistToggle-full" datatype="html">
@@ -10485,10 +10485,10 @@
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-autoPauseSettings-hint" datatype="html">
-        <source> Das Spiel hält an, wenn eines dieser Ereignisse eintritt, solange die App sichtbar ist – auch beim Vorspulen. Während der Nachberechnung und im Hintergrund läuft es weiter; die Ereignisse stehen dann im Abwesenheitsbericht. </source>
+        <source> Das Spiel hält an, wenn eines dieser Ereignisse eintritt, solange die App sichtbar ist – auch beim Vorspulen. Ist die App verborgen, gilt das nur, wenn das Spiel dort mit der gewählten oder einer eigenen Geschwindigkeit läuft. Sonst und während der Nachberechnung läuft es weiter; die Ereignisse stehen dann im Abwesenheitsbericht. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/auto-pause-settings/auto-pause-settings.component.html</context>
-          <context context-type="linenumber">9,13</context>
+          <context context-type="linenumber">9,14</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-deviceSettings-colorSchemeLegend" datatype="html">
@@ -10582,40 +10582,138 @@
           <context context-type="linenumber">3,6</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-speedLabel" datatype="html">
+        <source>Geschwindigkeit im Hintergrund</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.html</context>
+          <context context-type="linenumber">33,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-pauseAfterLabel" datatype="html">
+        <source>Im Hintergrund pausieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.html</context>
+          <context context-type="linenumber">52,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-backgroundHint" datatype="html">
+        <source> Ist die App geschlossen oder vom Browser eingefroren, rechnet sie beim nächsten Öffnen nur in Echtzeit nach. Schnelle Geschwindigkeiten im Hintergrund kosten Akku. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.html</context>
+          <context context-type="linenumber">74,78</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiSettings-playerSettings-gameStateHint" datatype="html">
         <source> Diese Einstellung gehört zum Spielstand und wird mit dem Spieler exportiert.
 </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.html</context>
-          <context context-type="linenumber">26,28</context>
+          <context context-type="linenumber">79,81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-playerSettings-realtime" datatype="html">
         <source>In Echtzeit weiterlaufen (Standard)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
-          <context context-type="linenumber">25</context>
+          <context context-type="linenumber">42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-playerSettings-realtimeHint" datatype="html">
         <source>Ist die App verborgen oder geschlossen, läuft die Spielzeit mit 1 s/s weiter. Beim nächsten Öffnen wird sie nachberechnet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
-          <context context-type="linenumber">26</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-playerSettings-pause" datatype="html">
         <source>Pausieren</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
-          <context context-type="linenumber">30</context>
+          <context context-type="linenumber">47</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-playerSettings-pauseHint" datatype="html">
         <source>Ist die App verborgen oder geschlossen, ruht die Spielzeit. Danach geht sie ohne Nachberechnung weiter.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
-          <context context-type="linenumber">31</context>
+          <context context-type="linenumber">48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-keepSpeed" datatype="html">
+        <source>Gewählte Geschwindigkeit beibehalten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
+          <context context-type="linenumber">52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-keepSpeedHint" datatype="html">
+        <source>Ist die App verborgen, läuft die Spielzeit so schnell weiter wie gerade gewählt.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
+          <context context-type="linenumber">53</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-customSpeed" datatype="html">
+        <source>Eigene Geschwindigkeit</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-customSpeedHint" datatype="html">
+        <source>Ist die App verborgen, läuft die Spielzeit mit der Geschwindigkeit, die du hier wählst.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
+          <context context-type="linenumber">58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-pauseAfterOff" datatype="html">
+        <source>Nie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
+          <context context-type="linenumber">116</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-pauseAfter15" datatype="html">
+        <source>nach 15 Minuten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
+          <context context-type="linenumber">118</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-pauseAfter30" datatype="html">
+        <source>nach 30 Minuten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
+          <context context-type="linenumber">120</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-pauseAfter60" datatype="html">
+        <source>nach 1 Stunde</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
+          <context context-type="linenumber">122</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-pauseAfter120" datatype="html">
+        <source>nach 2 Stunden</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
+          <context context-type="linenumber">124</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-pauseAfter240" datatype="html">
+        <source>nach 4 Stunden</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
+          <context context-type="linenumber">126</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiSettings-playerSettings-pauseAfter480" datatype="html">
+        <source>nach 8 Stunden</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/ui/player-settings/player-settings.component.ts</context>
+          <context context-type="linenumber">128</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShared-amountInput-parseError" datatype="html">

@@ -9,6 +9,7 @@ import {
   MARKET_STATUS_REGIONS,
   RegionStatusEntry,
 } from '@app/clock/ui/market-status/market-status.model';
+import { BackgroundSettings } from '@app/engine/domain/models/game-state.model';
 
 import { CLOCK_FEATURE_KEY, ClockState } from './clock.reducer';
 
@@ -26,11 +27,22 @@ export const selectOverloaded = createSelector(selectClock, (clock) => clock?.ov
 export const selectJumping = createSelector(selectClock, (clock) => clock?.jumping ?? false);
 /** The notification an auto-pause stopped at, while it holds the game (TS §3.6, §12). */
 export const selectAutoPause = createSelector(selectClock, (clock) => clock?.autoPause ?? null);
-/** The player's background mode (TS §3.6), the one last sent until the engine reports it. */
-export const selectBackgroundMode = createSelector(
+/**
+ * The player's background settings (TS §3.6), the ones last sent until the engine reports them;
+ * `null` before the first clock event.
+ */
+export const selectBackground = createSelector(
   selectClock,
   selectState,
-  (clock, state) => state.requestedBackgroundMode ?? clock?.backgroundMode ?? null,
+  (clock, { requestedBackground: requested }): BackgroundSettings | null =>
+    clock === null
+      ? null
+      : {
+          mode: requested?.mode ?? clock.backgroundMode,
+          speed: requested?.speed ?? clock.backgroundSpeed,
+          pauseAfter:
+            requested?.pauseAfter === undefined ? clock.backgroundPauseAfter : requested.pauseAfter,
+        },
 );
 export const selectJumpTargetTick = createSelector(selectState, (state) => state.jumpTargetTick);
 

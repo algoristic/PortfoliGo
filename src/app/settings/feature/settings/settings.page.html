@@ -1,6 +1,6 @@
 @let colorScheme = settingsFacade.colorScheme$ | async;
 @let shortcutsEnabled = settingsFacade.shortcutsEnabled$ | async;
-@let backgroundMode = clockFacade.backgroundMode$ | async;
+@let background = clockFacade.background$ | async;
 @let autoPause = notificationsFacade.autoPause$ | async;
 
 <h1 class="text-xl font-semibold" i18n="@@featureSettings-settingsPage-title">Einstellungen</h1>
@@ -22,8 +22,8 @@
     i18n-heading="@@featureSettings-settingsPage-playerHeading"
     data-testid="settings.player">
     <app-player-settings
-      [backgroundMode]="backgroundMode"
-      (selectedBackgroundMode)="onSelectBackgroundMode($event)"></app-player-settings>
+      [background]="background"
+      (selectedBackground)="onSelectBackground($event)"></app-player-settings>
     <app-auto-pause-settings
       class="mt-6 border-t border-border pt-4"
       [autoPause]="autoPause"

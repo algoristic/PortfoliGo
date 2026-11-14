@@ -3,10 +3,11 @@ import { Action, createReducer, on } from '@ngrx/store';
 import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { ClockPayload, ExchangeInfo } from '@app/engine/data-access/service/engine-service.model';
-import { BackgroundMode } from '@app/engine/domain/models/game-state.model';
+import { BackgroundSettingsChange } from '@app/engine/domain/models/game-state.model';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 
 import * as ClockActions from './clock.actions';
+import { confirmsBackground } from './clock.utils';
 
 export const CLOCK_FEATURE_KEY = 'clock';
 
@@ -19,10 +20,11 @@ export interface ClockState {
    */
   requestedSpeed: SpeedId | null;
   /**
-   * Background mode sent to the engine and not yet in a clock event: the settings page shows it
-   * until the engine reports it, and the previous one again when the command fails.
+   * Background settings sent to the engine and not yet in a clock event, merged over consecutive
+   * changes: the settings page shows them until the engine reports all of them, and the previous
+   * ones again when a command fails.
    */
-  requestedBackgroundMode: BackgroundMode | null;
+  requestedBackground: BackgroundSettingsChange | null;
   /** Target of the running jump, from the reply to `jumpTo`. */
   jumpTargetTick: Tick | null;
   /** Exchanges of the loaded player's world with their trading hours (TS §3.3); `null` until loaded. */
@@ -33,7 +35,7 @@ export interface ClockState {
 export const initialClockState: ClockState = {
   clock: null,
   requestedSpeed: null,
-  requestedBackgroundMode: null,
+  requestedBackground: null,
   jumpTargetTick: null,
   exchanges: null,
 };
@@ -44,16 +46,23 @@ const reducer = createReducer(
   on(ClockActions.receivedClock, (state, { clock }) => ({
     ...state,
     clock,
-    requestedBackgroundMode:
-      state.requestedBackgroundMode === clock.backgroundMode ? null : state.requestedBackgroundMode,
+    requestedBackground:
+      state.requestedBackground !== null && confirmsBackground(clock, state.requestedBackground)
+        ? null
+        : state.requestedBackground,
   })),
-  on(ClockActions.selectedBackgroundMode, (state, { mode }) => ({
+  on(ClockActions.selectedBackgroundMode, (state, { mode, speed, pauseAfter }) => ({
     ...state,
-    requestedBackgroundMode: mode,
+    requestedBackground: {
+      ...state.requestedBackground,
+      mode,
+      ...(speed === undefined ? {} : { speed }),
+      ...(pauseAfter === undefined ? {} : { pauseAfter }),
+    },
   })),
   on(ClockActions.setBackgroundModeFailure, (state, { error }) => ({
     ...state,
-    requestedBackgroundMode: null,
+    requestedBackground: null,
     error,
   })),
   on(ClockActions.requestedSpeed, (state, { speed }) => ({ ...state, requestedSpeed: speed })),

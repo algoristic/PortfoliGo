@@ -1,4 +1,4 @@
-<fieldset [disabled]="!backgroundMode()">
+<fieldset [disabled]="!background()" aria-describedby="settings-player-background-hint">
   <legend class="mb-2 font-medium" i18n="@@uiSettings-playerSettings-backgroundModeLegend">
     Verhalten im Hintergrund
   </legend>
@@ -13,7 +13,7 @@
           [value]="option.id"
           [checked]="option.checked"
           [attr.data-testid]="'settings.player.background-mode.' + option.id"
-          (change)="onSelectBackgroundMode(option.id)" />
+          (change)="onSelectMode(option.id)" />
         <span class="flex flex-col">
           <span class="font-medium">{{ option.label }}</span>
           <span class="text-sm text-fg-muted">{{ option.hint }}</span>
@@ -21,6 +21,59 @@
       </label>
     }
   </div>
+
+  @if (showSpeed() || showPauseAfter()) {
+    <div class="mt-3 grid gap-3 sm:grid-cols-2">
+      @if (showSpeed()) {
+        <div class="flex flex-col gap-1">
+          <label
+            class="text-sm font-medium"
+            for="settings-player-background-speed"
+            i18n="@@uiSettings-playerSettings-speedLabel"
+            >Geschwindigkeit im Hintergrund</label
+          >
+          <select
+            id="settings-player-background-speed"
+            class="h-10 rounded-md border border-border bg-surface px-2 text-fg tabular-nums"
+            data-testid="settings.player.background-speed"
+            (change)="onSelectSpeed($event)">
+            @for (option of speedOptions(); track option.id) {
+              <option [value]="option.id" [selected]="option.selected">{{ option.label }}</option>
+            }
+          </select>
+        </div>
+      }
+      @if (showPauseAfter()) {
+        <div class="flex flex-col gap-1">
+          <label
+            class="text-sm font-medium"
+            for="settings-player-background-pause-after"
+            i18n="@@uiSettings-playerSettings-pauseAfterLabel"
+            >Im Hintergrund pausieren</label
+          >
+          <select
+            id="settings-player-background-pause-after"
+            class="h-10 rounded-md border border-border bg-surface px-2 text-fg tabular-nums"
+            data-testid="settings.player.background-pause-after"
+            (change)="onSelectPauseAfter($event)">
+            @for (option of pauseAfterOptions(); track option.value) {
+              <option [value]="option.value" [selected]="option.selected">
+                {{ option.label }}
+              </option>
+            }
+          </select>
+        </div>
+      }
+    </div>
+  }
+
+  <p
+    id="settings-player-background-hint"
+    class="mt-3 text-sm text-fg-muted"
+    i18n="@@uiSettings-playerSettings-backgroundHint">
+    Ist die App geschlossen oder vom Browser eingefroren, rechnet sie beim nächsten Öffnen nur in
+    Echtzeit nach. Schnelle Geschwindigkeiten im Hintergrund kosten Akku.
+  </p>
 </fieldset>
 <p class="mt-3 text-sm text-fg-muted" i18n="@@uiSettings-playerSettings-gameStateHint">
   Diese Einstellung gehört zum Spielstand und wird mit dem Spieler exportiert.

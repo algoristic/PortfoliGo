@@ -14,7 +14,7 @@ import { ToastService } from '@app/shared/ui/toast/toast.service';
 import * as ClockActions from './clock.actions';
 import { ClockEffects } from './clock.effects';
 import { CLOCK_FEATURE_KEY, clockReducer, ClockState, initialClockState } from './clock.reducer';
-import { selectBackgroundMode } from './clock.selectors';
+import { selectBackground } from './clock.selectors';
 
 const selectClockState = createFeatureSelector<ClockState>(CLOCK_FEATURE_KEY);
 
@@ -212,37 +212,56 @@ describe('ClockEffects', () => {
   });
 
   describe('setBackgroundMode$', () => {
-    it('shows the mode last sent until a clock event reports it, and the old one after a failure', () => {
+    it('shows the settings last sent until a clock event reports them, and the old ones after a failure', () => {
       const state = (): ClockState => store.selectSignal(selectClockState)();
       const reduce = (action: Action): void =>
         store.setState({ [CLOCK_FEATURE_KEY]: clockReducer(state(), action) });
       const subscription = effects.setBackgroundMode$.subscribe(reduce);
       const pending = new Subject<{ tick: number }>();
       engine.setBackgroundMode.mockReturnValue(pending);
+      const background = (): unknown => store.selectSignal(selectBackground)();
       setClock(clockAt(1));
 
-      const selected = ClockActions.selectedBackgroundMode({ mode: 'pause' });
+      const selected = ClockActions.selectedBackgroundMode({ mode: 'custom-speed' });
       reduce(selected);
       actions$.next(selected);
-      expect(engine.setBackgroundMode).toHaveBeenCalledWith('pause');
-      expect(store.selectSignal(selectBackgroundMode)()).toBe('pause');
-      // A clock event sent before the engine applied the command still has the old mode.
-      reduce(ClockActions.receivedClock({ clock: clockAt(2) }));
-      expect(store.selectSignal(selectBackgroundMode)()).toBe('pause');
-      reduce(ClockActions.receivedClock({ clock: { ...clockAt(3), backgroundMode: 'pause' } }));
+      expect(engine.setBackgroundMode).toHaveBeenCalledWith('custom-speed', {});
+      const speed = ClockActions.selectedBackgroundMode({ mode: 'custom-speed', speed: '1d' });
+      reduce(speed);
+      actions$.next(speed);
+      const pauseAfter = ClockActions.selectedBackgroundMode({
+        mode: 'custom-speed',
+        pauseAfter: 30,
+      });
+      reduce(pauseAfter);
+      actions$.next(pauseAfter);
+      const expected = { mode: 'custom-speed', speed: '1d', pauseAfter: 30 };
+      expect(background()).toEqual(expected);
+      // A clock event sent before the engine applied all commands still has old values.
+      const applied = { backgroundMode: 'custom-speed', backgroundSpeed: '1d' } as const;
+      reduce(ClockActions.receivedClock({ clock: { ...clockAt(2), ...applied } }));
+      expect(background()).toEqual(expected);
+      reduce(
+        ClockActions.receivedClock({
+          clock: { ...clockAt(3), ...applied, backgroundPauseAfter: 30 },
+        }),
+      );
       pending.next({ tick: 3 });
       pending.complete();
-      expect(state().requestedBackgroundMode).toBeNull();
-      expect(store.selectSignal(selectBackgroundMode)()).toBe('pause');
+      expect(engine.setBackgroundMode).toHaveBeenCalledWith('custom-speed', { speed: '1d' });
+      expect(engine.setBackgroundMode).toHaveBeenCalledWith('custom-speed', { pauseAfter: 30 });
+      expect(state().requestedBackground).toBeNull();
+      expect(background()).toEqual(expected);
 
       const error = new EngineCommandError('storage-failed');
       engine.setBackgroundMode.mockReturnValue(throwError(() => error));
-      const back = ClockActions.selectedBackgroundMode({ mode: 'realtime' });
-      reduce(back);
-      actions$.next(back);
+      const off = ClockActions.selectedBackgroundMode({ mode: 'custom-speed', pauseAfter: null });
+      reduce(off);
+      expect(background()).toEqual({ ...expected, pauseAfter: null });
+      actions$.next(off);
       subscription.unsubscribe();
       expect(state().error).toBe(error);
-      expect(store.selectSignal(selectBackgroundMode)()).toBe('pause');
+      expect(background()).toEqual(expected);
     });
   });
 

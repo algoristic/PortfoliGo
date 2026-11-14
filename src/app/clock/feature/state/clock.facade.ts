@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 
 import { SpeedId } from '@app/clock/domain/models/speed.model';
-import { BackgroundMode } from '@app/engine/domain/models/game-state.model';
+import { BackgroundSettingsChange } from '@app/engine/domain/models/game-state.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 
 import * as ClockActions from './clock.actions';
@@ -26,7 +26,7 @@ export class ClockFacade {
   canSlower$ = this.#store.pipe(select(ClockSelectors.selectCanSlower));
   regionStatuses$ = this.#store.pipe(select(ClockSelectors.selectRegionStatuses));
   exchangeStatuses$ = this.#store.pipe(select(ClockSelectors.selectExchangeStatuses));
-  backgroundMode$ = this.#store.pipe(select(ClockSelectors.selectBackgroundMode));
+  background$ = this.#store.pipe(select(ClockSelectors.selectBackground));
   shortcutsEnabled$ = inject(CLOCK_SHORTCUTS_ENABLED);
 
   togglePause(): void {
@@ -65,7 +65,7 @@ export class ClockFacade {
     this.#store.dispatch(ClockActions.clickedCancelJump());
   }
 
-  setBackgroundMode(mode: BackgroundMode): void {
-    this.#store.dispatch(ClockActions.selectedBackgroundMode({ mode }));
+  setBackground(change: BackgroundSettingsChange): void {
+    this.#store.dispatch(ClockActions.selectedBackgroundMode(change));
   }
 }

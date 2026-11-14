@@ -27,6 +27,7 @@ import { FormatPercentPipe } from '@app/shared/ui/pipes/format-percent/format-pe
 
 import { ClockMenuAction, SpeedOption } from './clock-controls.model';
 
+import { speedLabel } from '../labels/speed-labels';
 import { FormatGameTimePipe } from '../pipes/format-game-time/format-game-time.pipe';
 
 /**
@@ -185,26 +186,5 @@ export class ClockControlsComponent {
     } else if (value !== undefined) {
       this.selectedSpeed.emit(value);
     }
-  }
-}
-
-function speedLabel(id: SpeedId): string {
-  switch (id) {
-    case 'realtime':
-      return $localize`:@@uiClock-clockControls-speedRealtime:Echtzeit`;
-    case '1min':
-      return $localize`:@@uiClock-clockControls-speed1min:1 min/s`;
-    case '10min':
-      return $localize`:@@uiClock-clockControls-speed10min:10 min/s`;
-    case '1h':
-      return $localize`:@@uiClock-clockControls-speed1h:1 h/s`;
-    case '2h':
-      return $localize`:@@uiClock-clockControls-speed2h:2 h/s`;
-    case '4h':
-      return $localize`:@@uiClock-clockControls-speed4h:4 h/s`;
-    case '1d':
-      return $localize`:@@uiClock-clockControls-speed1d:1 d/s`;
-    case '1w':
-      return $localize`:@@uiClock-clockControls-speed1w:1 w/s`;
   }
 }

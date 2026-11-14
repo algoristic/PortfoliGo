@@ -221,7 +221,7 @@ Als Anwender möchte ich die Zeit komplett anhalten, damit ich in Ruhe analysier
 **US-ZT-04 – Offline-Fortschritt** · Stufe 1 · M
 Als Anwender möchte ich, dass die Zeit weiterläuft, wenn ich die App schließe, damit sich das Spiel wie ein echtes Finanzleben anfühlt.
 
-- Ist die App geschlossen, läuft die Spielzeit in Echtzeit (1 s/s) weiter. Dasselbe gilt, solange die App nicht sichtbar ist (E-02); wer das nicht möchte, stellt für den Spieler „im Hintergrund pausieren" ein (US-UI-09). Mit E-35 kommen weitere Modi dazu; geschlossen läuft die Zeit aber immer höchstens in Echtzeit.
+- Ist die App geschlossen, läuft die Spielzeit in Echtzeit (1 s/s) weiter. Dasselbe gilt, solange die App nicht sichtbar ist (E-02); wer das nicht möchte, stellt für den Spieler „im Hintergrund pausieren" ein (US-UI-09). Seit E-35 (AP 6.7) kann sie verborgen auch mit der gewählten oder einer eigenen Geschwindigkeit weiterlaufen und nach einer wählbaren Frist pausieren; geschlossen oder vom Browser eingefroren läuft die Zeit aber immer höchstens in Echtzeit.
 - Beim nächsten Öffnen wird die verstrichene Zeit mit Fortschrittsanzeige nachberechnet. Alle fälligen Vorgänge (Gehalt, Kosten, Orders, Dividenden, Sparpläne) werden in der richtigen Reihenfolge verarbeitet.
 - War das Spiel pausiert, bleibt es pausiert und es wird nichts nachberechnet (E-02).
 - Anschließend erscheint der Abwesenheitsbericht (US-BN-03).
@@ -596,7 +596,7 @@ Als Anwender möchte ich wissen, dass PortfoliGo ein Spiel mit vereinfachten Reg
 Als Anwender möchte ich das Verhalten der App an einer Stelle anpassen.
 
 - Für dieses Gerät: Erscheinungsbild und Farben, Hervorhebung von Kursänderungen, Tastenkürzel an/aus, Toasts und Browser-Benachrichtigungen je Ereignistyp.
-- Für den Spieler (Teil des Spielstands, wird mit exportiert): Name, Seed (anzeigen, kopieren), automatische Pause je Ereignistyp und das Verhalten im Hintergrund (E-02) – in Echtzeit weiterlaufen (Standard) oder pausieren; mit E-35 (AP 6.7) zusätzlich mit der gewählten Geschwindigkeit oder einer eigenen Hintergrund-Geschwindigkeit weiterlaufen, jeweils wahlweise mit Pause nach einer Zeitspanne.
+- Für den Spieler (Teil des Spielstands, wird mit exportiert): Name, Seed (anzeigen, kopieren), automatische Pause je Ereignistyp und das Verhalten im Hintergrund (E-02) – in Echtzeit weiterlaufen (Standard) oder pausieren; mit E-35 (AP 6.7) zusätzlich mit der gewählten Geschwindigkeit oder einer eigenen Hintergrund-Geschwindigkeit weiterlaufen, jeweils wahlweise mit Pause nach einer Zeitspanne (15 min, 30 min, 1 h, 2 h, 4 h oder 8 h; gilt für alle Modi außer „pausieren“).
 - Export des Spielers (US-EX-01).
 
 **US-UI-10 – Erste Schritte** · Stufe 1 · S

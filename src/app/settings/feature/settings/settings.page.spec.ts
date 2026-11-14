@@ -12,7 +12,7 @@ import { providePlayersTestPorts } from '@app/players/data-access/testing/fake-p
 import { NewPlayer } from '@app/players/domain/models/player.model';
 
 import { installSystemColorScheme, SystemColorScheme } from '../../../../testing/color-scheme';
-import { byTestId, click, press, textOf } from '../../../../testing/dom';
+import { byTestId, click, press, queryByTestId, select, textOf } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
 
 const ANNA: NewPlayer = {
@@ -78,6 +78,10 @@ describe('SettingsPage', () => {
 
   function input(testId: string): HTMLInputElement {
     return byTestId<HTMLInputElement>(page, testId);
+  }
+
+  function selectField(testId: string): HTMLSelectElement {
+    return byTestId<HTMLSelectElement>(page, testId);
   }
 
   function isDark(): boolean {
@@ -185,5 +189,65 @@ describe('SettingsPage', () => {
 
     await reload();
     expect(input('settings.player.background-mode.pause').checked).toBe(true);
+  });
+
+  it('keeps an own background speed and the deadline and pauses there while hidden', async () => {
+    expect(queryByTestId(page, 'settings.player.background-speed')).toBeNull();
+    expect(selectField('settings.player.background-pause-after').value).toBe('off');
+
+    await act(() => click(input('settings.player.background-mode.custom-speed')));
+    // TS §3.6: a new player has `backgroundSpeed` 1 h/s.
+    expect(selectField('settings.player.background-speed').value).toBe('1h');
+    await act(() => select(selectField('settings.player.background-speed'), '10min'));
+    await act(() => select(selectField('settings.player.background-pause-after'), '15'));
+    await run(200);
+    expect(
+      engine.current?.received
+        .filter((message) => message.type === 'setBackgroundMode')
+        .map((message) => message.payload),
+    ).toEqual([
+      { mode: 'custom-speed' },
+      { mode: 'custom-speed', speed: '10min' },
+      { mode: 'custom-speed', pauseAfter: 15 },
+    ]);
+
+    await reload();
+    expect(input('settings.player.background-mode.custom-speed').checked).toBe(true);
+    expect(selectField('settings.player.background-speed').value).toBe('10min');
+    expect(selectField('settings.player.background-pause-after').value).toBe('15');
+
+    // TS §3.6: hidden at the game start, 15 min at 10 min/s = 9,000 ticks = 6 days 6 hours.
+    setHidden(true);
+    await act(() => click(byTestId(page, 'shell.header.toggle-pause')));
+    await run(20 * 60_000);
+    setHidden(false);
+    await run(200);
+    expect(clock()).toBe('So., 07.04.2030, 06:00');
+    expect(byTestId(page, 'shell.header.toggle-pause').getAttribute('aria-label')).toBe(
+      'Weiter (Leertaste)',
+    );
+
+    // The deadline means nothing while the game rests in the background.
+    await act(() => click(input('settings.player.background-mode.pause')));
+    expect(queryByTestId(page, 'settings.player.background-speed')).toBeNull();
+    expect(queryByTestId(page, 'settings.player.background-pause-after')).toBeNull();
+  });
+
+  it('counts the time a frozen page misses only in real time', async () => {
+    await act(() => click(byTestId(page, 'shell.header.toggle-pause')));
+    await run(1_500);
+    expect(clock()).toBe('Mo., 01.04.2030, 00:01');
+
+    // TS §3.6: frozen, 4 s at 1 min/s count as 0 ticks instead of 4 (no gap, it is under 5 s).
+    await act(() => document.dispatchEvent(new Event('freeze')));
+    engine.timeline.suspend(4_000);
+    await act(() => document.dispatchEvent(new Event('resume')));
+    await run(200);
+    expect(
+      engine.current?.received
+        .filter((message) => message.type === 'setFrozen')
+        .map((message) => message.payload),
+    ).toEqual([{ frozen: true }, { frozen: false }]);
+    expect(clock()).toBe('Mo., 01.04.2030, 00:01');
   });
 });

@@ -187,11 +187,16 @@ export class ClockEffects {
   setBackgroundMode$ = createEffect(() =>
     this.#actions$.pipe(
       ofType(ClockActions.selectedBackgroundMode),
-      concatMap(({ mode }) =>
-        this.#engine.setBackgroundMode(mode).pipe(
-          ignoreElements(),
-          catchError((error: unknown) => of(ClockActions.setBackgroundModeFailure({ error }))),
-        ),
+      concatMap(({ mode, speed, pauseAfter }) =>
+        this.#engine
+          .setBackgroundMode(mode, {
+            ...(speed === undefined ? {} : { speed }),
+            ...(pauseAfter === undefined ? {} : { pauseAfter }),
+          })
+          .pipe(
+            ignoreElements(),
+            catchError((error: unknown) => of(ClockActions.setBackgroundModeFailure({ error }))),
+          ),
       ),
     ),
   );
