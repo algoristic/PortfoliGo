@@ -52,7 +52,7 @@ flowchart LR
 | M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Daueraufträge, Sparpläne, Steuern, Depot, Dashboard mit Benchmark   | 10  |
 | M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen                                     | 6   |
 
-**Empfohlene Reihenfolge:** M3 und M4 sind abgeschlossen (M4 mit AP 4.5). M5 läuft: AP 5.1 (in drei Teilen), AP 5.2, AP 5.3, AP 5.4 (in zwei Teilen), AP 5.5 (in zwei Teilen), AP 5.6a, AP 5.6b, AP 5.7 (in drei Teilen), AP 5.8 und AP 5.9 sind fertig. Zum Abschluss von M5 fehlt nur noch die einmalige Erhöhung von `SCHEMA_VERSION` (§5, M5). M5 braucht M3 und M4. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
+**Empfohlene Reihenfolge:** M3, M4 und M5 sind abgeschlossen (M5 mit der einmaligen Erhöhung von `SCHEMA_VERSION` auf 6, §5, M5). Als Nächstes folgt M6 mit AP 6.1 (Export und Import; seine Abhängigkeiten AP 5.6a, AP 5.6b und AP 5.7 sind fertig). Vor AP 6.1 muss der Product Owner die Ergänzungen zu E-10 bestätigen (§3). Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
 
 ## 2. Arbeitsweise in Sessions
 
@@ -699,7 +699,7 @@ Neu nach der kritischen Prüfung vom 11.11.2026: Mehrere APs brauchen Einstellun
 **Ziel:** Das Kernspiel ist komplett.
 **Ergebnis:** Kaufen, verkaufen, Daueraufträge, Sparpläne, Steuern, Depot und Dashboard mit Benchmark – der Funktionsumfang des MVP. Dazu kommen Nachbesserungen an Chart und Kopfzeile (AP 5.8, AP 5.9). Sie hängen von keinem anderen M5-AP ab und können jederzeit umgesetzt werden.
 
-**`SCHEMA_VERSION` in M5 (PO-Entscheidung 13.11.2026):** Sie wird in M5 nur einmal erhöht, am Ende, mit dem letzten AP, das den Spielerzustand ändert. Zwischenstände von M5 erhöhen sie nicht, auch wenn sich die Struktur des gespeicherten Zustands ändert (abweichend von §2.4); Spielstände aus Zwischenständen von M5 können deshalb unbrauchbar werden.
+**`SCHEMA_VERSION` in M5 (PO-Entscheidung 13.11.2026):** Sie wird in M5 nur einmal erhöht, am Ende, mit dem letzten AP, das den Spielerzustand ändert. Zwischenstände von M5 erhöhen sie nicht, auch wenn sich die Struktur des gespeicherten Zustands ändert (abweichend von §2.4); Spielstände aus Zwischenständen von M5 können deshalb unbrauchbar werden. **Erledigt (14.11.2026):** Mit dem Abschluss von M5 ist `SCHEMA_VERSION` 6; Spieler vom Stand M4 (Schema 5) gelten als veraltet.
 
 #### AP 5.1 – Depot und Orderausführung
 

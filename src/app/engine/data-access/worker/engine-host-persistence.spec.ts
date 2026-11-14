@@ -8,7 +8,7 @@ import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { BACKGROUND_MODES, GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { replayCommands } from '@app/engine/domain/replay';
 import { miniGame, MiniGame } from '@app/engine/domain/testing/mini-game';
-import { SIM_VERSION } from '@app/engine/domain/version';
+import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
 import { marketChecksum } from '@app/market/domain/market-checksum';
 import { seriesIds } from '@app/market/domain/series';
 import {
@@ -358,14 +358,18 @@ describe('EngineHost persistence', () => {
   });
 
   describe('versions and locks', () => {
-    it('answers player-outdated for a snapshot of another simVersion and keeps it', async () => {
+    // TS §15, E-25: a snapshot of another version is never restored, only reported
+    it.each([
+      ['another simVersion', { simVersion: SIM_VERSION + 1 }],
+      ['the previous schemaVersion', { schemaVersion: SCHEMA_VERSION - 1 }],
+    ])('answers player-outdated for a snapshot of %s and keeps it', async (_, versions) => {
       const locks = new FakePlayerLocks();
       const first = reload({ locks });
       await first.send('loadPlayer', PLAYER);
       await first.send('unloadPlayer', {});
       const database = await openPortfoligoDb();
       const [record] = (await database.getAll('snapshots')) as SnapshotRecord[];
-      await database.put('snapshots', { ...record, simVersion: SIM_VERSION + 1 });
+      await database.put('snapshots', { ...record, ...versions });
       database.close();
 
       const second = reload({ locks });
@@ -374,7 +378,7 @@ describe('EngineHost persistence', () => {
         error: 'player-outdated',
       });
       expect(locks.held).toEqual([]);
-      expect((await storedState()).snapshot?.simVersion).toBe(SIM_VERSION + 1);
+      expect((await storedState()).snapshot).toMatchObject(versions);
     });
 
     it('answers player-locked while another tab simulates the player', async () => {

@@ -16,6 +16,7 @@ import { providePlayersTestPorts } from '@app/players/data-access/testing/fake-p
 import { NewPlayer } from '@app/players/domain/models/player.model';
 import { EXCHANGES } from '@app/world/domain/taxonomy';
 
+import { installChartPlatform } from '../../../../testing/chart-platform';
 import { byTestId, click, press, queryByTestId, textOf, typeText } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
 import { parseEuros } from '../../../../testing/parse';
@@ -44,12 +45,17 @@ describe('ShellPage', () => {
   let engine: InProcessEngine;
   let harness: RouterTestingHarness;
   let page: HTMLElement;
+  let restorePlatform: () => void;
 
   beforeEach(() => {
+    // the game area opens on the dashboard with its performance chart
+    restorePlatform = installChartPlatform();
     localStorage.clear();
     locks = new FakePlayerLocks();
     engine = new InProcessEngine({ storage: 'indexed-db', locks });
   });
+
+  afterEach(() => restorePlatform());
 
   /** Opens the app like a new tab of the same browser (shared locks and database). */
   async function openApp(url = '/players', tab = engine): Promise<void> {

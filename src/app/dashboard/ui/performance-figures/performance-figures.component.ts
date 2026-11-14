@@ -53,6 +53,6 @@ export class PerformanceFiguresComponent {
   });
 
   heading = $localize`:@@uiDashboard-performanceFigures-heading:Performance`;
-  portfolioLabel = $localize`:@@uiDashboard-performanceFigures-portfolio:Ihr Vermögen`;
+  portfolioLabel = $localize`:@@uiDashboard-performanceFigures-portfolio:Dein Vermögen`;
   benchmarkLabel = $localize`:@@uiDashboard-performanceFigures-benchmark:Benchmark`;
 }

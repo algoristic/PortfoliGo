@@ -12,6 +12,7 @@ import { openPortfoligoDb } from '@app/persistence/data-access/schema/open-datab
 import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
 import { PlayerProfile } from '@app/players/domain/models/player.model';
 
+import { installChartPlatform } from '../../../../testing/chart-platform';
 import { blur, byTestId, click, queryByTestId, textOf, typeText } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
 import {
@@ -27,8 +28,11 @@ describe('NewPlayerPage', () => {
   let engine: InProcessEngine;
   let harness: RouterTestingHarness;
   let page: HTMLElement;
+  let restorePlatform: () => void;
 
   beforeEach(async () => {
+    // creating a player opens the dashboard with its performance chart
+    restorePlatform = installChartPlatform();
     localStorage.clear();
     persistence = new FakeStoragePersistence();
     database = await openPortfoligoDb();
@@ -40,7 +44,10 @@ describe('NewPlayerPage', () => {
     page = harness.fixture.nativeElement;
   });
 
-  afterEach(() => database.close());
+  afterEach(() => {
+    database.close();
+    restorePlatform();
+  });
 
   async function act(action: () => void): Promise<void> {
     action();

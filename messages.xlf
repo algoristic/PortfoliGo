@@ -3296,7 +3296,7 @@
         </context-group>
       </trans-unit>
       <trans-unit id="uiDashboard-performanceFigures-explanation" datatype="html">
-        <source> Die zeitgewichtete Rendite misst nur, wie sich Ihr Geld entwickelt hat; Gehalt und Lebenshaltung verfälschen sie nicht. Die Benchmark legt Startkapital und alle Zuflüsse ohne Kosten und Steuern in den Weltindex an und ist deshalb kaum zu schlagen. „Ohne Anlegen“ zeigt, was Sie hätten, wäre alles auf dem Gehaltskonto geblieben. </source>
+        <source> Die zeitgewichtete Rendite misst nur, wie sich dein Geld entwickelt hat; Gehalt und Lebenshaltung verfälschen sie nicht. Die Benchmark legt Startkapital und alle Zuflüsse ohne Kosten und Steuern in den Weltindex an und ist deshalb kaum zu schlagen. „Ohne Anlegen“ zeigt, was du hättest, wäre alles auf dem Gehaltskonto geblieben. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
           <context context-type="linenumber">90,95</context>
@@ -3317,7 +3317,7 @@
         </context-group>
       </trans-unit>
       <trans-unit id="uiDashboard-performanceFigures-portfolio" datatype="html">
-        <source>Ihr Vermögen</source>
+        <source>Dein Vermögen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.ts</context>
           <context context-type="linenumber">56</context>

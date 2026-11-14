@@ -16,6 +16,7 @@ import { providePlayersTestPorts } from '@app/players/data-access/testing/fake-p
 import { NewPlayer } from '@app/players/domain/models/player.model';
 import { ShellPage } from '@app/shell/feature/shell/shell.page';
 
+import { installChartPlatform } from '../../../../testing/chart-platform';
 import { byTestId, click, press, queryByTestId, select, textOf } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
 
@@ -62,6 +63,12 @@ describe('NotificationsPage', () => {
   let playerId: string;
 
   let locks: FakePlayerLocks;
+  let restorePlatform: () => void;
+
+  // some tests open the dashboard with its performance chart
+  beforeEach(() => {
+    restorePlatform = installChartPlatform();
+  });
 
   async function open(player: NewPlayer, area = 'notifications'): Promise<void> {
     localStorage.clear();
@@ -80,6 +87,7 @@ describe('NotificationsPage', () => {
 
   afterEach(() => {
     setHidden(false);
+    restorePlatform();
   });
 
   /** Closes the tab and opens the game again after `awayMs` with the same database. */

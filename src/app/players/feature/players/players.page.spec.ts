@@ -8,6 +8,7 @@ import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
 import { openPortfoligoDb } from '@app/persistence/data-access/schema/open-database';
 import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
 
+import { installChartPlatform } from '../../../../testing/chart-platform';
 import { byTestId, click, queryByTestId, textOf, typeText } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
 import { parseEuros } from '../../../../testing/parse';
@@ -75,15 +76,21 @@ describe('PlayersPage', () => {
   let hub: FakeBroadcastHub;
   let harness: RouterTestingHarness;
   let page: HTMLElement;
+  let restorePlatform: () => void;
 
   beforeEach(async () => {
+    // opening a player shows the dashboard with its performance chart
+    restorePlatform = installChartPlatform();
     localStorage.clear();
     locks = new FakePlayerLocks();
     hub = new FakeBroadcastHub();
     database = await openPortfoligoDb();
   });
 
-  afterEach(() => database.close());
+  afterEach(() => {
+    database.close();
+    restorePlatform();
+  });
 
   async function open(): Promise<void> {
     harness = await renderRoute('/players', [providePlayersTestPorts({ locks, hub })]);
