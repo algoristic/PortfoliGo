@@ -839,7 +839,7 @@ AP 5.7 wurde nach §2.5 geteilt (14.11.2026) und ist mit allen drei Teilen ferti
 
 #### AP 6.3 – PWA und Browser-Benachrichtigungen
 
-- **Umfang:** `@angular/service-worker` (Manifest, Icons, Offline-Betrieb, Hinweis auf neue Versionen mit Angebot zum Neuladen, Hinweis vor 1.0 zu ungültig werdenden Spielständen), Installationshinweis, `NOTIFICATION_PORT` mit Web-Implementierung über `ServiceWorkerRegistration.showNotification()`, Anzeige des Speicherstatus in den Einstellungen.
+- **Umfang:** `@angular/service-worker` (Manifest, Icons – abgeleitet aus `src/assets/favicon.svg`, das Favicon und `apple-touch-icon.png` gibt es seit dem Nachtrag zu M5 –, Offline-Betrieb, Hinweis auf neue Versionen mit Angebot zum Neuladen, Hinweis vor 1.0 zu ungültig werdenden Spielständen), Installationshinweis, `NOTIFICATION_PORT` mit Web-Implementierung über `ServiceWorkerRegistration.showNotification()`, Anzeige des Speicherstatus in den Einstellungen.
 - **Abnahme:** App ist installierbar und offline nutzbar: Systemtest (Service Worker aktiv, Neuladen ohne Netz) in Chromium, Firefox und WebKit, manuell unter Chrome für Android; nach Erlaubnis erscheinen Benachrichtigungen bei verborgenem Tab (am Desktop; Smartphones halten die App im Hintergrund an, PS US-BN-04).
 - **Referenzen:** US-UI-07, US-BN-04, US-EX-03; TS §12, §13, §15; E-05
 - **Abhängig von:** AP 6.2

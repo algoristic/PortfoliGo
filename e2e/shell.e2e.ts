@@ -61,6 +61,23 @@ test.describe('game area on a desktop', () => {
   });
 });
 
+test.describe('icons', () => {
+  test('links the favicon and the touch icon of the build', async ({ page }) => {
+    await page.goto('#/players');
+    for (const [rel, type] of [
+      ['icon', 'image/svg+xml'],
+      ['apple-touch-icon', 'image/png'],
+    ]) {
+      const href = await page
+        .locator(`link[rel="${rel}"]`)
+        .evaluate((link: HTMLLinkElement) => link.href);
+      const response = await page.request.get(href);
+      expect(response.status(), rel).toBe(200);
+      expect(response.headers()['content-type'], rel).toBe(type);
+    }
+  });
+});
+
 test.describe('deep links', () => {
   test('redirects unknown routes, keeps the route on reload and goes back', async ({ page }) => {
     await page.goto('#/does-not-exist');
