@@ -79,7 +79,7 @@ Es gibt kein „Game Over" und kein festes Spielziel. Motivation entsteht aus de
 
 - Die Spielzeit läuft in Ticks. Ein Tick entspricht einer Spielminute (E-02).
 - Der Anwender wählt die Geschwindigkeit – Echtzeit (1 s/s), 1 min/s, 10 min/s, 1 h/s, 2 h/s, 4 h/s, 1 d/s oder 1 w/s – und kann sie jederzeit ändern oder die Zeit anhalten.
-- Ist die App geschlossen, läuft die Zeit in Echtzeit weiter. Beim nächsten Öffnen wird die verstrichene Zeit nachberechnet. Dasselbe gilt, solange die App nicht sichtbar ist (z. B. Hintergrund-Tab); pro Spieler lässt sich stattdessen „im Hintergrund pausieren" einstellen. War das Spiel pausiert, bleibt es pausiert (E-02).
+- Ist die App geschlossen, läuft die Zeit in Echtzeit weiter. Beim nächsten Öffnen wird die verstrichene Zeit nachberechnet. Dasselbe gilt, solange die App nicht sichtbar ist (z. B. Hintergrund-Tab); pro Spieler lässt sich stattdessen „im Hintergrund pausieren" einstellen. Geplant ist außerdem, eine verborgene App mit der gewählten oder einer eigenen Geschwindigkeit weiterlaufen und nach einer Zeitspanne pausieren zu lassen (E-35, Vorschlag). War das Spiel pausiert, bleibt es pausiert (E-02).
 - Börsen haben Handelszeiten. Orders lassen sich jederzeit erteilen und werden während der Handelszeit ausgeführt (E-18). Nachts und am Wochenende stehen Aktienkurse still. Banken buchen nur an Bankarbeitstagen (E-19).
 
 ### 4.4 Die simulierte Welt
@@ -221,7 +221,7 @@ Als Anwender möchte ich die Zeit komplett anhalten, damit ich in Ruhe analysier
 **US-ZT-04 – Offline-Fortschritt** · Stufe 1 · M
 Als Anwender möchte ich, dass die Zeit weiterläuft, wenn ich die App schließe, damit sich das Spiel wie ein echtes Finanzleben anfühlt.
 
-- Ist die App geschlossen, läuft die Spielzeit in Echtzeit (1 s/s) weiter. Dasselbe gilt, solange die App nicht sichtbar ist (E-02); wer das nicht möchte, stellt für den Spieler „im Hintergrund pausieren" ein (US-UI-09).
+- Ist die App geschlossen, läuft die Spielzeit in Echtzeit (1 s/s) weiter. Dasselbe gilt, solange die App nicht sichtbar ist (E-02); wer das nicht möchte, stellt für den Spieler „im Hintergrund pausieren" ein (US-UI-09). Mit E-35 (Vorschlag) kommen weitere Modi dazu; geschlossen läuft die Zeit aber immer höchstens in Echtzeit.
 - Beim nächsten Öffnen wird die verstrichene Zeit mit Fortschrittsanzeige nachberechnet. Alle fälligen Vorgänge (Gehalt, Kosten, Orders, Dividenden, Sparpläne) werden in der richtigen Reihenfolge verarbeitet.
 - War das Spiel pausiert, bleibt es pausiert und es wird nichts nachberechnet (E-02).
 - Anschließend erscheint der Abwesenheitsbericht (US-BN-03).
@@ -595,7 +595,7 @@ Als Anwender möchte ich wissen, dass PortfoliGo ein Spiel mit vereinfachten Reg
 Als Anwender möchte ich das Verhalten der App an einer Stelle anpassen.
 
 - Für dieses Gerät: Erscheinungsbild und Farben, Hervorhebung von Kursänderungen, Tastenkürzel an/aus, Toasts und Browser-Benachrichtigungen je Ereignistyp.
-- Für den Spieler (Teil des Spielstands, wird mit exportiert): Name, Seed (anzeigen, kopieren), automatische Pause je Ereignistyp und das Verhalten im Hintergrund (E-02) – in Echtzeit weiterlaufen (Standard) oder pausieren.
+- Für den Spieler (Teil des Spielstands, wird mit exportiert): Name, Seed (anzeigen, kopieren), automatische Pause je Ereignistyp und das Verhalten im Hintergrund (E-02) – in Echtzeit weiterlaufen (Standard) oder pausieren; mit E-35 (Vorschlag, AP 6.7) zusätzlich mit der gewählten Geschwindigkeit oder einer eigenen Hintergrund-Geschwindigkeit weiterlaufen, jeweils wahlweise mit Pause nach einer Zeitspanne.
 - Export des Spielers (US-EX-01).
 
 **US-UI-10 – Erste Schritte** · Stufe 1 · S
@@ -603,6 +603,13 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 
 - Eine Liste auf der Übersicht führt durch: Banken vergleichen, Depot eröffnen, Geld überweisen, erstes Wertpapier kaufen, Sparplan anlegen.
 - Erledigte Schritte werden abgehakt; die Liste lässt sich ausblenden.
+
+**US-UI-11 – Sprache wählen** · Stufe 1 · S
+Als Anwender möchte ich die App auf Deutsch oder Englisch nutzen.
+
+- Die Sprache ist eine Einstellung dieses Geräts; Standard ist Deutsch, unabhängig von der Browsersprache.
+- Der Wechsel lädt die App neu. Alle Texte, Zahlen und Datumsangaben erscheinen in der gewählten Sprache; Beträge bleiben in Euro (E-36, Vorschlag).
+- Namen der simulierten Welt (Unternehmen, Banken, Börsen, Indizes) werden nicht übersetzt.
 
 ### 7.12 Spätere Ausbaustufen (Skizze)
 
@@ -629,8 +636,8 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 | US-PF-08 | Risikokennzahlen: Volatilität, maximaler Drawdown, Sharpe-Ratio                                                              | 2     |
 | US-CF-01 | CFD-Handel: CFD-Konto, Long- und Short-Positionen mit Hebel                                                                  | 3     |
 | US-CF-02 | CFD-Margin: Sicherheitsleistung, Finanzierungskosten, Margin-Call und Zwangsglattstellung                                    | 3     |
-| US-MK-19 | Große Welt: deutlich mehr Länder, Börsen, Branchen und Instrumente aller Assetklassen, bei gleichem Spieltempo               | 3     |
-| US-MK-20 | Große Listen bedienen: Screener, Suche und Marktübersicht bleiben auch mit Tausenden Instrumenten schnell und übersichtlich  | 3     |
+| US-MK-19 | Große Welt: deutlich mehr Länder, Börsen, Branchen und Instrumente aller Assetklassen, bei gleichem Spieltempo               | N     |
+| US-MK-20 | Große Listen bedienen: Screener, Suche und Marktübersicht bleiben auch mit Tausenden Instrumenten schnell und übersichtlich  | N     |
 | US-RG-01 | Regel anlegen: „wenn Bedingung, dann Aktion", z. B. „wenn SMA20(X) > SMA50(X), dann kaufen"                                  | 3     |
 | US-RG-02 | Regeln aktivieren, deaktivieren und ihre Ausführungen protokollieren                                                         | 3     |
 | US-RG-03 | Backtest einer Regel auf der Kurshistorie                                                                                    | 3     |
@@ -641,6 +648,9 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 | US-LE-04 | Karriere und Gehaltsentwicklung                                                                                              | 4     |
 | US-NT-01 | Newsticker zu Markt-, Branchen- und Unternehmensereignissen                                                                  | 4     |
 | US-NT-02 | Wirtschaftskalender (Zentralbanktermine, Quartalszahlen)                                                                     | 4     |
+| US-GA-01 | Achievements: Erfolge mit Kategorien und Stufen (z. B. erste Dividende, Vermögensschwellen, Bärenmarkt durchgehalten)        | 4     |
+| US-GA-02 | Spielziele und Herausforderungen mit Frist (z. B. „100.000 € Depotwert bis 2040")                                            | 4     |
+| US-GA-03 | Übersicht der Erfolge mit Fortschritt; Freischalten per Toast und Meldung im Newsticker                                      | 4     |
 | US-ER-01 | Erben: Ein Nachfolger startet mit dem Vermögen nach Erbschaftsteuer                                                          | 4     |
 | US-ER-02 | Prestige: dauerhafte Startvorteile für Nachfolger                                                                            | 4     |
 | US-ER-03 | Familienchronik über mehrere Generationen                                                                                    | 4     |
@@ -650,13 +660,13 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 
 ## 8. Ausbaustufen
 
-| Stufe | Name                        | Inhalt                                                                                                                                                                                                                                                                                    | Meilensteine |
-| ----- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| 1     | MVP „Spielbar"              | Spieler, Zeit, Einkommen und Kosten, Banken und Konten mit Daueraufträgen, Aktien und ETFs, Handel mit Market-, Limit-, Stop- und Stop-Limit-Orders, Sparpläne, Steuern (vereinfacht), Portfolio und Performance, Charts mit Basisindikatoren, Benachrichtigungen, Export und Import, PWA | M0–M6        |
-| 2     | „Vollständiger Markt"       | Zinsen und Inflation, Anleihen, Tagesgeld und Festgeld am Leitzins, Rohstoffe und ETCs, Edelmetalle, aktive Fonds, Steuerdetails, Fundamentaldaten, Unternehmensereignisse, Kursalarme, Depotübertrag, weitere Indikatoren                                                                | M7–M9        |
-| 3     | „Trading & Automatisierung" | CFDs, große Welt mit deutlich mehr Instrumenten, Regelwerk, Backtesting                                                                                                                                                                                                                   | M10–M12      |
-| 4     | „Leben & Welt"              | Lebensereignisse, Upgrades, Versicherungen, Karriere, Newsticker, Erben und Prestige                                                                                                                                                                                                      | M13–M15      |
-| N     | „Native" (optional)         | App für Android und iOS mit Capacitor, vorausgeplante Benachrichtigungen                                                                                                                                                                                                                  | N1           |
+| Stufe | Name                        | Inhalt                                                                                                                                                                                                                                                                                                          | Meilensteine |
+| ----- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| 1     | MVP „Spielbar"              | Spieler, Zeit, Einkommen und Kosten, Banken und Konten mit Daueraufträgen, Aktien und ETFs, Handel mit Market-, Limit-, Stop- und Stop-Limit-Orders, Sparpläne, Steuern (vereinfacht), Portfolio und Performance, Charts mit Basisindikatoren, Benachrichtigungen, Export und Import, PWA, Deutsch und Englisch | M0–M6        |
+| 2     | „Vollständiger Markt"       | Zinsen und Inflation, Anleihen, Tagesgeld und Festgeld am Leitzins, Rohstoffe und ETCs, Edelmetalle, aktive Fonds, Steuerdetails, Fundamentaldaten, Unternehmensereignisse, Kursalarme, Depotübertrag, weitere Indikatoren; vorab eine Prüfung des Rechenkerns (Modellreview, WebAssembly)                      | M7–M10       |
+| 3     | „Trading & Automatisierung" | CFDs, Regelwerk, Backtesting                                                                                                                                                                                                                                                                                    | M11–M12      |
+| 4     | „Leben & Welt"              | Lebensereignisse, Upgrades, Versicherungen, Karriere, Newsticker, Achievements und Spielziele, Erben und Prestige                                                                                                                                                                                               | M13–M16      |
+| N     | „Optional"                  | App für Android und iOS mit Capacitor, vorausgeplante Benachrichtigungen; große Welt mit deutlich mehr Instrumenten                                                                                                                                                                                             | N1, N2       |
 
 **Bekannte Grenze von Stufe 1:** Gehalt, Lebenshaltungskosten, Gebühren und Sparerpauschbetrag bleiben nominal fest; Inflation und Gehaltsentwicklung folgen in Stufe 2 und 4. In sehr langen Spielen verlieren Einkommen und Gebühren deshalb gegenüber dem Vermögen an Gewicht. Wie sich der Markt über Jahrzehnte verhält, klärt E-22 (TS §6.4).
 

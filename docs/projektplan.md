@@ -20,7 +20,7 @@ Dieser Plan zerlegt PortfoliGo in Meilensteine und Arbeitspakete (AP). Ein AP is
 Geplant wird rollierend: Die Meilensteine bis zum MVP (Stufe 1, M0–M6) sind in Arbeitspakete zerlegt. Spätere Stufen sind als Epics skizziert und werden detailliert, sobald das MVP steht und die Prioritäten feststehen.
 
 ```mermaid
-flowchart LR
+flowchart TD
   M0[M0 Fundament] --> M1[M1 Simulationskern]
   M1 --> M2[M2 Engine und Spieler]
   M2 --> M3[M3 Banking und Haushalt]
@@ -28,31 +28,32 @@ flowchart LR
   M3 --> M5[M5 Handel, Depot, Steuern]
   M4 --> M5
   M5 --> M6[M6 Export, PWA, Release 1.0]
-  M6 --> M7[M7 Zinsen, Inflation, Anleihen]
-  M7 --> M8[M8 Rohstoffe, Edelmetalle, Fonds]
-  M8 --> M9[M9 Realismus-Ausbau]
-  M9 --> M10[M10 CFDs]
-  M9 --> M11[M11 Große Welt]
-  M9 --> M12[M12 Regeln und Backtesting]
-  M10 --> M13[M13 Lebenssimulation]
-  M11 --> M13
+  M6 --> M7[M7 Prüfung des Rechenkerns]
+  M7 --> M8[M8 Zinsen, Inflation, Anleihen]
+  M8 --> M9[M9 Rohstoffe, Edelmetalle, Fonds]
+  M9 --> M10[M10 Realismus-Ausbau]
+  M10 --> M11[M11 CFDs]
+  M10 --> M12[M12 Regeln und Backtesting]
+  M11 --> M13[M13 Lebenssimulation]
   M12 --> M13
   M13 --> M14[M14 Newsticker]
-  M14 --> M15[M15 Erben und Prestige]
+  M14 --> M15[M15 Achievements und Gamification]
+  M15 --> M16[M16 Erben und Prestige]
   M6 -.-> N1[N1 Native App, optional]
+  M10 -.-> N2[N2 Große Welt, optional]
 ```
 
-| Meilenstein | Stufe | Ziel                                               | Ergebnis, das man zeigen kann                                                          | APs |
-| ----------- | ----- | -------------------------------------------------- | -------------------------------------------------------------------------------------- | --- |
-| M0          | 1     | Sauberes Fundament mit Design-System und App-Shell | Navigierbare, leere App im Trading-Look; CI prüft Lint, Tests und Build                | 4   |
-| M1          | 1     | Getesteter, deterministischer Simulationskern      | Simulations-Labor zeigt eine generierte Welt mit Kursverläufen und Statistiken         | 12  |
-| M2          | 1     | Spielschleife mit Spielern, Uhr und Persistenz     | Spieler anlegen, Zeit in jeder Geschwindigkeit laufen lassen, schließen, nachberechnen | 6   |
-| M3          | 1     | Geldflüsse: Einkommen, Kosten, Gebühren, Zinsen    | Kontoauszüge füllen sich; Konten eröffnen, Geld überweisen, Warnungen                  | 6   |
-| M4          | 1     | Märkte im Trading-Look                             | Marktübersicht, Screener, Watchlist, Instrumentseite mit Live-Chart und Indikatoren    | 5   |
-| M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Daueraufträge, Sparpläne, Steuern, Depot, Dashboard mit Benchmark   | 10  |
-| M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen                                     | 6   |
+| Meilenstein | Stufe | Ziel                                               | Ergebnis, das man zeigen kann                                                             | APs |
+| ----------- | ----- | -------------------------------------------------- | ----------------------------------------------------------------------------------------- | --- |
+| M0          | 1     | Sauberes Fundament mit Design-System und App-Shell | Navigierbare, leere App im Trading-Look; CI prüft Lint, Tests und Build                   | 4   |
+| M1          | 1     | Getesteter, deterministischer Simulationskern      | Simulations-Labor zeigt eine generierte Welt mit Kursverläufen und Statistiken            | 12  |
+| M2          | 1     | Spielschleife mit Spielern, Uhr und Persistenz     | Spieler anlegen, Zeit in jeder Geschwindigkeit laufen lassen, schließen, nachberechnen    | 6   |
+| M3          | 1     | Geldflüsse: Einkommen, Kosten, Gebühren, Zinsen    | Kontoauszüge füllen sich; Konten eröffnen, Geld überweisen, Warnungen                     | 6   |
+| M4          | 1     | Märkte im Trading-Look                             | Marktübersicht, Screener, Watchlist, Instrumentseite mit Live-Chart und Indikatoren       | 5   |
+| M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Daueraufträge, Sparpläne, Steuern, Depot, Dashboard mit Benchmark      | 10  |
+| M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen, Hintergrundmodi, Deutsch und Englisch | 9   |
 
-**Empfohlene Reihenfolge:** M3, M4 und M5 sind abgeschlossen (M5 mit der einmaligen Erhöhung von `SCHEMA_VERSION` auf 6, §5, M5). Als Nächstes folgt M6 mit AP 6.1 (Export und Import; seine Abhängigkeiten AP 5.6a, AP 5.6b und AP 5.7 sind fertig). Vor AP 6.1 muss der Product Owner die Ergänzungen zu E-10 bestätigen (§3). Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
+**Empfohlene Reihenfolge:** M3, M4 und M5 sind abgeschlossen (M5 mit der einmaligen Erhöhung von `SCHEMA_VERSION` auf 6, §5, M5). Als Nächstes folgt M6 mit AP 6.7 (weitere Modi für das Verhalten im Hintergrund; seine Abhängigkeiten AP 2.6 und AP 3.6 sind fertig), danach AP 6.1 (Export und Import), damit Formatversion 1 des Exports die neuen Spielereinstellungen gleich enthält. Vor AP 6.7 muss der Product Owner E-35 bestätigen, vor AP 6.1 die Ergänzungen zu E-10 (§3). Die Sprachumschaltung (AP 6.8a, AP 6.8b) folgt nach AP 6.2; die Übersetzung kommt zuletzt, wenn alle Texte von M6 stehen. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
 
 ## 2. Arbeitsweise in Sessions
 
@@ -104,11 +105,13 @@ Wird ein AP für eine Session zu groß, teilt Claude es (z. B. AP 3.4a und 3.4b)
 
 Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevor das genannte AP beginnt. Details und Begründungen stehen in TS §16 und den verlinkten Abschnitten. Am einfachsten ist es, alle Vorschläge gesammelt zu bestätigen und nur Abweichungen zu nennen; Claude trägt den Status dann in TS §16 ein.
 
-| ID   | Frage                                               | Vorschlag                                                                                                                                                                                                | Spätestens vor |
-| ---- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| E-25 | Versionsregeln ab 1.0 (TS §15; vor 1.0 entschieden) | Umfang der Kompatibilitätszusage festlegen, z. B. aktuelle und vorige `simVersion` spielbar, ältere lesbar                                                                                               | AP 6.6         |
-| E-05 | Capacitor                                           | PWA im MVP; Capacitor als optionaler Meilenstein N1 (die Ergänzung zu „Demnächst“ ist entschieden)                                                                                                       | AP 6.3         |
-| E-10 | Exportformat                                        | base64(JSON) mit Spieler- und Marktzustand vom Beginn des Export-Tags; Kurshistorie nach dem Import im Hintergrund. Ergänzungen: gzip schon in Formatversion 1, ohne `commands`, Import startet pausiert | AP 6.1         |
+| ID   | Frage                                               | Vorschlag                                                                                                                                                                                                                                                                                                                                                                                                           | Spätestens vor |
+| ---- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| E-25 | Versionsregeln ab 1.0 (TS §15; vor 1.0 entschieden) | Umfang der Kompatibilitätszusage festlegen, z. B. aktuelle und vorige `simVersion` spielbar, ältere lesbar                                                                                                                                                                                                                                                                                                          | AP 6.6         |
+| E-05 | Capacitor                                           | PWA im MVP; Capacitor als optionaler Meilenstein N1 (die Ergänzung zu „Demnächst“ ist entschieden)                                                                                                                                                                                                                                                                                                                  | AP 6.3         |
+| E-10 | Exportformat                                        | base64(JSON) mit Spieler- und Marktzustand vom Beginn des Export-Tags; Kurshistorie nach dem Import im Hintergrund. Ergänzungen: gzip schon in Formatversion 1, ohne `commands`, Import startet pausiert                                                                                                                                                                                                            | AP 6.1         |
+| E-35 | Weitere Hintergrundmodi (TS §3.6)                   | `backgroundMode` zusätzlich `keep-speed` (gewählte Geschwindigkeit) und `custom-speed` (eigene `backgroundSpeed`), dazu `backgroundPauseAfter` (Echtzeit-Minuten oder aus) für alle laufenden Modi; geschlossene oder eingefrorene App rechnet weiter in Echtzeit nach (Lücken im Takt über 5 s zählen als Echtzeit); Auto-Pause greift in den neuen Modi auch verborgen; die Frist gilt auch bei geschlossener App | AP 6.7         |
+| E-36 | Sprachumschaltung (TS §11.9)                        | Deutsch und Englisch; Übersetzungen zur Laufzeit vor dem Bootstrap geladen (ein Build), Wechsel in den Geräteeinstellungen lädt neu; Standard Deutsch unabhängig von der Browsersprache; Zahlen- und Datumsformate folgen der Sprache (Englisch: `en-GB`), Währung EUR, Zeit UTC                                                                                                                                    | AP 6.8a        |
 
 Die Ergänzungen zu E-10 stammen aus der kritischen Prüfung vom 11.11.2026 ([Änderungsprotokoll](./aenderungsprotokoll.md)).
 
@@ -118,64 +121,67 @@ Die Ergänzungen zu E-10 stammen aus der kritischen Prüfung vom 11.11.2026 ([Ä
 
 Status: **offen**, **in Arbeit**, **fertig**.
 
-| AP   | Titel                                            | Status | Abhängig von    |
-| ---- | ------------------------------------------------ | ------ | --------------- |
-| 0.1  | Aufräumen und Baseline                           | fertig | –               |
-| 0.2  | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig | 0.1             |
-| 0.3  | App-Bootstrap und Infrastruktur                  | fertig | 0.1             |
-| 0.4  | App-Shell und UI-Grundkomponenten                | fertig | 0.2, 0.3        |
-| 0.5  | Testkonzept und Testinfrastruktur                | fertig | 0.4, 1.8a       |
-| 1.1  | Deterministischer Zufall und Mathematik          | fertig | 0.1             |
-| 1.2  | Spielkalender und Zeitmodell                     | fertig | 0.1             |
-| 1.3  | Weltgenerierung: Taxonomie, Unternehmen, Banken  | fertig | 1.1             |
-| 1.4  | Marktmodell: Tagesschritt und Vorlauf            | fertig | 1.2, 1.3        |
-| 1.5  | Brücken, Minutenkurse und Kerzen                 | fertig | 1.4             |
-| 1.6a | Dividenden und Indizes                           | fertig | 1.5             |
-| 1.6b | ETFs, indikative Werte, Geld- und Briefkurse     | fertig | 1.6a            |
-| 1.7  | Simulations-Labor: Welt, Simulation, Chart-Spike | fertig | 1.6b, 0.4       |
-| 1.8a | Simulations-Labor: Statistik                     | fertig | 1.7             |
-| 1.8b | Labor: Intraday, Langzeit, Selbsttest            | fertig | 1.8a            |
-| 1.9a | Marktmodell: Änderungen vor der Kalibrierung     | fertig | 1.8b            |
-| 1.9b | Marktmodell: Ergänzungen aus der Kalibrierung    | fertig | 1.9a            |
-| 1.9c | Kalibrierung des Marktmodells                    | fertig | 1.9b            |
-| 2.1  | GameEngine und Terminplaner                      | fertig | 1.6b            |
-| 2.2  | Worker-Host, Protokoll und EngineService         | fertig | 2.1, 0.3        |
-| 2.3  | Persistenz im Worker und Wiederherstellung       | fertig | 2.2             |
-| 2.4  | Spielerverwaltung                                | fertig | 2.3, 0.4        |
-| 2.5  | Spielsitzung und Uhr                             | fertig | 2.4             |
-| 2.6  | Einstellungen: Grundlage                         | fertig | 2.5             |
-| 3.1  | Hauptbuch und Kontenmodell                       | fertig | 2.4             |
-| 3.2  | Haushalt und periodische Buchungen               | fertig | 3.1             |
-| 3.3  | Bankkommandos und Banking-Slice                  | fertig | 3.2, 2.5        |
-| 3.4  | Kontenübersicht und Kontoauszug                  | fertig | 3.3             |
-| 3.5  | Bankenvergleich, Dialoge und Monatsübersicht     | fertig | 3.4             |
-| 3.6  | Benachrichtigungen                               | fertig | 3.3, 2.6        |
-| 4.1  | Marktdaten-Feed und Market-Slice                 | fertig | 2.5             |
-| 4.2  | Chart-Komponenten                                | fertig | 4.1, 1.7        |
-| 4.3  | Indikatoren                                      | fertig | 4.2             |
-| 4.4  | Marktübersicht, Screener und Watchlist           | fertig | 4.2             |
-| 4.5  | Instrument-Detailseite                           | fertig | 4.3, 4.4, 1.8a  |
-| 5.1a | Orderregeln als reine Funktionen                 | fertig | 3.3, 1.6b       |
-| 5.1b | Orders in der Engine                             | fertig | 5.1a            |
-| 5.1c | Orders im Protokoll, Projektion, Texte           | fertig | 5.1b            |
-| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | fertig | 5.1c            |
-| 5.3  | Steuern                                          | fertig | 5.2             |
-| 5.4a | Trading-Slice und Order-Ticket                   | fertig | 5.3, 4.5, 3.6   |
-| 5.4b | Orderbuch, Ändern und Stornieren                 | fertig | 5.4a            |
-| 5.5  | Depot, Positionen und Steuerübersicht (UI)       | fertig | 5.4             |
-| 5.6a | Daueraufträge                                    | fertig | 3.5, 5.1c       |
-| 5.6b | Sparpläne                                        | fertig | 5.5             |
-| 5.7a | Tagesreihen, Rendite und Benchmark               | fertig | 5.5             |
-| 5.7b | Dashboard                                        | fertig | 5.7a            |
-| 5.7c | Erträge und Kosten, Dividendenkalender           | fertig | 5.7b            |
-| 5.8  | Chart: wählbare Auflösung und Indikatorfarben    | fertig | 4.5             |
-| 5.9  | Kopfzeile: stabiles Layout der Uhr               | fertig | 2.5             |
-| 6.1  | Export und Import                                | offen  | 5.6a, 5.6b, 5.7 |
-| 6.2  | Einstellungen                                    | offen  | 6.1, 3.6, 2.6   |
-| 6.3  | PWA und Browser-Benachrichtigungen               | offen  | 6.2             |
-| 6.4  | Performance und Robustheit                       | offen  | 6.1, 1.9c       |
-| 6.5  | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3             |
-| 6.6  | Release 1.0                                      | offen  | 6.4, 6.5, 3.5   |
+| AP   | Titel                                            | Status | Abhängig von         |
+| ---- | ------------------------------------------------ | ------ | -------------------- |
+| 0.1  | Aufräumen und Baseline                           | fertig | –                    |
+| 0.2  | Design-System-Grundlage (Tailwind v4, Tokens)    | fertig | 0.1                  |
+| 0.3  | App-Bootstrap und Infrastruktur                  | fertig | 0.1                  |
+| 0.4  | App-Shell und UI-Grundkomponenten                | fertig | 0.2, 0.3             |
+| 0.5  | Testkonzept und Testinfrastruktur                | fertig | 0.4, 1.8a            |
+| 1.1  | Deterministischer Zufall und Mathematik          | fertig | 0.1                  |
+| 1.2  | Spielkalender und Zeitmodell                     | fertig | 0.1                  |
+| 1.3  | Weltgenerierung: Taxonomie, Unternehmen, Banken  | fertig | 1.1                  |
+| 1.4  | Marktmodell: Tagesschritt und Vorlauf            | fertig | 1.2, 1.3             |
+| 1.5  | Brücken, Minutenkurse und Kerzen                 | fertig | 1.4                  |
+| 1.6a | Dividenden und Indizes                           | fertig | 1.5                  |
+| 1.6b | ETFs, indikative Werte, Geld- und Briefkurse     | fertig | 1.6a                 |
+| 1.7  | Simulations-Labor: Welt, Simulation, Chart-Spike | fertig | 1.6b, 0.4            |
+| 1.8a | Simulations-Labor: Statistik                     | fertig | 1.7                  |
+| 1.8b | Labor: Intraday, Langzeit, Selbsttest            | fertig | 1.8a                 |
+| 1.9a | Marktmodell: Änderungen vor der Kalibrierung     | fertig | 1.8b                 |
+| 1.9b | Marktmodell: Ergänzungen aus der Kalibrierung    | fertig | 1.9a                 |
+| 1.9c | Kalibrierung des Marktmodells                    | fertig | 1.9b                 |
+| 2.1  | GameEngine und Terminplaner                      | fertig | 1.6b                 |
+| 2.2  | Worker-Host, Protokoll und EngineService         | fertig | 2.1, 0.3             |
+| 2.3  | Persistenz im Worker und Wiederherstellung       | fertig | 2.2                  |
+| 2.4  | Spielerverwaltung                                | fertig | 2.3, 0.4             |
+| 2.5  | Spielsitzung und Uhr                             | fertig | 2.4                  |
+| 2.6  | Einstellungen: Grundlage                         | fertig | 2.5                  |
+| 3.1  | Hauptbuch und Kontenmodell                       | fertig | 2.4                  |
+| 3.2  | Haushalt und periodische Buchungen               | fertig | 3.1                  |
+| 3.3  | Bankkommandos und Banking-Slice                  | fertig | 3.2, 2.5             |
+| 3.4  | Kontenübersicht und Kontoauszug                  | fertig | 3.3                  |
+| 3.5  | Bankenvergleich, Dialoge und Monatsübersicht     | fertig | 3.4                  |
+| 3.6  | Benachrichtigungen                               | fertig | 3.3, 2.6             |
+| 4.1  | Marktdaten-Feed und Market-Slice                 | fertig | 2.5                  |
+| 4.2  | Chart-Komponenten                                | fertig | 4.1, 1.7             |
+| 4.3  | Indikatoren                                      | fertig | 4.2                  |
+| 4.4  | Marktübersicht, Screener und Watchlist           | fertig | 4.2                  |
+| 4.5  | Instrument-Detailseite                           | fertig | 4.3, 4.4, 1.8a       |
+| 5.1a | Orderregeln als reine Funktionen                 | fertig | 3.3, 1.6b            |
+| 5.1b | Orders in der Engine                             | fertig | 5.1a                 |
+| 5.1c | Orders im Protokoll, Projektion, Texte           | fertig | 5.1b                 |
+| 5.2  | Positionen, Lots, Ausschüttungen und Depotgebühr | fertig | 5.1c                 |
+| 5.3  | Steuern                                          | fertig | 5.2                  |
+| 5.4a | Trading-Slice und Order-Ticket                   | fertig | 5.3, 4.5, 3.6        |
+| 5.4b | Orderbuch, Ändern und Stornieren                 | fertig | 5.4a                 |
+| 5.5  | Depot, Positionen und Steuerübersicht (UI)       | fertig | 5.4                  |
+| 5.6a | Daueraufträge                                    | fertig | 3.5, 5.1c            |
+| 5.6b | Sparpläne                                        | fertig | 5.5                  |
+| 5.7a | Tagesreihen, Rendite und Benchmark               | fertig | 5.5                  |
+| 5.7b | Dashboard                                        | fertig | 5.7a                 |
+| 5.7c | Erträge und Kosten, Dividendenkalender           | fertig | 5.7b                 |
+| 5.8  | Chart: wählbare Auflösung und Indikatorfarben    | fertig | 4.5                  |
+| 5.9  | Kopfzeile: stabiles Layout der Uhr               | fertig | 2.5                  |
+| 6.1  | Export und Import                                | offen  | 5.6a, 5.6b, 5.7, 6.7 |
+| 6.2  | Einstellungen                                    | offen  | 6.1, 3.6, 2.6        |
+| 6.3  | PWA und Browser-Benachrichtigungen               | offen  | 6.2                  |
+| 6.4  | Performance und Robustheit                       | offen  | 6.1, 1.9c, 6.7       |
+| 6.5  | Barrierefreiheit, Hilfen und Hinweise            | offen  | 6.3                  |
+| 6.6  | Release 1.0                                      | offen  | 6.4, 6.5, 3.5, 6.8b  |
+| 6.7  | Verhalten im Hintergrund: weitere Modi           | offen  | 2.6, 3.6             |
+| 6.8a | Sprachumschaltung: Mechanik                      | offen  | 6.2                  |
+| 6.8b | Englische Übersetzung                            | offen  | 6.8a, 6.5, 6.7       |
 
 ### Abhängigkeitsgraph
 
@@ -252,6 +258,9 @@ flowchart TD
     AP6_4["6.4 Performance und Robustheit"]
     AP6_5["6.5 Barrierefreiheit, Hilfen und Hinweise"]
     AP6_6["6.6 Release 1.0"]
+    AP6_7["6.7 Verhalten im Hintergrund: weitere Modi"]
+    AP6_8a["6.8a Sprachumschaltung: Mechanik"]
+    AP6_8b["6.8b Englische Übersetzung"]
   end
   AP0_1 --> AP0_2
   AP0_1 --> AP0_3
@@ -323,6 +332,15 @@ flowchart TD
   AP6_4 --> AP6_6
   AP6_5 --> AP6_6
   AP3_5 --> AP6_6
+  AP2_6 --> AP6_7
+  AP3_6 --> AP6_7
+  AP6_7 --> AP6_1
+  AP6_7 --> AP6_4
+  AP6_2 --> AP6_8a
+  AP6_8a --> AP6_8b
+  AP6_5 --> AP6_8b
+  AP6_7 --> AP6_8b
+  AP6_8b --> AP6_6
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
   class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_1,AP5_2,AP5_3,AP5_4,AP5_5,AP5_6a,AP5_6b,AP5_7,AP5_8,AP5_9 done
@@ -828,7 +846,7 @@ AP 5.7 wurde nach §2.5 geteilt (14.11.2026) und ist mit allen drei Teilen ferti
   - Systemtest mit echtem Download und Upload in Chromium, Firefox und WebKit.
 - **Vor der Umsetzung klären:** die Ergänzungen zu E-10 – gzip schon in Formatversion 1, Export ohne `commands`, Import startet pausiert (TS §10.1, §10.3). Beim Import legt die UI das Profil an (TS §9.1).
 - **Referenzen:** US-EX-01–US-EX-03; TS §10; E-10
-- **Abhängig von:** AP 5.6a, AP 5.6b, AP 5.7
+- **Abhängig von:** AP 5.6a, AP 5.6b, AP 5.7, AP 6.7 (die erweiterten Hintergrund-Einstellungen gehören schon in Formatversion 1)
 
 #### AP 6.2 – Einstellungen
 
@@ -846,11 +864,11 @@ AP 5.7 wurde nach §2.5 geteilt (14.11.2026) und ist mit allen drei Teilen ferti
 
 #### AP 6.4 – Performance und Robustheit
 
-- **Umfang:** Messung gegen die Performance-Budgets (TS §14.3) und Optimierungen; Verdichtung alter Tageskerzen (TS §6.8); Fehlerbehandlung (Worker-Neustart mit Wiederherstellung und Abbruch nach wiederholtem Fehlschlag, TS §8.5; `QuotaExceededError`); Budgets für das Referenz-Mobilgerät (E-27).
+- **Umfang:** Messung gegen die Performance-Budgets (TS §14.3) und Optimierungen, auch für die Hintergrundmodi aus AP 6.7 (Engine bei gewählter Geschwindigkeit im verborgenen Tab, mit und ohne CPU-Drosselung); Verdichtung alter Tageskerzen (TS §6.8); Fehlerbehandlung (Worker-Neustart mit Wiederherstellung und Abbruch nach wiederholtem Fehlschlag, TS §8.5; `QuotaExceededError`); Budgets für das Referenz-Mobilgerät (E-27).
 - **Abnahme:** Alle Budgets aus TS §14.3 mit Perf-Suite und Systemtests (CPU-Drosselung) gemessen und eingehalten oder Abweichungen dokumentiert; ein künstlich ausgelöster Worker-Absturz wird ohne Verlust von Anwender-Aktionen überstanden.
 - **Vor der Umsetzung klären:** Die Verdichtung alter Tageskerzen lässt sich auf nach 1.0 verschieben, weil der Store `candles` ohnehin verworfen werden darf (E-08). Die Schätzung in TS §9.6 ergibt rund 1,7 MB je Spieljahr (1,1 MB Kerzen, 0,5 MB Journal, 0,08 MB Marktzustände) und liegt damit über dem Budget von 1,5 MB (NF-07): messen, dann Budget anpassen oder Kerzen sparsamer speichern (z. B. je Seed, E-08).
-- **Referenzen:** NF-01, NF-02, NF-06, NF-07; TS §8.5, §9.5, §14.3; E-27
-- **Abhängig von:** AP 6.1, AP 1.9c
+- **Referenzen:** NF-01, NF-02, NF-06, NF-07; TS §3.6, §8.5, §9.5, §14.3; E-27, E-35
+- **Abhängig von:** AP 6.1, AP 1.9c, AP 6.7
 
 #### AP 6.5 – Barrierefreiheit, Hilfen und Hinweise
 
@@ -864,46 +882,79 @@ AP 5.7 wurde nach §2.5 geteilt (14.11.2026) und ist mit allen drei Teilen ferti
 - **Umfang:** die dann gültige `simVersion` einfrieren und die Kompatibilitätszusage im beschlossenen Umfang aktivieren (TS §15, E-25); Versionsanzeige; README (Spielidee, Entwicklung, Deployment); CI/CD prüfen; Abschlusstest nach Checkliste aller Muss-Stories der Stufe 1.
 - **Abnahme:** Alle APs sind fertig und alle Muss-Stories der Stufe 1 erfüllt (Zuordnung am Ende von §5); der Selbsttest zeigt auch auf einem iOS-Gerät (Safari) die Golden-Master-Prüfsummen, in Chromium, Firefox und WebKit prüft das J11 bei jedem Push (TS §4.6); Release deployt (Tag und Commit auf Anweisung).
 - **Referenzen:** TS §4.6, §14.4, §15; E-25
-- **Abhängig von:** AP 6.4, AP 6.5, AP 3.5
+- **Abhängig von:** AP 6.4, AP 6.5, AP 3.5, AP 6.8b
+
+#### AP 6.7 – Verhalten im Hintergrund: weitere Modi
+
+- **Umfang:** Die Spielereinstellung `backgroundMode` (TS §3.6) bekommt zu `realtime` und `pause` zwei Modi: `keep-speed` (verborgen läuft die gewählte Geschwindigkeit weiter) und `custom-speed` (verborgen mit einer eigenen `backgroundSpeed`). Dazu kommt `backgroundPauseAfter` (Echtzeit-Minuten oder aus), das für alle laufenden Modi gilt: Nach der Frist pausiert das Spiel an dem Tick, der zur Frist gehört. Betroffen sind `effectiveSpeed` (`engine/domain/clock-pacing-logic.ts`), `catchUpTarget` (`engine/domain/catch-up-logic.ts`), `autoPauseApplies`, der Engine-Host, das Kommando für die Einstellung, der `clock`-Slice und `settings/ui/player-settings`.
+  - **Geschlossen oder eingefroren:** Nachberechnet wird weiter in Echtzeit (§3.7), sonst würde aus einer Stunde Einfrieren bei 1 w/s eine Nachberechnung von rund 69 Spieljahren. Der Host erkennt Lücken im Takt des Workers (Abstand zwischen zwei Durchläufen über der Schwelle; in Chromium zusätzlich `freeze`/`resume`) und zählt sie als Echtzeit.
+  - **Auto-Pause:** greift in `keep-speed` und `custom-speed` auch bei verborgener App; die Ereignisse erscheinen im Abwesenheitsbericht, Browser-Benachrichtigungen folgen mit AP 6.3.
+  - **Seiteneffekte prüfen und in TS §3.6 dokumentieren:** CPU und Akku im verborgenen Tab (Budget NF-02, E-27; die Messung gehört zu AP 6.4); Drosselung durch die Browser (Timer im Haupt-Thread, Intensive Throttling, Tab-Freezing und Energiesparmodus in Chromium, Firefox, Safari; Verhalten von Dedicated Workern); Drosselung der Projektionen im verborgenen Zustand (keine `quotes`, seltener `clock`); Persistenz (Takt von Snapshots und Uhr-Sicherung, `pgo.lastTick`, schnelleres Wachstum von Journal und Tageskerzen gegen NF-07); Hintergrundauftrag für Hoch und Tief und `liveHighLowMaxSpeed`; Web Lock und mehrere Tabs; Mobilgeräte, die die App anhalten.
+  - `SCHEMA_VERSION` steigt, weil sich der Spielerzustand ändert (E-25 vor 1.0).
+- **Abnahme:**
+  - Beispieltabelle für `effectiveSpeed`, die Pause-Frist und die Nachberechnung in TS §3.6 und §3.7, als Logiktests umgesetzt.
+  - Eigenschaft: Eine Lücke im Takt bringt nie mehr Spielzeit als Echtzeit.
+  - Host-Tests mit simulierter Sichtbarkeit und Uhr: Wechsel der Modi, Frist, Auto-Pause verborgen, Lücke.
+  - Seitentest der Spielereinstellungen. Ein Systemtest für den verborgenen Tab ist nicht möglich (TS §14.1).
+  - Die Seiteneffekte sind in TS §3.6 mit Befund und Gegenmaßnahme dokumentiert.
+- **Vor der Umsetzung klären:** E-35 – Schwelle für Lücken, Frist auch bei geschlossener App, Auto-Pause im Hintergrund.
+- **Referenzen:** US-ZT-01, US-UI-09; TS §3.5–§3.7, §12, §14.3; E-02, E-35
+- **Abhängig von:** AP 2.6, AP 3.6
+
+#### AP 6.8a – Sprachumschaltung: Mechanik
+
+- **Umfang:** Deutsch und Englisch als Sprachen (TS §11.9, E-36). `main.ts` liest die Sprache aus den Geräteeinstellungen, lädt bei Englisch die Übersetzungen (`loadTranslations()` aus `@angular/localize`) und importiert erst danach den Bootstrap, weil `$localize` in Modulkonstanten schon beim Import ausgewertet wird. Es bleibt bei einem Build; die Übersetzungsdatei wird mit der PWA zwischengespeichert. Umschalten in den Geräteeinstellungen lädt die App neu. `LOCALE_ID`, Locale-Daten und `<html lang>` folgen der Sprache; `shared/util/format.ts` bekommt eine einstellbare Locale (Englisch: `en-GB`), Währung EUR und Zeit UTC bleiben. Standard ist Deutsch, unabhängig von der Browsersprache. Eine Prüfung in `npm run verify` meldet IDs aus `messages.xlf` ohne Übersetzung (Gate ab AP 6.8b).
+- **Abnahme:** Formattabelle für Englisch in TS §11.9 als Logiktest; Seitentest der Einstellung; Systemtest: auf Englisch umschalten, neu laden, englischer Text und englisches Zahlenformat erscheinen, `@intl` bleibt grün.
+- **Vor der Umsetzung klären:** E-36.
+- **Referenzen:** US-UI-11; TS §9.3, §11.9; E-36
+- **Abhängig von:** AP 6.2
+
+#### AP 6.8b – Englische Übersetzung
+
+- **Umfang:** alle Texte ins Englische, auch die Texte der Engine-Codes, Glossar und Erklärungen, rechtliche Hinweise und Manifest; Begriffsliste DE → EN für Fachbegriffe (Depot, Verrechnungskonto, Sparerpauschbetrag …) in TS §11.9; die Prüfung auf fehlende Übersetzungen wird Teil des Gates.
+- **Abnahme:** keine fehlende Übersetzung; Stichprobe aller Hauptansichten auf Englisch im Browser (Textlängen, Umbrüche) und axe-Prüfung in beiden Sprachen.
+- **Referenzen:** US-UI-11; TS §11.9; E-36
+- **Abhängig von:** AP 6.8a, AP 6.5, AP 6.7
 
 ### Zuordnung der User Stories
 
 Stories der Stufe 1 (PS §7) und die Arbeitspakete, die sie umsetzen. AP 6.6 prüft die Muss-Stories nach dieser Liste.
 
-| Stories                                    | Arbeitspakete                                                              |
-| ------------------------------------------ | -------------------------------------------------------------------------- |
-| US-SP-01–03                                | AP 2.4; Seed in den Einstellungen: AP 6.2                                  |
-| US-ZT-01–05                                | AP 2.5 (US-ZT-05 Soll); Schalter für Tastenkürzel und Hintergrund: AP 2.6  |
-| US-ZT-01, US-ZT-03 (Layout der Uhr)        | AP 5.9                                                                     |
-| US-ZT-06 (Soll)                            | AP 3.6                                                                     |
-| US-EK-01, US-EK-02                         | AP 3.2                                                                     |
-| US-EK-03                                   | AP 3.5                                                                     |
-| US-BK-01–05                                | AP 3.3 (Kommandos), AP 3.5 (Oberfläche); Depot eröffnen: AP 5.1 und AP 5.4 |
-| US-BK-06                                   | AP 3.4                                                                     |
-| US-BK-07, US-BK-08                         | AP 3.2; Depotgebühr: AP 5.2                                                |
-| US-BK-10                                   | AP 5.6a                                                                    |
-| US-MK-01, US-MK-02, US-MK-04               | AP 4.4                                                                     |
-| US-MK-03                                   | AP 4.5                                                                     |
-| US-MK-05                                   | AP 4.1 (Feed), AP 4.4 und AP 4.5 (Hervorhebung); Schalter: AP 6.2          |
-| US-MK-06 (Soll)                            | AP 4.5 (Termine am Instrument), AP 5.7 (Kalender für Depot und Watchlist)  |
-| US-HD-01–04                                | AP 5.1 (Engine), AP 5.4 (Oberfläche)                                       |
-| US-HD-05                                   | AP 5.6b                                                                    |
-| US-PF-01, US-PF-04, US-PF-05               | AP 5.7                                                                     |
-| US-PF-02, US-PF-03, US-PF-06               | AP 5.5; Lots und Erträge in der Engine: AP 5.2                             |
-| US-PF-07 (Soll)                            | AP 5.7                                                                     |
-| US-ST-01–03                                | AP 3.2 (Steuerkern, Zinsen), AP 5.3                                        |
-| US-ST-04                                   | AP 5.5                                                                     |
-| US-CH-01                                   | AP 4.2; wählbare Auflösung: AP 5.8                                         |
-| US-CH-02                                   | AP 4.3; Indikatorfarben: AP 5.8                                            |
-| US-BN-01–03                                | AP 3.6                                                                     |
-| US-BN-04 (Soll)                            | AP 6.3                                                                     |
-| US-EX-01, US-EX-02, US-EX-03 (Soll)        | AP 6.1; Speicherstatus: AP 6.3                                             |
-| US-UI-01, US-UI-09                         | AP 2.6, AP 6.2                                                             |
-| US-UI-02 (Soll)                            | AP 6.2                                                                     |
-| US-UI-03, US-UI-04                         | AP 0.4 und jedes UI-AP; Abschlussprüfung: AP 6.5                           |
-| US-UI-05 (Soll), US-UI-06 (Soll), US-UI-08 | AP 6.5                                                                     |
-| US-UI-07 (Soll)                            | AP 6.3                                                                     |
-| US-UI-10 (Soll)                            | AP 5.7                                                                     |
+| Stories                                    | Arbeitspakete                                                                                              |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| US-SP-01–03                                | AP 2.4; Seed in den Einstellungen: AP 6.2                                                                  |
+| US-ZT-01–05                                | AP 2.5 (US-ZT-05 Soll); Schalter für Tastenkürzel und Hintergrund: AP 2.6; weitere Hintergrundmodi: AP 6.7 |
+| US-ZT-01, US-ZT-03 (Layout der Uhr)        | AP 5.9                                                                                                     |
+| US-ZT-06 (Soll)                            | AP 3.6                                                                                                     |
+| US-EK-01, US-EK-02                         | AP 3.2                                                                                                     |
+| US-EK-03                                   | AP 3.5                                                                                                     |
+| US-BK-01–05                                | AP 3.3 (Kommandos), AP 3.5 (Oberfläche); Depot eröffnen: AP 5.1 und AP 5.4                                 |
+| US-BK-06                                   | AP 3.4                                                                                                     |
+| US-BK-07, US-BK-08                         | AP 3.2; Depotgebühr: AP 5.2                                                                                |
+| US-BK-10                                   | AP 5.6a                                                                                                    |
+| US-MK-01, US-MK-02, US-MK-04               | AP 4.4                                                                                                     |
+| US-MK-03                                   | AP 4.5                                                                                                     |
+| US-MK-05                                   | AP 4.1 (Feed), AP 4.4 und AP 4.5 (Hervorhebung); Schalter: AP 6.2                                          |
+| US-MK-06 (Soll)                            | AP 4.5 (Termine am Instrument), AP 5.7 (Kalender für Depot und Watchlist)                                  |
+| US-HD-01–04                                | AP 5.1 (Engine), AP 5.4 (Oberfläche)                                                                       |
+| US-HD-05                                   | AP 5.6b                                                                                                    |
+| US-PF-01, US-PF-04, US-PF-05               | AP 5.7                                                                                                     |
+| US-PF-02, US-PF-03, US-PF-06               | AP 5.5; Lots und Erträge in der Engine: AP 5.2                                                             |
+| US-PF-07 (Soll)                            | AP 5.7                                                                                                     |
+| US-ST-01–03                                | AP 3.2 (Steuerkern, Zinsen), AP 5.3                                                                        |
+| US-ST-04                                   | AP 5.5                                                                                                     |
+| US-CH-01                                   | AP 4.2; wählbare Auflösung: AP 5.8                                                                         |
+| US-CH-02                                   | AP 4.3; Indikatorfarben: AP 5.8                                                                            |
+| US-BN-01–03                                | AP 3.6                                                                                                     |
+| US-BN-04 (Soll)                            | AP 6.3                                                                                                     |
+| US-EX-01, US-EX-02, US-EX-03 (Soll)        | AP 6.1; Speicherstatus: AP 6.3                                                                             |
+| US-UI-01, US-UI-09                         | AP 2.6, AP 6.2; Hintergrundmodi: AP 6.7                                                                    |
+| US-UI-02 (Soll)                            | AP 6.2                                                                                                     |
+| US-UI-03, US-UI-04                         | AP 0.4 und jedes UI-AP; Abschlussprüfung: AP 6.5                                                           |
+| US-UI-05 (Soll), US-UI-06 (Soll), US-UI-08 | AP 6.5                                                                                                     |
+| US-UI-07 (Soll)                            | AP 6.3                                                                                                     |
+| US-UI-10 (Soll)                            | AP 5.7                                                                                                     |
+| US-UI-11 (Soll)                            | AP 6.8a, AP 6.8b                                                                                           |
 
 Soll-Punkte innerhalb von Stories, die noch kein AP nennt: Saldoverlauf als Chart (US-BK-06) und die Aufteilung des Vermögensverlaufs in Bargeld und Wertpapiere (US-PF-04). Sie werden zugeordnet oder bewusst auf nach 1.0 verschoben, sobald M4 steht.
 
@@ -913,18 +964,20 @@ Die Reihenfolge ab M7 ist ein Vorschlag und wird nach dem MVP gemeinsam priorisi
 
 **Wichtig ab Version 1.0:** Neue Marktmechaniken ändern die Welt bestehender Seeds. Sie brauchen eine neue `simVersion`; bestehende Spieler laufen mit ihrer Version weiter (TS §15).
 
-| Meilenstein                        | Stufe | Inhalt                                                                                                                                                                                                                                                                                                                                                                                                               | Stories                                                                |
-| ---------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| M7 – Zinsen, Inflation, Anleihen   | 2     | Makromodell (Verbraucherpreise, Leitzins, Zinskurve), Inflation bei Kosten und Gehalt, Realwertanzeige, Staats- und Unternehmensanleihen mit Stückzinsen, Renten-ETFs, Tagesgeld am Leitzins, Festgeld und Lockzinsen                                                                                                                                                                                                | US-MK-10, US-MK-11, US-BK-11                                           |
-| M8 – Rohstoffe, Edelmetalle, Fonds | 2     | Rohstoffe mit Branchenkopplung, ETCs, physische Edelmetalle über das Barvermögen (Händler, Spanne, Spekulationsfrist), aktive Fonds                                                                                                                                                                                                                                                                                  | US-MK-12, US-MK-13, US-MK-14                                           |
-| M9 – Realismus-Ausbau              | 2     | Steuerdetails, Depotübertrag, Trailing-Stop, Kursalarme, Fundamentaldaten und Quartalszahlen, Unternehmensereignisse, Fremdwährungen, Feiertage und Direkthandel, Vergleichschart, weitere Indikatoren, Risikokennzahlen; voraussichtlich in zwei Teile zu schneiden                                                                                                                                                 | US-ST-10–12, US-BK-12, US-HD-10–11, US-MK-15–18, US-CH-03–04, US-PF-08 |
-| M10 – CFDs                         | 3     | CFD-Konto, Long und Short mit Hebel, Margin, Finanzierungskosten, Margin-Call und Zwangsglattstellung                                                                                                                                                                                                                                                                                                                | US-CF-01, US-CF-02                                                     |
-| M11 – Große Welt                   | 3     | Deutlich größere Welt mit mehr Ländern, Börsen, Branchen, Aktien, ETFs und den Assetklassen aus M7/M8 (Größenordnung: einige Tausend bis 10.000 Aktien, Zielgröße wird vor dem Start festgelegt); erweiterter Namensgenerator, genäherte breite Indizes, Tageskerzen und Hoch/Tief bei Bedarf, eigene Budgets für Spielstart, Speicher und Export, Bedienung großer Listen; Umsetzung nach der Checkliste in TS §5.8 | US-MK-19, US-MK-20                                                     |
-| M12 – Regeln und Backtesting       | 3     | Regel-Editor („wenn Bedingung, dann Aktion") ohne `eval`, Auswertung zum Kerzenschluss in der Engine, Ausführungsprotokoll, Backtest auf der Historie mit denselben Indikatorfunktionen                                                                                                                                                                                                                              | US-RG-01–US-RG-04                                                      |
-| M13 – Lebenssimulation             | 4     | Seed-basierte Lebensereignisse, Upgrades, Versicherungen, Karriere und Gehaltsentwicklung                                                                                                                                                                                                                                                                                                                            | US-LE-01–US-LE-04                                                      |
-| M14 – Newsticker                   | 4     | Nachrichten aus den strukturierten Markt-Ereignissen, Wirtschaftskalender                                                                                                                                                                                                                                                                                                                                            | US-NT-01, US-NT-02                                                     |
-| M15 – Erben und Prestige           | 4     | Nachfolger mit Erbe nach Erbschaftsteuer, Startvorteile, Familienchronik                                                                                                                                                                                                                                                                                                                                             | US-ER-01–US-ER-03                                                      |
-| N1 – Native App (optional)         | N     | Capacitor, Android zuerst; vorausgeplante lokale Benachrichtigungen über die Ereignisvorschau; iOS bei Bedarf                                                                                                                                                                                                                                                                                                        | US-NA-01–US-NA-03                                                      |
+| Meilenstein                         | Stufe | Inhalt                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Stories                                                                |
+| ----------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| M7 – Prüfung des Rechenkerns        | 2     | **AP 7.1 Modellreview durch Fable 5.2** (`claude-fable-5-2`, als Subagent mit `model: fable`) je Bereich: Determinismus-Mathematik (TS §4), Weltgenerierung (§5), Marktmodell und Kalibrierung (§6), Wirtschaftsmodell mit Rundung, Zinsen, Dispo, Steuern, Lots, Sparplänen, Rendite und Benchmark (§7); fachliche Plausibilität mit Nachrechnen, nicht nur Doku gegen Code; Befundliste zur Bewertung durch den Product Owner, Korrekturen in eigenen APs mit neuer `simVersion` (TS §15). **AP 7.2 WASM-Machbarkeit (Spike):** Hotspots profilieren (Tagesschritt, Brücken und Minutenkurse, Stapelbetrieb, Hoch/Tief-Auftrag), Toolchains vergleichen (z. B. Rust mit wasm-bindgen, AssemblyScript), einen Hotspot portieren und mit und ohne CPU-Drosselung messen; Determinismus (Golden-Master-Prüfsummen bitgleich, `detExp`/`detLog` portiert, Selbsttest auf allen Engines), Bundle-Größe, Einbindung in den Worker, CI, Tests und Mutationstests in zwei Sprachen; Ergebnis ist eine Entscheidung in TS §16, wichtig vor allem für N2 | –                                                                      |
+| M8 – Zinsen, Inflation, Anleihen    | 2     | Makromodell (Verbraucherpreise, Leitzins, Zinskurve), Inflation bei Kosten und Gehalt, Realwertanzeige, Staats- und Unternehmensanleihen mit Stückzinsen, Renten-ETFs, Tagesgeld am Leitzins, Festgeld und Lockzinsen                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | US-MK-10, US-MK-11, US-BK-11                                           |
+| M9 – Rohstoffe, Edelmetalle, Fonds  | 2     | Rohstoffe mit Branchenkopplung, ETCs, physische Edelmetalle über das Barvermögen (Händler, Spanne, Spekulationsfrist), aktive Fonds                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | US-MK-12, US-MK-13, US-MK-14                                           |
+| M10 – Realismus-Ausbau              | 2     | Steuerdetails, Depotübertrag, Trailing-Stop, Kursalarme, Fundamentaldaten und Quartalszahlen, Unternehmensereignisse, Fremdwährungen, Feiertage und Direkthandel, Vergleichschart, weitere Indikatoren, Risikokennzahlen; voraussichtlich in zwei Teile zu schneiden                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | US-ST-10–12, US-BK-12, US-HD-10–11, US-MK-15–18, US-CH-03–04, US-PF-08 |
+| M11 – CFDs                          | 3     | CFD-Konto, Long und Short mit Hebel, Margin, Finanzierungskosten, Margin-Call und Zwangsglattstellung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | US-CF-01, US-CF-02                                                     |
+| M12 – Regeln und Backtesting        | 3     | Regel-Editor („wenn Bedingung, dann Aktion") ohne `eval`, Auswertung zum Kerzenschluss in der Engine, Ausführungsprotokoll, Backtest auf der Historie mit denselben Indikatorfunktionen                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | US-RG-01–US-RG-04                                                      |
+| M13 – Lebenssimulation              | 4     | Seed-basierte Lebensereignisse, Upgrades, Versicherungen, Karriere und Gehaltsentwicklung                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | US-LE-01–US-LE-04                                                      |
+| M14 – Newsticker                    | 4     | Nachrichten aus den strukturierten Markt-Ereignissen, Wirtschaftskalender                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | US-NT-01, US-NT-02                                                     |
+| M15 – Achievements und Gamification | 4     | Erfolge mit Kategorien und Stufen (z. B. erster Kauf, erste Dividende, Vermögensschwellen, Sparplan über Jahre, Bärenmarkt ohne Verkauf durchgehalten, Sparerpauschbetrag ausgeschöpft), Spielziele und Herausforderungen mit Frist, Freischalten per Toast und Meldung im Newsticker, Übersicht mit Fortschritt; Auswertung deterministisch in der Engine aus Zustand und Journal (nur Codes), Teil des Spielstands und des Exports; Grundlage für Prestige in M16                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | US-GA-01–US-GA-03                                                      |
+| M16 – Erben und Prestige            | 4     | Nachfolger mit Erbe nach Erbschaftsteuer, Startvorteile, Familienchronik                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | US-ER-01–US-ER-03                                                      |
+| N1 – Native App (optional)          | N     | Capacitor, Android zuerst; vorausgeplante lokale Benachrichtigungen über die Ereignisvorschau; iOS bei Bedarf                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | US-NA-01–US-NA-03                                                      |
+| N2 – Große Welt (optional)          | N     | Deutlich größere Welt mit mehr Ländern, Börsen, Branchen, Aktien, ETFs und den Assetklassen aus M8/M9 (Größenordnung: einige Tausend bis 10.000 Aktien, Zielgröße wird vor dem Start festgelegt); erweiterter Namensgenerator, genäherte breite Indizes, Tageskerzen und Hoch/Tief bei Bedarf, eigene Budgets für Spielstart, Speicher und Export, Bedienung großer Listen; Umsetzung nach der Checkliste in TS §5.8; zuletzt eingeplant, Entscheidung über den Start nach M16                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | US-MK-19, US-MK-20                                                     |
 
 ## 7. Änderungsprotokoll
 
