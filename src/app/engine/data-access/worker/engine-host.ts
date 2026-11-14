@@ -1735,7 +1735,13 @@ export class EngineHost {
         return this.#performanceHistory(game, query);
       case 'upcoming': {
         const days = query.days ?? UPCOMING_DAYS;
-        return { kind: 'upcoming', events: engine.upcoming(days), days, tick: engine.tick };
+        return {
+          kind: 'upcoming',
+          events: engine.upcoming(days),
+          days,
+          tick: engine.tick,
+          dividends: engine.dividendCalendar(),
+        };
       }
     }
   }

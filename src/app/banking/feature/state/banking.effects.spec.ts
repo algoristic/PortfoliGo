@@ -471,6 +471,12 @@ describe('BankingEffects', () => {
       debitInterest: 0,
       taxes: 0,
       dividends: 0,
+      orderFees: 0,
+      savingsPlanFees: 0,
+      accountFees: 0,
+      custodyFees: 0,
+      spreadCosts: 0,
+      terCosts: 0,
     };
     const result = {
       kind: 'monthlyValues' as const,

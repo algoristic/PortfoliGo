@@ -266,6 +266,7 @@ export class SavingsPlanSystem {
         fill,
         { clearingAccountId: depot.clearingAccountId, bankId: depot.bankId },
         tick,
+        quote.mid,
       ),
     );
     bookPurchase(this.#player.positions, plan.depotId, plan.instrumentId, {

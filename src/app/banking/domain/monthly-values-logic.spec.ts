@@ -1,8 +1,9 @@
 import fc from 'fast-check';
 
 import { MonthlyValues } from './models/household.model';
-import { PostingDraft } from './models/ledger.model';
+import { PostingDraft, TextParams, TransactionType } from './models/ledger.model';
 import {
+  addTerCosts,
   addToMonthlyValues,
   emptyMonthlyValues,
   monthlyEarnings,
@@ -10,21 +11,26 @@ import {
   savingsRate,
 } from './monthly-values-logic';
 
-type Booking = { postings: PostingDraft[] };
+interface Booking {
+  type: TransactionType;
+  postings: PostingDraft[];
+  refs?: Record<string, string>;
+  params?: TextParams;
+}
 
-function booking(...postings: [PostingDraft['account'], number][]): Booking {
-  return { postings: postings.map(([account, amount]) => ({ account, amount })) };
+function booking(type: TransactionType, ...postings: [PostingDraft['account'], number][]): Booking {
+  return { type, postings: postings.map(([account, amount]) => ({ account, amount })) };
 }
 
 // TS §7.2 journal 1–6 plus overdraft interest of 0.52 €
 const APRIL_2030: Booking[] = [
-  booking(['acc-1', 1_000_000], ['external:opening-balance', -1_000_000]),
-  booking(['acc-1', -184_327], ['external:living-costs', 184_327]),
-  booking(['acc-1', -300_000], ['acc-2', 300_000]),
-  booking(['acc-1', -990], ['external:bank:b1:fees', 990]),
-  booking(['acc-2', 548], ['external:bank:b2:interest', -548]),
-  booking(['acc-1', 250_000], ['external:employer', -250_000]),
-  booking(['acc-1', -52], ['external:bank:b1:interest', 52]),
+  booking('opening-balance', ['acc-1', 1_000_000], ['external:opening-balance', -1_000_000]),
+  booking('living-costs', ['acc-1', -184_327], ['external:living-costs', 184_327]),
+  booking('transfer', ['acc-1', -300_000], ['acc-2', 300_000]),
+  booking('account-fee', ['acc-1', -990], ['external:bank:b1:fees', 990]),
+  booking('credit-interest', ['acc-2', 548], ['external:bank:b2:interest', -548]),
+  booking('salary', ['acc-1', 250_000], ['external:employer', -250_000]),
+  booking('overdraft-interest', ['acc-1', -52], ['external:bank:b1:interest', 52]),
 ];
 
 function sum(bookings: readonly Booking[]): MonthlyValues {
@@ -48,36 +54,103 @@ describe('monthly-values-logic', () => {
         debitInterest: 52,
         taxes: 0,
         dividends: 0,
+        orderFees: 0,
+        savingsPlanFees: 0,
+        accountFees: 990,
+        custodyFees: 0,
+        spreadCosts: 0,
+        terCosts: 0,
       });
     });
 
     // TS §7.4: classification by counterparty
     it.each<[string, Booking, Partial<MonthlyValues>]>([
-      ['a tax', booking(['acc-2', -137], ['external:tax-office', 137]), { taxes: 137 }],
+      ['a tax', booking('tax', ['acc-2', -137], ['external:tax-office', 137]), { taxes: 137 }],
       [
         'a tax refund',
-        booking(['acc-2', 5_425], ['external:tax-office', -5_425]),
+        booking('tax-refund', ['acc-2', 5_425], ['external:tax-office', -5_425]),
         { taxes: -5_425 },
       ],
       [
         'debit interest on a clearing account',
-        booking(['acc-4', -1_479], ['external:bank:b3:interest', 1_479]),
+        booking('debit-interest', ['acc-4', -1_479], ['external:bank:b3:interest', 1_479]),
         { debitInterest: 1_479 },
       ],
       [
         'a dividend with tax withheld',
-        booking(['acc-4', 7_500], ['external:issuer:i1', -10_000], ['external:tax-office', 2_500]),
+        booking(
+          'dividend',
+          ['acc-4', 7_500],
+          ['external:issuer:i1', -10_000],
+          ['external:tax-office', 2_500],
+        ),
         { dividends: 10_000, taxes: 2_500 },
       ],
       [
-        'a buy with an order fee',
-        booking(['acc-4', -100_590], ['external:market', 100_000], ['external:bank:b3:fees', 590]),
-        { fees: 590 },
+        'a buy with an order fee and its spread',
+        {
+          ...booking(
+            'buy',
+            ['acc-4', -100_590],
+            ['external:market', 100_000],
+            ['external:bank:b3:fees', 590],
+          ),
+          refs: { orderId: 'ord-1' },
+          params: { orderFee: 400, exchangeFee: 190, spreadCost: 75 },
+        },
+        { fees: 590, orderFees: 590, spreadCosts: 75 },
       ],
-      ['a transfer', booking(['acc-1', -300_000], ['acc-2', 300_000]), {}],
+      [
+        'a sale with an order fee and no estimate',
+        booking(
+          'sell',
+          ['acc-4', 49_510],
+          ['external:market', -50_000],
+          ['external:bank:b3:fees', 490],
+        ),
+        { fees: 490, orderFees: 490 },
+      ],
+      [
+        'a sale without fees',
+        {
+          ...booking('sell', ['acc-4', 50_000], ['external:market', -50_000]),
+          params: { spreadCost: 30 },
+        },
+        { spreadCosts: 30 },
+      ],
+      [
+        'a savings plan execution',
+        {
+          ...booking(
+            'buy',
+            ['acc-4', -5_000],
+            ['external:market', 4_925],
+            ['external:bank:b3:fees', 75],
+          ),
+          refs: { savingsPlanId: 'sp-1' },
+          params: { spreadCost: 5 },
+        },
+        { fees: 75, savingsPlanFees: 75, spreadCosts: 5 },
+      ],
+      [
+        'a custody fee',
+        booking('custody-fee', ['acc-4', -1_190], ['external:bank:b3:fees', 1_190]),
+        { fees: 1_190, custodyFees: 1_190 },
+      ],
+      [
+        'an account fee',
+        booking('account-fee', ['acc-1', -490], ['external:bank:b1:fees', 490]),
+        { fees: 490, accountFees: 490 },
+      ],
+      [
+        'a spread parameter on another type',
+        { ...booking('transfer', ['acc-1', -1], ['acc-2', 1]), params: { spreadCost: 9 } },
+        {},
+      ],
+      ['a transfer', booking('transfer', ['acc-1', -300_000], ['acc-2', 300_000]), {}],
       [
         'the opening balance',
-        booking(['acc-1', 1_000_000], ['external:opening-balance', -1_000_000]),
+        booking('opening-balance', ['acc-1', 1_000_000], ['external:opening-balance', -1_000_000]),
         {},
       ],
     ])('counts %s', (_case, transaction, expected) => {
@@ -93,6 +166,20 @@ describe('monthly-values-logic', () => {
           },
         ),
       );
+    });
+  });
+
+  describe('addTerCosts', () => {
+    // TS §7.4: estimated TER costs stay unrounded and outside fees and spending
+    it('adds the unrounded costs of a day', () => {
+      const day = addTerCosts(values({ terCosts: 0.25 }), 1.369_863);
+      expect(day.terCosts).toBeCloseTo(1.619_863, 9);
+      expect(monthlySpending(day)).toBe(0);
+    });
+
+    it('keeps the values of a day without ETFs', () => {
+      const before = values({ income: 1 });
+      expect(addTerCosts(before, 0)).toBe(before);
     });
   });
 

@@ -34,6 +34,7 @@ export class BankingFacade {
   statementNotFound$ = this.#store.pipe(select(BankingSelectors.selectStatementNotFound));
   bankComparison$ = this.#store.pipe(select(BankingSelectors.selectBankComparison));
   monthlyOverview$ = this.#store.pipe(select(BankingSelectors.selectMonthlyOverview));
+  incomeAndCosts$ = this.#store.pipe(select(BankingSelectors.selectIncomeAndCosts));
   /** The running month's values (dashboard cash flow, AP 5.7); `null` until loaded. */
   currentMonth$ = this.#store.pipe(select(BankingSelectors.selectCurrentMonth));
   standingOrders$ = this.#store.pipe(select(BankingSelectors.selectStandingOrders));

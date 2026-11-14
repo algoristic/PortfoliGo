@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { MINUTES_PER_HOUR } from '@app/clock/domain/models/time.model';
 import { ClockFacade } from '@app/clock/feature/state/clock.facade';
+import { EngineService } from '@app/engine/data-access/service/engine.service';
 import {
   generateMiniWorld,
   InProcessEngine,
@@ -28,6 +29,7 @@ import {
   typeText,
 } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
+import { parseEuros } from '../../../../testing/parse';
 import { installScrollViewport } from '../../../../testing/scroll-viewport';
 import { MONTHLY_VALUES_THROTTLE_MS } from '../state/banking.effects';
 import { BankingFacade } from '../state/banking.facade';
@@ -347,6 +349,53 @@ describe('AccountsPage', () => {
       expect(
         queryByTestId(byTestId(page, 'banking.monthly.row.2030-05'), 'banking.monthly.row.running'),
       ).not.toBeNull();
+    });
+  });
+
+  // US-PF-07, AP 5.7: earnings per month and year, costs per year
+  describe('earnings and costs', () => {
+    function clock(): string {
+      return textOf(byTestId(page, 'shell.header.clock'));
+    }
+
+    function monthIds(year: HTMLElement): string[] {
+      return [...year.querySelectorAll('tr[data-testid*=".month."]')].map(
+        (row) => row.getAttribute('data-testid')?.replace(/^.*\.month\./, '') ?? '',
+      );
+    }
+
+    it('shows the months of the running year and the account fee of April', async () => {
+      await act(() => click(byTestId(page, 'banking.accounts.tabs.income-costs.tab')));
+      let year = byTestId(page, 'banking.income-costs.2030');
+      expect(queryByTestId(year, 'banking.income-costs.running')).not.toBeNull();
+      expect(monthIds(year)).toEqual(['04']);
+      expect(textOf(byTestId(year, 'banking.income-costs.dividends'))).toBe('0,00 €');
+
+      // Past the month end to 01.05.2030, 07:00: the bank run charged April's account fee.
+      gameFacade(ClockFacade).jumpTo({ kind: 'date', tick: tickAt(Date.UTC(2030, 4, 1, 7)) });
+      for (let pass = 0; pass < 100 && !clock().endsWith('07:00'); pass++) {
+        await run(MINUTES_PER_HOUR);
+      }
+      await new Promise((resolve) => setTimeout(resolve, MONTHLY_VALUES_THROTTLE_MS + 50));
+      await run(100);
+
+      const reply = firstValueFrom(TestBed.inject(EngineService).monthlyValues());
+      await run(200);
+      const { closedMonths, current } = await reply;
+      const accountFees = [...closedMonths, current].reduce(
+        (sum, { values }) => sum + values.accountFees,
+        0,
+      );
+      year = byTestId(page, 'banking.income-costs.2030');
+      expect(monthIds(year)).toEqual(['05', '04']);
+      const fee = byTestId(year, 'banking.income-costs.cost.accountFees');
+      expect(
+        Math.round(parseEuros(textOf(byTestId(fee, 'banking.income-costs.cost.value'))) * 100),
+      ).toBe(accountFees);
+      expect(textOf(byTestId(year, 'banking.income-costs.cost.terCosts'))).toContain('geschätzt');
+      expect(
+        Math.round(parseEuros(textOf(byTestId(year, 'banking.income-costs.total'))) * 100),
+      ).toBe(accountFees);
     });
   });
 

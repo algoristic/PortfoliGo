@@ -54,7 +54,11 @@ import {
 } from '@app/banking/domain/models/household.model';
 import { Transaction, TransactionDraft } from '@app/banking/domain/models/ledger.model';
 import { StandingOrder } from '@app/banking/domain/models/standing-order.model';
-import { addToMonthlyValues, emptyMonthlyValues } from '@app/banking/domain/monthly-values-logic';
+import {
+  addTerCosts,
+  addToMonthlyValues,
+  emptyMonthlyValues,
+} from '@app/banking/domain/monthly-values-logic';
 import {
   accountEvents,
   availableAfterReservations,
@@ -261,6 +265,11 @@ export class BankingSystem {
         accrueCustodyDay(this.#custody(depot.id), valueOf(depot));
       }
     }
+  }
+
+  /** Adds the estimated TER costs of the day that ended to the running month (US-PF-07). */
+  accrueTerCosts(cents: number): void {
+    this.#player.monthlyValues = addTerCosts(this.#player.monthlyValues, cents);
   }
 
   /** The bank run at 06:00 (TS §7.4, E-19): the steps of `bankRunPlan` in their order. */

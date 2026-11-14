@@ -52,7 +52,7 @@ flowchart LR
 | M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Daueraufträge, Sparpläne, Steuern, Depot, Dashboard mit Benchmark   | 10  |
 | M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen                                     | 6   |
 
-**Empfohlene Reihenfolge:** M3 und M4 sind abgeschlossen (M4 mit AP 4.5). M5 läuft: AP 5.1 (in drei Teilen), AP 5.2, AP 5.3, AP 5.4 (in zwei Teilen), AP 5.5 (in zwei Teilen), AP 5.6a, AP 5.6b, AP 5.8 und AP 5.9 sind fertig; offen ist AP 5.7. M5 braucht M3 und M4. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
+**Empfohlene Reihenfolge:** M3 und M4 sind abgeschlossen (M4 mit AP 4.5). M5 läuft: AP 5.1 (in drei Teilen), AP 5.2, AP 5.3, AP 5.4 (in zwei Teilen), AP 5.5 (in zwei Teilen), AP 5.6a, AP 5.6b, AP 5.7 (in drei Teilen), AP 5.8 und AP 5.9 sind fertig. Zum Abschluss von M5 fehlt nur noch die einmalige Erhöhung von `SCHEMA_VERSION` (§5, M5). M5 braucht M3 und M4. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
 
 ## 2. Arbeitsweise in Sessions
 
@@ -165,7 +165,9 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 5.5  | Depot, Positionen und Steuerübersicht (UI)       | fertig | 5.4             |
 | 5.6a | Daueraufträge                                    | fertig | 3.5, 5.1c       |
 | 5.6b | Sparpläne                                        | fertig | 5.5             |
-| 5.7  | Dashboard und Performance                        | offen  | 5.5             |
+| 5.7a | Tagesreihen, Rendite und Benchmark               | fertig | 5.5             |
+| 5.7b | Dashboard                                        | fertig | 5.7a            |
+| 5.7c | Erträge und Kosten, Dividendenkalender           | fertig | 5.7b            |
 | 5.8  | Chart: wählbare Auflösung und Indikatorfarben    | fertig | 4.5             |
 | 5.9  | Kopfzeile: stabiles Layout der Uhr               | fertig | 2.5             |
 | 6.1  | Export und Import                                | offen  | 5.6a, 5.6b, 5.7 |
@@ -323,7 +325,7 @@ flowchart TD
   AP3_5 --> AP6_6
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_1,AP5_2,AP5_3,AP5_4,AP5_5,AP5_6a,AP5_6b,AP5_8,AP5_9 done
+  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_1,AP5_2,AP5_3,AP5_4,AP5_5,AP5_6a,AP5_6b,AP5_7,AP5_8,AP5_9 done
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6
@@ -773,6 +775,8 @@ AP 5.6b ist fertig (14.11.2026): Regeln in `trading/domain/savings-plan-logic.ts
 - **Geklärt (13.11.2026):** Externe Flüsse gehen am Tagesanfang in die Rendite ein, `r_day = V_end / (V_start + CF_day) − 1`; Tage mit `V_start + CF_day ≤ 0` gehen nicht in die Verkettung ein. „Veränderung heute“ rechnet ohne externe Zuflüsse (Einkommen, Lebenshaltung), zeigt also Markt, Zinsen, Kosten und Steuern (TS §7.9). „Demnächst“ liest die planbaren Termine aus Terminplaner und Kalender mit Basisbeträgen, ohne Vorausrechnung (E-05, TS §8.1). Zweite Vergleichsgröße und „Erste Schritte“ gehören zum Umfang (E-28).
 - **Referenzen:** US-PF-01, US-PF-04, US-PF-05, US-PF-07, US-MK-06, US-UI-10; TS §7.9, §8.1; E-05, E-28
 - **Abhängig von:** AP 5.5
+
+AP 5.7 wurde nach §2.5 geteilt (14.11.2026) und ist mit allen drei Teilen fertig: **AP 5.7a** Tagesreihen, zeitgewichtete Rendite, Benchmark und zweite Vergleichsgröße (TS §7.9, Abfrage `performanceHistory`), **AP 5.7b** die Übersicht (`/game/:playerId/dashboard`) mit „Erste Schritte“, Gesamtvermögen, Vermögensverlauf, Performance, „Demnächst“ (Abfrage `upcoming`, TS §8.1), Cashflow, Top-Positionen, Watchlist und letzten Benachrichtigungen, **AP 5.7c** die Soll-Teile Erträge und Kosten (US-PF-07: Kostenarten und geschätzte Spread- und TER-Kosten in den Monatswerten, Tab „Erträge und Kosten“ der Kontenseite, TS §7.4) und Dividendenkalender für Depot und Watchlist (US-MK-06: Kachel der Übersicht, TS §8.1), „Erste Schritte“ wieder einblenden, Aufräumen von `pgo.ui.firstSteps` beim Löschen eines Spielers und der Systemtest `e2e/dashboard.e2e.ts`. Abnahme: Beispieltabellen in `portfolio/domain/performance-logic.spec.ts`, `banking/domain/monthly-values-logic.spec.ts`, `income-costs-logic.spec.ts`, `portfolio/domain/cost-estimate-logic.spec.ts`, `dashboard/domain/*.spec.ts`; Engine-Szenarien `game-engine-performance.spec.ts`, `game-engine-upcoming.spec.ts`, `game-engine-savings-plans.spec.ts` (Kosten in den Monatswerten); Seitentests `dashboard/feature/dashboard/dashboard.page.spec.ts` (Werte der Engine als Orakel) und `banking/feature/accounts/accounts.page.spec.ts` (Erträge und Kosten).
 
 #### AP 5.8 – Chart: wählbare Auflösung und Indikatorfarben
 

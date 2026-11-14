@@ -513,6 +513,12 @@ function isMonthlyValues(value: unknown): boolean {
     debitInterest: isCents,
     taxes: isCents,
     dividends: isCents,
+    orderFees: isCents,
+    savingsPlanFees: isCents,
+    accountFees: isCents,
+    custodyFees: isCents,
+    spreadCosts: isCents,
+    terCosts: isFiniteNumber,
   });
 }
 

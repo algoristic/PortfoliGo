@@ -59,6 +59,15 @@ describe('DashboardEffects', () => {
       });
     });
 
+    it('saves showing the checklist again', () => {
+      store.overrideSelector(selectFirstStepsPlayerId, 'p1');
+      store.overrideSelector(selectFirstStepsSettings, { hidden: false, banksVisited: false });
+      const subscription = effects.saveFirstSteps$.subscribe();
+      actions$.next(DashboardActions.clickedShowFirstSteps());
+      subscription.unsubscribe();
+      expect(stored()).toEqual({ v: 1, data: { p1: { hidden: false, banksVisited: false } } });
+    });
+
     it('writes nothing before a player is loaded', () => {
       store.overrideSelector(selectFirstStepsPlayerId, null);
       store.overrideSelector(selectFirstStepsSettings, { hidden: true, banksVisited: false });

@@ -212,6 +212,12 @@ describe('banking selectors', () => {
       debitInterest: 0,
       taxes: 0,
       dividends: 0,
+      orderFees: 0,
+      savingsPlanFees: 0,
+      accountFees: 0,
+      custodyFees: 0,
+      spreadCosts: 0,
+      terCosts: 0,
     };
 
     it('puts the running month first, then the closed months newest first', () => {

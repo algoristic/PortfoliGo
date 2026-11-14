@@ -4,7 +4,12 @@ import { UpcomingResult } from '@app/engine/data-access/service/engine-service.m
 import { OrderView } from '@app/engine/domain/models/trading-view.model';
 import { SavingsPlanView } from '@app/trading/domain/models/savings-plan.model';
 
-import { firstStepsOf, parseStoredFirstSteps, upcomingEntries } from './dashboard.utils';
+import {
+  dividendCalendarRows,
+  firstStepsOf,
+  parseStoredFirstSteps,
+  upcomingEntries,
+} from './dashboard.utils';
 
 function at(day: number, month: number, hour = 0): number {
   return dateTimeToTick({ year: 2030, month, day, hour });
@@ -46,6 +51,7 @@ describe('upcomingEntries', () => {
       { kind: 'salary', tick: at(30, 4, 6), amount: 250_000, accountId: 'acc-1' },
       { kind: 'living-costs', tick: at(1, 5, 6), amount: 180_000, accountId: 'acc-1' },
     ],
+    dividends: [],
   };
   const standingOrder: StandingOrderView = {
     id: 'so-1',
@@ -111,5 +117,53 @@ describe('upcomingEntries', () => {
   it('drops dates that passed since the query', () => {
     const entries = upcomingEntries(result, at(30, 4, 6), [], [], [], NAMES, NAMES);
     expect(entries?.map(({ kind }) => kind)).toEqual(['living-costs']);
+  });
+});
+
+describe('dividendCalendarRows', () => {
+  const result: UpcomingResult = {
+    tick: at(22, 4, 10),
+    days: 14,
+    events: [],
+    dividends: [
+      {
+        instrumentId: 'E',
+        exTick: at(22, 4, 9),
+        paymentTick: at(24, 4, 6),
+        perShare: 335,
+        quantity: 7_000_000,
+        expected: 2_345,
+        earned: true,
+      },
+      {
+        instrumentId: 'A',
+        exTick: at(3, 5, 9),
+        paymentTick: at(7, 5, 6),
+        perShare: 400,
+        quantity: null,
+        expected: null,
+        earned: false,
+      },
+    ],
+  };
+
+  it('gives null before the first query', () => {
+    expect(dividendCalendarRows(null, at(22, 4, 10), NAMES)).toBeNull();
+  });
+
+  it('names the instruments, the ID without a name', () => {
+    const rows = dividendCalendarRows(result, at(22, 4, 10), NAMES);
+    expect(rows?.map(({ name, earned }) => [name, earned])).toEqual([
+      ['Welt-ETF', true],
+      ['A', false],
+    ]);
+  });
+
+  // An earned payout stays until its payment, an announced date until its ex-date.
+  it('drops payouts paid and ex-dates passed since the query', () => {
+    expect(dividendCalendarRows(result, at(24, 4, 6), NAMES)?.map(({ name }) => name)).toEqual([
+      'A',
+    ]);
+    expect(dividendCalendarRows(result, at(3, 5, 9), NAMES)).toEqual([]);
   });
 });

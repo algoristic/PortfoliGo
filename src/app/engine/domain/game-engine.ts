@@ -19,6 +19,8 @@ import {
   tickToDateTime,
 } from '@app/clock/domain/calendar-logic';
 import { Tick, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
+import { dividendCalendar } from '@app/dashboard/domain/dividend-calendar-logic';
+import { DividendCalendarEntry } from '@app/dashboard/domain/models/dividend-calendar.model';
 import { UpcomingEvent } from '@app/dashboard/domain/models/upcoming.model';
 import { upcoming } from '@app/dashboard/domain/upcoming-logic';
 import { paymentDay } from '@app/market/domain/dividend-logic';
@@ -36,6 +38,7 @@ import { PriceSource } from '@app/market/domain/price-source';
 import { etfSeries, seriesIds } from '@app/market/domain/series';
 import { watchlistError } from '@app/market/domain/watchlist-logic';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
+import { dailyTerCost } from '@app/portfolio/domain/cost-estimate-logic';
 import {
   DailyPoint,
   PerformanceFigures,
@@ -133,6 +136,8 @@ export class GameEngine {
   #instrumentIds: ReadonlySet<string> | null = null;
   /** Series and trading hours per instrument, made on the first `upcoming`. */
   #sessions: InstrumentSessions | null = null;
+  /** TER per ETF for the estimated TER costs (US-PF-07). */
+  readonly #ter: ReadonlyMap<string, number>;
 
   constructor(
     world: GameWorld,
@@ -144,6 +149,7 @@ export class GameEngine {
     this.#state = state;
     this.#history = history;
     this.#marketDay = createMarketDay(world.context);
+    this.#ter = new Map(world.world.etfs.map((etf) => [etf.id, etf.ter]));
     this.prices = (options.prices ?? priceSourcePort)(world, history, state.market);
     const changed = (id: AccountId): void => {
       this.#changedAccounts.add(id);
@@ -455,6 +461,18 @@ export class GameEngine {
     );
   }
 
+  /**
+   * The dividend calendar for depot and watchlist (US-MK-06, TS §8.1): announced ex-dates of held
+   * and watched instruments and earned payouts still to be credited.
+   */
+  dividendCalendar(): DividendCalendarEntry[] {
+    this.#sessions ??= instrumentSessions(this.world);
+    return dividendCalendar(
+      this.#state.tick,
+      upcomingInputs(this.world, this.#state, this.#sessions),
+    );
+  }
+
   /** What closing the account now would book, without booking (TS §7.4). */
   closingPreview(accountId: string): ClosingPreviewResult {
     return this.#bankCommands.closingPreview(accountId, this.#state.tick);
@@ -718,7 +736,20 @@ export class GameEngine {
     this.#performance.dayChanged(tick, (end) =>
       this.#valuation.holdingsValue(positions, end, tick),
     );
+    this.#banking.accrueTerCosts(this.#terCosts(endOfDay, tick));
     scheduleTask(this.#state.scheduler, dayStartTick(day + 1), { kind: 'day-change' });
+  }
+
+  /** Estimated TER costs of the day that ended (US-PF-07): each held ETF's value × TER ÷ 365. */
+  #terCosts(endOfDay: Tick, tick: Tick): number {
+    let cents = 0;
+    for (const position of this.#state.player.positions) {
+      const ter = this.#ter.get(position.instrumentId);
+      if (ter !== undefined) {
+        cents += dailyTerCost(this.#valuation.holdingsValue([position], endOfDay, tick), ter);
+      }
+    }
+    return cents;
   }
 
   #onMarketDay(marketDay: Readonly<MarketDay>, tick: Tick): void {

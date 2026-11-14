@@ -2,15 +2,19 @@ import { Cents } from '@app/shared/domain/models/money.model';
 
 import { EMPLOYER_ACCOUNT, LIVING_COSTS_ACCOUNT, TAX_OFFICE_ACCOUNT } from './ledger-logic';
 import { MonthlyValues } from './models/household.model';
-import { LedgerAccountId, PostingDraft } from './models/ledger.model';
+import { LedgerAccountId, TransactionDraft } from './models/ledger.model';
 
 type MonthlyValueKey = keyof MonthlyValues;
+type CategoryKey = Exclude<
+  MonthlyValueKey,
+  'orderFees' | 'savingsPlanFees' | 'accountFees' | 'custodyFees' | 'spreadCosts' | 'terCosts'
+>;
 
 const BANK_FEES = /^external:bank:.+:fees$/;
 const BANK_INTEREST = /^external:bank:.+:interest$/;
 const ISSUER = 'external:issuer:';
 /** Counterparties of earnings pay the player: their postings are negative. */
-const EARNINGS: readonly MonthlyValueKey[] = ['income', 'creditInterest', 'dividends'];
+const EARNINGS: readonly CategoryKey[] = ['income', 'creditInterest', 'dividends'];
 
 export function emptyMonthlyValues(): MonthlyValues {
   return {
@@ -21,6 +25,12 @@ export function emptyMonthlyValues(): MonthlyValues {
     debitInterest: 0,
     taxes: 0,
     dividends: 0,
+    orderFees: 0,
+    savingsPlanFees: 0,
+    accountFees: 0,
+    custodyFees: 0,
+    spreadCosts: 0,
+    terCosts: 0,
   };
 }
 
@@ -28,11 +38,14 @@ export function emptyMonthlyValues(): MonthlyValues {
  * Adds a transaction to the values of its month (TS §7.4). Each posting on an external account
  * counts by that counterparty: employer → income, living costs, bank fees, bank interest (paid by
  * the bank → credit interest, received → debit interest), tax office (refunds negative), issuers →
- * dividends. The opening balance, the market and own transfers don't count.
+ * dividends. The opening balance, the market and own transfers don't count. Bank fees also count
+ * by the transaction type (US-PF-07): purchases and sales → order fees (savings plans with
+ * `refs.savingsPlanId` → savings plan costs), `custody-fee` → custody fees, all others → account
+ * fees. An execution's `params.spreadCost` adds to the estimated spread costs.
  */
 export function addToMonthlyValues(
   values: MonthlyValues,
-  transaction: { postings: readonly PostingDraft[] },
+  transaction: Pick<TransactionDraft, 'type' | 'postings' | 'refs' | 'params'>,
 ): MonthlyValues {
   const result = { ...values };
   for (const { account, amount } of transaction.postings) {
@@ -40,8 +53,20 @@ export function addToMonthlyValues(
     if (key !== null) {
       result[key] += EARNINGS.includes(key) ? -amount : amount;
     }
+    if (key === 'fees') {
+      result[feeKindOf(transaction)] += amount;
+    }
+  }
+  const spread = transaction.params?.['spreadCost'];
+  if (typeof spread === 'number' && (transaction.type === 'buy' || transaction.type === 'sell')) {
+    result.spreadCosts += spread;
   }
   return result;
+}
+
+/** Adds the estimated TER costs of a day in unrounded cents (US-PF-07, TS §7.4). */
+export function addTerCosts(values: MonthlyValues, cents: number): MonthlyValues {
+  return cents === 0 ? values : { ...values, terCosts: values.terCosts + cents };
 }
 
 /** Income, credit interest and dividends. */
@@ -60,7 +85,21 @@ export function savingsRate(values: MonthlyValues): number | null {
   return earnings > 0 ? (earnings - monthlySpending(values)) / earnings : null;
 }
 
-function categoryOf(account: LedgerAccountId, amount: number): MonthlyValueKey | null {
+function feeKindOf(
+  transaction: Pick<TransactionDraft, 'type' | 'refs'>,
+): 'orderFees' | 'savingsPlanFees' | 'accountFees' | 'custodyFees' {
+  switch (transaction.type) {
+    case 'buy':
+    case 'sell':
+      return transaction.refs?.['savingsPlanId'] === undefined ? 'orderFees' : 'savingsPlanFees';
+    case 'custody-fee':
+      return 'custodyFees';
+    default:
+      return 'accountFees';
+  }
+}
+
+function categoryOf(account: LedgerAccountId, amount: number): CategoryKey | null {
   if (account === EMPLOYER_ACCOUNT) {
     return 'income';
   }

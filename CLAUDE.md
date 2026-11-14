@@ -44,7 +44,7 @@ Rules that apply everywhere:
 
 - Reuse the UI building blocks of `shared/ui` (catalogue at `#/lab/components`; tabs and menus use `@angular/aria`, E-16; everything else from the CDK).
 - Templates format only through the pipes in `shared/ui/pipes` and `clock/ui/pipes` over the functions in `shared/util`; never round or format ad hoc.
-- Simulation code uses the toolkit in `simulation/util` instead of `Math.random`/`Math.exp`/`Math.log`/`**`; an ESLint rule enforces this in `simulation`, `world`, `market` and `clock` (`domain`, `util`), in the `domain` folders of `engine`, `banking`, `trading`, `portfolio` and `taxes`, and in `shared/domain` (`eslint.config.js`).
+- Simulation code uses the toolkit in `simulation/util` instead of `Math.random`/`Math.exp`/`Math.log`/`**`; an ESLint rule enforces this in `simulation`, `world`, `market` and `clock` (`domain`, `util`), in the `domain` folders of `engine`, `banking`, `trading`, `portfolio`, `taxes` and `dashboard`, and in `shared/domain` (`eslint.config.js`).
 - Convert game time only via the `TICKS_PER_*` constants of `clock/domain`, never with literal `60`/`1440`.
 - Check every change to the market model or the world with `npm run test:calibration`; recalibrate instead of widening bands (the bands are decisions of the product owner).
 - `npm run verify` is green. CI runs the same checks on every push (TS §14.4): the gate `build-latest.yml` (format, lint, types, `logic`, `angular`, build with bundle budget, system tests in Chromium without the J10 budgets) must pass before `publish.yml` deploys; `verify.yml` runs the rest (`calibration`, `perf`, `mutation`, J10 budgets tagged `@budget`, Firefox, WebKit, phones) without blocking the deployment. Fix a red `Verify` run like a red gate.

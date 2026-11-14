@@ -164,6 +164,7 @@ describe('savings-plan-logic', () => {
           fill,
           { clearingAccountId: 'acc-3', bankId: 'b4' },
           77,
+          119.88,
         ),
       ).toEqual({
         tick: 77,
@@ -181,6 +182,7 @@ describe('savings-plan-logic', () => {
           marketValue: 4_925,
           orderFee: 75,
           exchangeFee: 0,
+          spreadCost: 5,
         },
       });
     });
@@ -191,6 +193,7 @@ describe('savings-plan-logic', () => {
         savingsPlanFill(1_000, 3, FREE),
         { clearingAccountId: 'acc-3', bankId: 'b4' },
         1,
+        3,
       );
       expect(draft.postings).toEqual([
         { account: 'acc-3', amount: -1_000 },

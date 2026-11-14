@@ -10,6 +10,7 @@ import {
 import { StatementEntry } from '@app/banking/domain/models/statement.model';
 import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
+import { DividendCalendarEntry } from '@app/dashboard/domain/models/dividend-calendar.model';
 import { UpcomingEvent } from '@app/dashboard/domain/models/upcoming.model';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
 import { BackgroundMode, StartConditions } from '@app/engine/domain/models/game-state.model';
@@ -167,11 +168,15 @@ export interface UpcomingQuery {
   days?: number;
 }
 
-/** The dates after `tick` up to `tick + days` days, sorted (`sortUpcoming`). */
+/**
+ * The dates after `tick` up to `tick + days` days, sorted (`sortUpcoming`), and the dividend
+ * calendar of depot and watchlist (US-MK-06, `dividendCalendar`, without a window).
+ */
 export interface UpcomingResult {
   events: UpcomingEvent[];
   days: number;
   tick: Tick;
+  dividends: DividendCalendarEntry[];
 }
 
 /**

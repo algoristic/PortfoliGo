@@ -367,6 +367,7 @@ Als Anwender möchte ich, dass sich Kurse sichtbar bewegen, während die Zeit l�
 Als Anwender möchte ich anstehende Dividenden meiner Werte sehen, damit ich Ausschüttungen einplanen kann.
 
 - Kalender mit Ex-Tagen und Zahltagen für Depot und Watchlist.
+- Nur angekündigte Termine (Aktien rund vier Wochen vor dem Ex-Tag); bei gehaltenen Werten mit dem erwarteten Betrag.
 
 ### 7.6 Handel (HD)
 
@@ -453,6 +454,7 @@ Als Anwender möchte ich sehen, was mir meine Anlagen einbringen und was sie kos
 
 - Dividenden und Zinsen pro Monat und Jahr.
 - Kosten pro Jahr: Orderentgelte, Konto- und Depotgebühren, Dispozinsen, geschätzte Spread- und TER-Kosten.
+- Spread und TER sind als „geschätzt“ gekennzeichnet: Sie werden nicht gebucht, sondern stecken in den Kursen.
 
 ### 7.8 Steuern (ST)
 
@@ -707,19 +709,19 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 
 ### 10.3 Hauptansichten
 
-| Ansicht            | Inhalt                                                                                                                                                                                                                                                                    |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Spielerauswahl     | Spieler als Liste, „Neuer Spieler", Import                                                                                                                                                                                                                                |
-| Spieler anlegen    | Formular mit Voreinstellungen, Seed und Vorschau der Startbedingungen                                                                                                                                                                                                     |
-| Übersicht          | Erste Schritte (ausblendbar), Gesamtvermögen mit Verlauf, Cashflow des Monats, Top-Positionen, Watchlist, letzte Benachrichtigungen, „Demnächst" (nur planbare Termine wie Gehalt, Lastschriften, angekündigte Dividenden, Sparpläne – nichts, was künftige Kurse verrät) |
-| Märkte             | Indizes, Gewinner und Verlierer, Sektoren, Screener mit Filtern                                                                                                                                                                                                           |
-| Instrument         | Kurskopf, Chart mit Indikatoren, Kennzahlen, Profil, Dividenden, Kauf und Verkauf                                                                                                                                                                                         |
-| Depot              | Positionen, Allokation, Performance und Benchmark, Sparpläne                                                                                                                                                                                                              |
-| Konten & Banken    | Kontenübersicht, Kontoauszug, Bankenvergleich, Überweisen, Daueraufträge, Konto eröffnen                                                                                                                                                                                  |
-| Orders             | Offene Orders, Orderhistorie, Sparpläne                                                                                                                                                                                                                                   |
-| Steuern            | Jahresübersicht, Verlusttopf, Sparerpauschbetrag                                                                                                                                                                                                                          |
-| Benachrichtigungen | Liste mit Filtern                                                                                                                                                                                                                                                         |
-| Einstellungen      | Erscheinungsbild, Zeitverhalten, Benachrichtigungen, Spieler (Seed, Export)                                                                                                                                                                                               |
+| Ansicht            | Inhalt                                                                                                                                                                                                                                                                                                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Spielerauswahl     | Spieler als Liste, „Neuer Spieler", Import                                                                                                                                                                                                                                                                                                |
+| Spieler anlegen    | Formular mit Voreinstellungen, Seed und Vorschau der Startbedingungen                                                                                                                                                                                                                                                                     |
+| Übersicht          | Erste Schritte (ausblendbar, wieder einblendbar), Gesamtvermögen mit Verlauf, Cashflow des Monats, Top-Positionen, Dividendenkalender für Depot und Watchlist, Watchlist, letzte Benachrichtigungen, „Demnächst" (nur planbare Termine wie Gehalt, Lastschriften, angekündigte Dividenden, Sparpläne – nichts, was künftige Kurse verrät) |
+| Märkte             | Indizes, Gewinner und Verlierer, Sektoren, Screener mit Filtern                                                                                                                                                                                                                                                                           |
+| Instrument         | Kurskopf, Chart mit Indikatoren, Kennzahlen, Profil, Dividenden, Kauf und Verkauf                                                                                                                                                                                                                                                         |
+| Depot              | Positionen, Allokation, Performance und Benchmark, Sparpläne                                                                                                                                                                                                                                                                              |
+| Konten & Banken    | Kontenübersicht, Kontoauszug, Bankenvergleich, Überweisen, Daueraufträge, Konto eröffnen, Monatsübersicht, Erträge und Kosten                                                                                                                                                                                                             |
+| Orders             | Offene Orders, Orderhistorie, Sparpläne                                                                                                                                                                                                                                                                                                   |
+| Steuern            | Jahresübersicht, Verlusttopf, Sparerpauschbetrag                                                                                                                                                                                                                                                                                          |
+| Benachrichtigungen | Liste mit Filtern                                                                                                                                                                                                                                                                                                                         |
+| Einstellungen      | Erscheinungsbild, Zeitverhalten, Benachrichtigungen, Spieler (Seed, Export)                                                                                                                                                                                                                                                               |
 
 ### 10.4 Zahlen und Zeit
 

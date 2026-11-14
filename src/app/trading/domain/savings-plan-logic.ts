@@ -5,6 +5,7 @@ import { FeeModel } from '@app/banking/domain/models/bank-conditions.model';
 import { PostingDraft, TransactionDraft } from '@app/banking/domain/models/ledger.model';
 import { availableAfterReservations } from '@app/banking/domain/overdraft-logic';
 import { Tick } from '@app/clock/domain/models/time.model';
+import { spreadCost } from '@app/portfolio/domain/cost-estimate-logic';
 import { Cents, MICRO_UNITS_PER_UNIT, MicroUnits } from '@app/shared/domain/models/money.model';
 import { eurosToCentsDown, marketValue } from '@app/shared/domain/money-logic';
 
@@ -184,13 +185,15 @@ export interface SavingsPlanAccounts {
  * Booking of an execution (TS §7.2, §7.8): a `buy` on the clearing account against the market
  * (market value) and the bank's fee account (the savings plan costs, left out at 0), the shares as
  * unit posting on the depot. `params` match those of an order purchase, with the costs as
- * `orderFee` and no exchange fee, so that statement and monthly values treat both alike.
+ * `orderFee` and no exchange fee, so that statement and monthly values treat both alike; the
+ * estimated `spreadCost` comes from the mid of the quote (US-PF-07).
  */
 export function savingsPlanTransaction(
   plan: Pick<SavingsPlan, 'id' | 'depotId' | 'instrumentId'>,
   fill: SavingsPlanFill,
   accounts: SavingsPlanAccounts,
   tick: Tick,
+  mid: number,
 ): TransactionDraft {
   const postings: PostingDraft[] = [
     { account: accounts.clearingAccountId, amount: -fill.total },
@@ -211,6 +214,7 @@ export function savingsPlanTransaction(
       marketValue: fill.marketValue,
       orderFee: fill.costs,
       exchangeFee: 0,
+      spreadCost: spreadCost('buy', fill.quantity, fill.price, mid),
     },
   };
 }

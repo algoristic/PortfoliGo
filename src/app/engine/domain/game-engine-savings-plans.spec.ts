@@ -556,6 +556,37 @@ describe('GameEngine savings plans', () => {
     });
   });
 
+  describe('US-PF-07: costs in the monthly values', () => {
+    // TS §7.4: costs by kind, estimated spread at the execution, estimated TER per calendar day
+    it('counts the plan costs, the spread and the TER of the held ETF', () => {
+      const engine = setup();
+      create(engine, plan(5_000, 15));
+      engine.runUntil(at(15, 4, 9));
+      // 0,410416 shares × (120,00 − 119,88) € = 0,0492… € → 5 cents.
+      expect(engine.player.monthlyValues).toMatchObject({
+        fees: 75,
+        savingsPlanFees: 75,
+        orderFees: 0,
+        accountFees: 0,
+        custodyFees: 0,
+        spreadCosts: 5,
+        terCosts: 0,
+      });
+      const ter = world.world.etfs.find(({ id }) => id === etfId)?.ter ?? Number.NaN;
+      // End-of-day value at the bid 119,76 €: 0,410416 × 119,76 € = 49,15… € → 4.915 cents.
+      const day = (4_915 * ter) / 365;
+      engine.runUntil(at(17, 4));
+      expect(engine.player.monthlyValues.terCosts).toBeCloseTo(2 * day, 9);
+      // 15.–30.04.: 16 days at the end of April.
+      engine.runUntil(at(1, 5, 1));
+      const april = engine.player.closedMonths.at(-1);
+      expect(april?.month).toEqual({ year: 2030, month: 4 });
+      expect(april?.values.terCosts).toBeCloseTo(16 * day, 9);
+      expect(april?.values.spreadCosts).toBe(5);
+      expect(engine.player.monthlyValues.terCosts).toBe(0);
+    });
+  });
+
   describe('snapshots', () => {
     it('continues after a restore as without it', () => {
       const prices = [{ tick: 0, price: ASK_120 }];

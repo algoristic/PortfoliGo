@@ -7,6 +7,7 @@ import { NotificationEntry } from '@app/notifications/domain/models/notification
 export const enterDashboardPage = createAction('[Dashboard/Page] Enter dashboard page');
 export const leaveDashboardPage = createAction('[Dashboard/Page] Leave dashboard page');
 export const clickedHideFirstSteps = createAction('[Dashboard/Page] Clicked hide first steps');
+export const clickedShowFirstSteps = createAction('[Dashboard/Page] Clicked show first steps');
 
 export const retrievedUpcoming = createAction(
   '[Dashboard/API] Retrieved upcoming',

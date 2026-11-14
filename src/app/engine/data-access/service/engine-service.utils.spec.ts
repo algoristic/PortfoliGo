@@ -132,6 +132,12 @@ const arbMonthlyValues = fc.record({
   debitInterest: arbCents,
   taxes: arbCents,
   dividends: arbCents,
+  orderFees: arbCents,
+  savingsPlanFees: arbCents,
+  accountFees: arbCents,
+  custodyFees: arbCents,
+  spreadCosts: arbCents,
+  terCosts: fc.double({ min: 0, max: 1e6, noNaN: true }),
 });
 
 const arbValidity = fc.oneof(
@@ -665,6 +671,12 @@ const MONTH_CLOSED = {
       debitInterest: 0,
       taxes: 0,
       dividends: 0,
+      orderFees: 0,
+      savingsPlanFees: 0,
+      accountFees: 0,
+      custodyFees: 0,
+      spreadCosts: 0,
+      terCosts: 0,
     },
   },
 };

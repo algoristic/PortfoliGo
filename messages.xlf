@@ -83,105 +83,112 @@
         <source>Konten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">10,12</context>
+          <context context-type="linenumber">11,13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-openAccount" datatype="html">
         <source>Konto eröffnen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">21,24</context>
+          <context context-type="linenumber">22,25</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-transfer" datatype="html">
         <source>Überweisen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">30,33</context>
+          <context context-type="linenumber">31,34</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-banks" datatype="html">
         <source>Bankenvergleich</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">35,40</context>
+          <context context-type="linenumber">36,41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-openHeading" datatype="html">
         <source>Offene Konten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">55,57</context>
+          <context context-type="linenumber">56,58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-closedHeading" datatype="html">
         <source>Geschlossene Konten (<x id="INTERPOLATION" equiv-text="{{ overview.closed.length }}"/>)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">81,82</context>
+          <context context-type="linenumber">82,83</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-standingOrdersIntro" datatype="html">
         <source> Daueraufträge überweisen jeden Monat einen festen Betrag zwischen deinen Konten. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">99,103</context>
+          <context context-type="linenumber">100,104</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-createStandingOrder" datatype="html">
         <source>Dauerauftrag anlegen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.html</context>
-          <context context-type="linenumber">108,112</context>
+          <context context-type="linenumber">109,113</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-accountsTab" datatype="html">
         <source>Konten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
-          <context context-type="linenumber">68</context>
+          <context context-type="linenumber">70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-standingOrdersTab" datatype="html">
         <source>Daueraufträge</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
-          <context context-type="linenumber">71</context>
+          <context context-type="linenumber">73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-monthsTab" datatype="html">
         <source>Monatsübersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
-          <context context-type="linenumber">73</context>
+          <context context-type="linenumber">75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureBanking-accountsPage-incomeCostsTab" datatype="html">
+        <source>Erträge und Kosten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
+          <context context-type="linenumber">78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-tabsLabel" datatype="html">
         <source>Ansicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
-          <context context-type="linenumber">75</context>
+          <context context-type="linenumber">81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-noStandingOrdersHeading" datatype="html">
         <source>Noch keine Daueraufträge</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
-          <context context-type="linenumber">76</context>
+          <context context-type="linenumber">82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-noStandingOrdersText" datatype="html">
         <source>Lege einen an, z. B. vom Gehaltskonto auf das Verrechnungskonto eines Depots mit Sparplan.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
-          <context context-type="linenumber">77</context>
+          <context context-type="linenumber">83</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-noStandingOrdersSingleAccount" datatype="html">
         <source>Für einen Dauerauftrag brauchst du ein zweites Konto.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/accounts/accounts.page.ts</context>
-          <context context-type="linenumber">78</context>
+          <context context-type="linenumber">84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsRoutes-accountsTitle" datatype="html">
@@ -1303,6 +1310,133 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/bank-table/bank-table.component.ts</context>
           <context context-type="linenumber">176</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-running" datatype="html">
+        <source>laufend, bisher</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.html</context>
+          <context context-type="linenumber">14,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-incomeHeading" datatype="html">
+        <source>Erträge</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.html</context>
+          <context context-type="linenumber">20,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-month" datatype="html">
+        <source>Monat</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.html</context>
+          <context context-type="linenumber">25,27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-dividends" datatype="html">
+        <source>Dividenden</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.html</context>
+          <context context-type="linenumber">28,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-interest" datatype="html">
+        <source>Zinsen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.html</context>
+          <context context-type="linenumber">31,33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-yearSum" datatype="html">
+        <source>Jahr</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.html</context>
+          <context context-type="linenumber">57,59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-costsHeading" datatype="html">
+        <source>Kosten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.html</context>
+          <context context-type="linenumber">74,76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-estimated" datatype="html">
+        <source>(geschätzt)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.html</context>
+          <context context-type="linenumber">84,86</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-total" datatype="html">
+        <source>Kosten gesamt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.html</context>
+          <context context-type="linenumber">94,95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-estimatedTotal" datatype="html">
+        <source>davon geschätzt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.html</context>
+          <context context-type="linenumber">100,101</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-note" datatype="html">
+        <source> Dividenden einschließlich Ausschüttungen von ETFs, vor Steuern. Spread und TER werden nicht gebucht, sie stecken in den Kursen: Der Spread ist der Abstand des Ausführungskurses zum Mittelkurs, die TER der tägliche Anteil der Fondskosten am Wert deiner ETFs.
+</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.html</context>
+          <context context-type="linenumber">112,116</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-orderFees" datatype="html">
+        <source>Orderentgelte (inkl. Börsenentgelt)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-savingsPlanFees" datatype="html">
+        <source>Sparplankosten</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-accountFees" datatype="html">
+        <source>Kontoführung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
+          <context context-type="linenumber">61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-custodyFees" datatype="html">
+        <source>Depotgebühren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
+          <context context-type="linenumber">63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-debitInterest" datatype="html">
+        <source>Soll- und Dispozinsen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
+          <context context-type="linenumber">65</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-spreadCosts" datatype="html">
+        <source>Spread</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
+          <context context-type="linenumber">67</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-incomeCosts-terCosts" datatype="html">
+        <source>Laufende Fondskosten (TER)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/income-costs/income-costs.component.ts</context>
+          <context context-type="linenumber">69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-bankConditionsText-free" datatype="html">
@@ -2633,21 +2767,28 @@
         <source>Übersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/feature/dashboard/dashboard.page.html</context>
-          <context context-type="linenumber">12,14</context>
+          <context context-type="linenumber">14,16</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureDashboard-dashboardPage-showFirstSteps" datatype="html">
+        <source>Erste Schritte anzeigen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/feature/dashboard/dashboard.page.html</context>
+          <context context-type="linenumber">68,72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureDashboard-dashboardEffects-saveFirstStepsFailure" datatype="html">
         <source>„Erste Schritte“ ließ sich auf diesem Gerät nicht speichern.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/feature/state/dashboard.effects.ts</context>
-          <context context-type="linenumber">196</context>
+          <context context-type="linenumber">204</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureDashboard-dashboardEffects-loadFailure" datatype="html">
         <source>Ein Teil der Übersicht ließ sich nicht laden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/feature/state/dashboard.effects.ts</context>
-          <context context-type="linenumber">197</context>
+          <context context-type="linenumber">205</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiDashboard-cashflow-earnings" datatype="html">
@@ -2683,6 +2824,69 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/ui/cashflow/cashflow.component.ts</context>
           <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dividendCalendar-emptyHeading" datatype="html">
+        <source>Keine angekündigten Termine</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/dividend-calendar/dividend-calendar.component.html</context>
+          <context context-type="linenumber">10,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dividendCalendar-emptyText" datatype="html">
+        <source>Unternehmen kündigen eine Dividende rund vier Wochen vor dem Ex-Tag an. Hier erscheinen die Termine deiner Werte und deiner Watchlist.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/dividend-calendar/dividend-calendar.component.html</context>
+          <context context-type="linenumber">12,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dividendCalendar-earned" datatype="html">
+        <source>Anspruch erworben</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/dividend-calendar/dividend-calendar.component.html</context>
+          <context context-type="linenumber">30,32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dividendCalendar-exDate" datatype="html">
+        <source>Ex-Tag <x id="INTERPOLATION" equiv-text="{{ entry.exTick | formatGameDate }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/dividend-calendar/dividend-calendar.component.html</context>
+          <context context-type="linenumber">36,37</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dividendCalendar-paymentDate" datatype="html">
+        <source>Zahltag <x id="INTERPOLATION" equiv-text="{{ entry.paymentTick | formatGameDate }}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/dividend-calendar/dividend-calendar.component.html</context>
+          <context context-type="linenumber">43,44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dividendCalendar-perShare" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ entry.perShare | formatCents }}"/> je Stück</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/dividend-calendar/dividend-calendar.component.html</context>
+          <context context-type="linenumber">49,50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dividendCalendar-watched" datatype="html">
+        <source>Watchlist</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/dividend-calendar/dividend-calendar.component.html</context>
+          <context context-type="linenumber">64,68</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dividendCalendar-note" datatype="html">
+        <source> Beträge vor Steuern; erwartet für die Stücke, die du jetzt hältst. Ausschüttungen von ETFs stehen erst am Ex-Tag fest. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/dividend-calendar/dividend-calendar.component.html</context>
+          <context context-type="linenumber">71,76</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dividendCalendar-heading" datatype="html">
+        <source>Dividendenkalender</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/dividend-calendar/dividend-calendar.component.ts</context>
+          <context context-type="linenumber">34</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiDashboard-firstSteps-hide" datatype="html">

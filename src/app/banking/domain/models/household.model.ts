@@ -74,6 +74,7 @@ export interface CoverageState {
 export interface MonthlyValues {
   income: Cents;
   livingCosts: Cents;
+  /** All bank fees: the sum of the four kinds below. */
   fees: Cents;
   creditInterest: Cents;
   /** Overdraft interest on current accounts and debit interest on clearing accounts. */
@@ -81,6 +82,24 @@ export interface MonthlyValues {
   taxes: Cents;
   /** Dividends and fund distributions before tax; 0 until AP 5.2. */
   dividends: Cents;
+  /** Order fee plus exchange fee of executed orders (US-PF-07, AP 5.7). */
+  orderFees: Cents;
+  /** Costs of savings plan executions. */
+  savingsPlanFees: Cents;
+  /** Monthly account fees, also at closing. */
+  accountFees: Cents;
+  /** Custody fees, also at closing. */
+  custodyFees: Cents;
+  /**
+   * Estimated spread costs of executions (not booked, not part of `fees`): shares × the distance
+   * of the execution price from the mid, rounded per execution (TS §7.4).
+   */
+  spreadCosts: Cents;
+  /**
+   * Estimated TER costs of held ETFs (not booked, part of the price): end-of-day value × TER ÷ 365
+   * per calendar day, in unrounded cents.
+   */
+  terCosts: number;
 }
 
 /** Household flows of a closed month (TS §7.4), oldest first in the player state. */

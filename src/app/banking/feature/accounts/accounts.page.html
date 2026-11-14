@@ -3,6 +3,7 @@
 @let netWorth = bankingFacade.netWorth$ | async;
 @let banks = bankingFacade.banks$ | async;
 @let monthlyOverview = bankingFacade.monthlyOverview$ | async;
+@let incomeAndCosts = bankingFacade.incomeAndCosts$ | async;
 @let standingOrders = bankingFacade.standingOrders$ | async;
 @let canTransfer = (overview?.open.length ?? 0) > 1;
 
@@ -135,6 +136,16 @@
       <app-monthly-overview
         data-testid="banking.monthly"
         [months]="monthlyOverview"></app-monthly-overview>
+    } @else {
+      <app-skeleton class="h-32" [block]="true"></app-skeleton>
+    }
+  </ng-template>
+
+  <ng-template appTabPanel="income-costs">
+    @if (incomeAndCosts) {
+      <app-income-costs
+        data-testid="banking.income-costs"
+        [years]="incomeAndCosts"></app-income-costs>
     } @else {
       <app-skeleton class="h-32" [block]="true"></app-skeleton>
     }

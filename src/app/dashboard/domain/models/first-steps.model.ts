@@ -29,6 +29,9 @@ export interface FirstStep {
   done: boolean;
 }
 
+/** Version of `pgo.ui.firstSteps` (TS §9.3). */
+export const FIRST_STEPS_SETTINGS_VERSION = 1;
+
 /** The device-local part of the checklist per player (TS §9.3 `pgo.ui.firstSteps`). */
 export interface FirstStepsSettings {
   hidden: boolean;

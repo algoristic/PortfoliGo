@@ -2,7 +2,9 @@ import { getRouterSelectors } from '@ngrx/router-store';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 import { sortBanks } from '@app/banking/domain/bank-comparison-logic';
+import { incomeAndCosts } from '@app/banking/domain/income-costs-logic';
 import { ACCOUNT_KINDS, AccountId } from '@app/banking/domain/models/account.model';
+import { IncomeCostsYear } from '@app/banking/domain/models/income-costs.model';
 import {
   monthlyEarnings,
   monthlySpending,
@@ -127,6 +129,15 @@ export const selectBankComparison = createSelector(
 /** Open current accounts: the choice of the salary account (US-BK-05). */
 export const selectOpenCurrentAccounts = createSelector(selectAccountOverview, ({ open }) =>
   open.filter((account) => account.kind === 'current'),
+);
+
+/** Earnings and costs per year (US-PF-07): the running year first; `null` until loaded. */
+export const selectIncomeAndCosts = createSelector(
+  selectMonthlyValues,
+  (monthlyValues): IncomeCostsYear[] | null =>
+    monthlyValues === null
+      ? null
+      : incomeAndCosts(monthlyValues.closedMonths, monthlyValues.current),
 );
 
 /** The monthly overview (US-EK-03): the running month first, then the closed months newest first. */

@@ -7,7 +7,7 @@ import {
   LIVING_COSTS_ACCOUNT,
   TAX_OFFICE_ACCOUNT,
 } from '@app/banking/domain/ledger-logic';
-import { PostingDraft } from '@app/banking/domain/models/ledger.model';
+import { PostingDraft, TransactionType } from '@app/banking/domain/models/ledger.model';
 import { MarketIndex } from '@app/world/domain/models/market-index.model';
 
 import {
@@ -27,10 +27,10 @@ import {
   NotificationCode,
 } from './models/notification.model';
 
-type Booking = { postings: PostingDraft[] };
+type Booking = { type: TransactionType; postings: PostingDraft[] };
 
 function booking(...postings: [PostingDraft['account'], number][]): Booking {
-  return { postings: postings.map(([account, amount]) => ({ account, amount })) };
+  return { type: 'transfer', postings: postings.map(([account, amount]) => ({ account, amount })) };
 }
 
 function uncovered(seq: number): GameNotification {
@@ -145,7 +145,7 @@ describe('absence-report-logic', () => {
         booking(['acc-1', -50_000], ['acc-2', 50_000]),
       ]);
       tally = tallyBookings(tally, [
-        booking(['acc-1', -1_200], [bankFeesAccount('b1'), 1_200]),
+        { ...booking(['acc-1', -1_200], [bankFeesAccount('b1'), 1_200]), type: 'account-fee' },
         booking(['acc-2', 300], [bankInterestAccount('b1'), -300]),
         booking(['acc-2', -79], [TAX_OFFICE_ACCOUNT, 79]),
       ]);
@@ -167,6 +167,12 @@ describe('absence-report-logic', () => {
           debitInterest: 0,
           taxes: 79,
           dividends: 0,
+          orderFees: 0,
+          savingsPlanFees: 0,
+          accountFees: 1_200,
+          custodyFees: 0,
+          spreadCosts: 0,
+          terCosts: 0,
         },
         bookings: 6,
         notifications: 2,

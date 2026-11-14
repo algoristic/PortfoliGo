@@ -24,11 +24,15 @@ import {
 import * as BankingActions from '@app/banking/feature/state/banking.actions';
 import { dayIndex } from '@app/clock/domain/calendar-logic';
 import { selectTick } from '@app/clock/feature/state/clock.selectors';
+import { FIRST_STEPS_SETTINGS_VERSION } from '@app/dashboard/domain/models/first-steps.model';
 import { EngineService } from '@app/engine/data-access/service/engine.service';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
 import { selectPhase } from '@app/engine/feature/state/session.selectors';
 import * as MarketActions from '@app/market/feature/state/market.actions';
-import { selectInstrumentsLoaded } from '@app/market/feature/state/market.selectors';
+import {
+  selectInstrumentsLoaded,
+  selectWatchlist,
+} from '@app/market/feature/state/market.selectors';
 import { selectLastSeq } from '@app/notifications/feature/state/notifications.selectors';
 import { LocalStorageService } from '@app/persistence/data-access/local-storage/local-storage.service';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
@@ -38,7 +42,6 @@ import * as DashboardActions from './dashboard.actions';
 import {
   DASHBOARD_NOTIFICATION_COUNT,
   DASHBOARD_SUBSCRIPTION,
-  FIRST_STEPS_SETTINGS_VERSION,
   UPCOMING_THROTTLE_MS,
 } from './dashboard.model';
 import {
@@ -82,12 +85,16 @@ export class DashboardEffects {
   );
 
   /**
-   * Hiding the checklist and visiting the bank comparison are saved per player at once; the
-   * entries of other players stay.
+   * Hiding or showing the checklist again and visiting the bank comparison are saved per player at
+   * once; the entries of other players stay.
    */
   saveFirstSteps$ = createEffect(() =>
     this.#actions$.pipe(
-      ofType(DashboardActions.clickedHideFirstSteps, BankingActions.enterBanksPage),
+      ofType(
+        DashboardActions.clickedHideFirstSteps,
+        DashboardActions.clickedShowFirstSteps,
+        BankingActions.enterBanksPage,
+      ),
       concatLatestFrom(() => [
         this.#store.pipe(select(selectFirstStepsPlayerId)),
         this.#store.pipe(select(selectFirstStepsSettings)),
@@ -109,9 +116,10 @@ export class DashboardEffects {
   );
 
   /**
-   * The worker's part of „Demnächst“ (TS §8.1): once the player is loaded, again on every new day
-   * and after bookings or holdings changed, throttled to one query per `UPCOMING_THROTTLE_MS`
-   * including the last trigger. Leaving the page ends it.
+   * The worker's part of „Demnächst“ (TS §8.1) and the dividend calendar (US-MK-06): once the
+   * player is loaded, again on every new day, after bookings or holdings changed and when the
+   * watchlist changed, throttled to one query per `UPCOMING_THROTTLE_MS` including the last
+   * trigger. Leaving the page ends it.
    */
   loadUpcoming$ = createEffect(() =>
     this.#actions$.pipe(
@@ -122,8 +130,8 @@ export class DashboardEffects {
           throttleTime(UPCOMING_THROTTLE_MS, asyncScheduler, { leading: true, trailing: true }),
           switchMap(() =>
             this.#engine.upcoming().pipe(
-              map(({ events, days, tick }) =>
-                DashboardActions.retrievedUpcoming({ upcoming: { events, days, tick } }),
+              map(({ events, days, tick, dividends }) =>
+                DashboardActions.retrievedUpcoming({ upcoming: { events, days, tick, dividends } }),
               ),
               catchError((error: unknown) => of(DashboardActions.loadUpcomingFailure({ error }))),
             ),
@@ -209,7 +217,10 @@ export class DashboardEffects {
     );
   }
 
-  /** The first query, every new game day, and projections with changed accounts or holdings. */
+  /**
+   * The first query, every new game day, projections with changed accounts or holdings, and a
+   * changed watchlist (dividend calendar).
+   */
   #upcomingTriggers(): Observable<unknown> {
     return merge(
       of(null),
@@ -227,6 +238,12 @@ export class DashboardEffects {
       this.#actions$.pipe(
         ofType(TradingActions.receivedTrading),
         filter(({ trading }) => trading.depots.length > 0),
+      ),
+      this.#store.pipe(
+        select(selectWatchlist),
+        map(({ ids }) => (ids ?? []).join()),
+        distinctUntilChanged(),
+        skip(1),
       ),
     );
   }

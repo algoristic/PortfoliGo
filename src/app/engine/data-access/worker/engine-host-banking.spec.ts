@@ -389,6 +389,12 @@ describe('EngineHost banking', () => {
         debitInterest: 0,
         taxes: 0,
         dividends: 0,
+        orderFees: 0,
+        savingsPlanFees: 0,
+        accountFees: 0,
+        custodyFees: 0,
+        spreadCosts: 0,
+        terCosts: 0,
       };
       expect(await harness.send('query', { query: { kind: 'monthlyValues' } })).toEqual({
         ok: true,

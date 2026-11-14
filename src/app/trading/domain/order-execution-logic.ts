@@ -6,6 +6,7 @@ import { DepotConditions } from '@app/banking/domain/models/bank-conditions.mode
 import { PostingDraft, TransactionDraft } from '@app/banking/domain/models/ledger.model';
 import { availableAmount } from '@app/banking/domain/overdraft-logic';
 import { Tick } from '@app/clock/domain/models/time.model';
+import { spreadCost } from '@app/portfolio/domain/cost-estimate-logic';
 import { Cents, MICRO_UNITS_PER_UNIT, MicroUnits } from '@app/shared/domain/models/money.model';
 import { BidAsk } from '@app/shared/domain/models/quote.model';
 import { eurosToCentsDown, marketValue } from '@app/shared/domain/money-logic';
@@ -175,13 +176,15 @@ export interface ExecutionAccounts {
  * (market value) and the bank's fee account (order fee plus exchange fee, one posting, left out
  * at 0), with the shares as unit posting on the depot; `params` keep both fees apart. A sale also
  * carries its acquisition cost and realized gain (`costBasis`, `realizedGain`, TS §7.6), so that
- * the journal keeps them after the position is gone.
+ * the journal keeps them after the position is gone. `spreadCost` is the estimate from the mid of
+ * the execution's quote (`spreadCost`, US-PF-07), counted in the monthly values.
  */
 export function executionTransaction(
   order: Pick<Order, 'id' | 'depotId' | 'instrumentId' | 'side'>,
   fill: OrderFill,
   accounts: ExecutionAccounts,
   tick: Tick,
+  mid: number,
   sale?: PositionSale,
 ): TransactionDraft {
   const sign = order.side === 'buy' ? 1 : -1;
@@ -208,6 +211,7 @@ export function executionTransaction(
       marketValue: fill.marketValue,
       orderFee: fill.orderFee,
       exchangeFee: fill.exchangeFee,
+      spreadCost: spreadCost(order.side, fill.quantity, fill.price, mid),
       ...(sale === undefined ? {} : { costBasis: sale.costBasis, realizedGain: sale.realizedGain }),
     },
   };

@@ -57,6 +57,10 @@ const reducer = createReducer(
     ...state,
     firstSteps: { ...state.firstSteps, hidden: true },
   })),
+  on(DashboardActions.clickedShowFirstSteps, (state) => ({
+    ...state,
+    firstSteps: { ...state.firstSteps, hidden: false },
+  })),
   on(BankingActions.enterBanksPage, (state) => ({
     ...state,
     firstSteps: { ...state.firstSteps, banksVisited: true },

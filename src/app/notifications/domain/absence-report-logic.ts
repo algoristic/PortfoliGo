@@ -1,4 +1,4 @@
-import { PostingDraft } from '@app/banking/domain/models/ledger.model';
+import { TransactionDraft } from '@app/banking/domain/models/ledger.model';
 import { addToMonthlyValues, emptyMonthlyValues } from '@app/banking/domain/monthly-values-logic';
 import { Tick } from '@app/clock/domain/models/time.model';
 import { Cents } from '@app/shared/domain/models/money.model';
@@ -70,7 +70,7 @@ export function openAbsence(
 /** Adds booked transactions: their household flows by monthly value category (TS §7.4). */
 export function tallyBookings(
   tally: Readonly<AbsenceTally>,
-  transactions: readonly { postings: readonly PostingDraft[] }[],
+  transactions: readonly Pick<TransactionDraft, 'type' | 'postings' | 'refs' | 'params'>[],
 ): AbsenceTally {
   let flows = tally.flows;
   for (const transaction of transactions) {

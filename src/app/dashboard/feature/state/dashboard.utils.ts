@@ -22,6 +22,7 @@ import { DepotEntry } from '@app/trading/feature/state/trading.model';
 import { DEFAULT_FIRST_STEPS, StoredFirstSteps } from './dashboard.model';
 
 import {
+  DividendCalendarRow,
   TopPositionEntry,
   UpcomingEntry,
   WatchlistSummary,
@@ -150,6 +151,33 @@ export function upcomingEntries(
       instrumentName: nameOf(instrumentNames, event.instrumentId),
       accountName: nameOf(accountNames, event.accountId as AccountId | undefined),
       toAccountName: nameOf(accountNames, event.toAccountId),
+    }));
+}
+
+/**
+ * The dividend calendar (US-MK-06) after now: an announced date until its ex-date, an earned payout
+ * until its payment; `null` until the first query.
+ */
+export function dividendCalendarRows(
+  result: UpcomingResult | null,
+  now: Tick | null,
+  instrumentNames: Names,
+): DividendCalendarRow[] | null {
+  if (result === null) {
+    return null;
+  }
+  const from = Math.max(now ?? result.tick, result.tick);
+  return result.dividends
+    .filter((entry) => (entry.earned ? entry.paymentTick : entry.exTick) > from)
+    .map((entry) => ({
+      key: `${entry.instrumentId}:${entry.exTick}`,
+      instrumentId: entry.instrumentId,
+      name: instrumentNames.get(entry.instrumentId) ?? entry.instrumentId,
+      exTick: entry.exTick,
+      paymentTick: entry.paymentTick,
+      perShare: entry.perShare,
+      expected: entry.expected,
+      earned: entry.earned,
     }));
 }
 

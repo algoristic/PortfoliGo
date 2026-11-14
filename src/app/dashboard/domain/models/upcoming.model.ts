@@ -93,10 +93,20 @@ export interface AnnouncedDividend {
   paymentTick: Tick;
 }
 
+/** An announced ex-date of an instrument on the watchlist that is not held (US-MK-06). */
+export interface WatchedDividend {
+  instrumentId: string;
+  cents: Cents;
+  exTick: Tick;
+  paymentTick: Tick;
+}
+
 /** Everything the worker knows of the next days (TS §8.1). */
 export interface UpcomingInputs {
   household: UpcomingHousehold;
   announcedDividends: readonly AnnouncedDividend[];
+  /** Announced ex-dates of watchlist instruments without a holding. */
+  watchedDividends: readonly WatchedDividend[];
   /** Payouts earned at past ex-dates and not yet credited. */
   pendingDistributions: readonly PendingDistribution[];
 }

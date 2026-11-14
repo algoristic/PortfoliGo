@@ -2,6 +2,8 @@ import { DestroyRef, inject, Injectable, PendingTasks } from '@angular/core';
 import { IDBPDatabase } from 'idb';
 import { defer, firstValueFrom, map, Observable, share } from 'rxjs';
 
+import { withoutFirstSteps } from '@app/dashboard/domain/first-steps-logic';
+import { FIRST_STEPS_SETTINGS_VERSION } from '@app/dashboard/domain/models/first-steps.model';
 import type {
   RuntimeRecord,
   SnapshotRecord,
@@ -156,7 +158,8 @@ export class PlayersService {
   /**
    * Deletes the player with all its records in one transaction. It takes the player's Web Lock
    * first: while another tab runs the player, it fails with `player-locked` (TS §9.4). It also
-   * forgets the player as the last used one and its entry in `pgo.lastTick` (TS §9.3).
+   * forgets the player as the last used one and its entries in `pgo.lastTick` and
+   * `pgo.ui.firstSteps` (TS §9.3).
    */
   deletePlayer(playerId: string): Observable<void> {
     return this.#task(async () => {
@@ -174,6 +177,7 @@ export class PlayersService {
         await firstValueFrom(this.#localStorage.remove('pgo.lastPlayerId'));
       }
       await this.#forgetLastTick(playerId);
+      await this.#forgetFirstSteps(playerId);
       this.#broadcast('deleted', playerId);
     });
   }
@@ -227,6 +231,26 @@ export class PlayersService {
       }
     } catch {
       // The entry only gives a lower bound for loading (E-08); a deleted player is never loaded.
+    }
+  }
+
+  /** Like `#forgetLastTick`: the checklist of a deleted player is never shown again. */
+  async #forgetFirstSteps(playerId: string): Promise<void> {
+    try {
+      const data = await firstValueFrom(
+        this.#localStorage.get<unknown>('pgo.ui.firstSteps', FIRST_STEPS_SETTINGS_VERSION),
+      );
+      if (data !== undefined) {
+        await firstValueFrom(
+          this.#localStorage.set(
+            'pgo.ui.firstSteps',
+            FIRST_STEPS_SETTINGS_VERSION,
+            withoutFirstSteps(data, playerId),
+          ),
+        );
+      }
+    } catch {
+      // A display setting; a deleted player is never loaded.
     }
   }
 

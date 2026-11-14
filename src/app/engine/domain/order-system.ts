@@ -313,6 +313,7 @@ export class OrderSystem {
         fill,
         { clearingAccountId: depot.clearingAccountId, bankId: depot.bankId },
         tick,
+        quote.mid,
         sale,
       ),
     );

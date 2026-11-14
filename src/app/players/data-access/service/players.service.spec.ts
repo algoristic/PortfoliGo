@@ -254,6 +254,22 @@ describe('PlayersService', () => {
         data: { [ben.id]: 5_389_950 },
       });
     });
+
+    it('forgets the first steps of the deleted player, but not of another', async () => {
+      const anna = await create();
+      const ben = await create({ ...ANNA, name: 'Ben' });
+      const settings = { hidden: true, banksVisited: false };
+      localStorage.setItem(
+        'pgo.ui.firstSteps',
+        JSON.stringify({ v: 1, data: { [anna.id]: settings, [ben.id]: settings } }),
+      );
+
+      await firstValueFrom(service.deletePlayer(anna.id));
+      expect(JSON.parse(localStorage.getItem('pgo.ui.firstSteps') ?? 'null')).toEqual({
+        v: 1,
+        data: { [ben.id]: settings },
+      });
+    });
   });
 
   describe('loadPlayers', () => {

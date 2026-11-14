@@ -3,9 +3,6 @@ import { FirstStepsSettings } from '@app/dashboard/domain/models/first-steps.mod
 /** Quote subscription of the dashboard: top positions and watchlist (TS §8.4, §11.3). */
 export const DASHBOARD_SUBSCRIPTION = 'dashboard';
 
-/** Version of `pgo.ui.firstSteps` (TS §9.3). */
-export const FIRST_STEPS_SETTINGS_VERSION = 1;
-
 /** Watchlist entries the dashboard shows. */
 export const DASHBOARD_WATCHLIST_COUNT = 5;
 

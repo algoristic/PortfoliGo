@@ -210,6 +210,7 @@ describe('DashboardPage', () => {
       'upcoming',
       'cashflow',
       'top-positions',
+      'dividends',
       'watchlist',
       'notifications',
     ]) {
@@ -320,6 +321,11 @@ describe('DashboardPage', () => {
     await open('dashboard');
     expect(queryByTestId(page, 'dashboard.first-steps')).toBeNull();
     expect(queryByTestId(page, 'dashboard.net-worth')).not.toBeNull();
+
+    // Shown again with the button below the tiles, which then goes away.
+    await act(() => click(byTestId(page, 'dashboard.first-steps.show')));
+    expect(text(page, 'dashboard.first-steps.progress')).toBe('5 von 5 erledigt');
+    expect(queryByTestId(page, 'dashboard.first-steps.show')).toBeNull();
   });
 
   it('stacks the tiles in one column on phones', async () => {

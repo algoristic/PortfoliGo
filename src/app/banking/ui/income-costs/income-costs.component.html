@@ -1,0 +1,115 @@
+<div class="flex flex-col gap-4">
+  @for (year of views(); track year.year) {
+    <section
+      class="rounded-lg border border-border bg-surface p-4"
+      [attr.aria-labelledby]="'banking-income-costs-' + year.year"
+      [attr.data-testid]="'banking.income-costs.' + year.year">
+      <h2 [id]="'banking-income-costs-' + year.year" class="text-lg font-semibold">
+        {{ year.year }}
+        @if (year.running) {
+          <app-badge
+            class="ml-2"
+            data-testid="banking.income-costs.running"
+            i18n="@@uiBanking-incomeCosts-running"
+            >laufend, bisher</app-badge
+          >
+        }
+      </h2>
+      <div class="mt-3 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div>
+          <h3 class="font-medium" i18n="@@uiBanking-incomeCosts-incomeHeading">Erträge</h3>
+          <table class="mt-2 w-full border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-border">
+                <th scope="col" class="py-1 pr-3 text-left font-medium">
+                  <span i18n="@@uiBanking-incomeCosts-month">Monat</span>
+                </th>
+                <th scope="col" class="py-1 pr-3 text-right font-medium">
+                  <span i18n="@@uiBanking-incomeCosts-dividends">Dividenden</span>
+                </th>
+                <th scope="col" class="py-1 text-right font-medium">
+                  <span i18n="@@uiBanking-incomeCosts-interest">Zinsen</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (month of year.months; track month.id) {
+                <tr
+                  class="border-b border-border"
+                  [attr.data-testid]="'banking.income-costs.' + year.year + '.month.' + month.id">
+                  <th scope="row" class="py-1 pr-3 text-left font-normal">{{ month.label }}</th>
+                  <td
+                    class="py-1 pr-3 text-right tabular-nums"
+                    data-testid="banking.income-costs.month.dividends">
+                    {{ month.dividends }}
+                  </td>
+                  <td
+                    class="py-1 text-right tabular-nums"
+                    data-testid="banking.income-costs.month.interest">
+                    {{ month.creditInterest }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+            <tfoot>
+              <tr class="font-semibold">
+                <th scope="row" class="py-1 pr-3 text-left">
+                  <span i18n="@@uiBanking-incomeCosts-yearSum">Jahr</span>
+                </th>
+                <td
+                  class="py-1 pr-3 text-right tabular-nums"
+                  data-testid="banking.income-costs.dividends">
+                  {{ year.dividends }}
+                </td>
+                <td
+                  class="py-1 text-right tabular-nums"
+                  data-testid="banking.income-costs.interest">
+                  {{ year.creditInterest }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div>
+          <h3 class="font-medium" i18n="@@uiBanking-incomeCosts-costsHeading">Kosten</h3>
+          <dl class="mt-2 text-sm">
+            @for (cost of year.costs; track cost.kind) {
+              <div
+                class="flex justify-between gap-3 border-b border-border py-1"
+                [attr.data-testid]="'banking.income-costs.cost.' + cost.kind">
+                <dt>
+                  {{ cost.label }}
+                  @if (cost.estimated) {
+                    <span class="text-fg-muted" i18n="@@uiBanking-incomeCosts-estimated"
+                      >(geschätzt)</span
+                    >
+                  }
+                </dt>
+                <dd class="tabular-nums" data-testid="banking.income-costs.cost.value">
+                  {{ cost.value }}
+                </dd>
+              </div>
+            }
+            <div class="flex justify-between gap-3 py-1 font-semibold">
+              <dt i18n="@@uiBanking-incomeCosts-total">Kosten gesamt</dt>
+              <dd class="tabular-nums" data-testid="banking.income-costs.total">
+                {{ year.totalCosts }}
+              </dd>
+            </div>
+            <div class="flex justify-between gap-3 py-1 text-fg-muted">
+              <dt i18n="@@uiBanking-incomeCosts-estimatedTotal">davon geschätzt</dt>
+              <dd class="tabular-nums" data-testid="banking.income-costs.estimated">
+                {{ year.estimatedCosts }}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </section>
+  }
+</div>
+<p class="mt-2 text-xs text-fg-muted" i18n="@@uiBanking-incomeCosts-note">
+  Dividenden einschließlich Ausschüttungen von ETFs, vor Steuern. Spread und TER werden nicht
+  gebucht, sie stecken in den Kursen: Der Spread ist der Abstand des Ausführungskurses zum
+  Mittelkurs, die TER der tägliche Anteil der Fondskosten am Wert deiner ETFs.
+</p>

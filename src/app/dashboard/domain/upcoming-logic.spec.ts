@@ -79,6 +79,7 @@ const APRIL: UpcomingInputs = {
       paymentTick: at('24.04.2030', '06:00'),
     },
   ],
+  watchedDividends: [],
 };
 
 // TS §8.1, second example: Mo 01.07.2030 05:59, 3 days.
@@ -108,6 +109,7 @@ const JULY: UpcomingInputs = {
   },
   announcedDividends: [],
   pendingDistributions: [],
+  watchedDividends: [],
 };
 
 describe('upcoming', () => {

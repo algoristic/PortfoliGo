@@ -100,6 +100,18 @@ describe('GameEngine upcoming', () => {
         }));
 
     engine.runUntil(startOfDay(exDate.tick) - 10 * TICKS_PER_DAY);
+    // US-MK-06: the dividend calendar shows the same date with the expected payout.
+    expect(engine.dividendCalendar()).toEqual([
+      {
+        instrumentId: exDate.instrumentId,
+        exTick: exDate.tick,
+        paymentTick: payment,
+        perShare: exDate.cents,
+        quantity: 3_000_000,
+        expected: 3 * exDate.cents,
+        earned: false,
+      },
+    ]);
     expect(dividends()).toEqual([
       {
         kind: 'ex-dividend',
@@ -124,6 +136,17 @@ describe('GameEngine upcoming', () => {
     ]);
 
     engine.runUntil(exDate.tick);
+    expect(engine.dividendCalendar()).toEqual([
+      {
+        instrumentId: exDate.instrumentId,
+        exTick: exDate.tick,
+        paymentTick: payment,
+        perShare: exDate.cents,
+        quantity: 3_000_000,
+        expected: 3 * exDate.cents,
+        earned: true,
+      },
+    ]);
     expect(dividends()).toEqual([
       {
         kind: 'dividend-payment',
@@ -133,5 +156,49 @@ describe('GameEngine upcoming', () => {
         instrumentId: exDate.instrumentId,
       },
     ]);
+  });
+
+  // US-MK-06: a share on the watchlist without a holding shows its ex-date once announced (20
+  // market days ahead, TS §6.5), never before, and without an expected payout.
+  it('shows the announced ex-date of a watched share only after the announcement', () => {
+    const { seedKey, world } = miniWorld(TEST_SEEDS.mini);
+    const first = startBankingGame(createGameWorld(seedKey, world), START);
+    const start = first.snapshot();
+    const monthStarts = first.monthStartsAfter(-1);
+    const ids = seriesIds(first.world.context);
+    const etfs = new Set(world.etfs.map(({ id }) => id));
+    first.runUntil(at(1, 9));
+    const exDate = first
+      .drainEvents()
+      .flatMap((event) =>
+        event.type === 'ex-dividend' && !etfs.has(ids[event.series]) && event.tick > at(1, 7)
+          ? [{ instrumentId: ids[event.series], tick: event.tick, cents: event.cents }]
+          : [],
+      )[0];
+    if (exDate === undefined) {
+      throw new Error('the mini world has no ex-date of a share in July or August');
+    }
+    const state = structuredClone(start) as GameState;
+    state.player.watchlist = [exDate.instrumentId];
+    const engine = GameEngine.restore(first.world, state, { monthStarts });
+    const ofShare = (): unknown[] =>
+      engine
+        .dividendCalendar()
+        .filter(({ exTick }) => exTick === exDate.tick)
+        .map(({ instrumentId, perShare, quantity, expected }) => ({
+          instrumentId,
+          perShare,
+          quantity,
+          expected,
+        }));
+
+    engine.runUntil(startOfDay(exDate.tick) - 40 * TICKS_PER_DAY);
+    expect(ofShare()).toEqual([]);
+    engine.runUntil(startOfDay(exDate.tick) - 10 * TICKS_PER_DAY);
+    expect(ofShare()).toEqual([
+      { instrumentId: exDate.instrumentId, perShare: exDate.cents, quantity: null, expected: null },
+    ]);
+    engine.runUntil(exDate.tick);
+    expect(ofShare()).toEqual([]);
   });
 });

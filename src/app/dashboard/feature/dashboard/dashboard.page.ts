@@ -3,6 +3,7 @@ import { Component, inject } from '@angular/core';
 
 import { BankingFacade } from '@app/banking/feature/state/banking.facade';
 import { CashflowComponent } from '@app/dashboard/ui/cashflow/cashflow.component';
+import { DividendCalendarComponent } from '@app/dashboard/ui/dividend-calendar/dividend-calendar.component';
 import { FirstStepsComponent } from '@app/dashboard/ui/first-steps/first-steps.component';
 import { NetWorthChartComponent } from '@app/dashboard/ui/net-worth-chart/net-worth-chart.component';
 import { NetWorthSummaryComponent } from '@app/dashboard/ui/net-worth-summary/net-worth-summary.component';
@@ -14,13 +15,16 @@ import { WatchlistSummaryComponent } from '@app/dashboard/ui/watchlist-summary/w
 import { NotificationsFacade } from '@app/notifications/feature/state/notifications.facade';
 import { HistoryRange } from '@app/portfolio/domain/models/performance.model';
 import { PortfolioFacade } from '@app/portfolio/feature/state/portfolio.facade';
+import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 
 import { DashboardFacade } from '../state/dashboard.facade';
 
 /**
  * The dashboard „Übersicht“ (PS §10.3, AP 5.7): „Erste Schritte“, net worth with its history,
- * performance, „Demnächst“, the month's cash flow, top positions, watchlist and the newest
- * notifications; one column on phones, two from `md`, three from `xl`.
+ * performance, „Demnächst“, the month's cash flow, top positions, the dividend calendar, watchlist
+ * and the newest notifications; one column on phones, two from `md`, three from `xl`. Hidden
+ * „Erste Schritte“ come back with a button below the tiles.
  */
 @Component({
   selector: 'app-dashboard-page',
@@ -33,8 +37,11 @@ import { DashboardFacade } from '../state/dashboard.facade';
     UpcomingListComponent,
     CashflowComponent,
     TopPositionsComponent,
+    DividendCalendarComponent,
     WatchlistSummaryComponent,
     RecentNotificationsComponent,
+    ButtonDirective,
+    IconDirective,
   ],
   templateUrl: './dashboard.page.html',
   host: { class: 'block' },
@@ -51,5 +58,9 @@ export class DashboardPage {
 
   onHideFirstSteps(): void {
     this.dashboardFacade.hideFirstSteps();
+  }
+
+  onShowFirstSteps(): void {
+    this.dashboardFacade.showFirstSteps();
   }
 }

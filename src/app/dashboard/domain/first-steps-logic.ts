@@ -22,3 +22,14 @@ export function firstSteps(facts: FirstStepsFacts): FirstStep[] {
 export function firstStepsDone(steps: readonly FirstStep[]): number {
   return steps.filter((step) => step.done).length;
 }
+
+/**
+ * A stored `pgo.ui.firstSteps` without the entry of a deleted player (TS §9.3); other entries stay
+ * as they are, the reader validates them. Anything but an object becomes an empty one.
+ */
+export function withoutFirstSteps(data: unknown, playerId: string): Record<string, unknown> {
+  if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+    return {};
+  }
+  return Object.fromEntries(Object.entries(data).filter(([id]) => id !== playerId));
+}

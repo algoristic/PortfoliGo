@@ -19,6 +19,12 @@ function monthClosed(seq: number, tick: number): GameNotification {
         debitInterest: 0,
         taxes: 0,
         dividends: 0,
+        orderFees: 0,
+        savingsPlanFees: 0,
+        accountFees: 0,
+        custodyFees: 0,
+        spreadCosts: 0,
+        terCosts: 0,
       },
     },
   };

@@ -1,4 +1,4 @@
-import { firstSteps, firstStepsDone } from './first-steps-logic';
+import { firstSteps, firstStepsDone, withoutFirstSteps } from './first-steps-logic';
 import { FirstStepsFacts } from './models/first-steps.model';
 
 const NEW_PLAYER: FirstStepsFacts = {
@@ -57,5 +57,17 @@ describe('firstSteps', () => {
     ]);
     expect(steps.map((step) => step.done)).toEqual(done);
     expect(firstStepsDone(steps)).toBe(done.filter(Boolean).length);
+  });
+});
+
+describe('withoutFirstSteps', () => {
+  it.each<[string, unknown, Record<string, unknown>]>([
+    ['the deleted player only', { p1: { hidden: true }, p2: 1 }, { p2: 1 }],
+    ['no entry of the player', { p2: { hidden: false } }, { p2: { hidden: false } }],
+    ['a broken entry', 'x', {}],
+    ['a list', [1], {}],
+    ['null', null, {}],
+  ])('keeps %s out', (_case, data, expected) => {
+    expect(withoutFirstSteps(data, 'p1')).toEqual(expected);
   });
 });

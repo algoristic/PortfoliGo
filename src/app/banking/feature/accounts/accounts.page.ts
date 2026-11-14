@@ -9,6 +9,7 @@ import { StandingOrderId } from '@app/banking/domain/models/standing-order.model
 import { AccountActionsComponent } from '@app/banking/ui/account-actions/account-actions.component';
 import { AccountCardComponent } from '@app/banking/ui/account-card/account-card.component';
 import { AccountTotalsComponent } from '@app/banking/ui/account-totals/account-totals.component';
+import { IncomeCostsComponent } from '@app/banking/ui/income-costs/income-costs.component';
 import { MonthlyOverviewComponent } from '@app/banking/ui/monthly-overview/monthly-overview.component';
 import { StandingOrderListComponent } from '@app/banking/ui/standing-order-list/standing-order-list.component';
 import { StandingOrderPauseChange } from '@app/banking/ui/standing-order-list/standing-order-list.model';
@@ -26,7 +27,7 @@ import { BankingFacade } from '../state/banking.facade';
 /**
  * Account overview (US-BK-02, AP 3.4) with the bank commands (AP 3.5): the open accounts as cards
  * with their actions, totals, the closed ones apart; the standing orders (US-BK-10, AP 5.6a) and
- * the monthly overview (US-EK-03) as tabs.
+ * the monthly overview (US-EK-03) and earnings and costs (US-PF-07, AP 5.7) as tabs.
  */
 @Component({
   selector: 'app-accounts-page',
@@ -36,6 +37,7 @@ import { BankingFacade } from '../state/banking.facade';
     AccountActionsComponent,
     AccountCardComponent,
     AccountTotalsComponent,
+    IncomeCostsComponent,
     MonthlyOverviewComponent,
     StandingOrderListComponent,
     EmptyStateComponent,
@@ -71,6 +73,10 @@ export class AccountsPage {
       label: $localize`:@@featureBanking-accountsPage-standingOrdersTab:Daueraufträge`,
     },
     { id: 'months', label: $localize`:@@featureBanking-accountsPage-monthsTab:Monatsübersicht` },
+    {
+      id: 'income-costs',
+      label: $localize`:@@featureBanking-accountsPage-incomeCostsTab:Erträge und Kosten`,
+    },
   ];
   tabsLabel = $localize`:@@featureBanking-accountsPage-tabsLabel:Ansicht`;
   noStandingOrdersHeading = $localize`:@@featureBanking-accountsPage-noStandingOrdersHeading:Noch keine Daueraufträge`;

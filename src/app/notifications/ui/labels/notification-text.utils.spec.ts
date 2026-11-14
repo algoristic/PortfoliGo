@@ -38,6 +38,12 @@ const APRIL: MonthlyValues = {
   debitInterest: 0,
   taxes: 79,
   dividends: 0,
+  orderFees: 0,
+  savingsPlanFees: 0,
+  accountFees: 1_200,
+  custodyFees: 0,
+  spreadCosts: 0,
+  terCosts: 0,
 };
 
 function notification(partial: Pick<GameNotification, 'code' | 'params'>): GameNotification {

@@ -64,3 +64,17 @@ export interface FirstStepsView {
   steps: FirstStep[];
   done: number;
 }
+
+/** A date of the dividend calendar (US-MK-06) with the instrument's name. */
+export interface DividendCalendarRow {
+  key: string;
+  instrumentId: string;
+  name: string;
+  exTick: Tick;
+  paymentTick: Tick;
+  perShare: Cents;
+  /** `null` for watchlist instruments without a holding. */
+  expected: Cents | null;
+  /** The ex-date has passed; the payout is earned. */
+  earned: boolean;
+}

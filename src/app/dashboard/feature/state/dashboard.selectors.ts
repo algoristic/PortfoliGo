@@ -27,6 +27,7 @@ import { DASHBOARD_WATCHLIST_COUNT } from './dashboard.model';
 import { DASHBOARD_FEATURE_KEY, DashboardState } from './dashboard.reducer';
 import {
   dashboardSeries,
+  dividendCalendarRows,
   firstStepsFacts,
   topPositionEntries,
   upcomingEntries,
@@ -44,6 +45,10 @@ export const selectRecentNotifications = createSelector(
 );
 export const selectFirstStepsSettings = createSelector(selectState, (state) => state.firstSteps);
 export const selectFirstStepsPlayerId = createSelector(selectState, (state) => state.playerId);
+export const selectFirstStepsHidden = createSelector(
+  selectState,
+  (state) => state.playerId !== null && state.firstSteps.hidden,
+);
 
 /** „Demnächst“ (TS §8.1): worker dates and planned executions after now; follows the clock. */
 export const selectUpcoming = createSelector(
@@ -74,6 +79,14 @@ export const selectUpcoming = createSelector(
     ),
     days: result?.days ?? 0,
   }),
+);
+
+/** The dividend calendar for depot and watchlist (US-MK-06); follows the clock. */
+export const selectDividendCalendar = createSelector(
+  selectUpcomingResult,
+  selectTick,
+  selectInstrumentNames,
+  dividendCalendarRows,
 );
 
 /** The largest positions over all open depots (PS §10.3); follows the quotes. */

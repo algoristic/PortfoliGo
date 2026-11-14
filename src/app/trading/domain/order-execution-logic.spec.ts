@@ -460,7 +460,7 @@ describe('order-execution-logic', () => {
         100,
         BRANCH,
       );
-      expect(executionTransaction(order, fill, accounts, 1_234)).toEqual({
+      expect(executionTransaction(order, fill, accounts, 1_234, 99.95)).toEqual({
         tick: 1_234,
         type: 'buy',
         postings: [
@@ -476,6 +476,7 @@ describe('order-execution-logic', () => {
           marketValue: 100_000,
           orderFee: 1_000,
           exchangeFee: 300,
+          spreadCost: 50,
         },
       });
     });
@@ -486,7 +487,13 @@ describe('order-execution-logic', () => {
         40,
         NEO,
       );
-      const transaction = executionTransaction({ ...order, side: 'sell' }, fill, accounts, 1_234);
+      const transaction = executionTransaction(
+        { ...order, side: 'sell' },
+        fill,
+        accounts,
+        1_234,
+        40,
+      );
       expect(transaction.type).toBe('sell');
       expect(transaction.postings).toEqual([
         { account: 'acc-3', amount: 9_910 },
@@ -506,16 +513,17 @@ describe('order-execution-logic', () => {
       );
       const sale = { costBasis: 10_500, realizedGain: -590 };
       const order2 = { ...order, side: 'sell' as const };
-      expect(executionTransaction(order2, fill, accounts, 1_234, sale).params).toEqual({
+      expect(executionTransaction(order2, fill, accounts, 1_234, 40.02, sale).params).toEqual({
         quantity: 2_500_000,
         price: 40,
         marketValue: 10_000,
         orderFee: 90,
         exchangeFee: 0,
+        spreadCost: 5,
         costBasis: 10_500,
         realizedGain: -590,
       });
-      expect(executionTransaction(order2, fill, accounts, 1_234).params).not.toHaveProperty(
+      expect(executionTransaction(order2, fill, accounts, 1_234, 40).params).not.toHaveProperty(
         'costBasis',
       );
     });
@@ -527,7 +535,7 @@ describe('order-execution-logic', () => {
         10,
         conditions,
       );
-      expect(executionTransaction(order, fill, accounts, 0).postings).toEqual([
+      expect(executionTransaction(order, fill, accounts, 0, 10).postings).toEqual([
         { account: 'acc-3', amount: -1_200 },
         { account: 'external:market', amount: 1_000 },
         { account: 'external:bank:b1:fees', amount: 200 },
@@ -541,7 +549,7 @@ describe('order-execution-logic', () => {
         10,
         conditions,
       );
-      expect(executionTransaction(order, fill, accounts, 0).postings).toEqual([
+      expect(executionTransaction(order, fill, accounts, 0, 10).postings).toEqual([
         { account: 'acc-3', amount: -1_000 },
         { account: 'external:market', amount: 1_000 },
       ]);
@@ -561,7 +569,13 @@ describe('order-execution-logic', () => {
               priceSteps / 10_000,
               depot(orderFee, exchangeFee, true),
             );
-            const transaction = executionTransaction({ ...order, side }, fill, accounts, 0);
+            const transaction = executionTransaction(
+              { ...order, side },
+              fill,
+              accounts,
+              0,
+              priceSteps / 10_000,
+            );
             expect(transaction.postings.reduce((sum, { amount }) => sum + amount, 0)).toBe(0);
           },
         ),

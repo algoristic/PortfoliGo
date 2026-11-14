@@ -135,6 +135,12 @@ describe('BankingSystem', () => {
         debitInterest: 0,
         taxes: 0,
         dividends: 0,
+        orderFees: 0,
+        savingsPlanFees: 0,
+        accountFees: 0,
+        custodyFees: 0,
+        spreadCosts: 0,
+        terCosts: 0,
       });
       expect(player.closedMonths).toEqual([]);
     });
@@ -302,6 +308,12 @@ describe('BankingSystem', () => {
         debitInterest: -overdraft + 1_479,
         taxes: 0,
         dividends: 0,
+        orderFees: 0,
+        savingsPlanFees: 0,
+        accountFees: 1_200,
+        custodyFees: 0,
+        spreadCosts: 0,
+        terCosts: 0,
       });
     });
 
@@ -691,6 +703,12 @@ describe('BankingSystem', () => {
         debitInterest: 0,
         taxes: 0,
         dividends: 0,
+        orderFees: 0,
+        savingsPlanFees: 0,
+        accountFees: fees,
+        custodyFees: 0,
+        spreadCosts: 0,
+        terCosts: 0,
       });
       // The opening balance counts for nothing; each month pays the fee of the one before.
       expect(engine.player.closedMonths).toEqual([

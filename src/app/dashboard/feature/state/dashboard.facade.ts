@@ -15,6 +15,9 @@ export class DashboardFacade {
   cashflow$ = this.#store.pipe(select(DashboardSelectors.selectCashflow));
   /** `null` while hidden. */
   firstSteps$ = this.#store.pipe(select(DashboardSelectors.selectFirstSteps));
+  /** The player hid „Erste Schritte“; the page offers to show them again. */
+  firstStepsHidden$ = this.#store.pipe(select(DashboardSelectors.selectFirstStepsHidden));
+  dividendCalendar$ = this.#store.pipe(select(DashboardSelectors.selectDividendCalendar));
 
   enterDashboardPage(): void {
     this.#store.dispatch(DashboardActions.enterDashboardPage());
@@ -26,5 +29,9 @@ export class DashboardFacade {
 
   hideFirstSteps(): void {
     this.#store.dispatch(DashboardActions.clickedHideFirstSteps());
+  }
+
+  showFirstSteps(): void {
+    this.#store.dispatch(DashboardActions.clickedShowFirstSteps());
   }
 }

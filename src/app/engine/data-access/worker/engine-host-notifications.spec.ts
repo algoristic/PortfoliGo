@@ -111,6 +111,12 @@ function flowsByType(journal: readonly Transaction[]): MonthlyValues {
     debitInterest: 0 - total('overdraft-interest', 'debit-interest'),
     taxes: 0 - total('tax', 'tax-refund'),
     dividends: 0,
+    orderFees: 0,
+    savingsPlanFees: 0,
+    accountFees: 0 - total('account-fee'),
+    custodyFees: 0,
+    spreadCosts: 0,
+    terCosts: 0,
   };
 }
 
