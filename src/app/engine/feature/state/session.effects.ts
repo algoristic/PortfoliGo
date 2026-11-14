@@ -183,11 +183,17 @@ export class SessionEffects {
     () =>
       this.#actions$.pipe(
         ofType(SessionActions.receivedWarning),
-        tap(() =>
-          this.#toastService.warning(
-            $localize`:@@featureEngine-sessionEffects-storageWarning:Der Spielstand konnte gerade nicht gespeichert werden. PortfoliGo versucht es weiter.`,
-          ),
-        ),
+        tap(({ warning }) => {
+          if (warning.code === 'storage-full') {
+            this.#toastService.error(
+              $localize`:@@featureEngine-sessionEffects-storageFull:Der Speicher ist voll. Das Spiel wurde pausiert. Exportiere deinen Spielstand und lösche alte Spieler; den belegten Speicher zeigen die Einstellungen unter „App“.`,
+            );
+          } else {
+            this.#toastService.warning(
+              $localize`:@@featureEngine-sessionEffects-storageWarning:Der Spielstand konnte gerade nicht gespeichert werden. PortfoliGo versucht es weiter.`,
+            );
+          }
+        }),
       ),
     { dispatch: false },
   );
@@ -201,6 +207,16 @@ export class SessionEffects {
             $localize`:@@featureEngine-sessionEffects-unloadFailure:Der Spielstand konnte beim Verlassen nicht gespeichert werden.`,
           ),
         ),
+      ),
+    { dispatch: false },
+  );
+
+  /** A failed game starts over with a new page (TS §8.5): new worker, new failure count. */
+  reload$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(SessionActions.clickedReload),
+        tap(() => this.#document.location.reload()),
       ),
     { dispatch: false },
   );

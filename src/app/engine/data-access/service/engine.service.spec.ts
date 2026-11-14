@@ -2,6 +2,7 @@ import { Injector } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom, Observable, Subscription } from 'rxjs';
 
+import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { TestMarket, TestPrice } from '@app/engine/domain/testing/test-market';
 import { IndexedDbService } from '@app/persistence/data-access/indexed-db/indexed-db.service';
 import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
@@ -23,6 +24,8 @@ import {
   InProcessEngineOptions,
   provideInProcessEngineWorker,
 } from '../testing/in-process-engine-worker';
+import { StoredClock } from '../worker/engine-host.model';
+import { InMemoryEngineStorage } from '../worker/in-memory-engine-storage';
 
 const EPOCH_MS = Date.UTC(2020, 0, 1);
 const GAME_START = (Date.UTC(2030, 3, 1) - EPOCH_MS) / 60_000;
@@ -31,6 +34,50 @@ const PLAYER = {
   seed: 'mini-1',
   start: { startCapital: 1_000_000, netIncome: 280_000, livingCosts: 170_000 },
 };
+
+/**
+ * Lets the write-ahead of the next game commands hang (TS §8.5): `before` the command is stored, as
+ * if the worker failed during the transaction, or `after`, as if it failed before it answered.
+ */
+class StallingStorage extends InMemoryEngineStorage {
+  stall: 'before' | 'after' | null = null;
+  #gates: Array<{ resolve: () => void; reject: (error: Error) => void }> = [];
+  #stalled: () => void = () => undefined;
+
+  /** Resolves when the next write-ahead hangs. */
+  stalled(): Promise<void> {
+    return new Promise((resolve) => (this.#stalled = resolve));
+  }
+
+  /** Ends the hanging writes of the failed worker; a write that hung `before` never stores. */
+  release(): void {
+    for (const gate of this.#gates.splice(0)) {
+      gate.reject(new Error('worker terminated'));
+    }
+  }
+
+  override async appendCommand(
+    playerId: string,
+    command: GameCommand,
+    clock: StoredClock,
+  ): Promise<void> {
+    const stall = this.stall;
+    if (stall === 'before') {
+      await this.#hang();
+    }
+    await super.appendCommand(playerId, command, clock);
+    if (stall === 'after') {
+      await this.#hang().catch(() => undefined);
+    }
+  }
+
+  #hang(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.#gates.push({ resolve, reject });
+      this.#stalled();
+    });
+  }
+}
 
 /** Series 0 at 100, every other series (indices of the absence report included) at 50. */
 function market(): TestMarket {
@@ -681,11 +728,110 @@ describe('EngineService', () => {
       await firstValueFrom(service.loadPlayer(PLAYER));
       for (let failure = 0; failure < 4; failure++) {
         await firstValueFrom(service.resume());
-        await engine.advance((failure + 1) * 5_000);
+        // More than a minute between the first and the third failure.
+        await engine.advance(31_000);
         engine.crash();
         await engine.idle();
       }
       expect(fatal.map(({ restarting }) => restarting)).toEqual([true, true, true, true]);
+    });
+
+    it('gives up at the third failure within a minute, although the game time moved on', async () => {
+      start();
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      for (let failure = 0; failure < 3; failure++) {
+        await firstValueFrom(service.resume());
+        await engine.advance(20_000);
+        engine.crash();
+        await engine.idle();
+      }
+      expect(fatal.map(({ restarting }) => restarting)).toEqual([true, true, false]);
+      expect(engine.workers).toHaveLength(3);
+    });
+
+    it('answers an open game command from the command log of the restored worker', async () => {
+      const storage = new StallingStorage();
+      start({ storage });
+      const projections: ProjectionPayload[] = [];
+      const projection = service.projection$.subscribe((payload) => projections.push(payload));
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      const { banks } = await firstValueFrom(service.banks());
+      const bankId = banks.find(({ type }) => type === 'branch')?.id as string;
+      storage.stall = 'after';
+      const stalled = storage.stalled();
+      const opened = firstValueFrom(service.openAccount(bankId, 'current'));
+      await stalled;
+      storage.stall = null;
+      engine.crash();
+      storage.release();
+      await engine.idle();
+      expect(await opened).toEqual({ tick: GAME_START, accountId: 'acc-2', depotId: null });
+      expect(received('loadPlayer', 1).map(({ payload }) => payload)).toEqual([
+        { ...PLAYER, pendingCommandIds: [received('openAccount', 0)[0].id] },
+      ]);
+      // Applied once: the restored worker shows the account, and the next one is `acc-3`.
+      expect(projections.at(-1)?.accounts.map(({ id }) => id)).toEqual(['acc-1', 'acc-2']);
+      expect(await firstValueFrom(service.openAccount(bankId, 'current'))).toMatchObject({
+        accountId: 'acc-3',
+      });
+      projection.unsubscribe();
+    });
+
+    it('fails an open game command the worker never stored with worker-restarted', async () => {
+      const storage = new StallingStorage();
+      start({ storage });
+      const clocks: ClockPayload[] = [];
+      const clock = service.clock$.subscribe((payload) => clocks.push(payload));
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      storage.stall = 'before';
+      const stalled = storage.stalled();
+      const changed = firstValueFrom(service.setBackgroundMode('pause')).catch(
+        (e: EngineCommandError) => e.code,
+      );
+      await stalled;
+      storage.stall = null;
+      engine.crash();
+      storage.release();
+      await engine.idle();
+      expect(await changed).toBe('worker-restarted');
+      expect(fatal).toEqual([{ message: 'the engine worker failed: crash', restarting: true }]);
+      // The restored worker loaded the player without the command.
+      expect(clocks.length).toBeGreaterThan(1);
+      expect(clocks.at(-1)?.backgroundMode).toBe('realtime');
+      clock.unsubscribe();
+    });
+
+    it('fails open game commands with worker-failed when it gives up', async () => {
+      const storage = new StallingStorage();
+      start({ storage });
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      for (let failure = 0; failure < 2; failure++) {
+        engine.crash();
+        await engine.idle();
+      }
+      storage.stall = 'after';
+      const stalled = storage.stalled();
+      const changed = firstValueFrom(service.setBackgroundMode('pause')).catch(
+        (e: EngineCommandError) => e.code,
+      );
+      await stalled;
+      storage.stall = null;
+      engine.crash();
+      storage.release();
+      await engine.idle();
+      expect(await changed).toBe('worker-failed');
+      expect(fatal.map(({ restarting }) => restarting)).toEqual([true, true, false]);
+    });
+
+    it('sends the frozen state to the restarted worker after the player', async () => {
+      start();
+      await firstValueFrom(service.loadPlayer(PLAYER));
+      await firstValueFrom(service.setFrozen(true));
+      engine.crash();
+      await engine.idle();
+      const types = engine.workers[1].received.map(({ type }) => type);
+      expect(types.indexOf('setFrozen')).toBeGreaterThan(types.indexOf('loadPlayer'));
+      expect(received('setFrozen', 1).map(({ payload }) => payload)).toEqual([{ frozen: true }]);
     });
   });
 

@@ -305,5 +305,8 @@ function backgroundModeFailureMessage(error: unknown): string {
   if (isEngineCommandError(error, 'busy')) {
     return failureMessage(error);
   }
+  if (isEngineCommandError(error, 'worker-restarted')) {
+    return $localize`:@@featureClock-clockEffects-backgroundModeWorkerRestarted:Die Spiel-Engine wurde neu gestartet. Bitte wiederhole die letzte Aktion.`;
+  }
   return $localize`:@@featureClock-clockEffects-backgroundModeFailure:Das Verhalten im Hintergrund konnte nicht geändert werden.`;
 }

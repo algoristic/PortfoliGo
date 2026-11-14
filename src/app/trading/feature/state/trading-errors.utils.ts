@@ -32,6 +32,9 @@ export function orderCommandFailureMessage(
     if (error.code === 'busy') {
       return $localize`:@@featureTrading-tradingErrors-busy:Das geht gerade nicht, weil die Spielzeit noch berechnet wird.`;
     }
+    if (error.code === 'worker-restarted') {
+      return $localize`:@@featureTrading-tradingErrors-workerRestarted:Die Spiel-Engine wurde neu gestartet. Bitte wiederhole die letzte Aktion.`;
+    }
     if (error.code === 'storage-failed') {
       return $localize`:@@featureTrading-tradingErrors-storageFailed:Der Auftrag konnte nicht gespeichert werden und wurde nicht ausgeführt.`;
     }
@@ -79,6 +82,9 @@ export function savingsPlanCommandFailureMessage(
     }
     if (error.code === 'busy') {
       return $localize`:@@featureTrading-tradingErrors-savingsPlanBusy:Das geht gerade nicht, weil die Spielzeit noch berechnet wird.`;
+    }
+    if (error.code === 'worker-restarted') {
+      return $localize`:@@featureTrading-tradingErrors-savingsPlanWorkerRestarted:Die Spiel-Engine wurde neu gestartet. Bitte wiederhole die letzte Aktion.`;
     }
     if (error.code === 'storage-failed') {
       return $localize`:@@featureTrading-tradingErrors-savingsPlanStorageFailed:Die Änderung konnte nicht gespeichert werden und wurde nicht übernommen.`;

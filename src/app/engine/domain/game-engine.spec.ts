@@ -642,6 +642,32 @@ describe('GameEngine', () => {
       expect(changes.map((event) => event.tick)).toEqual([start + 5, start + 90, start + 90]);
     });
 
+    // TS §8.5: the restored worker answers the open commands of a failed one from these results
+    it('reports each applied command with its result', () => {
+      const start = engine.tick;
+      const applied: Array<[string, unknown]> = [];
+      replayCommands(
+        engine,
+        [
+          { id: 'old', type: 'setBackgroundMode', mode: 'pause', tick: start - 1 },
+          {
+            id: 'c1',
+            type: 'openAccount',
+            bankId: engine.player.homeBankId,
+            kind: 'savings',
+            tick: start,
+          },
+          { id: 'c2', type: 'setSalaryAccount', accountId: 'acc-9', tick: start + 5 },
+        ],
+        start + 10,
+        (command, result) => applied.push([command.id, result]),
+      );
+      expect(applied).toEqual([
+        ['c1', { ok: true, opened: { accountId: 'acc-2', depotId: null } }],
+        ['c2', { ok: false, error: 'unknown-account' }],
+      ]);
+    });
+
     // TS §8.5: the snapshot holds the IDs of the commands of its tick, rejected ones included
     it('does not apply a command again that was rejected before the snapshot at its tick', () => {
       const tick = engine.tick;

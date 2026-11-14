@@ -16,6 +16,8 @@ export function watchlistFailureMessage(error: unknown): string {
         return $localize`:@@featureMarket-watchlistErrors-watchlistTooLong:Die Watchlist ist voll. Sie fasst höchstens ${MAX_WATCHLIST_LENGTH}:maxLength: Wertpapiere.`;
       case 'busy':
         return $localize`:@@featureMarket-watchlistErrors-busy:Die Watchlist lässt sich gerade nicht ändern, weil die Spielzeit noch berechnet wird.`;
+      case 'worker-restarted':
+        return $localize`:@@featureMarket-watchlistErrors-workerRestarted:Die Spiel-Engine wurde neu gestartet. Die Änderung der Watchlist wurde zurückgenommen, bitte wiederhole sie.`;
       case 'storage-failed':
         return $localize`:@@featureMarket-watchlistErrors-storageFailed:Die Änderung der Watchlist konnte nicht gespeichert werden und wurde zurückgenommen.`;
     }

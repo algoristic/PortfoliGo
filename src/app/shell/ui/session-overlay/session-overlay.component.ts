@@ -1,5 +1,13 @@
 import { CdkTrapFocus } from '@angular/cdk/a11y';
-import { afterNextRender, Component, computed, ElementRef, input, viewChild } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  computed,
+  ElementRef,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 import { SessionStatus } from '@app/engine/domain/models/session.model';
@@ -21,6 +29,8 @@ export class SessionOverlayComponent {
   status = input.required<SessionStatus>();
   /** Share of the catch-up done (0–1), `null` while unknown. */
   progress = input<number | null>(null);
+
+  clickedReload = output<void>();
 
   dialog = viewChild.required<ElementRef<HTMLElement>>('dialog');
 

@@ -696,186 +696,193 @@
           <context context-type="linenumber">21</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureBanking-bankingErrors-workerRestarted" datatype="html">
+        <source>Die Spiel-Engine wurde neu gestartet. Bitte wiederhole die letzte Aktion.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
+          <context context-type="linenumber">24</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-storageFailed" datatype="html">
         <source>Der Auftrag konnte nicht gespeichert werden und wurde nicht ausgeführt.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">24</context>
+          <context context-type="linenumber">27</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-unknownBank" datatype="html">
         <source>Diese Bank gibt es nicht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">38</context>
+          <context context-type="linenumber">41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-accountKindNotOffered" datatype="html">
         <source>Diese Bank bietet diese Kontoart nicht an.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">40</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-unknownAccount" datatype="html">
         <source>Dieses Konto gibt es nicht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">42</context>
+          <context context-type="linenumber">45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-accountClosed" datatype="html">
         <source>Dieses Konto ist bereits geschlossen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">44</context>
+          <context context-type="linenumber">47</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-notACurrentAccount" datatype="html">
         <source>Nur ein Girokonto kann Gehaltskonto sein.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">46</context>
+          <context context-type="linenumber">49</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-salaryAccount" datatype="html">
         <source>Das Gehaltskonto lässt sich erst schließen, wenn du ein anderes Girokonto als Gehaltskonto gewählt hast.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">48</context>
+          <context context-type="linenumber">51</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-negativeBalance" datatype="html">
         <source>Das Konto wäre nach dem Abschluss im Minus. Gleiche es zuerst mit einer Überweisung aus.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">53</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-depotNotEmpty" datatype="html">
         <source>Im Depot liegen noch Wertpapiere, offene Orders oder Sparpläne.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">52</context>
+          <context context-type="linenumber">55</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-targetRequired" datatype="html">
         <source>Wähle ein Konto, auf das das Restguthaben überwiesen wird.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">54</context>
+          <context context-type="linenumber">57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-invalidTarget" datatype="html">
         <source>Das Restguthaben kann nur auf ein anderes offenes Konto gehen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">56</context>
+          <context context-type="linenumber">59</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-sameAccount" datatype="html">
         <source>Absender- und Empfängerkonto müssen verschieden sein.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">58</context>
+          <context context-type="linenumber">61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-invalidAmount" datatype="html">
         <source>Der Betrag muss mindestens 0,01 € sein.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">60</context>
+          <context context-type="linenumber">63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-insufficientFunds" datatype="html">
         <source>Der Betrag ist höher als das, was auf dem Konto verfügbar ist.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">62</context>
+          <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-purposeTooLong" datatype="html">
         <source>Der Verwendungszweck darf höchstens <x id="maxLength" equiv-text="MAX_PURPOSE_LENGTH"/> Zeichen lang sein.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">64</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-standingOrders" datatype="html">
         <source>Für dieses Konto gibt es noch Daueraufträge. Lösche sie zuerst.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-invalidDay" datatype="html">
         <source>Der Ausführungstag muss zwischen dem 1. und dem 28. liegen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">68</context>
+          <context context-type="linenumber">71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-unknownStandingOrder" datatype="html">
         <source>Diesen Dauerauftrag gibt es nicht mehr.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">70</context>
+          <context context-type="linenumber">73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-openAccountFailure" datatype="html">
         <source>Das Konto konnte nicht eröffnet werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">77</context>
+          <context context-type="linenumber">80</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-closeAccountFailure" datatype="html">
         <source>Das Konto konnte nicht geschlossen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">79</context>
+          <context context-type="linenumber">82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-setSalaryAccountFailure" datatype="html">
         <source>Das Gehaltskonto konnte nicht gewechselt werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">81</context>
+          <context context-type="linenumber">84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-transferFailure" datatype="html">
         <source>Die Überweisung konnte nicht ausgeführt werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">83</context>
+          <context context-type="linenumber">86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-createStandingOrderFailure" datatype="html">
         <source>Der Dauerauftrag konnte nicht angelegt werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">85</context>
+          <context context-type="linenumber">88</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-changeStandingOrderFailure" datatype="html">
         <source>Der Dauerauftrag konnte nicht geändert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">87</context>
+          <context context-type="linenumber">90</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-setStandingOrderPausedFailure" datatype="html">
         <source>Der Dauerauftrag konnte nicht pausiert oder fortgesetzt werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">89</context>
+          <context context-type="linenumber">92</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingErrors-deleteStandingOrderFailure" datatype="html">
         <source>Der Dauerauftrag konnte nicht gelöscht werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking-errors.utils.ts</context>
-          <context context-type="linenumber">91</context>
+          <context context-type="linenumber">94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-createStandingOrderSuccess" datatype="html">
@@ -2504,11 +2511,18 @@
           <context context-type="linenumber">301</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureClock-clockEffects-backgroundModeWorkerRestarted" datatype="html">
+        <source>Die Spiel-Engine wurde neu gestartet. Bitte wiederhole die letzte Aktion.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
+          <context context-type="linenumber">309</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureClock-clockEffects-backgroundModeFailure" datatype="html">
         <source>Das Verhalten im Hintergrund konnte nicht geändert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/clock/feature/state/clock.effects.ts</context>
-          <context context-type="linenumber">308</context>
+          <context context-type="linenumber">311</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiClock-clockControls-jumpingTo" datatype="html">
@@ -3519,39 +3533,46 @@
           <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureEngine-sessionEffects-storageFull" datatype="html">
+        <source>Der Speicher ist voll. Das Spiel wurde pausiert. Exportiere deinen Spielstand und lösche alte Spieler; den belegten Speicher zeigen die Einstellungen unter „App“.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
+          <context context-type="linenumber">189</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-storageWarning" datatype="html">
         <source>Der Spielstand konnte gerade nicht gespeichert werden. PortfoliGo versucht es weiter.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">188</context>
+          <context context-type="linenumber">193</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-unloadFailure" datatype="html">
         <source>Der Spielstand konnte beim Verlassen nicht gespeichert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">201</context>
+          <context context-type="linenumber">207</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-playerNotFound" datatype="html">
         <source>Diesen Spieler gibt es nicht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">244</context>
+          <context context-type="linenumber">260</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-playerOutdated" datatype="html">
         <source>Dieser Spieler stammt aus einer älteren Version von PortfoliGo und kann nur noch gelöscht werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">246</context>
+          <context context-type="linenumber">262</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-playerUnavailable" datatype="html">
         <source>Der Spieler konnte nicht geöffnet werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">248</context>
+          <context context-type="linenumber">264</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-title" datatype="html">
@@ -5876,18 +5897,25 @@
           <context context-type="linenumber">18</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureMarket-watchlistErrors-workerRestarted" datatype="html">
+        <source>Die Spiel-Engine wurde neu gestartet. Die Änderung der Watchlist wurde zurückgenommen, bitte wiederhole sie.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/market/feature/state/watchlist-errors.utils.ts</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureMarket-watchlistErrors-storageFailed" datatype="html">
         <source>Die Änderung der Watchlist konnte nicht gespeichert werden und wurde zurückgenommen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/watchlist-errors.utils.ts</context>
-          <context context-type="linenumber">20</context>
+          <context context-type="linenumber">22</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-watchlistErrors-failure" datatype="html">
         <source>Die Watchlist konnte nicht geändert werden. Die Änderung wurde zurückgenommen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/feature/state/watchlist-errors.utils.ts</context>
-          <context context-type="linenumber">23</context>
+          <context context-type="linenumber">25</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-watchlistPage-emptyListHeading" datatype="html">
@@ -8529,39 +8557,46 @@
           <context context-type="linenumber">19</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureNotifications-notificationsErrors-workerRestarted" datatype="html">
+        <source>Die Spiel-Engine wurde neu gestartet. Bitte wiederhole die letzte Aktion.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/feature/state/notifications-errors.utils.ts</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureNotifications-notificationsErrors-storageFailed" datatype="html">
         <source>Die Änderung konnte nicht gespeichert werden und wurde nicht übernommen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/state/notifications-errors.utils.ts</context>
-          <context context-type="linenumber">22</context>
+          <context context-type="linenumber">25</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-notificationsErrors-loadFailure" datatype="html">
         <source>Die Benachrichtigungen konnten nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/state/notifications-errors.utils.ts</context>
-          <context context-type="linenumber">26</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-notificationsErrors-markReadFailure" datatype="html">
         <source>Die Benachrichtigungen konnten nicht als gelesen markiert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/state/notifications-errors.utils.ts</context>
-          <context context-type="linenumber">28</context>
+          <context context-type="linenumber">31</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-notificationsErrors-setAutoPauseFailure" datatype="html">
         <source>Die automatische Pause konnte nicht geändert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/state/notifications-errors.utils.ts</context>
-          <context context-type="linenumber">30</context>
+          <context context-type="linenumber">33</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureNotifications-notificationsErrors-absenceReportFailure" datatype="html">
         <source>Der Abwesenheitsbericht konnte nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/feature/state/notifications-errors.utils.ts</context>
-          <context context-type="linenumber">32</context>
+          <context context-type="linenumber">35</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-absenceReport-period" datatype="html">
@@ -11084,11 +11119,18 @@
           <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureSettings-settingsEffects-saveFailureStorageFull" datatype="html">
+        <source>Die Einstellung gilt nur bis zum Neuladen, weil der Speicher voll ist. Exportiere deinen Spielstand und lösche alte Spieler; den belegten Speicher zeigen die Einstellungen unter „App“.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/settings/feature/state/settings.effects.ts</context>
+          <context context-type="linenumber">93</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureSettings-settingsEffects-saveFailure" datatype="html">
         <source>Die Einstellung gilt nur bis zum Neuladen, weil sie auf diesem Gerät nicht gespeichert werden konnte.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/state/settings.effects.ts</context>
-          <context context-type="linenumber">91</context>
+          <context context-type="linenumber">94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiSettings-autoPauseSettings-legend" datatype="html">
@@ -11646,59 +11688,73 @@
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-sessionOverlay-failedText" datatype="html">
-        <source> Beim Laden oder Berechnen ist ein Fehler aufgetreten. Lade die Seite neu oder wähle einen anderen Spieler. </source>
+        <source> Beim Laden oder Berechnen ist ein Fehler aufgetreten. Deine bestätigten Aktionen sind gespeichert. Lade die Seite neu oder wähle einen anderen Spieler. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
           <context context-type="linenumber">44,48</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-failedExportHint" datatype="html">
+        <source> Tritt der Fehler wieder auf, sichere den Spielstand, sobald das Spiel wieder läuft: unter Einstellungen › Spielstand sichern. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
+          <context context-type="linenumber">51,55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiShell-sessionOverlay-reload" datatype="html">
+        <source>Neu laden</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
+          <context context-type="linenumber">61,64</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-sessionOverlay-catchUpHeading" datatype="html">
         <source> Nachberechnung </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
-          <context context-type="linenumber">54,57</context>
+          <context context-type="linenumber">70,73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-sessionOverlay-catchUpText" datatype="html">
         <source> Die Spielzeit seit deinem letzten Besuch wird nachberechnet. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
-          <context context-type="linenumber">60,63</context>
+          <context context-type="linenumber">76,79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-sessionOverlay-restartingHeading" datatype="html">
         <source>Spiel wird neu gestartet</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
-          <context context-type="linenumber">82,85</context>
+          <context context-type="linenumber">98,101</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-sessionOverlay-loadingHeading" datatype="html">
         <source>Spiel wird geladen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
-          <context context-type="linenumber">86,89</context>
+          <context context-type="linenumber">102,105</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-sessionOverlay-loadingText" datatype="html">
         <source> Welt und Märkte werden vorbereitet. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
-          <context context-type="linenumber">94,97</context>
+          <context context-type="linenumber">110,113</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-sessionOverlay-toPlayers" datatype="html">
         <source>Zur Spielerauswahl</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.html</context>
-          <context context-type="linenumber">112,116</context>
+          <context context-type="linenumber">128,132</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-sessionOverlay-progressLabel" datatype="html">
         <source>Fortschritt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/shell/ui/session-overlay/session-overlay.component.ts</context>
-          <context context-type="linenumber">33</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiShell-sideNav-navLabel" datatype="html">
@@ -12213,74 +12269,88 @@
           <context context-type="linenumber">33</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featureTrading-tradingErrors-workerRestarted" datatype="html">
+        <source>Die Spiel-Engine wurde neu gestartet. Bitte wiederhole die letzte Aktion.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featureTrading-tradingErrors-storageFailed" datatype="html">
         <source>Der Auftrag konnte nicht gespeichert werden und wurde nicht ausgeführt.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
-          <context context-type="linenumber">36</context>
+          <context context-type="linenumber">39</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureTrading-tradingErrors-placeOrderFailure" datatype="html">
         <source>Die Order konnte nicht erteilt werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
-          <context context-type="linenumber">41</context>
+          <context context-type="linenumber">44</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureTrading-tradingErrors-changeOrderFailure" datatype="html">
         <source>Die Order konnte nicht geändert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
-          <context context-type="linenumber">43</context>
+          <context context-type="linenumber">46</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureTrading-tradingErrors-cancelOrderFailure" datatype="html">
         <source>Die Order konnte nicht storniert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
-          <context context-type="linenumber">45</context>
+          <context context-type="linenumber">48</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureTrading-tradingErrors-savingsPlanBusy" datatype="html">
         <source>Das geht gerade nicht, weil die Spielzeit noch berechnet wird.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
-          <context context-type="linenumber">81</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featureTrading-tradingErrors-savingsPlanWorkerRestarted" datatype="html">
+        <source>Die Spiel-Engine wurde neu gestartet. Bitte wiederhole die letzte Aktion.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
+          <context context-type="linenumber">87</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureTrading-tradingErrors-savingsPlanStorageFailed" datatype="html">
         <source>Die Änderung konnte nicht gespeichert werden und wurde nicht übernommen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
-          <context context-type="linenumber">84</context>
+          <context context-type="linenumber">90</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureTrading-tradingErrors-createSavingsPlanFailure" datatype="html">
         <source>Der Sparplan konnte nicht angelegt werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
-          <context context-type="linenumber">89</context>
+          <context context-type="linenumber">95</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureTrading-tradingErrors-changeSavingsPlanFailure" datatype="html">
         <source>Der Sparplan konnte nicht geändert werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
-          <context context-type="linenumber">91</context>
+          <context context-type="linenumber">97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureTrading-tradingErrors-pauseSavingsPlanFailure" datatype="html">
         <source>Der Sparplan konnte nicht pausiert oder fortgesetzt werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
-          <context context-type="linenumber">93</context>
+          <context context-type="linenumber">99</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureTrading-tradingErrors-deleteSavingsPlanFailure" datatype="html">
         <source>Der Sparplan konnte nicht gelöscht werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/feature/state/trading-errors.utils.ts</context>
-          <context context-type="linenumber">95</context>
+          <context context-type="linenumber">101</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureTrading-tradingEffects-createSavingsPlanSuccess" datatype="html">

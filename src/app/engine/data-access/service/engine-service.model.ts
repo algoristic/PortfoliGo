@@ -13,6 +13,7 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { DividendCalendarEntry } from '@app/dashboard/domain/models/dividend-calendar.model';
 import { UpcomingEvent } from '@app/dashboard/domain/models/upcoming.model';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
+import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import {
   BackgroundMode,
   BackgroundPauseAfter,
@@ -92,6 +93,12 @@ export interface LoadPlayerPayload {
    * least up to it (TS §9.2, step 3), because the clock in the database may be older.
    */
   minTick?: Tick;
+  /**
+   * Game commands of the UI that a failed worker left unanswered (TS §8.5): for each one found in
+   * the stored command log, the restored worker sends its reply (from the replay) before the reply
+   * of `loadPlayer`; the others were never accepted.
+   */
+  pendingCommandIds?: string[];
 }
 
 /**
@@ -382,6 +389,29 @@ export const ENGINE_COMMAND_TYPES = [
   'importPlayer',
 ] as const satisfies readonly (keyof EngineCommandPayloads)[];
 export type EngineCommandType = (typeof ENGINE_COMMAND_TYPES)[number];
+
+/** The game commands (TS §8.2): written ahead to the command log before the engine applies them. */
+export const GAME_COMMAND_TYPES = [
+  'setBackgroundMode',
+  'openAccount',
+  'closeAccount',
+  'setSalaryAccount',
+  'transfer',
+  'createStandingOrder',
+  'changeStandingOrder',
+  'setStandingOrderPaused',
+  'deleteStandingOrder',
+  'setAutoPause',
+  'markNotificationsRead',
+  'updateWatchlist',
+  'placeOrder',
+  'changeOrder',
+  'cancelOrder',
+  'createSavingsPlan',
+  'changeSavingsPlan',
+  'setSavingsPlanPaused',
+  'deleteSavingsPlan',
+] as const satisfies readonly (EngineCommandType & GameCommand['type'])[];
 
 export type EngineCommandMessage = {
   [K in EngineCommandType]: EngineMessage<K, EngineCommandPayloads[K]>;
@@ -830,6 +860,11 @@ export const ENGINE_WARNINGS = [
    * failures.
    */
   'storage-failed',
+  /**
+   * The storage is full (`QuotaExceededError`, TS §9.5) even after the daily candles of the player
+   * were dropped: the game pauses. Game commands fail with `storage-failed` until space is freed.
+   */
+  'storage-full',
 ] as const;
 export type EngineWarningCode = (typeof ENGINE_WARNINGS)[number];
 

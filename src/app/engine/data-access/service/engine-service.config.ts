@@ -38,5 +38,11 @@ export function randomCommandIdPrefix(): string {
   return crypto.randomUUID().replaceAll('-', '').slice(0, 12);
 }
 
-/** Failures in a row after which the service stops restarting the worker (TS §8.5). */
-export const MAX_WORKER_FAILURES = 3;
+/**
+ * Wall clock of the service in milliseconds, for the window of worker failures (TS §8.5); tests
+ * replace it with a manual clock.
+ */
+export const ENGINE_SERVICE_CLOCK = new InjectionToken<() => number>('ENGINE_SERVICE_CLOCK', {
+  providedIn: 'root',
+  factory: () => () => Date.now(),
+});

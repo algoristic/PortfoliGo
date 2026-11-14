@@ -12,6 +12,11 @@ import { UPCOMING_DAYS } from '@app/dashboard/domain/models/upcoming.model';
 import { BackgroundMode } from '@app/engine/domain/models/game-state.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
+import {
+  NO_WORKER_FAILURES,
+  recordWorkerFailure,
+  recordWorkerProgress,
+} from '@app/engine/domain/worker-restart-logic';
 import { CandleResolution } from '@app/market/domain/models/candle.model';
 import { ScreenerCriteria } from '@app/market/domain/models/screener.model';
 import { AutoPauseCode } from '@app/notifications/domain/models/notification.model';
@@ -24,8 +29,8 @@ import {
 
 import {
   ENGINE_COMMAND_ID_PREFIX,
+  ENGINE_SERVICE_CLOCK,
   ENGINE_WORKER_FACTORY,
-  MAX_WORKER_FAILURES,
 } from './engine-service.config';
 import {
   CandlePayload,
@@ -43,6 +48,7 @@ import {
   EngineQueryResultOf,
   EngineReplies,
   EngineWorkerPort,
+  GAME_COMMAND_TYPES,
   LoadPlayerPayload,
   MoversPayload,
   NotificationsRequest,
@@ -58,8 +64,12 @@ import {
 } from './engine-service.model';
 import { isEngineEventMessage } from './engine-service.utils';
 
-/** Error codes of the service: the worker's codes plus a failed worker. */
-export type EngineServiceErrorCode = EngineErrorCode | 'worker-failed';
+/**
+ * Error codes of the service: the worker's codes plus a failed worker (`worker-failed`) and a game
+ * command that a failed worker left unanswered and the restored one did not find in the command
+ * log (`worker-restarted`, TS §8.5): it was not applied and may be repeated.
+ */
+export type EngineServiceErrorCode = EngineErrorCode | 'worker-failed' | 'worker-restarted';
 
 /** Error of a command; `code` is what the UI maps to a text (TS §8.6). */
 export class EngineCommandError extends Error {
@@ -74,7 +84,10 @@ export class EngineCommandError extends Error {
 
 export interface EngineFatal {
   message: string;
-  /** `false` after the third failure in a row: the worker is not started again (TS §8.5). */
+  /**
+   * `false` when the service gives up (`recordWorkerFailure`, TS §8.5) or no player is loaded: the
+   * worker is not started again.
+   */
   restarting: boolean;
 }
 
@@ -84,17 +97,24 @@ export interface EngineFatal {
  * an `EngineCommandError`. Unsubscribing before the reply ignores it; the command still runs.
  *
  * A failing worker (`error`, `messageerror`, `fatal`) is restarted and the last loaded player is
- * loaded again with the open subscriptions; after three failures in a row without progress of the
- * game time beyond the last failure, the service gives up.
+ * loaded again with the visibility, the frozen state and the open subscriptions. Open game commands
+ * survive the restart: the restored worker answers those it finds in the command log, the others
+ * fail with `worker-restarted`; other open commands fail with `worker-failed`. After three failures
+ * at the same place or within a minute (`recordWorkerFailure`), the service gives up.
  */
 @Injectable()
 export class EngineService implements OnDestroy {
   readonly #createWorker = inject(ENGINE_WORKER_FACTORY);
   /** Unique per service, so that command IDs never repeat after a page reload (TS §8.5). */
   readonly #idPrefix = inject(ENGINE_COMMAND_ID_PREFIX)();
+  readonly #now = inject(ENGINE_SERVICE_CLOCK);
   readonly #events = new Subject<EngineEventMessage>();
-  /** Ends the open commands when the worker fails. */
-  readonly #failures = new Subject<EngineCommandError>();
+  /** Ends the open commands when the worker fails, except the game commands carried over. */
+  readonly #failures = new Subject<{ error: EngineCommandError; carried: ReadonlySet<string> }>();
+  /** Game commands carried over a restart that the restored worker did not answer. */
+  readonly #abandoned = new Subject<ReadonlySet<string>>();
+  /** Game commands posted and not yet answered, by message ID. */
+  readonly #openGameCommands = new Set<string>();
   readonly #fatal = new Subject<EngineFatal>();
   /** Subscribers per series (TS §8.4). */
   readonly #quoteCounts = new Map<number, number>();
@@ -106,9 +126,9 @@ export class EngineService implements OnDestroy {
   #nextId = 1;
   #lastLoad?: LoadPlayerPayload;
   #visible?: boolean;
-  #lastTick?: Tick;
-  #failureTick?: Tick;
-  #failuresInRow = 0;
+  #frozen = false;
+  #lastTick: Tick | null = null;
+  #failureHistory = NO_WORKER_FAILURES;
   #givenUp = false;
 
   clock$ = this.#payloads('clock');
@@ -216,7 +236,10 @@ export class EngineService implements OnDestroy {
 
   /** The page was frozen or runs again (Chromium `freeze`/`resume`, TS §3.6). */
   setFrozen(frozen: boolean): Observable<null> {
-    return this.#request('setFrozen', { frozen });
+    return defer(() => {
+      this.#frozen = frozen;
+      return this.#request('setFrozen', { frozen });
+    });
   }
 
   jumpTo(target: JumpTarget): Observable<EngineReplies['jumpTo']> {
@@ -611,6 +634,7 @@ export class EngineService implements OnDestroy {
         return undefined;
       }
       const message = this.#message(type, payload);
+      const isGameCommand = (GAME_COMMAND_TYPES as readonly string[]).includes(type);
       const subscription = this.#events
         .pipe(
           filter((event) => event.type === 'reply' && event.replyTo === message.id),
@@ -626,7 +650,27 @@ export class EngineService implements OnDestroy {
             subscriber.error(new EngineCommandError(reply.error, reply.message));
           }
         });
-      subscription.add(this.#failures.pipe(take(1)).subscribe((error) => subscriber.error(error)));
+      subscription.add(
+        this.#failures
+          .pipe(filter(({ carried }) => !carried.has(message.id)))
+          .subscribe(({ error }) => subscriber.error(error)),
+      );
+      if (isGameCommand) {
+        this.#openGameCommands.add(message.id);
+        subscription.add(() => this.#openGameCommands.delete(message.id));
+        subscription.add(
+          this.#abandoned
+            .pipe(filter((ids) => ids.has(message.id)))
+            .subscribe(() =>
+              subscriber.error(
+                new EngineCommandError(
+                  'worker-restarted',
+                  'the engine worker was restarted before it accepted the command',
+                ),
+              ),
+            ),
+        );
+      }
       this.#ensureWorker().postMessage(message);
       return subscription;
     });
@@ -683,35 +727,45 @@ export class EngineService implements OnDestroy {
   /** Progress of the game time beyond the last failure ends a row of failures. */
   #onTick(tick: Tick): void {
     this.#lastTick = tick;
-    if (this.#failureTick !== undefined && tick > this.#failureTick) {
-      this.#failuresInRow = 0;
-      this.#failureTick = undefined;
-    }
+    this.#failureHistory = recordWorkerProgress(this.#failureHistory, tick);
   }
 
   #fail(worker: EngineWorkerPort, message: string): void {
     worker.terminate();
     this.#worker = undefined;
-    this.#failuresInRow++;
-    this.#failureTick = this.#lastTick;
-    this.#givenUp = this.#failuresInRow >= MAX_WORKER_FAILURES;
-    const restarting = !this.#givenUp && this.#lastLoad !== undefined;
-    this.#failures.next(new EngineCommandError('worker-failed', message));
+    const decision = recordWorkerFailure(this.#failureHistory, {
+      atMs: this.#now(),
+      lastTick: this.#lastTick,
+    });
+    this.#failureHistory = decision.history;
+    this.#givenUp = !decision.restart;
+    const restarting = decision.restart && this.#lastLoad !== undefined;
+    // The write-ahead may have stored them before the worker failed: the restored worker decides.
+    const carried = restarting ? new Set(this.#openGameCommands) : new Set<string>();
+    this.#failures.next({ error: new EngineCommandError('worker-failed', message), carried });
     this.#fatal.next({ message, restarting });
     if (restarting) {
-      this.#restart();
+      this.#restart(carried);
     }
   }
 
-  /** New worker with the last loaded player, the visibility and the open subscriptions. */
-  #restart(): void {
+  /**
+   * New worker with the last loaded player, the visibility, the frozen state and the open
+   * subscriptions. The game commands `carried` over get their reply from the replay of the command
+   * log, which comes before the reply of `loadPlayer`; those still open then fail with
+   * `worker-restarted`.
+   */
+  #restart(carried: ReadonlySet<string>): void {
     if (this.#visible !== undefined) {
       this.#notify('setVisibility', { visible: this.#visible });
     }
     const load = this.#lastLoad;
     if (load !== undefined) {
       const worker = this.#ensureWorker();
-      this.#request('loadPlayer', load).subscribe({
+      const payload: LoadPlayerPayload =
+        carried.size === 0 ? load : { ...load, pendingCommandIds: [...carried] };
+      this.#request('loadPlayer', payload).subscribe({
+        next: () => this.#abandoned.next(carried),
         error: (error: unknown) => {
           if (
             this.#worker === worker &&
@@ -721,6 +775,10 @@ export class EngineService implements OnDestroy {
           }
         },
       });
+    }
+    if (this.#frozen) {
+      // After the player: the worker ignores the frozen state without one.
+      this.#notify('setFrozen', { frozen: true });
     }
     const series = [...this.#quoteCounts.keys()];
     const charts = [...this.#chartCounts.values()].map(({ chart }) => ({ ...chart }));

@@ -20,6 +20,9 @@ export function bankCommandFailureMessage(command: BankCommand, error: unknown):
     if (error.code === 'busy') {
       return $localize`:@@featureBanking-bankingErrors-busy:Das geht gerade nicht, weil die Spielzeit noch berechnet wird.`;
     }
+    if (error.code === 'worker-restarted') {
+      return $localize`:@@featureBanking-bankingErrors-workerRestarted:Die Spiel-Engine wurde neu gestartet. Bitte wiederhole die letzte Aktion.`;
+    }
     if (error.code === 'storage-failed') {
       return $localize`:@@featureBanking-bankingErrors-storageFailed:Der Auftrag konnte nicht gespeichert werden und wurde nicht ausgeführt.`;
     }

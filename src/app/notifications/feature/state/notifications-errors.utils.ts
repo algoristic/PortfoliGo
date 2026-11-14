@@ -18,6 +18,9 @@ export function notificationFailureMessage(request: NotificationRequest, error: 
   if (isEngineCommandError(error, 'busy')) {
     return $localize`:@@featureNotifications-notificationsErrors-busy:Das geht gerade nicht, weil die Spielzeit noch berechnet wird.`;
   }
+  if (isEngineCommandError(error, 'worker-restarted')) {
+    return $localize`:@@featureNotifications-notificationsErrors-workerRestarted:Die Spiel-Engine wurde neu gestartet. Bitte wiederhole die letzte Aktion.`;
+  }
   if (isEngineCommandError(error, 'storage-failed')) {
     return $localize`:@@featureNotifications-notificationsErrors-storageFailed:Die Änderung konnte nicht gespeichert werden und wurde nicht übernommen.`;
   }

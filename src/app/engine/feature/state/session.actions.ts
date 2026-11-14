@@ -16,6 +16,8 @@ export const enterGame = createAction(
   props<{ profile: PlayerProfile }>(),
 );
 export const leaveGame = createAction('[Session/Page] Leave game');
+/** „Neu laden“ on the overlay of a failed game (TS §8.5). */
+export const clickedReload = createAction('[Session/Page] Clicked reload');
 /** The guard sends the player back to the selection (TS §11.4). */
 export const rejectedGame = createAction(
   '[Session/Page] Rejected game',

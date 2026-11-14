@@ -4,6 +4,7 @@ import { concatLatestFrom } from '@ngrx/operators';
 import { select, Store } from '@ngrx/store';
 import { catchError, concatMap, ignoreElements, map, of, switchMap, tap } from 'rxjs';
 
+import { isQuotaExceeded } from '@app/persistence/util/quota';
 import { ColorSchemeService } from '@app/shared/data-access/color-scheme/color-scheme.service';
 import { ToastService } from '@app/shared/ui/toast/toast.service';
 
@@ -86,9 +87,11 @@ export class SettingsEffects {
     () =>
       this.#actions$.pipe(
         ofType(SettingsActions.saveSettingsFailure),
-        tap(() =>
+        tap(({ error }) =>
           this.#toastService.error(
-            $localize`:@@featureSettings-settingsEffects-saveFailure:Die Einstellung gilt nur bis zum Neuladen, weil sie auf diesem Gerät nicht gespeichert werden konnte.`,
+            isQuotaExceeded(error)
+              ? $localize`:@@featureSettings-settingsEffects-saveFailureStorageFull:Die Einstellung gilt nur bis zum Neuladen, weil der Speicher voll ist. Exportiere deinen Spielstand und lösche alte Spieler; den belegten Speicher zeigen die Einstellungen unter „App“.`
+              : $localize`:@@featureSettings-settingsEffects-saveFailure:Die Einstellung gilt nur bis zum Neuladen, weil sie auf diesem Gerät nicht gespeichert werden konnte.`,
           ),
         ),
       ),

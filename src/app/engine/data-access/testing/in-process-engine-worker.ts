@@ -8,7 +8,11 @@ import { generateWorld } from '@app/world/domain/world-generator';
 
 import { ManualTimeline } from './manual-timeline';
 
-import { ENGINE_COMMAND_ID_PREFIX, ENGINE_WORKER_FACTORY } from '../service/engine-service.config';
+import {
+  ENGINE_COMMAND_ID_PREFIX,
+  ENGINE_SERVICE_CLOCK,
+  ENGINE_WORKER_FACTORY,
+} from '../service/engine-service.config';
 import {
   EngineCommandMessage,
   EngineEventMessage,
@@ -221,5 +225,7 @@ export function provideInProcessEngineWorker(engine = new InProcessEngine()): Pr
     },
     // Deterministic command IDs: every service on this engine gets its own prefix (`s1`, `s2`, …).
     { provide: ENGINE_COMMAND_ID_PREFIX, useValue: () => engine.nextCommandIdPrefix() },
+    // The service counts worker failures in the same manual wall clock (TS §8.5).
+    { provide: ENGINE_SERVICE_CLOCK, useValue: () => engine.now() },
   ];
 }

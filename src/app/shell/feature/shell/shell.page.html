@@ -104,7 +104,8 @@
 @if (isBlocked) {
   <app-session-overlay
     [status]="sessionStatus ?? 'loading'"
-    [progress]="catchUpRatio"></app-session-overlay>
+    [progress]="catchUpRatio"
+    (clickedReload)="sessionFacade.reload()"></app-session-overlay>
 }
 
 <!-- Announces only the end of loading and catching up, never the progress steps (TS §11.10). -->

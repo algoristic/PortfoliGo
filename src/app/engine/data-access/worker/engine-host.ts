@@ -21,11 +21,16 @@ import { InstrumentFacts } from '@app/engine/domain/instrument-figures';
 import { jumpTargetTick } from '@app/engine/domain/jump-target-logic';
 import { marketMovers, screenInstruments } from '@app/engine/domain/market-screen';
 import { ClockSettings } from '@app/engine/domain/models/engine-clock.model';
-import { GameCommand, OpenedAccount } from '@app/engine/domain/models/engine-command.model';
+import {
+  CommandResult,
+  GameCommand,
+  OpenedAccount,
+} from '@app/engine/domain/models/engine-command.model';
 import { tradingProjection } from '@app/engine/domain/order-projection';
 import { replayCommands } from '@app/engine/domain/replay';
 import { seriesQuote } from '@app/engine/domain/series-quote';
 import { standingOrderViews } from '@app/engine/domain/standing-order-projection';
+import { storageFailureResponse } from '@app/engine/domain/storage-failure-logic';
 import { taxesProjection } from '@app/engine/domain/tax-projection';
 import { Throttle } from '@app/engine/domain/throttle-logic';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
@@ -67,6 +72,7 @@ import {
 } from '@app/notifications/domain/notification-page-logic';
 import { oldestKeptSeq, unreadCount } from '@app/notifications/domain/read-state-logic';
 import { PlayerLock } from '@app/persistence/data-access/locks/player-locks';
+import { isQuotaExceeded } from '@app/persistence/util/quota';
 import {
   buildPlayerExport,
   encodePlayerExport,
@@ -175,6 +181,13 @@ interface LoadedGame {
   candlesWriting: DailyCandlePatch[];
   candleWriteAgain: boolean;
   backfill?: CandleBackfill;
+  /**
+   * The storage was full (TS §9.5): the stored daily candles of the player are deleted, and for the
+   * rest of the session the host neither buffers nor writes candles nor runs the candle job.
+   */
+  candlesDropped: boolean;
+  /** The deletion of the candles, for writes that failed while it ran. */
+  candleDrop?: Promise<void>;
   backfillPlanned: boolean;
   backfillRunning: boolean;
   backfillProgressMs: number;
@@ -571,6 +584,11 @@ export class EngineHost {
   /** Plannings of the candle job; they wait for the writes, so they are not writes themselves. */
   readonly #plans = new Set<Promise<void>>();
   #storageFailing = false;
+  /**
+   * Replies to the game commands of a failed worker that the replay of the last load found in the
+   * command log (TS §8.5); sent before the reply of `loadPlayer`.
+   */
+  #restoredReplies: Array<[string, ReplyPayload]> = [];
   #game?: LoadedGame;
   #visible = true;
   /** Game commands in progress; the clock holds while it is > 0. */
@@ -670,6 +688,9 @@ export class EngineHost {
     // The clock and the projection go out before the reply, so the UI sees the new state when the
     // command ends.
     this.#guarded(() => this.#flush());
+    for (const [id, restored] of this.#restoredReplies.splice(0)) {
+      this.#reply(id, restored);
+    }
     this.#reply(data.id, reply);
   }
 
@@ -689,6 +710,7 @@ export class EngineHost {
     try {
       return await this.#open(payload, lock);
     } catch (error) {
+      this.#restoredReplies = [];
       if (this.#game?.lock === lock) {
         this.#stopLoop();
         this.#game = undefined;
@@ -747,6 +769,7 @@ export class EngineHost {
       candlesWrittenMs: now,
       candleWriteAgain: false,
       backfill: this.#createBackfill(payload.playerId, candles),
+      candlesDropped: false,
       backfillPlanned: false,
       backfillRunning: false,
       backfillProgressMs: now,
@@ -783,12 +806,16 @@ export class EngineHost {
     };
     this.#game = game;
     this.#drainEngineEvents(game, true);
-    this.#replay(game, stored, payload.minTick);
+    this.#replay(game, stored, payload);
     game.replaying = false;
     game.pacer.update(backgroundClockSettings(engine.player), engine.tick, this.#ports.now());
     // The first snapshot of a new player, or the replayed state: the next restore starts here.
     const written = this.#snapshotData(game);
-    await storageCall(() => storage.saveSnapshot(game.playerId, written.state, written.options));
+    await storageCall(() =>
+      this.#withQuotaRecovery(game, () =>
+        storage.saveSnapshot(game.playerId, written.state, written.options),
+      ),
+    );
     this.#snapshotWritten(game, written);
     this.#progress({ kind: 'init', state: 'done', done: 1, total: 1 });
 
@@ -829,19 +856,25 @@ export class EngineHost {
 
   /**
    * Restore step 3 (TS §9.2): replays the logged commands and runs on to the newest of the stored
-   * clock, the last command and the lower bound of the UI, in batch mode.
+   * clock, the last command and the lower bound of the UI, in batch mode. A replayed command that a
+   * failed worker left unanswered (`pendingCommandIds`, TS §8.5) gets the reply it would have got.
    */
-  #replay(game: LoadedGame, stored: StoredPlayerState, minTick: Tick | undefined): void {
+  #replay(game: LoadedGame, stored: StoredPlayerState, payload: LoadPlayerPayload): void {
     const lastCommand = stored.commands.at(-1);
     const target = Math.max(
       game.engine.tick,
       stored.clock?.tick ?? -Infinity,
       lastCommand?.tick ?? -Infinity,
-      minTick ?? -Infinity,
+      payload.minTick ?? -Infinity,
     );
+    const pending = new Set(payload.pendingCommandIds ?? []);
     game.candles.keepSupport = true;
     try {
-      replayCommands(game.engine, stored.commands, target);
+      replayCommands(game.engine, stored.commands, target, (command, result) => {
+        if (pending.has(command.id)) {
+          this.#restoredReplies.push([command.id, gameCommandReply(command.tick, result)]);
+        }
+      });
       this.#drainEngineEvents(game, false);
     } finally {
       game.candles.keepSupport = false;
@@ -1024,9 +1057,15 @@ export class EngineHost {
     this.#held++;
     try {
       const command = build(game.engine.tick);
+      const clock = this.#storedClock(game);
       try {
-        await this.#ports.storage.appendCommand(game.playerId, command, this.#storedClock(game));
+        await this.#withQuotaRecovery(game, () =>
+          this.#ports.storage.appendCommand(game.playerId, command, clock),
+        );
       } catch (error) {
+        if (isQuotaExceeded(error)) {
+          this.#storageFailed(error);
+        }
         throw new CommandFailure('storage-failed', errorMessage(error));
       }
       const result = game.engine.applyCommand(command);
@@ -1545,6 +1584,9 @@ export class EngineHost {
    * are reproducible; the job finds them missing after the next load.
    */
   #bufferCandles(game: LoadedGame, patches: readonly DailyCandlePatch[]): void {
+    if (game.candlesDropped) {
+      return;
+    }
     for (const patch of patches) {
       const year = candleYear(patch.day);
       if (!game.candleYears.has(year)) {
@@ -1575,7 +1617,11 @@ export class EngineHost {
     game.candleYears.clear();
     game.candlesWrittenMs = this.#ports.now();
     game.candleWrite = this.#write(
-      () => this.#ports.storage.saveDailyCandles(game.playerId, patches),
+      // Dropped meanwhile (a full storage): the candles are not written again.
+      () =>
+        game.candlesDropped
+          ? Promise.reject(new CandlesDropped())
+          : this.#ports.storage.saveDailyCandles(game.playerId, patches),
       undefined,
       () => {
         game.candleWrite = undefined;
@@ -2220,9 +2266,10 @@ export class EngineHost {
    * and the UI gets one `warning` per series of failures (TS §9.5).
    */
   #write(work: () => Promise<void>, onSuccess?: () => void, onSettled?: () => void): Promise<void> {
+    const game = this.#game;
     let started: Promise<void>;
     try {
-      started = work();
+      started = game === undefined ? work() : this.#withQuotaRecovery(game, work);
     } catch (error) {
       started = Promise.reject(error);
     }
@@ -2232,7 +2279,12 @@ export class EngineHost {
           this.#storageFailing = false;
           onSuccess?.();
         },
-        (error: unknown) => this.#storageFailed(error),
+        (error: unknown) => {
+          // A skipped candle write neither ends nor continues a series of failures.
+          if (!(error instanceof CandlesDropped)) {
+            this.#storageFailed(error);
+          }
+        },
       )
       .finally(() => onSettled?.());
     this.#track(written);
@@ -2250,10 +2302,80 @@ export class EngineHost {
     }
   }
 
+  /**
+   * A failed write (TS §9.2, §9.5): one `warning` per series of failures. A full storage (after the
+   * candles were dropped) also pauses the game, because every further write fails as well.
+   */
   #storageFailed(error: unknown): void {
-    if (!this.#storageFailing) {
-      this.#storageFailing = true;
-      this.#post('warning', { code: 'storage-failed', message: errorMessage(error) });
+    if (this.#storageFailing) {
+      return;
+    }
+    this.#storageFailing = true;
+    const game = this.#game;
+    const full =
+      storageFailureResponse(isQuotaExceeded(error), game?.candlesDropped ?? true) ===
+      'storage-full';
+    if (full && game !== undefined) {
+      this.#pauseStorageFull(game);
+    }
+    this.#post('warning', {
+      code: full ? 'storage-full' : 'storage-failed',
+      message: errorMessage(error),
+    });
+  }
+
+  /**
+   * Runs a write; when the storage is full, it drops the daily candles once per load and tries again
+   * (`storageFailureResponse`, TS §9.5).
+   */
+  async #withQuotaRecovery<T>(game: LoadedGame, write: () => Promise<T>): Promise<T> {
+    const dropBefore = game.candleDrop;
+    try {
+      return await write();
+    } catch (error) {
+      if (!isQuotaExceeded(error)) {
+        throw error;
+      }
+      if (game.candleDrop !== dropBefore && game.candleDrop !== undefined) {
+        // Another write dropped the candles while this one ran: it gets its second try too.
+        await game.candleDrop;
+        return write();
+      }
+      if (storageFailureResponse(true, game.candlesDropped) !== 'drop-candles') {
+        throw error;
+      }
+      game.candleDrop = this.#dropCandles(game);
+      await game.candleDrop;
+      return write();
+    }
+  }
+
+  /**
+   * Frees space (TS §9.5): deletes the stored daily candles of the player, which are reproducible
+   * (E-08), and stops buffering and writing them and the candle job for this load. The candle query
+   * takes open and close from the support values then; the next load fills the gaps again.
+   */
+  async #dropCandles(game: LoadedGame): Promise<void> {
+    game.candlesDropped = true;
+    game.candleBuffer = [];
+    game.candleYears.clear();
+    game.candleWriteAgain = false;
+    game.backfill = undefined;
+    if (game.backfillRunning) {
+      game.backfillRunning = false;
+      this.#progress({ kind: 'candles', state: 'done', done: 0, total: 0 });
+    }
+    await this.#ports.storage.clearCandles(game.playerId);
+  }
+
+  /** The storage stays full (TS §9.5): pause like the player, ending a jump; nothing is written. */
+  #pauseStorageFull(game: LoadedGame): void {
+    if (game.batch?.kind === 'jump') {
+      this.#endBatch(game, 'cancelled', false);
+    }
+    if (!game.pacer.settings.paused) {
+      game.pacer.update({ paused: true }, game.engine.tick, this.#ports.now());
+      game.overloaded = false;
     }
   }
 
@@ -2308,6 +2430,31 @@ function sameClock(a: ClockPayload, b: ClockPayload | null): boolean {
     a.jumping === b.jumping &&
     a.autoPause?.seq === b.autoPause?.seq
   );
+}
+
+/** A candle write skipped because the candles were dropped (TS §9.5); not a storage failure. */
+class CandlesDropped extends Error {}
+
+/**
+ * The reply a game command got when it was accepted (TS §8.5): its tick and what the engine created,
+ * the same data as the command's handler answers; for a command restored from the command log.
+ */
+function gameCommandReply(tick: Tick, result: CommandResult): ReplyPayload {
+  if (!result.ok) {
+    // Like `CommandFailure(result.error)` of the live command.
+    return { ok: false, error: result.error, message: result.error };
+  }
+  const { opened, orderId, standingOrderId, savingsPlanId } = result;
+  return {
+    ok: true,
+    data: {
+      tick,
+      ...opened,
+      ...(orderId === undefined ? {} : { orderId }),
+      ...(standingOrderId === undefined ? {} : { standingOrderId }),
+      ...(savingsPlanId === undefined ? {} : { savingsPlanId }),
+    },
+  };
 }
 
 /** Runs a storage call of a command; its failure answers the command with `storage-failed`. */

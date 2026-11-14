@@ -355,6 +355,7 @@ const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = 
       seed: isString,
       start: isStartConditions,
       minTick: isOptional(isCount),
+      pendingCommandIds: isOptional(isListOf(isNonEmptyString)),
     }),
   unloadPlayer: isFields,
   setSpeed: (payload) => hasFields(payload, { speed: isSpeedId }),

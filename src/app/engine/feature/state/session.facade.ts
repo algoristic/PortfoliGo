@@ -31,4 +31,8 @@ export class SessionFacade {
   leaveGame(): void {
     this.#store.dispatch(SessionActions.leaveGame());
   }
+
+  reload(): void {
+    this.#store.dispatch(SessionActions.clickedReload());
+  }
 }

@@ -41,9 +41,25 @@
           id="session-overlay-text"
           class="text-sm text-fg-muted"
           i18n="@@uiShell-sessionOverlay-failedText">
-          Beim Laden oder Berechnen ist ein Fehler aufgetreten. Lade die Seite neu oder wähle einen
-          anderen Spieler.
+          Beim Laden oder Berechnen ist ein Fehler aufgetreten. Deine bestätigten Aktionen sind
+          gespeichert. Lade die Seite neu oder wähle einen anderen Spieler.
         </p>
+        <p
+          class="text-sm text-fg-muted"
+          data-testid="shell.session-overlay.export-hint"
+          i18n="@@uiShell-sessionOverlay-failedExportHint">
+          Tritt der Fehler wieder auf, sichere den Spielstand, sobald das Spiel wieder läuft: unter
+          Einstellungen › Spielstand sichern.
+        </p>
+        <button
+          appButton
+          type="button"
+          variant="primary"
+          data-testid="shell.session-overlay.reload"
+          (click)="clickedReload.emit()">
+          <i appIcon="arrow-clockwise"></i>
+          <ng-container i18n="@@uiShell-sessionOverlay-reload">Neu laden</ng-container>
+        </button>
       }
       @case ('catching-up') {
         <h1
@@ -105,7 +121,7 @@
     @if (isEnded()) {
       <a
         appButton
-        variant="primary"
+        [variant]="_status === 'failed' ? 'secondary' : 'primary'"
         routerLink="/players"
         data-testid="shell.session-overlay.players">
         <i appIcon="people"></i>
