@@ -13,7 +13,11 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { DividendCalendarEntry } from '@app/dashboard/domain/models/dividend-calendar.model';
 import { UpcomingEvent } from '@app/dashboard/domain/models/upcoming.model';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
-import { BackgroundMode, StartConditions } from '@app/engine/domain/models/game-state.model';
+import {
+  BackgroundMode,
+  BackgroundPauseAfter,
+  StartConditions,
+} from '@app/engine/domain/models/game-state.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { MarketMovers } from '@app/engine/domain/models/market-movers.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
@@ -277,13 +281,22 @@ export interface EngineCommandPayloads {
   pause: EmptyPayload;
   resume: EmptyPayload;
   setVisibility: { visible: boolean };
+  /**
+   * The page was frozen (`true`, Chromium `freeze`) or runs again (`false`, `resume`); the time in
+   * between runs only in real time (TS §3.6).
+   */
+  setFrozen: { frozen: boolean };
   jumpTo: { target: JumpTarget };
   cancelJump: EmptyPayload;
   /** Quotes of `series`; `movers: true` adds the `movers` event, `charts` `candle` events (TS §8.4). */
   subscribe: SubscriptionPayload;
   unsubscribe: SubscriptionPayload;
   query: { query: EngineQuery };
-  setBackgroundMode: { mode: BackgroundMode };
+  /**
+   * Behaviour in the background (TS §3.6): `speed` is `backgroundSpeed`, `pauseAfter`
+   * `backgroundPauseAfter` (`null` = off); a missing one keeps its value.
+   */
+  setBackgroundMode: { mode: BackgroundMode; speed?: SpeedId; pauseAfter?: BackgroundPauseAfter };
   openAccount: { bankId: string; kind: OpenableAccountKind };
   /** `targetAccountId` receives the remainder after the settlement; required if one remains. */
   closeAccount: { accountId: AccountId; targetAccountId?: AccountId };
@@ -327,6 +340,7 @@ export const ENGINE_COMMAND_TYPES = [
   'pause',
   'resume',
   'setVisibility',
+  'setFrozen',
   'jumpTo',
   'cancelJump',
   'subscribe',
@@ -491,6 +505,7 @@ export interface EngineReplies {
   pause: null;
   resume: null;
   setVisibility: null;
+  setFrozen: null;
   jumpTo: { targetTick: Tick };
   cancelJump: null;
   subscribe: null;
@@ -524,7 +539,10 @@ export const ENGINE_ERRORS = [
   /** Payload invalid, or a game command the engine cannot read. */
   'invalid-command',
   'player-not-loaded',
-  /** A jump runs; only `cancelJump`, `unloadPlayer`, `setVisibility`, queries and subscriptions pass. */
+  /**
+   * A jump runs; only `cancelJump`, `unloadPlayer`, `setVisibility`, `setFrozen`, queries and
+   * subscriptions pass.
+   */
   'busy',
   'tick-mismatch',
   'invalid-jump-target',
@@ -566,6 +584,10 @@ export interface ClockPayload {
   paused: boolean;
   visible: boolean;
   backgroundMode: BackgroundMode;
+  /** Speed while hidden in `custom-speed` (TS §3.6). */
+  backgroundSpeed: SpeedId;
+  /** Real-time minutes hidden after which a running game pauses, `null` = off (TS §3.6). */
+  backgroundPauseAfter: BackgroundPauseAfter;
   /** Speed at which the game runs now, `null` while it rests (TS §3.6). */
   effectiveSpeed: SpeedId | null;
   /** Backlog above two seconds of real time (TS §3.5). */

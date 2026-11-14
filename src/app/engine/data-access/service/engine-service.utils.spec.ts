@@ -4,7 +4,10 @@ import { ACCOUNT_KINDS, OPENABLE_ACCOUNT_KINDS } from '@app/banking/domain/model
 import { TRANSACTION_TYPES } from '@app/banking/domain/models/ledger.model';
 import { MAX_STATEMENT_LIMIT } from '@app/banking/domain/models/statement.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
-import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
+import {
+  BACKGROUND_MODES,
+  BACKGROUND_PAUSE_AFTER_MINUTES,
+} from '@app/engine/domain/models/game-state.model';
 import { MAX_CANDLE_LIMIT } from '@app/market/domain/candle-window';
 import { CANDLE_RESOLUTIONS } from '@app/market/domain/models/candle.model';
 import { INSTRUMENT_KINDS } from '@app/market/domain/models/instrument.model';
@@ -48,6 +51,7 @@ const arbId = fc.string({ minLength: 1, maxLength: 8 });
 const arbCount = fc.nat({ max: 10_000_000 });
 const arbSpeed = fc.constantFrom(...SPEEDS.map((speed) => speed.id));
 const arbMode = fc.constantFrom(...BACKGROUND_MODES);
+const arbPauseAfter = fc.constantFrom(null, ...BACKGROUND_PAUSE_AFTER_MINUTES);
 const arbPrice = fc.double({ min: 0.01, max: 1e6, noNaN: true });
 const arbCents = fc.integer({ min: -1e12, max: 1e12 });
 const arbAccountId = fc.integer({ min: 1, max: 1e9 }).map((n) => `acc-${n}`);
@@ -300,6 +304,7 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
   envelope('pause', fc.constant({})),
   envelope('resume', fc.constant({})),
   envelope('setVisibility', fc.record({ visible: fc.boolean() })),
+  envelope('setFrozen', fc.record({ frozen: fc.boolean() })),
   envelope(
     'jumpTo',
     fc.record({
@@ -356,7 +361,13 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
       ),
     }),
   ),
-  envelope('setBackgroundMode', fc.record({ mode: arbMode })),
+  envelope(
+    'setBackgroundMode',
+    fc.record(
+      { mode: arbMode, speed: arbSpeed, pauseAfter: arbPauseAfter },
+      { requiredKeys: ['mode'] },
+    ),
+  ),
   envelope(
     'openAccount',
     fc.record({ bankId: arbId, kind: fc.constantFrom(...OPENABLE_ACCOUNT_KINDS) }),
@@ -443,6 +454,8 @@ const arbEvent: fc.Arbitrary<EngineEventMessage> = fc.oneof(
         paused: fc.boolean(),
         visible: fc.boolean(),
         backgroundMode: arbMode,
+        backgroundSpeed: arbSpeed,
+        backgroundPauseAfter: arbPauseAfter,
         effectiveSpeed: fc.option(arbSpeed, { nil: null }),
         overloaded: fc.boolean(),
         jumping: fc.boolean(),
@@ -458,6 +471,8 @@ const arbEvent: fc.Arbitrary<EngineEventMessage> = fc.oneof(
           'paused',
           'visible',
           'backgroundMode',
+          'backgroundSpeed',
+          'backgroundPauseAfter',
           'effectiveSpeed',
           'overloaded',
           'jumping',
@@ -622,6 +637,8 @@ const CLOCK = {
   paused: false,
   visible: true,
   backgroundMode: 'realtime',
+  backgroundSpeed: '1h',
+  backgroundPauseAfter: null,
   effectiveSpeed: null,
   overloaded: false,
   jumping: false,
@@ -819,6 +836,19 @@ describe('engine protocol guards', () => {
       ['a negative lower bound of the tick', loadPlayer({ minTick: -1 })],
       ['a lower bound of the tick given as a string', loadPlayer({ minTick: '5' })],
       ['a visibility that is not a boolean', command('setVisibility', { visible: 'yes' })],
+      ['a frozen flag that is not a boolean', command('setFrozen', { frozen: 1 })],
+      [
+        'an unknown background speed',
+        command('setBackgroundMode', { mode: 'custom-speed', speed: 'warp' }),
+      ],
+      [
+        'a pause deadline off the list',
+        command('setBackgroundMode', { mode: 'keep-speed', pauseAfter: 45 }),
+      ],
+      [
+        'a pause deadline given as a string',
+        command('setBackgroundMode', { mode: 'keep-speed', pauseAfter: '15' }),
+      ],
       ['unsubscribe without a series list', command('unsubscribe', { series: 3 })],
       ['series given as strings', command('subscribe', { series: ['1'] })],
       ['a jump target that is not an object', command('jumpTo', { target: null })],
@@ -1209,6 +1239,8 @@ describe('engine protocol guards', () => {
             paused: false,
             visible: true,
             backgroundMode: 'realtime',
+            backgroundSpeed: '1h',
+            backgroundPauseAfter: null,
             effectiveSpeed: 'warp',
             overloaded: false,
             jumping: false,
@@ -1223,6 +1255,18 @@ describe('engine protocol guards', () => {
       ['an unknown warning', event('warning', { code: 'disk-full', message: '' })],
       ['a clock with a string tick', event('clock', { ...CLOCK, tick: '1' })],
       ['a clock with paused as a string', event('clock', { ...CLOCK, paused: 'no' })],
+      [
+        'a clock with an unknown background speed',
+        event('clock', { ...CLOCK, backgroundSpeed: 'warp' }),
+      ],
+      [
+        'a clock with a pause deadline off the list',
+        event('clock', { ...CLOCK, backgroundPauseAfter: 45 }),
+      ],
+      [
+        'a clock without a pause deadline',
+        event('clock', { ...CLOCK, backgroundPauseAfter: undefined }),
+      ],
       ['a quote with a string bid', event('quotes', { tick: 1, quotes: [{ ...QUOTE, bid: '1' }] })],
       [
         'movers with an unknown sector',

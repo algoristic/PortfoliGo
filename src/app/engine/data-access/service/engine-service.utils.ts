@@ -3,6 +3,7 @@ import { TRANSACTION_TYPES } from '@app/banking/domain/models/ledger.model';
 import { MAX_STATEMENT_LIMIT } from '@app/banking/domain/models/statement.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
 import { MAX_UPCOMING_DAYS } from '@app/dashboard/domain/models/upcoming.model';
+import { isBackgroundPauseAfter, isBackgroundSpeed } from '@app/engine/domain/background-logic';
 import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
 import { MAX_CANDLE_LIMIT } from '@app/market/domain/candle-window';
 import { CANDLE_RESOLUTIONS } from '@app/market/domain/models/candle.model';
@@ -360,12 +361,18 @@ const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = 
   pause: isFields,
   resume: isFields,
   setVisibility: (payload) => hasFields(payload, { visible: isBoolean }),
+  setFrozen: (payload) => hasFields(payload, { frozen: isBoolean }),
   jumpTo: (payload) => hasFields(payload, { target: isJumpTarget }),
   cancelJump: isFields,
   subscribe: isSubscription,
   unsubscribe: isSubscription,
   query: (payload) => hasFields(payload, { query: isQuery }),
-  setBackgroundMode: (payload) => hasFields(payload, { mode: isBackgroundMode }),
+  setBackgroundMode: (payload) =>
+    hasFields(payload, {
+      mode: isBackgroundMode,
+      speed: isOptional(isBackgroundSpeed),
+      pauseAfter: isOptional(isBackgroundPauseAfter),
+    }),
   openAccount: (payload) =>
     hasFields(payload, { bankId: isNonEmptyString, kind: isOneOf(OPENABLE_ACCOUNT_KINDS) }),
   closeAccount: (payload) =>
@@ -698,6 +705,8 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
       paused: isBoolean,
       visible: isBoolean,
       backgroundMode: isBackgroundMode,
+      backgroundSpeed: isBackgroundSpeed,
+      backgroundPauseAfter: isBackgroundPauseAfter,
       effectiveSpeed: isNullOr(isSpeedId),
       overloaded: isBoolean,
       jumping: isBoolean,

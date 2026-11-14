@@ -68,6 +68,25 @@ export class SessionEffects {
     { dispatch: false },
   );
 
+  /**
+   * Chromium freezes hidden pages (`freeze` until `resume`); the engine counts the time in between
+   * only in real time (TS §3.6).
+   */
+  reportFrozen$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(SessionActions.enterGame),
+        switchMap(() =>
+          merge(
+            fromEvent(this.#document, 'freeze').pipe(map(() => true)),
+            fromEvent(this.#document, 'resume').pipe(map(() => false)),
+          ).pipe(takeUntil(this.#left$)),
+        ),
+        mergeMap((frozen) => this.#engine.setFrozen(frozen).pipe(catchError(() => EMPTY))),
+      ),
+    { dispatch: false },
+  );
+
   loadPlayer$ = createEffect(() =>
     this.#actions$.pipe(
       ofType(SessionActions.enterGame),

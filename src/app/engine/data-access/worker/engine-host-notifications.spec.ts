@@ -225,7 +225,8 @@ describe('EngineHost notifications', () => {
       await harness.send('setVisibility', { visible: false });
       await harness.send('jumpTo', { target: { kind: 'next-month' } });
       await runUntil(harness, () => jumpEnded(harness));
-      await advance(harness, 100);
+      // Hidden, the clock event goes out at most once per second.
+      await advance(harness, 1_000);
 
       expect(harness.progress.filter(({ kind }) => kind === 'jump').at(-1)).toMatchObject({
         state: 'done',

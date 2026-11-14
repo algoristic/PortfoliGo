@@ -25,6 +25,8 @@ function clockAt(tick: number, paused = false): ClockPayload {
     paused,
     visible: true,
     backgroundMode: 'realtime',
+    backgroundSpeed: '1h',
+    backgroundPauseAfter: null,
     effectiveSpeed: paused ? null : '1h',
     overloaded: false,
     jumping: false,

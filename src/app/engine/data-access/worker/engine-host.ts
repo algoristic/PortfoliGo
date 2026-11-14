@@ -8,7 +8,12 @@ import { Tick, TICKS_PER_DAY, TradingHours } from '@app/clock/domain/models/time
 import { UPCOMING_DAYS } from '@app/dashboard/domain/models/upcoming.model';
 import { accountViews, netWorth } from '@app/engine/domain/account-projection';
 import { liveHighLow, WorkShare } from '@app/engine/domain/background-share-logic';
-import { catchUpSeenAt, catchUpTarget } from '@app/engine/domain/catch-up-logic';
+import {
+  catchUpHiddenSince,
+  CatchUpResult,
+  catchUpSeenAt,
+  catchUpTarget,
+} from '@app/engine/domain/catch-up-logic';
 import { backgroundClockSettings, ClockPacer } from '@app/engine/domain/clock-pacing-logic';
 import { GameEngine } from '@app/engine/domain/game-engine';
 import { createGameWorld } from '@app/engine/domain/game-world';
@@ -137,6 +142,8 @@ interface BatchRun {
   from: Tick;
   to: Tick;
   lastProgressMs: number;
+  /** The catch-up's result (TS §3.7): with `paused`, the game pauses once it is done. */
+  catchUp?: CatchUpResult;
 }
 
 interface LoadedGame {
@@ -298,6 +305,7 @@ export class EngineHost {
   readonly #options: EngineHostOptions;
   readonly #config: EngineHostConfig;
   readonly #clockThrottle: Throttle;
+  readonly #hiddenClockThrottle: Throttle;
   readonly #quotesThrottle: Throttle;
   readonly #moversThrottle: Throttle;
   readonly #candleThrottle: Throttle;
@@ -313,6 +321,7 @@ export class EngineHost {
     pause: () => this.#changeClock({ paused: true }),
     resume: () => this.#changeClock({ paused: false }),
     setVisibility: ({ visible }) => this.#setVisibility(visible),
+    setFrozen: ({ frozen }) => this.#setFrozen(frozen),
     jumpTo: ({ target }) => {
       const game = this.#requireIdle();
       const to = jumpTargetTick(target, game.engine.tick, game.sessions);
@@ -354,9 +363,16 @@ export class EngineHost {
       return null;
     },
     query: ({ query }) => this.#query(this.#requireGame(), query),
-    setBackgroundMode: async ({ mode }, id) => ({
+    setBackgroundMode: async ({ mode, speed, pauseAfter }, id) => ({
       tick: (
-        await this.#applyGameCommand((tick) => ({ id, tick, type: 'setBackgroundMode', mode }))
+        await this.#applyGameCommand((tick) => ({
+          id,
+          tick,
+          type: 'setBackgroundMode',
+          mode,
+          ...(speed === undefined ? {} : { speed }),
+          ...(pauseAfter === undefined ? {} : { pauseAfter }),
+        }))
       ).tick,
     }),
     openAccount: async ({ bankId, kind }, id) => {
@@ -568,6 +584,7 @@ export class EngineHost {
     this.#options = options;
     this.#config = { ...DEFAULT_ENGINE_HOST_CONFIG, ...options.config };
     this.#clockThrottle = new Throttle(this.#config.clockPerSecond);
+    this.#hiddenClockThrottle = new Throttle(this.#config.hiddenClockPerSecond);
     this.#quotesThrottle = new Throttle(this.#config.quotesPerSecond);
     this.#moversThrottle = new Throttle(this.#config.moversPerSecond);
     this.#candleThrottle = new Throttle(this.#config.candlePerSecond);
@@ -696,7 +713,7 @@ export class EngineHost {
     const game: LoadedGame = {
       playerId: payload.playerId,
       engine,
-      pacer: new ClockPacer(settings, engine.tick, now),
+      pacer: new ClockPacer(settings, engine.tick, now, this.#loadedHiddenSince(stored, now)),
       sessions: world.exchanges.map(({ open, close }) => ({ open, close })),
       overloaded: false,
       lock,
@@ -752,23 +769,32 @@ export class EngineHost {
     this.#snapshotWritten(game, written);
     this.#progress({ kind: 'init', state: 'done', done: 1, total: 1 });
 
-    const target =
+    const catchUp: CatchUpResult =
       stored.clock === undefined
-        ? engine.tick
+        ? { target: engine.tick, paused: settings.paused }
         : catchUpTarget(
-            { tick: engine.tick, paused: stored.clock.paused, lastSeenAt: stored.clock.lastSeenAt },
+            {
+              tick: engine.tick,
+              paused: stored.clock.paused,
+              lastSeenAt: stored.clock.lastSeenAt,
+              hiddenSince: stored.clock.hiddenSince,
+            },
             engine.player,
             this.#ports.now(),
-          ).target;
+          );
     this.#lastClock = null;
     this.#quotesStale = true;
     this.#charts.forEach((chart) => (chart.sent = null));
     this.#chartsStale = true;
     this.#projectionDue = true;
-    if (target > engine.tick) {
+    if (catchUp.target > engine.tick) {
       this.#openAbsence(game);
-      this.#startBatch(game, 'catch-up', target);
+      this.#startBatch(game, 'catch-up', catchUp.target, catchUp);
     } else {
+      if (catchUp.paused) {
+        // `backgroundPauseAfter` ran out before the stored tick (TS §3.7).
+        this.#pauseInBackground(game);
+      }
       if (!this.#visible) {
         this.#openAbsence(game);
       }
@@ -797,6 +823,17 @@ export class EngineHost {
     } finally {
       game.candles.keepSupport = false;
     }
+  }
+
+  /**
+   * `hiddenSince` of a player loaded while the app is hidden (TS §3.6, §3.7): the stored one, else
+   * the stored `lastSeenAt`, because closing counts as hiding; `null` while visible.
+   */
+  #loadedHiddenSince(stored: StoredPlayerState, nowMs: number): number | null {
+    if (this.#visible) {
+      return null;
+    }
+    return Math.min(nowMs, stored.clock?.hiddenSince ?? stored.clock?.lastSeenAt ?? nowMs);
   }
 
   /** Saves the game (snapshot with clock and candles) and releases the lock (TS §8.2). */
@@ -851,6 +888,24 @@ export class EngineHost {
       } else {
         this.#guarded(() => this.#openAbsence(game));
         await this.#snapshot(game);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * The page is frozen or runs again (Chromium `freeze`/`resume`, TS §3.6): the time in between
+   * counts as a gap in the loop. Freezing writes a snapshot, because a frozen page may be discarded
+   * without further events.
+   */
+  async #setFrozen(frozen: boolean): Promise<null> {
+    const game = this.#game;
+    if (game !== undefined) {
+      if (frozen) {
+        game.pacer.freeze(this.#ports.now());
+        await this.#snapshot(game);
+      } else {
+        game.pacer.resume(this.#ports.now());
       }
     }
     return null;
@@ -970,6 +1025,9 @@ export class EngineHost {
             game.candles.keepSupport = false;
           }
           game.overloaded = result.overloaded && game.pacer.speed !== null;
+          if (result.pauseDue) {
+            this.#pauseInBackground(game);
+          }
           this.#periodicWrites(game);
           if (result.reached && !shouldYield()) {
             this.#backfillPass(game, start);
@@ -1011,9 +1069,15 @@ export class EngineHost {
     }
   }
 
-  #startBatch(game: LoadedGame, kind: BatchRun['kind'], to: Tick): void {
+  #startBatch(game: LoadedGame, kind: BatchRun['kind'], to: Tick, catchUp?: CatchUpResult): void {
     const from = game.engine.tick;
-    game.batch = { kind, from, to, lastProgressMs: this.#ports.now() };
+    game.batch = {
+      kind,
+      from,
+      to,
+      lastProgressMs: this.#ports.now(),
+      ...(catchUp === undefined ? {} : { catchUp }),
+    };
     this.#progress({ kind, state: 'running', done: 0, total: to - from });
     this.#restartLoop(0);
   }
@@ -1062,6 +1126,9 @@ export class EngineHost {
       done: game.engine.tick - batch.from,
       total: batch.to - batch.from,
     });
+    if (state === 'done' && batch.catchUp?.paused === true) {
+      this.#pauseInBackground(game);
+    }
     if (snapshot) {
       void this.#snapshot(game);
       this.#startBackfill(game);
@@ -1151,6 +1218,20 @@ export class EngineHost {
     if (game.batch?.kind === 'jump') {
       this.#endBatch(game, 'cancelled');
     }
+    this.#clockEventsHeld++;
+    void this.#saveClock(game).finally(() => this.#clockEventsHeld--);
+  }
+
+  /**
+   * Pause of `backgroundPauseAfter` (TS §3.6, §3.7): like a pause of the player, the clock is
+   * stored and the `clock` event waits for the write.
+   */
+  #pauseInBackground(game: LoadedGame): void {
+    if (game.pacer.settings.paused) {
+      return;
+    }
+    game.pacer.update({ paused: true }, game.engine.tick, this.#ports.now());
+    game.overloaded = false;
     this.#clockEventsHeld++;
     void this.#saveClock(game).finally(() => this.#clockEventsHeld--);
   }
@@ -1487,7 +1568,11 @@ export class EngineHost {
     }
   }
 
-  /** Sends the clock and the quotes when they changed and their rate limit allows it. */
+  /**
+   * Sends the clock, quotes, movers, candles, projection and notifications when they changed and
+   * their rate limit allows it. While the app is hidden (TS §3.6), the clock goes out less often and
+   * quotes, movers and candles not at all; they follow once it is visible again.
+   */
   #flush(): void {
     const game = this.#game;
     if (game === undefined) {
@@ -1495,17 +1580,19 @@ export class EngineHost {
     }
     const now = this.#ports.now();
     const clock = this.#clockPayload(game);
+    const clockThrottle = this.#visible ? this.#clockThrottle : this.#hiddenClockThrottle;
     if (
       this.#clockEventsHeld === 0 &&
       !sameClock(clock, this.#lastClock) &&
-      this.#clockThrottle.isDue(now)
+      clockThrottle.isDue(now)
     ) {
       this.#post('clock', clock);
-      this.#clockThrottle.sent(now);
+      clockThrottle.sent(now);
       this.#lastClock = clock;
     }
     const tick = game.engine.tick;
     if (
+      this.#visible &&
       this.#subscriptions.size > 0 &&
       (this.#quotesStale || tick !== this.#lastQuotesTick) &&
       this.#quotesThrottle.isDue(now)
@@ -1520,6 +1607,7 @@ export class EngineHost {
       this.#quotesStale = false;
     }
     if (
+      this.#visible &&
       this.#moversSubscribed &&
       (this.#moversStale || tick !== this.#lastMoversTick) &&
       this.#moversThrottle.isDue(now)
@@ -1531,6 +1619,7 @@ export class EngineHost {
       this.#moversStale = false;
     }
     if (
+      this.#visible &&
       this.#charts.size > 0 &&
       (this.#chartsStale || tick !== this.#lastChartsTick) &&
       this.#candleThrottle.isDue(now)
@@ -1991,6 +2080,8 @@ export class EngineHost {
       paused: settings.paused,
       visible: this.#visible,
       backgroundMode: settings.backgroundMode,
+      backgroundSpeed: settings.backgroundSpeed,
+      backgroundPauseAfter: settings.backgroundPauseAfter,
       effectiveSpeed: jumping ? null : game.pacer.speed,
       overloaded: !jumping && game.overloaded,
       jumping,
@@ -2002,19 +2093,26 @@ export class EngineHost {
 
   /**
    * Clock state to store. During a catch-up, `lastSeenAt` lies back by the ticks still to catch up,
-   * so a restore from it loses none of them (`catchUpSeenAt`).
+   * so a restore from it loses none of them (`catchUpSeenAt`), and `hiddenSince` keeps a pause of
+   * `backgroundPauseAfter` at its end (`catchUpHiddenSince`). `hiddenSince` is missing while visible.
    */
   #storedClock(game: LoadedGame): StoredClock {
     const { speed, paused } = game.pacer.settings;
     const tick = game.engine.tick;
     const now = this.#ports.now();
-    const lastSeenAt =
-      game.batch?.kind === 'catch-up' ? catchUpSeenAt(now, tick, game.batch.to) : now;
+    const batch = game.batch;
+    const catchingUp = batch?.kind === 'catch-up';
+    const lastSeenAt = catchingUp ? catchUpSeenAt(now, tick, batch.to) : now;
+    const hiddenSince =
+      catchingUp && batch.catchUp !== undefined
+        ? catchUpHiddenSince(now, batch.catchUp, game.engine.player, game.pacer.hiddenSince)
+        : game.pacer.hiddenSince;
     return {
       tick,
       speed,
       paused,
       lastSeenAt,
+      ...(hiddenSince === null ? {} : { hiddenSince }),
       netWorth: netWorth(game.engine.player, game.engine.securitiesValue()),
     };
   }
@@ -2105,6 +2203,8 @@ function sameClock(a: ClockPayload, b: ClockPayload | null): boolean {
     a.paused === b.paused &&
     a.visible === b.visible &&
     a.backgroundMode === b.backgroundMode &&
+    a.backgroundSpeed === b.backgroundSpeed &&
+    a.backgroundPauseAfter === b.backgroundPauseAfter &&
     a.effectiveSpeed === b.effectiveSpeed &&
     a.overloaded === b.overloaded &&
     a.jumping === b.jumping &&

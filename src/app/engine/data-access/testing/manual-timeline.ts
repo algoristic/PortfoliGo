@@ -52,6 +52,14 @@ export class ManualTimeline implements LoopTimer {
   }
 
   /**
+   * Moves the clock forward by `ms` without running timers, as when the process is frozen or
+   * suspended (TS §3.6); the overdue timers run with the next `advance` or `step`.
+   */
+  suspend(ms: number): void {
+    this.#nowMs += Math.max(0, ms);
+  }
+
+  /**
    * Runs only the earliest timer, moving the clock to its due time; e.g. one pass of a jump.
    * Returns `false` when no timer is set.
    */

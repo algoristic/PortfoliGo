@@ -214,6 +214,11 @@ export class EngineService implements OnDestroy {
     });
   }
 
+  /** The page was frozen or runs again (Chromium `freeze`/`resume`, TS §3.6). */
+  setFrozen(frozen: boolean): Observable<null> {
+    return this.#request('setFrozen', { frozen });
+  }
+
   jumpTo(target: JumpTarget): Observable<EngineReplies['jumpTo']> {
     return this.#request('jumpTo', { target });
   }
@@ -370,8 +375,15 @@ export class EngineService implements OnDestroy {
     return this.#request('updateWatchlist', { ids: [...ids] });
   }
 
-  setBackgroundMode(mode: BackgroundMode): Observable<EngineReplies['setBackgroundMode']> {
-    return this.#request('setBackgroundMode', { mode });
+  /**
+   * Sets the behaviour in the background (TS §3.6); `speed` (`backgroundSpeed`) and `pauseAfter`
+   * (`backgroundPauseAfter`, `null` = off) keep their value when missing.
+   */
+  setBackgroundMode(
+    mode: BackgroundMode,
+    options: Omit<EngineCommandPayloads['setBackgroundMode'], 'mode'> = {},
+  ): Observable<EngineReplies['setBackgroundMode']> {
+    return this.#request('setBackgroundMode', { mode, ...options });
   }
 
   /** Opens an account, or a depot with its clearing account (`kind: 'depot'`). */

@@ -188,6 +188,11 @@ export interface EngineHostConfig {
   passBudgetMs: number;
   /** Rate limits of the events (TS §8.4). */
   clockPerSecond: number;
+  /**
+   * Rate limit of the `clock` event while the app is hidden (TS §3.6); quotes, movers and candles
+   * pause then.
+   */
+  hiddenClockPerSecond: number;
   quotesPerSecond: number;
   /** Rate limit of the `movers` event (TS §8.4). */
   moversPerSecond: number;
@@ -231,6 +236,7 @@ export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
   loopIntervalMs: 16,
   passBudgetMs: 8,
   clockPerSecond: 10,
+  hiddenClockPerSecond: 1,
   quotesPerSecond: 4,
   moversPerSecond: 4,
   candlePerSecond: 4,
