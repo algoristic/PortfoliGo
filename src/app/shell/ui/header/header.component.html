@@ -91,6 +91,18 @@
           <div
             ngMenuItem
             appMenuItem
+            value="about"
+            [active]="isAboutActive()"
+            data-testid="shell.header.player-menu.about">
+            <i appIcon="info-circle" [class.text-fg-muted]="!isAboutActive()"></i>
+            <span class="flex-1" i18n="@@uiShell-header-about">Über PortfoliGo</span>
+            @if (isAboutActive()) {
+              <i appIcon="check2"></i>
+            }
+          </div>
+          <div
+            ngMenuItem
+            appMenuItem
             value="export"
             [disabled]="true"
             data-testid="shell.header.player-menu.export">

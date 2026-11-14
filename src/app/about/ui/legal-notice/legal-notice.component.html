@@ -1,0 +1,86 @@
+<app-panel
+  heading="Ein Spiel, keine Anlageberatung"
+  i18n-heading="@@uiAbout-legalNotice-disclaimerHeading"
+  data-testid="about.disclaimer">
+  <div class="flex flex-col gap-3 text-sm">
+    <p i18n="@@uiAbout-legalNotice-disclaimerGame">
+      PortfoliGo ist ein Spiel. Nichts in der App ist eine Anlageberatung oder eine Empfehlung, ein
+      Wertpapier zu kaufen, zu halten oder zu verkaufen.
+    </p>
+    <p i18n="@@uiAbout-legalNotice-disclaimerFictional">
+      Alle Unternehmen, Banken, Börsen, Indizes, Fonds und Kennungen wie ISINs sind erfunden. Kurse,
+      Dividenden und Zinsen entstehen in einer Simulation. Regionen und Länder sind echt, die Kurse
+      sagen aber nichts über ihre Märkte aus.
+    </p>
+    <p i18n="@@uiAbout-legalNotice-disclaimerSimplified">
+      Die Regeln sind vereinfacht, etwa bei Steuern (pauschal 25 % ohne Solidaritätszuschlag und
+      Kirchensteuer), Gebühren und Handelszeiten. Was du im Spiel gewinnst oder verlierst, lässt
+      sich nicht auf echte Geldanlagen übertragen.
+    </p>
+  </div>
+</app-panel>
+
+<app-panel heading="Version" i18n-heading="@@uiAbout-legalNotice-versionHeading">
+  <dl class="flex flex-col gap-1 text-sm">
+    <div class="flex gap-4">
+      <dt class="w-24 text-fg-muted" i18n="@@uiAbout-legalNotice-appVersion">App</dt>
+      <dd class="tabular-nums" data-testid="about.app-version">{{ appVersion() }}</dd>
+    </div>
+    <div class="flex gap-4">
+      <dt class="w-24 text-fg-muted" i18n="@@uiAbout-legalNotice-simVersion">Simulation</dt>
+      <dd class="tabular-nums" data-testid="about.sim-version">{{ simVersion() }}</dd>
+    </div>
+  </dl>
+</app-panel>
+
+<app-panel
+  heading="Lizenzen"
+  i18n-heading="@@uiAbout-legalNotice-licensesHeading"
+  data-testid="about.licenses">
+  <p class="text-sm" i18n="@@uiAbout-legalNotice-licensesIntro">
+    PortfoliGo nutzt die folgenden Bibliotheken und Schriften. Wir danken ihren Autorinnen und
+    Autoren.
+  </p>
+  <p class="mt-3 text-sm" data-testid="about.tradingview">
+    <span i18n="@@uiAbout-legalNotice-tradingview"
+      >Die Kurscharts zeichnet TradingView Lightweight Charts™; das TradingView-Logo im Chart
+      verweist auf den Hersteller.</span
+    >
+    {{ attribution.notice }}
+    <a
+      class="text-accent underline"
+      target="_blank"
+      rel="noopener noreferrer"
+      data-testid="about.tradingview.link"
+      [href]="attribution.url"
+      >{{ attribution.url
+      }}<span class="sr-only" i18n="@@uiAbout-legalNotice-newTabAttribution">
+        (öffnet in einem neuen Tab)</span
+      ></a
+    >
+  </p>
+  <ul class="mt-4 flex flex-col divide-y divide-border border-t border-border">
+    @for (license of licenses(); track license.id) {
+      <li
+        class="flex flex-col gap-0.5 py-3 text-sm"
+        [attr.data-testid]="'about.license.' + license.id">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-4">
+          <a
+            class="font-medium text-accent underline"
+            target="_blank"
+            rel="noopener noreferrer"
+            [href]="license.url"
+            >{{ license.name
+            }}<span class="sr-only" i18n="@@uiAbout-legalNotice-newTabLicense">
+              (öffnet in einem neuen Tab)</span
+            ></a
+          >
+          <span class="text-fg-muted" [attr.data-testid]="'about.license.' + license.id + '.id'">{{
+            license.license
+          }}</span>
+        </div>
+        <span class="text-fg-muted">{{ license.copyright }}</span>
+      </li>
+    }
+  </ul>
+</app-panel>

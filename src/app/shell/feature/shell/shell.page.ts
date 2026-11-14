@@ -137,6 +137,9 @@ export class ShellPage {
       case 'settings':
         void this.#router.navigate(['settings'], { relativeTo: this.#route });
         break;
+      case 'about':
+        void this.#router.navigate(['about'], { relativeTo: this.#route });
+        break;
       case 'export':
         // Export follows in AP 6.1; the menu item is disabled until then.
         break;

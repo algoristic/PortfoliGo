@@ -1,6 +1,8 @@
 <div
   class="dialog flex w-full flex-col rounded-lg border border-border bg-surface text-fg shadow-xl">
-  <header class="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-3">
+  <!-- Not <header>/<footer>: inside a dialog they would become extra banner and contentinfo
+       landmarks of the page (TS §11.10). -->
+  <div class="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-3">
     <h2 class="text-base font-semibold">{{ heading() }}</h2>
     <button
       type="button"
@@ -11,11 +13,11 @@
       (click)="onClose()">
       <i appIcon="x-lg"></i>
     </button>
-  </header>
+  </div>
   <div class="min-h-0 flex-1 overflow-y-auto px-4 py-4 text-sm">
     <ng-content />
   </div>
-  <footer class="flex shrink-0 flex-wrap justify-end gap-2 border-t border-border px-4 py-3">
+  <div class="flex shrink-0 flex-wrap justify-end gap-2 border-t border-border px-4 py-3">
     <ng-content select="[dialogActions]" />
-  </footer>
+  </div>
 </div>

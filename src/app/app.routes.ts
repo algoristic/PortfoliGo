@@ -20,6 +20,12 @@ export const routes: Routes = [
     },
   },
   {
+    path: 'about',
+    loadChildren: async () => {
+      return (await import('@app/about/feature/about.routes')).aboutRoutes;
+    },
+  },
+  {
     path: 'game/:playerId',
     loadChildren: async () => {
       return (await import('@app/shell/feature/shell.routes')).shellRoutes;

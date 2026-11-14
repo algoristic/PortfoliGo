@@ -47,6 +47,7 @@ export class HeaderComponent {
   selectedPlayerMenuAction = output<PlayerMenuAction>();
 
   isSettingsActive = computed(() => this.activePath() === 'settings');
+  isAboutActive = computed(() => this.activePath() === 'about');
   unreadBadge = computed(() => {
     const count = this.unreadCount() ?? 0;
     if (count <= 0) {

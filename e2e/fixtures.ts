@@ -81,6 +81,9 @@ export async function expectAccessible(page: Page, exclude: readonly string[] = 
  */
 async function waitForTransitions(page: Page): Promise<void> {
   await page.evaluate(async () => {
+    // Transitions of a style change from the last action (a dialog that just opened) start with
+    // the next frame; before it, `getAnimations()` doesn't list them yet.
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const running = document
       .getAnimations()
       .filter(

@@ -32,6 +32,13 @@ export class ToastContainerComponent {
 
   dismissedToast = output<number>();
 
+  // The icon is decorative; screen readers hear the tone as a word before the message.
+  toneLabels: Record<ToastTone, string> = {
+    info: $localize`:@@uiShared-toastContainer-toneInfo:Hinweis:`,
+    success: $localize`:@@uiShared-toastContainer-toneSuccess:Erledigt:`,
+    warning: $localize`:@@uiShared-toastContainer-toneWarning:Warnung:`,
+    error: $localize`:@@uiShared-toastContainer-toneError:Fehler:`,
+  };
   dismissLabel = $localize`:@@uiShared-toastContainer-dismiss:Hinweis schließen`;
 
   onDismiss(toastId: number): void {

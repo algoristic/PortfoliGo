@@ -171,6 +171,22 @@ describe('ShellPage', () => {
       expect(current('shell.header.player-menu.settings')).toBe('page');
     });
 
+    it('opens „Über PortfoliGo“ in the game through the player menu and the settings', async () => {
+      await act(() => click(byTestId(page, 'shell.header.player-menu')));
+      await act(() => click(byTestId(page, 'shell.header.player-menu.about')));
+      expect(url()).toMatch(/^\/game\/p-[0-9a-f]+\/about$/);
+      expect(document.title).toBe('Über PortfoliGo · PortfoliGo');
+      expect(current('shell.header.player-menu.about')).toBe('page');
+      expect(queryByTestId(page, 'about.disclaimer')).not.toBeNull();
+      // the game stays loaded
+      expect(clock()).toBe(GAME_START_TEXT);
+
+      await act(() => click(byTestId(page, 'shell.header.player-menu')));
+      await act(() => click(byTestId(page, 'shell.header.player-menu.settings')));
+      await act(() => click(byTestId(page, 'about.disclaimer-hint.link')));
+      expect(url()).toMatch(/^\/game\/p-[0-9a-f]+\/about$/);
+    });
+
     it('offers the export only as a disabled entry', async () => {
       await act(() => click(byTestId(page, 'shell.header.player-menu')));
       const exportItem = byTestId(page, 'shell.header.player-menu.export');

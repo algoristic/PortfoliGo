@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 
+import { DisclaimerHintComponent } from '@app/about/ui/disclaimer-hint/disclaimer-hint.component';
 import { ClockFacade } from '@app/clock/feature/state/clock.facade';
 import { BackgroundSettingsChange } from '@app/engine/domain/models/game-state.model';
 import { SessionFacade } from '@app/engine/feature/state/session.facade';
@@ -40,6 +41,7 @@ import { SettingsFacade } from '../state/settings.facade';
     AutoPauseSettingsComponent,
     PlayerBackupComponent,
     AppSettingsComponent,
+    DisclaimerHintComponent,
   ],
   templateUrl: './settings.page.html',
   host: { class: 'block' },

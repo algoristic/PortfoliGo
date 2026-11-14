@@ -6,6 +6,7 @@ import { provideEffects } from '@ngrx/effects';
 import { provideRouterStore, routerReducer } from '@ngrx/router-store';
 import { provideStore } from '@ngrx/store';
 
+import { APP_VERSION } from '@app/about/feature/about.config';
 import { CLOCK_SHORTCUTS_ENABLED } from '@app/clock/feature/state/clock.config';
 import { provideEngineService } from '@app/engine/data-access/service/engine-service.providers';
 import { NOTIFICATION_CHANNEL_SETTINGS } from '@app/notifications/feature/state/notifications.config';
@@ -17,6 +18,8 @@ import { provideColorSchemeService } from '@app/shared/data-access/color-scheme/
 import { provideToastService } from '@app/shared/ui/toast/toast-service.providers';
 import { VALUE_FLASH_ENABLED } from '@app/shared/ui/value-flash/value-flash.config';
 import { providePageTitleStrategy } from '@app/shell/feature/page-title/page-title.providers';
+
+import { version } from '../../package.json';
 
 registerLocaleData(localeDe);
 
@@ -31,6 +34,7 @@ export function provideAppCore(): Array<Provider | EnvironmentProviders> {
     provideEffects(),
     provideRouterStore(),
     { provide: LOCALE_ID, useValue: 'de' },
+    { provide: APP_VERSION, useValue: version },
     provideColorSchemeService(),
     provideToastService(),
     provideEngineService(),

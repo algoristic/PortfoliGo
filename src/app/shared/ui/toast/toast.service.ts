@@ -27,6 +27,9 @@ export class ToastService {
   toasts = this.#toasts.asReadonly();
 
   constructor() {
+    // Screen readers announce changes of a live region only when the region was in the document
+    // before; created together with the first toast, that toast would be missed (TS §11.10).
+    this.#attachContainer();
     inject(DestroyRef).onDestroy(() => {
       this.#timers.forEach((timer) => clearTimeout(timer));
       this.#overlayRef?.dispose();

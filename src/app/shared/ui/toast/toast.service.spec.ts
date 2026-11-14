@@ -34,6 +34,18 @@ describe('ToastService', () => {
       ]);
     });
 
+    it('puts the live region into the document before the first toast', () => {
+      // TS §11.10: a region created together with its content is not announced
+      TestBed.tick();
+      const region = document.querySelector('app-toast-container [aria-live="polite"]');
+      expect(region).not.toBeNull();
+      expect(region?.querySelectorAll('li')).toHaveLength(0);
+      service.error('Fehlgeschlagen');
+      TestBed.tick();
+      expect(document.querySelector('app-toast-container [aria-live="polite"]')).toBe(region);
+      expect(region?.textContent).toContain('Fehler:');
+    });
+
     it('renders the toasts in an overlay', () => {
       service.info('Hallo');
       TestBed.tick();

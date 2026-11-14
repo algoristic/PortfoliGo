@@ -110,9 +110,10 @@ describe('OrdersPage', () => {
   }
 
   function toasts(): string[] {
-    return Array.from(document.body.querySelectorAll<HTMLElement>('[data-testid^="toast."]'))
-      .filter((toast) => !toast.dataset['testid']?.endsWith('.dismiss'))
-      .map((toast) => textOf(toast));
+    // the message without the tone that only screen readers hear
+    return Array.from(document.body.querySelectorAll<HTMLElement>('[data-testid^="toast."] p')).map(
+      textOf,
+    );
   }
 
   function openRows(): HTMLElement[] {

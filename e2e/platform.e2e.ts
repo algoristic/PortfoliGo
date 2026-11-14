@@ -1,8 +1,7 @@
-import { expect, expectAccessible, test } from './fixtures';
-import { createPlayer } from './players.po';
+import { expect, test } from './fixtures';
 import { storeColorScheme } from './settings.po';
 
-// Colour scheme and accessibility (J8, J9).
+// Colour scheme (J8); the accessibility of the main views is in `accessibility.e2e.ts` (J9).
 
 test.describe('colour scheme', () => {
   test('follows the colour scheme of the system with the setting „System“, also when it changes', async ({
@@ -17,36 +16,4 @@ test.describe('colour scheme', () => {
     await page.emulateMedia({ colorScheme: 'light' });
     await expect(page.locator('html')).not.toHaveClass(/\bdark\b/);
   });
-});
-
-test.describe('accessibility', () => {
-  test.skip(
-    ({ browserName }) => browserName !== 'chromium',
-    'axe results do not depend on the engine',
-  );
-
-  for (const colorScheme of ['light', 'dark'] as const) {
-    test(`has no serious findings on the main views (${colorScheme})`, async ({ page }) => {
-      // The appearance is a setting (dark by default, E-06); the system follows the same scheme.
-      await storeColorScheme(page, colorScheme);
-      await page.emulateMedia({ colorScheme });
-      const game = await createPlayer(page, 'Anna');
-      for (const path of [
-        '#/players',
-        '#/players/new',
-        `${game}/dashboard`,
-        `${game}/settings`,
-        '#/lab/components',
-      ]) {
-        await page.goto(path);
-        await page.waitForLoadState('networkidle');
-        await expectAccessible(page);
-      }
-      await page.goto('#/lab/simulation');
-      await page.getByTestId('lab.simulation.seed').fill('e2e-1');
-      await page.getByTestId('lab.simulation.generate').click();
-      await expect(page.getByTestId('lab.simulation.game-time')).toBeVisible({ timeout: 30_000 });
-      await expectAccessible(page);
-    });
-  }
 });
