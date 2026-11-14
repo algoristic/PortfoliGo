@@ -88,6 +88,7 @@ import { SavingsPlan, SavingsPlanId } from '@app/trading/domain/models/savings-p
 import { generateWorld } from '@app/world/domain/world-generator';
 
 import { CandleBackfill } from './candle-backfill';
+import { CandleConsolidation } from './candle-consolidation';
 import { dailyCandleBlock } from './daily-candle-query';
 import { DailyCandleSource } from './daily-candle-source';
 import { candleYear } from './daily-candles.utils';
@@ -181,6 +182,8 @@ interface LoadedGame {
   candlesWriting: DailyCandlePatch[];
   candleWriteAgain: boolean;
   backfill?: CandleBackfill;
+  /** Consolidation of old daily candles (TS §6.8), once the candle job is planned. */
+  consolidation?: CandleConsolidation;
   /**
    * The storage was full (TS §9.5): the stored daily candles of the player are deleted, and for the
    * rest of the session the host neither buffers nor writes candles nor runs the candle job.
@@ -1168,6 +1171,7 @@ export class EngineHost {
           this.#periodicWrites(game);
           if (result.reached && !shouldYield()) {
             this.#backfillPass(game, start);
+            this.#consolidationPass(game);
           }
         }
       }
@@ -1661,7 +1665,31 @@ export class EngineHost {
     const toDay = dayIndex(game.engine.tick);
     this.#writeCandles(game);
     const planned = this.#settleWrites()
-      .then(() => backfill.plan(toDay))
+      .then(async () => {
+        const { playerId, candles } = game;
+        const firstYear = candleYear(0);
+        const consolidated = new Set(
+          (
+            await this.#ports.storage.loadWeeklyCandles(
+              playerId,
+              candles.ids[0],
+              firstYear,
+              candleYear(toDay),
+            )
+          ).map(({ year }) => year),
+        );
+        await backfill.plan(toDay, consolidated);
+        if (!game.candlesDropped) {
+          game.consolidation = new CandleConsolidation(
+            this.#ports.storage,
+            playerId,
+            candles.ids,
+            firstYear,
+            this.#config.dailyCandleYears,
+            consolidated,
+          );
+        }
+      })
       .catch((error: unknown) => this.#storageFailed(error));
     this.#plans.add(planned);
     void planned.finally(() => this.#plans.delete(planned));
@@ -1709,6 +1737,30 @@ export class EngineHost {
       report('done');
     } else if (this.#ports.now() - game.backfillProgressMs >= this.#config.progressIntervalMs) {
       report('running');
+    }
+  }
+
+  /**
+   * Consolidates the next due year of old daily candles to weekly ones (TS §6.8), one year at a time
+   * beside the loop, after the candle job completed it and once its buffered candles are written.
+   */
+  #consolidationPass(game: LoadedGame): void {
+    const job = game.consolidation;
+    if (job === undefined || job.running || game.candlesDropped) {
+      return;
+    }
+    const inYear = (year: number) => (patch: DailyCandlePatch) => candleYear(patch.day) === year;
+    const year = job.nextYear(
+      dayIndex(game.engine.tick),
+      (candidate) =>
+        (game.backfill?.hasWorkIn(candidate) ?? false) ||
+        game.candleBuffer.some(inYear(candidate)) ||
+        game.candlesWriting.some(inYear(candidate)),
+    );
+    if (year !== undefined) {
+      void this.#write(async () => {
+        await job.run(year);
+      });
     }
   }
 
@@ -2045,6 +2097,10 @@ export class EngineHost {
         storageCall(() =>
           this.#ports.storage.loadDailyCandles(playerId, seriesId, fromYear, toYear),
         ),
+      loadWeeklyBuckets: (fromYear, toYear) =>
+        storageCall(() =>
+          this.#ports.storage.loadWeeklyCandles(playerId, seriesId, fromYear, toYear),
+        ),
       support: (days) => supportOpenClose(context, source.history, source.tables, series, days),
     });
     return { ...result, ...block };
@@ -2361,6 +2417,7 @@ export class EngineHost {
     game.candleYears.clear();
     game.candleWriteAgain = false;
     game.backfill = undefined;
+    game.consolidation = undefined;
     if (game.backfillRunning) {
       game.backfillRunning = false;
       this.#progress({ kind: 'candles', state: 'done', done: 0, total: 0 });

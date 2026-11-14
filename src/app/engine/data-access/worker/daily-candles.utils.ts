@@ -4,6 +4,9 @@ import {
   dayStartTick,
   tickToDateTime,
 } from '@app/clock/domain/calendar-logic';
+import { DAYS_PER_WEEK } from '@app/clock/domain/models/time.model';
+import { weekParts } from '@app/market/domain/candle-consolidation-logic';
+import { weekStartDay } from '@app/market/domain/candle-window';
 import { isMarketDay, marketDaysBefore } from '@app/market/domain/market-calendar';
 import { Candle } from '@app/market/domain/models/candle.model';
 
@@ -81,6 +84,61 @@ export function decodeCandleValues(year: number, values: Float32Array): Candle[]
     const [open, high, low, close] = values.subarray(offset, offset + CANDLE_FIELDS);
     if (Number.isNaN(open) && Number.isNaN(close)) {
       continue;
+    }
+    candles.push({ tick: dayStartTick(day), open, high, low, close });
+  }
+  return candles;
+}
+
+/** Whether every slot of a daily bucket holds all four values (the job has completed it). */
+export function isCompleteCandleBucket(values: Float32Array): boolean {
+  return values.every((value) => !Number.isNaN(value));
+}
+
+/**
+ * Weeks touching a calendar year, the slots of its weekly bucket (TS §6.8): slot 0 is the week of
+ * 1 January (from its Monday, possibly in the year before).
+ */
+export function weeksInYear(year: number): number {
+  return weekSlot(year, yearStartDay(year + 1) - 1) + 1;
+}
+
+/** Slot of the week of `day` in the weekly bucket of its calendar year. */
+function weekSlot(year: number, day: number): number {
+  return (weekStartDay(day) - weekStartDay(yearStartDay(year))) / DAYS_PER_WEEK;
+}
+
+/**
+ * Weekly bucket of a calendar year from its complete daily bucket (TS §6.8): one part per week
+ * within the year (`weekParts`), `values[4 · slot + f]`; weeks without a market day in the year
+ * stay `NaN`.
+ */
+export function weeklyCandleValues(year: number, daily: Float32Array): Float32Array {
+  const values = new Float32Array(weeksInYear(year) * CANDLE_FIELDS).fill(Number.NaN);
+  for (const part of weekParts(decodeCandleValues(year, daily))) {
+    const offset = weekSlot(year, dayIndex(part.tick)) * CANDLE_FIELDS;
+    values.set([part.open, part.high, part.low, part.close], offset);
+  }
+  return values;
+}
+
+/**
+ * Week parts of a weekly bucket in ascending order, each at its first market day in the year;
+ * slots without values are left out.
+ */
+export function decodeWeeklyValues(year: number, values: Float32Array): Candle[] {
+  const candles: Candle[] = [];
+  const firstDay = yearStartDay(year);
+  const firstWeek = weekStartDay(firstDay);
+  for (let slot = 0; slot * CANDLE_FIELDS < values.length; slot++) {
+    const offset = slot * CANDLE_FIELDS;
+    const [open, high, low, close] = values.subarray(offset, offset + CANDLE_FIELDS);
+    if (Number.isNaN(open) && Number.isNaN(close)) {
+      continue;
+    }
+    let day = Math.max(firstDay, firstWeek + slot * DAYS_PER_WEEK);
+    while (!isMarketDay(day)) {
+      day++;
     }
     candles.push({ tick: dayStartTick(day), open, high, low, close });
   }

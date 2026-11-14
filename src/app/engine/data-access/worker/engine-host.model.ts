@@ -5,6 +5,7 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { PricePortFactory } from '@app/engine/domain/game-engine';
 import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
+import { DAILY_CANDLE_YEARS } from '@app/market/domain/candle-consolidation-logic';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
 import { PlayerLocks } from '@app/persistence/data-access/locks/player-locks';
@@ -101,6 +102,19 @@ export interface DailyCandleBucket {
 }
 
 /**
+ * Weekly candles of one series in one consolidated calendar year (TS §6.8): `values[4 · slot + f]`
+ * with `slot` the week within the year (`weeksInYear`); a week across the turn of the year has a
+ * part in each year.
+ */
+export type WeeklyCandleBucket = DailyCandleBucket;
+
+/**
+ * Result of consolidating a year (TS §6.8): `consolidated` (weekly buckets written, daily ones
+ * deleted), `incomplete` (a series misses a value; nothing changed) or `none` (no daily bucket).
+ */
+export type CandleConsolidationResult = 'consolidated' | 'incomplete' | 'none';
+
+/**
  * Storage port of the worker host (TS §8.5, §9.2): `IndexedDbEngineStorage` in the worker,
  * `InMemoryEngineStorage` in tests that don't need a database.
  */
@@ -140,6 +154,23 @@ export interface EngineStorage {
     fromYear: number,
     toYear: number,
   ): Promise<DailyCandleBucket[]>;
+  /** Weekly buckets of a series for the consolidated years `fromYear … toYear`, ascending. */
+  loadWeeklyCandles(
+    playerId: string,
+    seriesId: string,
+    fromYear: number,
+    toYear: number,
+  ): Promise<WeeklyCandleBucket[]>;
+  /**
+   * Consolidates the daily candles of `year` (TS §6.8) in one transaction: when the daily buckets
+   * of all `seriesIds` are complete, writes their weekly buckets (`weeklyCandleValues`) and deletes
+   * the daily ones; otherwise changes nothing.
+   */
+  consolidateCandles(
+    playerId: string,
+    seriesIds: readonly string[],
+    year: number,
+  ): Promise<CandleConsolidationResult>;
   /**
    * Points of the daily series (TS §7.9, §9.1 `series`, AP 5.7), merged into their year records;
    * a stored day is overwritten.
@@ -147,7 +178,7 @@ export interface EngineStorage {
   saveDailyPoints(playerId: string, points: readonly DailyPoint[]): Promise<void>;
   /** Stored points of the days `fromDay … toDay` (inclusive), ascending. */
   loadDailyPoints(playerId: string, fromDay: number, toDay: number): Promise<DailyPoint[]>;
-  /** Drops all daily candles of the player; they are reproducible (TS §6.8, §9.5). */
+  /** Drops all daily and weekly candles of the player; they are reproducible (TS §6.8, §9.5). */
   clearCandles(playerId: string): Promise<void>;
   loadPlayerState(playerId: string): Promise<StoredPlayerState>;
   /**
@@ -236,6 +267,11 @@ export interface EngineHostConfig {
    */
   liveHighLowMaxSpeed: SpeedId;
   /**
+   * Game years of stored daily candles; the candle job consolidates older years to weekly candles
+   * (TS §6.8, `DAILY_CANDLE_YEARS`). Tests lower it.
+   */
+  dailyCandleYears: number;
+  /**
    * Computing time of one slice of the import's history run (TS §10.3); other messages and the loop
    * of a loaded player run between the slices.
    */
@@ -259,6 +295,7 @@ export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
   notificationPerSecond: 4,
   backfillShare: 0.1,
   liveHighLowMaxSpeed: '1d',
+  dailyCandleYears: DAILY_CANDLE_YEARS,
   importSliceMs: 50,
 };
 

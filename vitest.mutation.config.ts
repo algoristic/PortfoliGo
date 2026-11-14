@@ -20,6 +20,7 @@ const RULE_SPECS = [
   'src/app/analysis/domain/indicator-logic.spec.ts',
   'src/app/market/domain/dividend-logic.spec.ts',
   'src/app/market/domain/candle-logic.spec.ts',
+  'src/app/market/domain/candle-consolidation-logic.spec.ts',
   'src/app/market/domain/price-logic.spec.ts',
   'src/app/market/domain/index-layout.spec.ts',
   'src/app/market/domain/idio-path-logic.spec.ts',

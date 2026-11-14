@@ -8,9 +8,16 @@ import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
 import { DailyPoint } from '@app/portfolio/domain/models/performance.model';
 
-import { candleYear, createCandleValues, patchCandleValues } from './daily-candles.utils';
+import {
+  candleYear,
+  createCandleValues,
+  isCompleteCandleBucket,
+  patchCandleValues,
+  weeklyCandleValues,
+} from './daily-candles.utils';
 import { mergePoints } from './daily-series.utils';
 import {
+  CandleConsolidationResult,
   DailyCandleBucket,
   DailyCandlePatch,
   EngineStorage,
@@ -19,6 +26,7 @@ import {
   StoredClock,
   StoredPlayerState,
   StoredSnapshot,
+  WeeklyCandleBucket,
 } from './engine-host.model';
 
 export interface StoredCommand {
@@ -31,6 +39,8 @@ interface PlayerRecords {
   snapshots: StoredSnapshot[];
   monthStarts: Map<number, FactorStateEntry>;
   candles: Map<string, DailyCandleBucket>;
+  /** Weekly buckets of the consolidated years (TS §6.8), by series and year. */
+  weeklyCandles: Map<string, WeeklyCandleBucket>;
   /** Journal transactions by running number. */
   transactions: Map<number, Transaction>;
   /** Notifications by running number. */
@@ -159,6 +169,41 @@ export class InMemoryEngineStorage implements EngineStorage {
       .map((bucket) => structuredClone(bucket));
   }
 
+  async loadWeeklyCandles(
+    playerId: string,
+    seriesId: string,
+    fromYear: number,
+    toYear: number,
+  ): Promise<WeeklyCandleBucket[]> {
+    return Array.from(this.#players.get(playerId)?.weeklyCandles.values() ?? [])
+      .filter((bucket) => bucket.seriesId === seriesId)
+      .filter((bucket) => bucket.year >= fromYear && bucket.year <= toYear)
+      .sort((a, b) => a.year - b.year)
+      .map((bucket) => structuredClone(bucket));
+  }
+
+  async consolidateCandles(
+    playerId: string,
+    seriesIds: readonly string[],
+    year: number,
+  ): Promise<CandleConsolidationResult> {
+    const records = this.#records(playerId);
+    const keys = seriesIds.map((seriesId) => JSON.stringify([seriesId, year]));
+    const daily = keys.map((key) => records.candles.get(key));
+    if (daily.every((bucket) => bucket === undefined)) {
+      return 'none';
+    }
+    if (daily.some((bucket) => bucket === undefined || !isCompleteCandleBucket(bucket.values))) {
+      return 'incomplete';
+    }
+    seriesIds.forEach((seriesId, s) => {
+      const values = weeklyCandleValues(year, (daily[s] as DailyCandleBucket).values);
+      records.weeklyCandles.set(keys[s], { seriesId, year, values });
+      records.candles.delete(keys[s]);
+    });
+    return 'consolidated';
+  }
+
   async saveDailyPoints(playerId: string, points: readonly DailyPoint[]): Promise<void> {
     this.#putDailyPoints(this.#records(playerId), points);
   }
@@ -171,6 +216,7 @@ export class InMemoryEngineStorage implements EngineStorage {
 
   async clearCandles(playerId: string): Promise<void> {
     this.#players.get(playerId)?.candles.clear();
+    this.#players.get(playerId)?.weeklyCandles.clear();
   }
 
   async loadPlayerState(playerId: string): Promise<StoredPlayerState> {
@@ -223,6 +269,7 @@ export class InMemoryEngineStorage implements EngineStorage {
         snapshots: [],
         monthStarts: new Map(),
         candles: new Map(),
+        weeklyCandles: new Map(),
         transactions: new Map(),
         notifications: new Map(),
         dailyPoints: [],

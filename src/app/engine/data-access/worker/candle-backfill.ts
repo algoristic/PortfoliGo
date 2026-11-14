@@ -126,16 +126,26 @@ export class CandleBackfill {
     );
   }
 
+  /** Whether days of the calendar year `year` miss values (the consolidation waits for them). */
+  hasWorkIn(year: number): boolean {
+    const inYear = (day: number): boolean => candleYear(day) === year;
+    return this.#openClose.some(inYear) || this.#highLow.some(inYear);
+  }
+
   /**
    * Reads the stored candles of the market days in `[fromDay, toDay)` and adds the days where a
-   * series misses a value. Call it when no batch run writes days before `toDay`.
+   * series misses a value; consolidated years (weekly candles, TS §6.8) have no daily candles and
+   * are left out. Call it when no batch run writes days before `toDay`.
    */
-  async plan(toDay: number): Promise<void> {
+  async plan(toDay: number, consolidated: ReadonlySet<number> = new Set()): Promise<void> {
     if (toDay <= this.#fromDay) {
       return;
     }
     const ids = this.#source.ids;
     for (let year = candleYear(toDay - 1); year >= candleYear(this.#fromDay); year--) {
+      if (consolidated.has(year)) {
+        continue;
+      }
       const buckets = await Promise.all(
         ids.map((id) => this.#storage.loadDailyCandles(this.#playerId, id, year, year)),
       );

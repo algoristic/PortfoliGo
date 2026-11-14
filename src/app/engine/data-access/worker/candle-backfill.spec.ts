@@ -127,4 +127,20 @@ describe('CandleBackfill', () => {
     expect(emitted).toEqual([FIRST_WEEK[1], FIRST_WEEK[0]]);
     expect(backfill.hasWork(MONDAY_AFTER)).toBe(true);
   });
+
+  it('leaves out consolidated years and reports the years that still miss values', async () => {
+    const from = day(2021, 1, 1);
+    const backfill = new CandleBackfill(source, new InMemoryEngineStorage(), 'p1', from, 8);
+    await backfill.plan(day(2023, 1, 1), new Set([2021]));
+
+    // Weekdays of 2022 by `Date`, each missing open/close and high/low.
+    let weekdays = 0;
+    for (let at = day(2022, 1, 1); at < day(2023, 1, 1); at++) {
+      const weekday = new Date(EPOCH_MS + at * MS_PER_DAY).getUTCDay();
+      weekdays += weekday === 0 || weekday === 6 ? 0 : 1;
+    }
+    expect(backfill.total).toBe(2 * weekdays);
+    expect(backfill.hasWorkIn(2021)).toBe(false);
+    expect(backfill.hasWorkIn(2022)).toBe(true);
+  });
 });

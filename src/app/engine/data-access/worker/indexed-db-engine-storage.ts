@@ -21,9 +21,16 @@ import {
 } from '@app/persistence/data-access/schema/player-records';
 import { DailyPoint } from '@app/portfolio/domain/models/performance.model';
 
-import { candleYear, createCandleValues, patchCandleValues } from './daily-candles.utils';
+import {
+  candleYear,
+  createCandleValues,
+  isCompleteCandleBucket,
+  patchCandleValues,
+  weeklyCandleValues,
+} from './daily-candles.utils';
 import { mergePoints, pointsByYear, pointYear } from './daily-series.utils';
 import {
+  CandleConsolidationResult,
   DailyCandleBucket,
   DailyCandlePatch,
   EngineStorage,
@@ -31,6 +38,7 @@ import {
   SNAPSHOTS_KEPT,
   StoredClock,
   StoredPlayerState,
+  WeeklyCandleBucket,
 } from './engine-host.model';
 import {
   CandleRecord,
@@ -311,6 +319,54 @@ export class IndexedDbEngineStorage implements EngineStorage {
       IDBKeyRange.bound([playerId, seriesId, '1d', fromYear], [playerId, seriesId, '1d', toYear]),
     )) as CandleRecord[];
     return records.map(({ bucket, values }) => ({ seriesId, year: bucket, values }));
+  }
+
+  async loadWeeklyCandles(
+    playerId: string,
+    seriesId: string,
+    fromYear: number,
+    toYear: number,
+  ): Promise<WeeklyCandleBucket[]> {
+    const database = await this.#db();
+    const records = (await database.getAll(
+      'candles',
+      IDBKeyRange.bound([playerId, seriesId, '1w', fromYear], [playerId, seriesId, '1w', toYear]),
+    )) as CandleRecord[];
+    return records.map(({ bucket, values }) => ({ seriesId, year: bucket, values }));
+  }
+
+  async consolidateCandles(
+    playerId: string,
+    seriesIds: readonly string[],
+    year: number,
+  ): Promise<CandleConsolidationResult> {
+    let result: CandleConsolidationResult = 'none';
+    await this.#write(['candles'], async (transaction) => {
+      const store = transaction.objectStore('candles');
+      const daily = (await Promise.all(
+        seriesIds.map((seriesId) => store.get([playerId, seriesId, '1d', year])),
+      )) as Array<CandleRecord | undefined>;
+      if (daily.every((record) => record === undefined)) {
+        result = 'none';
+        return;
+      }
+      if (daily.some((record) => record === undefined || !isCompleteCandleBucket(record.values))) {
+        result = 'incomplete';
+        return;
+      }
+      for (const [s, seriesId] of seriesIds.entries()) {
+        await store.put({
+          playerId,
+          instrumentId: seriesId,
+          resolution: '1w',
+          bucket: year,
+          values: weeklyCandleValues(year, (daily[s] as CandleRecord).values),
+        } satisfies CandleRecord);
+        await store.delete([playerId, seriesId, '1d', year]);
+      }
+      result = 'consolidated';
+    });
+    return result;
   }
 
   saveDailyPoints(playerId: string, points: readonly DailyPoint[]): Promise<void> {

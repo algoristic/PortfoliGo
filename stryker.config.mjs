@@ -22,6 +22,7 @@ const config = {
     'src/app/analysis/domain/indicator-logic.ts',
     'src/app/market/domain/dividend-logic.ts',
     'src/app/market/domain/candle-logic.ts',
+    'src/app/market/domain/candle-consolidation-logic.ts',
     'src/app/market/domain/price-logic.ts',
     'src/app/market/domain/index-layout.ts',
     'src/app/market/domain/idio-path-logic.ts',

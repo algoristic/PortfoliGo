@@ -91,6 +91,7 @@ describe('candle query performance', () => {
         now: NOW,
         prices: engine.prices as PriceSource,
         loadBuckets: () => Promise.resolve(buckets),
+        loadWeeklyBuckets: () => Promise.resolve([]),
         pending: [],
         support: (days) => supportOpenClose(context, history, tables, series, days),
       };

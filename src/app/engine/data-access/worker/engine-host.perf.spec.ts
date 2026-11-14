@@ -37,6 +37,8 @@ function overlay(base: EngineStorage): EngineStorage {
     saveMonthStarts: (...args) => writes.saveMonthStarts(...args),
     saveDailyCandles: (...args) => writes.saveDailyCandles(...args),
     loadDailyCandles: (...args) => writes.loadDailyCandles(...args),
+    loadWeeklyCandles: (...args) => writes.loadWeeklyCandles(...args),
+    consolidateCandles: (...args) => writes.consolidateCandles(...args),
     saveDailyPoints: (...args) => writes.saveDailyPoints(...args),
     loadDailyPoints: (...args) => writes.loadDailyPoints(...args),
     clearCandles: (...args) => writes.clearCandles(...args),

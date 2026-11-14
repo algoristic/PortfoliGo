@@ -8,12 +8,14 @@ import { GameNotification } from '@app/notifications/domain/models/notification.
 import { DailyPoint } from '@app/portfolio/domain/models/performance.model';
 
 import {
+  CandleConsolidationResult,
   DailyCandleBucket,
   DailyCandlePatch,
   EngineStorage,
   SaveSnapshotOptions,
   StoredClock,
   StoredPlayerState,
+  WeeklyCandleBucket,
 } from '../worker/engine-host.model';
 
 /** `fail`: only the n-th write fails. `crash`: the n-th write and every later one fail. */
@@ -105,6 +107,23 @@ export class FaultyEngineStorage implements EngineStorage {
     return this.inner.loadDailyCandles(playerId, seriesId, fromYear, toYear);
   }
 
+  loadWeeklyCandles(
+    playerId: string,
+    seriesId: string,
+    fromYear: number,
+    toYear: number,
+  ): Promise<WeeklyCandleBucket[]> {
+    return this.inner.loadWeeklyCandles(playerId, seriesId, fromYear, toYear);
+  }
+
+  consolidateCandles(
+    playerId: string,
+    seriesIds: readonly string[],
+    year: number,
+  ): Promise<CandleConsolidationResult> {
+    return this.#write(() => this.inner.consolidateCandles(playerId, seriesIds, year));
+  }
+
   saveDailyPoints(playerId: string, points: readonly DailyPoint[]): Promise<void> {
     return this.#write(() => this.inner.saveDailyPoints(playerId, points));
   }
@@ -129,7 +148,7 @@ export class FaultyEngineStorage implements EngineStorage {
     return this.#write(() => this.inner.deletePlayer(playerId));
   }
 
-  async #write(write: () => Promise<void>): Promise<void> {
+  async #write<T>(write: () => Promise<T>): Promise<T> {
     const number = ++this.#writes;
     const { failAt, mode } = this.#options;
     if (number === failAt && mode === 'crash') {
@@ -138,6 +157,6 @@ export class FaultyEngineStorage implements EngineStorage {
     if (number === failAt || this.#crashed) {
       throw new InjectedStorageFault(number);
     }
-    await write();
+    return write();
   }
 }

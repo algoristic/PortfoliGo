@@ -11,8 +11,8 @@ import { isMarketDay } from '@app/market/domain/market-calendar';
 import { Candle } from '@app/market/domain/models/candle.model';
 import { PriceSource } from '@app/market/domain/price-source';
 
-import { candleYear, decodeCandleValues } from './daily-candles.utils';
-import { DailyCandleBucket, DailyCandlePatch } from './engine-host.model';
+import { candleYear, decodeCandleValues, decodeWeeklyValues } from './daily-candles.utils';
+import { DailyCandleBucket, DailyCandlePatch, WeeklyCandleBucket } from './engine-host.model';
 
 /** What the daily and weekly candle query needs (TS §8.2, §6.8). */
 export interface DailyCandleQuery {
@@ -27,6 +27,8 @@ export interface DailyCandleQuery {
   prices: PriceSource;
   /** Year buckets of the series (`EngineStorage.loadDailyCandles`). */
   loadBuckets(fromYear: number, toYear: number): Promise<DailyCandleBucket[]>;
+  /** Weekly buckets of the consolidated years (`EngineStorage.loadWeeklyCandles`, TS §6.8). */
+  loadWeeklyBuckets(fromYear: number, toYear: number): Promise<WeeklyCandleBucket[]>;
   /** Candles written or buffered but not yet stored, in write order. */
   pending: readonly DailyCandlePatch[];
   /** Open and close of past market days from the support points (`supportOpenClose`). */
@@ -38,6 +40,8 @@ export interface DailyCandleQuery {
  * (TS §6.8, §11.7): past days from the stored daily candles plus the not yet stored ones; days
  * without open or close (before the background job) from the support points, missing high and low
  * as the range of open and close. Stored days after the current tick never count (query limit).
+ * Consolidated years have weekly candles only: a daily block shows each week part at its first
+ * market day of the year, a weekly block merges the parts of a week across the turn of the year.
  */
 export async function dailyCandleBlock(query: DailyCandleQuery): Promise<CandleBlock> {
   const { series, seriesId, resolution, limit, now, prices } = query;
@@ -50,22 +54,45 @@ export async function dailyCandleBlock(query: DailyCandleQuery): Promise<CandleB
   }
   const today = dayIndex(now);
   const lastPast = Math.min(lastDay, today - 1);
-  const days: number[] = [];
+  let days: number[] = [];
   for (let day = plan.firstDay; day <= lastPast; day++) {
     if (isMarketDay(day)) {
       days.push(day);
     }
   }
   const stored = new Map<number, Candle>();
+  const weekParts: Candle[] = [];
   if (days.length > 0) {
-    const buckets = await query.loadBuckets(candleYear(days[0]), candleYear(lastPast));
+    const firstDay = days[0];
+    const [buckets, weekly] = await Promise.all([
+      query.loadBuckets(candleYear(firstDay), candleYear(lastPast)),
+      query.loadWeeklyBuckets(candleYear(firstDay), candleYear(lastPast)),
+    ]);
+    const consolidated = new Set(weekly.map(({ year }) => year));
+    for (const { year, values } of weekly) {
+      for (const part of decodeWeeklyValues(year, values)) {
+        const day = dayIndex(part.tick);
+        if (day >= firstDay && day <= lastPast) {
+          weekParts.push(part);
+        }
+      }
+    }
+    days = days.filter((day) => !consolidated.has(candleYear(day)));
     for (const { year, values } of buckets) {
+      if (consolidated.has(year)) {
+        continue;
+      }
       for (const candle of decodeCandleValues(year, values)) {
         stored.set(dayIndex(candle.tick), candle);
       }
     }
     for (const patch of query.pending) {
-      if (patch.seriesId === seriesId && patch.day >= days[0] && patch.day <= lastPast) {
+      if (
+        patch.seriesId === seriesId &&
+        patch.day >= firstDay &&
+        patch.day <= lastPast &&
+        !consolidated.has(candleYear(patch.day))
+      ) {
         stored.set(patch.day, merged(stored.get(patch.day), patch));
       }
     }
@@ -75,7 +102,7 @@ export async function dailyCandleBlock(query: DailyCandleQuery): Promise<CandleB
     return candle === undefined || Number.isNaN(candle.open) || Number.isNaN(candle.close);
   });
   const support = missing.length > 0 ? query.support(missing) : new Map();
-  const daily = days.map((day) => {
+  const fromDays = days.map((day) => {
     const candle = stored.get(day);
     const fallback = support.get(day);
     const tick = dayStartTick(day);
@@ -90,6 +117,9 @@ export async function dailyCandleBlock(query: DailyCandleQuery): Promise<CandleB
     }
     return withHighLow({ ...(candle as Candle), tick });
   });
+  // Years are consolidated oldest first once complete, so a younger one may be consolidated first.
+  const daily =
+    weekParts.length === 0 ? fromDays : [...weekParts, ...fromDays].sort((a, b) => a.tick - b.tick);
   if (lastDay === today && isMarketDay(today)) {
     // The running day from its minute curve (TS §6.8): one day, mostly cached.
     daily.push(...prices.candles(series, '1d', dayStartTick(today), dayStartTick(today), now));
