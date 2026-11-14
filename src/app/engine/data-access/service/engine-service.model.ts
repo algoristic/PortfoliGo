@@ -40,6 +40,7 @@ import {
   NotificationCategory,
   NotificationEntry,
 } from '@app/notifications/domain/models/notification.model';
+import { IMPORT_ERRORS } from '@app/players/domain/models/player-export.model';
 import {
   DailyPoint,
   PerformanceFigures,
@@ -336,6 +337,13 @@ export interface EngineCommandPayloads {
    * knows (TS §9.1). Not during a jump or the catch-up (`busy`).
    */
   exportPlayer: { name: string };
+  /**
+   * Imports an export file (TS §10.3) as the new player `playerId` (the UI creates the ID, as when
+   * creating a player): checks the file, recomputes the market history and writes the game paused.
+   * It neither needs nor touches a loaded player and does not load the new one; the UI creates the
+   * profile afterwards (TS §9.1).
+   */
+  importPlayer: { content: string; playerId: string };
 }
 
 export const ENGINE_COMMAND_TYPES = [
@@ -371,6 +379,7 @@ export const ENGINE_COMMAND_TYPES = [
   'setSavingsPlanPaused',
   'deleteSavingsPlan',
   'exportPlayer',
+  'importPlayer',
 ] as const satisfies readonly (keyof EngineCommandPayloads)[];
 export type EngineCommandType = (typeof ENGINE_COMMAND_TYPES)[number];
 
@@ -387,6 +396,26 @@ export interface ExportedPlayer {
   content: string;
   tick: Tick;
   exportedAt: string;
+}
+
+/**
+ * An imported player (TS §10.3): the profile data of the file (`name` as exported, without the
+ * suffix of the UI), the versions, the export tick at which the game continues paused, the net
+ * worth there, and whether the recomputed market history reached the exported market state
+ * (`marketChecksumMatches`; if not, the game continues from the exported market).
+ */
+export interface ImportedPlayer {
+  playerId: string;
+  name: string;
+  seed: string;
+  startConditions: StartConditions;
+  simVersion: number;
+  schemaVersion: number;
+  appVersion: string;
+  exportedAt: string;
+  tick: Tick;
+  netWorth: Cents;
+  marketChecksumMatches: boolean;
 }
 
 export interface LoadedPlayer {
@@ -548,6 +577,7 @@ export interface EngineReplies {
   setSavingsPlanPaused: GameCommandReply;
   deleteSavingsPlan: GameCommandReply;
   exportPlayer: ExportedPlayer;
+  importPlayer: ImportedPlayer;
 }
 
 /** Error codes of replies (TS §8.3); the UI turns them into texts. */
@@ -589,6 +619,11 @@ export const ENGINE_ERRORS = [
   ...ORDER_COMMAND_ERRORS,
   /** The engine rejected a savings plan command (TS §7.8); see `SAVINGS_PLAN_COMMAND_ERRORS`. */
   ...SAVINGS_PLAN_COMMAND_ERRORS,
+  /**
+   * `importPlayer` rejected the file (TS §10.3); see `IMPORT_ERRORS`. A file whose state the engine
+   * cannot restore answers `invalid-structure`.
+   */
+  ...IMPORT_ERRORS,
 ] as const;
 export type EngineErrorCode = (typeof ENGINE_ERRORS)[number];
 
@@ -652,12 +687,15 @@ export interface CandlePayload {
  * `init`: loading and replay; `catch-up`, `jump`: batch runs in ticks; `candles`: background job
  * for daily candles in market days (TS §6.8).
  */
-export const PROGRESS_KINDS = ['init', 'catch-up', 'jump', 'candles'] as const;
+export const PROGRESS_KINDS = ['init', 'catch-up', 'jump', 'candles', 'import'] as const;
 export type ProgressKind = (typeof PROGRESS_KINDS)[number];
 export const PROGRESS_STATES = ['running', 'done', 'cancelled'] as const;
 export type ProgressState = (typeof PROGRESS_STATES)[number];
 
-/** Progress of initialisation, catching up, jumps and the candle job; `done` and `total` in steps. */
+/**
+ * Progress of initialisation, catching up, jumps, the candle job and imports (`import`: market days
+ * of the history run since the epoch, TS §10.3); `done` and `total` in steps.
+ */
 export interface ProgressPayload {
   kind: ProgressKind;
   state: ProgressState;

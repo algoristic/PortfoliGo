@@ -5,6 +5,7 @@ import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import { TestMarket, TestPrice } from '@app/engine/domain/testing/test-market';
 import { IndexedDbService } from '@app/persistence/data-access/indexed-db/indexed-db.service';
 import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
+import { EXPORT_V1_CONTENT } from '@app/players/domain/testing/export-v1';
 import { OrderSpec } from '@app/trading/domain/models/order.model';
 
 import {
@@ -110,6 +111,40 @@ describe('EngineService', () => {
       ticks.slice(1).forEach((tick, i) => expect(tick).toBeGreaterThan(ticks[i]));
       expect(ticks[ticks.length - 1]).toBeGreaterThan(GAME_START + 50);
       expect(ticks[ticks.length - 1]).toBeLessThanOrEqual(GAME_START + 60);
+    });
+  });
+
+  describe('import', () => {
+    beforeEach(() => setup({ prices: undefined }));
+
+    it('imports an export file as a new player that loads paused at the export tick (AP 6.1)', async () => {
+      const exportTick = (Date.UTC(2030, 4, 15, 14, 37) - EPOCH_MS) / 60_000;
+      const progress: ProgressPayload[] = [];
+      const subscription = service.progress$.subscribe((payload) => progress.push(payload));
+
+      const imported = await firstValueFrom(service.importPlayer(EXPORT_V1_CONTENT, 'p-imp'));
+
+      expect(imported).toMatchObject({
+        playerId: 'p-imp',
+        name: 'Export Fixture',
+        seed: 'mini-1',
+        tick: exportTick,
+        marketChecksumMatches: true,
+      });
+      expect(progress.at(-1)).toMatchObject({ kind: 'import', state: 'done' });
+      expect(received('importPlayer')).toHaveLength(1);
+      expect(await firstValueFrom(service.loadPlayer({ ...PLAYER, playerId: 'p-imp' }))).toEqual({
+        playerId: 'p-imp',
+        tick: exportTick,
+      });
+      subscription.unsubscribe();
+    });
+
+    it('errors with the code of a rejected file', async () => {
+      const error = await firstValueFrom(service.importPlayer('kein Export', 'p-imp')).catch(
+        (e: unknown) => e,
+      );
+      expect((error as EngineCommandError).code).toBe('invalid-encoding');
     });
   });
 

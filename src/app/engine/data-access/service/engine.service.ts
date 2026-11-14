@@ -485,6 +485,15 @@ export class EngineService implements OnDestroy {
   }
 
   /**
+   * Imports the export file `content` (TS §10.3) as the new player `playerId`; the game is written
+   * paused and not loaded. Errors with the codes of `IMPORT_ERRORS`, `player-locked` or
+   * `storage-failed`; `progress` events of kind `import` report the history run.
+   */
+  importPlayer(content: string, playerId: string): Observable<EngineReplies['importPlayer']> {
+    return this.#request('importPlayer', { content, playerId });
+  }
+
+  /**
    * Quotes of `series` (TS §8.4) as the worker sends them, at most four times per second. The
    * worker gets one `subscribe` per series however many views watch it, and the `unsubscribe` when
    * the last of them unsubscribes.

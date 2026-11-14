@@ -19,6 +19,8 @@ export const BUDGETS_MS = {
   /** Catch-up after loading (TS §3.7): 30 days and one game year. */
   catchUp30Days: 1_000,
   catchUpYear: 5_000,
+  /** Import of a player with 50 game years until it is playable (AP 6.1, TS §10.3). */
+  importPlayable: 3_000,
   /** One statement page in the worker over 10,000 transactions of an account (AP 3.4). */
   statementPage: 50,
   /** Main-thread work per arriving statement page at 10,000 bookings: reducer, selectors, rows (AP 3.4). */

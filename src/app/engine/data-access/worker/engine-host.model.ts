@@ -174,6 +174,11 @@ export interface EngineHostPorts {
   storage: EngineStorage;
   /** Web Lock per player (TS §9.4); without it, the host does not lock. */
   locks?: PlayerLocks;
+  /**
+   * Lets other messages and the loop run between the slices of an import (TS §10.3): a macrotask in
+   * the worker; without it, a resolved promise (tests).
+   */
+  yieldToEvents?: () => Promise<void>;
 }
 
 export interface GeneratedWorld {
@@ -230,6 +235,11 @@ export interface EngineHostConfig {
    * above it, the close writes open and close and the candle job adds high and low (TS §6.8, §14.3).
    */
   liveHighLowMaxSpeed: SpeedId;
+  /**
+   * Computing time of one slice of the import's history run (TS §10.3); other messages and the loop
+   * of a loaded player run between the slices.
+   */
+  importSliceMs: number;
 }
 
 export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
@@ -249,6 +259,7 @@ export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
   notificationPerSecond: 4,
   backfillShare: 0.1,
   liveHighLowMaxSpeed: '1d',
+  importSliceMs: 50,
 };
 
 export interface EngineHostOptions {

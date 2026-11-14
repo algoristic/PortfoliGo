@@ -120,6 +120,7 @@ const config = {
     'src/app/persistence/util/text-codec.ts',
     'src/app/players/domain/player-export-logic.ts',
     'src/app/players/domain/player-export.utils.ts',
+    'src/app/players/domain/player-import-logic.ts',
   ],
   coverageAnalysis: 'perTest',
   ignoreStatic: true,

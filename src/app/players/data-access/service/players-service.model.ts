@@ -1,3 +1,4 @@
+import { Tick } from '@app/clock/domain/models/time.model';
 import { PlayerProfile } from '@app/players/domain/models/player.model';
 
 export const PLAYER_CHANGES = ['created', 'renamed', 'deleted'] as const;
@@ -14,6 +15,16 @@ export interface CreatedPlayer {
   profile: PlayerProfile;
   /** No other player existed: time to ask for persistent storage (TS §9.5). */
   firstPlayer: boolean;
+}
+
+export interface ImportedPlayerResult extends CreatedPlayer {
+  /** Export tick at which the imported game continues, paused (TS §10.3). */
+  tick: Tick;
+  /**
+   * The recomputed market history reached the exported market state; if not, the game continues from
+   * the exported market and the UI tells the user (TS §10.3 step 5).
+   */
+  marketChecksumMatches: boolean;
 }
 
 export const PLAYERS_SERVICE_ERROR_CODES = [

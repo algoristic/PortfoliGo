@@ -1,7 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { IDBPDatabase } from 'idb';
-import { firstValueFrom } from 'rxjs';
+import { defer, firstValueFrom, throwError } from 'rxjs';
+import type { Mocked } from 'vitest';
 
+import { ImportedPlayer } from '@app/engine/data-access/service/engine-service.model';
+import { EngineCommandError, EngineService } from '@app/engine/data-access/service/engine.service';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
 import { STORE_NAMES, StoreName } from '@app/persistence/data-access/schema/idb-schema';
 import { openPortfoligoDb } from '@app/persistence/data-access/schema/open-database';
@@ -71,8 +74,26 @@ async function countRecords(database: IDBPDatabase, playerId: string): Promise<n
   return counts;
 }
 
+/** What the worker answers to an import of the export fixture (TS §10.3). */
+function importedPlayer(playerId: string, start = ANNA.start): ImportedPlayer {
+  return {
+    playerId,
+    name: 'Export Fixture',
+    seed: 'mini-1',
+    startConditions: start,
+    simVersion: SIM_VERSION,
+    schemaVersion: SCHEMA_VERSION,
+    appVersion: '0.0.0-fixture',
+    exportedAt: '2026-11-14T09:41:00.000Z',
+    tick: 5_454_877,
+    netWorth: 1_234_567,
+    marketChecksumMatches: true,
+  };
+}
+
 describe('PlayersService', () => {
   let service: PlayersService;
+  let engine: Mocked<Pick<EngineService, 'importPlayer'>>;
   let locks: FakePlayerLocks;
   let hub: FakeBroadcastHub;
   let persistence: FakeStoragePersistence;
@@ -83,9 +104,11 @@ describe('PlayersService', () => {
     locks = new FakePlayerLocks();
     hub = new FakeBroadcastHub();
     persistence = new FakeStoragePersistence();
+    engine = { importPlayer: vi.fn() };
     TestBed.configureTestingModule({
       providers: [
         providePlayersService(),
+        { provide: EngineService, useValue: engine },
         providePlayersTestPorts({
           locks,
           hub,
@@ -148,6 +171,84 @@ describe('PlayersService', () => {
       expect(hub.posted).toEqual([
         { type: 'players-changed', change: 'created', playerId: profile.id },
       ]);
+    });
+  });
+
+  describe('importPlayer', () => {
+    it('lets the worker write the game first, then creates the profile with the suffix', async () => {
+      let profilesDuringImport = -1;
+      engine.importPlayer.mockImplementation((_content, playerId) =>
+        defer(async () => {
+          profilesDuringImport = await database.count('players');
+          await writeWorkerRecords(database, playerId);
+          return importedPlayer(playerId);
+        }),
+      );
+
+      const imported = await firstValueFrom(service.importPlayer('file', ' (Import)'));
+
+      expect(engine.importPlayer).toHaveBeenCalledWith(
+        'file',
+        'p-00000abc00000abd00000abe00000abf',
+      );
+      expect(profilesDuringImport).toBe(0);
+      expect(imported).toEqual({
+        profile: {
+          id: 'p-00000abc00000abd00000abe00000abf',
+          name: 'Export Fixture (Import)',
+          seed: 'mini-1',
+          seedKey: expect.any(Array),
+          start: ANNA.start,
+          simVersion: SIM_VERSION,
+          createdAt: NOW,
+        },
+        firstPlayer: true,
+        tick: 5_454_877,
+        marketChecksumMatches: true,
+      });
+      expect(await database.getAll('players')).toEqual([imported.profile]);
+      expect(hub.posted).toEqual([
+        { type: 'players-changed', change: 'created', playerId: imported.profile.id },
+      ]);
+      const [player] = await firstValueFrom(service.loadPlayers());
+      expect(player).toMatchObject({ name: 'Export Fixture (Import)', tick: 5_400_000 });
+    });
+
+    it('creates no profile when the worker rejects the file', async () => {
+      engine.importPlayer.mockReturnValue(
+        throwError(() => new EngineCommandError('checksum-mismatch')),
+      );
+
+      const error = await firstValueFrom(service.importPlayer('file', ' (Import)')).catch(
+        (failure: unknown) => failure,
+      );
+
+      expect(error).toBeInstanceOf(EngineCommandError);
+      expect((error as EngineCommandError).code).toBe('checksum-mismatch');
+      expect(await database.count('players')).toBe(0);
+      expect(hub.posted).toEqual([]);
+    });
+
+    it('deletes what the worker wrote when the profile cannot be created', async () => {
+      let playerId = '';
+      engine.importPlayer.mockImplementation((_content, id) =>
+        defer(async () => {
+          playerId = id;
+          await writeWorkerRecords(database, id);
+          // Start conditions out of the ranges of PS US-SP-01: no valid profile.
+          return importedPlayer(id, { ...ANNA.start, netIncome: 5_000_001 });
+        }),
+      );
+
+      const error = await firstValueFrom(service.importPlayer('file', ' (Import)')).catch(
+        (failure: unknown) => failure,
+      );
+
+      expect(error).toBeInstanceOf(Error);
+      expect(playerId).not.toBe('');
+      expect((await countRecords(database, playerId)).every((count) => count === 0)).toBe(true);
+      expect(locks.held).toEqual([]);
+      expect(hub.posted).toEqual([]);
     });
   });
 
@@ -377,6 +478,7 @@ describe('PlayersService', () => {
       TestBed.configureTestingModule({
         providers: [
           providePlayersService(),
+          { provide: EngineService, useValue: engine },
           providePlayersTestPorts({ persistence: new FakeStoragePersistence(false) }),
         ],
       });

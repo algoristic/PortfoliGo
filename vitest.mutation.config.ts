@@ -114,6 +114,7 @@ const RULE_SPECS = [
   'src/app/persistence/util/canonical-json.spec.ts',
   'src/app/persistence/util/text-codec.spec.ts',
   'src/app/players/domain/player-export-logic.spec.ts',
+  'src/app/players/domain/player-import-logic.spec.ts',
   'src/app/players/domain/player-export.utils.spec.ts',
 ];
 

@@ -97,6 +97,7 @@ import {
   StoredClock,
   StoredPlayerState,
 } from './engine-host.model';
+import { importPlayer } from './player-import';
 
 import {
   AutoPauseCause,
@@ -115,6 +116,7 @@ import {
   EngineReplies,
   ExchangeInfo,
   ExportedPlayer,
+  ImportedPlayer,
   LoadPlayerPayload,
   NotificationsProjection,
   NotificationsQuery,
@@ -558,9 +560,12 @@ export class EngineHost {
       ).tick,
     }),
     exportPlayer: ({ name }) => this.#export(name),
+    importPlayer: (payload) => this.#import(payload),
   };
 
   #queue: Promise<void> = Promise.resolve();
+  /** Imports run one after another beside the other messages (TS §10.3). */
+  #imports: Promise<void> = Promise.resolve();
   /** Writes that run beside the loop (clock, snapshots, candles); they never reject. */
   readonly #writes = new Set<Promise<void>>();
   /** Plannings of the candle job; they wait for the writes, so they are not writes themselves. */
@@ -606,6 +611,11 @@ export class EngineHost {
 
   /** Handles a message of the UI; resolves when it is answered. Never rejects. */
   receive(data: unknown): Promise<void> {
+    if (isEngineEnvelope(data) && data.type === 'importPlayer') {
+      // An import yields between its slices; the loaded player's messages go on meanwhile.
+      this.#imports = this.#imports.then(() => this.#handle(data));
+      return this.#imports;
+    }
     this.#queue = this.#queue.then(() => this.#handle(data));
     return this.#queue;
   }
@@ -900,6 +910,28 @@ export class EngineHost {
       tick: snapshot.tick,
       exportedAt: content.exportedAt,
     };
+  }
+
+  /**
+   * Imports an export file as a new player (TS §10.3, `player-import.ts`). It needs no loaded player
+   * and does not load the new one.
+   */
+  async #import(payload: EngineCommandPayloads['importPlayer']): Promise<ImportedPlayer> {
+    const result = await importPlayer(payload, {
+      storage: this.#ports.storage,
+      locks: this.#ports.locks,
+      now: () => this.#ports.now(),
+      yieldToEvents: this.#ports.yieldToEvents ?? (() => Promise.resolve()),
+      sliceMs: this.#config.importSliceMs,
+      progressIntervalMs: this.#config.progressIntervalMs,
+      progress: (progress) => this.#progress(progress),
+      createWorld: this.#options.createWorld ?? generateStandardWorld,
+      prices: this.#options.prices,
+    });
+    if (!result.ok) {
+      throw new CommandFailure(result.error, result.message);
+    }
+    return result.player;
   }
 
   /** Saves the game (snapshot with clock and candles) and releases the lock (TS §8.2). */

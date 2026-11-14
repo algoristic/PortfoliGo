@@ -410,6 +410,7 @@ const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = 
     hasFields(payload, { savingsPlanId: isSavingsPlanId, paused: isBoolean }),
   deleteSavingsPlan: (payload) => hasFields(payload, { savingsPlanId: isSavingsPlanId }),
   exportPlayer: (payload) => hasFields(payload, { name: isString }),
+  importPlayer: (payload) => hasFields(payload, { content: isString, playerId: isNonEmptyString }),
 };
 
 function isQuote(value: unknown): boolean {

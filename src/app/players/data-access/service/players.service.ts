@@ -4,6 +4,7 @@ import { defer, firstValueFrom, map, Observable, share } from 'rxjs';
 
 import { withoutFirstSteps } from '@app/dashboard/domain/first-steps-logic';
 import { FIRST_STEPS_SETTINGS_VERSION } from '@app/dashboard/domain/models/first-steps.model';
+import { EngineService } from '@app/engine/data-access/service/engine.service';
 import type {
   RuntimeRecord,
   SnapshotRecord,
@@ -18,6 +19,7 @@ import {
   playerKeyRange,
 } from '@app/persistence/data-access/schema/player-records';
 import { NewPlayer, PlayerListEntry, PlayerProfile } from '@app/players/domain/models/player.model';
+import { importedPlayerName } from '@app/players/domain/player-import-logic';
 import {
   createPlayerProfile,
   normalizePlayerName,
@@ -38,6 +40,7 @@ import {
 } from './players-service.config';
 import {
   CreatedPlayer,
+  ImportedPlayerResult,
   PlayerChange,
   PlayersChangedMessage,
   PlayersServiceError,
@@ -58,6 +61,7 @@ export class PlayersService {
   readonly #now = inject(PLAYERS_CLOCK);
   readonly #random = inject(PLAYERS_RANDOM);
   readonly #pendingTasks = inject(PendingTasks);
+  readonly #engine = inject(EngineService);
 
   #database: Promise<IDBPDatabase> | undefined;
   #channel: MessageChannelPort | undefined;
@@ -121,14 +125,45 @@ export class PlayersService {
   createPlayer(input: NewPlayer): Observable<CreatedPlayer> {
     return this.#task(async () => {
       const profile = createPlayerProfile(input, createPlayerId(this.#random), this.#now());
-      const database = await this.#db();
-      const transaction = database.transaction('players', 'readwrite');
-      const store = transaction.objectStore('players');
-      const others = await store.count();
-      await store.add(profile);
-      await transaction.done;
+      const created = await this.#addProfile(profile);
       this.#broadcast('created', profile.id);
-      return { profile, firstPlayer: others === 0 };
+      return created;
+    });
+  }
+
+  /**
+   * Imports an export file (TS §9.1, §10.3): the worker checks it, recomputes the market history
+   * and writes the game under a new ID; then the profile is created with the exported name and
+   * `nameSuffix` (a text of the UI, e.g. „ (Import)“). If the profile cannot be created, the
+   * worker's records are deleted again. Errors of the worker are `EngineCommandError`s with the
+   * codes of `IMPORT_ERRORS`, `player-locked` or `storage-failed`.
+   */
+  importPlayer(content: string, nameSuffix: string): Observable<ImportedPlayerResult> {
+    return this.#task(async () => {
+      const playerId = createPlayerId(this.#random);
+      const imported = await firstValueFrom(this.#engine.importPlayer(content, playerId));
+      let created: CreatedPlayer;
+      try {
+        const profile = createPlayerProfile(
+          {
+            name: importedPlayerName(imported.name, nameSuffix),
+            seed: imported.seed,
+            start: imported.startConditions,
+          },
+          playerId,
+          this.#now(),
+        );
+        created = await this.#addProfile(profile);
+      } catch (error) {
+        await this.#deleteWorkerRecords(playerId);
+        throw error;
+      }
+      this.#broadcast('created', playerId);
+      return {
+        ...created,
+        tick: imported.tick,
+        marketChecksumMatches: imported.marketChecksumMatches,
+      };
     });
   }
 
@@ -212,6 +247,29 @@ export class PlayersService {
   /** A shareable seed such as `kupfer-falke-731` (TS §4.1). */
   suggestSeed(): string {
     return generateSeed(this.#random);
+  }
+
+  async #addProfile(profile: PlayerProfile): Promise<CreatedPlayer> {
+    const database = await this.#db();
+    const transaction = database.transaction('players', 'readwrite');
+    const store = transaction.objectStore('players');
+    const others = await store.count();
+    await store.add(profile);
+    await transaction.done;
+    return { profile, firstPlayer: others === 0 };
+  }
+
+  /** Removes what an import wrote, under the player's Web Lock (best effort, TS §9.4). */
+  async #deleteWorkerRecords(playerId: string): Promise<void> {
+    const lock = await this.#locks.acquire(playerId);
+    try {
+      const database = await this.#db();
+      await deletePlayerRecords(database, playerId, [...WORKER_STORES]);
+    } catch {
+      // The records have no profile, so the player list never shows them.
+    } finally {
+      lock?.release();
+    }
   }
 
   /** A broken entry is dropped as well; failing localStorage does not fail the deletion. */

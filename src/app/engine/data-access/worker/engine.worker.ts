@@ -7,6 +7,12 @@ import { IndexedDbEngineStorage } from './indexed-db-engine-storage';
 
 import { version } from '../../../../../package.json';
 
+// A macrotask without the clamping of nested `setTimeout` calls: an import yields between its
+// slices of the history run (TS §10.3), so that other messages and the loop run.
+const yieldChannel = new MessageChannel();
+const yielded: (() => void)[] = [];
+yieldChannel.port1.onmessage = () => yielded.shift()?.();
+
 const host = new EngineHost(
   {
     now: () => Date.now(),
@@ -17,6 +23,11 @@ const host = new EngineHost(
     },
     storage: new IndexedDbEngineStorage(),
     locks: new WebPlayerLocks(navigator.locks),
+    yieldToEvents: () =>
+      new Promise((resolve) => {
+        yielded.push(resolve);
+        yieldChannel.port2.postMessage(null);
+      }),
   },
   { appVersion: version },
 );
