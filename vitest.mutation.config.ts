@@ -116,6 +116,7 @@ const RULE_SPECS = [
   'src/app/players/domain/player-export-logic.spec.ts',
   'src/app/players/domain/player-import-logic.spec.ts',
   'src/app/players/domain/player-export.utils.spec.ts',
+  'src/app/players/domain/backup-logic.spec.ts',
 ];
 
 export default mergeConfig(

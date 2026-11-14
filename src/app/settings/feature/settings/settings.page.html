@@ -2,6 +2,8 @@
 @let shortcutsEnabled = settingsFacade.shortcutsEnabled$ | async;
 @let background = clockFacade.background$ | async;
 @let autoPause = notificationsFacade.autoPause$ | async;
+@let backup = playersFacade.backup$ | async;
+@let exporting = playersFacade.exporting$ | async;
 
 <h1 class="text-xl font-semibold" i18n="@@featureSettings-settingsPage-title">Einstellungen</h1>
 
@@ -28,5 +30,11 @@
       class="mt-6 border-t border-border pt-4"
       [autoPause]="autoPause"
       (toggledAutoPause)="onToggleAutoPause($event)"></app-auto-pause-settings>
+    <app-player-backup
+      class="mt-6 border-t border-border pt-4"
+      [backup]="backup"
+      [exporting]="exporting"
+      (clickedExport)="onExport()"
+      (selectedInterval)="onSelectBackupInterval($event)"></app-player-backup>
   </app-panel>
 </div>

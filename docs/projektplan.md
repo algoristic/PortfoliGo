@@ -53,7 +53,7 @@ flowchart TD
 | M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Daueraufträge, Sparpläne, Steuern, Depot, Dashboard mit Benchmark      | 10  |
 | M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 1.0: Export und Import, PWA, Einstellungen, Hintergrundmodi, Deutsch und Englisch | 9   |
 
-**Empfohlene Reihenfolge:** M3, M4 und M5 sind abgeschlossen (M5 mit der einmaligen Erhöhung von `SCHEMA_VERSION` auf 6, §5, M5). In M6 ist AP 6.7 (weitere Modi für das Verhalten im Hintergrund, `SCHEMA_VERSION` 7) fertig; als Nächstes folgt AP 6.1 (Export und Import), damit Formatversion 1 des Exports die neuen Spielereinstellungen gleich enthält. E-35 und die Ergänzungen zu E-10 sind entschieden (14.11.2026, §3). Die Sprachumschaltung (AP 6.8a, AP 6.8b) folgt nach AP 6.2; die Übersetzung kommt zuletzt, wenn alle Texte von M6 stehen. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
+**Empfohlene Reihenfolge:** M3, M4 und M5 sind abgeschlossen (M5 mit der einmaligen Erhöhung von `SCHEMA_VERSION` auf 6, §5, M5). In M6 sind AP 6.7 (weitere Modi für das Verhalten im Hintergrund, `SCHEMA_VERSION` 7) und AP 6.1 (Export und Import, Formatversion 1 mit den neuen Spielereinstellungen) fertig; als Nächstes folgt AP 6.2 (Einstellungen). E-35 und die Ergänzungen zu E-10 sind entschieden (14.11.2026, §3). Die Sprachumschaltung (AP 6.8a, AP 6.8b) folgt nach AP 6.2; die Übersetzung kommt zuletzt, wenn alle Texte von M6 stehen. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
 
 ## 2. Arbeitsweise in Sessions
 
@@ -167,7 +167,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 5.7c | Erträge und Kosten, Dividendenkalender           | fertig | 5.7b                 |
 | 5.8  | Chart: wählbare Auflösung und Indikatorfarben    | fertig | 4.5                  |
 | 5.9  | Kopfzeile: stabiles Layout der Uhr               | fertig | 2.5                  |
-| 6.1  | Export und Import                                | offen  | 5.6a, 5.6b, 5.7, 6.7 |
+| 6.1  | Export und Import                                | fertig | 5.6a, 5.6b, 5.7, 6.7 |
 | 6.2  | Einstellungen                                    | offen  | 6.1, 3.6, 2.6        |
 | 6.3  | PWA und Browser-Benachrichtigungen               | offen  | 6.2                  |
 | 6.4  | Performance und Robustheit                       | offen  | 6.1, 1.9c, 6.7       |
@@ -337,7 +337,7 @@ flowchart TD
   AP6_8b --> AP6_6
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_1,AP5_2,AP5_3,AP5_4,AP5_5,AP5_6a,AP5_6b,AP5_7,AP5_8,AP5_9,AP6_7 done
+  class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_1,AP5_2,AP5_3,AP5_4,AP5_5,AP5_6a,AP5_6b,AP5_7,AP5_8,AP5_9,AP6_1,AP6_7 done
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6
@@ -839,7 +839,7 @@ AP 5.7 wurde nach §2.5 geteilt (14.11.2026) und ist mit allen drei Teilen ferti
   - Seitentest: exportieren, importieren, beschädigte Datei ablehnen.
   - Systemtest mit echtem Download und Upload in Chromium, Firefox und WebKit.
 - **Geklärt (14.11.2026):** E-10 mit Ergänzungen bestätigt – gzip schon in Formatversion 1, Export ohne `commands`, Import startet pausiert (TS §10.1, §10.3).
-- **Vor der Umsetzung klären:** Beim Import legt die UI das Profil an (Vorschlag, TS §9.1).
+- **Vor der Umsetzung klären:** Beim Import legt die UI das Profil an (Vorschlag, TS §9.1; in AP 6.1 so umgesetzt, Bestätigung durch den PO offen).
 - **Referenzen:** US-EX-01–US-EX-03; TS §10; E-10
 - **Abhängig von:** AP 5.6a, AP 5.6b, AP 5.7, AP 6.7 (die erweiterten Hintergrund-Einstellungen gehören schon in Formatversion 1)
 

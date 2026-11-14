@@ -25,7 +25,7 @@ export function click(element: HTMLElement): void {
 }
 
 /** Sets the value like typing does and reports it with an `input` event. */
-export function typeText(input: HTMLInputElement, value: string): void {
+export function typeText(input: HTMLInputElement | HTMLTextAreaElement, value: string): void {
   input.value = value;
   input.dispatchEvent(new Event('input', { bubbles: true }));
 }

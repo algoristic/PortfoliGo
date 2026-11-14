@@ -1,0 +1,49 @@
+@let _backup = backup();
+
+<h3 class="font-medium" i18n="@@uiPlayers-playerBackup-heading">Spielstand sichern</h3>
+<p class="mt-1 text-sm text-fg-muted" i18n="@@uiPlayers-playerBackup-text">
+  Exportiere den Spielstand als Datei oder in die Zwischenablage, um ihn zu sichern oder auf einem
+  anderen Gerät weiterzuspielen. Browser können gespeicherte Daten löschen.
+</p>
+<p class="mt-2 text-sm" data-testid="settings.player.last-export">
+  @if (_backup?.exportedAt; as exportedAt) {
+    <span i18n="@@uiPlayers-playerBackup-lastExport"
+      >Zuletzt auf diesem Gerät exportiert:
+      <span class="tabular-nums">{{ exportedAt | formatDateTime }}</span></span
+    >
+  } @else {
+    <span i18n="@@uiPlayers-playerBackup-neverExported"
+      >Auf diesem Gerät noch nicht exportiert.</span
+    >
+  }
+</p>
+<div class="mt-3 flex flex-wrap items-end gap-3">
+  <button
+    appButton
+    type="button"
+    data-testid="settings.player.export"
+    [disabled]="exporting()"
+    [attr.aria-busy]="exporting() ? true : null"
+    (click)="onExport()">
+    <i appIcon="box-arrow-up"></i>
+    <span i18n="@@uiPlayers-playerBackup-export">Spielstand exportieren</span>
+  </button>
+  <div class="flex flex-col gap-1">
+    <label
+      class="text-sm font-medium"
+      for="settings-player-backup-interval"
+      i18n="@@uiPlayers-playerBackup-intervalLabel"
+      >An Sicherung erinnern (alle Spieler auf diesem Gerät)</label
+    >
+    <select
+      id="settings-player-backup-interval"
+      class="h-10 rounded-md border border-border bg-surface px-2 text-fg"
+      data-testid="settings.player.backup-interval"
+      [disabled]="!_backup"
+      (change)="onSelectInterval($event)">
+      @for (option of intervalOptions(); track option.value) {
+        <option [value]="option.value" [selected]="option.selected">{{ option.label }}</option>
+      }
+    </select>
+  </div>
+</div>

@@ -121,6 +121,7 @@ const config = {
     'src/app/players/domain/player-export-logic.ts',
     'src/app/players/domain/player-export.utils.ts',
     'src/app/players/domain/player-import-logic.ts',
+    'src/app/players/domain/backup-logic.ts',
   ],
   coverageAnalysis: 'perTest',
   ignoreStatic: true,

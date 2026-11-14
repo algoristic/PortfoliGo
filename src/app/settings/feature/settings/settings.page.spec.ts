@@ -10,9 +10,21 @@ import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-playe
 import { PlayersService } from '@app/players/data-access/service/players.service';
 import { providePlayersTestPorts } from '@app/players/data-access/testing/fake-players-ports';
 import { NewPlayer } from '@app/players/domain/models/player.model';
+import {
+  provideRecordingFileDownload,
+  RecordingFileDownload,
+} from '@app/shared/data-access/testing/recording-file-download';
 
 import { installSystemColorScheme, SystemColorScheme } from '../../../../testing/color-scheme';
-import { byTestId, click, press, queryByTestId, select, textOf } from '../../../../testing/dom';
+import {
+  byTestId,
+  click,
+  press,
+  queryByTestId,
+  select,
+  textOf,
+  typeText,
+} from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
 
 const ANNA: NewPlayer = {
@@ -31,9 +43,14 @@ describe('SettingsPage', () => {
   let page: HTMLElement;
   let system: SystemColorScheme;
   let playerId: string;
+  let downloads: RecordingFileDownload;
+  /** Wall clock of the `PlayersService` (creation, export and reminder times). */
+  let wallClock: number;
 
   beforeEach(async () => {
     localStorage.clear();
+    wallClock = Date.UTC(2026, 10, 13, 12);
+    downloads = new RecordingFileDownload();
     document.documentElement.classList.remove('dark');
     system = installSystemColorScheme(false);
     locks = new FakePlayerLocks();
@@ -53,7 +70,8 @@ describe('SettingsPage', () => {
   async function openApp(url: string): Promise<void> {
     harness = await renderRoute(url, [
       provideInProcessEngineWorker(engine),
-      providePlayersTestPorts({ locks }),
+      providePlayersTestPorts({ locks, clock: () => wallClock }),
+      provideRecordingFileDownload(downloads),
     ]);
     page = harness.fixture.nativeElement;
   }
@@ -249,5 +267,161 @@ describe('SettingsPage', () => {
         .map((message) => message.payload),
     ).toEqual([{ frozen: true }, { frozen: false }]);
     expect(clock()).toBe('Mo., 01.04.2030, 00:01');
+  });
+
+  describe('export (US-EX-01, TS §10.2)', () => {
+    /** `PLAYERS_CLOCK` of `providePlayersTestPorts`: 13.11.2026, 12:00 UTC. */
+    const NOW = Date.UTC(2026, 10, 13, 12);
+
+    function storedBackup(): unknown {
+      return JSON.parse(localStorage.getItem('pgo.backup') ?? 'null');
+    }
+
+    function toastTexts(): string[] {
+      return [...document.body.querySelectorAll('[data-testid^="toast."] p')].map(textOf);
+    }
+
+    it('saves the export as a file and in the clipboard and notes the time', async () => {
+      expect(textOf(byTestId(page, 'settings.player.last-export'))).toBe(
+        'Auf diesem Gerät noch nicht exportiert.',
+      );
+      expect(selectField('settings.player.backup-interval').value).toBe('7');
+
+      await act(() => click(byTestId(page, 'settings.player.export')));
+      // TS §10.1: <name>-<game date of the export tick>.pgo
+      expect(textOf(byTestId(document.body, 'players.export-dialog.file-name'))).toBe(
+        'Anna-2030-04-01.pgo',
+      );
+      expect(storedBackup()).toBeNull();
+      await act(() => click(byTestId(document.body, 'players.export-dialog.download')));
+
+      expect(downloads.files).toHaveLength(1);
+      const [file] = downloads.files;
+      expect(file.fileName).toBe('Anna-2030-04-01.pgo');
+      expect(file.type).toBe('application/octet-stream');
+      // base64 of gzip starts with its magic bytes 1f 8b 08 (RFC 1952)
+      expect(file.content).toMatch(/^H4sI[A-Za-z0-9+/]+=*$/);
+      expect(queryByTestId(document.body, 'players.export-dialog.file-name')).toBeNull();
+      expect(storedBackup()).toEqual({
+        v: 1,
+        data: { intervalDays: 7, players: { [playerId]: { exportedAt: NOW } } },
+      });
+      expect(textOf(byTestId(page, 'settings.player.last-export'))).toMatch(
+        /^Zuletzt auf diesem Gerät exportiert: \d{2}\.\d{2}\.\d{4}, \d{2}:\d{2}$/,
+      );
+
+      // The CDK copies through `execCommand`, which jsdom lacks: the platform boundary.
+      const copied: string[] = [];
+      const execCommand = document.execCommand;
+      document.execCommand = (command: string): boolean => {
+        copied.push(`${command}:${[...document.querySelectorAll('textarea')].at(-1)?.value}`);
+        return true;
+      };
+      try {
+        await act(() => click(byTestId(page, 'settings.player.export')));
+        await act(() => click(byTestId(document.body, 'players.export-dialog.copy')));
+      } finally {
+        document.execCommand = execCommand;
+      }
+      expect(copied).toEqual([`copy:${file.content}`]);
+      expect(toastTexts()).toContain('Der Spielstand ist in der Zwischenablage.');
+    });
+
+    it('keeps the game when copying fails and lets the reminder be switched off', async () => {
+      const execCommand = document.execCommand;
+      document.execCommand = (): boolean => false;
+      try {
+        await act(() => click(byTestId(page, 'settings.player.export')));
+        await act(() => click(byTestId(document.body, 'players.export-dialog.copy')));
+      } finally {
+        document.execCommand = execCommand;
+      }
+      expect(textOf(byTestId(document.body, 'players.export-dialog.copy-error'))).toBe(
+        'Das Kopieren hat nicht geklappt. Lade den Spielstand stattdessen als Datei herunter.',
+      );
+      await act(() => click(byTestId(document.body, 'players.export-dialog.close')));
+      expect(storedBackup()).toBeNull();
+
+      await act(() => select(selectField('settings.player.backup-interval'), 'off'));
+      expect(storedBackup()).toEqual({ v: 1, data: { intervalDays: null, players: {} } });
+      await reload();
+      expect(selectField('settings.player.backup-interval').value).toBe('off');
+    });
+
+    it('imports the exported file as a new player with the same game day and settings', async () => {
+      await act(() => click(input('settings.player.background-mode.pause')));
+      await run(200);
+      await act(() => click(byTestId(page, 'settings.player.export')));
+      await act(() => click(byTestId(document.body, 'players.export-dialog.download')));
+      const [file] = downloads.files;
+
+      await harness.navigateByUrl('/players');
+      await settle(harness.fixture);
+      await act(() => click(byTestId(page, 'players.list.import')));
+      typeText(
+        byTestId<HTMLTextAreaElement>(document.body, 'players.import-dialog.text'),
+        file.content,
+      );
+      await act(() => click(byTestId(document.body, 'players.import-dialog.submit')));
+
+      const players = await firstValueFrom(TestBed.inject(PlayersService).loadPlayers());
+      const imported = players.find(({ name }) => name === 'Anna (Import)');
+      expect(imported).toBeDefined();
+      const importedId = imported?.id ?? '';
+      expect(importedId).not.toBe(playerId);
+      await run(200);
+      expect(clock()).toBe(GAME_START_TEXT);
+      expect(textOf(byTestId(page, 'shell.header.paused'))).toBe('Pausiert');
+
+      await harness.navigateByUrl(`/game/${importedId}/settings`);
+      await run(200);
+      expect(input('settings.player.background-mode.pause').checked).toBe(true);
+    });
+  });
+
+  describe('backup reminder (US-EX-03, TS §9.3)', () => {
+    const DAY_MS = 86_400_000;
+    const REMINDER =
+      'Sicherung empfohlen: Exportiere deinen Spielstand unter Einstellungen → Spieler. So bleibt er erhalten, auch wenn der Browser seine Daten löscht.';
+
+    function toastTexts(): string[] {
+      return [...document.body.querySelectorAll('[data-testid^="toast."] p')].map(textOf);
+    }
+
+    it('reminds seven days after the creation, then a day later again, not after an export', async () => {
+      expect(toastTexts()).not.toContain(REMINDER);
+
+      wallClock += 7 * DAY_MS - 60_000;
+      await reload();
+      expect(toastTexts()).not.toContain(REMINDER);
+
+      wallClock += 60_000;
+      await reload();
+      expect(toastTexts()).toContain(REMINDER);
+
+      // „später“: the next reminder waits a day
+      wallClock += DAY_MS - 60_000;
+      await reload();
+      expect(toastTexts()).not.toContain(REMINDER);
+      wallClock += 60_000;
+      await reload();
+      expect(toastTexts()).toContain(REMINDER);
+
+      await act(() => click(byTestId(page, 'settings.player.export')));
+      await act(() => click(byTestId(document.body, 'players.export-dialog.download')));
+      wallClock += 6 * DAY_MS;
+      await reload();
+      expect(toastTexts()).not.toContain(REMINDER);
+      wallClock += DAY_MS;
+      await reload();
+      expect(toastTexts()).toContain(REMINDER);
+    });
+
+    it('does not remind with the reminder switched off', async () => {
+      await act(() => select(selectField('settings.player.backup-interval'), 'off'));
+      wallClock += 30 * DAY_MS;
+      await reload();
+      expect(toastTexts()).not.toContain(REMINDER);
+    });
   });
 });

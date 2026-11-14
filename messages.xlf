@@ -9231,6 +9231,118 @@
           <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featurePlayers-dialogExportPlayer-text" datatype="html">
+        <source> Dein Spielstand ist bereit. Lade ihn als Datei herunter oder kopiere ihn in die Zwischenablage. Über „Spielstand importieren“ in der Spielerauswahl spielst du ihn später oder auf einem anderen Gerät weiter. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-export-player/dialog-export-player.component.html</context>
+          <context context-type="linenumber">3,7</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogExportPlayer-copyError" datatype="html">
+        <source> Das Kopieren hat nicht geklappt. Lade den Spielstand stattdessen als Datei herunter. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-export-player/dialog-export-player.component.html</context>
+          <context context-type="linenumber">16,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogExportPlayer-copy" datatype="html">
+        <source>In die Zwischenablage</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-export-player/dialog-export-player.component.html</context>
+          <context context-type="linenumber">22,26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogExportPlayer-download" datatype="html">
+        <source>Datei herunterladen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-export-player/dialog-export-player.component.html</context>
+          <context context-type="linenumber">31,35</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogExportPlayer-heading" datatype="html">
+        <source>Spielstand exportieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-export-player/dialog-export-player.component.ts</context>
+          <context context-type="linenumber">34</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogImportPlayer-text" datatype="html">
+        <source> Der Import legt einen neuen Spieler an. Er startet pausiert am Spieltag des Exports. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-import-player/dialog-import-player.component.html</context>
+          <context context-type="linenumber">7,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogImportPlayer-fileLabel" datatype="html">
+        <source>Datei</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-import-player/dialog-import-player.component.html</context>
+          <context context-type="linenumber">15,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogImportPlayer-chooseFile" datatype="html">
+        <source>Datei auswählen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-import-player/dialog-import-player.component.html</context>
+          <context context-type="linenumber">36,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogImportPlayer-noFile" datatype="html">
+        <source>Keine Datei ausgewählt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-import-player/dialog-import-player.component.html</context>
+          <context context-type="linenumber">48,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogImportPlayer-removeFile" datatype="html">
+        <source> Entfernen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-import-player/dialog-import-player.component.html</context>
+          <context context-type="linenumber">60,64</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogImportPlayer-fileError" datatype="html">
+        <source> Die Datei ließ sich nicht lesen. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-import-player/dialog-import-player.component.html</context>
+          <context context-type="linenumber">70,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogImportPlayer-textLabel" datatype="html">
+        <source>Oder Text einfügen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-import-player/dialog-import-player.component.html</context>
+          <context context-type="linenumber">80,83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogImportPlayer-decline" datatype="html">
+        <source> Abbrechen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-import-player/dialog-import-player.component.html</context>
+          <context context-type="linenumber">108,110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogImportPlayer-submit" datatype="html">
+        <source>Importieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-import-player/dialog-import-player.component.html</context>
+          <context context-type="linenumber">112,115</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogImportPlayer-required" datatype="html">
+        <source>Bitte wähle eine Datei oder füge den Spielstand als Text ein.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-import-player/dialog-import-player.component.ts</context>
+          <context context-type="linenumber">42</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-dialogImportPlayer-heading" datatype="html">
+        <source>Spielstand importieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/dialog-import-player/dialog-import-player.component.ts</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featurePlayers-dialogRenamePlayer-name" datatype="html">
         <source>Name</source>
         <context-group purpose="location">
@@ -9284,126 +9396,291 @@
         <source>Spielerauswahl</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
-          <context context-type="linenumber">8,9</context>
+          <context context-type="linenumber">10,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-import" datatype="html">
+        <source>Spielstand importieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
+          <context context-type="linenumber">20,23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersPage-create" datatype="html">
         <source>Neuer Spieler</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
-          <context context-type="linenumber">12,17</context>
+          <context context-type="linenumber">29,33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-importing" datatype="html">
+        <source> Spielstand wird importiert … </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
+          <context context-type="linenumber">39,41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-importingText" datatype="html">
+        <source> Die Kurshistorie seit Spielbeginn wird nachgerechnet. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
+          <context context-type="linenumber">42,45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersPage-emptyHeading" datatype="html">
         <source>Noch keine Spieler</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
-          <context context-type="linenumber">32,33</context>
+          <context context-type="linenumber">75,76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersPage-emptyText" datatype="html">
         <source>Lege einen Spieler an, um ein Spiel zu beginnen. Jeder Spieler hat seine eigene Welt.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
-          <context context-type="linenumber">34,35</context>
+          <context context-type="linenumber">77,78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersPage-createFirst" datatype="html">
         <source>Neuer Spieler</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
-          <context context-type="linenumber">43,46</context>
+          <context context-type="linenumber">86,90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-importFirst" datatype="html">
+        <source> Spielstand importieren </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
+          <context context-type="linenumber">95,98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersPage-lab" datatype="html">
         <source>Zum Labor</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/players/players.page.html</context>
-          <context context-type="linenumber">55,59</context>
+          <context context-type="linenumber">107,111</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersPage-importProgressLabel" datatype="html">
+        <source>Fortschritt des Imports</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/players/players.page.ts</context>
+          <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-renameDialogLabel" datatype="html">
         <source>Spieler umbenennen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">103</context>
+          <context context-type="linenumber">118</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-deleteHeading" datatype="html">
         <source>Spieler löschen?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">140</context>
+          <context context-type="linenumber">155</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-deleteMessage" datatype="html">
         <source>„<x id="name" equiv-text="name"/>“ wird mit allen Spieldaten endgültig gelöscht. Das lässt sich nicht rückgängig machen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">141</context>
+          <context context-type="linenumber">156</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-deleteConfirm" datatype="html">
         <source>Löschen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">142</context>
+          <context context-type="linenumber">157</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-deleteSuccess" datatype="html">
         <source>„<x id="name" equiv-text="name"/>“ wurde gelöscht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">216</context>
+          <context context-type="linenumber">231</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-deleteLocked" datatype="html">
         <source>„<x id="name" equiv-text="name"/>“ ist in einem anderen Tab geöffnet und lässt sich gerade nicht löschen. Schließe den Spieler dort und versuche es erneut.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">230</context>
+          <context context-type="linenumber">245</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-deleteFailure" datatype="html">
         <source>„<x id="name" equiv-text="name"/>“ konnte nicht gelöscht werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">234</context>
+          <context context-type="linenumber">249</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-loadFailure" datatype="html">
         <source>Die Spieler konnten nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">258</context>
+          <context context-type="linenumber">273</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-createFailure" datatype="html">
         <source>Der Spieler konnte nicht angelegt werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">259</context>
+          <context context-type="linenumber">274</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-importDialogLabel" datatype="html">
+        <source>Spielstand importieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">291</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-importNameSuffix" datatype="html">
+        <source> (Import)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">305</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-importSuccess" datatype="html">
+        <source>„<x id="name" equiv-text="profile.name"/>“ wurde importiert. Das Spiel ist pausiert.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">354</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-importChecksumMismatch" datatype="html">
+        <source>Die nachgerechneten Kurse weichen vom Export ab. Das Spiel läuft mit dem exportierten Marktzustand weiter.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">358</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-exportDialogLabel" datatype="html">
+        <source>Spielstand exportieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">404</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-exportCopied" datatype="html">
+        <source>Der Spielstand ist in der Zwischenablage.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">439</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-backupSaveFailure" datatype="html">
+        <source>Die Angaben zur Sicherung konnten auf diesem Gerät nicht gespeichert werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">489</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-backupReminder" datatype="html">
+        <source>Sicherung empfohlen: Exportiere deinen Spielstand unter Einstellungen → Spieler. So bleibt er erhalten, auch wenn der Browser seine Daten löscht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">516</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-renameNotFound" datatype="html">
         <source>Den Spieler gibt es nicht mehr.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">278</context>
+          <context context-type="linenumber">536</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-renameInvalid" datatype="html">
         <source>Der Name ist ungültig.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">281</context>
+          <context context-type="linenumber">539</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePlayers-playersEffects-renameFailure" datatype="html">
         <source>Der Spieler konnte nicht umbenannt werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
-          <context context-type="linenumber">283</context>
+          <context context-type="linenumber">541</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-importFailure" datatype="html">
+        <source>Der Spielstand konnte nicht importiert werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">547</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">566</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-importUnreadable" datatype="html">
+        <source>Die Daten lassen sich nicht lesen. Prüfe, ob du die ganze Datei gewählt oder den ganzen Text eingefügt hast.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">551</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-importInvalid" datatype="html">
+        <source>Das ist kein PortfoliGo-Spielstand.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">553</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-importFormatVersion" datatype="html">
+        <source>Der Spielstand hat ein Format, das diese Version von PortfoliGo nicht kennt. Aktualisiere die App und versuche es erneut.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">555</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-importChecksum" datatype="html">
+        <source>Der Spielstand ist beschädigt oder wurde verändert: Die Prüfsumme stimmt nicht.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">557</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-importVersion" datatype="html">
+        <source>Der Spielstand stammt aus einer anderen Version von PortfoliGo und lässt sich hier nicht fortsetzen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">560</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-importStructure" datatype="html">
+        <source>Der Spielstand ist unvollständig oder fehlerhaft und lässt sich nicht laden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">562</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-importStorage" datatype="html">
+        <source>Der Spielstand konnte nicht gespeichert werden. Prüfe den freien Speicher und versuche es erneut.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">564</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-exportBusy" datatype="html">
+        <source>Während des Vorspulens oder der Nachberechnung lässt sich nicht exportieren. Versuche es gleich noch einmal.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">572</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePlayers-playersEffects-exportFailure" datatype="html">
+        <source>Der Spielstand konnte nicht exportiert werden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/feature/state/players.effects.ts</context>
+          <context context-type="linenumber">574</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPlayers-formNewPlayer-name" datatype="html">
@@ -9509,6 +9786,77 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/ui/form-new-player/form-new-player.component.ts</context>
           <context context-type="linenumber">66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerBackup-heading" datatype="html">
+        <source>Spielstand sichern</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-backup/player-backup.component.html</context>
+          <context context-type="linenumber">3,4</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerBackup-text" datatype="html">
+        <source> Exportiere den Spielstand als Datei oder in die Zwischenablage, um ihn zu sichern oder auf einem anderen Gerät weiterzuspielen. Browser können gespeicherte Daten löschen.
+</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-backup/player-backup.component.html</context>
+          <context context-type="linenumber">5,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerBackup-lastExport" datatype="html">
+        <source>Zuletzt auf diesem Gerät exportiert: <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;tabular-nums&quot;&gt;"/><x id="INTERPOLATION" equiv-text="{{ exportedAt | formatDateTime }}"/><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-backup/player-backup.component.html</context>
+          <context context-type="linenumber">11,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerBackup-neverExported" datatype="html">
+        <source>Auf diesem Gerät noch nicht exportiert.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-backup/player-backup.component.html</context>
+          <context context-type="linenumber">16,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerBackup-export" datatype="html">
+        <source>Spielstand exportieren</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-backup/player-backup.component.html</context>
+          <context context-type="linenumber">29,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerBackup-intervalLabel" datatype="html">
+        <source>An Sicherung erinnern (alle Spieler auf diesem Gerät)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-backup/player-backup.component.html</context>
+          <context context-type="linenumber">36,39</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerBackup-intervalOff" datatype="html">
+        <source>Nie</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-backup/player-backup.component.ts</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerBackup-intervalDaily" datatype="html">
+        <source>Täglich</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-backup/player-backup.component.ts</context>
+          <context context-type="linenumber">59</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerBackup-intervalWeekly" datatype="html">
+        <source>Wöchentlich</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-backup/player-backup.component.ts</context>
+          <context context-type="linenumber">61</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-playerBackup-intervalDays" datatype="html">
+        <source>Alle <x id="days" equiv-text="intervalDays"/> Tage</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/player-backup/player-backup.component.ts</context>
+          <context context-type="linenumber">63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPlayers-playerList-lastPlayed" datatype="html">
@@ -10453,21 +10801,21 @@
         <source>Einstellungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">6,8</context>
+          <context context-type="linenumber">8,10</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-deviceHeading" datatype="html">
         <source>Dieses Gerät</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">10,11</context>
+          <context context-type="linenumber">12,13</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsPage-playerHeading" datatype="html">
         <source>Spieler</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/settings/feature/settings/settings.page.html</context>
-          <context context-type="linenumber">22</context>
+          <context context-type="linenumber">24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsEffects-saveFailure" datatype="html">

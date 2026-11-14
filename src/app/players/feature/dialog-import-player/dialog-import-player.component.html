@@ -1,0 +1,116 @@
+@let _text = importPlayerForm.text();
+@let _file = file();
+
+<form [formRoot]="importPlayerForm">
+  <app-dialog [heading]="heading" testId="players.import-dialog" (clickedClose)="decline()">
+    <p class="text-fg-muted" i18n="@@featurePlayers-dialogImportPlayer-text">
+      Der Import legt einen neuen Spieler an. Er startet pausiert am Spieltag des Exports.
+    </p>
+
+    <div class="mt-4 flex flex-col gap-1">
+      <span
+        id="players-import-dialog-file-label"
+        class="font-medium"
+        i18n="@@featurePlayers-dialogImportPlayer-fileLabel"
+        >Datei</span
+      >
+      <!-- The native control shows browser texts in the browser's language; the button below opens it. -->
+      <input
+        #fileInput
+        id="players-import-dialog-file"
+        type="file"
+        accept=".pgo,text/plain"
+        class="sr-only"
+        tabindex="-1"
+        aria-hidden="true"
+        data-testid="players.import-dialog.file"
+        (change)="onSelectFile($event)" />
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          appButton
+          type="button"
+          aria-describedby="players-import-dialog-file-label players-import-dialog-file-status"
+          data-testid="players.import-dialog.choose-file"
+          (click)="onChooseFile()">
+          <i appIcon="folder2-open"></i>
+          <span i18n="@@featurePlayers-dialogImportPlayer-chooseFile">Datei auswählen</span>
+        </button>
+        <span
+          id="players-import-dialog-file-status"
+          class="flex min-w-0 flex-wrap items-center gap-2"
+          aria-live="polite">
+          @if (_file) {
+            <span class="break-all" data-testid="players.import-dialog.file-name">{{
+              _file.name
+            }}</span>
+          } @else {
+            <span class="text-fg-muted" i18n="@@featurePlayers-dialogImportPlayer-noFile"
+              >Keine Datei ausgewählt</span
+            >
+          }
+        </span>
+        @if (_file) {
+          <button
+            appButton
+            type="button"
+            size="sm"
+            data-testid="players.import-dialog.remove-file"
+            i18n="@@featurePlayers-dialogImportPlayer-removeFile"
+            (click)="onRemoveFile()">
+            Entfernen
+          </button>
+        }
+      </div>
+      @if (fileUnreadable()) {
+        <p
+          class="text-down"
+          role="alert"
+          data-testid="players.import-dialog.file-error"
+          i18n="@@featurePlayers-dialogImportPlayer-fileError">
+          Die Datei ließ sich nicht lesen.
+        </p>
+      }
+    </div>
+
+    <div class="mt-4 flex flex-col gap-1">
+      <label
+        class="font-medium"
+        for="players-import-dialog-text"
+        i18n="@@featurePlayers-dialogImportPlayer-textLabel"
+        >Oder Text einfügen</label
+      >
+      <textarea
+        id="players-import-dialog-text"
+        rows="5"
+        class="rounded-md border border-border bg-surface px-3 py-2 font-mono text-xs text-fg disabled:opacity-50 aria-invalid:border-down"
+        autocomplete="off"
+        spellcheck="false"
+        aria-describedby="players-import-dialog-text-errors"
+        data-testid="players.import-dialog.text"
+        [attr.aria-invalid]="_text.touched() && _text.invalid()"
+        [formField]="importPlayerForm.text"></textarea>
+      <p id="players-import-dialog-text-errors" class="text-down">
+        @if (_text.touched() && _text.invalid()) {
+          @for (error of _text.errors(); track error.kind) {
+            <span data-testid="players.import-dialog.text-error">{{ error.message }}</span>
+          }
+        }
+      </p>
+    </div>
+
+    <ng-container dialogActions>
+      <button
+        appButton
+        type="button"
+        data-testid="players.import-dialog.decline"
+        i18n="@@featurePlayers-dialogImportPlayer-decline"
+        (click)="decline()">
+        Abbrechen
+      </button>
+      <button appButton type="submit" variant="primary" data-testid="players.import-dialog.submit">
+        <i appIcon="box-arrow-in-down"></i>
+        <span i18n="@@featurePlayers-dialogImportPlayer-submit">Importieren</span>
+      </button>
+    </ng-container>
+  </app-dialog>
+</form>

@@ -534,6 +534,7 @@ Als Anwender möchte ich einen Spieler jederzeit exportieren, damit ich ihn sich
 
 - Export als base64-kodiertes JSON: als Datei-Download und zum Kopieren in die Zwischenablage.
 - Der Export enthält alles, was den Spieler ausmacht; die Welt wird beim Import aus dem Seed neu erzeugt.
+- Der Export liegt in den Einstellungen unter „Spieler“ („Spielstand sichern“); dort steht auch, wann zuletzt auf diesem Gerät exportiert wurde (AP 6.1).
 
 **US-EX-02 – Spieler importieren** · Stufe 1 · M
 Als Anwender möchte ich einen exportierten Spieler importieren, damit ich weiterspielen kann.
@@ -541,11 +542,13 @@ Als Anwender möchte ich einen exportierten Spieler importieren, damit ich weite
 - Import aus einer Datei oder aus eingefügtem Text; der Import legt immer einen neuen Spieler an.
 - Der importierte Spieler startet pausiert; die Zeit seit dem Export wird nicht nachberechnet (E-10).
 - Ungültige oder beschädigte Daten und inkompatible Versionen werden mit verständlicher Meldung abgelehnt.
+- „Spielstand importieren“ steht in der Spielerauswahl; der neue Spieler heißt wie der exportierte mit dem Zusatz „(Import)“ und öffnet sich danach wie ein neu angelegter (AP 6.1).
 
 **US-EX-03 – Datensicherung und Speicherschutz** · Stufe 1 · S
 Als Anwender möchte ich vor Datenverlust geschützt werden, damit mein Fortschritt nicht verloren geht.
 
 - Erinnerung an einen Export in einstellbarem Abstand (Echtzeit).
+- Die Erinnerung erscheint beim Spielstart als Hinweis, wenn seit dem letzten Export (oder dem Anlegen) der gewählte Abstand vergangen ist – täglich, alle 3 Tage, wöchentlich (Vorgabe), alle 14 oder 30 Tage oder nie –, und danach frühestens einen Tag später wieder (AP 6.1, TS §9.3).
 - Die App fordert dauerhaften Speicher an und erklärt, warum die Installation als App die Daten zusätzlich schützt.
 
 **US-UI-01 – Erscheinungsbild** · Stufe 1 · M

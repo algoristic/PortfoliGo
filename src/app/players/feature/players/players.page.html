@@ -1,18 +1,61 @@
 @let players = playersFacade.players$ | async;
 @let loaded = playersFacade.loaded$ | async;
 @let lastPlayerId = playersFacade.lastPlayerId$ | async;
+@let importing = playersFacade.importing$ | async;
+@let importRatio = playersFacade.importRatio$ | async;
 
 <main class="mx-auto flex min-h-dvh max-w-2xl flex-col gap-4 px-4 py-8">
   <p class="text-lg font-semibold text-accent">PortfoliGo</p>
   <div class="flex flex-wrap items-center justify-between gap-2">
     <h1 class="text-2xl font-semibold" i18n="@@featurePlayers-playersPage-title">Spielerauswahl</h1>
     @if (players && players.length > 0) {
-      <a #createLink appButton variant="primary" routerLink="new" data-testid="players.list.create">
-        <i appIcon="person-plus"></i>
-        <span i18n="@@featurePlayers-playersPage-create">Neuer Spieler</span>
-      </a>
+      <div class="flex flex-wrap gap-2">
+        <button
+          appButton
+          type="button"
+          data-testid="players.list.import"
+          [disabled]="importing"
+          (click)="onImportPlayer()">
+          <i appIcon="box-arrow-in-down"></i>
+          <span i18n="@@featurePlayers-playersPage-import">Spielstand importieren</span>
+        </button>
+        <a
+          #createLink
+          appButton
+          variant="primary"
+          routerLink="new"
+          data-testid="players.list.create">
+          <i appIcon="person-plus"></i>
+          <span i18n="@@featurePlayers-playersPage-create">Neuer Spieler</span>
+        </a>
+      </div>
     }
   </div>
+
+  @if (importing) {
+    <app-panel data-testid="players.import-progress">
+      <div class="flex flex-col gap-2" aria-live="polite">
+        <p class="font-medium" i18n="@@featurePlayers-playersPage-importing">
+          Spielstand wird importiert …
+        </p>
+        <p class="text-sm text-fg-muted" i18n="@@featurePlayers-playersPage-importingText">
+          Die Kurshistorie seit Spielbeginn wird nachgerechnet.
+        </p>
+        <div
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuenow]="importPercent()"
+          [attr.aria-label]="importProgressLabel"
+          class="h-2 w-full overflow-hidden rounded-full bg-surface-raised">
+          <div class="h-full bg-accent" [style.width.%]="importPercent() ?? 0"></div>
+        </div>
+        <p class="text-sm tabular-nums" data-testid="players.import-progress.value">
+          {{ importRatio | formatPercent: 0 }}
+        </p>
+      </div>
+    </app-panel>
+  }
 
   @if (!loaded) {
     <app-panel>
@@ -42,6 +85,15 @@
           i18n="@@featurePlayers-playersPage-createFirst"
           >Neuer Spieler</a
         >
+        <button
+          appButton
+          type="button"
+          data-testid="players.list.import"
+          [disabled]="importing"
+          i18n="@@featurePlayers-playersPage-importFirst"
+          (click)="onImportPlayer()">
+          Spielstand importieren
+        </button>
       </app-empty-state>
     </app-panel>
   }

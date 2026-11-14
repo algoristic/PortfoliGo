@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 
+import { BackupIntervalDays } from '@app/players/domain/models/backup.model';
 import { NewPlayer } from '@app/players/domain/models/player.model';
 
 import * as PlayersActions from './players.actions';
@@ -15,6 +16,10 @@ export class PlayersFacade {
   lastPlayerId$ = this.#store.pipe(select(PlayersSelectors.selectLastPlayerId));
   suggestedSeed$ = this.#store.pipe(select(PlayersSelectors.selectSuggestedSeed));
   creating$ = this.#store.pipe(select(PlayersSelectors.selectCreating));
+  importing$ = this.#store.pipe(select(PlayersSelectors.selectImporting));
+  importRatio$ = this.#store.pipe(select(PlayersSelectors.selectImportRatio));
+  exporting$ = this.#store.pipe(select(PlayersSelectors.selectExporting));
+  backup$ = this.#store.pipe(select(PlayersSelectors.selectBackup));
 
   enterPlayersPage(): void {
     this.#store.dispatch(PlayersActions.enterPlayersPage());
@@ -46,5 +51,18 @@ export class PlayersFacade {
 
   createPlayer(newPlayer: NewPlayer): void {
     this.#store.dispatch(PlayersActions.submittedNewPlayer({ newPlayer }));
+  }
+
+  importPlayer(): void {
+    this.#store.dispatch(PlayersActions.clickedImportPlayer());
+  }
+
+  /** Exports the player of the open game (TS §10.2). */
+  exportPlayer(): void {
+    this.#store.dispatch(PlayersActions.clickedExportPlayer());
+  }
+
+  selectBackupInterval(intervalDays: BackupIntervalDays | null): void {
+    this.#store.dispatch(PlayersActions.selectedBackupInterval({ intervalDays }));
   }
 }

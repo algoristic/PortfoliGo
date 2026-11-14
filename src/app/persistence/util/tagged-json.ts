@@ -88,19 +88,24 @@ function encodeObject(value: object): JsonValue {
       return toTaggedJson(item);
     });
   }
-  if (value instanceof Map) {
-    return {
-      [MAP_TAG]: [...value.entries()].map(([key, item]) => [toTaggedJson(key), toTaggedJson(item)]),
-    };
+  // By the built-in tag instead of `instanceof`: values read back from IndexedDB may come from
+  // another realm (fake-indexeddb under jsdom), whose constructors differ.
+  switch (Object.prototype.toString.call(value)) {
+    case '[object Map]':
+      return {
+        [MAP_TAG]: [...(value as Map<unknown, unknown>).entries()].map(([key, item]) => [
+          toTaggedJson(key),
+          toTaggedJson(item),
+        ]),
+      };
+    case '[object Float64Array]':
+      return { [FLOAT64_TAG]: Array.from(value as Float64Array, encodeNumber) };
+    case '[object Int32Array]':
+      return { [INT32_TAG]: Array.from(value as Int32Array) };
   }
-  if (value instanceof Float64Array) {
-    return { [FLOAT64_TAG]: Array.from(value, encodeNumber) };
-  }
-  if (value instanceof Int32Array) {
-    return { [INT32_TAG]: Array.from(value) };
-  }
-  const prototype = Object.getPrototypeOf(value) as unknown;
-  if (prototype !== Object.prototype && prototype !== null) {
+  // A plain object's prototype is the `Object.prototype` of some realm, which has none itself.
+  const prototype = Object.getPrototypeOf(value) as object | null;
+  if (prototype !== null && Object.getPrototypeOf(prototype) !== null) {
     throw new TypeError('toTaggedJson: unsupported object');
   }
   const result: Record<string, JsonValue> = {};

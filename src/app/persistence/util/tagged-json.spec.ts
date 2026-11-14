@@ -1,5 +1,7 @@
 import fc from 'fast-check';
 
+import { runInNewContext } from 'node:vm';
+
 import { fromTaggedJson, toTaggedJson } from './tagged-json';
 
 // TS §10.1: the state in the export file is JSON with tags for what JSON cannot hold.
@@ -22,6 +24,18 @@ const { value: arbValue } = fc.letrec((tie) => ({
 }));
 
 describe('toTaggedJson', () => {
+  // State read back from IndexedDB can come from another realm (fake-indexeddb under jsdom).
+  it('encodes maps and typed arrays of another realm', () => {
+    const foreign = runInNewContext(
+      '({ m: new Map([["a", 1]]), f: Float64Array.of(2, NaN), i: Int32Array.of(3) })',
+    ) as unknown;
+    expect(toTaggedJson(foreign)).toEqual({
+      m: { $map: [['a', 1]] },
+      f: { $f64: [2, { $num: 'NaN' }] },
+      i: { $i32: [3] },
+    });
+  });
+
   // TS §10.1: maps, typed arrays and the numbers JSON lacks become one-key objects.
   it.each([
     [new Map([['acc-1', 5]]), { $map: [['acc-1', 5]] }],

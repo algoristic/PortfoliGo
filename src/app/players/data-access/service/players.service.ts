@@ -1,9 +1,13 @@
 import { DestroyRef, inject, Injectable, PendingTasks } from '@angular/core';
 import { IDBPDatabase } from 'idb';
-import { defer, firstValueFrom, map, Observable, share } from 'rxjs';
+import { defer, filter, firstValueFrom, map, Observable, share, switchMap } from 'rxjs';
 
 import { withoutFirstSteps } from '@app/dashboard/domain/first-steps-logic';
 import { FIRST_STEPS_SETTINGS_VERSION } from '@app/dashboard/domain/models/first-steps.model';
+import {
+  ExportedPlayer,
+  ProgressPayload,
+} from '@app/engine/data-access/service/engine-service.model';
 import { EngineService } from '@app/engine/data-access/service/engine.service';
 import type {
   RuntimeRecord,
@@ -18,6 +22,18 @@ import {
   deletePlayerRecords,
   playerKeyRange,
 } from '@app/persistence/data-access/schema/player-records';
+import {
+  backupReminderDue,
+  parseBackupSettings,
+  withoutPlayerBackup,
+  withPlayerBackup,
+} from '@app/players/domain/backup-logic';
+import {
+  BACKUP_SETTINGS_VERSION,
+  BackupIntervalDays,
+  BackupSettings,
+  PlayerBackupStatus,
+} from '@app/players/domain/models/backup.model';
 import { NewPlayer, PlayerListEntry, PlayerProfile } from '@app/players/domain/models/player.model';
 import { importedPlayerName } from '@app/players/domain/player-import-logic';
 import {
@@ -79,6 +95,11 @@ export class PlayersService {
       return () => channel.removeEventListener('message', listener);
     },
   ).pipe(share());
+
+  /** Progress of the history run of a running import (TS §10.3). */
+  readonly importProgress$: Observable<ProgressPayload> = defer(() => this.#engine.progress$).pipe(
+    filter((progress) => progress.kind === 'import'),
+  );
 
   constructor() {
     inject(DestroyRef).onDestroy(() => {
@@ -213,8 +234,69 @@ export class PlayersService {
       }
       await this.#forgetLastTick(playerId);
       await this.#forgetFirstSteps(playerId);
+      await this.#forgetBackup(playerId);
       this.#broadcast('deleted', playerId);
     });
+  }
+
+  /**
+   * Exports the loaded player (TS §10.2) as the worker encodes it; `name` is the profile's name,
+   * which only the UI knows. Errors are `EngineCommandError`s (`busy`, `player-not-loaded`,
+   * `storage-failed`).
+   */
+  exportPlayer(name: string): Observable<ExportedPlayer> {
+    return this.#engine.exportPlayer(name);
+  }
+
+  /** Last export of the player on this device and the reminder interval (`pgo.backup`, TS §9.3). */
+  loadBackup(playerId: string): Observable<PlayerBackupStatus> {
+    return this.#readBackup().pipe(
+      map((settings) => ({
+        playerId,
+        exportedAt: settings.players[playerId]?.exportedAt ?? null,
+        intervalDays: settings.intervalDays,
+      })),
+    );
+  }
+
+  /** Notes that the player's export was saved now (download or clipboard); returns the instant. */
+  recordExport(playerId: string): Observable<number> {
+    return defer(() => {
+      const exportedAt = this.#now();
+      return this.#writeBackup((settings) =>
+        withPlayerBackup(settings, playerId, { exportedAt }),
+      ).pipe(map(() => exportedAt));
+    });
+  }
+
+  /** Sets the device-wide reminder interval; `null` switches the reminder off (PS US-EX-03). */
+  setBackupInterval(intervalDays: BackupIntervalDays | null): Observable<void> {
+    return this.#writeBackup((settings) => ({ ...settings, intervalDays })).pipe(
+      map(() => undefined),
+    );
+  }
+
+  /**
+   * `true` if the backup reminder is due for the player now (`backupReminderDue`, TS §9.3); then
+   * the reminder is noted, so it waits a day before it comes again.
+   */
+  remindBackup(profile: PlayerProfile): Observable<boolean> {
+    return this.#readBackup().pipe(
+      switchMap((settings) => {
+        const now = this.#now();
+        const due = backupReminderDue({
+          intervalDays: settings.intervalDays,
+          createdAt: profile.createdAt,
+          ...settings.players[profile.id],
+          now,
+        });
+        return due
+          ? this.#writeBackup((current) =>
+              withPlayerBackup(current, profile.id, { remindedAt: now }),
+            ).pipe(map(() => true))
+          : [false];
+      }),
+    );
   }
 
   getLastPlayerId(): Observable<string | undefined> {
@@ -310,6 +392,35 @@ export class PlayersService {
     } catch {
       // A display setting; a deleted player is never loaded.
     }
+  }
+
+  /** Like `#forgetLastTick`: a later player never inherits the entry. */
+  async #forgetBackup(playerId: string): Promise<void> {
+    try {
+      const settings = await firstValueFrom(this.#readBackup());
+      if (settings.players[playerId] !== undefined) {
+        await firstValueFrom(
+          this.#writeBackup((current) => withoutPlayerBackup(current, playerId)),
+        );
+      }
+    } catch {
+      // A device-local hint; a deleted player is never loaded.
+    }
+  }
+
+  #readBackup(): Observable<BackupSettings> {
+    return this.#localStorage
+      .get<unknown>('pgo.backup', BACKUP_SETTINGS_VERSION)
+      .pipe(map((data) => parseBackupSettings(data)));
+  }
+
+  /** Read-modify-write of `pgo.backup`, so entries of other players stay. */
+  #writeBackup(change: (settings: BackupSettings) => BackupSettings): Observable<BackupSettings> {
+    return this.#readBackup().pipe(
+      switchMap((settings) =>
+        this.#localStorage.set('pgo.backup', BACKUP_SETTINGS_VERSION, change(settings)),
+      ),
+    );
   }
 
   /** Storage work keeps the app unstable until it is done, so `whenStable()` covers it. */
