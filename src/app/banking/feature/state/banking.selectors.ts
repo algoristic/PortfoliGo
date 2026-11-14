@@ -3,6 +3,11 @@ import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 import { sortBanks } from '@app/banking/domain/bank-comparison-logic';
 import { ACCOUNT_KINDS, AccountId } from '@app/banking/domain/models/account.model';
+import {
+  monthlyEarnings,
+  monthlySpending,
+  savingsRate,
+} from '@app/banking/domain/monthly-values-logic';
 import { isEngineCommandError } from '@app/engine/feature/state/session.utils';
 import { Bank } from '@app/world/domain/models/bank.model';
 
@@ -12,6 +17,7 @@ import {
   AccountTotals,
   BankCommand,
   BankComparison,
+  CurrentMonthView,
   MonthlyOverviewRow,
   StandingOrderEntry,
   StatementWindow,
@@ -136,6 +142,27 @@ export const selectMonthlyOverview = createSelector(
       running: false,
     }));
     return [{ ...monthlyValues.current, running: true }, ...closed.reverse()];
+  },
+);
+
+/**
+ * The running month (dashboard cash flow, AP 5.7, US-EK-03): its values, earnings, spending and
+ * savings rate; `null` until loaded.
+ */
+export const selectCurrentMonth = createSelector(
+  selectMonthlyValues,
+  (monthlyValues): CurrentMonthView | null => {
+    if (monthlyValues === null) {
+      return null;
+    }
+    const { month, values } = monthlyValues.current;
+    return {
+      month,
+      values,
+      earnings: monthlyEarnings(values),
+      spending: monthlySpending(values),
+      savingsRate: savingsRate(values),
+    };
   },
 );
 

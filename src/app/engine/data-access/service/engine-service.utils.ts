@@ -2,6 +2,7 @@ import { ACCOUNT_KINDS, OPENABLE_ACCOUNT_KINDS } from '@app/banking/domain/model
 import { TRANSACTION_TYPES } from '@app/banking/domain/models/ledger.model';
 import { MAX_STATEMENT_LIMIT } from '@app/banking/domain/models/statement.model';
 import { SPEEDS } from '@app/clock/domain/models/speed.model';
+import { MAX_UPCOMING_DAYS } from '@app/dashboard/domain/models/upcoming.model';
 import { BACKGROUND_MODES } from '@app/engine/domain/models/game-state.model';
 import { MAX_CANDLE_LIMIT } from '@app/market/domain/candle-window';
 import { CANDLE_RESOLUTIONS } from '@app/market/domain/models/candle.model';
@@ -237,6 +238,12 @@ function isPerformanceHistoryQuery(value: Fields): boolean {
   });
 }
 
+function isUpcomingQuery(value: Fields): boolean {
+  return hasFields(value, {
+    days: isOptional((days) => isCount(days) && days >= 1 && days <= MAX_UPCOMING_DAYS),
+  });
+}
+
 function isStandingOrderId(value: unknown): boolean {
   return isString(value) && /^so-[1-9]\d*$/.test(value);
 }
@@ -322,6 +329,8 @@ function isQuery(value: unknown): boolean {
       return isCandlesQuery(value);
     case 'performanceHistory':
       return isPerformanceHistoryQuery(value);
+    case 'upcoming':
+      return isUpcomingQuery(value);
     default:
       return true;
   }

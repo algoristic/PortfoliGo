@@ -97,6 +97,16 @@ export interface MonthlyOverviewRow {
   running: boolean;
 }
 
+/** The running month for the dashboard's cash flow (AP 5.7): earnings and spending as US-EK-03. */
+export interface CurrentMonthView {
+  month: CalendarMonth;
+  values: MonthlyValues;
+  earnings: Cents;
+  spending: Cents;
+  /** `null` without positive earnings. */
+  savingsRate: number | null;
+}
+
 /** A standing order with its accounts (US-BK-10); an account is `null` until the projection has it. */
 export interface StandingOrderEntry extends StandingOrderView {
   from: AccountEntry | null;

@@ -2,6 +2,7 @@ import { EnvironmentProviders, Provider } from '@angular/core';
 
 import { provideBankingState } from '@app/banking/feature/state/banking.providers';
 import { provideClockState } from '@app/clock/feature/state/clock.providers';
+import { provideDashboardState } from '@app/dashboard/feature/state/dashboard.providers';
 import { provideSessionState } from '@app/engine/feature/state/session.providers';
 import { provideMarketState } from '@app/market/feature/state/market.providers';
 import { provideNotificationsState } from '@app/notifications/feature/state/notifications.providers';
@@ -23,5 +24,6 @@ export function provideGameState(): Array<Provider | EnvironmentProviders> {
     provideTaxesState(),
     provideTradingState(),
     providePortfolioState(),
+    provideDashboardState(),
   ];
 }

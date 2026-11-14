@@ -70,6 +70,11 @@ export const selectedBankSort = createAction(
 
 export const enterAccountsPage = createAction('[Banking/Page] Enter accounts page');
 export const leaveAccountsPage = createAction('[Banking/Page] Leave accounts page');
+/** Another page shows the running month (the dashboard's cash flow, AP 5.7). */
+export const enterMonthlyValues = createAction('[Banking/Page] Enter monthly values');
+export const leaveMonthlyValues = createAction('[Banking/Page] Leave monthly values');
+/** The bank comparison was opened (US-UI-10 „Banken vergleichen“). */
+export const enterBanksPage = createAction('[Banking/Page] Enter banks page');
 export const retrievedMonthlyValues = createAction(
   '[Banking/API] Retrieved monthly values',
   props<{ monthlyValues: MonthlyValuesResult }>(),

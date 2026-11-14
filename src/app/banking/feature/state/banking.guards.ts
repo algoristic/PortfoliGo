@@ -32,3 +32,29 @@ export function leaveAccountStatementPage(): CanDeactivateFn<unknown> {
     return true;
   };
 }
+
+/**
+ * The monthly values for another page than the accounts page (the dashboard's cash flow, AP 5.7):
+ * loaded like the monthly overview until leaving.
+ */
+export function enterMonthlyValues(): CanActivateFn {
+  return () => {
+    inject(BankingFacade).enterMonthlyValues();
+    return true;
+  };
+}
+
+export function leaveMonthlyValues(): CanDeactivateFn<unknown> {
+  return () => {
+    inject(BankingFacade).leaveMonthlyValues();
+    return true;
+  };
+}
+
+/** Reports the bank comparison as visited (US-UI-10). */
+export function enterBanksPage(): CanActivateFn {
+  return () => {
+    inject(BankingFacade).enterBanksPage();
+    return true;
+  };
+}

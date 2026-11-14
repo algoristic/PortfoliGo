@@ -19,6 +19,8 @@ import {
   tickToDateTime,
 } from '@app/clock/domain/calendar-logic';
 import { Tick, TICKS_PER_MINUTE } from '@app/clock/domain/models/time.model';
+import { UpcomingEvent } from '@app/dashboard/domain/models/upcoming.model';
+import { upcoming } from '@app/dashboard/domain/upcoming-logic';
 import { paymentDay } from '@app/market/domain/dividend-logic';
 import { marketChecksum } from '@app/market/domain/market-checksum';
 import { createFactorHistory } from '@app/market/domain/market-history';
@@ -48,6 +50,7 @@ import { copyPosition } from '@app/trading/domain/position-logic';
 import { BankCommands, ClosingPreviewResult } from './bank-commands';
 import { AccountBooks, BankingSystem, openAccount } from './banking-system';
 import { DistributionSystem } from './distribution-system';
+import { instrumentSessions, InstrumentSessions } from './instrument-sessions';
 import { CommandResult, GameCommand } from './models/engine-command.model';
 import { EngineEvent } from './models/engine-event.model';
 import {
@@ -72,6 +75,7 @@ import {
   scheduleTask,
   unscheduleTasks,
 } from './scheduler';
+import { upcomingInputs } from './upcoming-inputs';
 import { Valuation } from './valuation';
 
 /** Creates the price port over the engine's market; the history and the state grow in place. */
@@ -127,6 +131,8 @@ export class GameEngine {
   #changedDepots = new Set<DepotId>();
   /** IDs of all instruments of the world, made on the first `updateWatchlist`. */
   #instrumentIds: ReadonlySet<string> | null = null;
+  /** Series and trading hours per instrument, made on the first `upcoming`. */
+  #sessions: InstrumentSessions | null = null;
 
   constructor(
     world: GameWorld,
@@ -434,6 +440,19 @@ export class GameEngine {
   /** The savings plans with their next execution after the current tick (TS §8.3). */
   savingsPlanViews(): SavingsPlanView[] {
     return this.#savingsPlans.views(this.#state.tick);
+  }
+
+  /**
+   * Plannable dates of the next `days` days that only the engine knows (TS §8.1, E-05): bank runs
+   * with base amounts, fees, announced ex-dates and payouts. Reads the state, runs nothing ahead.
+   */
+  upcoming(days: number): UpcomingEvent[] {
+    this.#sessions ??= instrumentSessions(this.world);
+    return upcoming(
+      this.#state.tick,
+      days,
+      upcomingInputs(this.world, this.#state, this.#sessions),
+    );
   }
 
   /** What closing the account now would book, without booking (TS §7.4). */

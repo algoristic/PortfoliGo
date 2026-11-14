@@ -1,0 +1,44 @@
+@let _rows = rows();
+
+<app-panel [heading]="heading">
+  <a
+    panelActions
+    class="text-sm text-accent hover:underline"
+    routerLink="../notifications"
+    data-testid="dashboard.notifications.all"
+    i18n="@@uiDashboard-recentNotifications-all"
+    >Alle anzeigen</a
+  >
+  @if (_rows === null) {
+    <app-skeleton [lines]="3"></app-skeleton>
+  } @else if (_rows.length === 0) {
+    <app-empty-state
+      icon="bell"
+      data-testid="dashboard.notifications.empty"
+      heading="Keine Benachrichtigungen"
+      i18n-heading="@@uiDashboard-recentNotifications-emptyHeading"></app-empty-state>
+  } @else {
+    <ul class="flex flex-col divide-y divide-border">
+      @for (row of _rows; track row.seq) {
+        <li
+          class="flex items-start gap-2 py-2"
+          [attr.data-testid]="'dashboard.notifications.' + row.seq"
+          [attr.data-unread]="row.read ? null : ''">
+          <i class="mt-0.5" [appIcon]="row.icon" [class]="row.iconClass"></i>
+          <div class="flex min-w-0 flex-col">
+            <span
+              class="text-sm"
+              [class.font-semibold]="!row.read"
+              data-testid="dashboard.notifications.title">
+              @if (!row.read) {
+                <span class="sr-only">{{ unreadLabel }}:</span>
+              }
+              {{ row.title }}
+            </span>
+            <span class="text-xs text-fg-muted tabular-nums">{{ row.tick | formatGameTime }}</span>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</app-panel>

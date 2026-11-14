@@ -7,6 +7,7 @@ export const LOCAL_STORAGE_KEYS = [
   'pgo.lastPlayerId',
   'pgo.lastTick',
   'pgo.ui.chart',
+  'pgo.ui.firstSteps',
   'pgo.ui.tables',
   'pgo.backup',
 ] as const;

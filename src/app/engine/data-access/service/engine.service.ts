@@ -8,6 +8,7 @@ import {
 } from '@app/banking/domain/models/standing-order.model';
 import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
+import { UPCOMING_DAYS } from '@app/dashboard/domain/models/upcoming.model';
 import { BackgroundMode } from '@app/engine/domain/models/game-state.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
@@ -327,6 +328,14 @@ export class EngineService implements OnDestroy {
     request: PerformanceHistoryRequest = {},
   ): Observable<EngineQueryResultOf<'performanceHistory'>> {
     return this.#query({ ...request, kind: 'performanceHistory' });
+  }
+
+  /**
+   * Plannable dates of the next `days` days that only the worker knows (TS §8.1, §8.2, E-05);
+   * standing orders, savings plans and order expiries come with the projection.
+   */
+  upcoming(days: number = UPCOMING_DAYS): Observable<EngineQueryResultOf<'upcoming'>> {
+    return this.#query({ kind: 'upcoming', days });
   }
 
   /** Switches the auto-pause of a notification code (TS §12, US-ZT-06). */

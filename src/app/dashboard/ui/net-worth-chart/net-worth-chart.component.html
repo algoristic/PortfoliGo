@@ -1,0 +1,91 @@
+@let _range = range();
+@let _view = view();
+@let _points = points();
+@let _summary = summary();
+
+<app-panel [heading]="heading">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <div
+      class="flex flex-wrap gap-1"
+      role="group"
+      aria-label="Zeitraum"
+      i18n-aria-label="@@uiDashboard-netWorthChart-rangeGroup">
+      @for (range of ranges; track range) {
+        <button
+          appButton
+          type="button"
+          size="sm"
+          [variant]="range === _range ? 'primary' : 'secondary'"
+          [attr.aria-pressed]="range === _range"
+          [attr.data-testid]="'dashboard.history.range.' + range"
+          (click)="onSelectRange(range)">
+          {{ rangeLabels[range] }}
+        </button>
+      }
+    </div>
+    <div
+      class="flex gap-1"
+      role="group"
+      aria-label="Ansicht"
+      i18n-aria-label="@@uiDashboard-netWorthChart-viewGroup">
+      @for (view of views; track view) {
+        <button
+          appButton
+          type="button"
+          size="sm"
+          [variant]="view === _view ? 'primary' : 'secondary'"
+          [attr.aria-pressed]="view === _view"
+          [attr.data-testid]="'dashboard.history.view.' + view"
+          (click)="onSelectView(view)">
+          {{ viewLabels[view] }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (_points !== null && _points.length === 0 && !loading()) {
+    <app-empty-state
+      class="mt-3"
+      icon="graph-up"
+      data-testid="dashboard.history.empty"
+      heading="Noch kein Verlauf"
+      i18n-heading="@@uiDashboard-netWorthChart-emptyHeading"
+      text="Der Verlauf beginnt mit dem Ende des ersten Spieltags."
+      i18n-text="@@uiDashboard-netWorthChart-emptyText"></app-empty-state>
+  } @else {
+    <app-price-chart
+      class="mt-3 h-64"
+      data-testid="dashboard.history.chart"
+      chartType="area"
+      [candles]="candles()"
+      [overlays]="overlays()"
+      [loading]="loading() || _points === null"
+      [label]="chartLabel"></app-price-chart>
+    <ul class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-fg-muted" aria-hidden="true">
+      @for (item of legend(); track item.id) {
+        <li
+          class="flex items-center gap-1.5"
+          [attr.data-testid]="'dashboard.history.legend.' + item.id">
+          <span class="inline-block size-2.5 rounded-sm" [class]="item.swatchClass"></span>
+          {{ item.label }}
+        </li>
+      }
+    </ul>
+    @if (_summary) {
+      <p
+        class="sr-only"
+        data-testid="dashboard.history.summary"
+        i18n="@@uiDashboard-netWorthChart-summary">
+        Gesamtvermögen am {{ _summary.fromTick | formatGameDate }}:
+        {{ _summary.from | formatCents }}, am {{ _summary.toTick | formatGameDate }}:
+        {{ _summary.to | formatCents }}.
+      </p>
+    }
+  }
+  @if (_view === 'compare') {
+    <p class="mt-2 text-xs text-fg-muted" i18n="@@uiDashboard-netWorthChart-compareNote">
+      Benchmark: Startkapital und alle Zuflüsse ohne Kosten in den Weltindex angelegt. Ohne Anlegen:
+      alles wäre auf dem Gehaltskonto geblieben.
+    </p>
+  }
+</app-panel>

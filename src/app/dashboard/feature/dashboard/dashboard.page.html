@@ -1,10 +1,54 @@
+@let firstSteps = dashboardFacade.firstSteps$ | async;
+@let figures = portfolioFacade.performance$ | async;
+@let history = portfolioFacade.performanceHistory$ | async;
+@let upcoming = dashboardFacade.upcoming$ | async;
+@let cashflow = dashboardFacade.cashflow$ | async;
+@let topPositions = dashboardFacade.topPositions$ | async;
+@let watchlist = dashboardFacade.watchlist$ | async;
+@let notifications = dashboardFacade.recentNotifications$ | async;
+@let accountNames = notificationsFacade.accountNames$ | async;
+@let instrumentNames = notificationsFacade.instrumentNames$ | async;
+
 <h1 class="text-xl font-semibold" i18n="@@featureDashboard-dashboardPage-title">Übersicht</h1>
 
-<app-panel class="mt-4">
-  <app-empty-state
-    icon="grid-1x2"
-    heading="Noch keine Inhalte"
-    i18n-heading="@@featureDashboard-dashboardPage-emptyHeading"
-    text="Diese Ansicht entsteht in AP 5.7."
-    i18n-text="@@featureDashboard-dashboardPage-emptyText"></app-empty-state>
-</app-panel>
+<div class="mt-4 grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3">
+  @if (firstSteps) {
+    <app-first-steps
+      class="md:col-span-2 xl:col-span-3"
+      data-testid="dashboard.first-steps"
+      [firstSteps]="firstSteps"
+      (clickedHide)="onHideFirstSteps()"></app-first-steps>
+  }
+  <app-net-worth-summary
+    data-testid="dashboard.net-worth"
+    [figures]="figures"></app-net-worth-summary>
+  @if (history) {
+    <app-net-worth-chart
+      class="md:col-span-2 xl:col-span-2 xl:row-span-2"
+      data-testid="dashboard.history"
+      [range]="history.range"
+      [points]="history.history?.points ?? null"
+      [loading]="history.loading"
+      (selectedRange)="onSelectRange($event)"></app-net-worth-chart>
+  }
+  <app-performance-figures
+    data-testid="dashboard.performance"
+    [figures]="figures"></app-performance-figures>
+  @if (upcoming) {
+    <app-upcoming-list data-testid="dashboard.upcoming" [upcoming]="upcoming"></app-upcoming-list>
+  }
+  <app-cashflow data-testid="dashboard.cashflow" [cashflow]="cashflow"></app-cashflow>
+  <app-top-positions
+    data-testid="dashboard.top-positions"
+    [positions]="topPositions ?? []"></app-top-positions>
+  @if (watchlist) {
+    <app-watchlist-summary
+      data-testid="dashboard.watchlist"
+      [watchlist]="watchlist"></app-watchlist-summary>
+  }
+  <app-recent-notifications
+    data-testid="dashboard.notifications"
+    [entries]="notifications"
+    [accountNames]="accountNames"
+    [instrumentNames]="instrumentNames"></app-recent-notifications>
+</div>

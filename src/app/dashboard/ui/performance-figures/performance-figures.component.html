@@ -1,0 +1,106 @@
+@let _figures = figures();
+
+<app-panel [heading]="heading">
+  @if (_figures) {
+    <table class="w-full text-sm">
+      <caption class="sr-only" i18n="@@uiDashboard-performanceFigures-caption">
+        Zeitgewichtete Rendite
+      </caption>
+      <thead>
+        <tr class="border-b border-border text-xs text-fg-muted">
+          <th scope="col" class="py-1 text-left font-medium">
+            <span class="sr-only" i18n="@@uiDashboard-performanceFigures-who">Wer</span>
+          </th>
+          <th
+            scope="col"
+            class="py-1 text-right font-medium"
+            i18n="@@uiDashboard-performanceFigures-sinceStart">
+            Seit Beginn
+          </th>
+          <th
+            scope="col"
+            class="py-1 text-right font-medium"
+            i18n="@@uiDashboard-performanceFigures-yearToDate">
+            Lfd. Jahr
+          </th>
+          <th
+            scope="col"
+            class="py-1 text-right font-medium"
+            i18n="@@uiDashboard-performanceFigures-annualized">
+            p. a.
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.id) {
+          <tr
+            class="border-b border-border last:border-0"
+            [attr.data-testid]="'dashboard.performance.' + row.id">
+            <th scope="row" class="py-1.5 text-left font-medium">{{ row.label }}</th>
+            <td
+              class="py-1.5 text-right tabular-nums"
+              data-testid="dashboard.performance.since-start">
+              {{ row.returns.sinceStart | formatSignedPercent }}
+            </td>
+            <td
+              class="py-1.5 text-right tabular-nums"
+              data-testid="dashboard.performance.year-to-date">
+              {{ row.returns.yearToDate | formatSignedPercent }}
+            </td>
+            <td
+              class="py-1.5 text-right tabular-nums"
+              data-testid="dashboard.performance.annualized">
+              {{ row.returns.annualized | formatSignedPercent }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <dl class="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+      @if (_figures.benchmark; as benchmark) {
+        <div class="flex flex-col gap-0.5">
+          <dt class="text-xs text-fg-muted" i18n="@@uiDashboard-performanceFigures-benchmarkValue">
+            Wert der Benchmark
+          </dt>
+          <dd class="tabular-nums" data-testid="dashboard.performance.benchmark-value">
+            {{ benchmark.value | formatCents }}
+          </dd>
+        </div>
+      }
+      <div class="flex flex-col gap-0.5">
+        <dt class="text-xs text-fg-muted" i18n="@@uiDashboard-performanceFigures-comparison">
+          Ohne Anlegen
+        </dt>
+        <dd class="tabular-nums" data-testid="dashboard.performance.comparison">
+          {{ _figures.comparison | formatCents }}
+        </dd>
+      </div>
+      <div class="flex flex-col gap-0.5">
+        <dt class="text-xs text-fg-muted" i18n="@@uiDashboard-performanceFigures-gainByInvesting">
+          Mehr durch Anlegen
+        </dt>
+        <dd class="tabular-nums" data-testid="dashboard.performance.gain-by-investing">
+          {{ _figures.sinceStart | formatSignedCents }}
+        </dd>
+      </div>
+    </dl>
+
+    <p class="mt-3 text-xs text-fg-muted" i18n="@@uiDashboard-performanceFigures-explanation">
+      Die zeitgewichtete Rendite misst nur, wie sich Ihr Geld entwickelt hat; Gehalt und
+      Lebenshaltung verfälschen sie nicht. Die Benchmark legt Startkapital und alle Zuflüsse ohne
+      Kosten und Steuern in den Weltindex an und ist deshalb kaum zu schlagen. „Ohne Anlegen“ zeigt,
+      was Sie hätten, wäre alles auf dem Gehaltskonto geblieben.
+    </p>
+    @if (_figures.skippedDays > 0) {
+      <p
+        class="mt-2 text-xs text-warning"
+        data-testid="dashboard.performance.skipped"
+        i18n="@@uiDashboard-performanceFigures-skipped">
+        {{ _figures.skippedDays }} Tage mit Vermögen von höchstens 0 € zählen nicht zur Rendite.
+      </p>
+    }
+  } @else {
+    <app-skeleton [lines]="4"></app-skeleton>
+  }
+</app-panel>

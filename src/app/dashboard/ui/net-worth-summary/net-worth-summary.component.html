@@ -1,0 +1,64 @@
+@let _figures = figures();
+
+<app-panel [heading]="heading">
+  @if (_figures) {
+    <p class="text-3xl font-semibold tabular-nums" data-testid="dashboard.net-worth.value">
+      {{ _figures.netWorth | formatCents }}
+    </p>
+    <dl class="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+      <div class="flex flex-col gap-0.5">
+        <dt class="text-xs text-fg-muted" i18n="@@uiDashboard-netWorthSummary-today">
+          Veränderung heute
+        </dt>
+        <dd class="flex flex-wrap items-baseline gap-x-2">
+          <app-price-change
+            data-testid="dashboard.net-worth.today"
+            mode="cents"
+            [value]="_figures.today.change"></app-price-change>
+          @if (_figures.today.ratio !== null) {
+            <app-price-change
+              class="text-fg-muted"
+              data-testid="dashboard.net-worth.today-ratio"
+              [showArrow]="false"
+              [value]="_figures.today.ratio"></app-price-change>
+          }
+        </dd>
+      </div>
+      <div class="flex flex-col gap-0.5">
+        <dt class="text-xs text-fg-muted" i18n="@@uiDashboard-netWorthSummary-sinceStart">
+          Seit Spielbeginn
+        </dt>
+        <dd class="flex flex-wrap items-baseline gap-x-2">
+          <app-price-change
+            data-testid="dashboard.net-worth.since-start"
+            mode="cents"
+            [value]="_figures.sinceStart"></app-price-change>
+          <app-price-change
+            data-testid="dashboard.net-worth.since-start-ratio"
+            [showArrow]="false"
+            [value]="_figures.returns.sinceStart"></app-price-change>
+        </dd>
+      </div>
+      <div class="flex flex-col gap-0.5">
+        <dt class="text-xs text-fg-muted" i18n="@@uiDashboard-netWorthSummary-cash">Bargeld</dt>
+        <dd class="tabular-nums" data-testid="dashboard.net-worth.cash">
+          {{ _figures.cash | formatCents }}
+        </dd>
+      </div>
+      <div class="flex flex-col gap-0.5">
+        <dt class="text-xs text-fg-muted" i18n="@@uiDashboard-netWorthSummary-securities">
+          Wertpapiere
+        </dt>
+        <dd class="tabular-nums" data-testid="dashboard.net-worth.securities">
+          {{ _figures.securities | formatCents }}
+        </dd>
+      </div>
+    </dl>
+    <p class="mt-3 text-xs text-fg-muted" i18n="@@uiDashboard-netWorthSummary-note">
+      Beide Veränderungen rechnen Gehalt und Lebenshaltung heraus: Sie zeigen, was Kurse, Zinsen,
+      Kosten und Steuern bewirkt haben.
+    </p>
+  } @else {
+    <app-skeleton [lines]="3"></app-skeleton>
+  }
+</app-panel>

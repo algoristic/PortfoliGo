@@ -34,6 +34,8 @@ export class BankingFacade {
   statementNotFound$ = this.#store.pipe(select(BankingSelectors.selectStatementNotFound));
   bankComparison$ = this.#store.pipe(select(BankingSelectors.selectBankComparison));
   monthlyOverview$ = this.#store.pipe(select(BankingSelectors.selectMonthlyOverview));
+  /** The running month's values (dashboard cash flow, AP 5.7); `null` until loaded. */
+  currentMonth$ = this.#store.pipe(select(BankingSelectors.selectCurrentMonth));
   standingOrders$ = this.#store.pipe(select(BankingSelectors.selectStandingOrders));
   /** Active standing orders by next execution (AP 5.7 „Demnächst“). */
   upcomingStandingOrders$ = this.#store.pipe(select(BankingSelectors.selectUpcomingStandingOrders));
@@ -104,6 +106,18 @@ export class BankingFacade {
 
   leaveAccountsPage(): void {
     this.#store.dispatch(BankingActions.leaveAccountsPage());
+  }
+
+  enterMonthlyValues(): void {
+    this.#store.dispatch(BankingActions.enterMonthlyValues());
+  }
+
+  leaveMonthlyValues(): void {
+    this.#store.dispatch(BankingActions.leaveMonthlyValues());
+  }
+
+  enterBanksPage(): void {
+    this.#store.dispatch(BankingActions.enterBanksPage());
   }
 
   openAccount(bankId: string, kind: OpenableAccountKind): void {

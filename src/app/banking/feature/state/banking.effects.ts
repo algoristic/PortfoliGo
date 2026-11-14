@@ -80,7 +80,12 @@ export class BankingEffects {
 
   /** Ends the monthly overview: leaving the accounts page or the game, or entering another player. */
   readonly #accountsLeft$ = this.#actions$.pipe(
-    ofType(BankingActions.leaveAccountsPage, SessionActions.leaveGame, SessionActions.enterGame),
+    ofType(
+      BankingActions.leaveAccountsPage,
+      BankingActions.leaveMonthlyValues,
+      SessionActions.leaveGame,
+      SessionActions.enterGame,
+    ),
   );
 
   /**
@@ -339,11 +344,12 @@ export class BankingEffects {
   /**
    * The monthly overview of the accounts page (US-EK-03, TS §11.3): once the player is loaded, then
    * again when a month ends or a projection changes the net worth (bookings), throttled to one load
-   * per `MONTHLY_VALUES_THROTTLE_MS` including the last trigger. Leaving the page ends it.
+   * per `MONTHLY_VALUES_THROTTLE_MS` including the last trigger. Leaving the page ends it. The
+   * dashboard starts the same load for its cash flow (`enterMonthlyValues`, AP 5.7).
    */
   loadMonthlyValues$ = createEffect(() =>
     this.#actions$.pipe(
-      ofType(BankingActions.enterAccountsPage),
+      ofType(BankingActions.enterAccountsPage, BankingActions.enterMonthlyValues),
       switchMap(() =>
         this.#store.pipe(
           select(selectPhase),

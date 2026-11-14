@@ -1,0 +1,51 @@
+@let _watchlist = watchlist();
+
+<app-panel [heading]="heading">
+  <a
+    panelActions
+    class="text-sm text-accent hover:underline"
+    routerLink="../markets/watchlist"
+    data-testid="dashboard.watchlist.all"
+    i18n="@@uiDashboard-watchlistSummary-all"
+    >Alle ({{ _watchlist.total }})</a
+  >
+  @if (_watchlist.entries.length === 0) {
+    <app-empty-state
+      icon="star"
+      data-testid="dashboard.watchlist.empty"
+      heading="Watchlist ist leer"
+      i18n-heading="@@uiDashboard-watchlistSummary-emptyHeading"
+      text="Mit dem Stern bei einem Wertpapier landet es hier."
+      i18n-text="@@uiDashboard-watchlistSummary-emptyText"></app-empty-state>
+  } @else {
+    <ul class="flex flex-col divide-y divide-border">
+      @for (entry of _watchlist.entries; track entry.instrumentId) {
+        <li
+          class="flex items-center justify-between gap-3 py-2"
+          data-testid="dashboard.watchlist.row"
+          [attr.data-instrument-id]="entry.instrumentId">
+          <a
+            class="min-w-0 truncate text-sm font-medium hover:underline"
+            data-testid="dashboard.watchlist.row.name"
+            [routerLink]="['../markets', entry.instrumentId]"
+            >{{ entry.name }}</a
+          >
+          <div class="flex shrink-0 items-baseline gap-2">
+            <span
+              class="text-sm tabular-nums"
+              data-testid="dashboard.watchlist.row.price"
+              [appValueFlash]="entry.last"
+              >{{ entry.last | formatPrice }}</span
+            >
+            @if (entry.changeRatio !== null) {
+              <app-price-change
+                class="text-xs"
+                data-testid="dashboard.watchlist.row.change"
+                [value]="entry.changeRatio"></app-price-change>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</app-panel>

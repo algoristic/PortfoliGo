@@ -1,0 +1,49 @@
+@let _rows = rows();
+
+<app-panel [heading]="heading()">
+  @if (_rows === null) {
+    <app-skeleton [lines]="3"></app-skeleton>
+  } @else if (_rows.length === 0) {
+    <app-empty-state
+      icon="calendar"
+      data-testid="dashboard.upcoming.empty"
+      heading="Keine Termine"
+      i18n-heading="@@uiDashboard-upcomingList-emptyHeading"></app-empty-state>
+  } @else {
+    <ul class="flex flex-col divide-y divide-border">
+      @for (row of _rows; track row.key) {
+        <li
+          class="flex items-start justify-between gap-3 py-2"
+          data-testid="dashboard.upcoming.row"
+          [attr.data-kind]="row.kind">
+          <div class="flex min-w-0 flex-col">
+            <span class="text-sm font-medium" data-testid="dashboard.upcoming.row.title">{{
+              row.title
+            }}</span>
+            <span class="text-xs text-fg-muted">
+              <span class="tabular-nums" data-testid="dashboard.upcoming.row.date">{{
+                row.tick | formatGameDate
+              }}</span>
+              @if (row.detail) {
+                · <span data-testid="dashboard.upcoming.row.detail">{{ row.detail }}</span>
+              }
+            </span>
+          </div>
+          @if (row.amount !== null) {
+            <span
+              class="shrink-0 text-sm tabular-nums"
+              data-testid="dashboard.upcoming.row.amount"
+              [class]="row.amountClass"
+              >{{
+                row.signed ? (row.amount | formatSignedCents) : (row.amount | formatCents)
+              }}</span
+            >
+          }
+        </li>
+      }
+    </ul>
+    <p class="mt-2 text-xs text-fg-muted" i18n="@@uiDashboard-upcomingList-note">
+      Lebenshaltung als Basisbetrag; der tatsächliche Betrag schwankt von Monat zu Monat.
+    </p>
+  }
+</app-panel>

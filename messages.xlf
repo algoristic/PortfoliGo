@@ -188,21 +188,21 @@
         <source>Konten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/banking.routes.ts</context>
-          <context context-type="linenumber">13</context>
+          <context context-type="linenumber">14</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsRoutes-accountStatementTitle" datatype="html">
         <source>Kontoauszug</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/banking.routes.ts</context>
-          <context context-type="linenumber">22</context>
+          <context context-type="linenumber">23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-banksRoutes-banksTitle" datatype="html">
         <source>Bankenvergleich</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/banking.routes.ts</context>
-          <context context-type="linenumber">34</context>
+          <context context-type="linenumber">35</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-banksPage-back" datatype="html">
@@ -875,91 +875,91 @@
         <source>Der Dauerauftrag ist angelegt.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">252</context>
+          <context context-type="linenumber">257</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-changeStandingOrderSuccess" datatype="html">
         <source>Der Dauerauftrag ist geändert.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">257</context>
+          <context context-type="linenumber">262</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-pauseStandingOrderSuccess" datatype="html">
         <source>Der Dauerauftrag ist pausiert.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">263</context>
+          <context context-type="linenumber">268</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-resumeStandingOrderSuccess" datatype="html">
         <source>Der Dauerauftrag läuft wieder.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">264</context>
+          <context context-type="linenumber">269</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-deleteStandingOrderSuccess" datatype="html">
         <source>Der Dauerauftrag ist gelöscht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">269</context>
+          <context context-type="linenumber">274</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-loadMonthlyValuesFailure" datatype="html">
         <source>Die Monatsübersicht konnte nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">379</context>
+          <context context-type="linenumber">385</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-loadStatementFailure" datatype="html">
         <source>Der Kontoauszug konnte nicht geladen werden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">398</context>
+          <context context-type="linenumber">404</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-closeAccountSuccess" datatype="html">
         <source>Das Konto ist geschlossen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">421</context>
+          <context context-type="linenumber">427</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-setSalaryAccountSuccess" datatype="html">
         <source>Dein Gehalt geht ab jetzt auf das neue Gehaltskonto.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">426</context>
+          <context context-type="linenumber">432</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-transferSuccess" datatype="html">
         <source><x id="amount" equiv-text="formatCents(action.transfer.amount)"/> überwiesen.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">431</context>
+          <context context-type="linenumber">437</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-openCurrentSuccess" datatype="html">
         <source>Das Girokonto ist eröffnet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">597</context>
+          <context context-type="linenumber">603</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-openSavingsSuccess" datatype="html">
         <source>Das Tagesgeldkonto ist eröffnet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">599</context>
+          <context context-type="linenumber">605</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-bankingEffects-openDepotSuccess" datatype="html">
         <source>Das Depot mit Verrechnungskonto ist eröffnet.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/state/banking.effects.ts</context>
-          <context context-type="linenumber">601</context>
+          <context context-type="linenumber">607</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-accountActions-transfer" datatype="html">
@@ -2626,28 +2626,637 @@
         <source>Übersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/feature/dashboard.routes.ts</context>
-          <context context-type="linenumber">6</context>
+          <context context-type="linenumber">18</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureDashboard-dashboardPage-title" datatype="html">
         <source>Übersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/feature/dashboard/dashboard.page.html</context>
-          <context context-type="linenumber">1,5</context>
+          <context context-type="linenumber">12,14</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featureDashboard-dashboardPage-emptyHeading" datatype="html">
-        <source>Noch keine Inhalte</source>
+      <trans-unit id="featureDashboard-dashboardEffects-saveFirstStepsFailure" datatype="html">
+        <source>„Erste Schritte“ ließ sich auf diesem Gerät nicht speichern.</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/dashboard/feature/dashboard/dashboard.page.html</context>
-          <context context-type="linenumber">6,7</context>
+          <context context-type="sourcefile">src/app/dashboard/feature/state/dashboard.effects.ts</context>
+          <context context-type="linenumber">196</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featureDashboard-dashboardPage-emptyText" datatype="html">
-        <source>Diese Ansicht entsteht in AP 5.7.</source>
+      <trans-unit id="featureDashboard-dashboardEffects-loadFailure" datatype="html">
+        <source>Ein Teil der Übersicht ließ sich nicht laden.</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/dashboard/feature/dashboard/dashboard.page.html</context>
-          <context context-type="linenumber">8,9</context>
+          <context context-type="sourcefile">src/app/dashboard/feature/state/dashboard.effects.ts</context>
+          <context context-type="linenumber">197</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-cashflow-earnings" datatype="html">
+        <source>Einnahmen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/cashflow/cashflow.component.html</context>
+          <context context-type="linenumber">7,8</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-cashflow-spending" datatype="html">
+        <source>Ausgaben</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/cashflow/cashflow.component.html</context>
+          <context context-type="linenumber">13,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-cashflow-savingsRate" datatype="html">
+        <source>Sparquote</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/cashflow/cashflow.component.html</context>
+          <context context-type="linenumber">19,20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-cashflow-note" datatype="html">
+        <source> Bisher in diesem Monat gebucht; Käufe, Verkäufe und Überweisungen zwischen eigenen Konten zählen nicht. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/cashflow/cashflow.component.html</context>
+          <context context-type="linenumber">26,30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-cashflow-heading" datatype="html">
+        <source>Cashflow <x id="month" equiv-text="month"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/cashflow/cashflow.component.ts</context>
+          <context context-type="linenumber">36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-firstSteps-hide" datatype="html">
+        <source> Ausblenden </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/first-steps/first-steps.component.html</context>
+          <context context-type="linenumber">11,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-firstSteps-progress" datatype="html">
+        <source><x id="done" equiv-text="done"/> von <x id="total" equiv-text="steps.length"/> erledigt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/first-steps/first-steps.component.ts</context>
+          <context context-type="linenumber">46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-firstSteps-heading" datatype="html">
+        <source>Erste Schritte</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/first-steps/first-steps.component.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-firstSteps-done" datatype="html">
+        <source>Erledigt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/first-steps/first-steps.component.ts</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-firstSteps-open" datatype="html">
+        <source>Offen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/first-steps/first-steps.component.ts</context>
+          <context context-type="linenumber">51</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-range1m" datatype="html">
+        <source>1M</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">9</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-range6m" datatype="html">
+        <source>6M</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-range1y" datatype="html">
+        <source>1J</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-range5y" datatype="html">
+        <source>5J</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-rangeMax" datatype="html">
+        <source>Max</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-stepCompareBanks" datatype="html">
+        <source>Banken vergleichen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">25</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-stepOpenDepot" datatype="html">
+        <source>Depot eröffnen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-stepTransfer" datatype="html">
+        <source>Geld aufs Verrechnungskonto überweisen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-stepFirstPurchase" datatype="html">
+        <source>Erstes Wertpapier kaufen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-stepSavingsPlan" datatype="html">
+        <source>Sparplan anlegen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-hintCompareBanks" datatype="html">
+        <source>Kosten für Konto, Depot und Orders unterscheiden sich je Bank.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-hintOpenDepot" datatype="html">
+        <source>Unter „Konten“ ein Depot eröffnen; es kommt mit einem Verrechnungskonto.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">43</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-hintTransfer" datatype="html">
+        <source>Vom Girokonto aufs Verrechnungskonto überweisen, damit Käufe gedeckt sind.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">45</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-hintFirstPurchase" datatype="html">
+        <source>Unter „Märkte“ ein Wertpapier wählen und kaufen.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">47</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-hintSavingsPlan" datatype="html">
+        <source>Jeden Monat automatisch einen festen Betrag anlegen, am besten in einen ETF.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">49</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-upcomingDividendPayment" datatype="html">
+        <source>Dividende/Ausschüttung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-upcomingSalary" datatype="html">
+        <source>Gehalt</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-upcomingLivingCosts" datatype="html">
+        <source>Lebenshaltung (Basisbetrag)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-upcomingAccountFee" datatype="html">
+        <source>Kontoführung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-upcomingCustodyFee" datatype="html">
+        <source>Depotgebühr</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-upcomingStandingOrder" datatype="html">
+        <source>Dauerauftrag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">91</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-upcomingExDividend" datatype="html">
+        <source>Ex-Tag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">93</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-upcomingSavingsPlan" datatype="html">
+        <source>Sparplan</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-dashboardLabels-upcomingOrderExpiry" datatype="html">
+        <source>Order läuft ab</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/labels/dashboard-labels.ts</context>
+          <context context-type="linenumber">97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-rangeGroup" datatype="html">
+        <source>Zeitraum</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.html</context>
+          <context context-type="linenumber">11,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-viewGroup" datatype="html">
+        <source>Ansicht</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.html</context>
+          <context context-type="linenumber">30</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-emptyHeading" datatype="html">
+        <source>Noch kein Verlauf</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.html</context>
+          <context context-type="linenumber">51,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-emptyText" datatype="html">
+        <source>Der Verlauf beginnt mit dem Ende des ersten Spieltags.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.html</context>
+          <context context-type="linenumber">53,54</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-summary" datatype="html">
+        <source> Gesamtvermögen am <x id="INTERPOLATION" equiv-text="{{ _summary.fromTick | formatGameDate }}"/>: <x id="INTERPOLATION_1" equiv-text="{{ _summary.from | formatCents }}"/>, am <x id="INTERPOLATION_2" equiv-text="{{ _summary.toTick | formatGameDate }}"/>: <x id="INTERPOLATION_3" equiv-text="{{ _summary.to | formatCents }}"/>. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.html</context>
+          <context context-type="linenumber">79,84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-compareNote" datatype="html">
+        <source> Benchmark: Startkapital und alle Zuflüsse ohne Kosten in den Weltindex angelegt. Ohne Anlegen: alles wäre auf dem Gehaltskonto geblieben. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.html</context>
+          <context context-type="linenumber">87,92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-heading" datatype="html">
+        <source>Vermögensverlauf</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.ts</context>
+          <context context-type="linenumber">155</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-chartLabel" datatype="html">
+        <source>Gesamtvermögen je Tag</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.ts</context>
+          <context context-type="linenumber">156</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-netWorth" datatype="html">
+        <source>Gesamtvermögen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.ts</context>
+          <context context-type="linenumber">157</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-securities" datatype="html">
+        <source>Wertpapiere</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.ts</context>
+          <context context-type="linenumber">158</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-cash" datatype="html">
+        <source>Bargeld</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.ts</context>
+          <context context-type="linenumber">159</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-benchmark" datatype="html">
+        <source>Benchmark (Weltindex)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.ts</context>
+          <context context-type="linenumber">160</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-comparison" datatype="html">
+        <source>Ohne Anlegen (Gehaltskonto)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.ts</context>
+          <context context-type="linenumber">161</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-viewSplit" datatype="html">
+        <source>Aufteilung</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.ts</context>
+          <context context-type="linenumber">163</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthChart-viewCompare" datatype="html">
+        <source>Vergleich</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-chart/net-worth-chart.component.ts</context>
+          <context context-type="linenumber">164</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthSummary-today" datatype="html">
+        <source> Veränderung heute </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-summary/net-worth-summary.component.html</context>
+          <context context-type="linenumber">11,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthSummary-sinceStart" datatype="html">
+        <source> Seit Spielbeginn </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-summary/net-worth-summary.component.html</context>
+          <context context-type="linenumber">29,31</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthSummary-cash" datatype="html">
+        <source>Bargeld</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-summary/net-worth-summary.component.html</context>
+          <context context-type="linenumber">43,44</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthSummary-securities" datatype="html">
+        <source> Wertpapiere </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-summary/net-worth-summary.component.html</context>
+          <context context-type="linenumber">50,52</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthSummary-note" datatype="html">
+        <source> Beide Veränderungen rechnen Gehalt und Lebenshaltung heraus: Sie zeigen, was Kurse, Zinsen, Kosten und Steuern bewirkt haben. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-summary/net-worth-summary.component.html</context>
+          <context context-type="linenumber">58,62</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-netWorthSummary-heading" datatype="html">
+        <source>Gesamtvermögen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/net-worth-summary/net-worth-summary.component.ts</context>
+          <context context-type="linenumber">23</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-caption" datatype="html">
+        <source> Zeitgewichtete Rendite </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
+          <context context-type="linenumber">7,10</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-who" datatype="html">
+        <source>Wer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
+          <context context-type="linenumber">12,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-sinceStart" datatype="html">
+        <source> Seit Beginn </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
+          <context context-type="linenumber">18,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-yearToDate" datatype="html">
+        <source> Lfd. Jahr </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
+          <context context-type="linenumber">24,27</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-annualized" datatype="html">
+        <source> p. a. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
+          <context context-type="linenumber">30,33</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-benchmarkValue" datatype="html">
+        <source> Wert der Benchmark </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
+          <context context-type="linenumber">64,66</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-comparison" datatype="html">
+        <source> Ohne Anlegen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
+          <context context-type="linenumber">73,75</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-gainByInvesting" datatype="html">
+        <source> Mehr durch Anlegen </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
+          <context context-type="linenumber">81,83</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-explanation" datatype="html">
+        <source> Die zeitgewichtete Rendite misst nur, wie sich Ihr Geld entwickelt hat; Gehalt und Lebenshaltung verfälschen sie nicht. Die Benchmark legt Startkapital und alle Zuflüsse ohne Kosten und Steuern in den Weltindex an und ist deshalb kaum zu schlagen. „Ohne Anlegen“ zeigt, was Sie hätten, wäre alles auf dem Gehaltskonto geblieben. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
+          <context context-type="linenumber">90,95</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-skipped" datatype="html">
+        <source> <x id="INTERPOLATION" equiv-text="{{ _figures.skippedDays }}"/> Tage mit Vermögen von höchstens 0 € zählen nicht zur Rendite. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.html</context>
+          <context context-type="linenumber">100,103</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-heading" datatype="html">
+        <source>Performance</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.ts</context>
+          <context context-type="linenumber">55</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-portfolio" datatype="html">
+        <source>Ihr Vermögen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.ts</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-performanceFigures-benchmark" datatype="html">
+        <source>Benchmark</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/performance-figures/performance-figures.component.ts</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-recentNotifications-all" datatype="html">
+        <source>Alle anzeigen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/recent-notifications/recent-notifications.component.html</context>
+          <context context-type="linenumber">10,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-recentNotifications-emptyHeading" datatype="html">
+        <source>Keine Benachrichtigungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/recent-notifications/recent-notifications.component.html</context>
+          <context context-type="linenumber">18,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-recentNotifications-heading" datatype="html">
+        <source>Letzte Benachrichtigungen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/recent-notifications/recent-notifications.component.ts</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-recentNotifications-unread" datatype="html">
+        <source>Ungelesen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/recent-notifications/recent-notifications.component.ts</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-topPositions-all" datatype="html">
+        <source>Zum Depot</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/top-positions/top-positions.component.html</context>
+          <context context-type="linenumber">8,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-topPositions-emptyHeading" datatype="html">
+        <source>Noch keine Wertpapiere</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/top-positions/top-positions.component.html</context>
+          <context context-type="linenumber">14,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-topPositions-emptyText" datatype="html">
+        <source>Gekaufte Wertpapiere erscheinen hier nach ihrem Wert.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/top-positions/top-positions.component.html</context>
+          <context context-type="linenumber">16,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-topPositions-share" datatype="html">
+        <source>Anteil</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/top-positions/top-positions.component.html</context>
+          <context context-type="linenumber">35,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-topPositions-heading" datatype="html">
+        <source>Top-Positionen</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/top-positions/top-positions.component.ts</context>
+          <context context-type="linenumber">29</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-upcomingList-emptyHeading" datatype="html">
+        <source>Keine Termine</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/upcoming-list/upcoming-list.component.html</context>
+          <context context-type="linenumber">10,11</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-upcomingList-note" datatype="html">
+        <source> Lebenshaltung als Basisbetrag; der tatsächliche Betrag schwankt von Monat zu Monat. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/upcoming-list/upcoming-list.component.html</context>
+          <context context-type="linenumber">46,50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-upcomingList-headingDays" datatype="html">
+        <source>Demnächst (<x id="days" equiv-text="days"/> Tage)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/upcoming-list/upcoming-list.component.ts</context>
+          <context context-type="linenumber">78</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-upcomingList-heading" datatype="html">
+        <source>Demnächst</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/upcoming-list/upcoming-list.component.ts</context>
+          <context context-type="linenumber">79</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-upcomingList-standingOrder" datatype="html">
+        <source>an <x id="account" equiv-text="entry.toAccountName ?? &apos;&apos;"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/upcoming-list/upcoming-list.component.ts</context>
+          <context context-type="linenumber">85</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-upcomingList-custodyFee" datatype="html">
+        <source>Betrag hängt von den Depotwerten ab</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/upcoming-list/upcoming-list.component.ts</context>
+          <context context-type="linenumber">87</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-watchlistSummary-all" datatype="html">
+        <source>Alle (<x id="INTERPOLATION" equiv-text="{{ _watchlist.total }}"/>)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/watchlist-summary/watchlist-summary.component.html</context>
+          <context context-type="linenumber">10,12</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-watchlistSummary-emptyHeading" datatype="html">
+        <source>Watchlist ist leer</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/watchlist-summary/watchlist-summary.component.html</context>
+          <context context-type="linenumber">16,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-watchlistSummary-emptyText" datatype="html">
+        <source>Mit dem Stern bei einem Wertpapier landet es hier.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/watchlist-summary/watchlist-summary.component.html</context>
+          <context context-type="linenumber">18,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiDashboard-watchlistSummary-heading" datatype="html">
+        <source>Watchlist</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/dashboard/ui/watchlist-summary/watchlist-summary.component.ts</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-storageWarning" datatype="html">

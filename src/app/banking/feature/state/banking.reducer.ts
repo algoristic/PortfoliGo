@@ -178,10 +178,16 @@ const reducer = createReducer(
     ...state,
     bankSort: nextBankSort(state.bankSort, key),
   })),
-  on(BankingActions.enterAccountsPage, BankingActions.leaveAccountsPage, (state) => ({
-    ...state,
-    monthlyValues: null,
-  })),
+  on(
+    BankingActions.enterAccountsPage,
+    BankingActions.leaveAccountsPage,
+    BankingActions.enterMonthlyValues,
+    BankingActions.leaveMonthlyValues,
+    (state) => ({
+      ...state,
+      monthlyValues: null,
+    }),
+  ),
   on(BankingActions.retrievedMonthlyValues, (state, { monthlyValues }) => ({
     ...state,
     monthlyValues,

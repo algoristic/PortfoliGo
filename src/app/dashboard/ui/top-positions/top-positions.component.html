@@ -1,0 +1,54 @@
+<app-panel [heading]="heading">
+  <a
+    panelActions
+    class="text-sm text-accent hover:underline"
+    routerLink="../portfolio"
+    data-testid="dashboard.top-positions.all"
+    i18n="@@uiDashboard-topPositions-all"
+    >Zum Depot</a
+  >
+  @if (positions().length === 0) {
+    <app-empty-state
+      icon="briefcase"
+      data-testid="dashboard.top-positions.empty"
+      heading="Noch keine Wertpapiere"
+      i18n-heading="@@uiDashboard-topPositions-emptyHeading"
+      text="Gekaufte Wertpapiere erscheinen hier nach ihrem Wert."
+      i18n-text="@@uiDashboard-topPositions-emptyText"></app-empty-state>
+  } @else {
+    <ol class="flex flex-col divide-y divide-border">
+      @for (position of positions(); track position.instrumentId) {
+        <li
+          class="flex items-center justify-between gap-3 py-2"
+          data-testid="dashboard.top-positions.row"
+          [attr.data-instrument-id]="position.instrumentId">
+          <div class="flex min-w-0 flex-col">
+            <a
+              class="truncate text-sm font-medium hover:underline"
+              data-testid="dashboard.top-positions.row.name"
+              [routerLink]="['../portfolio', position.instrumentId]"
+              >{{ position.name }}</a
+            >
+            <span
+              class="text-xs text-fg-muted tabular-nums"
+              data-testid="dashboard.top-positions.row.share">
+              <span i18n="@@uiDashboard-topPositions-share">Anteil</span>
+              {{ position.share | formatPercent: 1 }}
+            </span>
+          </div>
+          <div class="flex shrink-0 flex-col items-end">
+            <span class="text-sm tabular-nums" data-testid="dashboard.top-positions.row.value">
+              {{ position.value | formatCents }}
+            </span>
+            @if (position.gainRatio !== null) {
+              <app-price-change
+                class="text-xs"
+                data-testid="dashboard.top-positions.row.gain-ratio"
+                [value]="position.gainRatio"></app-price-change>
+            }
+          </div>
+        </li>
+      }
+    </ol>
+  }
+</app-panel>

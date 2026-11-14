@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import {
   enterAccountsPage,
   enterAccountStatementPage,
+  enterBanksPage,
   leaveAccountsPage,
   leaveAccountStatementPage,
 } from './state/banking.guards';
@@ -32,6 +33,7 @@ export const banksRoutes: Routes = [
   {
     path: '',
     title: $localize`:@@featureBanking-banksRoutes-banksTitle:Bankenvergleich`,
+    canActivate: [enterBanksPage()],
     loadComponent: async () => {
       return (await import('./banks/banks.page')).BanksPage;
     },

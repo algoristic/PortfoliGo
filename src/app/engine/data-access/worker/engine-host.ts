@@ -5,6 +5,7 @@ import { StandingOrder, StandingOrderId } from '@app/banking/domain/models/stand
 import { mergeJournal, statementPage } from '@app/banking/domain/statement-logic';
 import { dayIndex } from '@app/clock/domain/calendar-logic';
 import { Tick, TICKS_PER_DAY, TradingHours } from '@app/clock/domain/models/time.model';
+import { UPCOMING_DAYS } from '@app/dashboard/domain/models/upcoming.model';
 import { accountViews, netWorth } from '@app/engine/domain/account-projection';
 import { liveHighLow, WorkShare } from '@app/engine/domain/background-share-logic';
 import { catchUpSeenAt, catchUpTarget } from '@app/engine/domain/catch-up-logic';
@@ -1732,6 +1733,10 @@ export class EngineHost {
         return this.#candles(game, query);
       case 'performanceHistory':
         return this.#performanceHistory(game, query);
+      case 'upcoming': {
+        const days = query.days ?? UPCOMING_DAYS;
+        return { kind: 'upcoming', events: engine.upcoming(days), days, tick: engine.tick };
+      }
     }
   }
 

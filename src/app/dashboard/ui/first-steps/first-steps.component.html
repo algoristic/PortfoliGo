@@ -1,0 +1,41 @@
+<app-panel [heading]="heading">
+  <button
+    panelActions
+    appButton
+    type="button"
+    size="sm"
+    variant="ghost"
+    data-testid="dashboard.first-steps.hide"
+    i18n="@@uiDashboard-firstSteps-hide"
+    (click)="onHide()">
+    Ausblenden
+  </button>
+  <p class="text-xs text-fg-muted" data-testid="dashboard.first-steps.progress">{{ progress() }}</p>
+  <ol class="mt-2 flex flex-col gap-2">
+    @for (row of rows(); track row.id) {
+      <li
+        class="flex items-start gap-3"
+        [attr.data-testid]="'dashboard.first-steps.' + row.id"
+        [attr.data-done]="row.done">
+        @if (row.done) {
+          <i class="mt-0.5 text-up" appIcon="check-circle-fill"></i>
+        } @else {
+          <i class="mt-0.5 text-fg-muted" appIcon="circle"></i>
+        }
+        <div class="flex min-w-0 flex-col">
+          <a
+            class="text-sm font-medium hover:underline"
+            [class.line-through]="row.done"
+            [class.text-fg-muted]="row.done"
+            [routerLink]="row.link"
+            [attr.data-testid]="'dashboard.first-steps.' + row.id + '.link'"
+            ><span class="sr-only">{{ row.done ? doneLabel : openLabel }}: </span>{{ row.title }}</a
+          >
+          @if (!row.done) {
+            <span class="text-xs text-fg-muted">{{ row.hint }}</span>
+          }
+        </div>
+      </li>
+    }
+  </ol>
+</app-panel>

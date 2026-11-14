@@ -1,0 +1,32 @@
+@let _cashflow = cashflow();
+
+<app-panel [heading]="heading()">
+  @if (_cashflow) {
+    <dl class="grid grid-cols-3 gap-2 text-sm">
+      <div class="flex flex-col gap-0.5">
+        <dt class="text-xs text-fg-muted" i18n="@@uiDashboard-cashflow-earnings">Einnahmen</dt>
+        <dd class="text-up tabular-nums" data-testid="dashboard.cashflow.earnings">
+          {{ _cashflow.earnings | formatCents }}
+        </dd>
+      </div>
+      <div class="flex flex-col gap-0.5">
+        <dt class="text-xs text-fg-muted" i18n="@@uiDashboard-cashflow-spending">Ausgaben</dt>
+        <dd class="text-down tabular-nums" data-testid="dashboard.cashflow.spending">
+          {{ _cashflow.spending | formatCents }}
+        </dd>
+      </div>
+      <div class="flex flex-col gap-0.5">
+        <dt class="text-xs text-fg-muted" i18n="@@uiDashboard-cashflow-savingsRate">Sparquote</dt>
+        <dd class="tabular-nums" data-testid="dashboard.cashflow.savings-rate">
+          {{ _cashflow.savingsRate | formatPercent: 1 }}
+        </dd>
+      </div>
+    </dl>
+    <p class="mt-3 text-xs text-fg-muted" i18n="@@uiDashboard-cashflow-note">
+      Bisher in diesem Monat gebucht; Käufe, Verkäufe und Überweisungen zwischen eigenen Konten
+      zählen nicht.
+    </p>
+  } @else {
+    <app-skeleton [lines]="2"></app-skeleton>
+  }
+</app-panel>

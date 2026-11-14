@@ -10,6 +10,7 @@ import {
 import { StatementEntry } from '@app/banking/domain/models/statement.model';
 import { SpeedId } from '@app/clock/domain/models/speed.model';
 import { Tick } from '@app/clock/domain/models/time.model';
+import { UpcomingEvent } from '@app/dashboard/domain/models/upcoming.model';
 import { AccountView } from '@app/engine/domain/models/account-view.model';
 import { BackgroundMode, StartConditions } from '@app/engine/domain/models/game-state.model';
 import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
@@ -157,6 +158,23 @@ export interface PerformanceHistoryQuery {
 export type PerformanceHistoryRequest = Omit<PerformanceHistoryQuery, 'kind'>;
 
 /**
+ * Plannable dates of the next `days` days (default `UPCOMING_DAYS`, 1 … `MAX_UPCOMING_DAYS`) that
+ * only the worker knows (TS §8.1, §8.2, E-05): bank runs with base amounts, fees, announced
+ * ex-dates and payouts of held instruments.
+ */
+export interface UpcomingQuery {
+  kind: 'upcoming';
+  days?: number;
+}
+
+/** The dates after `tick` up to `tick + days` days, sorted (`sortUpcoming`). */
+export interface UpcomingResult {
+  events: UpcomingEvent[];
+  days: number;
+  tick: Tick;
+}
+
+/**
  * Queries (TS §8.2); they write nothing and don't hold the clock. `closingPreview` shows what
  * closing an account now would book (TS §7.4); `monthlyValues` the household months (US-EK-03).
  */
@@ -178,7 +196,8 @@ export type EngineQuery =
   | { kind: 'instrumentComposition'; id: string }
   | ScreenerQuery
   | CandlesQuery
-  | PerformanceHistoryQuery;
+  | PerformanceHistoryQuery
+  | UpcomingQuery;
 export type EngineQueryKind = EngineQuery['kind'];
 export const ENGINE_QUERY_KINDS = [
   'exchanges',
@@ -196,6 +215,7 @@ export const ENGINE_QUERY_KINDS = [
   'screener',
   'candles',
   'performanceHistory',
+  'upcoming',
 ] as const satisfies readonly EngineQueryKind[];
 
 /** Own transfer (US-BK-04): whole cents ≥ 1, purpose up to `MAX_PURPOSE_LENGTH` characters. */
@@ -377,7 +397,8 @@ export type EngineQueryResult =
   | { kind: 'instrumentComposition'; composition: IndexComposition | null; tick: Tick }
   | ({ kind: 'screener' } & ScreenerResult)
   | ({ kind: 'candles' } & CandlesResult)
-  | ({ kind: 'performanceHistory' } & PerformanceHistoryResult);
+  | ({ kind: 'performanceHistory' } & PerformanceHistoryResult)
+  | ({ kind: 'upcoming' } & UpcomingResult);
 
 /** The result of a query of kind `K`. */
 export type EngineQueryResultOf<K extends EngineQueryKind> = Extract<
