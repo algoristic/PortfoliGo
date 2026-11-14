@@ -726,7 +726,7 @@ Als Einsteiger möchte ich nach dem Anlegen eines Spielers durch die ersten Schr
 ### 10.4 Zahlen und Zeit
 
 - Geldbeträge: `1.234,56 €`; in Übersichten kompakt (`1,2 Mio. €`).
-- Veränderungen immer mit Vorzeichen und Farbe: `+1,23 %`, `−45,10 €` (typografisches Minuszeichen).
+- Veränderungen immer mit Vorzeichen und Farbe: `+1,23 %`, `−45,10 €` (typografisches Minuszeichen). Auch negative Prozentwerte ohne Vorzeichenpflicht (z. B. die Sparquote) tragen das typografische Minus: `−4,2 %`.
 - Kurse ab 10 € mit zwei, von 1 bis 10 € mit drei, unter 1 € mit vier Nachkommastellen. So bleibt der Spread auch bei günstigen Aktien sichtbar.
 - Spielzeit: `Mo., 01.04.2030, 09:41`.
 - Zahlen in Tabellen rechtsbündig mit tabellarischen Ziffern.

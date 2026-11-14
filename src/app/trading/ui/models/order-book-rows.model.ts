@@ -15,6 +15,8 @@ export interface OrderRow {
   typeLabel: string;
   limit: number | null;
   stop: number | null;
+  /** The type label already names the stop or limit (type `stop` or `limit`): only the price follows. */
+  priceNamed: boolean;
   /** Shares of an order by quantity, `null` for an order by amount. */
   quantity: MicroUnits | null;
   /** Amount of an order by amount, `null` for an order by quantity. */

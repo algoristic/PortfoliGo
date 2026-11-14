@@ -41,7 +41,14 @@ describe('format', () => {
   describe('formatPercent', () => {
     it('formats ratios as percentages', () => {
       expect(formatPercent(0.025)).toBe(`2,50${NBSP}%`);
-      expect(formatPercent(-0.1234, 1)).toBe(`-12,3${NBSP}%`);
+    });
+
+    // PS §10.4: the typographic minus as in the formats for changes, also for large values (the
+    // savings rate of a month before its salary)
+    it('writes negative ratios with the typographic minus', () => {
+      expect(formatPercent(-0.1234, 1)).toBe(`${MINUS}12,3${NBSP}%`);
+      expect(formatPercent(-42.114, 1)).toBe(`${MINUS}4.211,4${NBSP}%`);
+      expect(formatPercent(-0.025)).not.toContain('-');
     });
   });
 

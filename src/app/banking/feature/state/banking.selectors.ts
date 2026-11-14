@@ -11,6 +11,7 @@ import {
   savingsRate,
 } from '@app/banking/domain/monthly-values-logic';
 import { isEngineCommandError } from '@app/engine/feature/state/session.utils';
+import { selectInstruments } from '@app/market/feature/state/market.selectors';
 import { Bank } from '@app/world/domain/models/bank.model';
 
 import {
@@ -188,6 +189,12 @@ export const selectStatementAccount = createSelector(
   selectStatementAccountId,
   selectAccounts,
   (accountId, accounts) => accounts.find((account) => account.id === accountId) ?? null,
+);
+/** Names of the securities for the booking texts of the statement; empty until loaded. */
+export const selectInstrumentNames = createSelector(
+  selectInstruments,
+  (instruments): ReadonlyMap<string, string> =>
+    new Map(instruments.map(({ id, name }) => [id, name])),
 );
 export const selectStatement = createSelector(selectState, (state) => state.statement);
 export const selectStatementFilter = createSelector(

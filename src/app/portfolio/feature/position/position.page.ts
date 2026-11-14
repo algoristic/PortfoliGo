@@ -28,7 +28,7 @@ const ALL_DEPOTS = 'all';
 /**
  * Position detail (US-PF-06) of the instrument in the route, in the depot chosen on the depot page
  * or all depots combined: price head, key figures, the chart with the own trades marked, lots,
- * and the executions the order history keeps; buying and selling through the order ticket. Without
+ * and the order executions and savings plan purchases from the journal; buying and selling through the order ticket. Without
  * shares an empty state links to the instrument page.
  */
 @Component({

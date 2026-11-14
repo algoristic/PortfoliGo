@@ -275,6 +275,38 @@ describe('statement-logic', () => {
       expect(result.entries.map(({ seq }) => seq)).toEqual(seqs);
     });
 
+    // TS §7.2: the name of the security of a booking (`refs.instrumentId`) is searchable
+    it('finds bookings by the name of their security', () => {
+      const booking = (seq: number, instrumentId: string): Transaction => ({
+        seq,
+        tick: at(1, 4),
+        type: 'dividend',
+        postings: [
+          { account: 'acc-1', amount: 1_000, balanceAfter: 1_000 * seq },
+          { account: `external:issuer:${instrumentId}`, amount: -1_000, balanceAfter: null },
+        ],
+        refs: { instrumentId },
+      });
+      const journal = [booking(1, 'stk-1'), booking(2, 'stk-2'), booking(3, 'stk-9')];
+      const instrumentNames = new Map([
+        ['stk-1', 'Astix AG'],
+        ['stk-2', 'Borealis SE'],
+      ]);
+      const search = (text: string) =>
+        statementPage(
+          journal,
+          { ...context('acc-1'), instrumentNames },
+          { search: text },
+          ALL,
+        ).entries.map(({ seq }) => seq);
+      expect(search('astix')).toEqual([1]);
+      expect(search(' SE ')).toEqual([2]);
+      expect(search('stk-9')).toEqual([]);
+      expect(statementPage(journal, context('acc-1'), { search: 'astix' }, ALL).entries).toEqual(
+        [],
+      );
+    });
+
     // TS §7.2: purchase example, every other account is a counterparty and searchable
     it('lists and searches every counterparty of a purchase', () => {
       const journal: Transaction[] = [

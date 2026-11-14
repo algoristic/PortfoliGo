@@ -41,6 +41,7 @@ import {
   PerformanceFigures,
   SeriesResolution,
 } from '@app/portfolio/domain/models/performance.model';
+import { PositionTrades } from '@app/portfolio/domain/models/position-detail.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import {
   ORDER_COMMAND_ERRORS,
@@ -159,6 +160,25 @@ export interface PerformanceHistoryQuery {
 export type PerformanceHistoryRequest = Omit<PerformanceHistoryQuery, 'kind'>;
 
 /**
+ * Purchases and sales of an instrument from the journal (TS §8.2, US-PF-06): order executions and
+ * savings plan purchases in the depot `depotId` or in all depots of the player, the newest `limit`
+ * (default and at most `MAX_POSITION_TRADES`) newest first, up to the current tick.
+ */
+export interface PositionTradesQuery {
+  kind: 'positionTrades';
+  instrumentId: string;
+  depotId?: DepotId;
+  limit?: number;
+}
+
+export type PositionTradesRequest = Omit<PositionTradesQuery, 'kind'>;
+
+/** The newest trades up to `tick` (the query limit) and the number of all of them. */
+export interface PositionTradesResult extends PositionTrades {
+  tick: Tick;
+}
+
+/**
  * Plannable dates of the next `days` days (default `UPCOMING_DAYS`, 1 … `MAX_UPCOMING_DAYS`) that
  * only the worker knows (TS §8.1, §8.2, E-05): bank runs with base amounts, fees, announced
  * ex-dates and payouts of held instruments.
@@ -202,7 +222,8 @@ export type EngineQuery =
   | ScreenerQuery
   | CandlesQuery
   | PerformanceHistoryQuery
-  | UpcomingQuery;
+  | UpcomingQuery
+  | PositionTradesQuery;
 export type EngineQueryKind = EngineQuery['kind'];
 export const ENGINE_QUERY_KINDS = [
   'exchanges',
@@ -221,6 +242,7 @@ export const ENGINE_QUERY_KINDS = [
   'candles',
   'performanceHistory',
   'upcoming',
+  'positionTrades',
 ] as const satisfies readonly EngineQueryKind[];
 
 /** Own transfer (US-BK-04): whole cents ≥ 1, purpose up to `MAX_PURPOSE_LENGTH` characters. */
@@ -403,7 +425,8 @@ export type EngineQueryResult =
   | ({ kind: 'screener' } & ScreenerResult)
   | ({ kind: 'candles' } & CandlesResult)
   | ({ kind: 'performanceHistory' } & PerformanceHistoryResult)
-  | ({ kind: 'upcoming' } & UpcomingResult);
+  | ({ kind: 'upcoming' } & UpcomingResult)
+  | ({ kind: 'positionTrades' } & PositionTradesResult);
 
 /** The result of a query of kind `K`. */
 export type EngineQueryResultOf<K extends EngineQueryKind> = Extract<

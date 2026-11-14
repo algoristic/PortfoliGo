@@ -8,6 +8,7 @@ import type { Mocked } from 'vitest';
 import { selectTick } from '@app/clock/feature/state/clock.selectors';
 import { EngineQueryResultOf } from '@app/engine/data-access/service/engine-service.model';
 import { EngineService } from '@app/engine/data-access/service/engine.service';
+import { selectPhase } from '@app/engine/feature/state/session.selectors';
 import { IndexComposition } from '@app/market/domain/models/instrument-figures.model';
 import * as MarketActions from '@app/market/feature/state/market.actions';
 import { selectInstrumentsLoaded } from '@app/market/feature/state/market.selectors';
@@ -20,6 +21,7 @@ import {
   selectMissingCompositions,
   selectPerformanceDay,
   selectPortfolioSeries,
+  selectPositionTradesLoad,
 } from './portfolio.selectors';
 
 const COMPOSITION = { indexId: 'idx-1' } as IndexComposition;
@@ -28,11 +30,17 @@ describe('PortfolioEffects', () => {
   let effects: PortfolioEffects;
   let actions$: Subject<Action>;
   let store: MockStore;
-  let engine: Mocked<Pick<EngineService, 'instrumentComposition' | 'performanceHistory'>>;
+  let engine: Mocked<
+    Pick<EngineService, 'instrumentComposition' | 'performanceHistory' | 'positionTrades'>
+  >;
 
   beforeEach(() => {
     actions$ = new Subject();
-    engine = { instrumentComposition: vi.fn(), performanceHistory: vi.fn() };
+    engine = {
+      instrumentComposition: vi.fn(),
+      performanceHistory: vi.fn(),
+      positionTrades: vi.fn(),
+    };
     TestBed.configureTestingModule({
       providers: [
         PortfolioEffects,
@@ -99,6 +107,75 @@ describe('PortfolioEffects', () => {
       store.refreshState();
       expect(emitted).toHaveLength(1);
       subscription.unsubscribe();
+    });
+  });
+
+  describe('loadPositionTrades$', () => {
+    const DEPOT = 'dep-2' as const;
+    const result = (total: number): EngineQueryResultOf<'positionTrades'> => ({
+      kind: 'positionTrades',
+      trades: [],
+      total,
+      tick: 5,
+    });
+
+    it('loads once the player is loaded and again when the holdings change', async () => {
+      engine.positionTrades.mockReturnValueOnce(of(result(1))).mockReturnValueOnce(of(result(2)));
+      store.overrideSelector(selectPhase, 'loading');
+      store.overrideSelector(selectPositionTradesLoad, {
+        instrumentId: 'stk-1',
+        depotId: DEPOT,
+        key: 'a',
+      });
+      const emitted: Action[] = [];
+      const subscription = effects.loadPositionTrades$.subscribe((action) => emitted.push(action));
+      actions$.next(PortfolioActions.enterPositionPage());
+      expect(engine.positionTrades).not.toHaveBeenCalled();
+      store.overrideSelector(selectPhase, 'loaded');
+      store.refreshState();
+      // The same key (e.g. a new quote) loads nothing; a new holding does.
+      store.refreshState();
+      store.overrideSelector(selectPositionTradesLoad, {
+        instrumentId: 'stk-1',
+        depotId: null,
+        key: 'b',
+      });
+      store.refreshState();
+      expect(engine.positionTrades.mock.calls).toEqual([
+        [{ instrumentId: 'stk-1', depotId: DEPOT }],
+        [{ instrumentId: 'stk-1' }],
+      ]);
+      expect(emitted).toEqual([
+        PortfolioActions.retrievedPositionTrades({
+          trades: { instrumentId: 'stk-1', depotId: DEPOT, trades: [], total: 1 },
+        }),
+        PortfolioActions.retrievedPositionTrades({
+          trades: { instrumentId: 'stk-1', depotId: null, trades: [], total: 2 },
+        }),
+      ]);
+      actions$.next(PortfolioActions.leavePositionPage());
+      store.overrideSelector(selectPositionTradesLoad, {
+        instrumentId: 'stk-1',
+        depotId: null,
+        key: 'c',
+      });
+      store.refreshState();
+      expect(engine.positionTrades).toHaveBeenCalledTimes(2);
+      subscription.unsubscribe();
+    });
+
+    it('maps a failed query to loadPositionTradesFailure', async () => {
+      const error = new Error('storage');
+      engine.positionTrades.mockReturnValue(throwError(() => error));
+      store.overrideSelector(selectPhase, 'loaded');
+      store.overrideSelector(selectPositionTradesLoad, {
+        instrumentId: 'stk-1',
+        depotId: null,
+        key: 'a',
+      });
+      const failure = firstValueFrom(effects.loadPositionTrades$);
+      actions$.next(PortfolioActions.enterPositionPage());
+      expect(await failure).toEqual(PortfolioActions.loadPositionTradesFailure({ error }));
     });
   });
 

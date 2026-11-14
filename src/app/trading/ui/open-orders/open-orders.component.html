@@ -91,7 +91,9 @@
             <span data-testid="trading.open-orders.row.type">{{ row.typeLabel }}</span>
             @if (row.stop !== null) {
               <span class="text-fg-muted">
-                · <ng-container i18n="@@uiTrading-openOrders-stop">Stop</ng-container>
+                @if (!row.priceNamed) {
+                  · <ng-container i18n="@@uiTrading-openOrders-stop">Stop</ng-container>
+                }
                 <span class="ml-1" data-testid="trading.open-orders.row.stop">{{
                   row.stop | formatPrice
                 }}</span>
@@ -99,7 +101,9 @@
             }
             @if (row.limit !== null) {
               <span class="text-fg-muted">
-                · <ng-container i18n="@@uiTrading-openOrders-limit">Limit</ng-container>
+                @if (!row.priceNamed) {
+                  · <ng-container i18n="@@uiTrading-openOrders-limit">Limit</ng-container>
+                }
                 <span class="ml-1" data-testid="trading.open-orders.row.limit">{{
                   row.limit | formatPrice
                 }}</span>

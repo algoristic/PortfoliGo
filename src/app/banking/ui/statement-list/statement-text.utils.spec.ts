@@ -4,6 +4,13 @@ import { StatementCounterparty, StatementEntry } from '@app/banking/domain/model
 import { statementEntryText } from './statement-text.utils';
 
 const MS_PER_MINUTE = 60_000;
+const NBSP = '\u00a0';
+const INSTRUMENT_NAMES = new Map([
+  ['stk-1', 'Astix AG'],
+  ['etf-1', 'Welt ETF'],
+]);
+// TS §7.5: the purchase of 10 shares at 100,00 €; savings plans buy fractional shares (TS §7.8).
+const PURCHASE = { quantity: 10_000_000, price: 100, marketValue: 100_000 };
 const BANK_NAMES = new Map([
   ['b1', 'Hansebank'],
   ['b2', 'Direktbank Süd'],
@@ -101,6 +108,62 @@ describe('statementEntryText', () => {
     ['tax', entry('tax'), 'Abgeltungsteuer', null],
     ['tax refund', entry('tax-refund'), 'Steuererstattung', null],
     [
+      'purchase by an order',
+      entry('buy', { refs: { orderId: 'ord-1', instrumentId: 'stk-1' }, params: PURCHASE }),
+      'Kauf Astix AG',
+      `10 Stück zu 100,00${NBSP}€`,
+    ],
+    [
+      'savings plan purchase',
+      entry('buy', {
+        refs: { savingsPlanId: 'sp-1', instrumentId: 'etf-1' },
+        params: { quantity: 1_030_927, price: 48.5 },
+      }),
+      'Sparplan-Kauf Welt ETF',
+      `1,030927 Stück zu 48,50${NBSP}€`,
+    ],
+    [
+      'sale of a low-priced share with its grid',
+      entry('sell', {
+        amount: 100,
+        refs: { orderId: 'ord-2', instrumentId: 'stk-1' },
+        params: { quantity: 500_000, price: 0.1234 },
+      }),
+      'Verkauf Astix AG',
+      `0,5 Stück zu 0,1234${NBSP}€`,
+    ],
+    [
+      'purchase of an unknown security without shares',
+      entry('buy', { refs: { orderId: 'ord-3', instrumentId: 'stk-9' } }),
+      'Kauf stk-9',
+      null,
+    ],
+    ['purchase without a security', entry('buy'), 'Kauf', null],
+    [
+      'dividend',
+      entry('dividend', { amount: 100, refs: { depotId: 'dep-2', instrumentId: 'stk-1' } }),
+      'Dividende Astix AG',
+      null,
+    ],
+    [
+      'fund distribution',
+      entry('fund-distribution', { amount: 100, refs: { instrumentId: 'etf-1' } }),
+      'Ausschüttung Welt ETF',
+      null,
+    ],
+    [
+      'tax on a sale',
+      entry('tax', { refs: { orderId: 'ord-2', instrumentId: 'stk-1' } }),
+      'Abgeltungsteuer Astix AG',
+      null,
+    ],
+    [
+      'tax refund on a payout',
+      entry('tax-refund', { amount: 100, refs: { instrumentId: 'etf-1' } }),
+      'Steuererstattung Welt ETF',
+      null,
+    ],
+    [
       'outgoing transfer',
       entry('transfer', { counterparties: [SAVINGS], params: { purpose: 'Urlaub Mai' } }),
       'Überweisung an Tagesgeld 0000000002 · Direktbank Süd',
@@ -150,6 +213,9 @@ describe('statementEntryText', () => {
       null,
     ],
   ])('names %s', (_name, statementEntry, text, detail) => {
-    expect(statementEntryText(statementEntry, BANK_NAMES)).toEqual({ text, detail });
+    expect(statementEntryText(statementEntry, BANK_NAMES, INSTRUMENT_NAMES)).toEqual({
+      text,
+      detail,
+    });
   });
 });

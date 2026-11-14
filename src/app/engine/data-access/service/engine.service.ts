@@ -48,6 +48,7 @@ import {
   NotificationsRequest,
   PerformanceHistoryRequest,
   PerformanceProjectionUpdate,
+  PositionTradesRequest,
   SavingsPlansProjectionUpdate,
   StandingOrdersProjectionUpdate,
   StatementRequest,
@@ -336,6 +337,16 @@ export class EngineService implements OnDestroy {
    */
   upcoming(days: number = UPCOMING_DAYS): Observable<EngineQueryResultOf<'upcoming'>> {
     return this.#query({ kind: 'upcoming', days });
+  }
+
+  /**
+   * Purchases and sales of an instrument from the journal (TS §8.2, US-PF-06): order executions
+   * and savings plan purchases in one depot or all depots, the newest first.
+   */
+  positionTrades(
+    request: PositionTradesRequest,
+  ): Observable<EngineQueryResultOf<'positionTrades'>> {
+    return this.#query({ ...request, kind: 'positionTrades' });
   }
 
   /** Switches the auto-pause of a notification code (TS §12, US-ZT-06). */

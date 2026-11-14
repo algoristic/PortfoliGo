@@ -40,9 +40,12 @@ export function formatPrice(price: number, fractionDigits = 2): string {
   }).format(price);
 }
 
-/** Formats a ratio as a percentage, e.g. `0.025` → `2,50 %`. */
+/**
+ * Formats a ratio as a percentage, e.g. `0.025` → `2,50 %`; negative ratios with the typographic
+ * minus like the formats for changes, e.g. `−12,3 %` (PS §10.4).
+ */
 export function formatPercent(ratio: number, fractionDigits = 2): string {
-  return numberFormat(percentOptions(fractionDigits)).format(ratio);
+  return withMinusSign(numberFormat(percentOptions(fractionDigits)).format(ratio));
 }
 
 /**

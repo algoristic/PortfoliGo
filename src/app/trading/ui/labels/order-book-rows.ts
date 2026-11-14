@@ -42,6 +42,7 @@ export function orderRow({
     typeLabel: orderTypeLabel(order.type),
     limit: order.limit,
     stop: order.stop,
+    priceNamed: order.type === 'limit' || order.type === 'stop',
     quantity: order.size.kind === 'quantity' ? order.size.quantity : null,
     amount: order.size.kind === 'amount' ? order.size.amount : null,
   };

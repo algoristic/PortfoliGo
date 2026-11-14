@@ -54,9 +54,12 @@ export function positionColumnLabel(key: PositionSortKey): string {
   }
 }
 
-/** Kind of a trade in the position detail (US-PF-06). */
-export function tradeSideLabel(side: OrderSide): string {
-  return side === 'buy'
-    ? $localize`:@@uiPortfolio-portfolioLabels-purchase:Kauf`
-    : $localize`:@@uiPortfolio-portfolioLabels-sale:Verkauf`;
+/** Kind of a trade in the position detail (US-PF-06); a savings plan purchase is named as such. */
+export function tradeSideLabel(side: OrderSide, savingsPlan = false): string {
+  if (side === 'sell') {
+    return $localize`:@@uiPortfolio-portfolioLabels-sale:Verkauf`;
+  }
+  return savingsPlan
+    ? $localize`:@@uiPortfolio-portfolioLabels-savingsPlanPurchase:Sparplan-Kauf`
+    : $localize`:@@uiPortfolio-portfolioLabels-purchase:Kauf`;
 }

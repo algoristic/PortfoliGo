@@ -38,3 +38,21 @@ export function leavePerformanceHistory(): CanDeactivateFn<unknown> {
     return true;
   };
 }
+
+/**
+ * Starts the trades of the position detail (US-PF-06): order executions and savings plan purchases
+ * from the journal, loaded again when the holdings of the instrument change.
+ */
+export function enterPositionPage(): CanActivateFn {
+  return () => {
+    inject(PortfolioFacade).enterPositionPage();
+    return true;
+  };
+}
+
+export function leavePositionPage(): CanDeactivateFn<unknown> {
+  return () => {
+    inject(PortfolioFacade).leavePositionPage();
+    return true;
+  };
+}

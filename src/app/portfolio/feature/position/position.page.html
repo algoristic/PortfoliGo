@@ -94,14 +94,25 @@
       }
 
       <app-panel class="min-w-0" [heading]="tradesHeading">
-        @if (view.trades.length > 0) {
+        @if (view.tradesLoading) {
+          <app-skeleton data-testid="portfolio.position.trades.loading" [lines]="3"></app-skeleton>
+        } @else if (view.trades.length > 0) {
           <app-trade-list [trades]="view.trades" [compact]="!wide()"></app-trade-list>
+          @if (view.tradesTotal > view.trades.length) {
+            <p
+              class="mt-2 text-xs text-fg-muted"
+              data-testid="portfolio.position.trades.limited"
+              i18n="@@featurePortfolio-positionPage-tradesLimited">
+              Die neuesten {{ view.trades.length }} von {{ view.tradesTotal }} Ausführungen; alle
+              Buchungen stehen im Kontoauszug des Verrechnungskontos.
+            </p>
+          }
         } @else {
           <p
             class="text-sm text-fg-muted"
             data-testid="portfolio.position.trades.empty"
-            i18n="@@featurePortfolio-positionPage-noTrades">
-            Die Orderhistorie enthält keine Ausführungen dieses Wertpapiers.
+            i18n="@@featurePortfolio-positionPage-noTradesYet">
+            Noch keine Käufe oder Verkäufe dieses Wertpapiers.
           </p>
         }
       </app-panel>

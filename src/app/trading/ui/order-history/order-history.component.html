@@ -47,13 +47,17 @@
             <span data-testid="trading.order-history.row.type">{{ row.typeLabel }}</span>
             @if (row.stop !== null) {
               <span class="text-fg-muted">
-                · <ng-container i18n="@@uiTrading-orderHistory-stop">Stop</ng-container>
+                @if (!row.priceNamed) {
+                  · <ng-container i18n="@@uiTrading-orderHistory-stop">Stop</ng-container>
+                }
                 {{ row.stop | formatPrice }}</span
               >
             }
             @if (row.limit !== null) {
               <span class="text-fg-muted">
-                · <ng-container i18n="@@uiTrading-orderHistory-limit">Limit</ng-container>
+                @if (!row.priceNamed) {
+                  · <ng-container i18n="@@uiTrading-orderHistory-limit">Limit</ng-container>
+                }
                 {{ row.limit | formatPrice }}</span
               >
             }

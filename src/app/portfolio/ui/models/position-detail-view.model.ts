@@ -19,9 +19,12 @@ export interface LotRow {
 
 /** An executed purchase or sale of the position detail (US-PF-06). */
 export interface TradeRow {
-  orderId: string;
+  /** Running number of the transaction. */
+  id: string;
   depot: string | null;
   side: OrderSide;
+  /** A savings plan purchase rather than an order execution. */
+  savingsPlan: boolean;
   tick: Tick;
   quantity: MicroUnits;
   price: number;
@@ -41,7 +44,12 @@ export interface PositionDetailView {
   /** The head figures and lots; `null` when the shown depots hold no shares. */
   detail: PositionDetail | null;
   lots: LotRow[];
+  /** The newest trades (order executions and savings plan purchases), newest first. */
   trades: TradeRow[];
+  /** The trades of the shown instrument and depots are still loading. */
+  tradesLoading: boolean;
+  /** Number of all trades; more than `trades` holds when the query limit cut them. */
+  tradesTotal: number;
   /** The trades as markers for the chart, oldest first. */
   chartTrades: ChartTrade[];
 }

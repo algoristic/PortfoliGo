@@ -4,7 +4,7 @@ import { changeDirection } from '@app/shared/util/change-direction';
 import { formatCents, formatSignedCents } from '@app/shared/util/format';
 
 import { StatementRow, StatementRowView } from './statement-list.model';
-import { statementEntryText } from './statement-text.utils';
+import { InstrumentNames, statementEntryText } from './statement-text.utils';
 
 const AMOUNT_CLASSES = { up: 'text-up', down: 'text-down', flat: 'text-fg-muted' } as const;
 
@@ -18,11 +18,12 @@ export function statementRows(
   offset: number,
   entries: readonly StatementEntry[],
   bankNames: ReadonlyMap<string, string>,
+  instrumentNames?: InstrumentNames,
 ): StatementRow[] {
   const rows: StatementRow[] = new Array<StatementRow>(total).fill(null);
   const end = Math.min(total, offset + entries.length);
   for (let index = Math.max(0, offset); index < end; index++) {
-    rows[index] = statementRowView(entries[index - offset], index, bankNames);
+    rows[index] = statementRowView(entries[index - offset], index, bankNames, instrumentNames);
   }
   return rows;
 }
@@ -31,9 +32,10 @@ function statementRowView(
   entry: StatementEntry,
   index: number,
   bankNames: ReadonlyMap<string, string>,
+  instrumentNames: InstrumentNames | undefined,
 ): StatementRowView {
   return {
-    ...statementEntryText(entry, bankNames),
+    ...statementEntryText(entry, bankNames, instrumentNames),
     seq: entry.seq,
     position: index + 1,
     date: formatGameDate(entry.tick),

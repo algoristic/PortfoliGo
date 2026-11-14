@@ -7,6 +7,7 @@ import { Bank } from '@app/world/domain/models/bank.model';
 
 import { StatementListRange, StatementRow } from './statement-list.model';
 import { statementRows } from './statement-list.utils';
+import { InstrumentNames } from './statement-text.utils';
 
 /** Height of a row in px: `h-16` in the template, the item size of the virtual scrolling. */
 const ROW_HEIGHT_PX = 64;
@@ -26,6 +27,8 @@ export class StatementListComponent {
   offset = input.required<number>();
   entries = input.required<StatementEntry[]>();
   banks = input<Bank[] | null>();
+  /** Names of the securities; `null` until the master data is loaded (texts then show IDs). */
+  instrumentNames = input<InstrumentNames | null>(null);
   /** The list scrolls to the top when this changes (a new filter). */
   resetKey = input<unknown>();
 
@@ -39,7 +42,13 @@ export class StatementListComponent {
     () => new Map((this.banks() ?? []).map((bank) => [bank.id, bank.name] as const)),
   );
   rows = computed(() =>
-    statementRows(this.total(), this.offset(), this.entries(), this.#bankNames()),
+    statementRows(
+      this.total(),
+      this.offset(),
+      this.entries(),
+      this.#bankNames(),
+      this.instrumentNames() ?? undefined,
+    ),
   );
 
   label = $localize`:@@uiBanking-statementList-label:Buchungen`;

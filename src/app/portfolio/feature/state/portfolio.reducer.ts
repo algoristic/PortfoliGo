@@ -7,7 +7,12 @@ import { DEFAULT_POSITION_SORT, PositionSort } from '@app/portfolio/domain/model
 import { nextPositionSort } from '@app/portfolio/domain/position-overview-logic';
 
 import * as PortfolioActions from './portfolio.actions';
-import { DEFAULT_HISTORY_RANGE, LoadedComposition, LoadedHistory } from './portfolio.model';
+import {
+  DEFAULT_HISTORY_RANGE,
+  LoadedComposition,
+  LoadedHistory,
+  LoadedTrades,
+} from './portfolio.model';
 
 export const PORTFOLIO_FEATURE_KEY = 'portfolio';
 
@@ -32,6 +37,8 @@ export interface PortfolioState {
   history: LoadedHistory | null;
   historyLoading: boolean;
   historyFailed: boolean;
+  /** Trades of the position detail as last loaded (US-PF-06); `null` outside the page. */
+  trades: LoadedTrades | null;
 }
 
 export const initialPortfolioState: PortfolioState = {
@@ -45,6 +52,7 @@ export const initialPortfolioState: PortfolioState = {
   history: null,
   historyLoading: false,
   historyFailed: false,
+  trades: null,
 };
 
 function without(record: Record<string, number>, id: string, day: number): Record<string, number> {
@@ -115,6 +123,11 @@ const reducer = createReducer(
   on(PortfolioActions.loadPerformanceHistoryFailure, (state, { range }) =>
     range === state.historyRange ? { ...state, historyLoading: false, historyFailed: true } : state,
   ),
+  on(PortfolioActions.enterPositionPage, PortfolioActions.leavePositionPage, (state) => ({
+    ...state,
+    trades: null,
+  })),
+  on(PortfolioActions.retrievedPositionTrades, (state, { trades }) => ({ ...state, trades })),
 );
 
 export function portfolioReducer(

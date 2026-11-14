@@ -22,6 +22,8 @@ export class BankingFacade {
   accountTotals$ = this.#store.pipe(select(BankingSelectors.selectAccountTotals));
   salaryAccount$ = this.#store.pipe(select(BankingSelectors.selectSalaryAccount));
   banks$ = this.#store.pipe(select(BankingSelectors.selectBanks));
+  /** Names of the securities for the statement's booking texts. */
+  instrumentNames$ = this.#store.pipe(select(BankingSelectors.selectInstrumentNames));
   netWorth$ = this.#store.pipe(select(BankingSelectors.selectNetWorth));
   pending$ = this.#store.pipe(select(BankingSelectors.selectPending));
   accountOverview$ = this.#store.pipe(select(BankingSelectors.selectAccountOverview));

@@ -16,6 +16,7 @@ import {
 import { MAX_NOTIFICATION_LIMIT } from '@app/notifications/domain/notification-page-logic';
 import { MAX_STORED_NOTIFICATIONS } from '@app/notifications/domain/read-state-logic';
 import { DISTRIBUTION_KINDS } from '@app/portfolio/domain/models/distribution.model';
+import { MAX_POSITION_TRADES } from '@app/portfolio/domain/models/position-detail.model';
 import { MAX_HISTORY_POINTS } from '@app/portfolio/domain/performance-logic';
 import {
   ORDER_REJECTIONS,
@@ -244,6 +245,14 @@ function isUpcomingQuery(value: Fields): boolean {
   });
 }
 
+function isPositionTradesQuery(value: Fields): boolean {
+  return hasFields(value, {
+    instrumentId: isNonEmptyString,
+    depotId: isOptional(isDepotId),
+    limit: isOptional((limit) => isCount(limit) && limit >= 1 && limit <= MAX_POSITION_TRADES),
+  });
+}
+
 function isStandingOrderId(value: unknown): boolean {
   return isString(value) && /^so-[1-9]\d*$/.test(value);
 }
@@ -331,6 +340,8 @@ function isQuery(value: unknown): boolean {
       return isPerformanceHistoryQuery(value);
     case 'upcoming':
       return isUpcomingQuery(value);
+    case 'positionTrades':
+      return isPositionTradesQuery(value);
     default:
       return true;
   }

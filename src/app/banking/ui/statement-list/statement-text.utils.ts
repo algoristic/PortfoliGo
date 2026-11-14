@@ -9,6 +9,8 @@ import {
 } from '@app/clock/domain/calendar-logic';
 import { formatGameDate } from '@app/clock/domain/game-time-format';
 import { Tick, TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
+import { priceDecimals } from '@app/shared/domain/price-step-logic';
+import { formatPrice, formatQuantity } from '@app/shared/util/format';
 
 import { StatementEntryText } from './statement-list.model';
 
@@ -20,14 +22,24 @@ const monthFormat = new Intl.DateTimeFormat('de-DE', {
   year: 'numeric',
 });
 
+/** Names of the securities by instrument ID (from the market slice). */
+export type InstrumentNames = ReadonlyMap<string, string>;
+
+const NO_INSTRUMENT_NAMES: InstrumentNames = new Map();
+
 /**
  * Booking text of a statement entry from its type, parameters and other side (TS §8.6): the engine
- * stores codes and numbers, the purpose of a transfer is the player's own text.
+ * stores codes and numbers, the purpose of a transfer is the player's own text. Bookings of a
+ * security (`refs.instrumentId`) name it; a security the names don't know shows its ID.
  */
 export function statementEntryText(
   entry: StatementEntry,
   bankNames: ReadonlyMap<string, string>,
+  instrumentNames: InstrumentNames = NO_INSTRUMENT_NAMES,
 ): StatementEntryText {
+  const instrumentId = entry.refs['instrumentId'];
+  const instrument =
+    instrumentId === undefined ? null : (instrumentNames.get(instrumentId) ?? instrumentId);
   switch (entry.type) {
     case 'opening-balance':
       return plain($localize`:@@uiBanking-statementText-openingBalance:Startkapital`);
@@ -73,9 +85,71 @@ export function statementEntryText(
       );
     case 'transfer':
       return transferText(entry, bankNames);
+    case 'buy':
+    case 'sell':
+      return instrument === null
+        ? plain(transactionTypeLabel(entry.type))
+        : tradeText(entry, instrument);
+    case 'dividend':
+      return instrumentText(
+        instrument,
+        entry,
+        (name) => $localize`:@@uiBanking-statementText-dividend:Dividende ${name}:instrument:`,
+      );
+    case 'fund-distribution':
+      return instrumentText(
+        instrument,
+        entry,
+        (name) =>
+          $localize`:@@uiBanking-statementText-fundDistribution:Ausschüttung ${name}:instrument:`,
+      );
+    case 'tax':
+      return instrumentText(
+        instrument,
+        entry,
+        (name) => $localize`:@@uiBanking-statementText-tax:Abgeltungsteuer ${name}:instrument:`,
+      );
+    case 'tax-refund':
+      return instrumentText(
+        instrument,
+        entry,
+        (name) =>
+          $localize`:@@uiBanking-statementText-taxRefund:Steuererstattung ${name}:instrument:`,
+      );
     default:
       return plain(transactionTypeLabel(entry.type));
   }
+}
+
+function instrumentText(
+  instrument: string | null,
+  entry: StatementEntry,
+  text: (name: string) => string,
+): StatementEntryText {
+  return plain(instrument === null ? transactionTypeLabel(entry.type) : text(instrument));
+}
+
+/**
+ * A purchase or sale names the security, a savings plan purchase as such; the second line holds
+ * shares and price when the parameters carry them.
+ */
+function tradeText(entry: StatementEntry, instrument: string): StatementEntryText {
+  const text =
+    entry.type === 'sell'
+      ? $localize`:@@uiBanking-statementText-sell:Verkauf ${instrument}:instrument:`
+      : entry.refs['savingsPlanId'] !== undefined
+        ? $localize`:@@uiBanking-statementText-savingsPlanBuy:Sparplan-Kauf ${instrument}:instrument:`
+        : $localize`:@@uiBanking-statementText-buy:Kauf ${instrument}:instrument:`;
+  const { quantity, price } = entry.params;
+  if (typeof quantity !== 'number' || typeof price !== 'number') {
+    return plain(text);
+  }
+  const shares = formatQuantity(quantity);
+  const at = formatPrice(price, priceDecimals(price));
+  return {
+    text,
+    detail: $localize`:@@uiBanking-statementText-tradeDetail:${shares}:quantity: Stück zu ${at}:price:`,
+  };
 }
 
 function plain(text: string): StatementEntryText {

@@ -4,6 +4,7 @@
 @let filterActive = bankingFacade.statementFilterActive$ | async;
 @let statementWindow = bankingFacade.statementWindow$ | async;
 @let banks = bankingFacade.banks$ | async;
+@let instrumentNames = bankingFacade.instrumentNames$ | async;
 @let openAccounts = bankingFacade.openAccounts$ | async;
 @let canTransfer = (openAccounts?.length ?? 0) > 1;
 
@@ -111,6 +112,7 @@
           [offset]="statementWindow.offset"
           [entries]="statementWindow.entries"
           [banks]="banks"
+          [instrumentNames]="instrumentNames"
           [resetKey]="filter"
           (changedRange)="onChangeRange($event)"></app-statement-list>
       }

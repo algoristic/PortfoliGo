@@ -6,6 +6,8 @@ import { IndexComposition } from '@app/market/domain/models/instrument-figures.m
 import { HistoryRange, PerformanceFigures } from '@app/portfolio/domain/models/performance.model';
 import { PositionSortKey } from '@app/portfolio/domain/models/portfolio.model';
 
+import { LoadedTrades } from './portfolio.model';
+
 export const enterPortfolioPage = createAction('[Portfolio/Page] Enter portfolio page');
 export const leavePortfolioPage = createAction('[Portfolio/Page] Leave portfolio page');
 
@@ -55,4 +57,16 @@ export const retrievedPerformanceHistory = createAction(
 export const loadPerformanceHistoryFailure = createAction(
   '[Portfolio/API] Load performance history failure',
   props<{ range: HistoryRange; error: unknown }>(),
+);
+
+/** The position detail opens or closes (US-PF-06): its trades follow the holdings. */
+export const enterPositionPage = createAction('[Portfolio/Page] Enter position page');
+export const leavePositionPage = createAction('[Portfolio/Page] Leave position page');
+export const retrievedPositionTrades = createAction(
+  '[Portfolio/API] Retrieved position trades',
+  props<{ trades: LoadedTrades }>(),
+);
+export const loadPositionTradesFailure = createAction(
+  '[Portfolio/API] Load position trades failure',
+  props<{ error: unknown }>(),
 );

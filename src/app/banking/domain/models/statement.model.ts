@@ -41,16 +41,20 @@ export interface StatementFilter {
   from?: Tick;
   to?: Tick;
   types?: readonly TransactionType[];
-  /** Purpose, bank names, number of an own counter account or amount (TS §7.2). */
+  /** Purpose, bank names, number of an own counter account, security name or amount (TS §7.2). */
   search?: string;
 }
 
-/** What turns transactions into entries and what the search reads: accounts and bank names. */
+/**
+ * What turns transactions into entries and what the search reads: accounts, bank names and the
+ * names of the securities (`refs.instrumentId`; none without).
+ */
 export interface StatementContext {
   accountId: AccountId;
   /** All accounts of the player, closed ones included. */
   accounts: readonly Account[];
   bankNames: ReadonlyMap<string, string>;
+  instrumentNames?: ReadonlyMap<string, string>;
 }
 
 export interface StatementPageRequest {

@@ -13,7 +13,8 @@ interface TradeRowView extends TradeRow {
 }
 
 /**
- * Executed purchases and sales of a position (US-PF-06), newest first: time, kind, depot when all
+ * Executed purchases and sales of a position (US-PF-06), newest first, savings plan purchases
+ * included: time, kind, depot when all
  * depots are shown, shares, price, costs (order and exchange fee) and the debit or credit. A table
  * from `md`, cards below.
  */
@@ -28,7 +29,10 @@ export class TradeListComponent {
   compact = input(false);
 
   rows = computed((): TradeRowView[] =>
-    this.trades().map((trade) => ({ ...trade, sideLabel: tradeSideLabel(trade.side) })),
+    this.trades().map((trade) => ({
+      ...trade,
+      sideLabel: tradeSideLabel(trade.side, trade.savingsPlan),
+    })),
   );
   showDepot = computed(() => this.trades().some((trade) => trade.depot !== null));
 

@@ -63,7 +63,9 @@ import {
 import { oldestKeptSeq, unreadCount } from '@app/notifications/domain/read-state-logic';
 import { PlayerLock } from '@app/persistence/data-access/locks/player-locks';
 import { DailyPoint, PerformanceState } from '@app/portfolio/domain/models/performance.model';
+import { MAX_POSITION_TRADES } from '@app/portfolio/domain/models/position-detail.model';
 import { DEFAULT_HISTORY_POINTS, thinPoints } from '@app/portfolio/domain/performance-logic';
+import { positionTrades } from '@app/portfolio/domain/position-detail-logic';
 import { deriveSeedKey } from '@app/simulation/util/seed';
 import { TaxYear } from '@app/taxes/domain/models/tax.model';
 import { SavingsPlan, SavingsPlanId } from '@app/trading/domain/models/savings-plan.model';
@@ -106,6 +108,7 @@ import {
   NotificationsProjection,
   NotificationsQuery,
   PerformanceHistoryQuery,
+  PositionTradesQuery,
   ProgressKind,
   ProgressPayload,
   ReplyPayload,
@@ -1743,6 +1746,8 @@ export class EngineHost {
           dividends: engine.dividendCalendar(),
         };
       }
+      case 'positionTrades':
+        return this.#positionTrades(game, query);
     }
   }
 
@@ -1930,6 +1935,9 @@ export class EngineHost {
     const unsaved = game.unsavedTransactions.slice();
     const accounts = engine.player.accounts.map((account) => ({ ...account }));
     const bankNames = new Map(engine.world.world.banks.map(({ id, name }) => [id, name]));
+    const instrumentNames = new Map(
+      this.#marketData(game).catalog.map(({ id, name }) => [id, name]),
+    );
     let stored: Transaction[];
     try {
       stored = await this.#ports.storage.loadTransactions(game.playerId, accountId);
@@ -1938,11 +1946,44 @@ export class EngineHost {
     }
     const page = statementPage(
       mergeJournal(stored, unsaved),
-      { accountId, accounts, bankNames },
+      { accountId, accounts, bankNames, instrumentNames },
       { from, to: Math.min(to ?? tick, tick), types, search },
       { offset, limit },
     );
     return { kind: 'statement', ...page, tick };
+  }
+
+  /**
+   * Purchases and sales of an instrument (TS §8.2, US-PF-06) from the stored transactions of the
+   * clearing accounts of the depots in question and those not yet stored, up to the current tick;
+   * read like the statement. An unknown depot has none.
+   */
+  async #positionTrades(game: LoadedGame, query: PositionTradesQuery): Promise<EngineQueryResult> {
+    const { engine } = game;
+    const { instrumentId, depotId, limit = MAX_POSITION_TRADES } = query;
+    const depots = engine.player.depots.filter(({ id }) => depotId === undefined || id === depotId);
+    const tick = engine.tick;
+    const unsaved = game.unsavedTransactions.slice();
+    let stored: Transaction[][];
+    try {
+      stored = await Promise.all(
+        depots.map(({ clearingAccountId }) =>
+          this.#ports.storage.loadTransactions(game.playerId, clearingAccountId),
+        ),
+      );
+    } catch (error) {
+      throw new CommandFailure('storage-failed', errorMessage(error));
+    }
+    const journal = mergeJournal(...stored, unsaved).filter(
+      (transaction) => transaction.tick <= tick,
+    );
+    const result = positionTrades(
+      journal,
+      instrumentId,
+      depots.map(({ id }) => id),
+      limit,
+    );
+    return { kind: 'positionTrades', ...result, tick };
   }
 
   #clockPayload(game: LoadedGame): ClockPayload {

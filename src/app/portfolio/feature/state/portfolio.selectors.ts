@@ -11,7 +11,6 @@ import {
 } from '@app/market/feature/state/market.selectors';
 import {
   selectOpenDepots,
-  selectOrders,
   selectTradingLoaded,
 } from '@app/trading/feature/state/trading.selectors';
 
@@ -22,12 +21,14 @@ import {
   missingCompositionIds,
   portfolioView,
   positionDetailView,
+  positionTradesLoad,
 } from './portfolio.utils';
 
 const selectState = createFeatureSelector<PortfolioState>(PORTFOLIO_FEATURE_KEY);
 
 export const selectPortfolioDepotId = createSelector(selectState, (state) => state.depotId);
 export const selectPositionSort = createSelector(selectState, (state) => state.sort);
+export const selectPositionTrades = createSelector(selectState, (state) => state.trades);
 
 /** Live performance figures (AP 5.7, US-PF-01, US-PF-05); `null` before the first projection. */
 export const selectPerformanceFigures = createSelector(selectState, (state) => state.performance);
@@ -95,9 +96,17 @@ export const selectPortfolioView = createSelector(
 export const selectPositionDetailView = createSelector(
   selectRouteInstrumentId,
   selectOpenDepots,
-  selectOrders,
+  selectPositionTrades,
   selectInstrumentEntities,
   selectQuoteEntities,
   selectPortfolioDepotId,
   positionDetailView,
+);
+
+/** What the position detail loads from the journal (US-PF-06); `null` without an instrument. */
+export const selectPositionTradesLoad = createSelector(
+  selectRouteInstrumentId,
+  selectOpenDepots,
+  selectPortfolioDepotId,
+  positionTradesLoad,
 );

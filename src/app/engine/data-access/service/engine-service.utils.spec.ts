@@ -15,6 +15,7 @@ import {
 } from '@app/notifications/domain/models/notification.model';
 import { MAX_NOTIFICATION_LIMIT } from '@app/notifications/domain/notification-page-logic';
 import { DISTRIBUTION_KINDS } from '@app/portfolio/domain/models/distribution.model';
+import { MAX_POSITION_TRADES } from '@app/portfolio/domain/models/position-detail.model';
 import {
   ORDER_REJECTIONS,
   ORDER_SIDES,
@@ -343,6 +344,15 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
         }),
         arbScreenerQuery,
         arbCandlesQuery,
+        fc.record(
+          {
+            kind: fc.constant('positionTrades' as const),
+            instrumentId: arbId,
+            depotId: arbDepotId,
+            limit: fc.integer({ min: 1, max: MAX_POSITION_TRADES }),
+          },
+          { requiredKeys: ['kind', 'instrumentId'] },
+        ),
       ),
     }),
   ),
@@ -938,6 +948,23 @@ describe('engine protocol guards', () => {
         command('unsubscribe', { series: [], charts: [{ interval: '1d' }] }),
       ],
       ['candles without an interval', command('query', { query: { kind: 'candles', series: 0 } })],
+      ['trades without an instrument', command('query', { query: { kind: 'positionTrades' } })],
+      [
+        'trades of an account instead of a depot',
+        command('query', {
+          query: { kind: 'positionTrades', instrumentId: 'stk-1', depotId: 'acc-2' },
+        }),
+      ],
+      [
+        'trades with a limit above the maximum',
+        command('query', {
+          query: { kind: 'positionTrades', instrumentId: 'stk-1', limit: MAX_POSITION_TRADES + 1 },
+        }),
+      ],
+      [
+        'trades with a limit of 0',
+        command('query', { query: { kind: 'positionTrades', instrumentId: 'stk-1', limit: 0 } }),
+      ],
       [
         'candles of a negative series',
         command('query', { query: { kind: 'candles', series: -1, interval: '1d' } }),

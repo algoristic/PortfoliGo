@@ -23,6 +23,7 @@ import { selectTick } from '@app/clock/feature/state/clock.selectors';
 import { PerformanceProjectionUpdate } from '@app/engine/data-access/service/engine-service.model';
 import { EngineService } from '@app/engine/data-access/service/engine.service';
 import * as SessionActions from '@app/engine/feature/state/session.actions';
+import { selectPhase } from '@app/engine/feature/state/session.selectors';
 import * as MarketActions from '@app/market/feature/state/market.actions';
 import { selectInstrumentsLoaded } from '@app/market/feature/state/market.selectors';
 import { historyFromDay } from '@app/portfolio/domain/performance-logic';
@@ -35,6 +36,7 @@ import {
   selectMissingCompositions,
   selectPerformanceDay,
   selectPortfolioSeries,
+  selectPositionTradesLoad,
 } from './portfolio.selectors';
 
 @Injectable()
@@ -107,6 +109,55 @@ export class PortfolioEffects {
         ),
       ),
     ),
+  );
+
+  /**
+   * While the position detail is open (US-PF-06), loads its trades from the journal once the player
+   * is loaded, again for another instrument or depot and whenever the shown holdings of the
+   * instrument change (an execution or savings plan purchase); a newer load cancels an older one.
+   */
+  loadPositionTrades$ = createEffect(() =>
+    this.#actions$.pipe(
+      ofType(PortfolioActions.enterPositionPage),
+      switchMap(() =>
+        this.#store.pipe(
+          select(selectPhase),
+          filter((phase) => phase === 'loaded'),
+          take(1),
+          switchMap(() => this.#store.pipe(select(selectPositionTradesLoad))),
+          filter((load) => load !== null),
+          distinctUntilChanged((a, b) => a.key === b.key),
+          switchMap(({ instrumentId, depotId }) =>
+            this.#engine
+              .positionTrades(depotId === null ? { instrumentId } : { instrumentId, depotId })
+              .pipe(
+                map(({ trades, total }) =>
+                  PortfolioActions.retrievedPositionTrades({
+                    trades: { instrumentId, depotId, trades, total },
+                  }),
+                ),
+                catchError((error: unknown) =>
+                  of(PortfolioActions.loadPositionTradesFailure({ error })),
+                ),
+              ),
+          ),
+          takeUntil(this.#actions$.pipe(ofType(PortfolioActions.leavePositionPage))),
+        ),
+      ),
+    ),
+  );
+
+  showPositionTradesFailure$ = createEffect(
+    () =>
+      this.#actions$.pipe(
+        ofType(PortfolioActions.loadPositionTradesFailure),
+        tap(() =>
+          this.#toastService.error(
+            $localize`:@@featurePortfolio-portfolioEffects-loadPositionTradesFailure:Die Käufe und Verkäufe ließen sich nicht laden.`,
+          ),
+        ),
+      ),
+    { dispatch: false },
   );
 
   showPerformanceHistoryFailure$ = createEffect(

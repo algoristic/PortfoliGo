@@ -16,11 +16,13 @@ import { PlayersService } from '@app/players/data-access/service/players.service
 import { providePlayersTestPorts } from '@app/players/data-access/testing/fake-players-ports';
 import { NewPlayer } from '@app/players/domain/models/player.model';
 import { OrderSide } from '@app/trading/domain/models/order.model';
+import { SavingsPlanView } from '@app/trading/domain/models/savings-plan.model';
 
 import { installChartPlatform } from '../../../../testing/chart-platform';
 import { byTestId, click, queryByTestId, textOf } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
 import { parseEuros } from '../../../../testing/parse';
+import { installScrollViewport } from '../../../../testing/scroll-viewport';
 import { installViewport } from '../../../../testing/viewport';
 
 const ANNA: NewPlayer = {
@@ -260,6 +262,72 @@ describe('PositionPage', () => {
       depot,
     );
     await act(() => click(byTestId(document.body, 'trading.order-ticket.decline')));
+  });
+
+  // US-PF-06 with a savings plan (AP 5.6b): its purchases come from the journal next to the order
+  // executions, named as such, and are marked in the chart.
+  it('lists savings plan purchases with the order executions and marks them in the chart', async () => {
+    await start(1024);
+    await open('portfolio');
+    await command(service.pause());
+    const { accountId, depotId } = await command(service.openAccount(BROKER!.id, 'depot'));
+    await command(
+      service.transfer({
+        fromAccountId: SALARY_ACCOUNT,
+        toAccountId: accountId,
+        amount: 5_000_00,
+        purpose: 'Depot',
+      }),
+    );
+    const depot = depotId!;
+    const etf = WORLD.etfs[0];
+    let plans: SavingsPlanView[] = [];
+    subscription!.add(service.savingsPlans$.subscribe((update) => (plans = update.savingsPlans)));
+
+    const order = await trade(depot, etf.id, 'buy', 1);
+    // Created after the order executed, the plan buys later: the newest trade is its purchase.
+    await command(
+      service.createSavingsPlan({ depotId: depot, instrumentId: etf.id, amount: 100_00, day: 2 }),
+    );
+    const next = plans[0]?.nextExecution ?? null;
+    expect(next).not.toBeNull();
+    await command(service.jumpTo({ kind: 'date', tick: next! + TICKS_PER_HOUR }));
+    for (let pass = 0; pass < 60 && (held(depot, etf.id)?.lots.length ?? 0) < 2; pass++) {
+      await run(1_000);
+    }
+    expect(held(depot, etf.id)?.lots).toHaveLength(2);
+
+    await open(`portfolio/${etf.id}`);
+    const trades = all('portfolio.position.trades.row');
+    expect(trades.map((element) => text(element, 'portfolio.position.trades.row.side'))).toEqual([
+      'Sparplan-Kauf',
+      'Kauf',
+    ]);
+    expect(trades.map((element) => element.dataset['savingsPlan'])).toEqual(['true', 'false']);
+    // TS §7.8: the debit of a savings plan purchase (shares plus costs) never exceeds its amount.
+    const planTotal = parseEuros(text(trades[0], 'portfolio.position.trades.row.total'));
+    expect(planTotal).toBeGreaterThan(0);
+    expect(planTotal).toBeLessThanOrEqual(100);
+    expect(parseEuros(text(trades[1], 'portfolio.position.trades.row.total'))).toBe(
+      order.execution!.total / 100,
+    );
+
+    await act(() => click(byTestId(page, 'market.instrument.chart.range.6m')));
+    await run(500);
+    const markers = byTestId(page, 'market.instrument.chart').getAttribute('data-markers') ?? '';
+    expect(markers.split(' ').map((marker) => marker.split(':')[0])).toEqual(['buy', 'buy']);
+
+    // The statement of the clearing account names the security of both purchases (TS §8.6).
+    const restoreScroll = installScrollViewport(512);
+    try {
+      await open(`accounts/${accountId}`);
+      const texts = all('banking.statement.entry.text').map(textOf);
+      expect(texts.slice(0, 2)).toEqual([`Sparplan-Kauf ${etf.name}`, `Kauf ${etf.name}`]);
+      const details = all('banking.statement.entry.detail').map(textOf);
+      expect(details[1]).toMatch(/^1 Stück zu /);
+    } finally {
+      restoreScroll();
+    }
   });
 
   it('shows an empty state with a link to the instrument page without shares', async () => {

@@ -148,6 +148,31 @@ describe('EngineHost savings plans', () => {
     expect(holdings?.find(({ depotId }) => depotId === 'dep-3')?.positions).toEqual([
       expect.objectContaining({ instrumentId: ETF.id }),
     ]);
+    // The position detail reads the purchase from the journal (US-PF-06), all depots or `dep-3`.
+    const trades = await second.send('query', {
+      query: { kind: 'positionTrades', instrumentId: ETF.id },
+    });
+    expect(trades).toMatchObject({
+      ok: true,
+      data: {
+        kind: 'positionTrades',
+        total: 1,
+        trades: [
+          {
+            orderId: null,
+            savingsPlanId: 'sp-1',
+            depotId: 'dep-3',
+            side: 'buy',
+            tick: openTick(2030, 4, 2),
+          },
+        ],
+      },
+    });
+    expect(
+      await second.send('query', {
+        query: { kind: 'positionTrades', instrumentId: ETF.id, depotId: 'dep-9' },
+      }),
+    ).toMatchObject({ ok: true, data: { trades: [], total: 0 } });
     await second.send('unloadPlayer', {});
     const journal = await new IndexedDbEngineStorage().loadTransactions(PLAYER.playerId, 'acc-2');
     const purchase = journal.filter(({ refs }) => refs?.['savingsPlanId'] === 'sp-1');

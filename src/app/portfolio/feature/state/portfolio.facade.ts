@@ -36,6 +36,14 @@ export class PortfolioFacade {
     this.#store.dispatch(PortfolioActions.selectedPositionSort({ key }));
   }
 
+  enterPositionPage(): void {
+    this.#store.dispatch(PortfolioActions.enterPositionPage());
+  }
+
+  leavePositionPage(): void {
+    this.#store.dispatch(PortfolioActions.leavePositionPage());
+  }
+
   enterPerformanceHistory(): void {
     this.#store.dispatch(PortfolioActions.enterPerformanceHistory());
   }

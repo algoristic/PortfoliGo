@@ -1,11 +1,13 @@
 import { AccountEntry } from '@app/banking/feature/state/banking.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
-import { OrderView, PositionView } from '@app/engine/domain/models/trading-view.model';
+import { PositionView } from '@app/engine/domain/models/trading-view.model';
 import { IndexComposition } from '@app/market/domain/models/instrument-figures.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
+import { PositionTrade } from '@app/portfolio/domain/models/position-detail.model';
 import { DepotEntry } from '@app/trading/feature/state/trading.model';
 import { Bank } from '@app/world/domain/models/bank.model';
 
+import { LoadedTrades } from './portfolio.model';
 import { initialPortfolioState, PortfolioState } from './portfolio.reducer';
 import {
   selectMissingCompositions,
@@ -13,6 +15,7 @@ import {
   selectPortfolioSeries,
   selectPortfolioView,
   selectPositionDetailView,
+  selectPositionTradesLoad,
 } from './portfolio.selectors';
 
 const BANK = { id: 'bnk-1', name: 'Darara Invest' } as Bank;
@@ -249,43 +252,36 @@ describe('portfolio selectors', () => {
 });
 
 describe('selectPositionDetailView', () => {
-  function executed(id: string, depotId: `dep-${number}`, tick: number): OrderView {
+  function executed(seq: number, depotId: `dep-${number}`, tick: number): PositionTrade {
     return {
-      id,
+      seq,
+      orderId: `ord-${seq}`,
+      savingsPlanId: null,
       depotId: depotId as DepotEntry['depotId'],
-      instrumentId: SHARE.id,
       side: 'buy',
-      type: 'market',
-      size: { kind: 'quantity', quantity: 5_000_000 },
-      limit: null,
-      stop: null,
-      validity: { kind: 'gtc' },
-      status: 'executed',
-      placedAt: 0,
-      expiresAt: 10_000,
-      reserved: 0,
-      triggeredAt: null,
-      execution: {
-        tick,
-        quantity: 5_000_000,
-        price: 100,
-        marketValue: 50_000,
-        orderFee: 0,
-        exchangeFee: 0,
-        total: 50_000,
-      },
-      closedAt: tick,
-      rejection: null,
+      tick,
+      quantity: 5_000_000,
+      price: 100,
+      costs: 0,
+      total: 50_000,
     };
   }
-  const ORDERS = [executed('ord-1', 'dep-1', 600), executed('ord-2', 'dep-2', 900)];
+  const TRADES = [executed(2, 'dep-2', 900), executed(1, 'dep-1', 600)];
   const QUOTES = { [SHARE.series]: quote(SHARE.series, 110) };
 
-  function view(depotId: PortfolioState['depotId'], instrumentId: string | undefined = SHARE.id) {
+  function loaded(depotId: PortfolioState['depotId'], trades = TRADES): LoadedTrades {
+    return { instrumentId: SHARE.id, depotId, trades, total: trades.length };
+  }
+
+  function view(
+    depotId: PortfolioState['depotId'],
+    instrumentId: string | undefined = SHARE.id,
+    trades: LoadedTrades | null = loaded(depotId, depotId === null ? TRADES : TRADES.slice(0, 1)),
+  ) {
     return selectPositionDetailView.projector(
       instrumentId,
       DEPOTS,
-      ORDERS,
+      trades,
       INSTRUMENTS,
       QUOTES,
       depotId,
@@ -295,20 +291,28 @@ describe('selectPositionDetailView', () => {
   it('combines the depots and names the depot of lots and trades', () => {
     const shown = view(null);
     expect(shown?.detail).toMatchObject({ quantity: 15_000_000, cost: 153_300, value: 165_000 });
-    expect(shown?.trades.map(({ orderId, depot: name }) => [orderId, name])).toEqual([
-      ['ord-2', 'Ddep-2 · Darara Invest'],
-      ['ord-1', 'Ddep-1 · Darara Invest'],
+    expect(shown?.trades.map(({ id, depot: name }) => [id, name])).toEqual([
+      ['2', 'Ddep-2 · Darara Invest'],
+      ['1', 'Ddep-1 · Darara Invest'],
     ]);
-    expect(shown?.chartTrades.map(({ id }) => id)).toEqual(['ord-1', 'ord-2']);
+    expect(shown?.chartTrades.map(({ id }) => id)).toEqual(['1', '2']);
+    expect(shown?.tradesLoading).toBe(false);
   });
 
   it('shows the chosen depot without depot names', () => {
     const shown = view('dep-2' as PortfolioState['depotId']);
     expect(shown?.depotId).toBe('dep-2');
     expect(shown?.detail).toMatchObject({ quantity: 5_000_000, cost: 52_000 });
-    expect(shown?.trades.map(({ orderId, depot: name }) => [orderId, name])).toEqual([
-      ['ord-2', null],
-    ]);
+    expect(shown?.trades.map(({ id, depot: name }) => [id, name])).toEqual([['2', null]]);
+  });
+
+  it('shows no trades while those of another depot or instrument are loaded', () => {
+    const otherDepot = view('dep-2' as PortfolioState['depotId'], SHARE.id, loaded(null));
+    expect(otherDepot?.trades).toEqual([]);
+    expect(otherDepot?.tradesLoading).toBe(true);
+    const otherInstrument = view(null, SHARE.id, { ...loaded(null), instrumentId: ETF.id });
+    expect(otherInstrument?.tradesLoading).toBe(true);
+    expect(view(null, SHARE.id, null)?.chartTrades).toEqual([]);
   });
 
   it('has no detail for an instrument the shown depots do not hold', () => {
@@ -321,8 +325,47 @@ describe('selectPositionDetailView', () => {
   it('is null for an unknown instrument', () => {
     expect(view(null, 'stk-9')).toBeNull();
     expect(
-      selectPositionDetailView.projector(undefined, DEPOTS, ORDERS, INSTRUMENTS, QUOTES, null),
+      selectPositionDetailView.projector(undefined, DEPOTS, null, INSTRUMENTS, QUOTES, null),
     ).toBeNull();
+  });
+});
+
+describe('selectPositionTradesLoad', () => {
+  const DEP_2 = 'dep-2' as PortfolioState['depotId'];
+
+  it('loads all depots unless an open depot is chosen', () => {
+    expect(selectPositionTradesLoad.projector(SHARE.id, DEPOTS, null)).toMatchObject({
+      instrumentId: SHARE.id,
+      depotId: null,
+    });
+    expect(selectPositionTradesLoad.projector(SHARE.id, DEPOTS, DEP_2)?.depotId).toBe('dep-2');
+    const closed = 'dep-7' as PortfolioState['depotId'];
+    expect(selectPositionTradesLoad.projector(SHARE.id, DEPOTS, closed)?.depotId).toBeNull();
+    expect(selectPositionTradesLoad.projector(undefined, DEPOTS, null)).toBeNull();
+  });
+
+  it('changes its key when the holdings of the instrument change, not for others', () => {
+    const key = (depots: DepotEntry[]) =>
+      selectPositionTradesLoad.projector(SHARE.id, depots, null)?.key;
+    const before = key(DEPOTS);
+    const bought = [
+      DEPOTS[0],
+      depot('dep-2', 20_000, [
+        position(ETF.id, 20_000_000, 200_670),
+        position(SHARE.id, 6_000_000, 62_000),
+      ]),
+    ];
+    const otherBought = [
+      DEPOTS[0],
+      depot('dep-2', 20_000, [
+        position(ETF.id, 21_000_000, 210_670),
+        position(SHARE.id, 5_000_000, 52_000),
+      ]),
+    ];
+    const soldOut = [DEPOTS[0], depot('dep-2', 20_000, [position(ETF.id, 20_000_000, 200_670)])];
+    expect(key(bought)).not.toBe(before);
+    expect(key(soldOut)).not.toBe(before);
+    expect(key(otherBought)).toBe(before);
   });
 });
 

@@ -3,7 +3,6 @@ import { Dictionary } from '@ngrx/entity';
 import { DepotId } from '@app/banking/domain/models/account.model';
 import { AccountEntry } from '@app/banking/feature/state/banking.model';
 import { SeriesQuote } from '@app/engine/domain/models/series-quote.model';
-import { OrderView } from '@app/engine/domain/models/trading-view.model';
 import { Instrument } from '@app/market/domain/models/instrument.model';
 import {
   assetClassAllocation,
@@ -12,7 +11,7 @@ import {
 } from '@app/portfolio/domain/allocation-logic';
 import { AllocationHolding } from '@app/portfolio/domain/models/allocation.model';
 import { HeldPosition } from '@app/portfolio/domain/models/portfolio.model';
-import { positionDetail, positionTrades } from '@app/portfolio/domain/position-detail-logic';
+import { positionDetail } from '@app/portfolio/domain/position-detail-logic';
 import {
   combinePositions,
   positionOverview,
@@ -21,7 +20,7 @@ import {
 import { Cents } from '@app/shared/domain/models/money.model';
 import { DepotEntry } from '@app/trading/feature/state/trading.model';
 
-import { LoadedComposition } from './portfolio.model';
+import { LoadedComposition, LoadedTrades, PositionTradesLoad } from './portfolio.model';
 import { PortfolioState } from './portfolio.reducer';
 
 import { PortfolioView } from '../../ui/models/portfolio-view.model';
@@ -180,15 +179,50 @@ export function depotLabel(depot: Pick<DepotEntry, 'number' | 'bank'>): string {
 }
 
 /**
- * The position detail (US-PF-06) of the instrument `instrumentId` in the depot chosen on the
- * depot page, or in all open depots: head figures at the bid without mark-up, lots, realized gain,
- * distributions and the executions the order history keeps; the depot of lots and trades is named
- * only when several depots are shown. `null` while the instrument is unknown.
+ * What the position detail loads from the journal (US-PF-06): the trades of the instrument in the
+ * depot chosen on the depot page when it is open, else in all depots; the key adds the shares and
+ * realized gain the open depots hold of it, so every execution loads them again. `null` without an
+ * instrument in the route.
+ */
+export function positionTradesLoad(
+  instrumentId: string | undefined,
+  openDepots: readonly DepotEntry[],
+  depotId: DepotId | null,
+): PositionTradesLoad | null {
+  if (instrumentId === undefined) {
+    return null;
+  }
+  const single = singleDepot(openDepots, depotId);
+  const holdings = openDepots.flatMap((depot) =>
+    depot.positions
+      .filter((position) => position.instrumentId === instrumentId)
+      .map((position) => `${depot.depotId}:${position.quantity}:${position.realizedGain}`),
+  );
+  const shown = single?.depotId ?? null;
+  return { instrumentId, depotId: shown, key: [instrumentId, shown, ...holdings].join('|') };
+}
+
+/** The one depot shown when the chosen depot is open; `null` for all depots. */
+function singleDepot(
+  openDepots: readonly DepotEntry[],
+  depotId: DepotId | null,
+): DepotEntry | null {
+  const shown = shownDepots(openDepots, depotId);
+  return shown.length === 1 && depotId !== null ? shown[0] : null;
+}
+
+/**
+ * The position detail (US-PF-06) of the instrument `instrumentId` in the depot chosen on the depot
+ * page, or in all open depots: head figures at the bid without mark-up, lots, realized gain,
+ * distributions and the trades loaded from the journal (order executions and savings plan
+ * purchases; `tradesLoading` while those of another instrument or depot are loaded); the depot of
+ * lots and trades is named only when several depots are shown. `null` while the instrument is
+ * unknown.
  */
 export function positionDetailView(
   instrumentId: string | undefined,
   openDepots: readonly DepotEntry[],
-  orders: readonly OrderView[],
+  loadedTrades: LoadedTrades | null,
   instruments: Dictionary<Instrument>,
   quotes: Dictionary<SeriesQuote>,
   depotId: DepotId | null,
@@ -198,7 +232,7 @@ export function positionDetailView(
     return null;
   }
   const shown = shownDepots(openDepots, depotId);
-  const single = shown.length === 1 && depotId !== null ? shown[0] : null;
+  const single = singleDepot(openDepots, depotId);
   const labels = new Map(openDepots.map((depot) => [depot.depotId, depotLabel(depot)]));
   const depotOf = (id: DepotId): string | null =>
     shown.length > 1 ? (labels.get(id) ?? id) : null;
@@ -211,7 +245,13 @@ export function positionDetailView(
     instrument.name,
     quotes[instrument.series]?.bid ?? null,
   );
-  const trades = positionTrades(orders, instrumentId, single === null ? null : [single.depotId]);
+  const current =
+    loadedTrades !== null &&
+    loadedTrades.instrumentId === instrumentId &&
+    loadedTrades.depotId === (single?.depotId ?? null)
+      ? loadedTrades
+      : null;
+  const trades = current?.trades ?? [];
   return {
     instrumentId,
     name: instrument.name,
@@ -231,15 +271,18 @@ export function positionDetailView(
       costPerShare: lot.costPerShare,
     })),
     trades: trades.map((trade) => ({
-      orderId: trade.orderId,
+      id: String(trade.seq),
       depot: depotOf(trade.depotId),
       side: trade.side,
+      savingsPlan: trade.savingsPlanId !== null,
       tick: trade.tick,
       quantity: trade.quantity,
       price: trade.price,
       costs: trade.costs,
       total: trade.total,
     })),
-    chartTrades: trades.map(({ orderId, tick, side }) => ({ id: orderId, tick, side })).reverse(),
+    tradesLoading: current === null,
+    tradesTotal: current?.total ?? 0,
+    chartTrades: trades.map(({ seq, tick, side }) => ({ id: String(seq), tick, side })).reverse(),
   };
 }

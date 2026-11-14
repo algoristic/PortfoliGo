@@ -1,7 +1,7 @@
 import fc from 'fast-check';
 
 import { DepotId } from '@app/banking/domain/models/account.model';
-import { Order, OrderExecution } from '@app/trading/domain/models/order.model';
+import { Transaction } from '@app/banking/domain/models/ledger.model';
 
 import { DepotPosition } from './models/position-detail.model';
 import { positionDetail, positionTrades } from './position-detail-logic';
@@ -129,62 +129,99 @@ describe('positionDetail', () => {
   });
 });
 
-function order(
-  id: string,
-  overrides: Partial<Order>,
-  execution: Partial<OrderExecution> | null = {},
-): Order {
+interface TradeSpec {
+  seq: number;
+  type?: 'buy' | 'sell';
+  tick?: number;
+  depotId?: DepotId;
+  instrumentId?: string;
+  quantity?: number;
+  price?: number;
+  orderFee?: number;
+  exchangeFee?: number;
+  refs?: Record<string, string>;
+}
+
+/**
+ * A journal entry as the engine books an execution (TS §7.5): clearing account against the market
+ * and the bank's fees, the shares as a unit posting. Default: the purchase of 10 shares at 100,00 €
+ * with 9,90 € order and 3,10 € exchange fee (debit 1.013,00 €).
+ */
+function trade({
+  seq,
+  type = 'buy',
+  tick = 600,
+  depotId = DEPOT_A,
+  instrumentId = 'stk-0001',
+  quantity = 10 * SHARE,
+  price = 100,
+  orderFee = 990,
+  exchangeFee = 310,
+  refs = { orderId: `ord-${seq}`, instrumentId },
+}: TradeSpec): Transaction {
+  const sign = type === 'buy' ? 1 : -1;
+  const marketValue = Math.round((quantity / SHARE) * price * 100);
+  const total = marketValue + sign * (orderFee + exchangeFee);
   return {
-    id,
-    depotId: DEPOT_A,
-    instrumentId: 'stk-0001',
-    side: 'buy',
-    type: 'market',
-    size: { kind: 'quantity', quantity: 10 * SHARE },
-    limit: null,
-    stop: null,
-    validity: { kind: 'gtc' },
-    status: 'executed',
-    placedAt: 0,
-    expiresAt: 100_000,
-    reserved: 0,
-    triggeredAt: null,
-    execution:
-      execution === null
-        ? null
-        : {
-            tick: 600,
-            quantity: 10 * SHARE,
-            price: 100,
-            marketValue: 100_000,
-            orderFee: 990,
-            exchangeFee: 310,
-            total: 101_300,
-            ...execution,
-          },
-    closedAt: 600,
-    rejection: null,
-    ...overrides,
+    seq,
+    tick,
+    type,
+    postings: [
+      { account: 'acc-2', amount: -sign * total, balanceAfter: 0 },
+      { account: 'external:market', amount: sign * marketValue, balanceAfter: null },
+      { account: 'external:bank:b1:fees', amount: orderFee + exchangeFee, balanceAfter: null },
+    ],
+    units: [{ depotId, instrumentId, quantity: sign * quantity }],
+    refs,
+    params: { quantity, price, marketValue, orderFee, exchangeFee, spreadCost: 0 },
   };
 }
 
 describe('positionTrades', () => {
-  // TS §7.5: the purchase of 10 shares at 100,00 € with 9,90 € order and 3,10 € exchange fee.
-  const orders: Order[] = [
-    order('ord-1', {}),
-    order('ord-2', { side: 'sell' }, { tick: 900, total: 44_000, orderFee: 500, exchangeFee: 0 }),
-    order('ord-3', { depotId: DEPOT_B }, { tick: 700 }),
-    order('ord-4', { instrumentId: 'stk-0002' }),
-    order('ord-5', { status: 'cancelled', closedAt: 650 }, null),
-    order('ord-6', { status: 'open', closedAt: null }, null),
-    order('ord-10', {}, { tick: 900 }),
+  const journal: Transaction[] = [
+    trade({ seq: 1 }),
+    {
+      seq: 2,
+      tick: 650,
+      type: 'dividend',
+      postings: [
+        { account: 'acc-2', amount: 500, balanceAfter: 0 },
+        { account: 'external:issuer:stk-0001', amount: -500, balanceAfter: null },
+      ],
+      refs: { depotId: DEPOT_A, instrumentId: 'stk-0001' },
+    },
+    trade({ seq: 3, tick: 700, depotId: DEPOT_B }),
+    trade({ seq: 4, instrumentId: 'stk-0002' }),
+    // TS §7.8: a savings plan purchase of 50,00 € with 1,50 € costs at 48,50 €: 1 share.
+    trade({
+      seq: 5,
+      tick: 800,
+      quantity: SHARE,
+      price: 48.5,
+      orderFee: 150,
+      exchangeFee: 0,
+      refs: { savingsPlanId: 'sp-1', instrumentId: 'stk-0001' },
+    }),
+    trade({
+      seq: 6,
+      type: 'sell',
+      tick: 900,
+      quantity: 4 * SHARE,
+      price: 110,
+      orderFee: 500,
+      exchangeFee: 0,
+    }),
+    trade({ seq: 7, tick: 900 }),
   ];
 
-  it('lists the executions of the instrument in all depots newest first', () => {
-    const trades = positionTrades(orders, 'stk-0001', null);
-    expect(trades.map(({ orderId }) => orderId)).toEqual(['ord-10', 'ord-2', 'ord-3', 'ord-1']);
-    expect(trades[3]).toEqual({
+  it('lists the executions and savings plan purchases of the instrument newest first', () => {
+    const { trades, total } = positionTrades(journal, 'stk-0001', null, 10);
+    expect(total).toBe(5);
+    expect(trades.map(({ seq }) => seq)).toEqual([7, 6, 5, 3, 1]);
+    expect(trades[4]).toEqual({
+      seq: 1,
       orderId: 'ord-1',
+      savingsPlanId: null,
       depotId: DEPOT_A,
       side: 'buy',
       tick: 600,
@@ -193,17 +230,35 @@ describe('positionTrades', () => {
       costs: 1_300,
       total: 101_300,
     });
-    expect(trades[1]).toMatchObject({ side: 'sell', costs: 500, total: 44_000 });
+    // 4 × 110,00 € − 5,00 €
+    expect(trades[1]).toMatchObject({
+      side: 'sell',
+      quantity: 4 * SHARE,
+      costs: 500,
+      total: 43_500,
+    });
+    expect(trades[2]).toMatchObject({
+      orderId: null,
+      savingsPlanId: 'sp-1',
+      side: 'buy',
+      quantity: SHARE,
+      price: 48.5,
+      costs: 150,
+      total: 5_000,
+    });
   });
 
   it('keeps only the shown depots', () => {
-    expect(positionTrades(orders, 'stk-0001', [DEPOT_B]).map(({ orderId }) => orderId)).toEqual([
-      'ord-3',
-    ]);
-    expect(positionTrades(orders, 'stk-0001', [])).toEqual([]);
+    expect(positionTrades(journal, 'stk-0001', [DEPOT_B], 10).trades.map(({ seq }) => seq)).toEqual(
+      [3],
+    );
+    expect(positionTrades(journal, 'stk-0001', [], 10)).toEqual({ trades: [], total: 0 });
   });
 
-  it('skips executed orders without an execution', () => {
-    expect(positionTrades([order('ord-1', {}, null)], 'stk-0001', null)).toEqual([]);
+  it('returns the newest up to the limit and counts all', () => {
+    const { trades, total } = positionTrades(journal, 'stk-0001', null, 2);
+    expect(trades.map(({ seq }) => seq)).toEqual([7, 6]);
+    expect(total).toBe(5);
+    expect(positionTrades(journal, 'stk-0001', null, 0)).toEqual({ trades: [], total: 5 });
   });
 });

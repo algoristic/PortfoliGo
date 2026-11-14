@@ -6,77 +6,77 @@
         <source>Alle Konten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">18,21</context>
+          <context context-type="linenumber">19,22</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountStatementPage-title" datatype="html">
         <source>Kontoauszug</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">22,27</context>
+          <context context-type="linenumber">23,28</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountStatementPage-notFoundHeading" datatype="html">
         <source>Konto nicht gefunden</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">29,30</context>
+          <context context-type="linenumber">30,31</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountStatementPage-notFoundText" datatype="html">
         <source>Dieses Konto gibt es bei diesem Spieler nicht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">31,32</context>
+          <context context-type="linenumber">32,33</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountStatementPage-notFoundBack" datatype="html">
         <source>Zur Kontenübersicht</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">35,39</context>
+          <context context-type="linenumber">36,40</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountStatementPage-noMatchesHeading" datatype="html">
         <source>Keine Treffer</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">75,76</context>
+          <context context-type="linenumber">76,77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountStatementPage-noMatchesText" datatype="html">
         <source>Keine Buchung passt zu Zeitraum, Buchungsart und Suche.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">77,78</context>
+          <context context-type="linenumber">78,79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountStatementPage-resetFilter" datatype="html">
         <source>Filter zurücksetzen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">86,89</context>
+          <context context-type="linenumber">87,90</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountStatementPage-noEntriesHeading" datatype="html">
         <source>Keine Buchungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">93,94</context>
+          <context context-type="linenumber">94,95</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountStatementPage-noEntriesText" datatype="html">
         <source>Auf diesem Konto wurde noch nichts gebucht.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">95,96</context>
+          <context context-type="linenumber">96,97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountStatementPage-total" datatype="html">
         <source>{VAR_PLURAL, plural, =1 {1 Buchung} other {<x id="INTERPOLATION"/> Buchungen}}</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/feature/account-statement/account-statement.page.html</context>
-          <context context-type="linenumber">103,105</context>
+          <context context-type="linenumber">104,106</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureBanking-accountsPage-title" datatype="html">
@@ -2179,105 +2179,161 @@
         <source>Buchungen</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-list.component.ts</context>
-          <context context-type="linenumber">45</context>
+          <context context-type="linenumber">54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-openingBalance" datatype="html">
         <source>Startkapital</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">33</context>
+          <context context-type="linenumber">45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-salary" datatype="html">
         <source>Gehalt <x id="month" equiv-text="month"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">38</context>
+          <context context-type="linenumber">50</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-livingCosts" datatype="html">
         <source>Lebenshaltung <x id="month" equiv-text="month"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">46</context>
+          <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-accountFee" datatype="html">
         <source>Kontoführung <x id="month" equiv-text="month"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">53</context>
+          <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-creditInterest" datatype="html">
         <source>Habenzinsen <x id="period" equiv-text="period"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">60</context>
+          <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-overdraftInterest" datatype="html">
         <source>Dispozinsen <x id="period" equiv-text="period"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-debitInterest" datatype="html">
         <source>Sollzinsen <x id="period" equiv-text="period"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">72</context>
+          <context context-type="linenumber">84</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-dividend" datatype="html">
+        <source>Dividende <x id="instrument" equiv-text="name"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">97</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-fundDistribution" datatype="html">
+        <source>Ausschüttung <x id="instrument" equiv-text="name"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">104</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-tax" datatype="html">
+        <source>Abgeltungsteuer <x id="instrument" equiv-text="name"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-taxRefund" datatype="html">
+        <source>Steuererstattung <x id="instrument" equiv-text="name"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">117</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-sell" datatype="html">
+        <source>Verkauf <x id="instrument" equiv-text="instrument"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">139</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-savingsPlanBuy" datatype="html">
+        <source>Sparplan-Kauf <x id="instrument" equiv-text="instrument"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">141</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-buy" datatype="html">
+        <source>Kauf <x id="instrument" equiv-text="instrument"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">142</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiBanking-statementText-tradeDetail" datatype="html">
+        <source><x id="quantity" equiv-text="shares"/> Stück zu <x id="price" equiv-text="at"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
+          <context context-type="linenumber">151</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-closingRemainderTo" datatype="html">
         <source>Restguthaben an <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">132</context>
+          <context context-type="linenumber">206</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-closingRemainderFrom" datatype="html">
         <source>Restguthaben von <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">133</context>
+          <context context-type="linenumber">207</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-closingRemainderDetail" datatype="html">
         <source>Kontoauflösung</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">134</context>
+          <context context-type="linenumber">208</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-standingOrderTo" datatype="html">
         <source>Dauerauftrag an <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">142</context>
+          <context context-type="linenumber">216</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-standingOrderFrom" datatype="html">
         <source>Dauerauftrag von <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">143</context>
+          <context context-type="linenumber">217</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-transferTo" datatype="html">
         <source>Überweisung an <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">149</context>
+          <context context-type="linenumber">223</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiBanking-statementText-transferFrom" datatype="html">
         <source>Überweisung von <x id="account" equiv-text="account"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/banking/ui/statement-list/statement-text.utils.ts</context>
-          <context context-type="linenumber">150</context>
+          <context context-type="linenumber">224</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiCharts-chartColorPicker-chart1" datatype="html">
@@ -9592,14 +9648,14 @@
         <source>Depot</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/feature/portfolio.routes.ts</context>
-          <context context-type="linenumber">14</context>
+          <context context-type="linenumber">20</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePortfolio-portfolioRoutes-positionTitle" datatype="html">
         <source>Position</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/feature/portfolio.routes.ts</context>
-          <context context-type="linenumber">23</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePortfolio-portfolioPage-title" datatype="html">
@@ -9742,11 +9798,18 @@
           <context context-type="linenumber">79,82</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="featurePortfolio-positionPage-noTrades" datatype="html">
-        <source> Die Orderhistorie enthält keine Ausführungen dieses Wertpapiers. </source>
+      <trans-unit id="featurePortfolio-positionPage-tradesLimited" datatype="html">
+        <source> Die neuesten <x id="INTERPOLATION" equiv-text="{{ view.trades.length }}"/> von <x id="INTERPOLATION_1" equiv-text="{{ view.tradesTotal }}"/> Ausführungen; alle Buchungen stehen im Kontoauszug des Verrechnungskontos. </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/feature/position/position.page.html</context>
-          <context context-type="linenumber">104,107</context>
+          <context context-type="linenumber">106,108</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="featurePortfolio-positionPage-noTradesYet" datatype="html">
+        <source> Noch keine Käufe oder Verkäufe dieses Wertpapiers. </source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/position/position.page.html</context>
+          <context context-type="linenumber">115,119</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePortfolio-positionPage-depot" datatype="html">
@@ -9805,18 +9868,25 @@
           <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioEffects-loadPositionTradesFailure" datatype="html">
+        <source>Die Käufe und Verkäufe ließen sich nicht laden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/state/portfolio.effects.ts</context>
+          <context context-type="linenumber">156</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featurePortfolio-portfolioEffects-loadPerformanceHistoryFailure" datatype="html">
         <source>Der Vermögensverlauf ließ sich nicht laden.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/feature/state/portfolio.effects.ts</context>
-          <context context-type="linenumber">118</context>
+          <context context-type="linenumber">169</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featurePortfolio-portfolioEffects-loadCompositionFailure" datatype="html">
         <source>Die Zusammensetzung eines ETF ließ sich nicht laden. Sein Wert erscheint bei Region und Sektor als „Nicht zugeordnet“.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/feature/state/portfolio.effects.ts</context>
-          <context context-type="linenumber">205</context>
+          <context context-type="linenumber">256</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-allocation-value" datatype="html">
@@ -9952,18 +10022,25 @@
           <context context-type="linenumber">53</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="uiPortfolio-portfolioLabels-purchase" datatype="html">
-        <source>Kauf</source>
+      <trans-unit id="uiPortfolio-portfolioLabels-sale" datatype="html">
+        <source>Verkauf</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
           <context context-type="linenumber">60</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="uiPortfolio-portfolioLabels-sale" datatype="html">
-        <source>Verkauf</source>
+      <trans-unit id="uiPortfolio-portfolioLabels-savingsPlanPurchase" datatype="html">
+        <source>Sparplan-Kauf</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
-          <context context-type="linenumber">61</context>
+          <context context-type="linenumber">63</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPortfolio-portfolioLabels-purchase" datatype="html">
+        <source>Kauf</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/ui/labels/portfolio-labels.ts</context>
+          <context context-type="linenumber">64</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-lotList-cardDepot" datatype="html">
@@ -10278,91 +10355,91 @@
         <source>Depot</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.html</context>
-          <context context-type="linenumber">23,24</context>
+          <context context-type="linenumber">24,25</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-tradeList-cardQuantity" datatype="html">
         <source>Stück</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.html</context>
-          <context context-type="linenumber">28,29</context>
+          <context context-type="linenumber">29,30</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-tradeList-cardPrice" datatype="html">
         <source>Kurs</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.html</context>
-          <context context-type="linenumber">32,33</context>
+          <context context-type="linenumber">33,34</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-tradeList-cardCosts" datatype="html">
         <source>Kosten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.html</context>
-          <context context-type="linenumber">36,37</context>
+          <context context-type="linenumber">37,38</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-tradeList-cardTotal" datatype="html">
         <source>Betrag</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.html</context>
-          <context context-type="linenumber">40,41</context>
+          <context context-type="linenumber">41,42</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-tradeList-time" datatype="html">
         <source> Ausführung </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.html</context>
-          <context context-type="linenumber">60,62</context>
+          <context context-type="linenumber">61,63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-tradeList-side" datatype="html">
         <source>Art</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.html</context>
-          <context context-type="linenumber">63,64</context>
+          <context context-type="linenumber">64,65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-tradeList-depot" datatype="html">
         <source> Depot </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.html</context>
-          <context context-type="linenumber">65,67</context>
+          <context context-type="linenumber">66,68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-tradeList-quantity" datatype="html">
         <source> Stück </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.html</context>
-          <context context-type="linenumber">72,75</context>
+          <context context-type="linenumber">73,76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-tradeList-price" datatype="html">
         <source> Kurs </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.html</context>
-          <context context-type="linenumber">78,81</context>
+          <context context-type="linenumber">79,82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-tradeList-costs" datatype="html">
         <source> Kosten </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.html</context>
-          <context context-type="linenumber">84,87</context>
+          <context context-type="linenumber">85,88</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-tradeList-total" datatype="html">
         <source> Betrag </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.html</context>
-          <context context-type="linenumber">90,93</context>
+          <context context-type="linenumber">91,94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-tradeList-label" datatype="html">
         <source>Käufe und Verkäufe</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/ui/trade-list/trade-list.component.ts</context>
-          <context context-type="linenumber">35</context>
+          <context context-type="linenumber">39</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureSettings-settingsRoutes-settingsTitle" datatype="html">
@@ -11911,14 +11988,14 @@
         <source>Order für <x id="instrument" equiv-text="name"/> ändern</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-book-rows.ts</context>
-          <context context-type="linenumber">56</context>
+          <context context-type="linenumber">57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderBookRows-cancel" datatype="html">
         <source>Order für <x id="instrument" equiv-text="name"/> stornieren</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-book-rows.ts</context>
-          <context context-type="linenumber">57</context>
+          <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-buy" datatype="html">
@@ -12310,56 +12387,56 @@
         <source>Stop</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/open-orders/open-orders.component.html</context>
-          <context context-type="linenumber">94,95</context>
+          <context context-type="linenumber">95,97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-openOrders-limit" datatype="html">
         <source>Limit</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/open-orders/open-orders.component.html</context>
-          <context context-type="linenumber">102,103</context>
+          <context context-type="linenumber">105,107</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-openOrders-expires" datatype="html">
         <source>gilt bis</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/open-orders/open-orders.component.html</context>
-          <context context-type="linenumber">110,111</context>
+          <context context-type="linenumber">114,115</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-openOrders-quantity" datatype="html">
         <source><x id="INTERPOLATION" equiv-text="{{ row.quantity | formatQuantity }}"/> Stück</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/open-orders/open-orders.component.html</context>
-          <context context-type="linenumber">122,123</context>
+          <context context-type="linenumber">126,127</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-openOrders-amount" datatype="html">
         <source>für <x id="INTERPOLATION" equiv-text="{{ row.amount | formatCents }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/open-orders/open-orders.component.html</context>
-          <context context-type="linenumber">126,127</context>
+          <context context-type="linenumber">130,131</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-openOrders-rowReserved" datatype="html">
         <source>reserviert</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/open-orders/open-orders.component.html</context>
-          <context context-type="linenumber">132,133</context>
+          <context context-type="linenumber">136,137</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-openOrders-change" datatype="html">
         <source>Ändern</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/open-orders/open-orders.component.html</context>
-          <context context-type="linenumber">150,152</context>
+          <context context-type="linenumber">154,156</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-openOrders-cancel" datatype="html">
         <source>Stornieren</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/open-orders/open-orders.component.html</context>
-          <context context-type="linenumber">161,163</context>
+          <context context-type="linenumber">165,167</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-openOrders-reservationDepot" datatype="html">
@@ -12422,63 +12499,63 @@
         <source>Stop</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/order-history/order-history.component.html</context>
-          <context context-type="linenumber">50,51</context>
+          <context context-type="linenumber">51,53</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderHistory-limit" datatype="html">
         <source>Limit</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/order-history/order-history.component.html</context>
-          <context context-type="linenumber">56,57</context>
+          <context context-type="linenumber">59,61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderHistory-quantity" datatype="html">
         <source><x id="INTERPOLATION" equiv-text="{{ row.quantity | formatQuantity }}"/> Stück</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/order-history/order-history.component.html</context>
-          <context context-type="linenumber">64,65</context>
+          <context context-type="linenumber">68,69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderHistory-amount" datatype="html">
         <source>für <x id="INTERPOLATION" equiv-text="{{ row.amount | formatCents }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/order-history/order-history.component.html</context>
-          <context context-type="linenumber">68,69</context>
+          <context context-type="linenumber">72,73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderHistory-executed" datatype="html">
         <source> Ausgeführt </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/order-history/order-history.component.html</context>
-          <context context-type="linenumber">85,87</context>
+          <context context-type="linenumber">89,91</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderHistory-quantityAtPrice" datatype="html">
         <source><x id="INTERPOLATION" equiv-text="{{ execution.quantity | formatQuantity }}"/> Stück zu <x id="INTERPOLATION_1" equiv-text="{{ execution.price | formatPrice }}"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/order-history/order-history.component.html</context>
-          <context context-type="linenumber">89,91</context>
+          <context context-type="linenumber">93,95</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderHistory-costs" datatype="html">
         <source>Kosten</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/order-history/order-history.component.html</context>
-          <context context-type="linenumber">95,96</context>
+          <context context-type="linenumber">99,100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderHistory-total" datatype="html">
         <source>Gesamt</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/order-history/order-history.component.html</context>
-          <context context-type="linenumber">101,102</context>
+          <context context-type="linenumber">105,106</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderHistory-notExecuted" datatype="html">
         <source> Nicht ausgeführt </source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/order-history/order-history.component.html</context>
-          <context context-type="linenumber">113,116</context>
+          <context context-type="linenumber">117,120</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderHistory-label" datatype="html">

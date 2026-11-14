@@ -1,5 +1,7 @@
+import { isPlayerAccount } from '@app/banking/domain/ledger-logic';
 import { DepotId } from '@app/banking/domain/models/account.model';
-import { Order } from '@app/trading/domain/models/order.model';
+import { TextParams, Transaction } from '@app/banking/domain/models/ledger.model';
+import { Cents, MicroUnits } from '@app/shared/domain/models/money.model';
 
 import { costPerShare } from './lot-logic';
 import {
@@ -7,6 +9,7 @@ import {
   DetailLot,
   PositionDetail,
   PositionTrade,
+  PositionTrades,
 } from './models/position-detail.model';
 import { positionOverview } from './position-overview-logic';
 
@@ -56,45 +59,71 @@ export function positionDetail(
 }
 
 /**
- * Executed purchases and sales of an instrument in the shown depots (`null` = all), newest first
- * (ties by order ID descending): what the order history still keeps (TS §7.5,
- * `ORDER_HISTORY_LENGTH`). Costs are the order and the exchange fee.
+ * Executed purchases and sales of an instrument in the shown depots (`null` = all) from the journal
+ * (in journal order): order executions and savings plan purchases (`buy`/`sell` with a unit posting
+ * of the instrument in a shown depot, TS §7.5, §7.8), the newest `limit` of them newest first, and
+ * the number of all. Costs are the order and the exchange fee, the total is the debit or credit on
+ * the clearing account.
  */
 export function positionTrades(
-  orders: readonly Order[],
+  journal: readonly Transaction[],
   instrumentId: string,
   depotIds: readonly DepotId[] | null,
-): PositionTrade[] {
+  limit: number,
+): PositionTrades {
   const shown = depotIds === null ? null : new Set(depotIds);
-  return orders
-    .flatMap((order): PositionTrade[] => {
-      const { execution } = order;
-      if (
-        execution === null ||
-        order.status !== 'executed' ||
-        order.instrumentId !== instrumentId ||
-        (shown !== null && !shown.has(order.depotId))
-      ) {
-        return [];
-      }
-      return [
-        {
-          orderId: order.id,
-          depotId: order.depotId,
-          side: order.side,
-          tick: execution.tick,
-          quantity: execution.quantity,
-          price: execution.price,
-          costs: execution.orderFee + execution.exchangeFee,
-          total: execution.total,
-        },
-      ];
-    })
-    .sort((a, b) => b.tick - a.tick || orderNumber(b.orderId) - orderNumber(a.orderId));
+  const trades: PositionTrade[] = [];
+  let total = 0;
+  for (let i = journal.length - 1; i >= 0; i--) {
+    const transaction = journal[i];
+    if (transaction.type !== 'buy' && transaction.type !== 'sell') {
+      continue;
+    }
+    const unit = transaction.units?.find(
+      (posting) =>
+        posting.instrumentId === instrumentId && (shown === null || shown.has(posting.depotId)),
+    );
+    const price = transaction.params?.['price'];
+    if (unit === undefined || typeof price !== 'number') {
+      continue;
+    }
+    if (trades.length < limit) {
+      trades.push(tradeOf(transaction, unit.depotId, Math.abs(unit.quantity), price));
+    }
+    total++;
+  }
+  return { trades, total };
 }
 
-/** The sequence number of an order ID `ord-<n>`; 0 for other IDs. */
-function orderNumber(orderId: string): number {
-  const number = Number(orderId.slice(orderId.indexOf('-') + 1));
-  return Number.isSafeInteger(number) ? number : 0;
+function tradeOf(
+  transaction: Transaction,
+  depotId: DepotId,
+  quantity: MicroUnits,
+  price: number,
+): PositionTrade {
+  const refs = transaction.refs ?? {};
+  const params = transaction.params ?? {};
+  let total: Cents = 0;
+  for (const posting of transaction.postings) {
+    if (isPlayerAccount(posting.account)) {
+      total += posting.amount;
+    }
+  }
+  return {
+    seq: transaction.seq,
+    orderId: refs['orderId'] ?? null,
+    savingsPlanId: refs['savingsPlanId'] ?? null,
+    depotId,
+    side: transaction.type === 'sell' ? 'sell' : 'buy',
+    tick: transaction.tick,
+    quantity,
+    price,
+    costs: centsParam(params, 'orderFee') + centsParam(params, 'exchangeFee'),
+    total: Math.abs(total),
+  };
+}
+
+function centsParam(params: TextParams, key: string): Cents {
+  const value = params[key];
+  return typeof value === 'number' ? value : 0;
 }

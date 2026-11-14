@@ -76,6 +76,7 @@ export function statementPage(
   const bankNames = new Map(
     [...context.bankNames].map(([bankId, name]) => [bankId, name.toLowerCase()]),
   );
+  const instrumentNames = context.instrumentNames ?? new Map<string, string>();
   const search = prepareStatementSearch(filter.search);
   const types =
     filter.types !== undefined && filter.types.length > 0 ? new Set(filter.types) : null;
@@ -98,7 +99,7 @@ export function statementPage(
     }
     if (
       search !== null &&
-      !matchesSearch(transaction, amount, search, accountId, accounts, bankNames)
+      !matchesSearch(transaction, amount, search, accountId, accounts, bankNames, instrumentNames)
     ) {
       continue;
     }
@@ -192,8 +193,8 @@ function counterparties(
 }
 
 /**
- * Purpose, the bank names and numbers of the other accounts (case-insensitive substrings) or the
- * amount (`matchesAmount`).
+ * Purpose, the bank names and numbers of the other accounts, the name of the security
+ * (case-insensitive substrings) or the amount (`matchesAmount`).
  */
 function matchesSearch(
   transaction: Transaction,
@@ -202,12 +203,18 @@ function matchesSearch(
   accountId: AccountId,
   accounts: ReadonlyMap<string, Account>,
   lowerBankNames: ReadonlyMap<string, string>,
+  instrumentNames: ReadonlyMap<string, string>,
 ): boolean {
   if (search.amount !== null && matchesAmount(amount, search.amount)) {
     return true;
   }
   const purpose = transaction.params?.['purpose'];
   if (typeof purpose === 'string' && purpose.toLowerCase().includes(search.text)) {
+    return true;
+  }
+  const instrumentId = transaction.refs?.['instrumentId'];
+  const instrument = instrumentId === undefined ? undefined : instrumentNames.get(instrumentId);
+  if (instrument !== undefined && instrument.toLowerCase().includes(search.text)) {
     return true;
   }
   return counterparties(transaction, accountId, accounts).some(

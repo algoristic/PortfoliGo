@@ -3,11 +3,12 @@
 
 @if (compact()) {
   <ul class="flex flex-col gap-3" data-testid="portfolio.position.trades" [attr.aria-label]="label">
-    @for (trade of _rows; track trade.orderId) {
+    @for (trade of _rows; track trade.id) {
       <li
         class="rounded-lg border border-border bg-surface p-3"
         data-testid="portfolio.position.trades.row"
-        [attr.data-side]="trade.side">
+        [attr.data-side]="trade.side"
+        [attr.data-savings-plan]="trade.savingsPlan">
         <p class="flex flex-wrap justify-between gap-x-3">
           <span class="font-medium" data-testid="portfolio.position.trades.row.side">{{
             trade.sideLabel
@@ -92,11 +93,12 @@
         </tr>
       </thead>
       <tbody>
-        @for (trade of _rows; track trade.orderId) {
+        @for (trade of _rows; track trade.id) {
           <tr
             class="border-b border-border last:border-b-0"
             data-testid="portfolio.position.trades.row"
-            [attr.data-side]="trade.side">
+            [attr.data-side]="trade.side"
+            [attr.data-savings-plan]="trade.savingsPlan">
             <th
               scope="row"
               class="px-3 py-2 text-left font-normal whitespace-nowrap tabular-nums"

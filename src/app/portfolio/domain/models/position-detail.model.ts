@@ -41,17 +41,34 @@ export interface PositionDetail {
   lots: DetailLot[];
 }
 
-/** An executed purchase or sale of the position detail (US-PF-06). */
+/** Most trades the `positionTrades` query returns, the newest (TS §8.2). */
+export const MAX_POSITION_TRADES = 200;
+
+/**
+ * An executed purchase or sale of the position detail (US-PF-06), read from the journal: an order
+ * execution or a savings plan purchase (TS §7.5, §7.8).
+ */
 export interface PositionTrade {
-  orderId: string;
+  /** Running number of the transaction (unique per player). */
+  seq: number;
+  /** The order of an execution, `null` for a savings plan purchase. */
+  orderId: string | null;
+  /** The savings plan of a savings plan purchase, else `null`. */
+  savingsPlanId: string | null;
   depotId: DepotId;
   side: OrderSide;
   tick: Tick;
   quantity: MicroUnits;
   /** Execution price in euros. */
   price: number;
-  /** Order fee plus exchange fee. */
+  /** Order fee plus exchange fee (savings plan: its costs). */
   costs: Cents;
   /** Debit of a purchase or credit of a sale after costs. */
   total: Cents;
+}
+
+/** The newest trades of a position (at most the requested number) and how many there are. */
+export interface PositionTrades {
+  trades: PositionTrade[];
+  total: number;
 }
