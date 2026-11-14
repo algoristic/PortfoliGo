@@ -61,6 +61,8 @@ import {
 } from '@app/notifications/domain/notification-page-logic';
 import { oldestKeptSeq, unreadCount } from '@app/notifications/domain/read-state-logic';
 import { PlayerLock } from '@app/persistence/data-access/locks/player-locks';
+import { DailyPoint, PerformanceState } from '@app/portfolio/domain/models/performance.model';
+import { DEFAULT_HISTORY_POINTS, thinPoints } from '@app/portfolio/domain/performance-logic';
 import { deriveSeedKey } from '@app/simulation/util/seed';
 import { TaxYear } from '@app/taxes/domain/models/tax.model';
 import { SavingsPlan, SavingsPlanId } from '@app/trading/domain/models/savings-plan.model';
@@ -70,6 +72,7 @@ import { CandleBackfill } from './candle-backfill';
 import { dailyCandleBlock } from './daily-candle-query';
 import { DailyCandleSource } from './daily-candle-source';
 import { candleYear } from './daily-candles.utils';
+import { mergePoints } from './daily-series.utils';
 import {
   DailyCandlePatch,
   DEFAULT_ENGINE_HOST_CONFIG,
@@ -101,6 +104,7 @@ import {
   LoadPlayerPayload,
   NotificationsProjection,
   NotificationsQuery,
+  PerformanceHistoryQuery,
   ProgressKind,
   ProgressPayload,
   ReplyPayload,
@@ -161,6 +165,12 @@ interface LoadedGame {
   unsavedTransactions: Transaction[];
   transactionsWrittenMs: number;
   transactionWriteRunning: boolean;
+  /**
+   * Points of the daily series not yet confirmed as stored (TS §7.9, AP 5.7), ascending; written
+   * with the transactions' interval and with every snapshot, like the transactions.
+   */
+  unsavedPoints: DailyPoint[];
+  pointWriteRunning: boolean;
   /** Day of the newest month start entry in the database. */
   savedMonthDay: number;
   /** Last (attempted) writes of the clock state and of a snapshot. */
@@ -206,6 +216,11 @@ interface LoadedGame {
   standingOrdersSent: readonly StandingOrder[] | null;
   /** The savings plans of the last projection that carried them (as `standingOrdersSent`, AP 5.6b). */
   savingsPlansSent: readonly SavingsPlan[] | null;
+  /**
+   * The performance state of the last projection that carried the figures; the engine replaces it
+   * on every flow, benchmark close and day end (AP 5.7).
+   */
+  performanceSent: Readonly<PerformanceState> | null;
   /** Loading and replaying: notifications are stored, but neither sent nor reported. */
   replaying: boolean;
   /** Indices of the absence report (positions in the world's index list). */
@@ -695,6 +710,8 @@ export class EngineHost {
       unsavedTransactions: [],
       transactionsWrittenMs: now,
       transactionWriteRunning: false,
+      unsavedPoints: [],
+      pointWriteRunning: false,
       savedMonthDay: stored.monthStarts.at(-1)?.day ?? -1,
       clockSavedMs: now,
       clockSavedTick: engine.tick,
@@ -709,6 +726,7 @@ export class EngineHost {
       taxYearSent: null,
       standingOrdersSent: null,
       savingsPlansSent: null,
+      performanceSent: null,
       unsavedNotifications: [],
       notificationsWrittenMs: now,
       notificationWriteRunning: false,
@@ -966,6 +984,7 @@ export class EngineHost {
         this.#config.transactionWriteIntervalMs
       ) {
         this.#writeTransactions(game);
+        this.#writeDailyPoints(game);
       }
       if (
         this.#ports.now() - game.notificationsWrittenMs >=
@@ -1066,6 +1085,7 @@ export class EngineHost {
     const notifications = game.engine.drainNotifications();
     game.unsavedTransactions.push(...transactions);
     game.unsavedNotifications.push(...notifications);
+    game.unsavedPoints.push(...game.engine.drainDailyPoints());
     if (!game.replaying) {
       if (game.absence !== undefined) {
         game.absence = tallyNotifications(tallyBookings(game.absence, transactions), notifications);
@@ -1249,6 +1269,7 @@ export class EngineHost {
         transactions: game.unsavedTransactions.slice(),
         notifications: game.unsavedNotifications.slice(),
         keepNotificationsFrom: oldestKeptSeq(state.player.notifications.nextSeq - 1),
+        dailyPoints: game.unsavedPoints.slice(),
       },
       monthDay: monthStarts.at(-1)?.day ?? game.savedMonthDay,
     };
@@ -1258,6 +1279,30 @@ export class EngineHost {
     game.savedMonthDay = Math.max(game.savedMonthDay, written.monthDay);
     this.#transactionsSaved(game, written.options.transactions);
     this.#notificationsSaved(game, written.options.notifications);
+    this.#pointsSaved(game, written.options.dailyPoints);
+  }
+
+  /** Writes the points of the daily series not yet stored, like the transactions (AP 5.7). */
+  #writeDailyPoints(game: LoadedGame): void {
+    if (game.unsavedPoints.length === 0 || game.pointWriteRunning) {
+      return;
+    }
+    const points = game.unsavedPoints.slice();
+    game.pointWriteRunning = true;
+    void this.#write(
+      () => this.#ports.storage.saveDailyPoints(game.playerId, points),
+      () => this.#pointsSaved(game, points),
+      () => {
+        game.pointWriteRunning = false;
+      },
+    );
+  }
+
+  #pointsSaved(game: LoadedGame, saved: readonly DailyPoint[] | undefined): void {
+    const last = saved?.at(-1);
+    if (last !== undefined) {
+      game.unsavedPoints = game.unsavedPoints.filter(({ day }) => day > last.day);
+    }
   }
 
   /**
@@ -1505,11 +1550,13 @@ export class EngineHost {
     const taxesChanged = game.engine.player.taxYear !== game.taxYearSent;
     const standingOrdersChanged = game.engine.player.standingOrders !== game.standingOrdersSent;
     const savingsPlansChanged = game.engine.player.savingsPlans !== game.savingsPlansSent;
+    const performanceChanged = game.engine.player.performance !== game.performanceSent;
     if (
       (game.projectionFull ||
         taxesChanged ||
         standingOrdersChanged ||
         savingsPlansChanged ||
+        performanceChanged ||
         game.changedAccounts.size > 0 ||
         game.changedOrders.size > 0 ||
         game.changedDepots.size > 0 ||
@@ -1600,11 +1647,13 @@ export class EngineHost {
       full || player.savingsPlans !== game.savingsPlansSent
         ? game.engine.savingsPlanViews()
         : undefined;
+    const securities = game.engine.securitiesValue();
     this.#post('projection', {
       tick: game.engine.tick,
       full,
       accounts: accountViews(player, full ? undefined : [...game.changedAccounts]),
-      netWorth: netWorth(player, game.engine.securitiesValue()),
+      netWorth: netWorth(player, securities),
+      performance: game.engine.performanceFigures(securities),
       ...(part === undefined ? {} : { notifications: part }),
       ...(watchlist === undefined ? {} : { watchlist }),
       ...(trading === undefined ? {} : { trading }),
@@ -1616,6 +1665,7 @@ export class EngineHost {
     game.taxYearSent = player.taxYear;
     game.standingOrdersSent = player.standingOrders;
     game.savingsPlansSent = player.savingsPlans;
+    game.performanceSent = player.performance;
     game.projectionFull = false;
     game.valuedTick = game.engine.tick;
     game.changedAccounts.clear();
@@ -1680,7 +1730,34 @@ export class EngineHost {
         return this.#screener(game, query);
       case 'candles':
         return this.#candles(game, query);
+      case 'performanceHistory':
+        return this.#performanceHistory(game, query);
     }
+  }
+
+  /**
+   * The daily series from `fromDay` (default: the start of the game) up to the last day that ended
+   * (TS §8.2, AP 5.7), thinned to at most `maxPoints`. The points not yet stored are taken before
+   * reading, like the statement does; a stored point of the same day gives way to them.
+   */
+  async #performanceHistory(
+    game: LoadedGame,
+    query: PerformanceHistoryQuery,
+  ): Promise<EngineQueryResult> {
+    const { engine } = game;
+    const tick = engine.tick;
+    const performance = engine.player.performance;
+    const startDay = dayIndex(performance.startTick);
+    const toDay = performance.day - 1;
+    const fromDay = Math.max(query.fromDay ?? startDay, startDay);
+    const unsaved = game.unsavedPoints.filter(({ day }) => day >= fromDay && day <= toDay);
+    const stored = await this.#ports.storage.loadDailyPoints(game.playerId, fromDay, toDay);
+    const points = mergePoints(stored, unsaved);
+    const { points: thinned, resolution } = thinPoints(
+      points,
+      query.maxPoints ?? DEFAULT_HISTORY_POINTS,
+    );
+    return { kind: 'performanceHistory', points: thinned, resolution, total: points.length, tick };
   }
 
   /**

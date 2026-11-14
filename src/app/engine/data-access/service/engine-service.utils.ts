@@ -15,6 +15,7 @@ import {
 import { MAX_NOTIFICATION_LIMIT } from '@app/notifications/domain/notification-page-logic';
 import { MAX_STORED_NOTIFICATIONS } from '@app/notifications/domain/read-state-logic';
 import { DISTRIBUTION_KINDS } from '@app/portfolio/domain/models/distribution.model';
+import { MAX_HISTORY_POINTS } from '@app/portfolio/domain/performance-logic';
 import {
   ORDER_REJECTIONS,
   ORDER_SIDES,
@@ -229,6 +230,13 @@ function isCandlesQuery(value: Fields): boolean {
   });
 }
 
+function isPerformanceHistoryQuery(value: Fields): boolean {
+  return hasFields(value, {
+    fromDay: isOptional(isCents),
+    maxPoints: isOptional((count) => isCount(count) && count >= 2 && count <= MAX_HISTORY_POINTS),
+  });
+}
+
 function isStandingOrderId(value: unknown): boolean {
   return isString(value) && /^so-[1-9]\d*$/.test(value);
 }
@@ -312,6 +320,8 @@ function isQuery(value: unknown): boolean {
       return isScreenerQuery(value);
     case 'candles':
       return isCandlesQuery(value);
+    case 'performanceHistory':
+      return isPerformanceHistoryQuery(value);
     default:
       return true;
   }
@@ -604,6 +614,35 @@ function isAbsenceReport(value: unknown): boolean {
   });
 }
 
+function isPeriodReturns(value: unknown): boolean {
+  return hasFields(value, {
+    sinceStart: isFiniteNumber,
+    yearToDate: isNullOr(isFiniteNumber),
+    annualized: isNullOr(isFiniteNumber),
+  });
+}
+
+function isPerformanceFigures(value: unknown): boolean {
+  return hasFields(value, {
+    tick: isCount,
+    startTick: isCount,
+    startValue: isCents,
+    netWorth: isCents,
+    cash: isCents,
+    securities: isCents,
+    totalFlow: isCents,
+    comparison: isCents,
+    sinceStart: isCents,
+    today: (today) =>
+      hasFields(today, { change: isCents, ratio: isNullOr(isFiniteNumber), flow: isCents }),
+    returns: isPeriodReturns,
+    skippedDays: isCount,
+    benchmark: isNullOr((benchmark) =>
+      hasFields(benchmark, { value: isCents, returns: isPeriodReturns }),
+    ),
+  });
+}
+
 function isNotificationsProjection(value: unknown): boolean {
   return (
     hasFields(value, { lastSeq: isCount, unread: isCount, autoPause: isFields }) &&
@@ -674,6 +713,7 @@ const EVENT_PAYLOADS: Readonly<Record<EngineEventMessage['type'], Check>> = {
       taxes: isOptional(isTaxesProjection),
       standingOrders: isOptional(isListOf(isStandingOrderView)),
       savingsPlans: isOptional(isListOf(isSavingsPlanView)),
+      performance: isOptional(isPerformanceFigures),
     }),
   notification: (payload) =>
     hasFields(payload, { tick: isCount, notifications: isNotificationList }),

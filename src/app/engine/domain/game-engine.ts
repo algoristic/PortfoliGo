@@ -34,6 +34,12 @@ import { PriceSource } from '@app/market/domain/price-source';
 import { etfSeries, seriesIds } from '@app/market/domain/series';
 import { watchlistError } from '@app/market/domain/watchlist-logic';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
+import {
+  DailyPoint,
+  PerformanceFigures,
+  PerformanceState,
+} from '@app/portfolio/domain/models/performance.model';
+import { startPerformance } from '@app/portfolio/domain/performance-logic';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { openTaxYear } from '@app/taxes/domain/tax-logic';
 import { SavingsPlanView } from '@app/trading/domain/models/savings-plan.model';
@@ -56,6 +62,7 @@ import { PricePort } from './models/price-port.model';
 import { ExDividend, ScheduledTask } from './models/scheduled-task.model';
 import { NotificationSystem } from './notification-system';
 import { copyOrder, OrderSystem } from './order-system';
+import { benchmarkSeries, PerformanceSystem } from './performance-system';
 import { copySavingsPlan, SavingsPlanSystem } from './savings-plan-system';
 import {
   copyScheduler,
@@ -109,6 +116,7 @@ export class GameEngine {
   readonly #distributions: DistributionSystem;
   readonly #savingsPlans: SavingsPlanSystem;
   readonly #valuation: Valuation;
+  readonly #performance: PerformanceSystem;
   #events: EngineEvent[] = [];
   #journal: Transaction[] = [];
   /** Accounts whose projection changed since the last `drainChangedAccounts` (TS §8.4). */
@@ -135,8 +143,12 @@ export class GameEngine {
       this.#changedAccounts.add(id);
     };
     this.#notifications = new NotificationSystem(state.player);
+    this.#performance = new PerformanceSystem(world, state.player, this.prices);
     this.#banking = new BankingSystem(world, state.player, {
-      journal: (transaction) => this.#journal.push(transaction),
+      journal: (transaction) => {
+        this.#journal.push(transaction);
+        this.#performance.booked(transaction);
+      },
       emit: (event) => this.#emit(event),
       changed,
     });
@@ -244,6 +256,11 @@ export class GameEngine {
         standingOrderSequence: 0,
         savingsPlans: [],
         savingsPlanSequence: 0,
+        performance: startPerformance(
+          GAME_START_TICK,
+          start.startCapital,
+          benchmarkSeries(world) !== null,
+        ),
       },
       scheduler,
       commandIds: [],
@@ -396,6 +413,22 @@ export class GameEngine {
    */
   securitiesValue(): Cents {
     return this.#valuation.holdingsValue(this.#state.player.positions, this.#state.tick);
+  }
+
+  /**
+   * Points of the daily series (TS §3.8 step 4, §7.9) of the days that ended since the last call,
+   * ascending; empties the buffer. The host stores them in `series`.
+   */
+  drainDailyPoints(): DailyPoint[] {
+    return this.#performance.drainPoints();
+  }
+
+  /**
+   * Live performance figures (US-PF-01, US-PF-05, TS §7.9) with `securities` = the value of the
+   * positions now (`securitiesValue()`), which the host computes for the projection anyway.
+   */
+  performanceFigures(securities: Cents): PerformanceFigures {
+    return this.#performance.figures(this.#state.tick, securities);
   }
 
   /** The savings plans with their next execution after the current tick (TS §8.3). */
@@ -607,6 +640,7 @@ export class GameEngine {
           day: dayIndex(tick),
           series: exchange.closingSeries,
         });
+        this.#performance.sessionClosed(task.exchange, tick);
         break;
       }
       case 'order-expiry':
@@ -661,6 +695,9 @@ export class GameEngine {
         endOfDay,
         tick,
       ),
+    );
+    this.#performance.dayChanged(tick, (end) =>
+      this.#valuation.holdingsValue(positions, end, tick),
     );
     scheduleTask(this.#state.scheduler, dayStartTick(day + 1), { kind: 'day-change' });
   }
@@ -757,6 +794,14 @@ function copyPlayer(player: Readonly<PlayerState>): PlayerState {
     standingOrderSequence: player.standingOrderSequence,
     savingsPlans: player.savingsPlans.map(copySavingsPlan),
     savingsPlanSequence: player.savingsPlanSequence,
+    performance: copyPerformance(player.performance),
+  };
+}
+
+function copyPerformance(performance: Readonly<PerformanceState>): PerformanceState {
+  return {
+    ...performance,
+    benchmark: performance.benchmark === null ? null : { ...performance.benchmark },
   };
 }
 

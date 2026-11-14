@@ -5,6 +5,7 @@ import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
+import { DailyPoint } from '@app/portfolio/domain/models/performance.model';
 
 import {
   DailyCandleBucket,
@@ -102,6 +103,14 @@ export class FaultyEngineStorage implements EngineStorage {
     toYear: number,
   ): Promise<DailyCandleBucket[]> {
     return this.inner.loadDailyCandles(playerId, seriesId, fromYear, toYear);
+  }
+
+  saveDailyPoints(playerId: string, points: readonly DailyPoint[]): Promise<void> {
+    return this.#write(() => this.inner.saveDailyPoints(playerId, points));
+  }
+
+  loadDailyPoints(playerId: string, fromDay: number, toDay: number): Promise<DailyPoint[]> {
+    return this.inner.loadDailyPoints(playerId, fromDay, toDay);
   }
 
   clearCandles(playerId: string): Promise<void> {

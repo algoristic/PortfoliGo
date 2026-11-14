@@ -8,6 +8,7 @@ import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
 import { PlayerLocks } from '@app/persistence/data-access/locks/player-locks';
+import { DailyPoint } from '@app/portfolio/domain/models/performance.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { SeedKey } from '@app/simulation/util/seed';
 import { World } from '@app/world/domain/models/world.model';
@@ -65,6 +66,8 @@ export interface SaveSnapshotOptions {
    * notification it keeps (`oldestKeptSeq`).
    */
   keepNotificationsFrom?: number;
+  /** Points of the daily series not yet stored, written in the same transaction (TS §9.2, AP 5.7). */
+  dailyPoints?: readonly DailyPoint[];
 }
 
 /**
@@ -132,10 +135,20 @@ export interface EngineStorage {
     fromYear: number,
     toYear: number,
   ): Promise<DailyCandleBucket[]>;
+  /**
+   * Points of the daily series (TS §7.9, §9.1 `series`, AP 5.7), merged into their year records;
+   * a stored day is overwritten.
+   */
+  saveDailyPoints(playerId: string, points: readonly DailyPoint[]): Promise<void>;
+  /** Stored points of the days `fromDay … toDay` (inclusive), ascending. */
+  loadDailyPoints(playerId: string, fromDay: number, toDay: number): Promise<DailyPoint[]>;
   /** Drops all daily candles of the player; they are reproducible (TS §6.8, §9.5). */
   clearCandles(playerId: string): Promise<void>;
   loadPlayerState(playerId: string): Promise<StoredPlayerState>;
-  /** Discards the journal records after `tick` (TS §9.2, step 2); daily candles stay. */
+  /**
+   * Discards the journal records after `tick` (TS §9.2, step 2); daily candles stay. Year records
+   * of the daily series keep their points up to `tick`.
+   */
   discardAfter(playerId: string, tick: Tick): Promise<void>;
   /** Deletes all records of the player that the worker owns. */
   deletePlayer(playerId: string): Promise<void>;

@@ -6,8 +6,10 @@ import { GameSnapshot } from '@app/engine/domain/models/game-state.model';
 import { SCHEMA_VERSION, SIM_VERSION } from '@app/engine/domain/version';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
+import { DailyPoint } from '@app/portfolio/domain/models/performance.model';
 
 import { candleYear, createCandleValues, patchCandleValues } from './daily-candles.utils';
+import { mergePoints } from './daily-series.utils';
 import {
   DailyCandleBucket,
   DailyCandlePatch,
@@ -33,6 +35,8 @@ interface PlayerRecords {
   transactions: Map<number, Transaction>;
   /** Notifications by running number. */
   notifications: Map<number, GameNotification>;
+  /** Points of the daily series, ascending by day. */
+  dailyPoints: DailyPoint[];
 }
 
 /**
@@ -72,6 +76,7 @@ export class InMemoryEngineStorage implements EngineStorage {
     records.snapshots = snapshots.slice(-SNAPSHOTS_KEPT);
     this.#putMonthStarts(records, options.monthStarts ?? []);
     this.#putTransactions(records, options.transactions ?? []);
+    this.#putDailyPoints(records, options.dailyPoints ?? []);
     for (const notification of options.notifications ?? []) {
       records.notifications.set(notification.seq, structuredClone(notification));
     }
@@ -154,6 +159,16 @@ export class InMemoryEngineStorage implements EngineStorage {
       .map((bucket) => structuredClone(bucket));
   }
 
+  async saveDailyPoints(playerId: string, points: readonly DailyPoint[]): Promise<void> {
+    this.#putDailyPoints(this.#records(playerId), points);
+  }
+
+  async loadDailyPoints(playerId: string, fromDay: number, toDay: number): Promise<DailyPoint[]> {
+    return (this.#players.get(playerId)?.dailyPoints ?? [])
+      .filter(({ day }) => day >= fromDay && day <= toDay)
+      .map((point) => ({ ...point }));
+  }
+
   async clearCandles(playerId: string): Promise<void> {
     this.#players.get(playerId)?.candles.clear();
   }
@@ -189,6 +204,9 @@ export class InMemoryEngineStorage implements EngineStorage {
         }
       }
     }
+    if (records !== undefined) {
+      records.dailyPoints = records.dailyPoints.filter((point) => point.tick <= tick);
+    }
   }
 
   async deletePlayer(playerId: string): Promise<void> {
@@ -207,6 +225,7 @@ export class InMemoryEngineStorage implements EngineStorage {
         candles: new Map(),
         transactions: new Map(),
         notifications: new Map(),
+        dailyPoints: [],
       };
       this.#players.set(playerId, records);
     }
@@ -217,6 +236,13 @@ export class InMemoryEngineStorage implements EngineStorage {
     for (const transaction of transactions) {
       records.transactions.set(transaction.seq, structuredClone(transaction));
     }
+  }
+
+  #putDailyPoints(records: PlayerRecords, points: readonly DailyPoint[]): void {
+    records.dailyPoints = mergePoints(
+      records.dailyPoints,
+      points.map((point) => ({ ...point })),
+    );
   }
 
   #putMonthStarts(records: PlayerRecords, entries: readonly FactorStateEntry[]): void {

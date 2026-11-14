@@ -8992,11 +8992,18 @@
           <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="featurePortfolio-portfolioEffects-loadPerformanceHistoryFailure" datatype="html">
+        <source>Der Vermögensverlauf ließ sich nicht laden.</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/portfolio/feature/state/portfolio.effects.ts</context>
+          <context context-type="linenumber">118</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="featurePortfolio-portfolioEffects-loadCompositionFailure" datatype="html">
         <source>Die Zusammensetzung eines ETF ließ sich nicht laden. Sein Wert erscheint bei Region und Sektor als „Nicht zugeordnet“.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/portfolio/feature/state/portfolio.effects.ts</context>
-          <context context-type="linenumber">116</context>
+          <context context-type="linenumber">205</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPortfolio-allocation-value" datatype="html">

@@ -9,6 +9,7 @@ import { Bank } from '@app/world/domain/models/bank.model';
 import { initialPortfolioState, PortfolioState } from './portfolio.reducer';
 import {
   selectMissingCompositions,
+  selectPerformanceHistory,
   selectPortfolioSeries,
   selectPortfolioView,
   selectPositionDetailView,
@@ -322,5 +323,21 @@ describe('selectPositionDetailView', () => {
     expect(
       selectPositionDetailView.projector(undefined, DEPOTS, ORDERS, INSTRUMENTS, QUOTES, null),
     ).toBeNull();
+  });
+});
+
+describe('selectPerformanceHistory', () => {
+  it('shows a loaded series only for the selected period', () => {
+    const history = { range: '1m' as const, points: [], resolution: 'day' as const, tick: 5 };
+    const state: PortfolioState = { ...initialPortfolioState, historyRange: '1m', history };
+    expect(selectPerformanceHistory.projector(state)).toEqual({
+      range: '1m',
+      history,
+      loading: false,
+      failed: false,
+    });
+    expect(
+      selectPerformanceHistory.projector({ ...state, historyRange: '5y', historyLoading: true }),
+    ).toEqual({ range: '5y', history: null, loading: true, failed: false });
   });
 });

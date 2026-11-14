@@ -99,6 +99,8 @@ const config = {
     'src/app/portfolio/domain/position-overview-logic.ts',
     'src/app/portfolio/domain/allocation-logic.ts',
     'src/app/portfolio/domain/position-detail-logic.ts',
+    'src/app/portfolio/domain/performance-logic.ts',
+    'src/app/engine/domain/performance-system.ts',
     'src/app/players/domain/player-logic.ts',
     'src/app/notifications/domain/auto-pause-logic.ts',
     'src/app/notifications/domain/read-state-logic.ts',

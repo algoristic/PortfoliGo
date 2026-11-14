@@ -25,4 +25,46 @@ describe('portfolioReducer', () => {
     expect(state.loading).toEqual({});
     expect(state.failed).toEqual({ 'etf-1': 8 });
   });
+
+  it('takes a series only for the selected period and keeps the last one while another loads', () => {
+    const history = { points: [], resolution: 'day' as const, total: 0, tick: 99 };
+    let state = portfolioReducer(
+      initialPortfolioState,
+      PortfolioActions.selectedHistoryRange({ range: '1m' }),
+    );
+    state = portfolioReducer(
+      state,
+      PortfolioActions.retrievedPerformanceHistory({ range: '1m', history }),
+    );
+    expect(state.history).toEqual({ range: '1m', points: [], resolution: 'day', tick: 99 });
+    expect(state.historyLoading).toBe(false);
+
+    state = portfolioReducer(state, PortfolioActions.selectedHistoryRange({ range: 'max' }));
+    expect(state.historyLoading).toBe(true);
+    // A late answer for the period before changes nothing.
+    const late = portfolioReducer(
+      state,
+      PortfolioActions.retrievedPerformanceHistory({
+        range: '1m',
+        history: { ...history, tick: 120 },
+      }),
+    );
+    expect(late).toBe(state);
+    expect(
+      portfolioReducer(
+        state,
+        PortfolioActions.loadPerformanceHistoryFailure({ range: '1m', error: 'x' }),
+      ),
+    ).toBe(state);
+    state = portfolioReducer(
+      state,
+      PortfolioActions.loadPerformanceHistoryFailure({ range: 'max', error: 'x' }),
+    );
+    expect(state).toMatchObject({
+      historyLoading: false,
+      historyFailed: true,
+      historyRange: 'max',
+    });
+    expect(state.history?.range).toBe('1m');
+  });
 });

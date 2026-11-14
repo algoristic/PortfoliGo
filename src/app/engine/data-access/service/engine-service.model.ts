@@ -34,6 +34,11 @@ import {
   NotificationCategory,
   NotificationEntry,
 } from '@app/notifications/domain/models/notification.model';
+import {
+  DailyPoint,
+  PerformanceFigures,
+  SeriesResolution,
+} from '@app/portfolio/domain/models/performance.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import {
   ORDER_COMMAND_ERRORS,
@@ -139,6 +144,19 @@ export interface CandlesQuery {
 export type CandlesRequest = Omit<CandlesQuery, 'kind'>;
 
 /**
+ * The daily series of net worth, flows, return and benchmark (TS §7.9, §8.2, US-PF-04, US-PF-05)
+ * from `fromDay` (default and earliest: the start of the game) up to the last day that ended,
+ * thinned to at most `maxPoints` (default `DEFAULT_HISTORY_POINTS`, 2 … `MAX_HISTORY_POINTS`).
+ */
+export interface PerformanceHistoryQuery {
+  kind: 'performanceHistory';
+  fromDay?: number;
+  maxPoints?: number;
+}
+
+export type PerformanceHistoryRequest = Omit<PerformanceHistoryQuery, 'kind'>;
+
+/**
  * Queries (TS §8.2); they write nothing and don't hold the clock. `closingPreview` shows what
  * closing an account now would book (TS §7.4); `monthlyValues` the household months (US-EK-03).
  */
@@ -159,7 +177,8 @@ export type EngineQuery =
   | { kind: 'instrumentDividends'; id: string }
   | { kind: 'instrumentComposition'; id: string }
   | ScreenerQuery
-  | CandlesQuery;
+  | CandlesQuery
+  | PerformanceHistoryQuery;
 export type EngineQueryKind = EngineQuery['kind'];
 export const ENGINE_QUERY_KINDS = [
   'exchanges',
@@ -176,6 +195,7 @@ export const ENGINE_QUERY_KINDS = [
   'instrumentComposition',
   'screener',
   'candles',
+  'performanceHistory',
 ] as const satisfies readonly EngineQueryKind[];
 
 /** Own transfer (US-BK-04): whole cents ≥ 1, purpose up to `MAX_PURPOSE_LENGTH` characters. */
@@ -356,7 +376,8 @@ export type EngineQueryResult =
   /** `composition` is `null` for shares. */
   | { kind: 'instrumentComposition'; composition: IndexComposition | null; tick: Tick }
   | ({ kind: 'screener' } & ScreenerResult)
-  | ({ kind: 'candles' } & CandlesResult);
+  | ({ kind: 'candles' } & CandlesResult)
+  | ({ kind: 'performanceHistory' } & PerformanceHistoryResult);
 
 /** The result of a query of kind `K`. */
 export type EngineQueryResultOf<K extends EngineQueryKind> = Extract<
@@ -399,6 +420,17 @@ export interface CandlesResult {
   interval: CandleResolution;
   candles: Candle[];
   hasOlder: boolean;
+  tick: Tick;
+}
+
+/**
+ * The daily series up to `tick` (the query limit), ascending: the first point of the period and
+ * the last of each `resolution` bucket; `total` is the number of days before thinning.
+ */
+export interface PerformanceHistoryResult {
+  points: DailyPoint[];
+  resolution: SeriesResolution;
+  total: number;
   tick: Tick;
 }
 
@@ -578,6 +610,21 @@ export interface ProjectionPayload {
    * was created, changed, paused, resumed, deleted or executed.
    */
   savingsPlans?: SavingsPlanView[];
+  /**
+   * Live performance figures (AP 5.7, US-PF-01, US-PF-05, TS §7.9) at the projection's tick: in
+   * every projection, which goes out whenever the accounts, the positions' value or the
+   * performance state changed (a flow, a benchmark close, a day end).
+   */
+  performance?: PerformanceFigures;
+}
+
+/**
+ * The performance figures of a projection as `EngineService.performance$` emits them.
+ */
+export interface PerformanceProjectionUpdate {
+  tick: Tick;
+  full: boolean;
+  figures: PerformanceFigures;
 }
 
 /**

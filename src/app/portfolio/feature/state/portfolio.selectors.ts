@@ -1,6 +1,7 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 
 import { selectAccounts } from '@app/banking/feature/state/banking.selectors';
+import { dayIndex } from '@app/clock/domain/calendar-logic';
 import {
   selectInstrumentEntities,
   selectInstrumentsLoaded,
@@ -14,6 +15,7 @@ import {
   selectTradingLoaded,
 } from '@app/trading/feature/state/trading.selectors';
 
+import { PerformanceHistoryView } from './portfolio.model';
 import { PORTFOLIO_FEATURE_KEY, PortfolioState } from './portfolio.reducer';
 import {
   heldSeries,
@@ -26,6 +28,29 @@ const selectState = createFeatureSelector<PortfolioState>(PORTFOLIO_FEATURE_KEY)
 
 export const selectPortfolioDepotId = createSelector(selectState, (state) => state.depotId);
 export const selectPositionSort = createSelector(selectState, (state) => state.sort);
+
+/** Live performance figures (AP 5.7, US-PF-01, US-PF-05); `null` before the first projection. */
+export const selectPerformanceFigures = createSelector(selectState, (state) => state.performance);
+export const selectHistoryRange = createSelector(selectState, (state) => state.historyRange);
+
+/** Calendar day of the last figures; a new one means a day ended (`null` before the first). */
+export const selectPerformanceDay = createSelector(selectPerformanceFigures, (figures) =>
+  figures === null ? null : dayIndex(figures.tick),
+);
+
+/**
+ * The net worth chart (US-PF-04): the selected period and the series loaded for it; a series of
+ * another period stays out, so the chart never shows the wrong period while the new one loads.
+ */
+export const selectPerformanceHistory = createSelector(
+  selectState,
+  (state): PerformanceHistoryView => ({
+    range: state.historyRange,
+    history: state.history?.range === state.historyRange ? state.history : null,
+    loading: state.historyLoading,
+    failed: state.historyFailed,
+  }),
+);
 
 /** Holdings and master data are there: the page can show positions or its empty state. */
 export const selectPortfolioLoaded = createSelector(

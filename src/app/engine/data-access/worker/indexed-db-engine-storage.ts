@@ -19,8 +19,10 @@ import {
   deletePlayerRecords,
   playerKeyRange,
 } from '@app/persistence/data-access/schema/player-records';
+import { DailyPoint } from '@app/portfolio/domain/models/performance.model';
 
 import { candleYear, createCandleValues, patchCandleValues } from './daily-candles.utils';
+import { mergePoints, pointsByYear, pointYear } from './daily-series.utils';
 import {
   DailyCandleBucket,
   DailyCandlePatch,
@@ -36,7 +38,9 @@ import {
   JournalRecord,
   MarketStateRecord,
   NotificationRecord,
+  PERFORMANCE_SERIES,
   RuntimeRecord,
+  SeriesRecord,
   SnapshotRecord,
   TransactionRecord,
 } from './indexed-db-engine-storage.model';
@@ -84,6 +88,26 @@ async function putNotifications(
   const store = transaction.objectStore('notifications');
   for (const notification of notifications) {
     await store.put({ ...notification, playerId } satisfies NotificationRecord);
+  }
+}
+
+async function putDailyPoints(
+  transaction: WriteTransaction,
+  playerId: string,
+  points: readonly DailyPoint[],
+): Promise<void> {
+  const store = transaction.objectStore('series');
+  for (const [year, added] of pointsByYear(points)) {
+    const stored = (await store.get([playerId, PERFORMANCE_SERIES, year])) as
+      SeriesRecord | undefined;
+    const merged = mergePoints(stored?.points ?? [], added);
+    await store.put({
+      playerId,
+      name: PERFORMANCE_SERIES,
+      year,
+      tick: merged[merged.length - 1].tick,
+      points: merged,
+    } satisfies SeriesRecord);
   }
 }
 
@@ -142,11 +166,21 @@ export class IndexedDbEngineStorage implements EngineStorage {
       transactions = [],
       notifications = [],
       keepNotificationsFrom,
+      dailyPoints = [],
     } = options;
     return this.#write(
-      ['snapshots', 'commands', 'marketStates', 'runtime', 'transactions', 'notifications'],
+      [
+        'snapshots',
+        'commands',
+        'marketStates',
+        'runtime',
+        'transactions',
+        'notifications',
+        'series',
+      ],
       async (transaction) => {
         await putTransactions(transaction, playerId, transactions);
+        await putDailyPoints(transaction, playerId, dailyPoints);
         await putNotifications(transaction, playerId, notifications);
         if (keepNotificationsFrom !== undefined) {
           await transaction
@@ -272,6 +306,27 @@ export class IndexedDbEngineStorage implements EngineStorage {
     return records.map(({ bucket, values }) => ({ seriesId, year: bucket, values }));
   }
 
+  saveDailyPoints(playerId: string, points: readonly DailyPoint[]): Promise<void> {
+    return this.#write(['series'], (transaction) => putDailyPoints(transaction, playerId, points));
+  }
+
+  async loadDailyPoints(playerId: string, fromDay: number, toDay: number): Promise<DailyPoint[]> {
+    if (toDay < fromDay) {
+      return [];
+    }
+    const database = await this.#db();
+    const records = (await database.getAll(
+      'series',
+      IDBKeyRange.bound(
+        [playerId, PERFORMANCE_SERIES, pointYear(fromDay)],
+        [playerId, PERFORMANCE_SERIES, pointYear(toDay)],
+      ),
+    )) as SeriesRecord[];
+    return records.flatMap(({ points }) =>
+      points.filter(({ day }) => day >= fromDay && day <= toDay),
+    );
+  }
+
   clearCandles(playerId: string): Promise<void> {
     return this.#write(['candles'], async (transaction) => {
       await transaction.objectStore('candles').delete(playerKeyRange(playerId));
@@ -319,8 +374,19 @@ export class IndexedDbEngineStorage implements EngineStorage {
       for (const name of JOURNAL_STORES) {
         let cursor = await transaction.objectStore(name).openCursor(playerKeyRange(playerId));
         while (cursor !== null) {
-          if ((cursor.value as JournalRecord).tick > tick) {
-            await cursor.delete();
+          const record = cursor.value as JournalRecord;
+          if (record.tick > tick) {
+            const points = name === 'series' ? (record as Partial<SeriesRecord>).points : undefined;
+            const kept = (points ?? []).filter((point) => point.tick <= tick);
+            if (kept.length === 0) {
+              await cursor.delete();
+            } else {
+              await cursor.update({
+                ...(record as SeriesRecord),
+                tick: kept[kept.length - 1].tick,
+                points: kept,
+              } satisfies SeriesRecord);
+            }
           }
           cursor = await cursor.continue();
         }

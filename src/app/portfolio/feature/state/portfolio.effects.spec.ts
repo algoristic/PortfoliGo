@@ -6,6 +6,7 @@ import { firstValueFrom, of, Subject, take, throwError, toArray } from 'rxjs';
 import type { Mocked } from 'vitest';
 
 import { selectTick } from '@app/clock/feature/state/clock.selectors';
+import { EngineQueryResultOf } from '@app/engine/data-access/service/engine-service.model';
 import { EngineService } from '@app/engine/data-access/service/engine.service';
 import { IndexComposition } from '@app/market/domain/models/instrument-figures.model';
 import * as MarketActions from '@app/market/feature/state/market.actions';
@@ -14,7 +15,12 @@ import { ToastService } from '@app/shared/ui/toast/toast.service';
 
 import * as PortfolioActions from './portfolio.actions';
 import { PortfolioEffects } from './portfolio.effects';
-import { selectMissingCompositions, selectPortfolioSeries } from './portfolio.selectors';
+import {
+  selectHistoryRange,
+  selectMissingCompositions,
+  selectPerformanceDay,
+  selectPortfolioSeries,
+} from './portfolio.selectors';
 
 const COMPOSITION = { indexId: 'idx-1' } as IndexComposition;
 
@@ -22,11 +28,11 @@ describe('PortfolioEffects', () => {
   let effects: PortfolioEffects;
   let actions$: Subject<Action>;
   let store: MockStore;
-  let engine: Mocked<Pick<EngineService, 'instrumentComposition'>>;
+  let engine: Mocked<Pick<EngineService, 'instrumentComposition' | 'performanceHistory'>>;
 
   beforeEach(() => {
     actions$ = new Subject();
-    engine = { instrumentComposition: vi.fn() };
+    engine = { instrumentComposition: vi.fn(), performanceHistory: vi.fn() };
     TestBed.configureTestingModule({
       providers: [
         PortfolioEffects,
@@ -42,6 +48,58 @@ describe('PortfolioEffects', () => {
     store.overrideSelector(selectPortfolioSeries, [2, 4]);
     store.overrideSelector(selectMissingCompositions, { day: 7, ids: [] });
     effects = TestBed.inject(PortfolioEffects);
+  });
+
+  describe('loadPerformanceHistory$', () => {
+    // 15.05.2031 (day 4152 since 01.01.2020): one month back is 15.04.2031, `max` asks for all.
+    const DAY = 4_152;
+    const result = (tick: number): EngineQueryResultOf<'performanceHistory'> => ({
+      kind: 'performanceHistory',
+      points: [],
+      resolution: 'day',
+      total: 0,
+      tick,
+    });
+
+    it('loads the selected period on entering, on a new period and after a day end', async () => {
+      engine.performanceHistory.mockImplementation((request) => of(result(request?.fromDay ?? -1)));
+      store.overrideSelector(selectHistoryRange, '1m');
+      store.overrideSelector(selectPerformanceDay, DAY);
+      const loaded = firstValueFrom(effects.loadPerformanceHistory$.pipe(take(3), toArray()));
+      actions$.next(PortfolioActions.enterPerformanceHistory());
+      store.overrideSelector(selectHistoryRange, 'max');
+      store.refreshState();
+      store.overrideSelector(selectPerformanceDay, DAY + 1);
+      store.refreshState();
+      expect(await loaded).toEqual([
+        PortfolioActions.retrievedPerformanceHistory({ range: '1m', history: result(DAY - 30) }),
+        PortfolioActions.retrievedPerformanceHistory({ range: 'max', history: result(-1) }),
+        PortfolioActions.retrievedPerformanceHistory({ range: 'max', history: result(-1) }),
+      ]);
+      expect(engine.performanceHistory.mock.calls).toEqual([[{ fromDay: DAY - 30 }], [{}], [{}]]);
+    });
+
+    it('waits for the first figures and stops after leaving', async () => {
+      engine.performanceHistory.mockReturnValue(throwError(() => new Error('down')));
+      store.overrideSelector(selectHistoryRange, '1y');
+      store.overrideSelector(selectPerformanceDay, null);
+      const emitted: Action[] = [];
+      const subscription = effects.loadPerformanceHistory$.subscribe((action) =>
+        emitted.push(action),
+      );
+      actions$.next(PortfolioActions.enterPerformanceHistory());
+      expect(emitted).toEqual([]);
+      store.overrideSelector(selectPerformanceDay, DAY);
+      store.refreshState();
+      expect(emitted).toEqual([
+        PortfolioActions.loadPerformanceHistoryFailure({ range: '1y', error: new Error('down') }),
+      ]);
+      actions$.next(PortfolioActions.leavePerformanceHistory());
+      store.overrideSelector(selectPerformanceDay, DAY + 1);
+      store.refreshState();
+      expect(emitted).toHaveLength(1);
+      subscription.unsubscribe();
+    });
   });
 
   describe('watchPortfolioQuotes$', () => {

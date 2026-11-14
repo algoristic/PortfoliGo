@@ -20,3 +20,21 @@ export function leavePortfolioPage(): CanDeactivateFn<unknown> {
     return true;
   };
 }
+
+/**
+ * Starts the daily series of the net worth chart (AP 5.7, US-PF-04) for the page that shows it
+ * (the dashboard, AP 5.7b): loaded for the selected period and again after every day end.
+ */
+export function enterPerformanceHistory(): CanActivateFn {
+  return () => {
+    inject(PortfolioFacade).enterPerformanceHistory();
+    return true;
+  };
+}
+
+export function leavePerformanceHistory(): CanDeactivateFn<unknown> {
+  return () => {
+    inject(PortfolioFacade).leavePerformanceHistory();
+    return true;
+  };
+}

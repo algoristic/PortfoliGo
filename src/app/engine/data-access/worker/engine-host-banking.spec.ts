@@ -141,6 +141,7 @@ describe('EngineHost banking', () => {
           ],
           netWorth: PLAYER.start.startCapital,
           notifications: { lastSeq: 0, unread: 0, autoPause: expect.any(Object) },
+          performance: expect.objectContaining({ netWorth: 1_000_000, comparison: 1_000_000 }),
           watchlist: { ids: [] },
           trading: { orders: [], depots: [] },
           taxes: { current: expect.objectContaining({ year: 2030, income: 0 }), closed: [] },

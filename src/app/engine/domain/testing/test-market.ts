@@ -11,8 +11,15 @@ export interface TestPrice {
 }
 
 /**
+ * Level of the series a test does not price at all, e.g. the world performance index the benchmark
+ * buys at every close (TS §7.9) in scenarios about something else.
+ */
+export const UNPRICED_LEVEL = 100;
+
+/**
  * Test market for engine scenarios (TS §14.1, principle 5): given prices per series, each valid
- * from its tick on, and a fixed relative spread. Market days are ignored.
+ * from its tick on, and a fixed relative spread. Series without any entry stand at
+ * `UNPRICED_LEVEL`. Market days are ignored.
  */
 export class TestMarket implements PricePort {
   readonly #prices: readonly (readonly TestPrice[])[];
@@ -30,7 +37,7 @@ export class TestMarket implements PricePort {
     }
     const entries = this.#prices[series];
     if (entries === undefined) {
-      throw new RangeError(`TestMarket: unknown series ${series}`);
+      return UNPRICED_LEVEL;
     }
     let price: number | undefined;
     for (const entry of entries) {

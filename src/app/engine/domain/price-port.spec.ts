@@ -7,7 +7,7 @@ import { priceStep } from '@app/shared/domain/price-step-logic';
 import { GameEngine } from './game-engine';
 import { PricePort } from './models/price-port.model';
 import { miniGame } from './testing/mini-game';
-import { TestMarket } from './testing/test-market';
+import { TestMarket, UNPRICED_LEVEL } from './testing/test-market';
 
 // Contract of the price port (TS §14.1, principle 5): the real adapter (`PriceSource`) and the
 // test market answer within the same rules (TS §4.5 rule 7, §6.7).
@@ -136,7 +136,7 @@ describe('TestMarket', () => {
     expect(market.priceAt(0, 199, 300)).toBe(20);
     expect(market.priceAt(0, 200, 300)).toBe(21.5);
     expect(() => market.priceAt(0, 99, 300)).toThrow(RangeError);
-    expect(() => market.priceAt(1, 200, 300)).toThrow(RangeError);
+    expect(market.priceAt(1, 200, 300)).toBe(UNPRICED_LEVEL);
   });
 
   // TS §6.7: 0.2 % spread around 20 € → 19.98 / 20.02.

@@ -45,6 +45,8 @@ import {
   LoadPlayerPayload,
   MoversPayload,
   NotificationsRequest,
+  PerformanceHistoryRequest,
+  PerformanceProjectionUpdate,
   SavingsPlansProjectionUpdate,
   StandingOrdersProjectionUpdate,
   StatementRequest,
@@ -152,6 +154,17 @@ export class EngineService implements OnDestroy {
   savingsPlans$: Observable<SavingsPlansProjectionUpdate> = this.projection$.pipe(
     map(({ tick, full, savingsPlans }) =>
       savingsPlans === undefined ? null : { tick, full, savingsPlans },
+    ),
+    filter((update) => update !== null),
+  );
+  /**
+   * Live performance figures (AP 5.7, US-PF-01, US-PF-05, TS §7.9) from every projection: net
+   * worth, change today and since the start without external flows, time-weighted returns,
+   * benchmark and second comparison value.
+   */
+  performance$: Observable<PerformanceProjectionUpdate> = this.projection$.pipe(
+    map(({ tick, full, performance }) =>
+      performance === undefined ? null : { tick, full, figures: performance },
     ),
     filter((update) => update !== null),
   );
@@ -304,6 +317,16 @@ export class EngineService implements OnDestroy {
    */
   candles(request: CandlesRequest): Observable<EngineQueryResultOf<'candles'>> {
     return this.#query({ ...request, kind: 'candles' });
+  }
+
+  /**
+   * The daily series (TS §7.9, §8.2, US-PF-04, US-PF-05) from `fromDay` (default: the start of the
+   * game) up to the last day that ended, thinned to at most `maxPoints` points.
+   */
+  performanceHistory(
+    request: PerformanceHistoryRequest = {},
+  ): Observable<EngineQueryResultOf<'performanceHistory'>> {
+    return this.#query({ ...request, kind: 'performanceHistory' });
   }
 
   /** Switches the auto-pause of a notification code (TS §12, US-ZT-06). */

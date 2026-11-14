@@ -5,6 +5,7 @@ import { GameCommand } from '@app/engine/domain/models/engine-command.model';
 import { CandleResolution } from '@app/market/domain/models/candle.model';
 import { FactorStateEntry } from '@app/market/domain/models/market-state.model';
 import { GameNotification } from '@app/notifications/domain/models/notification.model';
+import { DailyPoint } from '@app/portfolio/domain/models/performance.model';
 
 import { StoredClock, StoredSnapshot } from './engine-host.model';
 
@@ -72,3 +73,17 @@ export interface TransactionRecord extends Transaction {
  * because its read state lives in the player state (TS §9.1).
  */
 export type NotificationRecord = GameNotification & { playerId: string };
+
+/** Name of the daily series of net worth, flows and benchmark in `series` (TS §7.9, AP 5.7). */
+export const PERFORMANCE_SERIES = 'performance';
+
+/**
+ * `series`, key `[playerId, name, year]`: the points of one calendar year, ascending by day; `tick`
+ * is the end of the last of them. A restore keeps the points up to the snapshot tick instead of
+ * dropping the whole record (TS §9.1, §9.2).
+ */
+export interface SeriesRecord extends JournalRecord {
+  name: typeof PERFORMANCE_SERIES;
+  year: number;
+  points: DailyPoint[];
+}

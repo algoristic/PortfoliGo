@@ -13,6 +13,7 @@ import { Tick } from '@app/clock/domain/models/time.model';
 import { MarketState } from '@app/market/domain/models/market-state.model';
 import { NotificationState } from '@app/notifications/domain/models/notification.model';
 import { PendingDistribution } from '@app/portfolio/domain/models/distribution.model';
+import { PerformanceState } from '@app/portfolio/domain/models/performance.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { TaxYear } from '@app/taxes/domain/models/tax.model';
 import { Order } from '@app/trading/domain/models/order.model';
@@ -96,6 +97,12 @@ export interface PlayerState {
   savingsPlans: SavingsPlan[];
   /** Last value of the savings plan counter (`sp-<n>`). */
   savingsPlanSequence: number;
+  /**
+   * Running performance and benchmark (TS §7.9, AP 5.7): the running day and the chained values up
+   * to its start. Every flow, benchmark close and day end replaces the object, so a new reference
+   * means a change for the projection.
+   */
+  performance: PerformanceState;
 }
 
 /** Dynamic state of a game (TS §8.1). Everything in it is plain, structured-cloneable data. */

@@ -16,6 +16,7 @@ import {
   WORKER_STORES,
 } from '@app/persistence/data-access/schema/idb-schema';
 import { openPortfoligoDb } from '@app/persistence/data-access/schema/open-database';
+import { DailyPoint } from '@app/portfolio/domain/models/performance.model';
 
 import { EngineStorage, StoredClock } from './engine-host.model';
 import { InMemoryEngineStorage } from './in-memory-engine-storage';
@@ -144,6 +145,45 @@ function describeStorageContract(name: string, create: () => EngineStorage): voi
 
       expect(await storage.loadTransactions('p1')).toEqual(journal);
       expect(await storage.loadTransactions('p2')).toHaveLength(1);
+    });
+
+    it('stores daily points in year records with a snapshot and on their own (AP 5.7)', async () => {
+      const lastOf2030 = day(2030, 12, 31);
+      const points = [lastOf2030 - 1, lastOf2030, lastOf2030 + 1, lastOf2030 + 2].map((d) =>
+        dailyPoint(d),
+      );
+      await storage.saveSnapshot('p1', game.start, { dailyPoints: points.slice(0, 1) });
+      await storage.saveDailyPoints('p1', points.slice(1, 3));
+      // Written again (a snapshot after a periodic write): replaced, not doubled.
+      await storage.saveDailyPoints('p1', [{ ...points[2], netWorth: 7 }, points[3]]);
+      await storage.saveDailyPoints('p2', [dailyPoint(lastOf2030)]);
+
+      const changed = [points[0], points[1], { ...points[2], netWorth: 7 }, points[3]];
+      expect(await storage.loadDailyPoints('p1', 0, lastOf2030 + 10)).toEqual(changed);
+      expect(await storage.loadDailyPoints('p1', lastOf2030, lastOf2030 + 1)).toEqual(
+        changed.slice(1, 3),
+      );
+      expect(await storage.loadDailyPoints('p1', lastOf2030 + 1, lastOf2030)).toEqual([]);
+      expect(await storage.loadDailyPoints('p2', 0, lastOf2030 + 10)).toEqual([
+        dailyPoint(lastOf2030),
+      ]);
+    });
+
+    it('keeps the daily points up to the tick when discarding after it', async () => {
+      const first = day(2031, 1, 1);
+      const points = [0, 1, 2, 3].map((n) => dailyPoint(first + n));
+      await storage.saveDailyPoints('p1', [dailyPoint(first - 1), ...points]);
+
+      await storage.discardAfter('p1', points[1].tick);
+
+      expect(await storage.loadDailyPoints('p1', 0, first + 10)).toEqual([
+        dailyPoint(first - 1),
+        ...points.slice(0, 2),
+      ]);
+      await storage.discardAfter('p1', points[0].tick - 1);
+      expect(await storage.loadDailyPoints('p1', 0, first + 10)).toEqual([dailyPoint(first - 1)]);
+      await storage.deletePlayer('p1');
+      expect(await storage.loadDailyPoints('p1', 0, first + 10)).toEqual([]);
     });
 
     it('stores notifications with a snapshot and on their own, by running number', async () => {
@@ -458,6 +498,24 @@ describe('IndexedDbEngineStorage', () => {
 });
 
 /** A journal record with its in-line key (TS §9.1) and tick. */
+/** A point of the daily series at the end of `dayIndex` with its index as values. */
+function dailyPoint(dayIndex: number): DailyPoint {
+  return {
+    day: dayIndex,
+    tick: (dayIndex + 1) * 1_440,
+    netWorth: dayIndex,
+    cash: dayIndex,
+    securities: 0,
+    flow: 0,
+    totalFlow: 0,
+    comparison: 0,
+    index: 1,
+    skippedDays: 0,
+    benchmarkValue: null,
+    benchmarkIndex: null,
+  };
+}
+
 function journalRecord(
   store: string,
   playerId: string,

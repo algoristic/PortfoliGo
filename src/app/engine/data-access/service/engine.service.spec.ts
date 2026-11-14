@@ -615,7 +615,10 @@ describe('EngineService', () => {
     });
 
     it('treats a fatal event of the worker like a failure', async () => {
-      start({ prices: () => new TestMarket([]) });
+      // Series 5 has a price only far in the future: quoting it now throws in the worker.
+      const prices: TestPrice[][] = [];
+      prices[5] = [{ tick: Number.MAX_SAFE_INTEGER, price: 1 }];
+      start({ prices: () => new TestMarket(prices) });
       await firstValueFrom(service.loadPlayer(PLAYER));
       const quotes = service.quotes([5]).subscribe();
       await engine.advance(100);

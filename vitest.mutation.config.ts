@@ -94,6 +94,8 @@ const RULE_SPECS = [
   'src/app/portfolio/domain/position-overview-logic.spec.ts',
   'src/app/portfolio/domain/allocation-logic.spec.ts',
   'src/app/portfolio/domain/position-detail-logic.spec.ts',
+  'src/app/portfolio/domain/performance-logic.spec.ts',
+  'src/app/engine/domain/game-engine-performance.spec.ts',
   'src/app/players/domain/player-logic.spec.ts',
   'src/app/notifications/domain/auto-pause-logic.spec.ts',
   'src/app/notifications/domain/read-state-logic.spec.ts',
