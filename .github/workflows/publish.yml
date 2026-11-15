@@ -29,13 +29,22 @@ jobs:
           name: app-build-static
           path: app-build-static
 
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      # The host allows SFTP only, so stale hashed files are removed by mirroring:
+      # lftp uploads first and then deletes what the build no longer contains.
+      # TODO: remove --dry-run once the log of the first run lists only stale build files.
       - name: Deploy via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
-        with:
-          server: ${{ secrets.SFTP_HOST }}
-          port: ${{ secrets.SFTP_PORT }}
-          username: ${{ secrets.SFTP_USER }}
-          password: ${{ secrets.SFTP_PASS }}
-          local_path: './app-build-static/*'
-          remote_path: '/www/portfoligo'
-          sftp_only: true
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          LFTP_PASSWORD: ${{ secrets.SFTP_PASS }}
+        run: |
+          lftp -e "
+            set sftp:auto-confirm yes;
+            set net:max-retries 3;
+            open --env-password -u $SFTP_USER -p $SFTP_PORT sftp://$SFTP_HOST;
+            mirror --reverse --delete --verbose --parallel=4 --dry-run app-build-static /www/portfoligo;
+            bye"
