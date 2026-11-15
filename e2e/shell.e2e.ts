@@ -2,7 +2,7 @@ import { expect, test } from './fixtures';
 import { expectGameReady } from './game.po';
 import { createPlayer } from './players.po';
 
-// The game area of a new player with real media queries (J5–J7).
+// The game area of a new player with real media queries (J5–J7, US-UI-03).
 
 test.describe('game area on a phone', { tag: ['@mobile', '@phone'] }, () => {
   test('navigates with the bottom bar, the more menu and the player menu', async ({ page }) => {

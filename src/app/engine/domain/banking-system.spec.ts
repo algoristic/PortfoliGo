@@ -146,7 +146,7 @@ describe('BankingSystem', () => {
     });
   });
 
-  describe('bank run', () => {
+  describe('US-EK-01: bank run', () => {
     // TS §3.1, §7.4: the game starts on the first bank working day; March is not settled
     it('books the living costs of April at 06:00 on 01.04.2030 and no fee for March', () => {
       const engine = engineOf(funded);
@@ -487,7 +487,7 @@ describe('BankingSystem', () => {
     });
   });
 
-  describe('overdraft', () => {
+  describe('US-BK-07: overdraft', () => {
     // TS §7.3, §7.4: limit 2 × 2.500 €; living costs of about 6.000 € exceed it right away
     it('reports the uncovered account, charges the surcharge beyond the limit and warns again', () => {
       const indebted = started({ ...FUNDED, startCapital: 0, livingCosts: 600_000 });

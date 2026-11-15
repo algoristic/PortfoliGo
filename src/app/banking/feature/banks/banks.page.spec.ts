@@ -15,6 +15,7 @@ import { NewPlayer } from '@app/players/domain/models/player.model';
 
 import { byTestId, click, queryByTestId, textOf } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
+import { parseGermanNumber } from '../../../../testing/parse';
 
 const ANNA: NewPlayer = {
   name: 'Anna',
@@ -26,6 +27,7 @@ const ANNA: NewPlayer = {
 // order: two branch banks, two direct banks, an online and a neo broker.
 const BANKS = generateMiniWorld(ANNA.seed).world.banks;
 
+// PS US-BK-01: compare the banks by their conditions and sort them.
 describe('BanksPage', () => {
   let engine: InProcessEngine;
   let harness: RouterTestingHarness;
@@ -98,6 +100,25 @@ describe('BanksPage', () => {
       /^Market Maker, Spread-Aufschlag /,
     );
     expect(sortHeader('accountFee').getAttribute('aria-sort')).toBe('none');
+  });
+
+  it('shows overdraft, savings, custody and savings plan conditions of a bank', () => {
+    // The first branch bank of this seed: every condition is a rate, shown with two decimals.
+    const { currentAccount, savingsAccount, depot } = BANKS[0].conditions;
+    const percents = (column: string): number[] =>
+      [
+        ...textOf(byTestId(row('bnk-0001'), `banking.banks.row.${column}`)).matchAll(/([\d,]+) %/g),
+      ].map((match) => parseGermanNumber(match[1]));
+    expect(percents('overdraft')[0]).toBeCloseTo((currentAccount?.overdraft.rate ?? NaN) * 100, 2);
+    expect(percents('savings')[0]).toBeCloseTo((savingsAccount?.rate ?? NaN) * 100, 2);
+    expect(depot.custodyFee.kind).toBe('percent-pa');
+    if (depot.custodyFee.kind === 'percent-pa') {
+      expect(percents('custody-fee')[0]).toBeCloseTo(depot.custodyFee.rate * 100, 2);
+    }
+    expect(depot.savingsPlanFee.kind).toBe('percent');
+    if (depot.savingsPlanFee.kind === 'percent') {
+      expect(percents('savings-plan')[0]).toBeCloseTo(depot.savingsPlanFee.rate * 100, 2);
+    }
   });
 
   // TS §7.3 „Bankenvergleich“, worked out for the conditions of this seed's banks.

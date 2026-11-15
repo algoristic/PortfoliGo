@@ -360,6 +360,7 @@ describe('InstrumentPage', () => {
     );
   });
 
+  // PS US-CH-02: indicators with parameters and colours, kept per player.
   it('draws indicators, keeps them for the next visit and removes them', async () => {
     await openInstrument();
     const candles = CLOSE - OPEN;

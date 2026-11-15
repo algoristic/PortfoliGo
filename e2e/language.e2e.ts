@@ -1,5 +1,5 @@
 import { expect, expectAccessible, test } from './fixtures';
-import { GAME_START_TEXT, getClock } from './game.po';
+import { expectGameReady, GAME_START_TEXT, getClock } from './game.po';
 import { createPlayer } from './players.po';
 
 // Language switch (AP 6.8a, PS US-UI-11, TS §11.9, E-36): German by default; English after a
@@ -21,6 +21,7 @@ test.describe('language', () => {
       });
       const game = await createPlayer(page, 'Anna');
       await page.goto(`${game}/settings`);
+      await expectGameReady(page);
       await expect(page.locator('html')).toHaveAttribute('lang', 'de');
       await expect(page.getByTestId('settings.device.language.de')).toBeChecked();
       await expect(page.getByTestId('settings.device.change-colors.up')).toHaveText('+1,23 %');
@@ -30,6 +31,7 @@ test.describe('language', () => {
       const reloaded = page.waitForEvent('load');
       await page.getByTestId('settings.device.language.en').check();
       await reloaded;
+      await expectGameReady(page);
 
       await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
       await expect(page.locator('html')).toHaveAttribute('lang', 'en');
@@ -44,6 +46,7 @@ test.describe('language', () => {
       const back = page.waitForEvent('load');
       await page.getByTestId('settings.device.language.de').check();
       await back;
+      await expectGameReady(page);
 
       await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible();
       await expect(page.locator('html')).toHaveAttribute('lang', 'de');

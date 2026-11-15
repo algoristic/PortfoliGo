@@ -236,6 +236,7 @@ describe('SettingsPage', () => {
     expect(flashEnabled()).toBe(false);
   });
 
+  // PS US-SP-03: the seed is shown and can be copied.
   it('renames the player and copies the seed', async () => {
     await act(() => click(byTestId(page, 'settings.player.rename')));
     const name = byTestId<HTMLInputElement>(document.body, 'players.rename-dialog.name');

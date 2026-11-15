@@ -141,8 +141,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # One retry: a busy runner sometimes doubles a single J10 measurement (TS §14.3); a real
+          # regression exceeds the budget in both runs.
           - name: budgets
-            projects: --project=chromium --grep @budget
+            projects: --project=chromium --grep @budget --retries=1
           - name: firefox
             projects: --project=firefox
           - name: webkit

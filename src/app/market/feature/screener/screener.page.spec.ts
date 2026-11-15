@@ -16,7 +16,7 @@ import { NewPlayer } from '@app/players/domain/models/player.model';
 
 import { byTestId, click, textOf, typeText } from '../../../../testing/dom';
 import { renderRoute, settle } from '../../../../testing/page';
-import { parseGermanNumber } from '../../../../testing/parse';
+import { parseEuros, parseGermanNumber } from '../../../../testing/parse';
 import { installScrollViewport, scrollTo } from '../../../../testing/scroll-viewport';
 import { SCREENER_SCROLL_THROTTLE_MS, SCREENER_SEARCH_DEBOUNCE_MS } from '../state/market.model';
 
@@ -37,6 +37,7 @@ function byName(instruments: readonly Instrument[]): Instrument[] {
   return [...instruments].sort((a, b) => COLLATOR.compare(a.name, b.name) || a.series - b.series);
 }
 
+// PS US-MK-02: search, filter and sort the instruments of the world.
 describe('ScreenerPage', () => {
   let engine: InProcessEngine;
   let harness: RouterTestingHarness;
@@ -126,6 +127,21 @@ describe('ScreenerPage', () => {
     expect(byTestId(first, 'market.screener.row.name').getAttribute('href')).toBe(
       `/game/${playerId}/markets/${sorted[0].id}`,
     );
+
+    // Each match shows its price, change and sparkline (the paused game keeps them still).
+    const { rows } = await firstValueFrom(TestBed.inject(EngineService).screener({}));
+    const match = rows.find((entry) => entry.id === sorted[0].id);
+    expect(match).toBeDefined();
+    expect(parseEuros(textOf(byTestId(first, 'market.screener.row.price')))).toBeCloseTo(
+      match?.last ?? NaN,
+      2,
+    );
+    expect(parseGermanNumber(textOf(byTestId(first, 'market.screener.row.change')))).toBeCloseTo(
+      match?.changeRatio ?? NaN,
+      3,
+    );
+    const path = byTestId(first, 'market.screener.row.sparkline').querySelector('path');
+    expect(path?.getAttribute('d')?.match(/[ML]/g)).toHaveLength(match?.sparkline.length ?? -1);
   });
 
   it('searches by name, ticker and identifier after a pause in typing', async () => {

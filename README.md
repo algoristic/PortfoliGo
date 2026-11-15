@@ -7,11 +7,11 @@ Ein Börsenplanspiel im Browser, das aussieht und sich bedienen lässt wie eine 
 - **Deterministisch:** Gleicher Seed ergibt eine identische Welt. Mehrere Spieler können dieselbe Ausgangslage unterschiedlich spielen.
 - **Lokal und privat:** Kein Server, kein Benutzerkonto, kein Tracking. Alle Daten bleiben im Browser (IndexedDB).
 
-Die Oberfläche ist deutsch.
+Die Oberfläche gibt es auf Deutsch und Englisch.
 
 ## Stand
 
-Die Meilensteine M0 bis M5 der ersten Stufe sind fertig. Spielbar sind:
+Stufe 1 (M0 bis M6) ist abgeschlossen, aktuell ist Version 0.6.0. Spielbar sind:
 
 | Bereich            | Inhalt                                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------ |
@@ -21,9 +21,12 @@ Die Meilensteine M0 bis M5 der ersten Stufe sind fertig. Spielbar sind:
 | Handel und Depot   | Market-, Limit- und Stop-Orders, Orderbuch, Daueraufträge, Sparpläne, Positionen, Depotgebühr    |
 | Steuern            | Abgeltungsteuer, Sparerpauschbetrag, Verlustvortrag, Steuerübersicht                             |
 | Dashboard          | Performance mit Benchmark, „Demnächst“, „Erste Schritte“, Erträge und Kosten, Dividendenkalender |
-| Benachrichtigungen | Hinweise, automatische Pause, Abwesenheitsbericht                                                |
+| Benachrichtigungen | Hinweise, automatische Pause, Abwesenheitsbericht, Browser-Benachrichtigungen                    |
+| Datensicherung     | Export und Import eines Spielers als Datei oder Text                                             |
+| Einstellungen      | Erscheinungsbild, Farben für Gewinn und Verlust, Verhalten im Hintergrund, Sprache               |
+| App                | installierbar als PWA, offline spielbar, Glossar und Kontexthilfe, Befehlspalette, Tastatur      |
 
-Als Nächstes folgt AP 6.6, der Abschluss von M6 und Stufe 1 als Version 0.6.0. Version 1.0 kommt mit dem Public Release (M16). Den aktuellen Stand je Arbeitspaket zeigt die Statusübersicht im [Projektplan](docs/projektplan.md#4-statusübersicht).
+Als Nächstes folgt Stufe 2 mit M7 (Prüfung des Rechenkerns und neue Oberfläche, Vorlage in `docs/design/`). Bis 1.0 zählt die Version `0.<Meilenstein>.<Patch>`; Version 1.0 kommt mit dem Public Release (M16). Den aktuellen Stand je Arbeitspaket zeigt die Statusübersicht im [Projektplan](docs/projektplan.md#4-statusübersicht).
 
 Unter `#/lab` liegt zusätzlich ein **Simulations-Labor**, das generierte Welten, Kursverläufe und Statistiken des Marktmodells zeigt.
 
@@ -105,6 +108,7 @@ Erwartete Werte stammen nie aus dem getesteten Code, sondern aus Beispieltabelle
 | [Technische Spezifikation](docs/specs/technische-spezifikation.md) | Architektur, Zeit- und Marktmodell, Engine, Persistenz, Entscheidungen |
 | [Projektplan](docs/projektplan.md)                                 | Meilensteine, Arbeitspakete, Status, offene Entscheidungen             |
 | [Änderungsprotokoll](docs/aenderungsprotokoll.md)                  | Änderungen je Arbeitspaket, neueste zuerst                             |
+| [Design-Vorlage](docs/design/README.md)                            | Mockups für den UI-Overhaul in M7                                      |
 | [CLAUDE.md](CLAUDE.md) und `.claude/rules/`                        | Code-Konventionen und Ist-Stand je Bereich                             |
 
 ## Arbeitsweise
@@ -116,5 +120,6 @@ Entwickelt wird Arbeitspaket für Arbeitspaket nach dem [Projektplan](docs/proje
 GitHub Actions prüft jeden Push:
 
 - `build-latest.yml` ist das Gate: Format, Lint, Typen, Suiten `logic` und `angular`, Build mit Bundle-Budget und Systemtests in Chromium.
-- `verify.yml` führt den Rest aus: Kalibrierung, Performance, Mutation, Firefox, WebKit und Smartphone-Profile.
-- `publish.yml` baut `main` und veröffentlicht `www/` per SFTP, sobald das Gate grün ist.
+- `verify.yml` führt den Rest aus (`verify-extended.yml`): Kalibrierung, Performance, Mutation, J10-Budgets, Firefox, WebKit und Smartphone-Profile. Er blockiert das Deployment nicht.
+- `pull-request.yml` führt Gate und `verify-extended.yml` für Pull Requests aus.
+- `publish.yml` baut `main` und veröffentlicht `www/` per SFTP, sobald das Gate grün ist. Die App läuft unter <https://algoristic.de/portfoligo/>.

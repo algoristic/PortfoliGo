@@ -10,7 +10,7 @@ Rules for implementing Angular code in this repository, so that generated code l
 
 - `docs/specs/produktspezifikation.md` (PS): vision, domain model, user stories (`US-xx-nn`), UI/UX concept.
 - `docs/specs/technische-spezifikation.md` (TS): architecture, time and market model, engine, persistence, frontend architecture (§11), decisions `E-xx` (§16).
-- `docs/projektplan.md`: milestones M0–M6 split into work packages (`AP x.y`), status table (§4), open decisions (§3).
+- `docs/projektplan.md`: milestones M0–M10 (stage 1 done, stage 2 planned) split into work packages (`AP x.y`), status table (§4), open decisions (§3).
 - `docs/aenderungsprotokoll.md`: change log, newest entries first; read the latest entries and those of the AP's dependencies, not the whole file.
 
 **Session workflow:** Work happens one AP at a time ("Setze AP x.y aus `docs/projektplan.md` um"). Follow projektplan §2.3 and the Definition of Done in §2.4:

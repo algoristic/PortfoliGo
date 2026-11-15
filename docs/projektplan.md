@@ -59,7 +59,7 @@ flowchart TD
 | M9          | 2     | Neue Assetklassen                                  | Anleihen, Renten-ETFs, Rohstoffe, ETCs, physische Edelmetalle, aktive Fonds, Fondssteuer    | 14  |
 | M10         | 2     | Unternehmen, Steuerdetails und Werkzeuge           | Quartalszahlen, Splits und Übernahmen, Volumen, Trailing-Stop, Kursalarme, Steuerdetails    | 15  |
 
-**Empfohlene Reihenfolge:** M3, M4 und M5 sind abgeschlossen (M5 mit der einmaligen Erhöhung von `SCHEMA_VERSION` auf 6, §5, M5). In M6 sind AP 6.7 (weitere Modi für das Verhalten im Hintergrund, `SCHEMA_VERSION` 7), AP 6.1 (Export und Import, Formatversion 1 mit den neuen Spielereinstellungen), AP 6.2 (Einstellungen), AP 6.3 (PWA und Browser-Benachrichtigungen, `@angular/service-worker`), AP 6.4 (Performance und Robustheit, Verdichtung alter Tageskerzen), AP 6.5 (Barrierefreiheit, Glossar, Befehlspalette, rechtliche Hinweise), AP 6.8a (Sprachumschaltung: Mechanik) und AP 6.8b (englische Übersetzung, `i18n:check --strict` als Gate) fertig – M6 ist bis auf AP 6.6 erledigt. Als Nächstes folgt AP 6.6 (Abschluss Stufe 1 als Version 0.6.0; der PO setzt den Tag und gibt das Deployment frei). Version 1.0 kommt erst mit dem Public Release (M16, §6); bis dahin gelten die Versionsregeln vor 1.0 (TS §15), und E-25 ist erst vor M16 zu entscheiden. E-35 und die Ergänzungen zu E-10 sind entschieden (14.11.2026, §3). Die Sprachumschaltung (AP 6.8a, AP 6.8b) folgt nach AP 6.2; die Übersetzung kommt zuletzt, wenn alle Texte von M6 stehen. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
+**Empfohlene Reihenfolge:** M3, M4 und M5 sind abgeschlossen (M5 mit der einmaligen Erhöhung von `SCHEMA_VERSION` auf 6, §5, M5). In M6 sind AP 6.7 (weitere Modi für das Verhalten im Hintergrund, `SCHEMA_VERSION` 7), AP 6.1 (Export und Import, Formatversion 1 mit den neuen Spielereinstellungen), AP 6.2 (Einstellungen), AP 6.3 (PWA und Browser-Benachrichtigungen, `@angular/service-worker`), AP 6.4 (Performance und Robustheit, Verdichtung alter Tageskerzen), AP 6.5 (Barrierefreiheit, Glossar, Befehlspalette, rechtliche Hinweise), AP 6.8a (Sprachumschaltung: Mechanik) und AP 6.8b (englische Übersetzung, `i18n:check --strict` als Gate) fertig. AP 6.6 (Abschluss Stufe 1 als Version 0.6.0) ist umgesetzt und wartet auf das Deployment und den Selbsttest auf einem iOS-Gerät durch den PO; danach beginnt Stufe 2 mit M7. Version 1.0 kommt erst mit dem Public Release (M16, §6); bis dahin gelten die Versionsregeln vor 1.0 (TS §15), und E-25 ist erst vor M16 zu entscheiden. E-35 und die Ergänzungen zu E-10 sind entschieden (14.11.2026, §3). Die Sprachumschaltung (AP 6.8a, AP 6.8b) folgt nach AP 6.2; die Übersetzung kommt zuletzt, wenn alle Texte von M6 stehen. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
 
 **Stufe 2 (E-37, 15.11.2026):** Sie beginnt nach AP 6.6 mit M7 (Prüfungen, Korrekturen, UI-Overhaul). Danach kommt das Fundament, das Kalender und Kurse aller Instrumente ändert: Feiertage, Fremdwährungen, Zinsen und Inflation (M8). Erst darauf bauen die neuen Assetklassen (M9) und Unternehmen, Steuerdetails und Werkzeuge (M10) auf. Feiertage und Fremdwährungen standen früher in M10; Anleihen und Rohstoffe (in USD notiert) hätten sonst nachgebaut werden müssen. Jeder Meilenstein beginnt nach dem Abschluss-AP des vorigen mit einem Fachkonzept-AP (8.1, 9.1, 10.1), das die Stories und die TS-Abschnitte ausarbeitet und den Schnitt bestätigt (§6).
 
@@ -126,122 +126,122 @@ Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevo
 
 Status: **offen**, **in Arbeit**, **fertig**.
 
-| AP    | Titel                                              | Status | Abhängig von              |
-| ----- | -------------------------------------------------- | ------ | ------------------------- |
-| 0.1   | Aufräumen und Baseline                             | fertig | –                         |
-| 0.2   | Design-System-Grundlage (Tailwind v4, Tokens)      | fertig | 0.1                       |
-| 0.3   | App-Bootstrap und Infrastruktur                    | fertig | 0.1                       |
-| 0.4   | App-Shell und UI-Grundkomponenten                  | fertig | 0.2, 0.3                  |
-| 0.5   | Testkonzept und Testinfrastruktur                  | fertig | 0.4, 1.8a                 |
-| 1.1   | Deterministischer Zufall und Mathematik            | fertig | 0.1                       |
-| 1.2   | Spielkalender und Zeitmodell                       | fertig | 0.1                       |
-| 1.3   | Weltgenerierung: Taxonomie, Unternehmen, Banken    | fertig | 1.1                       |
-| 1.4   | Marktmodell: Tagesschritt und Vorlauf              | fertig | 1.2, 1.3                  |
-| 1.5   | Brücken, Minutenkurse und Kerzen                   | fertig | 1.4                       |
-| 1.6a  | Dividenden und Indizes                             | fertig | 1.5                       |
-| 1.6b  | ETFs, indikative Werte, Geld- und Briefkurse       | fertig | 1.6a                      |
-| 1.7   | Simulations-Labor: Welt, Simulation, Chart-Spike   | fertig | 1.6b, 0.4                 |
-| 1.8a  | Simulations-Labor: Statistik                       | fertig | 1.7                       |
-| 1.8b  | Labor: Intraday, Langzeit, Selbsttest              | fertig | 1.8a                      |
-| 1.9a  | Marktmodell: Änderungen vor der Kalibrierung       | fertig | 1.8b                      |
-| 1.9b  | Marktmodell: Ergänzungen aus der Kalibrierung      | fertig | 1.9a                      |
-| 1.9c  | Kalibrierung des Marktmodells                      | fertig | 1.9b                      |
-| 2.1   | GameEngine und Terminplaner                        | fertig | 1.6b                      |
-| 2.2   | Worker-Host, Protokoll und EngineService           | fertig | 2.1, 0.3                  |
-| 2.3   | Persistenz im Worker und Wiederherstellung         | fertig | 2.2                       |
-| 2.4   | Spielerverwaltung                                  | fertig | 2.3, 0.4                  |
-| 2.5   | Spielsitzung und Uhr                               | fertig | 2.4                       |
-| 2.6   | Einstellungen: Grundlage                           | fertig | 2.5                       |
-| 3.1   | Hauptbuch und Kontenmodell                         | fertig | 2.4                       |
-| 3.2   | Haushalt und periodische Buchungen                 | fertig | 3.1                       |
-| 3.3   | Bankkommandos und Banking-Slice                    | fertig | 3.2, 2.5                  |
-| 3.4   | Kontenübersicht und Kontoauszug                    | fertig | 3.3                       |
-| 3.5   | Bankenvergleich, Dialoge und Monatsübersicht       | fertig | 3.4                       |
-| 3.6   | Benachrichtigungen                                 | fertig | 3.3, 2.6                  |
-| 4.1   | Marktdaten-Feed und Market-Slice                   | fertig | 2.5                       |
-| 4.2   | Chart-Komponenten                                  | fertig | 4.1, 1.7                  |
-| 4.3   | Indikatoren                                        | fertig | 4.2                       |
-| 4.4   | Marktübersicht, Screener und Watchlist             | fertig | 4.2                       |
-| 4.5   | Instrument-Detailseite                             | fertig | 4.3, 4.4, 1.8a            |
-| 5.1a  | Orderregeln als reine Funktionen                   | fertig | 3.3, 1.6b                 |
-| 5.1b  | Orders in der Engine                               | fertig | 5.1a                      |
-| 5.1c  | Orders im Protokoll, Projektion, Texte             | fertig | 5.1b                      |
-| 5.2   | Positionen, Lots, Ausschüttungen und Depotgebühr   | fertig | 5.1c                      |
-| 5.3   | Steuern                                            | fertig | 5.2                       |
-| 5.4a  | Trading-Slice und Order-Ticket                     | fertig | 5.3, 4.5, 3.6             |
-| 5.4b  | Orderbuch, Ändern und Stornieren                   | fertig | 5.4a                      |
-| 5.5   | Depot, Positionen und Steuerübersicht (UI)         | fertig | 5.4                       |
-| 5.6a  | Daueraufträge                                      | fertig | 3.5, 5.1c                 |
-| 5.6b  | Sparpläne                                          | fertig | 5.5                       |
-| 5.7a  | Tagesreihen, Rendite und Benchmark                 | fertig | 5.5                       |
-| 5.7b  | Dashboard                                          | fertig | 5.7a                      |
-| 5.7c  | Erträge und Kosten, Dividendenkalender             | fertig | 5.7b                      |
-| 5.8   | Chart: wählbare Auflösung und Indikatorfarben      | fertig | 4.5                       |
-| 5.9   | Kopfzeile: stabiles Layout der Uhr                 | fertig | 2.5                       |
-| 6.1   | Export und Import                                  | fertig | 5.6a, 5.6b, 5.7, 6.7      |
-| 6.2   | Einstellungen                                      | fertig | 6.1, 3.6, 2.6             |
-| 6.3   | PWA und Browser-Benachrichtigungen                 | fertig | 6.2                       |
-| 6.4   | Performance und Robustheit                         | fertig | 6.1, 1.9c, 6.7            |
-| 6.5   | Barrierefreiheit, Hilfen und Hinweise              | fertig | 6.3                       |
-| 6.6   | Abschluss Stufe 1 (Version 0.6.0)                  | offen  | 6.4, 6.5, 3.5, 6.8b       |
-| 6.7   | Verhalten im Hintergrund: weitere Modi             | fertig | 2.6, 3.6                  |
-| 6.8a  | Sprachumschaltung: Mechanik                        | fertig | 6.2                       |
-| 6.8b  | Englische Übersetzung                              | fertig | 6.8a, 6.5, 6.7            |
-| 7.1a  | Modellreview: Determinismus und Welt               | offen  | 6.6                       |
-| 7.1b  | Modellreview: Marktmodell und Kalibrierung         | offen  | 6.6                       |
-| 7.1c  | Modellreview: Wirtschaftsmodell                    | offen  | 6.6                       |
-| 7.2   | WASM-Machbarkeit                                   | offen  | 6.6                       |
-| 7.3   | Korrekturen aus den Prüfungen                      | offen  | 7.1a, 7.1b, 7.1c          |
-| 7.4   | UI-Bausteine vereinheitlichen                      | offen  | 6.6                       |
-| 7.5   | UI-Overhaul: Vorlage auswerten                     | offen  | 7.3, 7.4                  |
-| 7.6   | UI-Overhaul: Design-Grundlage                      | offen  | 7.5                       |
-| 7.7   | UI-Overhaul: Shell, Navigation, Spielerbereich     | offen  | 7.6                       |
-| 7.8a  | UI-Overhaul: Übersicht, Märkte, Instrument         | offen  | 7.7                       |
-| 7.8b  | UI-Overhaul: Depot, Position, Orders, Steuern      | offen  | 7.7                       |
-| 7.8c  | UI-Overhaul: Konten, Banken und übrige Seiten      | offen  | 7.7                       |
-| 7.9   | Abschluss M7 (Version 0.7.0)                       | offen  | 7.2, 7.3, 7.8a–c          |
-| 8.1   | Fachkonzept M8                                     | offen  | 7.9                       |
-| 8.2   | Kalender mit Feiertagen                            | offen  | 8.1                       |
-| 8.3   | Marktmodell und Engine mit Feiertagen              | offen  | 8.2                       |
-| 8.4   | Makromodell: Preise, Leitzins, Zinskurve           | offen  | 8.3                       |
-| 8.5   | Wechselkurse und Notierung in Landeswährung        | offen  | 8.4                       |
-| 8.6   | Zinsfaktor und Kalibrierung                        | offen  | 8.5                       |
-| 8.7a  | Fremdwährung in Handel und Buchhaltung             | offen  | 8.5                       |
-| 8.7b  | Fremdwährung in der Oberfläche                     | offen  | 8.7a                      |
-| 8.8   | Direkthandel mit erweiterten Handelszeiten         | offen  | 8.3, 8.7a                 |
-| 8.9   | Inflation im Haushalt und Realwerte                | offen  | 8.4                       |
-| 8.10  | Bankzinsen am Leitzins und Lockzinsen              | offen  | 8.4                       |
-| 8.11  | Festgeld                                           | offen  | 8.10                      |
-| 8.12  | Abschluss M8 (Version 0.8.0)                       | offen  | 8.6, 8.7b, 8.8, 8.9, 8.11 |
-| 9.1   | Fachkonzept M9                                     | offen  | 8.12                      |
-| 9.2a  | Lebenszyklus im Markt                              | offen  | 9.1                       |
-| 9.2b  | Lebenszyklus in Engine und Hauptbuch               | offen  | 9.2a                      |
-| 9.3   | Anleihen: Welt und Kursmodell                      | offen  | 9.2a, 8.6                 |
-| 9.4   | Anleihen: Handel, Kupons, Rückzahlung, Ausfall     | offen  | 9.3, 9.2b                 |
-| 9.5   | Rentenindizes und Renten-ETFs                      | offen  | 9.3                       |
-| 9.6   | Anleihen und Renten-ETFs in der Oberfläche         | offen  | 9.4, 9.5                  |
-| 9.7   | Rohstoffe: Kursmodell und Kopplung                 | offen  | 9.1, 8.6                  |
-| 9.8   | ETCs und Rohstoffe in der Oberfläche               | offen  | 9.7                       |
-| 9.9   | Physische Edelmetalle                              | offen  | 9.7                       |
-| 9.10a | Aktive Fonds: Welt, NAV und Management             | offen  | 9.1, 8.6                  |
-| 9.10b | Fondsorders über die Fondsgesellschaft             | offen  | 9.10a                     |
-| 9.11  | Fondsbesteuerung: Teilfreistellung, Vorabpauschale | offen  | 9.10b, 9.5, 8.4           |
-| 9.12  | Abschluss M9 (Version 0.9.0)                       | offen  | 9.6, 9.8, 9.9, 9.11       |
-| 10.1  | Fachkonzept M10                                    | offen  | 9.12                      |
-| 10.2  | Fundamentaldaten und Quartalszahlen: Modell        | offen  | 10.1                      |
-| 10.3  | Unternehmensereignisse: Modell                     | offen  | 10.2, 9.2a                |
-| 10.4  | Unternehmensereignisse im Depot                    | offen  | 10.3, 9.2b                |
-| 10.5  | Fundamentaldaten und Ereignisse in der Oberfläche  | offen  | 10.2, 10.4                |
-| 10.6  | Handelsvolumen                                     | offen  | 10.3                      |
-| 10.7  | Chart-Bereiche, RSI, MACD und Volumen              | offen  | 10.6                      |
-| 10.8  | Vergleichschart                                    | offen  | 10.1                      |
-| 10.9  | Risikokennzahlen                                   | offen  | 10.1, 8.4                 |
-| 10.10 | Trailing-Stop                                      | offen  | 10.1                      |
-| 10.11 | Kursalarme                                         | offen  | 10.1                      |
-| 10.12 | Depotübertrag                                      | offen  | 10.1, 9.2b                |
-| 10.13 | Verlusttöpfe und Freistellungsaufträge             | offen  | 10.1, 9.9, 9.11           |
-| 10.14 | Quellensteuer                                      | offen  | 10.13, 8.7a               |
-| 10.15 | Abschluss M10 und Stufe 2 (Version 0.10.0)         | offen  | 10.5, 10.7–10.12, 10.14   |
+| AP    | Titel                                              | Status    | Abhängig von              |
+| ----- | -------------------------------------------------- | --------- | ------------------------- |
+| 0.1   | Aufräumen und Baseline                             | fertig    | –                         |
+| 0.2   | Design-System-Grundlage (Tailwind v4, Tokens)      | fertig    | 0.1                       |
+| 0.3   | App-Bootstrap und Infrastruktur                    | fertig    | 0.1                       |
+| 0.4   | App-Shell und UI-Grundkomponenten                  | fertig    | 0.2, 0.3                  |
+| 0.5   | Testkonzept und Testinfrastruktur                  | fertig    | 0.4, 1.8a                 |
+| 1.1   | Deterministischer Zufall und Mathematik            | fertig    | 0.1                       |
+| 1.2   | Spielkalender und Zeitmodell                       | fertig    | 0.1                       |
+| 1.3   | Weltgenerierung: Taxonomie, Unternehmen, Banken    | fertig    | 1.1                       |
+| 1.4   | Marktmodell: Tagesschritt und Vorlauf              | fertig    | 1.2, 1.3                  |
+| 1.5   | Brücken, Minutenkurse und Kerzen                   | fertig    | 1.4                       |
+| 1.6a  | Dividenden und Indizes                             | fertig    | 1.5                       |
+| 1.6b  | ETFs, indikative Werte, Geld- und Briefkurse       | fertig    | 1.6a                      |
+| 1.7   | Simulations-Labor: Welt, Simulation, Chart-Spike   | fertig    | 1.6b, 0.4                 |
+| 1.8a  | Simulations-Labor: Statistik                       | fertig    | 1.7                       |
+| 1.8b  | Labor: Intraday, Langzeit, Selbsttest              | fertig    | 1.8a                      |
+| 1.9a  | Marktmodell: Änderungen vor der Kalibrierung       | fertig    | 1.8b                      |
+| 1.9b  | Marktmodell: Ergänzungen aus der Kalibrierung      | fertig    | 1.9a                      |
+| 1.9c  | Kalibrierung des Marktmodells                      | fertig    | 1.9b                      |
+| 2.1   | GameEngine und Terminplaner                        | fertig    | 1.6b                      |
+| 2.2   | Worker-Host, Protokoll und EngineService           | fertig    | 2.1, 0.3                  |
+| 2.3   | Persistenz im Worker und Wiederherstellung         | fertig    | 2.2                       |
+| 2.4   | Spielerverwaltung                                  | fertig    | 2.3, 0.4                  |
+| 2.5   | Spielsitzung und Uhr                               | fertig    | 2.4                       |
+| 2.6   | Einstellungen: Grundlage                           | fertig    | 2.5                       |
+| 3.1   | Hauptbuch und Kontenmodell                         | fertig    | 2.4                       |
+| 3.2   | Haushalt und periodische Buchungen                 | fertig    | 3.1                       |
+| 3.3   | Bankkommandos und Banking-Slice                    | fertig    | 3.2, 2.5                  |
+| 3.4   | Kontenübersicht und Kontoauszug                    | fertig    | 3.3                       |
+| 3.5   | Bankenvergleich, Dialoge und Monatsübersicht       | fertig    | 3.4                       |
+| 3.6   | Benachrichtigungen                                 | fertig    | 3.3, 2.6                  |
+| 4.1   | Marktdaten-Feed und Market-Slice                   | fertig    | 2.5                       |
+| 4.2   | Chart-Komponenten                                  | fertig    | 4.1, 1.7                  |
+| 4.3   | Indikatoren                                        | fertig    | 4.2                       |
+| 4.4   | Marktübersicht, Screener und Watchlist             | fertig    | 4.2                       |
+| 4.5   | Instrument-Detailseite                             | fertig    | 4.3, 4.4, 1.8a            |
+| 5.1a  | Orderregeln als reine Funktionen                   | fertig    | 3.3, 1.6b                 |
+| 5.1b  | Orders in der Engine                               | fertig    | 5.1a                      |
+| 5.1c  | Orders im Protokoll, Projektion, Texte             | fertig    | 5.1b                      |
+| 5.2   | Positionen, Lots, Ausschüttungen und Depotgebühr   | fertig    | 5.1c                      |
+| 5.3   | Steuern                                            | fertig    | 5.2                       |
+| 5.4a  | Trading-Slice und Order-Ticket                     | fertig    | 5.3, 4.5, 3.6             |
+| 5.4b  | Orderbuch, Ändern und Stornieren                   | fertig    | 5.4a                      |
+| 5.5   | Depot, Positionen und Steuerübersicht (UI)         | fertig    | 5.4                       |
+| 5.6a  | Daueraufträge                                      | fertig    | 3.5, 5.1c                 |
+| 5.6b  | Sparpläne                                          | fertig    | 5.5                       |
+| 5.7a  | Tagesreihen, Rendite und Benchmark                 | fertig    | 5.5                       |
+| 5.7b  | Dashboard                                          | fertig    | 5.7a                      |
+| 5.7c  | Erträge und Kosten, Dividendenkalender             | fertig    | 5.7b                      |
+| 5.8   | Chart: wählbare Auflösung und Indikatorfarben      | fertig    | 4.5                       |
+| 5.9   | Kopfzeile: stabiles Layout der Uhr                 | fertig    | 2.5                       |
+| 6.1   | Export und Import                                  | fertig    | 5.6a, 5.6b, 5.7, 6.7      |
+| 6.2   | Einstellungen                                      | fertig    | 6.1, 3.6, 2.6             |
+| 6.3   | PWA und Browser-Benachrichtigungen                 | fertig    | 6.2                       |
+| 6.4   | Performance und Robustheit                         | fertig    | 6.1, 1.9c, 6.7            |
+| 6.5   | Barrierefreiheit, Hilfen und Hinweise              | fertig    | 6.3                       |
+| 6.6   | Abschluss Stufe 1 (Version 0.6.0)                  | in Arbeit | 6.4, 6.5, 3.5, 6.8b       |
+| 6.7   | Verhalten im Hintergrund: weitere Modi             | fertig    | 2.6, 3.6                  |
+| 6.8a  | Sprachumschaltung: Mechanik                        | fertig    | 6.2                       |
+| 6.8b  | Englische Übersetzung                              | fertig    | 6.8a, 6.5, 6.7            |
+| 7.1a  | Modellreview: Determinismus und Welt               | offen     | 6.6                       |
+| 7.1b  | Modellreview: Marktmodell und Kalibrierung         | offen     | 6.6                       |
+| 7.1c  | Modellreview: Wirtschaftsmodell                    | offen     | 6.6                       |
+| 7.2   | WASM-Machbarkeit                                   | offen     | 6.6                       |
+| 7.3   | Korrekturen aus den Prüfungen                      | offen     | 7.1a, 7.1b, 7.1c          |
+| 7.4   | UI-Bausteine vereinheitlichen                      | offen     | 6.6                       |
+| 7.5   | UI-Overhaul: Vorlage auswerten                     | offen     | 7.3, 7.4                  |
+| 7.6   | UI-Overhaul: Design-Grundlage                      | offen     | 7.5                       |
+| 7.7   | UI-Overhaul: Shell, Navigation, Spielerbereich     | offen     | 7.6                       |
+| 7.8a  | UI-Overhaul: Übersicht, Märkte, Instrument         | offen     | 7.7                       |
+| 7.8b  | UI-Overhaul: Depot, Position, Orders, Steuern      | offen     | 7.7                       |
+| 7.8c  | UI-Overhaul: Konten, Banken und übrige Seiten      | offen     | 7.7                       |
+| 7.9   | Abschluss M7 (Version 0.7.0)                       | offen     | 7.2, 7.3, 7.8a–c          |
+| 8.1   | Fachkonzept M8                                     | offen     | 7.9                       |
+| 8.2   | Kalender mit Feiertagen                            | offen     | 8.1                       |
+| 8.3   | Marktmodell und Engine mit Feiertagen              | offen     | 8.2                       |
+| 8.4   | Makromodell: Preise, Leitzins, Zinskurve           | offen     | 8.3                       |
+| 8.5   | Wechselkurse und Notierung in Landeswährung        | offen     | 8.4                       |
+| 8.6   | Zinsfaktor und Kalibrierung                        | offen     | 8.5                       |
+| 8.7a  | Fremdwährung in Handel und Buchhaltung             | offen     | 8.5                       |
+| 8.7b  | Fremdwährung in der Oberfläche                     | offen     | 8.7a                      |
+| 8.8   | Direkthandel mit erweiterten Handelszeiten         | offen     | 8.3, 8.7a                 |
+| 8.9   | Inflation im Haushalt und Realwerte                | offen     | 8.4                       |
+| 8.10  | Bankzinsen am Leitzins und Lockzinsen              | offen     | 8.4                       |
+| 8.11  | Festgeld                                           | offen     | 8.10                      |
+| 8.12  | Abschluss M8 (Version 0.8.0)                       | offen     | 8.6, 8.7b, 8.8, 8.9, 8.11 |
+| 9.1   | Fachkonzept M9                                     | offen     | 8.12                      |
+| 9.2a  | Lebenszyklus im Markt                              | offen     | 9.1                       |
+| 9.2b  | Lebenszyklus in Engine und Hauptbuch               | offen     | 9.2a                      |
+| 9.3   | Anleihen: Welt und Kursmodell                      | offen     | 9.2a, 8.6                 |
+| 9.4   | Anleihen: Handel, Kupons, Rückzahlung, Ausfall     | offen     | 9.3, 9.2b                 |
+| 9.5   | Rentenindizes und Renten-ETFs                      | offen     | 9.3                       |
+| 9.6   | Anleihen und Renten-ETFs in der Oberfläche         | offen     | 9.4, 9.5                  |
+| 9.7   | Rohstoffe: Kursmodell und Kopplung                 | offen     | 9.1, 8.6                  |
+| 9.8   | ETCs und Rohstoffe in der Oberfläche               | offen     | 9.7                       |
+| 9.9   | Physische Edelmetalle                              | offen     | 9.7                       |
+| 9.10a | Aktive Fonds: Welt, NAV und Management             | offen     | 9.1, 8.6                  |
+| 9.10b | Fondsorders über die Fondsgesellschaft             | offen     | 9.10a                     |
+| 9.11  | Fondsbesteuerung: Teilfreistellung, Vorabpauschale | offen     | 9.10b, 9.5, 8.4           |
+| 9.12  | Abschluss M9 (Version 0.9.0)                       | offen     | 9.6, 9.8, 9.9, 9.11       |
+| 10.1  | Fachkonzept M10                                    | offen     | 9.12                      |
+| 10.2  | Fundamentaldaten und Quartalszahlen: Modell        | offen     | 10.1                      |
+| 10.3  | Unternehmensereignisse: Modell                     | offen     | 10.2, 9.2a                |
+| 10.4  | Unternehmensereignisse im Depot                    | offen     | 10.3, 9.2b                |
+| 10.5  | Fundamentaldaten und Ereignisse in der Oberfläche  | offen     | 10.2, 10.4                |
+| 10.6  | Handelsvolumen                                     | offen     | 10.3                      |
+| 10.7  | Chart-Bereiche, RSI, MACD und Volumen              | offen     | 10.6                      |
+| 10.8  | Vergleichschart                                    | offen     | 10.1                      |
+| 10.9  | Risikokennzahlen                                   | offen     | 10.1, 8.4                 |
+| 10.10 | Trailing-Stop                                      | offen     | 10.1                      |
+| 10.11 | Kursalarme                                         | offen     | 10.1                      |
+| 10.12 | Depotübertrag                                      | offen     | 10.1, 9.2b                |
+| 10.13 | Verlusttöpfe und Freistellungsaufträge             | offen     | 10.1, 9.9, 9.11           |
+| 10.14 | Quellensteuer                                      | offen     | 10.13, 8.7a               |
+| 10.15 | Abschluss M10 und Stufe 2 (Version 0.10.0)         | offen     | 10.5, 10.7–10.12, 10.14   |
 
 ### Abhängigkeitsgraph
 
@@ -406,6 +406,7 @@ flowchart TD
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
   class AP0_1,AP0_2,AP0_3,AP0_4,AP0_5,AP1_1,AP1_2,AP1_3,AP1_4,AP1_5,AP1_6a,AP1_6b,AP1_7,AP1_8a,AP1_8b,AP1_9,AP2_1,AP2_2,AP2_3,AP2_4,AP2_5,AP2_6,AP3_1,AP3_2,AP3_3,AP3_4,AP3_5,AP3_6,AP4_1,AP4_2,AP4_3,AP4_4,AP4_5,AP5_1,AP5_2,AP5_3,AP5_4,AP5_5,AP5_6a,AP5_6b,AP5_7,AP5_8,AP5_9,AP6_1,AP6_2,AP6_3,AP6_4,AP6_5,AP6_7,AP6_8a,AP6_8b done
+  class AP6_6 active
 ```
 
 **Stufe 2**
@@ -574,6 +575,7 @@ flowchart TD
   AP10_14 --> AP10_15
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
+  class AP6_6 active
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6

@@ -53,7 +53,7 @@ function sum(values: readonly number[]): number {
 }
 
 describe('generateWorld', () => {
-  describe('determinism', () => {
+  describe('US-SP-03: determinism', () => {
     it('creates the same world for every spelling of a seed', () => {
       fc.assert(
         fc.property(arbSeedText(), fc.boolean(), (seed, upper) => {
@@ -384,7 +384,7 @@ describe('generateWorld', () => {
     });
   });
 
-  describe('banks', () => {
+  describe('US-BK-01: banks', () => {
     it('draws branch bank conditions from the ranges of the configuration', () => {
       const ranges = config.banks.branch;
       forAnyWorld((world) => {
@@ -430,6 +430,25 @@ describe('generateWorld', () => {
           expect(depot.custodyFee).toEqual({ kind: 'none' });
           expect(depot.orderFee.kind).toBe('flat-plus-percent');
           expectIn(depot.clearingAccountDebitRate, ranges.clearingDebitRate, 'debit rate');
+        }
+      });
+    });
+
+    it('gives banks of the same type different conditions', () => {
+      forAnyWorld((world) => {
+        for (const type of ['branch', 'direct'] as const) {
+          const conditions = world.banks
+            .filter((bank) => bank.type === type)
+            .map(({ conditions: { currentAccount, savingsAccount, depot } }) =>
+              JSON.stringify([
+                currentAccount?.monthlyFee,
+                currentAccount?.overdraft.rate,
+                savingsAccount?.rate,
+                depot.orderFee,
+              ]),
+            );
+          expect(conditions.length, type).toBeGreaterThan(1);
+          expect(new Set(conditions).size, type).toBe(conditions.length);
         }
       });
     });

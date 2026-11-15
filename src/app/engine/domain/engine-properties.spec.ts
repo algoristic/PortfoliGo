@@ -518,6 +518,23 @@ describe('GameEngine properties', () => {
     ]);
   });
 
+  // PS US-SP-03: the market of a seed doesn't depend on what a player does.
+  it('leaves the market and its month starts unchanged by any commands', () => {
+    const untouched = restoreStart();
+    untouched.runUntil(END_TICK);
+    const market = untouched.snapshot().market;
+    const starts = untouched.monthStartsAfter(-1);
+    fc.assert(
+      fc.property(arbCommands(instruments), (commands) => {
+        const engine = restoreStart();
+        replayCommands(engine, commands, END_TICK);
+        expect(engine.snapshot().market).toEqual(market);
+        expect(engine.monthStartsAfter(-1)).toEqual(starts);
+      }),
+      { numRuns: 15 },
+    );
+  });
+
   it('ends in the same state with the same events for any split of the ticks', () => {
     const arbSegment = fc.record({
       tick: arbRunTick(),
