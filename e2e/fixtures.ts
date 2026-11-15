@@ -8,9 +8,12 @@ const ABORTED = /ERR_ABORTED|NS_BINDING_ABORTED|cancelled/i;
  * Every system test fails on console errors, uncaught exceptions and failed requests of the page
  * (TS §14.1).
  */
-export const test = base.extend<{ pageErrors: void }>({
+export const test = base.extend<{ allowedPageErrors: readonly RegExp[]; pageErrors: void }>({
+  // Firefox and WebKit also report uncaught errors of a dedicated worker as `pageerror`; a journey
+  // that crashes the worker on purpose allows exactly that message.
+  allowedPageErrors: [[], { option: true }],
   pageErrors: [
-    async ({ page }, use) => {
+    async ({ page, allowedPageErrors }, use) => {
       const errors: string[] = [];
       const pending: Promise<void>[] = [];
       page.on('console', (message) => {
@@ -33,7 +36,11 @@ export const test = base.extend<{ pageErrors: void }>({
           );
         }
       });
-      page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
+      page.on('pageerror', (error) => {
+        if (!allowedPageErrors.some((allowed) => allowed.test(error.message))) {
+          errors.push(`pageerror: ${error.message}`);
+        }
+      });
       page.on('requestfailed', (request) => {
         const failure = request.failure()?.errorText ?? '';
         if (!ABORTED.test(failure)) {

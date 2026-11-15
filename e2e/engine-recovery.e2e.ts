@@ -9,6 +9,11 @@ import { createPlayer } from './players.po';
 // in the worker, raised through Playwright's access to the worker, makes the `EngineService`
 // restart it. The app has no crash hook of its own.
 
+const CRASH_MESSAGE = 'crash of the system test';
+
+// Firefox and WebKit report the crash as an error of the page, Chromium doesn't.
+test.use({ allowedPageErrors: [new RegExp(CRASH_MESSAGE)] });
+
 /** The engine worker of the game: the only dedicated worker outside the lab. */
 async function engineWorker(page: Page): Promise<Worker> {
   await expect.poll(() => page.workers().length).toBe(1);
@@ -19,11 +24,11 @@ async function engineWorker(page: Page): Promise<Worker> {
 async function crashWorker(page: Page): Promise<void> {
   const worker = await engineWorker(page);
   const closed = new Promise<void>((resolve) => worker.once('close', () => resolve()));
-  await worker.evaluate(() => {
+  await worker.evaluate((message) => {
     setTimeout(() => {
-      throw new Error('crash of the system test');
+      throw new Error(message);
     });
-  });
+  }, CRASH_MESSAGE);
   await closed;
 }
 

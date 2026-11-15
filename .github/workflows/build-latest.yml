@@ -81,7 +81,7 @@ jobs:
     # The image brings the browsers and their system libraries; its version matches @playwright/test.
     container:
       image: mcr.microsoft.com/playwright:v1.65.0-noble
-      options: --user 1001
+      options: --user 1001 --ipc=host
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

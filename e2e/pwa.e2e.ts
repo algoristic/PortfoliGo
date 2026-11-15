@@ -79,10 +79,13 @@ test.describe('PWA', () => {
 
   test('starts and plays offline after the first visit', async ({ page, context }) => {
     test.setTimeout(90_000);
-    const game = await createPlayer(page, 'Anna');
+    // The service worker takes over the page once its prefetch is done; a lazy chunk requested in
+    // that moment (submitting the new player) stayed without a response in WebKit.
     await page.goto('#/players');
     await expect(page.getByTestId('pwa.pre-release-hint')).toBeVisible();
     await waitForServiceWorker(page);
+    const game = await createPlayer(page, 'Anna');
+    await page.goto('#/players');
 
     await context.setOffline(true);
     await page.reload();

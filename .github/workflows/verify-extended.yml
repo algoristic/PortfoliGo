@@ -133,7 +133,7 @@ jobs:
     # The image brings the browsers and their system libraries; its version matches @playwright/test.
     container:
       image: mcr.microsoft.com/playwright:v1.65.0-noble
-      options: --user 1001
+      options: --user 1001 --ipc=host
     env:
       # J10 measures budgets (TS §14.3); runners are slower and noisier, as in the job `perf`.
       PERF_FACTOR: '2'
