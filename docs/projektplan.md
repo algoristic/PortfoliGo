@@ -94,7 +94,7 @@ Claude liest dann `CLAUDE.md`, die Rules der betroffenen Domänen (`.claude/rule
 - Berührt das AP ein Budget aus TS §14.3, ist es lokal mit der Perf-Suite gemessen und in TS §14.3 eingetragen.
 - Neue oder geänderte Texte haben i18n-IDs, `messages.xlf` ist aktualisiert.
 - Statusübersicht und [Änderungsprotokoll](./aenderungsprotokoll.md) sind gepflegt.
-- Der Ist-Stand der berührten Domänen in `.claude/rules/<domain>.md` ist nachgeführt (neue Domäne: neue Rule-Datei und Zeile in der Modulkarte der `CLAUDE.md`).
+- Der Ist-Stand der berührten Domänen in `.claude/rules/<domain>.md` ist nachgeführt: in das passende Thema eingearbeitet statt als neues Bullet pro AP, ohne Feldlisten und Messwerte, die im Code stehen (neue Domäne: neue Rule-Datei und Zeile in der Modulkarte der `CLAUDE.md`).
 - Hat sich eine Golden-Master-Prüfsumme (`market/domain/golden-master.ts`) geändert, steht das im [Änderungsprotokoll](./aenderungsprotokoll.md). Ab AP 2.3 ist dann auch `SIM_VERSION` erhöht (E-25); hat sich die Struktur des gespeicherten Zustands ohne Migration geändert, `schemaVersion` (TS §15).
 
 ### 2.5 Schnitt der Arbeitspakete
