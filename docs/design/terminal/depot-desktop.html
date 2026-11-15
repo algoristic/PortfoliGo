@@ -1,0 +1,1864 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Terminal – Depot (Desktop)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap"
+      rel="stylesheet" />
+    <style>
+      body {
+        margin: 0;
+        background: #0b0d10;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      button,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+      a {
+        color: #f2a93b;
+      }
+      a:hover {
+        color: #ffc56b;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      style="
+        --accent: #f2a93b;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: #0b0d10;
+        color: #e9ecef;
+        font-family: 'IBM Plex Sans', system-ui, sans-serif;
+        font-size: 13px;
+        line-height: 1.4;
+      ">
+      <header
+        style="
+          display: flex;
+          flex-wrap: wrap;
+          align-items: stretch;
+          min-height: 48px;
+          background: #121519;
+          border-bottom: 1px solid #262b33;
+        ">
+        <a
+          href="uebersicht-desktop.html"
+          style="
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 16px;
+            color: #e9ecef;
+            text-decoration: none;
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            border-right: 1px solid #262b33;
+          ">
+          <span style="width: 10px; height: 10px; background: var(--accent, #f2a93b)"></span
+          >PORTFOLIGO
+        </a>
+        <div
+          style="
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 16px;
+            border-right: 1px solid #262b33;
+          ">
+          <div
+            style="
+              display: flex;
+              align-items: baseline;
+              gap: 10px;
+              font-family: 'IBM Plex Mono', monospace;
+            ">
+            <span style="color: #9aa3ad">MO 20.10.2031</span>
+            <span style="font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums"
+              >10:42</span
+            >
+          </div>
+          <button
+            type="button"
+            aria-label="Pause"
+            style="
+              width: 34px;
+              height: 34px;
+              display: grid;
+              place-items: center;
+              background: #181c22;
+              border: 1px solid #2f353e;
+              color: var(--accent, #f2a93b);
+              cursor: pointer;
+            ">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.25"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M8 5v14M16 5v14"></path>
+            </svg>
+          </button>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              border: 1px solid #2f353e;
+              background: #181c22;
+              height: 34px;
+            ">
+            <button
+              type="button"
+              aria-label="Langsamer"
+              style="
+                width: 30px;
+                height: 32px;
+                display: grid;
+                place-items: center;
+                background: none;
+                border: 0;
+                color: #9aa3ad;
+                cursor: pointer;
+              ">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true">
+                <path d="M5 12h14"></path>
+              </svg>
+            </button>
+            <span style="padding: 0 6px; font-family: 'IBM Plex Mono', monospace; font-size: 12px"
+              >10 min/s</span
+            >
+            <button
+              type="button"
+              aria-label="Schneller"
+              style="
+                width: 30px;
+                height: 32px;
+                display: grid;
+                place-items: center;
+                background: none;
+                border: 0;
+                color: #9aa3ad;
+                cursor: pointer;
+              ">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true">
+                <path d="M12 5v14M5 12h14"></path>
+              </svg>
+            </button>
+          </div>
+          <button
+            type="button"
+            style="
+              height: 34px;
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              padding: 0 10px;
+              background: #181c22;
+              border: 1px solid #2f353e;
+              font-family: 'IBM Plex Mono', monospace;
+              font-size: 12px;
+              cursor: pointer;
+            ">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M4 5l8 7-8 7z"></path>
+              <path d="M12 5l8 7-8 7z"></path>
+            </svg>
+            VORSPULEN
+          </button>
+        </div>
+        <div style="flex: 1 1 260px; display: flex; align-items: center; padding: 6px 16px">
+          <button
+            type="button"
+            style="
+              width: 100%;
+              max-width: 440px;
+              height: 34px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding: 0 10px;
+              background: #0b0d10;
+              border: 1px solid #2f353e;
+              color: #9aa3ad;
+              text-align: left;
+              cursor: pointer;
+            ">
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.3-4.3"></path>
+            </svg>
+            <span style="flex: 1">Befehl, Wertpapier oder Seite …</span>
+            <kbd
+              style="
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 11px;
+                padding: 1px 6px;
+                border: 1px solid #2f353e;
+                color: #e9ecef;
+              "
+              >Strg K</kbd
+            >
+          </button>
+        </div>
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 12px;
+            border-left: 1px solid #262b33;
+          ">
+          <button
+            type="button"
+            aria-label="Benachrichtigungen, 3 ungelesen"
+            style="
+              position: relative;
+              width: 40px;
+              height: 40px;
+              display: grid;
+              place-items: center;
+              background: none;
+              border: 0;
+              color: #e9ecef;
+              cursor: pointer;
+            ">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+            </svg>
+            <span
+              style="
+                position: absolute;
+                top: 6px;
+                right: 5px;
+                min-width: 16px;
+                height: 16px;
+                padding: 0 4px;
+                background: var(--accent, #f2a93b);
+                color: #0b0d10;
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 10px;
+                font-weight: 600;
+                line-height: 16px;
+                text-align: center;
+              "
+              >3</span
+            >
+          </button>
+          <button
+            type="button"
+            aria-label="Spielermenü: Alex"
+            style="
+              width: 32px;
+              height: 32px;
+              display: grid;
+              place-items: center;
+              background: #23272f;
+              border: 1px solid #2f353e;
+              font-family: 'IBM Plex Mono', monospace;
+              font-size: 12px;
+              font-weight: 600;
+              cursor: pointer;
+            "
+            >A</button
+          >
+        </div>
+      </header>
+
+      <div
+        style="
+          display: flex;
+          overflow-x: auto;
+          background: #0e1014;
+          border-bottom: 1px solid #262b33;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 12px;
+          white-space: nowrap;
+          font-variant-numeric: tabular-nums;
+        ">
+        <div style="display: flex; gap: 10px; padding: 7px 16px; border-right: 1px solid #262b33"
+          ><span style="color: #9aa3ad">TALVAR WORLD</span><span>3.412,80</span
+          ><span style="color: #33d17a">+0,74 %</span></div
+        >
+        <div style="display: flex; gap: 10px; padding: 7px 16px; border-right: 1px solid #262b33"
+          ><span style="color: #9aa3ad">BELMAR 40</span><span>14.208,55</span
+          ><span style="color: #33d17a">+0,62 %</span></div
+        >
+        <div style="display: flex; gap: 10px; padding: 7px 16px; border-right: 1px solid #262b33"
+          ><span style="color: #9aa3ad">OSTREL 100</span><span>8.951,20</span
+          ><span style="color: #ff6b6b">−0,21 %</span
+          ><span style="color: #9aa3ad">Vortag</span></div
+        >
+        <div style="display: flex; gap: 10px; padding: 7px 16px; border-right: 1px solid #262b33"
+          ><span style="color: #9aa3ad">KYRIN 50</span><span>2.304,66</span
+          ><span style="color: #33d17a">+1,08 %</span
+          ><span style="color: #9aa3ad">Schluss</span></div
+        >
+        <div style="display: flex; gap: 10px; padding: 7px 16px; border-right: 1px solid #262b33"
+          ><span style="color: #9aa3ad">SUDAR 30</span><span>1.187,42</span
+          ><span style="color: #33d17a">+0,35 %</span></div
+        >
+      </div>
+
+      <div style="flex: 1; display: flex; flex-wrap: wrap; align-items: stretch">
+        <nav
+          aria-label="Hauptnavigation"
+          style="
+            flex: 1 1 96px;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 2px;
+            padding: 8px;
+            background: #121519;
+            border-right: 1px solid #262b33;
+          ">
+          <a
+            href="uebersicht-desktop.html"
+            style="
+              flex: 1 1 80px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 4px;
+              padding: 10px 2px;
+              color: #9aa3ad;
+              text-decoration: none;
+              font-size: 11px;
+            ">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linejoin="round"
+              aria-hidden="true">
+              <rect x="3" y="3" width="7" height="9"></rect>
+              <rect x="14" y="3" width="7" height="5"></rect>
+              <rect x="14" y="12" width="7" height="9"></rect>
+              <rect x="3" y="16" width="7" height="5"></rect>
+            </svg>
+            Übersicht
+          </a>
+          <a
+            href="instrument-desktop.html"
+            style="
+              flex: 1 1 80px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 4px;
+              padding: 10px 2px;
+              color: #9aa3ad;
+              text-decoration: none;
+              font-size: 11px;
+            ">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M3 3v18h18"></path>
+              <path d="M7 15l4-4 3 3 5-6"></path>
+            </svg>
+            Märkte
+          </a>
+          <a
+            href="depot-desktop.html"
+            aria-current="page"
+            style="
+              flex: 1 1 80px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 4px;
+              padding: 10px 2px;
+              background: #1e232b;
+              color: var(--accent, #f2a93b);
+              text-decoration: none;
+              font-size: 11px;
+              font-weight: 500;
+            ">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true">
+              <rect x="3" y="7" width="18" height="13" rx="1"></rect>
+              <path d="M9 7V4h6v3"></path>
+              <path d="M3 13h18"></path>
+            </svg>
+            Depot
+          </a>
+          <a
+            href="konten-desktop.html"
+            style="
+              flex: 1 1 80px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 4px;
+              padding: 10px 2px;
+              color: #9aa3ad;
+              text-decoration: none;
+              font-size: 11px;
+            ">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M3 10l9-6 9 6"></path>
+              <path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"></path>
+              <path d="M3 21h18"></path>
+            </svg>
+            Konten
+          </a>
+          <a
+            href="orders-desktop.html"
+            style="
+              flex: 1 1 80px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 4px;
+              padding: 10px 2px;
+              color: #9aa3ad;
+              text-decoration: none;
+              font-size: 11px;
+            ">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M11 6h10M11 12h10M11 18h10"></path>
+              <path d="M3 6l1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"></path>
+            </svg>
+            Orders
+          </a>
+          <a
+            href="#"
+            style="
+              flex: 1 1 80px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 4px;
+              padding: 10px 2px;
+              color: #9aa3ad;
+              text-decoration: none;
+              font-size: 11px;
+            ">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"></path>
+              <path d="M9 8h6M9 12h6"></path>
+            </svg>
+            Steuern
+          </a>
+          <a
+            href="#"
+            style="
+              flex: 1 1 80px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 4px;
+              padding: 10px 2px;
+              color: #9aa3ad;
+              text-decoration: none;
+              font-size: 11px;
+            ">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true">
+              <path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"></path>
+              <circle cx="15" cy="6" r="2"></circle>
+              <circle cx="9" cy="12" r="2"></circle>
+              <circle cx="17" cy="18" r="2"></circle>
+            </svg>
+            Einstellungen
+          </a>
+        </nav>
+
+        <main
+          style="
+            flex: 999 1 560px;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            background: #262b33;
+          ">
+          <div style="display: flex; flex-wrap: wrap; gap: 1px">
+            <div style="flex: 1 1 150px; padding: 12px 16px; background: #121519"
+              ><div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 10px;
+                  letter-spacing: 0.08em;
+                  color: #9aa3ad;
+                "
+                >DEPOTWERT</div
+              ><div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 24px;
+                  font-weight: 600;
+                  line-height: 1.2;
+                  margin-top: 6px;
+                "
+                >18.282,56 €</div
+              ><div
+                style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 4px"
+                ><span style="color: #33d17a">+147,38 € · +0,81 %</span>
+                <span style="color: #9aa3ad">heute</span></div
+              ></div
+            >
+            <div style="flex: 1 1 150px; padding: 12px 16px; background: #121519"
+              ><div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 10px;
+                  letter-spacing: 0.08em;
+                  color: #9aa3ad;
+                "
+                >UNREALISIERT</div
+              ><div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 17px;
+                  font-weight: 600;
+                  line-height: 1.2;
+                  margin-top: 6px;
+                "
+                ><span style="color: #33d17a">+1.535,46 €</span></div
+              ><div
+                style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 4px"
+                ><span style="color: #33d17a">+9,2 %</span>
+                <span style="color: #9aa3ad">auf Einstand</span></div
+              ></div
+            >
+            <div style="flex: 1 1 150px; padding: 12px 16px; background: #121519"
+              ><div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 10px;
+                  letter-spacing: 0.08em;
+                  color: #9aa3ad;
+                "
+                >EINSTAND</div
+              ><div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 17px;
+                  font-weight: 600;
+                  line-height: 1.2;
+                  margin-top: 6px;
+                "
+                >16.747,10 €</div
+              ><div
+                style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 4px"
+                ><span style="color: #9aa3ad">5 Positionen</span></div
+              ></div
+            >
+            <div style="flex: 1 1 150px; padding: 12px 16px; background: #121519"
+              ><div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 10px;
+                  letter-spacing: 0.08em;
+                  color: #9aa3ad;
+                "
+                >ERTRÄGE 2031</div
+              ><div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 17px;
+                  font-weight: 600;
+                  line-height: 1.2;
+                  margin-top: 6px;
+                "
+                >300,10 €</div
+              ><div
+                style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 4px"
+                ><span style="color: #9aa3ad">Div. 248,00 · Zins 52,10</span></div
+              ></div
+            >
+            <div style="flex: 1 1 150px; padding: 12px 16px; background: #121519"
+              ><div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 10px;
+                  letter-spacing: 0.08em;
+                  color: #9aa3ad;
+                "
+                >1 JAHR · ZEITGEWICHTET</div
+              ><div
+                style="
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 17px;
+                  font-weight: 600;
+                  line-height: 1.2;
+                  margin-top: 6px;
+                "
+                ><span style="color: #33d17a">+8,1 %</span></div
+              ><div
+                style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 4px"
+                ><span style="color: #9aa3ad">Benchmark</span>
+                <span style="color: #33d17a">+9,5 %</span></div
+              ></div
+            >
+            <div
+              style="
+                flex: 1 1 200px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 6px;
+                padding: 12px 16px;
+                background: #121519;
+              ">
+              <button
+                type="button"
+                style="
+                  background: #181c22;
+                  border: 1px solid #2f353e;
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 11px;
+                  letter-spacing: 0.04em;
+                  cursor: pointer;
+                  height: 30px;
+                  background: var(--accent, #f2a93b);
+                  border-color: var(--accent, #f2a93b);
+                  color: #0b0d10;
+                  font-weight: 600;
+                "
+                >+ WERTPAPIER KAUFEN</button
+              >
+              <button
+                type="button"
+                style="
+                  background: #181c22;
+                  border: 1px solid #2f353e;
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 11px;
+                  letter-spacing: 0.04em;
+                  cursor: pointer;
+                  height: 30px;
+                "
+                >+ SPARPLAN ANLEGEN</button
+              >
+            </div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 1px">
+            <section
+              aria-labelledby="td-pos"
+              style="flex: 3 1 720px; min-width: 0; background: #121519">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  gap: 8px;
+                  min-height: 37px;
+                  padding: 6px 16px;
+                  border-bottom: 1px solid #262b33;
+                "
+                ><h2
+                  id="td-pos"
+                  style="
+                    margin: 0;
+                    font-family: 'IBM Plex Mono', monospace;
+                    font-size: 11px;
+                    font-weight: 500;
+                    letter-spacing: 0.1em;
+                    color: #9aa3ad;
+                  "
+                  >POSITIONEN · 5</h2
+                ><div
+                  role="group"
+                  aria-label="Filter"
+                  style="
+                    display: flex;
+                    border: 1px solid #2f353e;
+                    font-family: 'IBM Plex Mono', monospace;
+                    font-size: 11px;
+                  "
+                  ><button
+                    type="button"
+                    aria-pressed="true"
+                    style="
+                      padding: 4px 9px;
+                      background: var(--accent, #f2a93b);
+                      border: 0;
+                      color: #0b0d10;
+                      font-weight: 600;
+                      cursor: pointer;
+                    "
+                    >ALLE</button
+                  ><button
+                    type="button"
+                    style="
+                      padding: 4px 9px;
+                      background: none;
+                      border: 0;
+                      border-left: 1px solid #2f353e;
+                      color: #9aa3ad;
+                      cursor: pointer;
+                    "
+                    >AKTIEN</button
+                  ><button
+                    type="button"
+                    style="
+                      padding: 4px 9px;
+                      background: none;
+                      border: 0;
+                      border-left: 1px solid #2f353e;
+                      color: #9aa3ad;
+                      cursor: pointer;
+                    "
+                    >ETF</button
+                  ></div
+                ></div
+              >
+              <div style="overflow-x: auto">
+                <table
+                  style="
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-variant-numeric: tabular-nums;
+                  ">
+                  <thead>
+                    <tr style="font-size: 11px; color: #9aa3ad; text-align: right">
+                      <th scope="col" style="padding: 8px 16px; text-align: left; font-weight: 500"
+                        >Wertpapier</th
+                      >
+                      <th scope="col" style="padding: 8px; font-weight: 500">Stück</th
+                      ><th scope="col" style="padding: 8px; font-weight: 500">Einstand</th
+                      ><th scope="col" style="padding: 8px; font-weight: 500">Kurs</th>
+                      <th
+                        scope="col"
+                        aria-sort="descending"
+                        style="padding: 8px; font-weight: 500; color: #e9ecef"
+                        >Wert ▾</th
+                      ><th scope="col" style="padding: 8px; font-weight: 500">Heute €</th>
+                      <th scope="col" style="padding: 8px; font-weight: 500">G/V €</th
+                      ><th scope="col" style="padding: 8px; font-weight: 500">G/V %</th
+                      ><th scope="col" style="padding: 8px; font-weight: 500">Anteil</th>
+                      <th scope="col" style="padding: 8px 16px 8px 8px"
+                        ><span
+                          style="
+                            position: absolute;
+                            width: 1px;
+                            height: 1px;
+                            overflow: hidden;
+                            clip: rect(0 0 0 0);
+                          "
+                          >Aktionen</span
+                        ></th
+                      >
+                    </tr>
+                  </thead>
+                  <tbody
+                    style="
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 12px;
+                      text-align: right;
+                    ">
+                    <tr style="border-top: 1px solid #1f242b"
+                      ><th
+                        scope="row"
+                        style="
+                          padding: 8px 16px;
+                          text-align: left;
+                          font-family: 'IBM Plex Sans', sans-serif;
+                          font-weight: 500;
+                          font-size: 13px;
+                        "
+                        >Talvar World ETF
+                        <span style="color: #9aa3ad; font-weight: 400; font-size: 11px"
+                          >ETF</span
+                        ></th
+                      ><td style="padding: 8px">120</td><td style="padding: 8px">63,05</td
+                      ><td style="padding: 8px">70,11</td><td style="padding: 8px">8.413,20</td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+70,08</span></td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+847,20</span></td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+11,2 %</span></td
+                      ><td style="padding: 8px"
+                        ><span style="display: inline-flex; align-items: center; gap: 8px"
+                          >46,0 %<span style="width: 48px; height: 4px; background: #262b33"
+                            ><span
+                              style="
+                                display: block;
+                                width: 46%;
+                                height: 4px;
+                                background: var(--accent, #f2a93b);
+                              "></span></span></span></td
+                      ><td style="padding: 8px 16px 8px 8px; width: 112px"></td></tr
+                    ><tr
+                      style="
+                        border-top: 1px solid #1f242b;
+                        background: #171b21;
+                        box-shadow: inset 2px 0 0 var(--accent, #f2a93b);
+                      "
+                      ><th
+                        scope="row"
+                        style="
+                          padding: 8px 16px;
+                          text-align: left;
+                          font-family: 'IBM Plex Sans', sans-serif;
+                          font-weight: 500;
+                          font-size: 13px;
+                        "
+                        >Halvion AG
+                        <span style="color: #9aa3ad; font-weight: 400; font-size: 11px"
+                          >Technologie</span
+                        ></th
+                      ><td style="padding: 8px">15</td><td style="padding: 8px">208,96</td
+                      ><td style="padding: 8px">260,36</td><td style="padding: 8px">3.905,40</td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+103,04</span></td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+771,00</span></td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+24,6 %</span></td
+                      ><td style="padding: 8px"
+                        ><span style="display: inline-flex; align-items: center; gap: 8px"
+                          >21,4 %<span style="width: 48px; height: 4px; background: #262b33"
+                            ><span
+                              style="
+                                display: block;
+                                width: 21%;
+                                height: 4px;
+                                background: var(--accent, #f2a93b);
+                              "></span></span></span></td
+                      ><td style="padding: 8px 16px 8px 8px; width: 112px"
+                        ><span style="display: inline-flex; gap: 4px"
+                          ><button
+                            type="button"
+                            style="
+                              background: #181c22;
+                              border: 1px solid #2f353e;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 11px;
+                              letter-spacing: 0.04em;
+                              cursor: pointer;
+                              padding: 3px 7px;
+                              color: var(--accent, #f2a93b);
+                            "
+                            >KAUF</button
+                          ><button
+                            type="button"
+                            style="
+                              background: #181c22;
+                              border: 1px solid #2f353e;
+                              font-family: 'IBM Plex Mono', monospace;
+                              font-size: 11px;
+                              letter-spacing: 0.04em;
+                              cursor: pointer;
+                              padding: 3px 7px;
+                            "
+                            >VERK.</button
+                          ></span
+                        ></td
+                      ></tr
+                    ><tr style="border-top: 1px solid #1f242b"
+                      ><th
+                        scope="row"
+                        style="
+                          padding: 8px 16px;
+                          text-align: left;
+                          font-family: 'IBM Plex Sans', sans-serif;
+                          font-weight: 500;
+                          font-size: 13px;
+                        "
+                        >Selmark Energie AG
+                        <span style="color: #9aa3ad; font-weight: 400; font-size: 11px"
+                          >Energie</span
+                        ></th
+                      ><td style="padding: 8px">60</td><td style="padding: 8px">46,46</td
+                      ><td style="padding: 8px">43,53</td><td style="padding: 8px">2.611,80</td
+                      ><td style="padding: 8px"><span style="color: #ff6b6b">−29,58</span></td
+                      ><td style="padding: 8px"><span style="color: #ff6b6b">−175,80</span></td
+                      ><td style="padding: 8px"><span style="color: #ff6b6b">−6,3 %</span></td
+                      ><td style="padding: 8px"
+                        ><span style="display: inline-flex; align-items: center; gap: 8px"
+                          >14,3 %<span style="width: 48px; height: 4px; background: #262b33"
+                            ><span
+                              style="
+                                display: block;
+                                width: 14%;
+                                height: 4px;
+                                background: var(--accent, #f2a93b);
+                              "></span></span></span></td
+                      ><td style="padding: 8px 16px 8px 8px; width: 112px"></td></tr
+                    ><tr style="border-top: 1px solid #1f242b"
+                      ><th
+                        scope="row"
+                        style="
+                          padding: 8px 16px;
+                          text-align: left;
+                          font-family: 'IBM Plex Sans', sans-serif;
+                          font-weight: 500;
+                          font-size: 13px;
+                        "
+                        >Kalveth Health SE
+                        <span style="color: #9aa3ad; font-weight: 400; font-size: 11px"
+                          >Gesundheit</span
+                        ></th
+                      ><td style="padding: 8px">35</td><td style="padding: 8px">54,46</td
+                      ><td style="padding: 8px">56,58</td><td style="padding: 8px">1.980,30</td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+9,07</span></td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+74,20</span></td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+3,9 %</span></td
+                      ><td style="padding: 8px"
+                        ><span style="display: inline-flex; align-items: center; gap: 8px"
+                          >10,8 %<span style="width: 48px; height: 4px; background: #262b33"
+                            ><span
+                              style="
+                                display: block;
+                                width: 11%;
+                                height: 4px;
+                                background: var(--accent, #f2a93b);
+                              "></span></span></span></td
+                      ><td style="padding: 8px 16px 8px 8px; width: 112px"></td></tr
+                    ><tr style="border-top: 1px solid #1f242b"
+                      ><th
+                        scope="row"
+                        style="
+                          padding: 8px 16px;
+                          text-align: left;
+                          font-family: 'IBM Plex Sans', sans-serif;
+                          font-weight: 500;
+                          font-size: 13px;
+                        "
+                        >Norvane Versorgung AG
+                        <span style="color: #9aa3ad; font-weight: 400; font-size: 11px"
+                          >Versorger</span
+                        ></th
+                      ><td style="padding: 8px">82</td><td style="padding: 8px">16,50</td
+                      ><td style="padding: 8px">16,73</td><td style="padding: 8px">1.371,86</td
+                      ><td style="padding: 8px"><span style="color: #ff6b6b">−5,23</span></td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+18,86</span></td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+1,4 %</span></td
+                      ><td style="padding: 8px"
+                        ><span style="display: inline-flex; align-items: center; gap: 8px"
+                          >7,5 %<span style="width: 48px; height: 4px; background: #262b33"
+                            ><span
+                              style="
+                                display: block;
+                                width: 8%;
+                                height: 4px;
+                                background: var(--accent, #f2a93b);
+                              "></span></span></span></td
+                      ><td style="padding: 8px 16px 8px 8px; width: 112px"></td
+                    ></tr>
+                  </tbody>
+                  <tfoot
+                    style="
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 12px;
+                      text-align: right;
+                      font-weight: 600;
+                    ">
+                    <tr style="border-top: 1px solid #262b33">
+                      <th
+                        scope="row"
+                        style="
+                          padding: 9px 16px;
+                          text-align: left;
+                          font-family: 'IBM Plex Sans', sans-serif;
+                          font-size: 13px;
+                        "
+                        >Summe</th
+                      >
+                      <td style="padding: 8px"></td><td style="padding: 8px">16.747,10</td
+                      ><td style="padding: 8px"></td><td style="padding: 8px">18.282,56</td>
+                      <td style="padding: 8px"><span style="color: #33d17a">+147,38</span></td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+1.535,46</span></td
+                      ><td style="padding: 8px"><span style="color: #33d17a">+9,2 %</span></td
+                      ><td style="padding: 8px">100 %</td><td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </section>
+
+            <section
+              aria-labelledby="td-alloc"
+              style="flex: 1 1 340px; min-width: 0; background: #121519">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  gap: 8px;
+                  min-height: 37px;
+                  padding: 6px 16px;
+                  border-bottom: 1px solid #262b33;
+                "
+                ><h2
+                  id="td-alloc"
+                  style="
+                    margin: 0;
+                    font-family: 'IBM Plex Mono', monospace;
+                    font-size: 11px;
+                    font-weight: 500;
+                    letter-spacing: 0.1em;
+                    color: #9aa3ad;
+                  "
+                  >ALLOKATION</h2
+                ><div
+                  role="group"
+                  aria-label="Aufteilung nach"
+                  style="
+                    display: flex;
+                    border: 1px solid #2f353e;
+                    font-family: 'IBM Plex Mono', monospace;
+                    font-size: 11px;
+                  "
+                  ><button
+                    type="button"
+                    aria-pressed="true"
+                    style="
+                      padding: 4px 9px;
+                      background: var(--accent, #f2a93b);
+                      border: 0;
+                      color: #0b0d10;
+                      font-weight: 600;
+                      cursor: pointer;
+                    "
+                    >SEKTOR</button
+                  ><button
+                    type="button"
+                    style="
+                      padding: 4px 9px;
+                      background: none;
+                      border: 0;
+                      border-left: 1px solid #2f353e;
+                      color: #9aa3ad;
+                      cursor: pointer;
+                    "
+                    >REGION</button
+                  ><button
+                    type="button"
+                    style="
+                      padding: 4px 9px;
+                      background: none;
+                      border: 0;
+                      border-left: 1px solid #2f353e;
+                      color: #9aa3ad;
+                      cursor: pointer;
+                    "
+                    >KLASSE</button
+                  ></div
+                ></div
+              >
+              <ul
+                style="
+                  list-style: none;
+                  margin: 0;
+                  padding: 8px 0 4px;
+                  font-variant-numeric: tabular-nums;
+                "
+                ><li
+                  style="
+                    display: grid;
+                    grid-template-columns: 128px minmax(0, 1fr) 52px;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 4px 16px;
+                  "
+                  ><span>ETF breit gestreut</span
+                  ><span style="height: 6px; background: #262b33"
+                    ><span
+                      style="
+                        display: block;
+                        width: 92%;
+                        height: 6px;
+                        background: var(--accent, #f2a93b);
+                      "></span></span
+                  ><span
+                    style="
+                      text-align: right;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 12px;
+                    "
+                    >46,0 %</span
+                  ></li
+                ><li
+                  style="
+                    display: grid;
+                    grid-template-columns: 128px minmax(0, 1fr) 52px;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 4px 16px;
+                  "
+                  ><span>Technologie</span
+                  ><span style="height: 6px; background: #262b33"
+                    ><span
+                      style="
+                        display: block;
+                        width: 42.8%;
+                        height: 6px;
+                        background: var(--accent, #f2a93b);
+                      "></span></span
+                  ><span
+                    style="
+                      text-align: right;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 12px;
+                    "
+                    >21,4 %</span
+                  ></li
+                ><li
+                  style="
+                    display: grid;
+                    grid-template-columns: 128px minmax(0, 1fr) 52px;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 4px 16px;
+                  "
+                  ><span>Energie</span
+                  ><span style="height: 6px; background: #262b33"
+                    ><span
+                      style="
+                        display: block;
+                        width: 28.6%;
+                        height: 6px;
+                        background: var(--accent, #f2a93b);
+                      "></span></span
+                  ><span
+                    style="
+                      text-align: right;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 12px;
+                    "
+                    >14,3 %</span
+                  ></li
+                ><li
+                  style="
+                    display: grid;
+                    grid-template-columns: 128px minmax(0, 1fr) 52px;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 4px 16px;
+                  "
+                  ><span>Gesundheit</span
+                  ><span style="height: 6px; background: #262b33"
+                    ><span
+                      style="
+                        display: block;
+                        width: 21.6%;
+                        height: 6px;
+                        background: var(--accent, #f2a93b);
+                      "></span></span
+                  ><span
+                    style="
+                      text-align: right;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 12px;
+                    "
+                    >10,8 %</span
+                  ></li
+                ><li
+                  style="
+                    display: grid;
+                    grid-template-columns: 128px minmax(0, 1fr) 52px;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 4px 16px;
+                  "
+                  ><span>Versorger</span
+                  ><span style="height: 6px; background: #262b33"
+                    ><span
+                      style="
+                        display: block;
+                        width: 15%;
+                        height: 6px;
+                        background: var(--accent, #f2a93b);
+                      "></span></span
+                  ><span
+                    style="
+                      text-align: right;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 12px;
+                    "
+                    >7,5 %</span
+                  ></li
+                ></ul
+              >
+              <div
+                style="
+                  padding: 8px 16px 2px;
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 10px;
+                  letter-spacing: 0.08em;
+                  color: #9aa3ad;
+                "
+                >REGION · ETF DURCHGERECHNET</div
+              >
+              <ul
+                style="
+                  list-style: none;
+                  margin: 0;
+                  padding: 4px 0 8px;
+                  font-variant-numeric: tabular-nums;
+                "
+                ><li
+                  style="
+                    display: grid;
+                    grid-template-columns: 128px minmax(0, 1fr) 52px;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 4px 16px;
+                  "
+                  ><span>Europa</span
+                  ><span style="height: 6px; background: #262b33"
+                    ><span
+                      style="
+                        display: block;
+                        width: 96.9%;
+                        height: 6px;
+                        background: var(--accent, #f2a93b);
+                      "></span></span
+                  ><span
+                    style="
+                      text-align: right;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 12px;
+                    "
+                    >67,8 %</span
+                  ></li
+                ><li
+                  style="
+                    display: grid;
+                    grid-template-columns: 128px minmax(0, 1fr) 52px;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 4px 16px;
+                  "
+                  ><span>Nordamerika</span
+                  ><span style="height: 6px; background: #262b33"
+                    ><span
+                      style="
+                        display: block;
+                        width: 31.6%;
+                        height: 6px;
+                        background: var(--accent, #f2a93b);
+                      "></span></span
+                  ><span
+                    style="
+                      text-align: right;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 12px;
+                    "
+                    >22,1 %</span
+                  ></li
+                ><li
+                  style="
+                    display: grid;
+                    grid-template-columns: 128px minmax(0, 1fr) 52px;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 4px 16px;
+                  "
+                  ><span>Asien-Pazifik</span
+                  ><span style="height: 6px; background: #262b33"
+                    ><span
+                      style="
+                        display: block;
+                        width: 9.1%;
+                        height: 6px;
+                        background: var(--accent, #f2a93b);
+                      "></span></span
+                  ><span
+                    style="
+                      text-align: right;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 12px;
+                    "
+                    >6,4 %</span
+                  ></li
+                ><li
+                  style="
+                    display: grid;
+                    grid-template-columns: 128px minmax(0, 1fr) 52px;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 4px 16px;
+                  "
+                  ><span>Schwellenländer</span
+                  ><span style="height: 6px; background: #262b33"
+                    ><span
+                      style="
+                        display: block;
+                        width: 5.3%;
+                        height: 6px;
+                        background: var(--accent, #f2a93b);
+                      "></span></span
+                  ><span
+                    style="
+                      text-align: right;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 12px;
+                    "
+                    >3,7 %</span
+                  ></li
+                ></ul
+              >
+              <div
+                style="
+                  display: flex;
+                  gap: 8px;
+                  margin: 0 16px 12px;
+                  padding: 8px 10px;
+                  border: 1px solid #2f353e;
+                  font-size: 12px;
+                  color: #9aa3ad;
+                ">
+                <span style="color: var(--accent, #f2a93b); font-family: 'IBM Plex Mono', monospace"
+                  >!</span
+                ><span>Europa-Anteil 67,8 %: Einzelaktien liegen alle in Europa.</span>
+              </div>
+            </section>
+          </div>
+
+          <div style="flex: 1; display: flex; flex-wrap: wrap; gap: 1px">
+            <section
+              aria-labelledby="td-perf"
+              style="
+                flex: 3 1 720px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                padding-bottom: 12px;
+                background: #121519;
+              ">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  gap: 8px;
+                  min-height: 37px;
+                  padding: 6px 16px;
+                  border-bottom: 1px solid #262b33;
+                "
+                ><h2
+                  id="td-perf"
+                  style="
+                    margin: 0;
+                    font-family: 'IBM Plex Mono', monospace;
+                    font-size: 11px;
+                    font-weight: 500;
+                    letter-spacing: 0.1em;
+                    color: #9aa3ad;
+                  "
+                  >WERTENTWICKLUNG · ZEITGEWICHTET</h2
+                ><div
+                  role="group"
+                  aria-label="Zeitraum"
+                  style="
+                    display: flex;
+                    border: 1px solid #2f353e;
+                    font-family: 'IBM Plex Mono', monospace;
+                    font-size: 11px;
+                  "
+                  ><button
+                    type="button"
+                    style="
+                      padding: 4px 9px;
+                      background: none;
+                      border: 0;
+                      color: #9aa3ad;
+                      cursor: pointer;
+                    "
+                    >6M</button
+                  ><button
+                    type="button"
+                    aria-pressed="true"
+                    style="
+                      padding: 4px 9px;
+                      background: var(--accent, #f2a93b);
+                      border: 0;
+                      color: #0b0d10;
+                      font-weight: 600;
+                      cursor: pointer;
+                    "
+                    >1J</button
+                  ><button
+                    type="button"
+                    style="
+                      padding: 4px 9px;
+                      background: none;
+                      border: 0;
+                      border-left: 1px solid #2f353e;
+                      color: #9aa3ad;
+                      cursor: pointer;
+                    "
+                    >5J</button
+                  ><button
+                    type="button"
+                    style="
+                      padding: 4px 9px;
+                      background: none;
+                      border: 0;
+                      border-left: 1px solid #2f353e;
+                      color: #9aa3ad;
+                      cursor: pointer;
+                    "
+                    >MAX</button
+                  ></div
+                ></div
+              >
+              <div
+                style="display: flex; gap: 16px; padding: 0 16px; font-size: 12px; color: #9aa3ad">
+                <span style="display: flex; align-items: center; gap: 6px"
+                  ><span style="width: 14px; height: 2px; background: var(--accent, #f2a93b)"></span
+                  >Depot
+                  <span style="font-family: 'IBM Plex Mono', monospace; color: #33d17a"
+                    >+8,1 %</span
+                  ></span
+                >
+                <span style="display: flex; align-items: center; gap: 6px"
+                  ><span style="width: 14px; border-top: 2px dashed #9aa3ad"></span>Talvar World
+                  <span style="font-family: 'IBM Plex Mono', monospace; color: #33d17a"
+                    >+9,5 %</span
+                  ></span
+                >
+              </div>
+              <div style="display: flex; padding: 0 0 0 16px">
+                <svg
+                  viewBox="0 0 1000 240"
+                  preserveAspectRatio="none"
+                  role="img"
+                  aria-label="Zeitgewichtete Wertentwicklung über ein Jahr: Depot +8,1 %, Benchmark Talvar World +9,5 %"
+                  style="flex: 1; min-width: 0; display: block; height: 170px">
+                  <path
+                    d="M0 60.8H1000M0 132.7H1000"
+                    stroke="#1f242b"
+                    stroke-width="1"
+                    vector-effect="non-scaling-stroke"></path>
+                  <path
+                    d="M0 204.5H1000"
+                    stroke="#3a414b"
+                    stroke-width="1"
+                    vector-effect="non-scaling-stroke"></path>
+                  <path
+                    d="M0 204.5 14 206.7 28 203 42 193.9 56 187.8 70 181.2 85 176.3 99 171.8 113 170.4 127 165.5 141 154.2 155 156.1 169 160.3 183 147.7 197 146 211 139.6 225 133.7 239 140.9 254 125 268 113.2 282 111.8 296 106.6 310 105.5 324 111.2 338 111.8 352 109.1 366 101.4 380 96.4 394 95.8 408 86.4 423 91.4 437 85.7 451 77.9 465 79.7 479 91.9 493 97.9 507 96.1 521 92.3 535 81.5 549 88.2 563 88 577 83.3 592 84.2 606 100.3 620 94.6 634 78.7 648 71.5 662 77.7 676 80.4 690 78.6 704 61.1 718 56.5 732 55.5 746 44.2 761 44.6 775 30.9 789 35.7 803 38.9 817 33.5 831 22.9 845 17.8 859 15.3 873 28.7 887 33.7 901 37.9 915 41.5 930 37.1 944 39.3 958 33.4 972 32.5 986 34.7 1000 33.7"
+                    fill="none"
+                    stroke="#9aa3ad"
+                    stroke-width="1.25"
+                    stroke-dasharray="4 4"
+                    vector-effect="non-scaling-stroke"></path>
+                  <path
+                    d="M0 204.5 14 214.5 28 210.2 42 200.5 56 204.2 70 215.1 85 214.7 99 209.6 113 198.9 127 208.9 141 219.4 155 212.3 169 207.2 183 192.7 197 182.8 211 182.8 225 184.3 239 159.8 254 161.5 268 167.9 282 177.6 296 175.7 310 173.4 324 175.6 338 175.2 352 171.7 366 164.3 380 153 394 150 408 166.1 423 158.5 437 171 451 171.6 465 184.3 479 183.3 493 189.5 507 186.6 521 155.5 535 155 549 146 563 157.7 577 159.4 592 152.1 606 152 620 147.5 634 145.5 648 154.1 662 147.7 676 154.5 690 135.7 704 139.6 718 131.9 732 130.9 746 120.5 761 125.4 775 114.5 789 114.7 803 101 817 93.6 831 91.1 845 98 859 89.1 873 83.2 887 65.1 901 68 915 61 930 54.5 944 50.3 958 46.9 972 43.8 986 49.2 1000 59"
+                    fill="none"
+                    stroke="var(--accent, #f2a93b)"
+                    stroke-width="1.75"
+                    vector-effect="non-scaling-stroke"></path>
+                </svg>
+                <div
+                  style="
+                    position: relative;
+                    width: 52px;
+                    height: 170px;
+                    font-family: 'IBM Plex Mono', monospace;
+                    font-size: 11px;
+                    color: #9aa3ad;
+                  ">
+                  <span
+                    style="position: absolute; top: 25.3%; left: 8px; transform: translateY(-50%)"
+                    >8 %</span
+                  >
+                  <span
+                    style="position: absolute; top: 55.3%; left: 8px; transform: translateY(-50%)"
+                    >4 %</span
+                  >
+                  <span
+                    style="position: absolute; top: 85.2%; left: 8px; transform: translateY(-50%)"
+                    >0 %</span
+                  >
+                </div>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  padding: 0 68px 0 16px;
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 11px;
+                  color: #9aa3ad;
+                ">
+                <span>OKT 30</span><span>JAN 31</span><span>APR 31</span><span>JUL 31</span
+                ><span>OKT 31</span>
+              </div>
+            </section>
+
+            <div
+              style="
+                flex: 1 1 340px;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+                gap: 1px;
+              ">
+              <section aria-labelledby="td-plan" style="background: #121519">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 8px;
+                    min-height: 37px;
+                    padding: 6px 16px;
+                    border-bottom: 1px solid #262b33;
+                  "
+                  ><h2
+                    id="td-plan"
+                    style="
+                      margin: 0;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 11px;
+                      font-weight: 500;
+                      letter-spacing: 0.1em;
+                      color: #9aa3ad;
+                    "
+                    >SPARPLÄNE · 1</h2
+                  ><a href="#" style="font-size: 12px; text-decoration: none">Orderbuch</a></div
+                >
+                <div
+                  style="display: flex; flex-direction: column; gap: 6px; padding: 10px 16px 12px">
+                  <div style="display: flex; justify-content: space-between; gap: 8px"
+                    ><span style="font-weight: 500">Talvar World ETF</span
+                    ><span style="font-family: 'IBM Plex Mono', monospace"
+                      >250,00 € / MONAT</span
+                    ></div
+                  >
+                  <div style="font-size: 12px; color: #9aa3ad"
+                    >am 1. · nächste Ausführung SA 01.11. · Quintrade Verrechnungskonto · Kosten
+                    0,00 €</div
+                  >
+                  <div style="font-size: 12px; color: #9aa3ad"
+                    >seit JAN 2031 · 10 Ausführungen · 2.500,00 € angelegt</div
+                  >
+                  <div style="display: flex; gap: 6px; margin-top: 2px">
+                    <button
+                      type="button"
+                      style="
+                        background: #181c22;
+                        border: 1px solid #2f353e;
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 11px;
+                        letter-spacing: 0.04em;
+                        cursor: pointer;
+                        padding: 4px 10px;
+                      "
+                      >PAUSIEREN</button
+                    >
+                    <button
+                      type="button"
+                      style="
+                        background: #181c22;
+                        border: 1px solid #2f353e;
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 11px;
+                        letter-spacing: 0.04em;
+                        cursor: pointer;
+                        padding: 4px 10px;
+                      "
+                      >ÄNDERN</button
+                    >
+                  </div>
+                </div>
+              </section>
+              <section aria-labelledby="td-div" style="flex: 1; background: #121519">
+                <div
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 8px;
+                    min-height: 37px;
+                    padding: 6px 16px;
+                    border-bottom: 1px solid #262b33;
+                  "
+                  ><h2
+                    id="td-div"
+                    style="
+                      margin: 0;
+                      font-family: 'IBM Plex Mono', monospace;
+                      font-size: 11px;
+                      font-weight: 500;
+                      letter-spacing: 0.1em;
+                      color: #9aa3ad;
+                    "
+                    >DIVIDENDEN 2031</h2
+                  ><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px"
+                    >248,00 €</span
+                  ></div
+                >
+                <ul
+                  style="
+                    list-style: none;
+                    margin: 0;
+                    padding: 4px 0 0;
+                    font-variant-numeric: tabular-nums;
+                  ">
+                  <li style="display: flex; gap: 12px; padding: 6px 16px; background: #171b21"
+                    ><span
+                      style="
+                        width: 52px;
+                        color: var(--accent, #f2a93b);
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 12px;
+                      "
+                      >24.10.</span
+                    ><span style="flex: 1">Norvane · angekündigt</span
+                    ><span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 12px;
+                        color: #33d17a;
+                      "
+                      >+28,70 €</span
+                    ></li
+                  >
+                  <li style="display: flex; gap: 12px; padding: 5px 16px"
+                    ><span
+                      style="
+                        width: 52px;
+                        color: #9aa3ad;
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 12px;
+                      "
+                      >15.10.</span
+                    ><span style="flex: 1">Kalveth Health SE</span
+                    ><span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 12px;
+                        color: #33d17a;
+                      "
+                      >+18,90 €</span
+                    ></li
+                  ><li style="display: flex; gap: 12px; padding: 5px 16px"
+                    ><span
+                      style="
+                        width: 52px;
+                        color: #9aa3ad;
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 12px;
+                      "
+                      >15.09.</span
+                    ><span style="flex: 1">Talvar World ETF</span
+                    ><span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 12px;
+                        color: #33d17a;
+                      "
+                      >+48,60 €</span
+                    ></li
+                  ><li style="display: flex; gap: 12px; padding: 5px 16px"
+                    ><span
+                      style="
+                        width: 52px;
+                        color: #9aa3ad;
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 12px;
+                      "
+                      >16.06.</span
+                    ><span style="flex: 1">Selmark Energie AG</span
+                    ><span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 12px;
+                        color: #33d17a;
+                      "
+                      >+72,00 €</span
+                    ></li
+                  ><li style="display: flex; gap: 12px; padding: 5px 16px"
+                    ><span
+                      style="
+                        width: 52px;
+                        color: #9aa3ad;
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 12px;
+                      "
+                      >15.05.</span
+                    ><span style="flex: 1">Halvion AG</span
+                    ><span
+                      style="
+                        font-family: 'IBM Plex Mono', monospace;
+                        font-size: 12px;
+                        color: #33d17a;
+                      "
+                      >+27,00 €</span
+                    ></li
+                  >
+                </ul>
+              </section>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <footer
+        style="
+          display: flex;
+          flex-wrap: wrap;
+          background: #121519;
+          border-top: 1px solid #262b33;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11px;
+          color: #9aa3ad;
+        ">
+        <span
+          style="
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-right: 1px solid #262b33;
+          "
+          ><span style="width: 7px; height: 7px; border-radius: 50%; background: #33d17a"></span
+          >EUROPA offen bis 17:30</span
+        >
+        <span
+          style="
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-right: 1px solid #262b33;
+          "
+          ><span style="width: 7px; height: 7px; border-radius: 50%; background: #33d17a"></span
+          >SCHWELLENLÄNDER offen bis 16:00</span
+        >
+        <span
+          style="
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-right: 1px solid #262b33;
+          "
+          ><span
+            style="width: 7px; height: 7px; border-radius: 50%; border: 1px solid #9aa3ad"></span
+          >NORDAMERIKA ab 15:30</span
+        >
+        <span
+          style="
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-right: 1px solid #262b33;
+          "
+          ><span
+            style="width: 7px; height: 7px; border-radius: 50%; border: 1px solid #9aa3ad"></span
+          >ASIEN-PAZIFIK geschlossen</span
+        >
+        <span style="margin-left: auto; padding: 6px 14px"
+          >Gespeichert 10:42 · Seed salbei-lotse-910</span
+        >
+      </footer>
+    </div>
+  </body>
+</html>

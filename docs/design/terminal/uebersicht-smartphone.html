@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <title>Terminal – Übersicht (Smartphone)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap"
+      rel="stylesheet" />
+    <style>
+      body {
+        margin: 0;
+        background: #0b0d10;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      button,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+      a {
+        color: #f2a93b;
+      }
+      a:hover {
+        color: #ffc56b;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      style="
+        --accent: #f2a93b;
+        position: relative;
+        width: 390px;
+        height: 844px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        background: #0b0d10;
+        color: #e9ecef;
+        font-family: 'IBM Plex Sans', system-ui, sans-serif;
+        font-size: 13px;
+        line-height: 1.4;
+      ">
+      <header
+        style="
+          display: flex;
+          align-items: center;
+          height: 48px;
+          padding: 0 4px 0 14px;
+          background: #121519;
+          border-bottom: 1px solid #262b33;
+        ">
+        <a
+          href="uebersicht-smartphone.html"
+          style="
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #e9ecef;
+            text-decoration: none;
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+          "
+          ><span style="width: 10px; height: 10px; background: var(--accent, #f2a93b)"></span
+          >PORTFOLIGO</a
+        >
+        <span style="flex: 1"></span>
+        <button
+          type="button"
+          aria-label="Suchen"
+          style="
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            background: none;
+            border: 0;
+            cursor: pointer;
+          ">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M21 21l-4.3-4.3"></path>
+          </svg>
+        </button>
+        <button
+          type="button"
+          aria-label="Benachrichtigungen, 3 ungelesen"
+          style="
+            position: relative;
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            background: none;
+            border: 0;
+            cursor: pointer;
+          ">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+          </svg>
+          <span
+            style="
+              position: absolute;
+              top: 8px;
+              right: 7px;
+              min-width: 16px;
+              height: 16px;
+              padding: 0 4px;
+              background: var(--accent, #f2a93b);
+              color: #0b0d10;
+              font-family: 'IBM Plex Mono', monospace;
+              font-size: 10px;
+              font-weight: 600;
+              line-height: 16px;
+              text-align: center;
+            "
+            >3</span
+          >
+        </button>
+        <button
+          type="button"
+          aria-label="Spielermenü: Alex"
+          style="
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            background: none;
+            border: 0;
+            cursor: pointer;
+          "
+          ><span
+            style="
+              width: 28px;
+              height: 28px;
+              display: grid;
+              place-items: center;
+              background: #23272f;
+              border: 1px solid #2f353e;
+              font-family: 'IBM Plex Mono', monospace;
+              font-size: 12px;
+              font-weight: 600;
+            "
+            >A</span
+          ></button
+        >
+      </header>
+
+      <div
+        style="
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          height: 48px;
+          padding: 0 10px 0 14px;
+          background: #121519;
+          border-bottom: 1px solid #262b33;
+          font-family: 'IBM Plex Mono', monospace;
+        ">
+        <span style="font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums"
+          >10:42</span
+        >
+        <span style="color: #9aa3ad; font-size: 12px">MO 20.10.31</span>
+        <span style="flex: 1"></span>
+        <button
+          type="button"
+          aria-label="Pause"
+          style="
+            width: 36px;
+            height: 36px;
+            display: grid;
+            place-items: center;
+            background: #181c22;
+            border: 1px solid #2f353e;
+            color: var(--accent, #f2a93b);
+            cursor: pointer;
+          ">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.25"
+            stroke-linecap="round"
+            aria-hidden="true">
+            <path d="M8 5v14M16 5v14"></path>
+          </svg>
+        </button>
+        <button
+          type="button"
+          aria-label="Geschwindigkeit: 10 Minuten pro Sekunde"
+          style="
+            height: 36px;
+            padding: 0 8px;
+            background: #181c22;
+            border: 1px solid #2f353e;
+            font-size: 12px;
+            cursor: pointer;
+          "
+          >10 min/s</button
+        >
+        <button
+          type="button"
+          aria-label="Vorspulen"
+          style="
+            width: 36px;
+            height: 36px;
+            display: grid;
+            place-items: center;
+            background: #181c22;
+            border: 1px solid #2f353e;
+            cursor: pointer;
+          ">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linejoin="round"
+            aria-hidden="true">
+            <path d="M4 5l8 7-8 7z"></path>
+            <path d="M12 5l8 7-8 7z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div
+        style="
+          display: flex;
+          overflow: hidden;
+          background: #0e1014;
+          border-bottom: 1px solid #262b33;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11px;
+          white-space: nowrap;
+          font-variant-numeric: tabular-nums;
+        ">
+        <div style="display: flex; gap: 8px; padding: 6px 12px; border-right: 1px solid #262b33"
+          ><span style="color: #9aa3ad">TALVAR WORLD</span><span>3.412,80</span
+          ><span style="color: #33d17a">+0,74 %</span></div
+        >
+        <div style="display: flex; gap: 8px; padding: 6px 12px; border-right: 1px solid #262b33"
+          ><span style="color: #9aa3ad">BELMAR 40</span><span>14.208,55</span
+          ><span style="color: #33d17a">+0,62 %</span></div
+        >
+        <div style="display: flex; gap: 8px; padding: 6px 12px"
+          ><span style="color: #9aa3ad">OSTREL 100</span><span>8.951,20</span></div
+        >
+      </div>
+
+      <main
+        style="
+          flex: 1;
+          min-height: 0;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+          background: #262b33;
+        ">
+        <section
+          aria-labelledby="tp-hero"
+          style="
+            padding: 14px;
+            background: #121519;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          ">
+          <h2
+            id="tp-hero"
+            style="
+              margin: 0;
+              font-family: 'IBM Plex Mono', monospace;
+              font-size: 11px;
+              font-weight: 500;
+              letter-spacing: 0.1em;
+              color: #9aa3ad;
+            "
+            >GESAMTVERMÖGEN</h2
+          >
+          <div
+            style="
+              display: flex;
+              align-items: baseline;
+              justify-content: space-between;
+              gap: 8px;
+              font-family: 'IBM Plex Mono', monospace;
+              font-variant-numeric: tabular-nums;
+            ">
+            <span style="font-size: 28px; font-weight: 600; line-height: 1">24.512,30 €</span>
+            <span style="color: #33d17a; font-size: 12px">+0,60 % heute</span>
+          </div>
+          <svg
+            viewBox="0 0 1000 240"
+            preserveAspectRatio="none"
+            role="img"
+            aria-label="Vermögensverlauf über ein Jahr, steigend"
+            style="display: block; width: 100%; height: 84px">
+            <path
+              d="M0 204.5 14 214.5 28 210.2 42 200.5 56 204.2 70 215.1 85 214.7 99 209.6 113 198.9 127 208.9 141 219.4 155 212.3 169 207.2 183 192.7 197 182.8 211 182.8 225 184.3 239 159.8 254 161.5 268 167.9 282 177.6 296 175.7 310 173.4 324 175.6 338 175.2 352 171.7 366 164.3 380 153 394 150 408 166.1 423 158.5 437 171 451 171.6 465 184.3 479 183.3 493 189.5 507 186.6 521 155.5 535 155 549 146 563 157.7 577 159.4 592 152.1 606 152 620 147.5 634 145.5 648 154.1 662 147.7 676 154.5 690 135.7 704 139.6 718 131.9 732 130.9 746 120.5 761 125.4 775 114.5 789 114.7 803 101 817 93.6 831 91.1 845 98 859 89.1 873 83.2 887 65.1 901 68 915 61 930 54.5 944 50.3 958 46.9 972 43.8 986 49.2 1000 59 L1000 240 L0 240 Z"
+              fill="var(--accent, #f2a93b)"
+              fill-opacity="0.08"></path>
+            <path
+              d="M0 204.5 14 214.5 28 210.2 42 200.5 56 204.2 70 215.1 85 214.7 99 209.6 113 198.9 127 208.9 141 219.4 155 212.3 169 207.2 183 192.7 197 182.8 211 182.8 225 184.3 239 159.8 254 161.5 268 167.9 282 177.6 296 175.7 310 173.4 324 175.6 338 175.2 352 171.7 366 164.3 380 153 394 150 408 166.1 423 158.5 437 171 451 171.6 465 184.3 479 183.3 493 189.5 507 186.6 521 155.5 535 155 549 146 563 157.7 577 159.4 592 152.1 606 152 620 147.5 634 145.5 648 154.1 662 147.7 676 154.5 690 135.7 704 139.6 718 131.9 732 130.9 746 120.5 761 125.4 775 114.5 789 114.7 803 101 817 93.6 831 91.1 845 98 859 89.1 873 83.2 887 65.1 901 68 915 61 930 54.5 944 50.3 958 46.9 972 43.8 986 49.2 1000 59"
+              fill="none"
+              stroke="var(--accent, #f2a93b)"
+              stroke-width="1.75"
+              vector-effect="non-scaling-stroke"></path>
+          </svg>
+          <dl
+            style="
+              margin: 0;
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 8px 16px;
+              font-variant-numeric: tabular-nums;
+            ">
+            <div
+              ><dt style="color: #9aa3ad; font-size: 11px">Bargeld</dt
+              ><dd style="margin: 0; font-family: 'IBM Plex Mono', monospace">6.229,74 €</dd></div
+            >
+            <div
+              ><dt style="color: #9aa3ad; font-size: 11px">Wertpapiere</dt
+              ><dd style="margin: 0; font-family: 'IBM Plex Mono', monospace">18.282,56 €</dd></div
+            >
+            <div
+              ><dt style="color: #9aa3ad; font-size: 11px">Seit Beginn</dt
+              ><dd style="margin: 0; font-family: 'IBM Plex Mono', monospace; color: #33d17a"
+                >+9,80 %</dd
+              ></div
+            >
+            <div
+              ><dt style="color: #9aa3ad; font-size: 11px">Benchmark</dt
+              ><dd style="margin: 0; font-family: 'IBM Plex Mono', monospace; color: #33d17a"
+                >+11,30 %</dd
+              ></div
+            >
+          </dl>
+        </section>
+
+        <section aria-labelledby="tp-pos" style="flex: 1; background: #121519">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 10px 14px;
+              border-bottom: 1px solid #262b33;
+            ">
+            <h2
+              id="tp-pos"
+              style="
+                margin: 0;
+                font-family: 'IBM Plex Mono', monospace;
+                font-size: 11px;
+                font-weight: 500;
+                letter-spacing: 0.1em;
+                color: #9aa3ad;
+              "
+              >POSITIONEN · 5</h2
+            >
+            <a href="depot-smartphone.html" style="font-size: 12px; text-decoration: none">Depot</a>
+          </div>
+          <ul style="list-style: none; margin: 0; padding: 0; font-variant-numeric: tabular-nums">
+            <li
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 9px 14px;
+                border-bottom: 1px solid #1f242b;
+              "
+              ><span style="flex: 1; min-width: 0"
+                ><span style="display: block; font-weight: 500">Talvar World ETF</span
+                ><span style="font-size: 11px; color: #9aa3ad">120 × 70,11</span></span
+              ><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px">8.413,20</span
+              ><span
+                style="
+                  width: 62px;
+                  text-align: right;
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 12px;
+                  color: #33d17a;
+                "
+                >+0,84 %</span
+              ></li
+            >
+            <li
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 9px 14px;
+                border-bottom: 1px solid #1f242b;
+              "
+              ><span style="flex: 1; min-width: 0"
+                ><span style="display: block; font-weight: 500">Halvion AG</span
+                ><span style="font-size: 11px; color: #9aa3ad">15 × 260,36</span></span
+              ><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px">3.905,40</span
+              ><span
+                style="
+                  width: 62px;
+                  text-align: right;
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 12px;
+                  color: #33d17a;
+                "
+                >+2,71 %</span
+              ></li
+            >
+            <li
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 9px 14px;
+                border-bottom: 1px solid #1f242b;
+              "
+              ><span style="flex: 1; min-width: 0"
+                ><span style="display: block; font-weight: 500">Selmark Energie AG</span
+                ><span style="font-size: 11px; color: #9aa3ad">60 × 43,53</span></span
+              ><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px">2.611,80</span
+              ><span
+                style="
+                  width: 62px;
+                  text-align: right;
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 12px;
+                  color: #ff6b6b;
+                "
+                >−1,12 %</span
+              ></li
+            >
+            <li
+              style="
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 9px 14px;
+                border-bottom: 1px solid #1f242b;
+              "
+              ><span style="flex: 1; min-width: 0"
+                ><span style="display: block; font-weight: 500">Kalveth Health SE</span
+                ><span style="font-size: 11px; color: #9aa3ad">35 × 56,58</span></span
+              ><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px">1.980,30</span
+              ><span
+                style="
+                  width: 62px;
+                  text-align: right;
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 12px;
+                  color: #33d17a;
+                "
+                >+0,46 %</span
+              ></li
+            >
+            <li style="display: flex; align-items: center; gap: 10px; padding: 9px 14px"
+              ><span style="flex: 1; min-width: 0"
+                ><span style="display: block; font-weight: 500">Norvane Versorgung AG</span
+                ><span style="font-size: 11px; color: #9aa3ad">82 × 16,73</span></span
+              ><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px">1.371,86</span
+              ><span
+                style="
+                  width: 62px;
+                  text-align: right;
+                  font-family: 'IBM Plex Mono', monospace;
+                  font-size: 12px;
+                  color: #ff6b6b;
+                "
+                >−0,38 %</span
+              ></li
+            >
+          </ul>
+        </section>
+      </main>
+
+      <div
+        style="
+          display: flex;
+          gap: 12px;
+          padding: 6px 14px;
+          background: #121519;
+          border-top: 1px solid #262b33;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 11px;
+          color: #9aa3ad;
+          white-space: nowrap;
+        ">
+        <span style="display: flex; align-items: center; gap: 5px"
+          ><span style="width: 7px; height: 7px; border-radius: 50%; background: #33d17a"></span
+          >EU</span
+        >
+        <span style="display: flex; align-items: center; gap: 5px"
+          ><span style="width: 7px; height: 7px; border-radius: 50%; background: #33d17a"></span
+          >EM</span
+        >
+        <span style="display: flex; align-items: center; gap: 5px"
+          ><span
+            style="width: 7px; height: 7px; border-radius: 50%; border: 1px solid #9aa3ad"></span
+          >NA ab 15:30</span
+        >
+        <span style="display: flex; align-items: center; gap: 5px"
+          ><span
+            style="width: 7px; height: 7px; border-radius: 50%; border: 1px solid #9aa3ad"></span
+          >AP zu</span
+        >
+      </div>
+
+      <nav
+        aria-label="Hauptnavigation"
+        style="
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          height: 64px;
+          background: #121519;
+          border-top: 1px solid #262b33;
+          font-family: 'IBM Plex Mono', monospace;
+          font-size: 10px;
+          letter-spacing: 0.04em;
+        ">
+        <a
+          href="uebersicht-smartphone.html"
+          aria-current="page"
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: var(--accent, #f2a93b);
+            text-decoration: none;
+            background: #1e232b;
+          ">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linejoin="round"
+            aria-hidden="true">
+            <rect x="3" y="3" width="7" height="9"></rect>
+            <rect x="14" y="3" width="7" height="5"></rect>
+            <rect x="14" y="12" width="7" height="9"></rect>
+            <rect x="3" y="16" width="7" height="5"></rect></svg
+          >ÜBERSICHT</a
+        >
+        <a
+          href="instrument-smartphone.html"
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #9aa3ad;
+            text-decoration: none;
+          ">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true">
+            <path d="M3 3v18h18"></path>
+            <path d="M7 15l4-4 3 3 5-6"></path></svg
+          >MÄRKTE</a
+        >
+        <a
+          href="depot-smartphone.html"
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #9aa3ad;
+            text-decoration: none;
+          ">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true">
+            <rect x="3" y="7" width="18" height="13" rx="1"></rect>
+            <path d="M9 7V4h6v3"></path>
+            <path d="M3 13h18"></path></svg
+          >DEPOT</a
+        >
+        <a
+          href="konten-smartphone.html"
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #9aa3ad;
+            text-decoration: none;
+          ">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true">
+            <path d="M3 10l9-6 9 6"></path>
+            <path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"></path>
+            <path d="M3 21h18"></path></svg
+          >KONTEN</a
+        >
+        <button
+          type="button"
+          style="
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: none;
+            border: 0;
+            color: #9aa3ad;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 0.04em;
+            cursor: pointer;
+          ">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true">
+            <path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg
+          >MEHR</button
+        >
+      </nav>
+    </div>
+  </body>
+</html>
