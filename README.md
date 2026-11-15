@@ -23,7 +23,7 @@ Die Meilensteine M0 bis M5 der ersten Stufe sind fertig. Spielbar sind:
 | Dashboard          | Performance mit Benchmark, „Demnächst“, „Erste Schritte“, Erträge und Kosten, Dividendenkalender |
 | Benachrichtigungen | Hinweise, automatische Pause, Abwesenheitsbericht                                                |
 
-Als Nächstes folgt M6 (Export und Import, Einstellungen, PWA, Barrierefreiheit, Release 1.0). Den aktuellen Stand je Arbeitspaket zeigt die Statusübersicht im [Projektplan](docs/projektplan.md#4-statusübersicht).
+Als Nächstes folgt AP 6.6, der Abschluss von M6 und Stufe 1 als Version 0.6.0. Version 1.0 kommt mit dem Public Release (M16). Den aktuellen Stand je Arbeitspaket zeigt die Statusübersicht im [Projektplan](docs/projektplan.md#4-statusübersicht).
 
 Unter `#/lab` liegt zusätzlich ein **Simulations-Labor**, das generierte Welten, Kursverläufe und Statistiken des Marktmodells zeigt.
 

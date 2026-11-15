@@ -29,7 +29,7 @@ What exists in the code, by topic. When an AP changes this area, work the change
 - App-wide slice `pwa` (`providePwaState()` in `provideAppCore()`, `provideAppInitializer` dispatches `enterApp`), `PwaFacade`: platform; `update` (`unrecoverable` is kept over a later `version-ready`); install availability and outcome; notification permission (read at start and on `enterAppSettings`, requested only from the click); storage status (read on `enterAppSettings` — guard `enterAppSettings()` on the settings route — and after `clickedRequestPersistentStorage`; a `PendingTask` while loading). Effects toast after `appinstalled` and on failures; `reload$` activates only a `version-ready`.
 - `pwa/feature/app-update` (in `AppComponent`, every page) with `pwa/ui/update-banner` (`pwa.update`, `pwa.update.reload`; floats above the phone navigation).
 - `pwa/ui/app-settings`: panel „App“ of the settings (test IDs `settings.app.*`: install, notifications, storage, persistence).
-- `pwa/ui/pre-release-hint` (`pwa.pre-release-hint`, players page and settings); remove it with AP 6.6.
+- `pwa/ui/pre-release-hint` (`pwa.pre-release-hint`, players page and settings); remove it with the public release (M16).
 
 ## Tests
 

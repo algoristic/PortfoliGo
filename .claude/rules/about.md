@@ -13,5 +13,5 @@ What exists in the code, by topic. When an AP changes this area, work the change
 - Content: disclaimer „Ein Spiel, keine Anlageberatung“ (`about.disclaimer`), app version (`about.app-version`, token `APP_VERSION` in `about/feature/about.config.ts`, provided only by `provideAppCore()` from `package.json`), simulation version (`about.sim-version`, `SIM_VERSION`), licences (`about.licenses`, rows `about.license.<id>.id`) and the TradingView attribution (`about.tradingview`, text from the NOTICE of `lightweight-charts`).
 - `THIRD_PARTY_LICENSES` (`about/domain/third-party-licenses.ts`, model `models/third-party-license.model.ts`) lists every runtime dependency and the self-hosted fonts; `third-party-licenses.spec.ts` checks it against `package.json`, so a new runtime dependency needs an entry. Names are language-neutral (`about/domain` has no `$localize`).
 - `about/ui/disclaimer-hint` (inputs `aboutLink`, `glossaryLink`): one-sentence note with links „Rechtliches und Lizenzen“ and „Glossar“ on the players page, „Spieler anlegen“ and the settings.
-- Impressum and privacy notice are out of scope (PO decision).
+- Impressum and privacy notice are not built yet; they follow in M16 (public release, E-26).
 - Tests: `about.page.spec.ts`; axe in `e2e/accessibility.e2e.ts`.
