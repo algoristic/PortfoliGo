@@ -15,7 +15,7 @@ export default defineConfig({
   timeout: isCi ? 60_000 : 30_000,
   reporter: isCi ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: 'http://127.0.0.1:4173/',
+    baseURL: 'http://127.0.0.1:4173/portfoligo/',
     trace: 'retain-on-failure',
     video: 'retain-on-failure',
     // The service worker of the build (AP 6.3) prefetches the whole app after 30 s at the latest;
@@ -25,7 +25,7 @@ export default defineConfig({
   },
   webServer: {
     command: 'node e2e/serve.mjs www',
-    url: 'http://127.0.0.1:4173/',
+    url: 'http://127.0.0.1:4173/portfoligo/',
     reuseExistingServer: !isCi,
   },
   projects: [
