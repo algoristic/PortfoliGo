@@ -593,7 +593,7 @@ The test concept is TS §14.1 (principles, test kinds, suites, decision E-29). T
 | Rule code                                                                                                                  | mutation tests                                                                                  | `stryker.config.mjs`, `vitest.mutation.config.ts`          | `mutation`    |
 
 - Specs in `domain` and `util` run in plain Vitest under Node (`vitest.config.ts`), so they must not import Angular, NgRx, RxJS or the DOM helpers (lint rule). All other specs run through `ng test` under jsdom. The globals `describe`, `it`, `expect` and `vi` exist in both.
-- New rule code goes into `mutate` in `stryker.config.mjs`, and its spec into `RULE_SPECS` in `vitest.mutation.config.ts`.
+- New rule code goes into one shard of `MUTATION_SHARDS` in `stryker.config.mjs` (the one with the fewest mutants), and its spec into `RULE_SPECS` in `vitest.mutation.config.ts`.
 
 ### Writing tests
 
@@ -715,7 +715,7 @@ They run the real code: store, effects, facades, services, worker code, child co
 
 ### Mutation tests
 
-- `npm run test:mutation` runs Stryker incrementally; the report is `reports/mutation/index.html`. CI fails below `thresholds.break` in `stryker.config.mjs`.
+- `npm run test:mutation` runs Stryker incrementally over all shards; the report is `reports/mutation/index.html`. CI runs one job per shard (`MUTATION_SHARD`) and fails when `tools/mutation-score.mjs` finds the score of all shards below `BREAK_THRESHOLD` in `stryker.config.mjs`.
 - Kill surviving mutants in changed rule code with a new test, or explain in the AP why a mutant is equivalent.
 
 ### Planning tests in an AP
