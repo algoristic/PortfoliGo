@@ -120,6 +120,6 @@ Entwickelt wird Arbeitspaket für Arbeitspaket nach dem [Projektplan](docs/proje
 GitHub Actions prüft jeden Push:
 
 - `build-latest.yml` ist das Gate: Format, Lint, Typen, Suiten `logic` und `angular`, Build mit Bundle-Budget und Systemtests in Chromium.
-- `verify.yml` führt den Rest aus (`verify-extended.yml`): Kalibrierung, Performance, Mutation, J10-Budgets, Firefox, WebKit und Smartphone-Profile. Er blockiert das Deployment nicht.
+- `verify.yml` führt den Rest aus (`verify-extended.yml`): Kalibrierung, Performance, Mutation, J10-Budgets, Firefox, WebKit und Smartphone-Profile. Er läuft vorerst nur auf Abruf, nicht bei jedem Push (die Prüfungen laufen lokal), und blockiert das Deployment nicht.
 - `pull-request.yml` führt Gate und `verify-extended.yml` für Pull Requests aus.
 - `publish.yml` baut `main` und veröffentlicht `www/` per SFTP, sobald das Gate grün ist. Die App läuft unter <https://algoristic.de/portfoligo/>.

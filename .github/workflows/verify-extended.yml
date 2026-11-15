@@ -1,8 +1,8 @@
 name: Verify PortfoliGo (extended)
 
 # Checks of TS §14.4 that do not gate the deployment: they are slow or measure wall-clock budgets,
-# which are noisy on the runners. `verify.yml` runs them on every push to `main`; a failure turns
-# that run red without stopping `publish.yml`.
+# which are noisy on the runners. `verify.yml` runs them on demand (for now they run locally
+# instead of on every push); a failure turns that run red without stopping `publish.yml`.
 
 on:
   workflow_call:

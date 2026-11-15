@@ -8,6 +8,7 @@ Hier steht, was sich an Plan, Spezifikationen und Code geändert hat: das Ergebn
 
 ## 15.11.2026
 
+- **CI: `Verify` läuft nicht mehr bei jedem Push (kein AP, Product Owner).** Die Pipeline hat zu viel vom Budget für GitHub Actions verbraucht. `verify.yml` hat nur noch den Trigger `workflow_dispatch`; Kalibrierung, Perf, Mutation, J10-Budgets, Firefox, WebKit und Smartphone-Profile laufen vorerst lokal vor dem Push. Gate und Publish sind unverändert, `pull-request.yml` ruft `verify-extended.yml` weiterhin auf. Angepasst: TS §14.4, README, `CLAUDE.md`.
 - **AP 6.6 – Abschluss Stufe 1 (Version 0.6.0), umgesetzt; offen sind Deployment und iOS-Selbsttest.**
   - **Version:** `package.json` auf 0.6.0 (`npm version --no-git-tag-version`); Über-Seite und Export lesen sie von dort. TS §15 nennt das Datum; das Einfrieren der `simVersion` steht bei M16 (verschoben aus AP 6.6).
   - **CI:** `Verify` war auf den letzten beiden Pushes rot, auch auf einem reinen Doku-Commit:
