@@ -116,12 +116,10 @@ Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevo
 | ID   | Frage                                               | Vorschlag                                                                                                                                                                                          | Spätestens vor |
 | ---- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
 | E-25 | Versionsregeln ab 1.0 (TS §15; vor 1.0 entschieden) | Umfang der Kompatibilitätszusage festlegen, z. B. aktuelle und vorige `simVersion` spielbar, ältere lesbar                                                                                         | M16            |
-| E-38 | Versionssprünge in Stufe 2 (TS §15)                 | `SIM_VERSION` steigt bei jedem Golden-Master-Bruch; `SCHEMA_VERSION` wie in M5 nur einmal je Meilenstein, mit dem letzten AP, das den gespeicherten Zustand ändert                                 | AP 7.3         |
 | E-39 | Kalibrierung in Stufe 2 (TS §6.9)                   | Modell-APs vor dem Kalibrierungsschritt ihres Meilensteins markieren betroffene Ziele als „offen bis AP x.y“, damit die Suite grün bleibt; neue Ziele und Bänder entscheidet der PO im Fachkonzept | AP 8.3         |
 | E-40 | Instrumente mit Lebenszyklus (TS §6.10)             | Alle Instrumente einer Welt entstehen zur Epoche mit Notierungszeitraum, die Typed Arrays bleiben fest; das Ende einer Notierung schließt Bestände per Auszahlung oder geldloser Ausbuchung        | AP 9.2a        |
-| E-41 | WebAssembly im Rechenkern (TS §14.3, AP 7.2)        | Keine Portierung in Stufe 2; neu prüfen beim Start von N2 nach festgelegter Weltgröße und umgesetzter Bedarfsrechnung (TS §5.8); dann zuerst die Primitive, nie die Modelllogik                    | AP 7.9 bzw. N2 |
 
-**Bereits entschieden:** E-07 (`CLAUDE.md`), E-03 – Zufallsströme per MurmurHash3 x86_128, `sfc32`, eigene `detExp`/`detLog` (10.11.2026), E-09 – Geld in Cent, Stück in Millionstel, Kurse als Gleitkomma mit Preisraster (10.11.2026), E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6), E-06 – Tailwind CSS v4 mit angehobener Browserslist und Inter Variable als selbst gehostete Schrift (10.11.2026) sowie die Ergänzungen für `CLAUDE.md` aus TS §11.2 (10.11.2026, übernommen in AP 0.2), E-15 – Hash-Routing mit englischen Routenpfaden (10.11.2026), E-16 – Angular Aria neben dem CDK für Tabs und Menüs (10.11.2026), E-12 – Stufe 1 mit Aktien, ETFs und Indizes, CFDs bleiben in Stufe 3 (10.11.2026), E-13 – reale Regionen und Länder, fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen; Standardwelt nach TS §5.2 (10.11.2026), E-17 – Banking mit sofortiger Eröffnung und Überweisung, Dispo mit geduldeter Überziehung, Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (10.11.2026), E-02 – Tick = 1 Spielminute, Start Mo 01.04.2030 00:00, im Hintergrund Echtzeit (pro Spieler auf Pause umstellbar), eine Pause bleibt Pause (11.11.2026), E-18 – Handelszeiten je Region, Orders jederzeit, Ausführung in der Handelszeit (11.11.2026), E-04 – lightweight-charts 5.3.0 mit TradingView-Logo, lazy geladen; eigene SVG-Sparklines und -Donuts (Spike in AP 1.7, 11.11.2026), E-01 – autoritative Engine im Web Worker, NgRx hält nur Projektionen (12.11.2026), E-26 – die App bleibt bis 1.0 öffentlich, Impressum, Datenschutzhinweis und Hinweis „keine Anlageberatung“ erst in AP 6.5; das Risiko trägt der Product Owner (12.11.2026), E-27 – vierfache CPU-Drosselung (Chromium) statt Referenzgerät, Budgets Engine bei 1 w/s < 50 % eines Kerns und Spielstart < 6 s, erste Messung in M2 (12.11.2026), E-08 – Persistenz mit Ergänzungen: Marktzustände zu Monatsbeginn im eigenen Store (DB-Version 4), Write-ahead nur für Spielkommandos, Kommando-Log älter als der älteste Snapshot wird gelöscht, Uhr spätestens nach einem Spieltag gesichert, Tick des letzten `clock`-Ereignisses bei `pagehide` als Untergrenze; Tageskerzen bleiben je Spieler (12.11.2026), E-25 vor 1.0 – `SIM_VERSION` und `schemaVersion` ab AP 2.3, veraltete Spieler gesperrt (nur löschen; Zusage ab 1.0 offen bis AP 6.6) (12.11.2026), E-14 – Lebenshaltungskosten als Startparameter, Hausbank ist die erste Filialbank in Weltreihenfolge, Start pausiert, Vorgaben 10.000 € / 2.500 € / 1.800 € (12.11.2026). E-30 bis E-33 – Regionsfaktoren mit eigener Aktivität und Schwellenländer-Ziel als „Info“, Korrelationsziele über Large Caps, Zero-Beta-Rendite, Dividenden-Lebenszyklus (12.11.2026, Vorbereitung der Kalibrierung, AP 1.9b). E-34 – Prüfregel und Ziele der Kalibrierung: Median von `calib-1` bis `calib-5`, Korrelation zwischen Sektoren 0,2–0,4, Tagesprofil 1,3–2,0, Risikoklassen als Quintile (12.11.2026, AP 1.9c). E-11 – Steuern in Stufe 1: 25 % pauschal, 1.000 € Sparerpauschbetrag, ein Verlusttopf, ohne Soli und Kirchensteuer (13.11.2026). E-19 – Buchungstermine: Bank-Lauf 06:00, Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag des Monats (13.11.2026). E-17 ergänzt: Dispo je Bank nach dem Gehaltseingang bei ihr, geduldete Überziehung ohne Obergrenze (13.11.2026, TS §7.4). E-21 – Daueraufträge (US-BK-10) in Stufe 1 statt eines Abbuchungskontos je Sparplan; Sparpläne buchen nur vom Verrechnungskonto ihres Depots (13.11.2026, TS §7.4, §7.8). E-28 – ETF-Durchschau als Muss, zweite Vergleichsgröße, Story „Erste Schritte“ (US-UI-10, Soll) in Stufe 1, Depotübertrag (US-BK-12) als Story in Stufe 2 (13.11.2026). E-05 ergänzt: „Demnächst“ liest die planbaren Termine aus Terminplaner und Kalender mit Basisbeträgen, keine Vorausrechnung im MVP (13.11.2026, TS §8.1). E-05 – PWA im MVP mit `@angular/service-worker`, Capacitor als optionaler Meilenstein N1, Ports jetzt vorbereiten (14.11.2026, TS §13). E-10 – Exportformat mit gzip schon in Formatversion 1, ohne `commands`, Import startet pausiert (14.11.2026, TS §10). E-35 – Hintergrundmodi `keep-speed` und `custom-speed`, Pause-Frist `backgroundPauseAfter` auch bei geschlossener App, Lücken im Takt über 5 s zählen als Echtzeit, Auto-Pause verborgen in den neuen Modi (14.11.2026, TS §3.6, §3.7). E-36 – Deutsch und Englisch, Übersetzungen zur Laufzeit, ein Build, Standard Deutsch, Englisch als `en-GB` (14.11.2026, TS §11.9). E-25 ergänzt – App-Version bis 1.0 als `0.<Meilenstein>.<Patch>` (Abschluss M6 = 0.6.0), Version 1.0.0 mit dem Public Release in M16 (15.11.2026, TS §15). E-37 – Stufe 2 „Fundament zuerst“: M8 Kalender, Währungen, Zinsen und Inflation, M9 neue Assetklassen, M10 Unternehmen, Steuerdetails und Werkzeuge als ein Meilenstein; Fachkonzept-AP am Anfang jedes Meilensteins, UI-Overhaul nach Auswertung der Vorlage (15.11.2026, §6). Das Deployment ist laut Product Owner unter `https://algoristic.de/portfoligo/` per HTTPS erreichbar.
+**Bereits entschieden:** E-07 (`CLAUDE.md`), E-03 – Zufallsströme per MurmurHash3 x86_128, `sfc32`, eigene `detExp`/`detLog` (10.11.2026), E-09 – Geld in Cent, Stück in Millionstel, Kurse als Gleitkomma mit Preisraster (10.11.2026), E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6), E-06 – Tailwind CSS v4 mit angehobener Browserslist und Inter Variable als selbst gehostete Schrift (10.11.2026) sowie die Ergänzungen für `CLAUDE.md` aus TS §11.2 (10.11.2026, übernommen in AP 0.2), E-15 – Hash-Routing mit englischen Routenpfaden (10.11.2026), E-16 – Angular Aria neben dem CDK für Tabs und Menüs (10.11.2026), E-12 – Stufe 1 mit Aktien, ETFs und Indizes, CFDs bleiben in Stufe 3 (10.11.2026), E-13 – reale Regionen und Länder, fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen; Standardwelt nach TS §5.2 (10.11.2026), E-17 – Banking mit sofortiger Eröffnung und Überweisung, Dispo mit geduldeter Überziehung, Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (10.11.2026), E-02 – Tick = 1 Spielminute, Start Mo 01.04.2030 00:00, im Hintergrund Echtzeit (pro Spieler auf Pause umstellbar), eine Pause bleibt Pause (11.11.2026), E-18 – Handelszeiten je Region, Orders jederzeit, Ausführung in der Handelszeit (11.11.2026), E-04 – lightweight-charts 5.3.0 mit TradingView-Logo, lazy geladen; eigene SVG-Sparklines und -Donuts (Spike in AP 1.7, 11.11.2026), E-01 – autoritative Engine im Web Worker, NgRx hält nur Projektionen (12.11.2026), E-26 – die App bleibt bis 1.0 öffentlich, Impressum, Datenschutzhinweis und Hinweis „keine Anlageberatung“ erst in AP 6.5; das Risiko trägt der Product Owner (12.11.2026), E-27 – vierfache CPU-Drosselung (Chromium) statt Referenzgerät, Budgets Engine bei 1 w/s < 50 % eines Kerns und Spielstart < 6 s, erste Messung in M2 (12.11.2026), E-08 – Persistenz mit Ergänzungen: Marktzustände zu Monatsbeginn im eigenen Store (DB-Version 4), Write-ahead nur für Spielkommandos, Kommando-Log älter als der älteste Snapshot wird gelöscht, Uhr spätestens nach einem Spieltag gesichert, Tick des letzten `clock`-Ereignisses bei `pagehide` als Untergrenze; Tageskerzen bleiben je Spieler (12.11.2026), E-25 vor 1.0 – `SIM_VERSION` und `schemaVersion` ab AP 2.3, veraltete Spieler gesperrt (nur löschen; Zusage ab 1.0 offen bis AP 6.6) (12.11.2026), E-14 – Lebenshaltungskosten als Startparameter, Hausbank ist die erste Filialbank in Weltreihenfolge, Start pausiert, Vorgaben 10.000 € / 2.500 € / 1.800 € (12.11.2026). E-30 bis E-33 – Regionsfaktoren mit eigener Aktivität und Schwellenländer-Ziel als „Info“, Korrelationsziele über Large Caps, Zero-Beta-Rendite, Dividenden-Lebenszyklus (12.11.2026, Vorbereitung der Kalibrierung, AP 1.9b). E-34 – Prüfregel und Ziele der Kalibrierung: Median von `calib-1` bis `calib-5`, Korrelation zwischen Sektoren 0,2–0,4, Tagesprofil 1,3–2,0, Risikoklassen als Quintile (12.11.2026, AP 1.9c). E-11 – Steuern in Stufe 1: 25 % pauschal, 1.000 € Sparerpauschbetrag, ein Verlusttopf, ohne Soli und Kirchensteuer (13.11.2026). E-19 – Buchungstermine: Bank-Lauf 06:00, Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag des Monats (13.11.2026). E-17 ergänzt: Dispo je Bank nach dem Gehaltseingang bei ihr, geduldete Überziehung ohne Obergrenze (13.11.2026, TS §7.4). E-21 – Daueraufträge (US-BK-10) in Stufe 1 statt eines Abbuchungskontos je Sparplan; Sparpläne buchen nur vom Verrechnungskonto ihres Depots (13.11.2026, TS §7.4, §7.8). E-28 – ETF-Durchschau als Muss, zweite Vergleichsgröße, Story „Erste Schritte“ (US-UI-10, Soll) in Stufe 1, Depotübertrag (US-BK-12) als Story in Stufe 2 (13.11.2026). E-05 ergänzt: „Demnächst“ liest die planbaren Termine aus Terminplaner und Kalender mit Basisbeträgen, keine Vorausrechnung im MVP (13.11.2026, TS §8.1). E-05 – PWA im MVP mit `@angular/service-worker`, Capacitor als optionaler Meilenstein N1, Ports jetzt vorbereiten (14.11.2026, TS §13). E-10 – Exportformat mit gzip schon in Formatversion 1, ohne `commands`, Import startet pausiert (14.11.2026, TS §10). E-35 – Hintergrundmodi `keep-speed` und `custom-speed`, Pause-Frist `backgroundPauseAfter` auch bei geschlossener App, Lücken im Takt über 5 s zählen als Echtzeit, Auto-Pause verborgen in den neuen Modi (14.11.2026, TS §3.6, §3.7). E-36 – Deutsch und Englisch, Übersetzungen zur Laufzeit, ein Build, Standard Deutsch, Englisch als `en-GB` (14.11.2026, TS §11.9). E-25 ergänzt – App-Version bis 1.0 als `0.<Meilenstein>.<Patch>` (Abschluss M6 = 0.6.0), Version 1.0.0 mit dem Public Release in M16 (15.11.2026, TS §15). E-37 – Stufe 2 „Fundament zuerst“: M8 Kalender, Währungen, Zinsen und Inflation, M9 neue Assetklassen, M10 Unternehmen, Steuerdetails und Werkzeuge als ein Meilenstein; Fachkonzept-AP am Anfang jedes Meilensteins, UI-Overhaul nach Auswertung der Vorlage (15.11.2026, §6). E-38 – Versionssprünge in Stufe 2, E-41 – kein WebAssembly in Stufe 2, neu prüfen beim Start von N2, E-22 neu – Weg (a): `U_i` mit dauerhaftem und kleinem vorübergehendem Anteil, R12-Grenzen nach Messung in AP 7.3e, E-34 ergänzt – Prüfregel im Median von mindestens 20 Seeds, Bänder für einen typischen Seed, Bärenmärkte in heutiger Zählung, E-42 – kuratierte Namensliste statt Silbengenerator in M10, E-43 – Konvention der zeitgewichteten Rendite mit `SCHEMA_VERSION` (16.11.2026, Sichtung von AP 7.1a–c und 7.2). Das Deployment ist laut Product Owner unter `https://algoristic.de/portfoligo/` per HTTPS erreichbar.
 
 ## 4. Statusübersicht
 
@@ -188,19 +186,23 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 6.7   | Verhalten im Hintergrund: weitere Modi             | fertig    | 2.6, 3.6                  |
 | 6.8a  | Sprachumschaltung: Mechanik                        | fertig    | 6.2                       |
 | 6.8b  | Englische Übersetzung                              | fertig    | 6.8a, 6.5, 6.7            |
-| 7.1a  | Modellreview: Determinismus und Welt               | in Arbeit | 6.6                       |
-| 7.1b  | Modellreview: Marktmodell und Kalibrierung         | in Arbeit | 6.6                       |
-| 7.1c  | Modellreview: Wirtschaftsmodell                    | in Arbeit | 6.6                       |
-| 7.2   | WASM-Machbarkeit                                   | in Arbeit | 6.6                       |
-| 7.3   | Korrekturen aus den Prüfungen                      | offen     | 7.1a, 7.1b, 7.1c          |
+| 7.1a  | Modellreview: Determinismus und Welt               | fertig    | 6.6                       |
+| 7.1b  | Modellreview: Marktmodell und Kalibrierung         | fertig    | 6.6                       |
+| 7.1c  | Modellreview: Wirtschaftsmodell                    | fertig    | 6.6                       |
+| 7.2   | WASM-Machbarkeit                                   | fertig    | 6.6                       |
+| 7.3a  | Korrekturen: Absicherung und Messung               | offen     | 7.1a, 7.1b                |
+| 7.3b  | Korrekturen: kleine Korrekturen und Doku           | offen     | 7.1a, 7.1b, 7.1c, 7.2     |
+| 7.3c  | Korrekturen: Rendite und Benchmark                 | offen     | 7.1c                      |
+| 7.3d  | Korrekturen: Modelländerung Marktmodell            | offen     | 7.3a                      |
+| 7.3e  | Korrekturen: Neukalibrierung                       | offen     | 7.3d                      |
 | 7.4   | UI-Bausteine vereinheitlichen                      | offen     | 6.6                       |
-| 7.5   | UI-Overhaul: Vorlage auswerten                     | offen     | 7.3, 7.4                  |
+| 7.5   | UI-Overhaul: Vorlage auswerten                     | offen     | 7.3b, 7.3c, 7.4           |
 | 7.6   | UI-Overhaul: Design-Grundlage                      | offen     | 7.5                       |
 | 7.7   | UI-Overhaul: Shell, Navigation, Spielerbereich     | offen     | 7.6                       |
 | 7.8a  | UI-Overhaul: Übersicht, Märkte, Instrument         | offen     | 7.7                       |
 | 7.8b  | UI-Overhaul: Depot, Position, Orders, Steuern      | offen     | 7.7                       |
 | 7.8c  | UI-Overhaul: Konten, Banken und übrige Seiten      | offen     | 7.7                       |
-| 7.9   | Abschluss M7 (Version 0.7.0)                       | offen     | 7.2, 7.3, 7.8a–c          |
+| 7.9   | Abschluss M7 (Version 0.7.0)                       | offen     | 7.2, 7.3a–e, 7.8a–c       |
 | 8.1   | Fachkonzept M8                                     | offen     | 7.9                       |
 | 8.2   | Kalender mit Feiertagen                            | offen     | 8.1                       |
 | 8.3   | Marktmodell und Engine mit Feiertagen              | offen     | 8.2                       |
@@ -230,6 +232,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 9.12  | Abschluss M9 (Version 0.9.0)                       | offen     | 9.6, 9.8, 9.9, 9.11       |
 | 10.1  | Fachkonzept M10                                    | offen     | 9.12                      |
 | 10.2  | Fundamentaldaten und Quartalszahlen: Modell        | offen     | 10.1                      |
+| 10.2b | Kuratierte Namen der Welt                          | offen     | 10.1                      |
 | 10.3  | Unternehmensereignisse: Modell                     | offen     | 10.2, 9.2a                |
 | 10.4  | Unternehmensereignisse im Depot                    | offen     | 10.3, 9.2b                |
 | 10.5  | Fundamentaldaten und Ereignisse in der Oberfläche  | offen     | 10.2, 10.4                |
@@ -421,7 +424,11 @@ flowchart TD
     AP7_1b["7.1b Modellreview: Marktmodell und Kalibrierung"]
     AP7_1c["7.1c Modellreview: Wirtschaftsmodell"]
     AP7_2["7.2 WASM-Machbarkeit"]
-    AP7_3["7.3 Korrekturen aus den Prüfungen"]
+    AP7_3a["7.3a Korrekturen: Absicherung und Messung"]
+    AP7_3b["7.3b Korrekturen: kleine Korrekturen und Doku"]
+    AP7_3c["7.3c Korrekturen: Rendite und Benchmark"]
+    AP7_3d["7.3d Korrekturen: Modelländerung Marktmodell"]
+    AP7_3e["7.3e Korrekturen: Neukalibrierung"]
     AP7_4["7.4 UI-Bausteine vereinheitlichen"]
     AP7_5["7.5 UI-Overhaul: Vorlage auswerten"]
     AP7_6["7.6 UI-Overhaul: Design-Grundlage"]
@@ -468,6 +475,7 @@ flowchart TD
     direction TB
     AP10_1["10.1 Fachkonzept M10"]
     AP10_2["10.2 Fundamentaldaten und Quartalszahlen: Modell"]
+    AP10_2b["10.2b Kuratierte Namen der Welt"]
     AP10_3["10.3 Unternehmensereignisse: Modell"]
     AP10_4["10.4 Unternehmensereignisse im Depot"]
     AP10_5["10.5 Fundamentaldaten und Ereignisse in der Oberfläche"]
@@ -487,10 +495,17 @@ flowchart TD
   AP6_6 --> AP7_1c
   AP6_6 --> AP7_2
   AP6_6 --> AP7_4
-  AP7_1a --> AP7_3
-  AP7_1b --> AP7_3
-  AP7_1c --> AP7_3
-  AP7_3 --> AP7_5
+  AP7_1a --> AP7_3a
+  AP7_1b --> AP7_3a
+  AP7_1a --> AP7_3b
+  AP7_1b --> AP7_3b
+  AP7_1c --> AP7_3b
+  AP7_2 --> AP7_3b
+  AP7_1c --> AP7_3c
+  AP7_3a --> AP7_3d
+  AP7_3d --> AP7_3e
+  AP7_3b --> AP7_5
+  AP7_3c --> AP7_5
   AP7_4 --> AP7_5
   AP7_5 --> AP7_6
   AP7_6 --> AP7_7
@@ -498,7 +513,11 @@ flowchart TD
   AP7_7 --> AP7_8b
   AP7_7 --> AP7_8c
   AP7_2 --> AP7_9
-  AP7_3 --> AP7_9
+  AP7_3a --> AP7_9
+  AP7_3b --> AP7_9
+  AP7_3c --> AP7_9
+  AP7_3d --> AP7_9
+  AP7_3e --> AP7_9
   AP7_8a --> AP7_9
   AP7_8b --> AP7_9
   AP7_8c --> AP7_9
@@ -546,6 +565,7 @@ flowchart TD
   AP9_11 --> AP9_12
   AP9_12 --> AP10_1
   AP10_1 --> AP10_2
+  AP10_1 --> AP10_2b
   AP10_2 --> AP10_3
   AP9_2a --> AP10_3
   AP10_3 --> AP10_4
@@ -574,9 +594,11 @@ flowchart TD
   AP10_11 --> AP10_15
   AP10_12 --> AP10_15
   AP10_14 --> AP10_15
+  AP10_2b --> AP10_15
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP6_6,AP7_1a,AP7_1b,AP7_1c,AP7_2 active
+  class AP7_1a,AP7_1b,AP7_1c,AP7_2 done
+  class AP6_6 active
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6
@@ -1217,28 +1239,28 @@ Geplant am 15.11.2026 (E-37). Stufe 2 „Vollständiger Markt“ beginnt nach AP
 **Ziel:** Der Rechenkern ist unabhängig geprüft und korrigiert, und die Oberfläche ist nach der Vorlage des Product Owners erneuert, bevor Stufe 2 neue Fachlichkeit baut.
 **Ergebnis:** Version 0.7.0 mit Befundlisten und Korrekturen der Prüfungen, einer Empfehlung zu WebAssembly und der App im neuen Design.
 
-**Prüfungen (AP 7.1a–c, AP 7.2):** Das sind reine Prüfungen ohne Änderungen an Code oder Spezifikation; die Ergebnisse stehen je AP unter `docs/reviews/`, eine Kurzfassung im Änderungsprotokoll. Jede Prüfung läuft zweimal, unabhängig voneinander und auf demselben Stand: einmal mit Opus 5.5 (`claude-opus-5-5`, Subagent mit `model: opus`, `effort: high`) und einmal mit Fable 5.2 (`claude-fable-5-2`, `model: fable`, `effort: medium`). Keiner der beiden Läufe sieht das Ergebnis des anderen. Danach werden beide Einschätzungen gegenübergestellt und abgewogen: Übereinstimmungen, Widersprüche, Befunde nur eines Laufs; strittige Punkte werden nachgerechnet oder nachgemessen. Das Ergebnis geht als gemeinsame Befundliste mit Empfehlung an den Product Owner. Ergibt sich Handlungsbedarf, folgt daraus ein eigenes AP (AP 7.3).
+**Prüfungen (AP 7.1a–c, AP 7.2):** Das sind reine Prüfungen ohne Änderungen an Code oder Spezifikation; die Ergebnisse stehen je AP unter `docs/archiv/reviews/`, eine Kurzfassung im Änderungsprotokoll. Jede Prüfung läuft zweimal, unabhängig voneinander und auf demselben Stand: einmal mit Opus 5.5 (`claude-opus-5-5`, Subagent mit `model: opus`, `effort: high`) und einmal mit Fable 5.2 (`claude-fable-5-2`, `model: fable`, `effort: medium`). Keiner der beiden Läufe sieht das Ergebnis des anderen. Danach werden beide Einschätzungen gegenübergestellt und abgewogen: Übereinstimmungen, Widersprüche, Befunde nur eines Laufs; strittige Punkte werden nachgerechnet oder nachgemessen. Das Ergebnis geht als gemeinsame Befundliste mit Empfehlung an den Product Owner. Ergibt sich Handlungsbedarf, folgt daraus ein eigenes AP (AP 7.3).
 
 **UI-Overhaul (AP 7.4–7.8c):** Er schließt M7 ab, nach den Prüfungen und ihren Folge-APs, damit M8 und alle weiteren Meilensteine auf der neuen Oberfläche aufbauen. Die Vorlage des Product Owners liegt in `docs/design/` (Variante „Terminal“). AP 7.4 bereitet ohne neue Optik vor. Der Schnitt von AP 7.6–7.8c ist ein Platzhalter, den AP 7.5 bestätigt oder ändert.
 
 #### AP 7.1a – Modellreview: Determinismus und Welt
 
 - **Umfang:** Prüfung nach dem Vorgehen oben für die Determinismus-Mathematik (TS §4: Seed, Ströme, Verteilungen, `detExp`/`detLog`, Regeln für Simulationscode, Determinismus-Vertrag) und die Weltgenerierung (TS §5: Mengen und Verteilungen, Unternehmen, Indizes, ETFs, Banken, Namen und Kennungen). Geprüft wird die fachliche Plausibilität mit Nachrechnen, nicht nur Doku gegen Code.
-- **Abnahme:** Gegenüberstellung und gemeinsame Befundliste mit Empfehlung (je Befund Schwere, Beleg und Vorschlag) stehen in `docs/reviews/ap-7.1a.md`, die Befundlisten beider Läufe als Rohberichte in `docs/reviews/ap-7.1a/`, eine Kurzfassung im Änderungsprotokoll. Der PO hat sie gesehen und entschieden, was in AP 7.3 kommt.
+- **Abnahme:** Gegenüberstellung und gemeinsame Befundliste mit Empfehlung (je Befund Schwere, Beleg und Vorschlag) stehen in `docs/archiv/reviews/ap-7.1a.md`, die Befundlisten beider Läufe als Rohberichte in `docs/archiv/reviews/ap-7.1a/`, eine Kurzfassung im Änderungsprotokoll. Der PO hat sie gesehen und entschieden, was in AP 7.3 kommt.
 - **Referenzen:** TS §4, §5; NF-05
 - **Abhängig von:** AP 6.6
 
 #### AP 7.1b – Modellreview: Marktmodell und Kalibrierung
 
 - **Umfang:** wie AP 7.1a für das Marktmodell und die Kalibrierung (TS §6: Faktoren, Phasen, unternehmensspezifischer Anteil, Dividenden, Indizes, ETFs, Spreads, Kerzen, Kalibrierungsziele mit ihren Messvorschriften, Langzeitverhalten). Strittige Kennzahlen werden mit dem Labor oder der Kalibrierungs-Suite nachgemessen.
-- **Abnahme:** wie AP 7.1a, Bericht in `docs/reviews/ap-7.1b.md` mit den Rohberichten in `docs/reviews/ap-7.1b/`.
+- **Abnahme:** wie AP 7.1a, Bericht in `docs/archiv/reviews/ap-7.1b.md` mit den Rohberichten in `docs/archiv/reviews/ap-7.1b/`.
 - **Referenzen:** TS §6; E-20, E-22–E-24, E-30–E-34; R1, R11, R12
 - **Abhängig von:** AP 6.6
 
 #### AP 7.1c – Modellreview: Wirtschaftsmodell
 
 - **Umfang:** wie AP 7.1a für das Wirtschaftsmodell (TS §7: Zahlen und Rundung, Hauptbuch, Konditionen, Zinsen und Dispo, Haushalt und Bank-Lauf, Orders, Lots, Steuern, Sparpläne, Rendite und Benchmark). Die Beispieltabellen werden unabhängig nachgerechnet.
-- **Abnahme:** wie AP 7.1a, Bericht in `docs/reviews/ap-7.1c.md` mit den Rohberichten in `docs/reviews/ap-7.1c/`.
+- **Abnahme:** wie AP 7.1a, Bericht in `docs/archiv/reviews/ap-7.1c.md` mit den Rohberichten in `docs/archiv/reviews/ap-7.1c/`.
 - **Referenzen:** TS §7; E-09, E-11, E-17, E-19, E-21
 - **Abhängig von:** AP 6.6
 
@@ -1249,17 +1271,84 @@ Geplant am 15.11.2026 (E-37). Stufe 2 „Vollständiger Markt“ beginnt nach AP
   - Toolchains vergleichen, z. B. Rust mit wasm-bindgen und AssemblyScript.
   - Einen Hotspot probeweise portieren und mit und ohne CPU-Drosselung messen. Der Prototyp bleibt außerhalb des Codes und wird nicht übernommen.
   - Bewerten: Determinismus (Golden-Master-Prüfsummen bitgleich, `detExp`/`detLog` portiert, Selbsttest auf allen Engines), Bundle-Größe, Einbindung in den Worker, CI, Tests und Mutationstests in zwei Sprachen.
-- **Abnahme:** Messwerte und die gemeinsame Einschätzung beider Läufe stehen in `docs/reviews/ap-7.2.md`, die Rohberichte in `docs/reviews/ap-7.2/`, eine Kurzfassung im Änderungsprotokoll. Dazu kommt eine Empfehlung als Vorschlag für eine Entscheidung in TS §16 (wichtig vor allem für N2). Der PO hat sie gesehen und über E-41 entschieden. Eine Portierung wäre ein eigenes, später geplantes AP.
+- **Abnahme:** Messwerte und die gemeinsame Einschätzung beider Läufe stehen in `docs/archiv/reviews/ap-7.2.md`, die Rohberichte in `docs/archiv/reviews/ap-7.2/`, eine Kurzfassung im Änderungsprotokoll. Dazu kommt eine Empfehlung als Vorschlag für eine Entscheidung in TS §16 (wichtig vor allem für N2). Der PO hat sie gesehen und über E-41 entschieden. Eine Portierung wäre ein eigenes, später geplantes AP.
 - **Referenzen:** TS §3.2, §4.4, §5.8, §14.3; E-27; R5, R14
 - **Abhängig von:** AP 6.6
 
-#### AP 7.3 – Korrekturen aus den Prüfungen
+#### AP 7.3a–e – Korrekturen aus den Prüfungen
 
-- **Umfang:** Platzhalter. Nach AP 7.1a–c wird es nach §2.5 in Teil-APs (7.3a, 7.3b …) mit eigener Abnahme geschnitten, je Befundgruppe, die der PO freigibt. Korrekturen am Rechenkern brauchen eine neue `SIM_VERSION` (TS §15), Änderungen an Kalibrierungsbändern eine Entscheidung des PO.
-- **Abnahme:** je Teil-AP. Befunde, die nicht umgesetzt werden, stehen mit Begründung im Änderungsprotokoll.
-- **Vor der Umsetzung klären:** E-38 (Versionssprünge in Stufe 2) und die Entscheidungen des PO aus den Prüfungen (Änderungsprotokoll 15.11.2026, „Für den PO zu entscheiden“): E-22 neu (Weg a oder b) mit den R12-Grenzen, die Namen (V1 oder V2) mit `SIM_VERSION`, die Rendite-Konvention mit `SCHEMA_VERSION` oder Neuberechnung, die Prüfregel der Kalibrierung auf mindestens 20 Seeds mit den Bändern, die Definition der Bärenmärkte und die geldgewichtete Rendite. Den Schnitt in Teil-APs schlägt dasselbe Protokoll vor.
-- **Referenzen:** Ergebnisse von AP 7.1a–c (`docs/reviews/`)
-- **Abhängig von:** AP 7.1a, AP 7.1b, AP 7.1c
+Der PO hat die Befunde von AP 7.1a–c und AP 7.2 am 16.11.2026 gesichtet (Änderungsprotokoll, Entscheidungen E-22 neu, E-34 ergänzt, E-38, E-41, E-42, E-43). Die Befund-IDs verweisen auf die gemeinsamen Befundlisten in `docs/archiv/reviews/`. Nicht in AP 7.3 kommen: 7.1a-01 Namen (E-42, AP 10.2b), 7.1b-10 geglättete Dividenden (M9), 7.1c-08 geldgewichtete Rendite (später), 7.1c-12 Zinsgutschrift zum Periodenende (M8), 7.1c-13 Steuervereinfachungen (AP 9.11).
+
+Jeder Push auf `main` deployt; jedes Teil-AP trägt deshalb seinen Versionssprung selbst. AP 7.3d und 7.3e laufen auf einem Branch und kommen gemeinsam nach `main`, damit Modelländerung und Neukalibrierung ein einziger Golden-Master-Bruch mit `SIM_VERSION` 2 sind.
+
+#### AP 7.3a – Korrekturen: Absicherung und Messung
+
+- **Umfang:** ohne Modelländerung, vor jeder Modellkorrektur, damit Golden Master und Kalibrierung deren Wirkung zeigen.
+  - Golden Master über viele Seeds: Prüfsumme `worlds` über die `worldChecksum` von rund 200 Seeds, im Selbsttest weniger (7.1a-02).
+  - Falle für nicht exakte `Math`-Funktionen während `computeGoldenChecksums` in Test und Selbsttest; eingefrorene Tabelle für `detExp`/`detLog` mit belegtem Fehler unter 1 ulp; Kommentar in `det-math.spec.ts` (7.1a-07).
+  - ESLint-Regel: `**=`, `Math.asinh`/`acosh`/`atanh`, Aliase von `Math`, `Date()`/`Date.parse`, `crypto`; Ordner, die der Worker einbindet; `localeCompare`/`Intl` mit begründeten Ausnahmen (7.1a-06).
+  - `logReturns` und die übrigen nicht exakten Funktionen in `analysis/domain` auf `detExp`/`detLog`, `analysis/domain` unter die Regel (7.1a-05).
+  - Test „22 Indizes“ auf „je nicht leerem Sektor ein Index“ mit einem Beispiel-Seed mit leerem Sektor; TS §5.2 und §5.5 um den Sonderfall ergänzen (7.1a-04).
+  - Info-Zeilen: Volatilität, Drawdown und Korrelation der Regionalindizes, Lag-1-Autokorrelation, Volatilität des Weltindex auf Wochen- und Monatsbasis, größter Drawdown, längste Zeit unter dem Hoch, schlechtestes 30-Jahres-Fenster, Höchstkurs; Stichtag 25 Jahre in der Prüfung von `LONG_TERM_LIMITS` (7.1b-07).
+  - Prämien als Info-Ziele: Mehrrendite der jährlich umgeschichteten Gleichgewichtung gegen den Performanceindex, Mehrrendite der 20 tiefsten Abstände zum Hoch, Anteil der Aktien mit negativer Rendite über 30 Jahre (7.1b-01).
+  - Breiter Seed-Satz (mindestens 20 frische Seeds) als Info-Lauf neben der heutigen Prüfregel (7.1b-03); übliche Zählung der Bärenmärkte als Info (7.1b-06, E-34).
+- **Abnahme:** Golden Master und Kalibrierungs-Suite grün und unverändert; die Info-Werte des heutigen Modells stehen als Ausgangslage im Änderungsprotokoll; die ESLint-Proben aus `docs/archiv/reviews/ap-7.1a.md` werden gemeldet.
+- **Referenzen:** `docs/archiv/reviews/ap-7.1a.md`, `docs/archiv/reviews/ap-7.1b.md`; TS §4.4, §4.5, §5.2, §5.5, §6.9; E-34
+- **Abhängig von:** AP 7.1a, AP 7.1b
+
+#### AP 7.3b – Korrekturen: kleine Korrekturen und Doku
+
+- **Umfang:** ohne Modelländerung und ohne Versionssprung.
+  - **Code:**
+    - Beim Laden das gespeicherte `seedKey` des Profils verwenden; Zeichensatz des Seeds für neue Spieler festlegen (7.1a-08).
+    - Indexprofil: „Höchstgewicht bei Auflage“ statt „Höchstgewicht je Wert“ (7.1b-04, i18n).
+    - Mindest-Kurswert für Einzelorders beim Erteilen und bei der Ausführung (Vorschlag 1,00 € wie `SAVINGS_PLAN_MIN_AMOUNT`) mit neuem Fehlercode und Tabellenzeile in TS §7.5 (7.1c-03).
+    - Zinsbuchung beim Kontoabschluss: `from` ist der erste Monat der offenen Abgrenzung; Engine-Szenario „Quartalstagesgeld mitten im Quartal schließen“ (7.1c-04).
+    - `bookTransaction` prüft `Number.isSafeInteger(balanceAfter)` (7.1c-05).
+    - Order-Ticket warnt bei negativer Gutschrift eines Verkaufs (7.1c-06).
+    - Engine-Szenario über 3–4 Jahre mit Schaltjahr 2032 gegen eine Referenz aus Tagessalden (7.1c-11).
+  - **Doku:** TS §5.4 Größenverteilung (7.1a-12); §4.2 „Hunderte“, §4.4 bekannte Annahmen (7.1a-14); §6.9 Definition der Bärenmärkte (7.1b-06); §6.7 Rastergrenzen von Geld und Brief (7.1b-08); §6.8 Float32-Grenze ab 131.072 € (7.1b-11); §6.3 und §6.10 Krise als Volatilitätsregime (7.1b-12); §6.6 Kappung bei Auflage (7.1b-04); §7.4 Verkauf ins Minus (7.1c-06), Wochentag und Nummerierung (7.1c-07); §7.1 Saldobereich und Doppelrundung (7.1c-05, 7.1c-09); §7.5 „größte Stückzahl“ (7.1c-10); §7.7 Zinsgutschrift als Vereinfachung (7.1c-12); §5.8 Hochrechnung für Hoch und Tief (AP 7.2).
+- **Abnahme:** Golden Master unverändert; neue Engine-Szenarien und Tests grün; Mutationstests der Order-Prüfung nachgezogen; i18n vollständig.
+- **Referenzen:** `docs/archiv/reviews/ap-7.1a.md` bis `ap-7.2.md`; TS §4–§7
+- **Abhängig von:** AP 7.1a, AP 7.1b, AP 7.1c, AP 7.2
+
+#### AP 7.3c – Korrekturen: Rendite und Benchmark
+
+- **Umfang:** neue Konvention der zeitgewichteten Rendite nach E-43 (7.1c-01, 7.1c-02), ohne `SIM_VERSION`.
+  - Spec zuerst: TS §7.9 mit Beispielzeilen „kleine Basis“ und „negatives Vermögen“, die Zeile „Mi“ prüfen; US-PF-05 gegenlesen.
+  - `performance-logic.ts`: Abflüsse am Tagesende, Benchmark mit allen Flüssen am Tagesende, `V_end < 0` als ausgelassener Tag, „–“ ab 50 % ausgelassener Tage, gemeinsame Auslassungen von Portfolio und Benchmark.
+  - Properties (Spieler ohne Wertpapiere mit konstanten Gebühren hat keinen Ausreißertag; Benchmark ohne leere Tage gleich der Indexrendite), Engine-Szenario „500 € Startkapital“, Glossar und Kontexthilfe.
+  - `SCHEMA_VERSION` anheben, die einzige Zustandsänderung von M7 (E-38).
+  - Prüfsumme über den Spielerzustand nach einem festen Kommandoskript (einige Monate mit Orders, Sparplan, Zinsabschluss, Steuer) in Selbsttest und Systemtest; Regel in TS §15 ergänzen (7.1a-11). Sie steht hier, weil sie mit der neuen Konvention sonst sofort bräche.
+- **Abnahme:** Beispieltabellen in TS §7.9 als Orakel; Properties und Engine-Szenario grün; gespeicherte Spieler mit alter Schema-Version gesperrt; Selbsttest mit der Prüfsumme des Spielerzustands in Chromium, Firefox und WebKit grün.
+- **Referenzen:** `docs/archiv/reviews/ap-7.1c.md`, `docs/archiv/reviews/ap-7.1a.md` (7.1a-11); TS §7.9, §15; US-PF-05; E-28, E-38, E-43
+- **Abhängig von:** AP 7.1c
+
+#### AP 7.3d – Korrekturen: Modelländerung Marktmodell
+
+- **Umfang:** eine Modelländerung mit `SIM_VERSION` 2 (gemeinsam mit AP 7.3e).
+  - `U_i` nach E-22 neu, Weg (a): dauerhafter Anteil mit vollem Kompensator und kleiner vorübergehender Anteil (Ausgangswert rund 20 % der Varianz); Rückkehr der Unterfaktoren `θ_k` prüfen (7.1b-01).
+  - Volatilitäts-Clustering der Einzelaktien: `σ_i` mit einem gedämpften Marktzustand skalieren, Kompensator mit der Tagesvarianz; Info-Zeile „ACF(|r|, 1) im Median der Aktien“ (7.1b-02).
+  - Dividende je Aktie mit vier Nachkommastellen, Gutschrift auf Cent (7.1b-09).
+  - Optional Kappung der Indizes zum Spielstart statt zur Epoche (7.1b-04).
+  - Welt: Sektorbesetzung per Größtrestverfahren (7.1a-03, die Ausnahme aus AP 7.3a entfällt wieder), Dividendenrendite ohne Punktmasse an der Obergrenze (7.1a-09), Nichtzahler mit `startDay > 0` (7.1a-10), Abbruch der Poisson-Inversion (7.1a-13).
+  - Betroffene Kalibrierungsziele als „offen bis AP 7.3e“ (wie E-39).
+- **Abnahme:** Beispieltabellen in TS §6.4 neu und unabhängig nachgerechnet; die Prämien-Info-Ziele aus AP 7.3a zeigen die Wirkung (Gleichgewichtung und „tiefste Abstände“ nahe dem realen Bereich); Determinismus-Vertrag; Golden Master neu eingefroren, `SIM_VERSION` 2.
+- **Referenzen:** `docs/archiv/reviews/ap-7.1b.md`, `docs/archiv/reviews/ap-7.1a.md`; TS §5.4, §6.2–§6.6, §15; E-22, E-38, E-39; R12
+- **Abhängig von:** AP 7.3a
+
+#### AP 7.3e – Korrekturen: Neukalibrierung
+
+- **Umfang:**
+  - Prüfregel nach E-34 ergänzt: Median über mindestens 20 frische Seeds, Bänder unverändert für einen typischen Seed; die Vorlauf-Ziele zusätzlich über den langen Lauf (7.1b-03).
+  - Regionsfaktor schwächer, Weltfaktor stärker; Konflikt mit den Overnight-Zielen neu abwägen (7.1b-05).
+  - Prämien-Ziele von Info zu Band (Vorschlag: Gleichgewichtung ≤ 2 Punkte, 20 tiefste Abstände zum Hoch ≤ 2–3 Punkte).
+  - `LONG_TERM_LIMITS` neu messen; der PO legt die neuen R12-Grenzen fest (E-22).
+  - TS §6.4 („riskantere Werte …“), §6.9 und R12 berichtigen; Kennzahlen in TS §6.2–§6.4 und §6.9 über den breiten Seed-Satz neu messen (7.1b-13).
+- **Abnahme:** Kalibrierungs-Suite mit der neuen Prüfregel grün, ohne „offen bis“; Grenzen und Bänder vom PO bestätigt; kommt mit AP 7.3d in einem Merge nach `main`.
+- **Vor der Umsetzung klären:** die Bänder der Prämien-Ziele und die R12-Grenzen (PO, nach Messung).
+- **Referenzen:** `docs/archiv/reviews/ap-7.1b.md`; TS §6.9, §17; E-22, E-34, E-39; R12
+- **Abhängig von:** AP 7.3d
 
 #### AP 7.4 – UI-Bausteine vereinheitlichen
 
@@ -1288,7 +1377,7 @@ Geplant am 15.11.2026 (E-37). Stufe 2 „Vollständiger Markt“ beginnt nach AP
   - Die Instrumentseite zeigt KGV und Handelsvolumen. Beide kommen erst mit AP 10.2 und AP 10.6; der Overhaul zeigt nur, was es gibt.
   - Tokens bleiben 6-stelliges Hex, weil die Charts Alpha-Suffixe anhängen (`readChartColors` in `charts/ui/price-chart/price-chart.utils.ts`, `src/testing/chart-platform.ts`). Hart codierte Farben stehen in `src/index.html` (`theme-color`) und in den Manifesten.
 - **Referenzen:** `docs/design/`; PS §10; TS §11.5, §11.10, §13
-- **Abhängig von:** AP 7.3, AP 7.4
+- **Abhängig von:** AP 7.3b, AP 7.3c, AP 7.4 (die Modellarbeit in AP 7.3a, 7.3d und 7.3e läuft parallel zum Overhaul)
 
 #### AP 7.6 – UI-Overhaul: Design-Grundlage
 
@@ -1324,10 +1413,10 @@ Geplant am 15.11.2026 (E-37). Stufe 2 „Vollständiger Markt“ beginnt nach AP
 
 #### AP 7.9 – Abschluss M7 (Version 0.7.0)
 
-- **Umfang:** `package.json` auf 0.7.0; Abschlusstest der neuen Oberfläche über alle Ansichten; Lücken der axe-Prüfung schließen (Positionsdetail, `#/lab/tokens`); README nachziehen; die Empfehlung aus AP 7.2 als Entscheidung in TS §16 oder als Vorschlag in §3.
+- **Umfang:** `package.json` auf 0.7.0; Abschlusstest der neuen Oberfläche über alle Ansichten; Lücken der axe-Prüfung schließen (Positionsdetail, `#/lab/tokens`); README nachziehen.
 - **Abnahme:** `e2e/accessibility.e2e.ts` über alle Hauptansichten in hell und dunkel, in beiden Sprachen und bei 360 px ohne ernste oder kritische Befunde; alle Teil-APs von AP 7.3 fertig; Version 0.7.0 deployt (Tag `v0.7.0` und Commit auf Anweisung).
 - **Referenzen:** TS §14.4, §15
-- **Abhängig von:** AP 7.2, AP 7.3, AP 7.8a, AP 7.8b, AP 7.8c
+- **Abhängig von:** AP 7.2, AP 7.3a–e, AP 7.8a, AP 7.8b, AP 7.8c
 
 ### M8 – Kalender, Währungen, Zinsen und Inflation
 
@@ -1675,6 +1764,16 @@ AP 10.8, AP 10.10 und AP 10.11 hängen fachlich nur an M7 (Oberfläche) und lass
   - Berichtstermine als planbare Termine („Demnächst“); Kennzahlen als Abfragen bis zum aktuellen Tick; Kalibrierung.
 - **Abnahme:** Beispieltabellen; statistische Tests (Überraschung und Sprung, Rückkehr des KGV); Determinismus-Vertrag; Golden Master erweitert, `SIM_VERSION` erhöht; Kalibrierungs-Suite grün.
 - **Referenzen:** US-MK-15; TS §6.4, §6.10, §8.1
+- **Abhängig von:** AP 10.1
+
+#### AP 10.2b – Kuratierte Namen der Welt
+
+- **Umfang:** Namen nach E-42 aus einer kuratierten Liste statt aus dem Silbengenerator (Befund 7.1a-01, `docs/archiv/reviews/ap-7.1a.md`).
+  - Konzept im Fachkonzept (AP 10.1): feste Identität je Eintrag (Name mit Region, Land, Branche, Rechtsform, gegebenenfalls Größe) oder Pool, aus dem je Seed gezogen wird; Ticker; Banken, Emittenten und Indizes; Umfang für die Standardwelt, Erweiterung für die große Welt aus N2 offen.
+  - Liste kuratieren und gegen Verzeichnisse börsennotierter Unternehmen, bekannte Marken und heikle Wörter prüfen; Snapshot-Test, damit jeder neue Eintrag eine Durchsicht erzwingt.
+  - Silbengenerator und Blockliste ablösen; TS §5.4 und R8 nachziehen.
+- **Abnahme:** keine realen Firmennamen oder heiklen Wörter in der Liste (Prüfprotokoll); Golden Master neu eingefroren, `SIM_VERSION` erhöht; Kalibrierungs-Suite grün, falls die Zuordnung Parameter ändert.
+- **Referenzen:** TS §5.4, §17 (R8); E-13, E-26, E-42
 - **Abhängig von:** AP 10.1
 
 #### AP 10.3 – Unternehmensereignisse: Modell
