@@ -13,4 +13,6 @@ export const TEST_SEEDS = {
   calibration: COMPARISON_SEEDS,
   /** Many worlds for cross-sectional tests of single instruments (`idio-1` … `idio-20`). */
   crossSection: Array.from({ length: 20 }, (_, n) => `idio-${n + 1}`),
+  /** Broad set of fresh seeds for the info run of the calibration (E-34, AP 7.3a). */
+  calibrationBroad: Array.from({ length: 20 }, (_, n) => `broad-${n + 1}`),
 } as const;

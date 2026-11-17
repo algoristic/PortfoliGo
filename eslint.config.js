@@ -17,6 +17,94 @@ const FRAMEWORK_IMPORTS = {
   message: 'domain and util are framework-free, so they run in the worker (CLAUDE.md §1).',
 };
 
+/** `Math` functions that ECMAScript leaves implementation-approximated (TS §4.4). */
+const INEXACT_MATH = [
+  'random',
+  'exp',
+  'expm1',
+  'log',
+  'log1p',
+  'log2',
+  'log10',
+  'pow',
+  'sin',
+  'cos',
+  'tan',
+  'asin',
+  'acos',
+  'atan',
+  'atan2',
+  'sinh',
+  'cosh',
+  'tanh',
+  'asinh',
+  'acosh',
+  'atanh',
+  'cbrt',
+  'hypot',
+];
+
+const LOCALE_MESSAGE =
+  'Depends on the ICU data of the engine: compare code units, or disable with a reason (TS §4.5).';
+
+/**
+ * Code under the determinism rules (TS §4.4): simulation, the player state and every other folder
+ * the engine worker bundles, so that the worker computes the same everywhere. The lab statistics
+ * (`lab/domain`) stay outside: they never feed back into the simulation.
+ */
+const DETERMINISTIC_FILES = [
+  'src/app/{simulation,world,market,clock}/{domain,util}/**/*.ts',
+  // The player state must be computed the same everywhere, or a replay diverges (TS §4.4).
+  'src/app/engine/domain/**/*.ts',
+  'src/app/{banking,trading,portfolio,taxes,dashboard}/domain/**/*.ts',
+  // Money and the price grid feed the simulation (rounding of dividends, quotes).
+  'src/app/shared/domain/**/*.ts',
+  // Further folders the engine worker bundles (AP 7.3a).
+  'src/app/{analysis,notifications,players}/domain/**/*.ts',
+  'src/app/persistence/util/**/*.ts',
+  'src/app/engine/data-access/worker/**/*.ts',
+];
+
+/** Syntax that bypasses `no-restricted-properties` and `no-restricted-globals` (TS §4.4, §4.5). */
+const DETERMINISM_SYNTAX = [
+  {
+    selector: 'BinaryExpression[operator="**"]',
+    message: 'Not deterministic across engines: use multiplication or detExp/detLog.',
+  },
+  {
+    selector: 'AssignmentExpression[operator="**="]',
+    message: 'Not deterministic across engines: use multiplication or detExp/detLog.',
+  },
+  {
+    selector: 'NewExpression[callee.name="Date"]',
+    message: 'Time comes from the tick (TS §4.5).',
+  },
+  {
+    selector: 'CallExpression[callee.name="Date"]',
+    message: 'Time comes from the tick (TS §4.5).',
+  },
+  {
+    // `const m = Math`, `f(Math)`: an alias escapes the property rules.
+    selector: 'Identifier[name="Math"]:not(MemberExpression[computed=false] > Identifier.object)',
+    message: 'Use Math only as `Math.<name>`, so the determinism rules see the call (TS §4.4).',
+  },
+  {
+    // `Math[name]` with a computed key escapes the property rules as well.
+    selector: 'MemberExpression[computed=true][object.name="Math"]',
+    message: 'Use Math only as `Math.<name>`, so the determinism rules see the call (TS §4.4).',
+  },
+  {
+    // `globalThis.Math`, `self.crypto`, `self.performance.now()`, `globalThis.Date`.
+    selector:
+      'MemberExpression[object.name=/^(globalThis|self|window)$/][property.name=/^(Math|Date|crypto|performance|Intl)$/]',
+    message: 'Reach globals directly, so the determinism rules see them (TS §4.4, §4.5).',
+  },
+  {
+    selector: 'MemberExpression[property.name=/^(localeCompare|toLocale\\w*)$/]',
+    message: LOCALE_MESSAGE,
+  },
+];
+
 module.exports = tseslint.config(
   {
     plugins: {
@@ -126,62 +214,26 @@ module.exports = tseslint.config(
   },
   {
     // Determinism rules for simulation code (TS §4.4, §4.5); the UI may use Math.* freely.
-    files: [
-      'src/app/{simulation,world,market,clock}/{domain,util}/**/*.ts',
-      // The player state must be computed the same everywhere, or a replay diverges (TS §4.4).
-      'src/app/engine/domain/**/*.ts',
-      'src/app/{banking,trading,portfolio,taxes,dashboard}/domain/**/*.ts',
-      // Money and the price grid feed the simulation (rounding of dividends, quotes).
-      'src/app/shared/domain/**/*.ts',
-    ],
+    files: DETERMINISTIC_FILES,
     ignores: ['**/*.spec.ts'],
     rules: {
       'no-restricted-properties': [
         'error',
-        ...[
-          'random',
-          'exp',
-          'expm1',
-          'log',
-          'log1p',
-          'log2',
-          'log10',
-          'pow',
-          'sin',
-          'cos',
-          'tan',
-          'asin',
-          'acos',
-          'atan',
-          'atan2',
-          'sinh',
-          'cosh',
-          'tanh',
-          'cbrt',
-          'hypot',
-        ].map((property) => ({
+        ...INEXACT_MATH.map((property) => ({
           object: 'Math',
           property,
           message: 'Not deterministic across engines: use detExp/detLog (TS §4.4) or streams.',
         })),
         { object: 'Date', property: 'now', message: 'Time comes from the tick (TS §4.5).' },
+        { object: 'Date', property: 'parse', message: 'Time comes from the tick (TS §4.5).' },
         { object: 'performance', property: 'now', message: 'Time comes from the tick (TS §4.5).' },
       ],
       'no-restricted-globals': [
         'error',
         { name: 'crypto', message: 'Randomness comes from streams (TS §4.5).' },
+        { name: 'Intl', message: LOCALE_MESSAGE },
       ],
-      'no-restricted-syntax': [
-        'error',
-        {
-          selector: 'BinaryExpression[operator="**"]',
-          message: 'Not deterministic across engines: use multiplication or detExp/detLog.',
-        },
-        {
-          selector: 'NewExpression[callee.name="Date"]',
-          message: 'Time comes from the tick (TS §4.5).',
-        },
-      ],
+      'no-restricted-syntax': ['error', ...DETERMINISM_SYNTAX],
     },
   },
   {

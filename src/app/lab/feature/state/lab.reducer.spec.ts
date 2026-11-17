@@ -281,6 +281,7 @@ describe('labReducer', () => {
         indices: 'd',
         etfs: 'e',
         gameStart: 'f',
+        worlds: 'g',
       },
       durationMs: 1500,
     };

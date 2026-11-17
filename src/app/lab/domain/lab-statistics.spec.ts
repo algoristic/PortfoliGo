@@ -2,7 +2,7 @@ import { dayStartTick } from '@app/clock/domain/calendar-logic';
 import { isMarketDay } from '@app/market/domain/market-calendar';
 import { World } from '@app/world/domain/models/world.model';
 
-import { computeLabStatistics, phaseSegments } from './lab-statistics';
+import { computeLabStatistics, phaseSegments, premiumMeasures } from './lab-statistics';
 import { MarketSample } from './market-sample';
 import { IntradayStatistics, LabStatistics } from './models/lab-statistics.model';
 
@@ -68,7 +68,45 @@ function sample(count: number): MarketSample {
       stocks: 0.3,
     },
     checkpoints: [],
+    regionPrices: [],
+    yearly: [],
+    maxPrice: 321,
   };
+}
+
+/** Closes with a trend and two waves, so that weekly and monthly returns vary. */
+function wavyCloses(count: number, scale = 100): Float64Array {
+  return Float64Array.from(
+    { length: count },
+    (_, d) => scale * Math.exp(0.0003 * d + 0.02 * Math.sin(d * 0.7) + 0.03 * Math.cos(d * 0.05)),
+  );
+}
+
+/** Calendar of a day for the oracles, through `Date` instead of the game calendar. */
+function utcDate(day: number): Date {
+  return new Date(Date.UTC(2020, 0, 1) + dayStartTick(day) * 60_000);
+}
+
+/**
+ * Brute-force volatility p. a. of the log returns between the last closes of each period, with
+ * the sample standard deviation written out (independent of `statistics-logic`).
+ */
+function periodVolatilityOracle(
+  days: Int32Array,
+  closes: Float64Array,
+  periodOf: (date: Date) => number,
+  periodsPerYear: number,
+): number {
+  const ends: number[] = [];
+  for (let d = 0; d < days.length; d++) {
+    if (d === days.length - 1 || periodOf(utcDate(days[d + 1])) !== periodOf(utcDate(days[d]))) {
+      ends.push(closes[d]);
+    }
+  }
+  const returns = ends.slice(1).map((close, i) => Math.log(close / ends[i]));
+  const m = returns.reduce((a, b) => a + b, 0) / returns.length;
+  const variance = returns.reduce((a, r) => a + (r - m) * (r - m), 0) / (returns.length - 1);
+  return Math.sqrt(variance * periodsPerYear);
 }
 
 /** Intraday part: computed from minute curves elsewhere, passed through unchanged. */
@@ -239,6 +277,110 @@ describe('lab-statistics', () => {
       expect(statistics.targets.find((row) => row.id === 'correlation-within-all')?.status).toBe(
         'info',
       );
+    });
+  });
+  describe('info rows of AP 7.3a (TS §6.9)', () => {
+    const count = 3 * DAYS_PER_YEAR + 1;
+    let input: MarketSample;
+    let statistics: LabStatistics;
+    const value = (id: string): number | undefined =>
+      statistics.targets.find((row) => row.id === id)?.value;
+
+    beforeAll(() => {
+      input = sample(count);
+      input.worldPrice = wavyCloses(count);
+      const europe = wavyCloses(count, 50);
+      input.regionPrices = [
+        { regionId: 'europe', closes: europe },
+        // Twice the European index: the same returns, so a correlation of exactly 1.
+        { regionId: 'asia-pacific', closes: europe.map((close) => 2 * close) },
+      ];
+      statistics = computeLabStatistics(input, intraday, world, 'epoch', DAYS_PER_YEAR);
+    });
+
+    it('measures the world volatility on weekly and monthly returns', () => {
+      const mondayOf = (date: Date): number =>
+        Math.floor(date.getTime() / 86_400_000) - ((date.getUTCDay() + 6) % 7);
+      const monthOf = (date: Date): number => date.getUTCFullYear() * 12 + date.getUTCMonth();
+      expect(value('world-volatility-weekly')).toBeCloseTo(
+        periodVolatilityOracle(input.days, input.worldPrice, mondayOf, DAYS_PER_YEAR / 5),
+        12,
+      );
+      expect(value('world-volatility-monthly')).toBeCloseTo(
+        periodVolatilityOracle(input.days, input.worldPrice, monthOf, 12),
+        12,
+      );
+    });
+
+    it('takes medians over the regional indices and correlates their monthly returns', () => {
+      expect(value('region-correlation')).toBeCloseTo(1, 12);
+      const europe = computeLabStatistics(
+        { ...input, worldPrice: input.regionPrices[0].closes },
+        intraday,
+        world,
+        'epoch',
+        DAYS_PER_YEAR,
+      );
+      const world0 = (id: string): number | undefined =>
+        europe.targets.find((row) => row.id === id)?.value;
+      // Scaling an index changes neither its volatility nor its drawdown.
+      expect(value('region-volatility')).toBeCloseTo(world0('world-volatility') ?? NaN, 12);
+      expect(value('region-max-drawdown')).toBeGreaterThan(0);
+    });
+
+    it('measures the drawdowns of the world total return index', () => {
+      // The total return index of `sample` alternates: below the high on every second day.
+      expect(value('world-max-drawdown')).toBeCloseTo(statistics.maxDrawdown, 15);
+      expect(value('world-longest-underwater')).toBeCloseTo(1 / DAYS_PER_YEAR, 12);
+      expect(value('world-worst-30y-return')).toBeNaN();
+    });
+
+    it('passes the highest close and shows every new row as info', () => {
+      expect(value('stock-max-price')).toBe(321);
+      for (const id of ['bear-markets-common', 'equal-weight-premium', 'negative-30y-share']) {
+        expect(statistics.targets.find((row) => row.id === id)?.status).toBe('info');
+      }
+    });
+  });
+
+  describe('premiumMeasures (7.1b-01)', () => {
+    /** `shares` log total returns per date; the world total return index stays flat. */
+    function yearlySample(logs: number[][], ratios: number[][]): MarketSample {
+      const base = sample(logs.length + 1);
+      return {
+        ...base,
+        worldTotalReturn: new Float64Array(logs.length).fill(100),
+        yearly: logs.map((logTotalReturn, position) => ({
+          position,
+          logTotalReturn: Float64Array.from(logTotalReturn),
+          highRatio: Float64Array.from(ratios[position]),
+        })),
+      };
+    }
+
+    it('rebalances the equal weight and the 20 deepest distances to the high yearly', () => {
+      // 22 shares: in the second year only shares 0 and 1 (at their high) triple, the 20 below
+      // their high stay flat. Equal weight: year 1 ±0, year 2 ln(26 / 22); strategy: year 2 ±0.
+      const flat = new Array<number>(22).fill(0);
+      const second = flat.map((_, i) => (i < 2 ? Math.log(3) : 0));
+      const ratios = flat.map((_, i) => (i < 2 ? 1 : 0.5));
+      const measures = premiumMeasures(yearlySample([flat, flat, second], [flat, ratios, ratios]));
+      expect(measures.equalWeight).toBeCloseTo(Math.log(26 / 22) / 2, 14);
+      expect(measures.drawdownStrategy).toBeCloseTo(0, 14);
+      expect(measures.negativeShare).toBeNaN();
+    });
+
+    it('counts negative total returns over every 30-year window', () => {
+      // Share 0 gains 10 % (log) a year, share 1 loses as much: 32 dates hold two windows each.
+      const logs = Array.from({ length: 32 }, (_, k) => [0.1 * k, -0.1 * k]);
+      const ratios = logs.map(() => [1, 1]);
+      expect(premiumMeasures(yearlySample(logs, ratios)).negativeShare).toBe(0.5);
+    });
+
+    it('is not measurable without a full year', () => {
+      const measures = premiumMeasures(yearlySample([[0, 0]], [[1, 1]]));
+      expect(measures.equalWeight).toBeNaN();
+      expect(measures.drawdownStrategy).toBeNaN();
     });
   });
 });

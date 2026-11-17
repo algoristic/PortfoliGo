@@ -44,3 +44,43 @@ export function drawdownEpisodes(values: Values, threshold: number): DrawdownEpi
   }
   return episodes;
 }
+
+/** Longest run of consecutive values below their running high, in values (0 without a decline). */
+export function longestUnderwater(values: Values): number {
+  let longest = 0;
+  let run = 0;
+  for (const drawdown of drawdowns(values)) {
+    run = drawdown > 0 ? run + 1 : 0;
+    longest = Math.max(longest, run);
+  }
+  return longest;
+}
+
+/**
+ * Number of bear markets by the common rule: a fall of at least `decline` from the high starts one,
+ * a rise of at least `recovery` from its low ends it, and the next one is measured from the high
+ * after that (TS §6.9, 7.1b-06). Unlike `drawdownEpisodes`, an episode doesn't wait for a new high.
+ */
+export function bearMarketCount(values: Values, decline: number, recovery: number): number {
+  let count = 0;
+  let inBear = false;
+  let high = Number.NEGATIVE_INFINITY;
+  let low = Number.POSITIVE_INFINITY;
+  for (let i = 0; i < values.length; i++) {
+    const value = values[i];
+    if (!inBear) {
+      high = Math.max(high, value);
+      if (value <= high * (1 - decline)) {
+        inBear = true;
+        low = value;
+        count++;
+      }
+    } else if (value < low) {
+      low = value;
+    } else if (value >= low * (1 + recovery)) {
+      inBear = false;
+      high = value;
+    }
+  }
+  return count;
+}

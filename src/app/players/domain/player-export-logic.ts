@@ -68,6 +68,7 @@ export function buildPlayerExport(input: PlayerExportInput): PlayerExportContent
   const firstSeq = oldestKeptSeq(lastSeq);
   const firstDay = dayIndex(player.performance.startTick);
   const lastDay = player.performance.day - 1;
+  // eslint-disable-next-line no-restricted-syntax -- formats a given wall-clock time
   const exportedAt = new Date(input.exportedAtMs).toISOString();
   return {
     format: EXPORT_FORMAT,

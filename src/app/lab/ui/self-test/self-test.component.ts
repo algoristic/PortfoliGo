@@ -6,6 +6,7 @@ import {
   GOLDEN_SEED,
   GoldenChecksumId,
   GoldenChecksums,
+  SELF_TEST_WORLD_SEEDS,
 } from '@app/market/domain/golden-master';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
@@ -62,6 +63,7 @@ export class SelfTestComponent {
     indices: $localize`:@@uiLab-selfTest-indices:Indizes 2020`,
     etfs: $localize`:@@uiLab-selfTest-etfs:ETFs 2020`,
     gameStart: $localize`:@@uiLab-selfTest-gameStart:Marktzustand zum Spielstart`,
+    worlds: $localize`:@@uiLab-selfTest-worlds:Welten von ${SELF_TEST_WORLD_SEEDS}:count: weiteren Seeds`,
   };
   matchLabel = $localize`:@@uiLab-selfTest-match:stimmt`;
   mismatchLabel = $localize`:@@uiLab-selfTest-mismatch:weicht ab`;

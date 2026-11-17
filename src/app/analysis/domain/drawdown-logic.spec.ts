@@ -1,6 +1,12 @@
 import fc from 'fast-check';
 
-import { drawdownEpisodes, drawdowns, maxDrawdown } from './drawdown-logic';
+import {
+  bearMarketCount,
+  drawdownEpisodes,
+  drawdowns,
+  longestUnderwater,
+  maxDrawdown,
+} from './drawdown-logic';
 
 const arbSeries = fc.array(fc.double({ min: 0.01, max: 1e6, noNaN: true }), {
   minLength: 1,
@@ -103,6 +109,43 @@ describe('drawdown-logic', () => {
       expect(drawdownEpisodes([100, 70, 75, 60, 100, 95, 101], 0.2)).toEqual([
         { peak: 0, trough: 3, recovery: 4, depth: 0.4 },
       ]);
+    });
+  });
+  describe('longestUnderwater', () => {
+    it('counts the longest run below the running high', () => {
+      expect(longestUnderwater(values)).toBe(3);
+      expect(longestUnderwater([1, 2, 3])).toBe(0);
+      expect(longestUnderwater([])).toBe(0);
+    });
+  });
+
+  describe('bearMarketCount', () => {
+    // TS §6.9: worked example of the common count (−20 % from the high, +20 % from the low)
+    // against the episodes to a new high of the calibration target.
+    const example = [100, 85, 79, 90, 96, 70, 84, 100, 75, 120, 95];
+
+    it('counts the bear markets of the example in TS §6.9', () => {
+      expect(bearMarketCount(example, 0.2, 0.2)).toBe(4);
+      expect(drawdownEpisodes(example, 0.2)).toHaveLength(3);
+    });
+
+    it.each([
+      [[100, 80], 1],
+      [[100, 80.01], 0],
+      [[100, 80, 95, 76], 1],
+      [[100, 80, 96, 76.8], 2],
+    ])('counts %j as %i', (series, expected) => {
+      expect(bearMarketCount(series, 0.2, 0.2)).toBe(expected);
+    });
+
+    it('never counts more than the declines of at least the threshold allow', () => {
+      fc.assert(
+        fc.property(arbSeries, (series) => {
+          const count = bearMarketCount(series, 0.2, 0.2);
+          expect(count).toBeGreaterThanOrEqual(drawdownEpisodes(series, 0.2).length);
+          expect(count === 0).toBe(maxDrawdown(series) < 0.2);
+        }),
+      );
     });
   });
 });

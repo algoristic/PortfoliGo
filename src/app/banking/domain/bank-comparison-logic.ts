@@ -100,7 +100,9 @@ export function sortBanks<T extends ComparedBank>(banks: readonly T[], sort: Ban
     .sort(
       (a, b) =>
         compareValues(a.values, b.values, sign) ||
+        // eslint-disable-next-line no-restricted-syntax -- display sort only (TS §4.5)
         a.bank.name.localeCompare(b.bank.name, 'de') ||
+        // eslint-disable-next-line no-restricted-syntax -- display sort only (TS §4.5)
         a.bank.id.localeCompare(b.bank.id),
     )
     .map(({ bank }) => bank);

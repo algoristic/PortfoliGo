@@ -30,6 +30,25 @@ export interface OvernightShares {
   stocks: number;
 }
 
+/** Daily closes of a broad regional price index. */
+export interface RegionCloses {
+  regionId: RegionId;
+  closes: Float64Array;
+}
+
+/**
+ * State of all shares at one yearly rebalancing date (every `marketDaysPerYear`-th market day from
+ * the first) for the premium measures of TS §6.9 (AP 7.3a).
+ */
+export interface YearlyShareState {
+  /** Position of the market day in the sample. */
+  position: number;
+  /** Per share: cumulative log total return `Σ ln((close + dividend) / previous close)` so far. */
+  logTotalReturn: Float64Array;
+  /** Per share: close ÷ highest close of the period so far (1 at a new high). */
+  highRatio: Float64Array;
+}
+
 /** Daily closes and returns of a period, collected in one pass over the support points. */
 export interface MarketSample {
   /** Market days of the period (day indices since the epoch). */
@@ -47,6 +66,12 @@ export interface MarketSample {
   overnight: OvernightShares;
   /** One entry per `CHECKPOINT_YEARS`; those outside the period are not measurable. */
   checkpoints: LongTermCheckpoint[];
+  /** Closes of the broad regional price indices, in the order of the world's indices. */
+  regionPrices: RegionCloses[];
+  /** One entry per rebalancing date, the first at the first market day. */
+  yearly: YearlyShareState[];
+  /** Highest close of a share in the period. */
+  maxPrice: number;
 }
 
 export interface MarketSampleOptions {
@@ -134,6 +159,11 @@ export class MarketSampleCollector {
   readonly #stockOvernight: OvernightSums;
   readonly #indexOvernight: OvernightSums;
   readonly #checkpoints: CheckpointRecord[];
+  readonly #regionPrices: Float64Array[];
+  readonly #logTotalReturn: Float64Array;
+  readonly #highs: Float64Array;
+  readonly #yearly: YearlyShareState[] = [];
+  #maxPrice = 0;
   #n = 0;
 
   constructor(
@@ -185,6 +215,9 @@ export class MarketSampleCollector {
     this.#previousIndexCloses = new Float64Array(this.#regionSeries.length + 1);
     this.#stockOvernight = new OvernightSums(this.#shareCount);
     this.#indexOvernight = new OvernightSums(this.#regionSeries.length + 1);
+    this.#regionPrices = this.#regionSeries.map(() => new Float64Array(marketDays));
+    this.#logTotalReturn = new Float64Array(this.#shareCount);
+    this.#highs = new Float64Array(this.#shareCount);
     this.#checkpoints = CHECKPOINT_YEARS.map((years) => ({
       years,
       day: checkpointDay(years),
@@ -205,7 +238,11 @@ export class MarketSampleCollector {
           this.#stockReturns[i][n - 1] = Math.log(close / this.#previousCloses[i]);
         }
         this.#stockOvernight.add(i, this.#previousCloses[i], support.value(i, 'open'), close);
+        const dividend = day.exDividendCents[i] / CENTS_PER_EURO;
+        this.#logTotalReturn[i] += Math.log((close + dividend) / this.#previousCloses[i]);
       }
+      this.#highs[i] = n === 0 ? close : Math.max(this.#highs[i], close);
+      this.#maxPrice = Math.max(this.#maxPrice, close);
       this.#closes[i] = close;
       this.#closeSum[i] += close;
       this.#dividendSum[i] += day.exDividendCents[i] / CENTS_PER_EURO;
@@ -221,6 +258,9 @@ export class MarketSampleCollector {
         );
       }
       this.#previousIndexCloses[k] = close;
+      if (k > 0) {
+        this.#regionPrices[k - 1][n] = close;
+      }
     });
     if (n > 0) {
       this.#stockOvernight.nextDay();
@@ -237,6 +277,13 @@ export class MarketSampleCollector {
         checkpoint.position = n;
         checkpoint.values = this.#checkpointValues();
       }
+    }
+    if (n % this.#marketDaysPerYear === 0) {
+      this.#yearly.push({
+        position: n,
+        logTotalReturn: this.#logTotalReturn.slice(),
+        highRatio: this.#closes.map((close, i) => close / this.#highs[i]),
+      });
     }
     this.#n++;
   }
@@ -268,6 +315,12 @@ export class MarketSampleCollector {
         ),
       },
       checkpoints: this.#checkpoints.map((checkpoint) => this.#checkpoint(checkpoint)),
+      regionPrices: this.#regionPrices.map((closes, k) => ({
+        regionId: this.#regionIds[k] as RegionId,
+        closes,
+      })),
+      yearly: this.#yearly,
+      maxPrice: this.#maxPrice,
     };
   }
 

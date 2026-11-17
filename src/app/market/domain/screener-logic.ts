@@ -9,6 +9,7 @@ import {
 /** Sorting without a choice: by name, ascending. */
 export const DEFAULT_SCREENER_SORT: ScreenerSort = { key: 'name', direction: 'asc' };
 
+// eslint-disable-next-line no-restricted-globals -- display sort only (TS §4.5)
 const NAME_COLLATOR = new Intl.Collator('de', { sensitivity: 'base' });
 
 /**

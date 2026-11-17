@@ -395,7 +395,7 @@ describe('SimulationPage', () => {
         expect(textOf(byTestId(page, `lab.simulation.self-test.${id}.status`))).toBe('stimmt');
       }
       expect(textOf(byTestId(page, 'lab.simulation.self-test.result'))).toBe(
-        'Alle 6 Prüfsummen stimmen.',
+        'Alle 7 Prüfsummen stimmen.',
       );
       expect(queryByTestId(page, 'lab.simulation.game-time')).toBeNull();
     });

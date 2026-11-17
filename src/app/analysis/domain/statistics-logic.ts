@@ -1,3 +1,5 @@
+import { detExp, detLog } from '@app/simulation/util/det-math';
+
 import { Histogram } from './models/histogram.model';
 
 type Values = ArrayLike<number>;
@@ -31,11 +33,14 @@ export function standardDeviation(values: Values): number {
   return Math.sqrt(variance(values));
 }
 
-/** Log returns `ln(v[i] / v[i − 1])`, one fewer than values. */
+/**
+ * Log returns `ln(v[i] / v[i − 1])`, one fewer than values. The worker computes volatility and beta
+ * of the instrument page with them, so they use `detLog` (TS §4.4).
+ */
 export function logReturns(values: Values): Float64Array {
   const result = new Float64Array(Math.max(0, values.length - 1));
   for (let i = 1; i < values.length; i++) {
-    result[i - 1] = Math.log(values[i] / values[i - 1]);
+    result[i - 1] = detLog(values[i] / values[i - 1]);
   }
   return result;
 }
@@ -50,7 +55,7 @@ export function geometricReturn(first: number, last: number, years: number): num
   if (!(years > 0) || !(first > 0)) {
     return Number.NaN;
   }
-  return Math.pow(last / first, 1 / years) - 1;
+  return detExp(detLog(last / first) / years) - 1;
 }
 
 /** Sample covariance (divisor `n − 1`); `NaN` for fewer than two pairs or different lengths. */
@@ -102,7 +107,7 @@ export function correlation(xs: Values, ys: Values): number {
 /** Population skewness (third standardized moment). */
 export function skewness(values: Values): number {
   const { m2, m3 } = centralMoments(values);
-  return m2 > 0 ? m3 / Math.pow(m2, 1.5) : Number.NaN;
+  return m2 > 0 ? m3 / (m2 * Math.sqrt(m2)) : Number.NaN;
 }
 
 /** Population kurtosis (fourth standardized moment); 3 for a normal distribution. */

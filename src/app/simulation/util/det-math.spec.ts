@@ -3,6 +3,11 @@ import fc from 'fast-check';
 import { detExp, detLog } from './det-math';
 import { createStream } from './random-stream';
 import { deriveSeedKey } from './seed';
+import {
+  DET_EXP_REFERENCE,
+  DET_LOG_REFERENCE,
+  DetMathReference,
+} from './testing/det-math-reference';
 
 const view = new DataView(new ArrayBuffer(8));
 
@@ -42,6 +47,50 @@ function maxUlpDistance(
   return max;
 }
 
+function fromBits(hex: string): number {
+  view.setBigUint64(0, BigInt(`0x${hex}`));
+  return view.getFloat64(0);
+}
+
+function toBits(x: number): string {
+  view.setFloat64(0, x);
+  return view.getBigUint64(0).toString(16).padStart(16, '0');
+}
+
+/** A finite double as the exact fraction `mantissa · 2^exponent`. */
+function exactBinary(x: number): { mantissa: bigint; exponent: number } {
+  view.setFloat64(0, x);
+  const bits = view.getBigUint64(0);
+  const biased = Number((bits >> 52n) & 0x7ffn);
+  const fraction = bits & 0xfffffffffffffn;
+  const sign = bits >> 63n === 1n ? -1n : 1n;
+  return biased === 0
+    ? { mantissa: sign * fraction, exponent: -1074 }
+    : { mantissa: sign * (fraction | (1n << 52n)), exponent: biased - 1075 };
+}
+
+/**
+ * Whether the double `x` lies less than one of its ulps from the decimal `reference`, computed
+ * exactly with integers (independent of any floating-point function).
+ */
+function withinOneUlpOfDecimal(x: number, reference: string): boolean {
+  const [digits, exponentText = '0'] = reference.toLowerCase().split('e');
+  const [whole, fraction = ''] = digits.split('.');
+  const decimalMantissa = BigInt(whole + fraction);
+  const decimalExponent = Number(exponentText) - fraction.length;
+  const { mantissa, exponent } = exactBinary(x);
+  // ulp of x: 2^(exponent) for normal and subnormal doubles alike.
+  const ulpExponent = exponent;
+  // Compare |m · 2^e − d · 10^k| < 2^u after scaling all terms by 2^s · 10^t to integers.
+  const s = Math.max(0, -exponent);
+  const t = Math.max(0, -decimalExponent);
+  const binary = mantissa * 2n ** BigInt(exponent + s) * 10n ** BigInt(t);
+  const decimal = decimalMantissa * 10n ** BigInt(decimalExponent + t) * 2n ** BigInt(s);
+  const ulp = 2n ** BigInt(ulpExponent + s) * 10n ** BigInt(t);
+  const difference = binary > decimal ? binary - decimal : decimal - binary;
+  return difference < ulp;
+}
+
 describe('det-math', () => {
   const seedKey = deriveSeedKey('det-math');
 
@@ -78,7 +127,9 @@ describe('det-math', () => {
     });
 
     it('stays within 1 ulp of Math.exp for any double', () => {
-      // V8's Math.exp is a port of the same fdlibm routine, so it serves as an independent oracle.
+      // V8's Math.exp is a port of the same fdlibm routine: in Node this checks the port, not the
+      // accuracy, and cannot tell detExp from Math.exp. The independent oracle is the frozen
+      // reference table below (AP 7.3a).
       fc.assert(
         fc.property(fc.double(), (x) => expectWithinOneUlp(detExp(x), Math.exp(x))),
         { numRuns: 2_000 },
@@ -126,6 +177,39 @@ describe('det-math', () => {
           );
         }),
       );
+    });
+  });
+  describe('frozen reference table (TS §4.4)', () => {
+    // Exact values from Python `decimal` (80 digits), independent of any libm. The table catches
+    // a changed port in every engine, where comparing with Math.exp/Math.log cannot.
+    it.each([
+      ['detExp', detExp, DET_EXP_REFERENCE],
+      ['detLog', detLog, DET_LOG_REFERENCE],
+    ] as const)(
+      '%s reproduces the frozen results',
+      (_name, fn: (x: number) => number, table: readonly DetMathReference[]) => {
+        expect(table.length).toBeGreaterThan(150);
+        for (const [input, result] of table) {
+          expect(toBits(fn(fromBits(input))), input).toBe(result);
+        }
+      },
+    );
+
+    it.each([
+      ['exp', DET_EXP_REFERENCE],
+      ['log', DET_LOG_REFERENCE],
+    ] as const)('holds results within 1 ulp of the exact %s', (_name, table) => {
+      for (const [input, result, exact] of table) {
+        expect(withinOneUlpOfDecimal(fromBits(result), exact), input).toBe(true);
+      }
+    });
+
+    it('rejects a result two ulps away from the exact value', () => {
+      const [, result, exact] = DET_EXP_REFERENCE[0];
+      const x = fromBits(result);
+      expect(withinOneUlpOfDecimal(x, exact)).toBe(true);
+      const twoUlpsUp = fromBits((BigInt(`0x${result}`) + 2n).toString(16).padStart(16, '0'));
+      expect(withinOneUlpOfDecimal(twoUlpsUp, exact)).toBe(false);
     });
   });
 });

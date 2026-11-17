@@ -190,7 +190,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 7.1b  | Modellreview: Marktmodell und Kalibrierung         | fertig    | 6.6                       |
 | 7.1c  | Modellreview: Wirtschaftsmodell                    | fertig    | 6.6                       |
 | 7.2   | WASM-Machbarkeit                                   | fertig    | 6.6                       |
-| 7.3a  | Korrekturen: Absicherung und Messung               | offen     | 7.1a, 7.1b                |
+| 7.3a  | Korrekturen: Absicherung und Messung               | fertig    | 7.1a, 7.1b                |
 | 7.3b  | Korrekturen: kleine Korrekturen und Doku           | offen     | 7.1a, 7.1b, 7.1c, 7.2     |
 | 7.3c  | Korrekturen: Rendite und Benchmark                 | offen     | 7.1c                      |
 | 7.3d  | Korrekturen: Modelländerung Marktmodell            | offen     | 7.3a                      |
@@ -597,7 +597,7 @@ flowchart TD
   AP10_2b --> AP10_15
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP7_1a,AP7_1b,AP7_1c,AP7_2 done
+  class AP7_1a,AP7_1b,AP7_1c,AP7_2,AP7_3a done
   class AP6_6 active
 ```
 

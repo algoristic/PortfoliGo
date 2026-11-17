@@ -252,10 +252,27 @@ describe('generateWorld', () => {
         expect(ofKind('world')).toBe(1);
         expect(ofKind('region-broad')).toBe(REGION_IDS.length);
         expect(ofKind('region-leading')).toBe(REGION_IDS.length);
-        expect(ofKind('sector')).toBe(SECTOR_IDS.length);
+        // One sector index per sector with shares; a sector can stay empty (TS §5.5, 7.1a-04).
+        const occupied = SECTOR_IDS.filter((sectorId) =>
+          world.companies.some((company) => company.sectorId === sectorId),
+        );
+        expect(
+          world.indices.filter((index) => index.kind === 'sector').map((index) => index.sectorId),
+        ).toEqual(occupied);
         expect(ofKind('small-cap')).toBe(1);
         expect(ofKind('dividend')).toBe(1);
       });
+    });
+
+    it('leaves out the index of an empty sector (TS §5.2, §5.5)', () => {
+      // `empty-13280` (AP 7.1a): no real-estate share, so 21 instead of 22 indices.
+      const world = generateWorld(deriveSeedKey('empty-13280'));
+      expect(world.companies.some((company) => company.sectorId === 'real-estate')).toBe(false);
+      expect(world.indices).toHaveLength(21);
+      expect(world.indices.some((index) => index.sectorId === 'real-estate')).toBe(false);
+      expect(world.indices.filter((index) => index.kind === 'sector')).toHaveLength(
+        SECTOR_IDS.length - 1,
+      );
     });
 
     it('selects the constituents by the rule of each index', () => {

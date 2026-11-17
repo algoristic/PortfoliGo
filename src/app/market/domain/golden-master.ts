@@ -6,6 +6,7 @@ import {
 } from '@app/clock/domain/calendar-logic';
 
 import { Checksum } from '@app/simulation/util/checksum';
+import { withInexactMathTrap } from '@app/simulation/util/inexact-math-trap';
 
 import { deriveSeedKey } from '@app/simulation/util/seed';
 
@@ -34,6 +35,7 @@ export const GOLDEN_CHECKSUM_IDS = [
   'indices',
   'etfs',
   'gameStart',
+  'worlds',
 ] as const;
 export type GoldenChecksumId = (typeof GOLDEN_CHECKSUM_IDS)[number];
 export type GoldenChecksums = Readonly<Record<GoldenChecksumId, string>>;
@@ -48,6 +50,7 @@ export type GoldenChecksums = Readonly<Record<GoldenChecksumId, string>>;
  * - `indices`: daily opens and closes of all price and total return indices in 2020.
  * - `etfs`: daily opens and closes of all ETFs in 2020.
  * - `gameStart`: the market state at the game start, after the whole prehistory.
+ * - `worlds`: the worlds of the first `SELF_TEST_WORLD_SEEDS` seeds of `worldSeeds` (AP 7.3a).
  */
 export const GOLDEN_CHECKSUMS: GoldenChecksums = {
   world: '0c8e345376a3fcac577a790a6f18192b',
@@ -56,7 +59,37 @@ export const GOLDEN_CHECKSUMS: GoldenChecksums = {
   indices: 'c7916ed1209dc9ed4f3c2ae71a710575',
   etfs: 'f7e944354b2985630448abdeff35382b',
   gameStart: '67859dc74b41896065cffc5a93a0c8e6',
+  worlds: '58e16d0666d88a5dc07778935e961574',
 };
+
+/** Number of seeds of the checksum over many worlds in the logic tests (AP 7.3a). */
+export const GOLDEN_WORLD_SEEDS = 200;
+/** Its first seeds, few enough for the self-test in the worker of every engine. */
+export const SELF_TEST_WORLD_SEEDS = 20;
+
+/**
+ * Frozen checksum over the worlds of all `GOLDEN_WORLD_SEEDS` seeds (TS §4.6). Rare paths of the
+ * world generation (non-payers starting at the epoch, small or empty sectors) occur only in some
+ * worlds, so one seed would not notice a change of them (AP 7.3a).
+ */
+export const GOLDEN_WORLDS_CHECKSUM = '859c4d6a79773ac38bf9c05e1818ca05';
+
+/** Seeds `worlds-1` … `worlds-<count>` of the checksum over many worlds. */
+export function worldSeeds(count: number): string[] {
+  return Array.from({ length: count }, (_, n) => `worlds-${n + 1}`);
+}
+
+/** Checksum over the `worldChecksum` of each seed in order, as 32-bit words of the hex digest. */
+export function worldsChecksum(seeds: readonly string[]): string {
+  const checksum = new Checksum();
+  for (const seed of seeds) {
+    const digest = worldChecksum(generateWorld(deriveSeedKey(seed)));
+    for (let i = 0; i < digest.length; i += 8) {
+      checksum.addUint32(Number.parseInt(digest.slice(i, i + 8), 16));
+    }
+  }
+  return checksum.digest();
+}
 
 /** First day after the golden year 2020. */
 const END_OF_2020_DAY = dayIndex(dateTimeToTick({ year: 2021, month: 1, day: 1 }));
@@ -69,10 +102,15 @@ export const GOLDEN_MINUTE_SAMPLE = {
 
 /**
  * Computes all golden checksums of a seed in one run: the year 2020 with its prices, then the
- * minute sample, then the prehistory up to the game start. Runs in the worker for the self-test in
- * the lab (TS §14.2), so it must stay framework-free.
+ * minute sample, then the prehistory up to the game start, then the worlds of the first
+ * `SELF_TEST_WORLD_SEEDS`. Runs in the worker for the self-test in the lab (TS §14.2), so it must
+ * stay framework-free. The inexact `Math` functions throw meanwhile (`withInexactMathTrap`).
  */
 export function computeGoldenChecksums(seed: string = GOLDEN_SEED): GoldenChecksums {
+  return withInexactMathTrap(() => computeChecksums(seed));
+}
+
+function computeChecksums(seed: string): GoldenChecksums {
   const seedKey = deriveSeedKey(seed);
   const world = generateWorld(seedKey);
   const config = DEFAULT_MARKET_CONFIG;
@@ -125,5 +163,6 @@ export function computeGoldenChecksums(seed: string = GOLDEN_SEED): GoldenChecks
     indices: indices.digest(),
     etfs: etfs.digest(),
     gameStart: marketChecksum(state),
+    worlds: worldsChecksum(worldSeeds(SELF_TEST_WORLD_SEEDS)),
   };
 }

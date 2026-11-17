@@ -18,6 +18,17 @@ export const CALIBRATION_TARGETS = [
   { id: 'world-return', unit: 'percent', min: 0.06, max: 0.08, minYears: 30 },
   { id: 'world-price-return', unit: 'percent' },
   { id: 'world-volatility', unit: 'percent', min: 0.14, max: 0.18, minYears: 5 },
+  // Weekly and monthly returns include the moves the daily closes of other regions miss (7.1b-07).
+  { id: 'world-volatility-weekly', unit: 'percent' },
+  { id: 'world-volatility-monthly', unit: 'percent' },
+  { id: 'world-autocorrelation-lag1', unit: 'number' },
+  { id: 'world-max-drawdown', unit: 'percent' },
+  { id: 'world-longest-underwater', unit: 'number' },
+  { id: 'world-worst-30y-return', unit: 'percent' },
+  // Broad regional price indices: medians over the regions, correlation of monthly returns.
+  { id: 'region-volatility', unit: 'percent' },
+  { id: 'region-max-drawdown', unit: 'percent' },
+  { id: 'region-correlation', unit: 'number' },
   { id: 'large-volatility', unit: 'percent', min: 0.2, max: 0.3, minYears: 1 },
   { id: 'mid-volatility', unit: 'percent' },
   { id: 'small-volatility', unit: 'percent', min: 0.35, max: 0.6, minYears: 1 },
@@ -30,8 +41,17 @@ export const CALIBRATION_TARGETS = [
   { id: 'weekly-correlation-within', unit: 'number' },
   { id: 'weekly-correlation-between', unit: 'number' },
   { id: 'bear-markets', unit: 'per-year', min: 1 / 8, max: 1 / 5, minYears: 50 },
+  // Common count on the price index: −20 % from the high to +20 % from the low (E-34, 7.1b-06).
+  { id: 'bear-markets-common', unit: 'per-year' },
   { id: 'world-kurtosis', unit: 'number', min: 5, minYears: 5 },
   { id: 'stock-kurtosis', unit: 'number', min: 5, minYears: 5 },
+  { id: 'stock-autocorrelation-lag1', unit: 'number' },
+  { id: 'stock-max-price', unit: 'number' },
+  // Premiums against the world total return index, log p. a. without costs; info until AP 7.3e
+  // gives them a band (7.1b-01).
+  { id: 'equal-weight-premium', unit: 'percent' },
+  { id: 'drawdown-strategy-premium', unit: 'percent' },
+  { id: 'negative-30y-share', unit: 'percent' },
   { id: 'clustering-lag1', unit: 'number', min: 0.1, max: 0.3, minYears: 5 },
   { id: 'clustering-mean', unit: 'number', min: 0, minYears: 5 },
   { id: 'world-dividend-yield', unit: 'percent', min: 0.02, max: 0.03, minYears: 1 },
@@ -57,7 +77,7 @@ export interface LongTermLimit {
 }
 
 /** Checkpoints in game years at which the limits of the long-term measures apply (E-22). */
-export const LONG_TERM_LIMIT_YEARS = [50, 100] as const;
+export const LONG_TERM_LIMIT_YEARS = [25, 50, 100] as const;
 
 /**
  * Limits of the long-term behaviour (TS §6.9, E-22), checked in the median of the calibration

@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals -- Formats game time for the UI; the simulation never reads
+   the text (TS §4.5). */
 import { perLocale } from '@app/shared/util/locale';
 
 import { tickToDateTime } from './calendar-logic';

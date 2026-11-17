@@ -15,6 +15,8 @@ yieldChannel.port1.onmessage = () => yielded.shift()?.();
 
 const host = new EngineHost(
   {
+    // The wall-clock port of the host paces the game clock; game time comes from the tick (TS §4.5).
+    // eslint-disable-next-line no-restricted-properties -- see above
     now: () => Date.now(),
     post: (message) => postMessage(message),
     timer: {

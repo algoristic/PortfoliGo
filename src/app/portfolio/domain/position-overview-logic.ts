@@ -88,6 +88,7 @@ export function sortPositions(
 ): PositionFigures[] {
   const sign = sort.direction === 'ascending' ? 1 : -1;
   const byName = (a: PositionFigures, b: PositionFigures): number =>
+    // eslint-disable-next-line no-restricted-syntax -- display sort only (TS §4.5)
     a.name.localeCompare(b.name, 'de') || a.instrumentId.localeCompare(b.instrumentId);
   return [...rows].sort((a, b) => {
     if (sort.key === 'name') {
