@@ -56,7 +56,7 @@ function summary(values: number[]): string {
 /**
  * Text report of all targets and long-term measures: median and range over the seeds, separately
  * for the prehistory and the long run, with the band and whether the median lies in it. Info for
- * the change log (AP 7.3a); it checks nothing.
+ * the change log (AP 7.3a, 7.3e); it checks nothing.
  */
 export function calibrationReport(title: string, runs: CalibrationRun[]): string {
   const lines = [`${title} (${runs.length} seeds: ${runs.map((run) => run.seed).join(', ')})`];
@@ -64,14 +64,20 @@ export function calibrationReport(title: string, runs: CalibrationRun[]): string
     const prehistory = runs.map((run) => targetValue(run.prehistory, target.id));
     const long = runs.map((run) => targetValue(run.long, target.id));
     const banded = target.min !== undefined || target.max !== undefined;
-    let band = 'info';
+    const open = target.openUntil === undefined ? '' : ` (open until ${target.openUntil})`;
+    let band = `info${open}`;
     if (banded) {
-      const value = median(measuredOverLongRun(target) ? long : prehistory);
-      const inBand =
-        (target.min === undefined || value >= target.min) &&
-        (target.max === undefined || value <= target.max);
-      const open = target.openUntil === undefined ? '' : ` (open until ${target.openUntil})`;
-      band = `${target.min ?? ''}…${target.max ?? ''} ${inBand ? 'ok' : 'OFF'}${open}`;
+      const status = (values: number[]): string => {
+        const value = median(values);
+        const inBand =
+          (target.min === undefined || value >= target.min) &&
+          (target.max === undefined || value <= target.max);
+        return inBand ? 'ok' : 'OFF';
+      };
+      const checked = measuredOverLongRun(target)
+        ? status(long)
+        : `${status(prehistory)} | ${status(long)}`;
+      band = `${target.min ?? ''}…${target.max ?? ''} ${checked}${open}`;
     }
     lines.push(
       `${target.id}: prehistory ${summary(prehistory)} | 110 years ${summary(long)} | ${band}`,

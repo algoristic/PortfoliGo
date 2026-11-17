@@ -26,7 +26,7 @@ import { GameWorld } from './models/game-world.model';
  * performance. It changes with every change of the economic rules or of the market; update it
  * only on purpose and note it in the change log (TS §15).
  */
-export const PLAYER_CHECKSUM = '737578bda2ff493b0fd551fc551bea75';
+export const PLAYER_CHECKSUM = 'da9c6b182535332bd0b0241b18d233f1';
 
 /** Start conditions of the script: enough capital for a savings account above the allowance. */
 export const PLAYER_SCRIPT_START: StartConditions = {

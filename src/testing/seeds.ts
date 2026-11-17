@@ -11,10 +11,10 @@ export const TEST_SEEDS = {
   smallBase: 'mini-2',
   /** Page tests of the lab. */
   page: 'page-test',
-  /** Statistical tests on fixed seeds. */
+  /** Other statistical tests on fixed seeds and the lab's seed comparison. */
   calibration: COMPARISON_SEEDS,
   /** Many worlds for cross-sectional tests of single instruments (`idio-1` … `idio-20`). */
   crossSection: Array.from({ length: 20 }, (_, n) => `idio-${n + 1}`),
-  /** Broad set of fresh seeds for the info run of the calibration (E-34, AP 7.3a). */
+  /** Broad set of fresh seeds whose median the calibration targets are checked on (E-34, AP 7.3e). */
   calibrationBroad: Array.from({ length: 20 }, (_, n) => `broad-${n + 1}`),
 } as const;

@@ -12,7 +12,7 @@ const NEXT = [
   [0.05, 0.15, 0, 0.8],
   [0.45, 0.55, 0, 0],
 ];
-const VOL_RATIOS = [0.074 / 0.093, 1, 0.127 / 0.093, 0.29 / 0.093];
+const VOL_RATIOS = [0.078 / 0.099, 1, 0.135 / 0.099, 0.31 / 0.099];
 const LOG_VOL_VARIANCE = (1.45 * 1.45) / (2 * 8);
 
 describe('idio-volatility-logic', () => {
@@ -37,17 +37,18 @@ describe('idio-volatility-logic', () => {
     expect(shares[1]).toBeCloseTo(2 / 3, 12);
   });
 
-  // TS §6.4: M = Σ_p π_p · r_p^{2φ} · e^{2φ²·V} and the scale √((s / s̄)^{2φ} / M) with s̄ = 9.3 %.
+  // TS §6.4: M = Σ_p π_p · r_p^{2φ} · e^{2φ²·V} and the scale √((s / s̄)^{2φ} / M) with s̄ = 9.9 %
+  // (volatility targets of the phases since AP 7.3e).
   it.each([
-    { coupling: 0.5, normalization: 1.225508, scales: [0.80578, 0.903321, 1.055607, 1.595143] },
-    { coupling: 0.25, normalization: 1.063197, scales: [0.915968, 0.969824, 1.048391, 1.288759] },
-    { coupling: 1, normalization: 2.196467, scales: [0.536891, 0.674742, 0.921422, 2.104034] },
+    { coupling: 0.5, normalization: 1.222895, scales: [0.802666, 0.904285, 1.055977, 1.600179] },
+    { coupling: 0.25, normalization: 1.061554, scales: [0.914416, 0.970575, 1.048827, 1.291102] },
+    { coupling: 1, normalization: 2.197173, scales: [0.531529, 0.674634, 0.919955, 2.112489] },
   ])('normalises φ = $coupling by M = $normalization', ({ coupling, normalization, scales }) => {
     const shares = stationaryPhaseShares(LEAVE, NEXT);
     const value = idioVolNormalization(shares, VOL_RATIOS, LOG_VOL_VARIANCE, coupling);
     expect(value).toBeCloseTo(normalization, 5);
-    [0.074, 0.093, 0.127, 0.29].forEach((vol, p) => {
-      expect(idioVolScale(vol, 0.093, coupling, value)).toBeCloseTo(scales[p], 5);
+    [0.078, 0.099, 0.135, 0.31].forEach((vol, p) => {
+      expect(idioVolScale(vol, 0.099, coupling, value)).toBeCloseTo(scales[p], 5);
     });
   });
 

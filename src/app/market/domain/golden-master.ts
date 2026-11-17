@@ -53,13 +53,13 @@ export type GoldenChecksums = Readonly<Record<GoldenChecksumId, string>>;
  * - `worlds`: the worlds of the first `SELF_TEST_WORLD_SEEDS` seeds of `worldSeeds` (AP 7.3a).
  */
 export const GOLDEN_CHECKSUMS: GoldenChecksums = {
-  world: '1cb153d641046051cf2fae576b4d6f9e',
-  prices: 'c68e6353e71422fca26401376e1aaf93',
-  minutes: '7508195e77f0056ded8bd64b09c62ac5',
-  indices: 'f02260bc653281218a2083a570ebbeff',
-  etfs: 'dd70f5d8c283c627cc137e5198419653',
-  gameStart: '8e24be67c6dfff04fb39509a57e5ef10',
-  worlds: '09f26bd4642796909654922d471e428b',
+  world: '3f0d08f488566392b17b7c206df7b095',
+  prices: '41344ffcfcdbe21f33b8ec151c4180fb',
+  minutes: '4771c60c2a03e9edb698b1cdc3a60251',
+  indices: '1fa9e157bfc45c44773e989d75540346',
+  etfs: '361e8b8305e25cc385c40d46c91124e1',
+  gameStart: 'af17c89923c8dec39c1fd1ddac57a2a0',
+  worlds: 'e8fb56389db4cf368ecffedd278ddd97',
 };
 
 /** Number of seeds of the checksum over many worlds in the logic tests (AP 7.3a). */
@@ -72,7 +72,7 @@ export const SELF_TEST_WORLD_SEEDS = 20;
  * world generation (non-payers starting at the epoch, small or empty sectors) occur only in some
  * worlds, so one seed would not notice a change of them (AP 7.3a).
  */
-export const GOLDEN_WORLDS_CHECKSUM = 'e8847c3f51134a272be26cace9a4f538';
+export const GOLDEN_WORLDS_CHECKSUM = 'fd5bfc48428b8f0011459abb26d0160b';
 
 /** Seeds `worlds-1` … `worlds-<count>` of the checksum over many worlds. */
 export function worldSeeds(count: number): string[] {

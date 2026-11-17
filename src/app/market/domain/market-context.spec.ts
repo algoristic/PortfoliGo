@@ -214,11 +214,11 @@ describe('createMarketContext: idiosyncratic part (TS §6.4, E-22 new, 7.1b-02)'
   const seedKey = deriveSeedKey(GOLDEN_SEED);
 
   it('normalises the volatility scale with M of the standard market', () => {
-    // M = 1.225508 for φ = 0.5 (TS §6.4, computed from the phase table of TS §6.3).
+    // M = 1.222895 for φ = 0.5 (TS §6.4, computed from the phase table of TS §6.3).
     const context = createMarketContext(seedKey, world);
-    expect(context.idioVolNormalization).toBeCloseTo(1.225508, 5);
+    expect(context.idioVolNormalization).toBeCloseTo(1.222895, 5);
     expect(idioDayScale(context, DEFAULT_MARKET_CONFIG.phases.crisis.volTarget)).toBeCloseTo(
-      1.595143,
+      1.600179,
       5,
     );
   });

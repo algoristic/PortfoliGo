@@ -3,7 +3,7 @@ import { TargetRow, TargetStatus, TargetUnit } from './models/lab-statistics.mod
 /**
  * Calibration targets of TS §6.9 with their measurement rule (AP 1.8a, AP 1.8b, AP 1.9a, AP 1.9b,
  * AP 1.9c). Without `min` and `max` a quantity is shown for information. The calibration suite
- * checks every target with a band in the median of the calibration seeds (AP 1.9c).
+ * checks every target with a band in the median of the broad seed set (E-34, AP 7.3e).
  */
 export interface CalibrationTarget {
   id: string;
@@ -13,14 +13,18 @@ export interface CalibrationTarget {
   /** Shortest period in years for a meaningful value. */
   minYears?: number;
   /**
-   * Work package whose calibration brings the target back into its band (E-39, TS §6.9); until
-   * then the calibration suite reports its median instead of checking it.
+   * Work package or decision that brings the target back into its band or gives it one (E-39,
+   * TS §6.9); until then the calibration suite reports its median instead of checking it.
    */
   openUntil?: string;
 }
 
-/** Calibration of the model change of AP 7.3d (E-22 new): the targets it moves wait for it. */
-export const RECALIBRATION_PACKAGE = 'AP 7.3e';
+/**
+ * Open after the recalibration of AP 7.3e: the product owner sets the bands of the premiums and
+ * the limit of R12 for the five largest values from its measurement (E-22 new, 7.1b-01).
+ */
+export const PRODUCT_OWNER_DECISION = 'product-owner decision';
+export const R12_DECISION = `${PRODUCT_OWNER_DECISION} (R12)`;
 
 export const CALIBRATION_TARGETS = [
   { id: 'world-return', unit: 'percent', min: 0.06, max: 0.08, minYears: 30 },
@@ -37,14 +41,7 @@ export const CALIBRATION_TARGETS = [
   { id: 'region-volatility', unit: 'percent' },
   { id: 'region-max-drawdown', unit: 'percent' },
   { id: 'region-correlation', unit: 'number' },
-  {
-    id: 'large-volatility',
-    unit: 'percent',
-    min: 0.2,
-    max: 0.3,
-    minYears: 1,
-    openUntil: RECALIBRATION_PACKAGE,
-  },
+  { id: 'large-volatility', unit: 'percent', min: 0.2, max: 0.3, minYears: 1 },
   { id: 'mid-volatility', unit: 'percent' },
   { id: 'small-volatility', unit: 'percent', min: 0.35, max: 0.6, minYears: 1 },
   // Large caps of the same region (E-31); all pairs of the same region for information. Between
@@ -64,10 +61,10 @@ export const CALIBRATION_TARGETS = [
   // Volatility clustering of single shares: ACF(|r|, 1), median of the shares (7.1b-02).
   { id: 'stock-abs-autocorrelation-lag1', unit: 'number' },
   { id: 'stock-max-price', unit: 'number' },
-  // Premiums against the world total return index, log p. a. without costs; info until AP 7.3e
-  // gives them a band (7.1b-01).
-  { id: 'equal-weight-premium', unit: 'percent' },
-  { id: 'drawdown-strategy-premium', unit: 'percent' },
+  // Premiums against the world total return index, log p. a. without costs (7.1b-01); info until the
+  // product owner sets their bands.
+  { id: 'equal-weight-premium', unit: 'percent', openUntil: PRODUCT_OWNER_DECISION },
+  { id: 'drawdown-strategy-premium', unit: 'percent', openUntil: PRODUCT_OWNER_DECISION },
   { id: 'negative-30y-share', unit: 'percent' },
   { id: 'clustering-lag1', unit: 'number', min: 0.1, max: 0.3, minYears: 5 },
   { id: 'clustering-mean', unit: 'number', min: 0, minYears: 5 },
@@ -99,14 +96,15 @@ export interface LongTermLimit {
 export const LONG_TERM_LIMIT_YEARS = [25, 50, 100] as const;
 
 /**
- * Limits of the long-term behaviour (TS §6.9, E-22), checked in the median of the calibration
- * seeds: at the checkpoints of `LONG_TERM_LIMIT_YEARS` and for the medians of the rolling windows.
+ * Limits of the long-term behaviour (TS §6.9, E-22), checked in the median of the broad seed set
+ * (E-34): at the checkpoints of `LONG_TERM_LIMIT_YEARS` and for the medians of the rolling windows.
  */
 export const LONG_TERM_LIMITS = {
-  // Open until the product owner sets the new limits after AP 7.3e (E-22 new, R12).
-  topFiveShare: { max: 0.4, openUntil: RECALIBRATION_PACKAGE },
-  belowOneEuro: { max: 0.1, openUntil: RECALIBRATION_PACKAGE },
-  atFloor: { max: 0.02, openUntil: RECALIBRATION_PACKAGE },
+  // Above its limit after the recalibration of AP 7.3e: open until the product owner sets the limit
+  // of R12 (E-22 new).
+  topFiveShare: { max: 0.4, openUntil: R12_DECISION },
+  belowOneEuro: { max: 0.1 },
+  atFloor: { max: 0.02 },
   windowVolatility: { years: 10, min: 0.13, max: 0.2 },
   windowDividendYield: { years: 30, min: 0.015 },
 } as const satisfies Record<string, LongTermLimit>;

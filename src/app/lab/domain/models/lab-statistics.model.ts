@@ -25,7 +25,7 @@ export interface TargetRow {
   min?: number;
   max?: number;
   minYears?: number;
-  /** Work package that brings the target back into its band (E-39). */
+  /** Work package or decision that brings the target back into its band or gives it one (E-39). */
   openUntil?: string;
   status: TargetStatus;
 }

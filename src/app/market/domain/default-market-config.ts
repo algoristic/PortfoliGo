@@ -11,8 +11,9 @@ const SUB_FACTOR: Omit<FactorParams, 'volTarget' | 'trendVol'> = {
 };
 
 /**
- * Standard market (TS §6.2, §6.3), calibrated in AP 1.9c against the targets of TS §6.9 on
- * `calib-1` … `calib-5`.
+ * Standard market (TS §6.2, §6.3), calibrated in AP 1.9c against the targets of TS §6.9 and
+ * recalibrated in AP 7.3e on the broad seed set `broad-1` … `broad-20` (E-34): world drift +1 point,
+ * world volatility up and region factors down (7.1b-05), zero-beta return with the drift.
  */
 export const DEFAULT_MARKET_CONFIG: MarketConfig = {
   tradingDaysPerYear: 261,
@@ -22,42 +23,42 @@ export const DEFAULT_MARKET_CONFIG: MarketConfig = {
   phases: {
     boom: {
       meanDuration: 3.5,
-      trendTarget: 0.1,
-      volTarget: 0.074,
+      trendTarget: 0.11,
+      volTarget: 0.078,
       next: { boom: 0, normal: 0.35, downturn: 0.35, crisis: 0.3 },
     },
     normal: {
       meanDuration: 2,
-      trendTarget: 0.08,
-      volTarget: 0.093,
+      trendTarget: 0.09,
+      volTarget: 0.099,
       next: { boom: 0.1, normal: 0, downturn: 0.75, crisis: 0.15 },
     },
     downturn: {
       meanDuration: 1,
-      trendTarget: 0.03,
-      volTarget: 0.127,
+      trendTarget: 0.04,
+      volTarget: 0.135,
       next: { boom: 0.05, normal: 0.15, downturn: 0, crisis: 0.8 },
     },
     crisis: {
       meanDuration: 0.4,
-      trendTarget: -0.05,
-      volTarget: 0.29,
+      trendTarget: -0.04,
+      volTarget: 0.31,
       next: { boom: 0.45, normal: 0.55, downturn: 0, crisis: 0 },
     },
   },
   factors: {
     world: {
-      trendTarget: 0.08,
+      trendTarget: 0.09,
       trendReversion: 3,
       trendVol: 0.07,
-      volTarget: 0.093,
+      volTarget: 0.099,
       volReversion: 8,
       volOfVol: 1.45,
       leverage: -0.6,
       levelReversion: 0,
       phaseCoupling: 1,
     },
-    region: { ...SUB_FACTOR, trendVol: 0.03, volTarget: 0.09, phaseCoupling: 0.4 },
+    region: { ...SUB_FACTOR, trendVol: 0.03, volTarget: 0.085, phaseCoupling: 0.4 },
     sector: { ...SUB_FACTOR, trendVol: 0.03, volTarget: 0.1 },
     industry: { ...SUB_FACTOR, trendVol: 0.04, volTarget: 0.06 },
     style: { ...SUB_FACTOR, trendVol: 0.02, volTarget: 0.04 },
@@ -66,13 +67,14 @@ export const DEFAULT_MARKET_CONFIG: MarketConfig = {
   },
   overnightShare: 0.25,
   // E-22 new (AP 7.3d): a fifth of the diffusion variance of U_i is transient and returns with a
-  // half-life of 10 years; the rest is a random walk. Start values, tuned in AP 7.3e.
+  // half-life of 10 years; the rest is a random walk. Kept in AP 7.3e: a larger share lowers the
+  // spread of the prices (R12) but raises the premiums (TS §6.9).
   idioReversion: Math.LN2 / 10,
   idioTransientShare: 0.2,
   // Damped coupling of the idiosyncratic volatility to the world factor (7.1b-02).
   idioVolCoupling: 0.5,
   alphaDecay: Math.LN2 / 7,
-  zeroBetaReturn: 0.05,
+  zeroBetaReturn: 0.06,
   closedActivity: 0,
   regionClosedActivity: 0.015,
   // Roughly the market capitalisation of the standard world (TS §5.2), with more weight on the

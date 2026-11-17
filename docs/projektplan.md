@@ -194,7 +194,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 7.3b  | Korrekturen: kleine Korrekturen und Doku           | fertig    | 7.1a, 7.1b, 7.1c, 7.2     |
 | 7.3c  | Korrekturen: Rendite und Benchmark                 | fertig    | 7.1c                      |
 | 7.3d  | Korrekturen: Modelländerung Marktmodell            | fertig    | 7.3a                      |
-| 7.3e  | Korrekturen: Neukalibrierung                       | offen     | 7.3d                      |
+| 7.3e  | Korrekturen: Neukalibrierung                       | in Arbeit | 7.3d                      |
 | 7.4   | UI-Bausteine vereinheitlichen                      | fertig    | 6.6                       |
 | 7.5   | UI-Overhaul: Vorlage auswerten                     | offen     | 7.3b, 7.3c, 7.4           |
 | 7.6   | UI-Overhaul: Design-Grundlage                      | offen     | 7.5                       |
@@ -598,7 +598,7 @@ flowchart TD
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
   class AP7_1a,AP7_1b,AP7_1c,AP7_2,AP7_3a,AP7_3b,AP7_3c,AP7_3d,AP7_4 done
-  class AP6_6 active
+  class AP6_6,AP7_3e active
 ```
 
 ## 5. Stufe 1: Meilensteine M0–M6
@@ -1347,6 +1347,7 @@ Jeder Push auf `main` deployt; jedes Teil-AP trägt deshalb seinen Versionssprun
   - TS §6.4 („riskantere Werte …“), §6.9 und R12 berichtigen; Kennzahlen in TS §6.2–§6.4 und §6.9 über den breiten Seed-Satz neu messen (7.1b-13).
 - **Abnahme:** Kalibrierungs-Suite mit der neuen Prüfregel grün, ohne „offen bis“; Grenzen und Bänder vom PO bestätigt; kommt mit AP 7.3d in einem Merge nach `main`.
 - **Vor der Umsetzung klären:** die Bänder der Prämien-Ziele und die R12-Grenzen (PO, nach Messung).
+- **Stand (17.11.2026):** Prüfregel auf `broad-1…20` umgestellt, Parameter neu kalibriert, alle Bänder im Median im Band (TS §6.9, Änderungsprotokoll). Offen bis zur Entscheidung des PO: die Bänder der beiden Prämien (Info-Zeilen mit `openUntil`, Vorschlag im Änderungsprotokoll) und die R12-Grenze der fünf größten Werte (nach 25 / 50 / 100 Jahren 40 / 57 / 63 % bei ≤ 40 %); die Grenzen für Kurse unter 1 € und an der Untergrenze sind wieder eingehalten und werden geprüft. Danach entfallen die letzten Markierungen, und das AP ist fertig.
 - **Referenzen:** `docs/archiv/reviews/ap-7.1b.md`; TS §6.9, §17; E-22, E-34, E-39; R12
 - **Abhängig von:** AP 7.3d
 
