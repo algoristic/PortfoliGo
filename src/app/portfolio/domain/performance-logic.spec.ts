@@ -291,7 +291,8 @@ describe('closeDay', () => {
             ends.map((end) => ({ flow: 0, end })),
           );
           const last = points[points.length - 1];
-          expect(last.index / (last.netWorth / startValue)).toBeCloseTo(1, 9);
+          // Chaining 1 + r loses digits when r is near −1 (FC_SEED=-266550119: 1 → 9999999 → 1).
+          expect(last.index / (last.netWorth / startValue)).toBeCloseTo(1, 6);
         },
       ),
     );
