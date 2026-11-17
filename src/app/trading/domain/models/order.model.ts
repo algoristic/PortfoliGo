@@ -85,6 +85,13 @@ export interface OrderExecution extends OrderFill {
  */
 export const ORDER_HISTORY_LENGTH = 500;
 
+/**
+ * Smallest market value of a purchase (TS §7.5, AP 7.3b), as for savings plans
+ * (`SAVINGS_PLAN_MIN_AMOUNT`): below half a cent, a bank without fees would hand out shares for
+ * nothing.
+ */
+export const MIN_ORDER_VALUE: Cents = 100;
+
 export interface Order extends OrderSpec {
   id: string;
   status: OrderStatus;
@@ -141,6 +148,8 @@ export const ORDER_COMMAND_ERRORS = [
   'insufficient-funds',
   /** At execution, the amount does not buy a single unit after costs. */
   'amount-too-small',
+  /** A purchase's (estimated) market value is below `MIN_ORDER_VALUE` (TS §7.5). */
+  'order-value-too-small',
   /** No order of the player has the ID (checked by the engine). */
   'unknown-order',
   /** Only open or triggered orders can be changed or cancelled. */
@@ -155,6 +164,7 @@ export const ORDER_REJECTIONS = [
   'insufficient-funds',
   'price-floor',
   'amount-too-small',
+  'order-value-too-small',
   'insufficient-quantity',
 ] as const satisfies readonly OrderCommandError[];
 export type OrderRejection = (typeof ORDER_REJECTIONS)[number];

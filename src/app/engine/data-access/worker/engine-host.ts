@@ -737,8 +737,12 @@ export class EngineHost {
     ) {
       throw new CommandFailure('player-outdated');
     }
-    const generated = (this.#options.createWorld ?? generateStandardWorld)(payload.seed);
-    const world = createGameWorld(generated.seedKey, generated.world);
+    // The stored key counts (TS §4.1): `normalizeSeed` follows the browser's Unicode tables.
+    const seedKey =
+      payload.seedKey === undefined
+        ? deriveSeedKey(payload.seed)
+        : Uint32Array.from(payload.seedKey);
+    const world = createGameWorld(seedKey, (this.#options.createWorld ?? generateWorld)(seedKey));
     const candles = new DailyCandleSource(world, this.#options.prices);
     const engine =
       snapshot === undefined
@@ -961,7 +965,7 @@ export class EngineHost {
       sliceMs: this.#config.importSliceMs,
       progressIntervalMs: this.#config.progressIntervalMs,
       progress: (progress) => this.#progress(progress),
-      createWorld: this.#options.createWorld ?? generateStandardWorld,
+      createWorld: this.#options.createWorld ?? generateWorld,
       prices: this.#options.prices,
     });
     if (!result.ok) {

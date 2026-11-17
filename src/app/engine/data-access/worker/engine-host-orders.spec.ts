@@ -35,14 +35,14 @@ const FUNDS = 500_000;
 const DEPOT = 'dep-3';
 const CLEARING = 'acc-2';
 
-/** A purchase of one share that waits far below any price (1 cent). */
+/** A purchase of one share that waits far below any price (1,00 €, the minimum market value). */
 const WAITING_BUY: OrderSpec = {
   depotId: DEPOT,
   instrumentId: SHARE.id,
   side: 'buy',
   type: 'limit',
   size: { kind: 'quantity', quantity: ONE },
-  limit: 0.01,
+  limit: 1,
   stop: null,
   validity: { kind: 'gtc' },
 };
@@ -190,15 +190,15 @@ describe('EngineHost orders', () => {
       const harness = new HostHarness({ config: FINE });
       await withDepot(harness);
       await harness.send('placeOrder', { order: WAITING_BUY });
-      await harness.send('placeOrder', { order: { ...WAITING_BUY, limit: 0.02 } });
+      await harness.send('placeOrder', { order: { ...WAITING_BUY, limit: 2 } });
 
       let from = harness.sent.length;
-      expect(
-        await harness.send('changeOrder', { orderId: 'ord-1', change: { limit: 0.03 } }),
-      ).toEqual({ ok: true, data: { tick: GAME_START } });
+      expect(await harness.send('changeOrder', { orderId: 'ord-1', change: { limit: 3 } })).toEqual(
+        { ok: true, data: { tick: GAME_START } },
+      );
       expect(tradingParts(harness, from)).toEqual([
         {
-          orders: [expect.objectContaining({ id: 'ord-1', status: 'open', limit: 0.03 })],
+          orders: [expect.objectContaining({ id: 'ord-1', status: 'open', limit: 3 })],
           depots: [{ depotId: DEPOT, positions: [] }],
         },
       ]);
@@ -338,8 +338,8 @@ describe('EngineHost orders', () => {
       const first = new HostHarness({ config: FINE }, { storage: new IndexedDbEngineStorage() });
       await withDepot(first);
       await first.send('placeOrder', { order: WAITING_BUY });
-      await first.send('placeOrder', { order: { ...WAITING_BUY, limit: 0.02 } });
-      await first.send('changeOrder', { orderId: 'ord-1', change: { limit: 0.03 } });
+      await first.send('placeOrder', { order: { ...WAITING_BUY, limit: 2 } });
+      await first.send('changeOrder', { orderId: 'ord-1', change: { limit: 3 } });
       await first.send('cancelOrder', { orderId: 'ord-2' });
       // Rejected: logged, and rejected again in the replay.
       await first.send('placeOrder', { order: { ...WAITING_BUY, depotId: 'dep-99' } });
@@ -351,8 +351,8 @@ describe('EngineHost orders', () => {
       expect(full.full).toBe(true);
       // Active orders first, then the history.
       expect(full.trading?.orders.map(({ id, status, limit }) => ({ id, status, limit }))).toEqual([
-        { id: 'ord-1', status: 'open', limit: 0.03 },
-        { id: 'ord-2', status: 'cancelled', limit: 0.02 },
+        { id: 'ord-1', status: 'open', limit: 3 },
+        { id: 'ord-2', status: 'cancelled', limit: 2 },
       ]);
       expect(full.trading?.depots).toEqual([{ depotId: DEPOT, positions: [] }]);
       expect(full.accounts.find(({ id }) => id === CLEARING)).toEqual(before);

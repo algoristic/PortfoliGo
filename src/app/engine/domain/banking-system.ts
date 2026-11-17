@@ -5,6 +5,7 @@ import {
   isInterestPayoutDue,
   monthKey,
   monthOf,
+  openInterestPeriod,
   previousMonth,
   startsQuarter,
 } from '@app/banking/domain/bank-run-logic';
@@ -419,11 +420,16 @@ export class BankingSystem {
     const month = monthOf(tick);
     const credit = bookedInterest(accrual.pendingCredit + accrual.credit);
     const debit = bookedInterest(accrual.pendingDebit + accrual.debit);
+    const payout =
+      account.kind === 'savings' ? this.#savingsConditions(account.bankId).payout : 'monthly';
+    const creditPeriod = openInterestPeriod(payout, account.openedAt, tick);
+    const debitPeriod = openInterestPeriod('monthly', account.openedAt, tick);
     let credits: TransactionDraft[] = [];
     let taxYear = this.#player.taxYear;
     let credited: AccountSettlement['credited'] = null;
     if (credit > 0) {
-      const interest = this.#creditDrafts(tick, account, credit, month, month, taxYear);
+      const { from, to } = creditPeriod;
+      const interest = this.#creditDrafts(tick, account, credit, from, to, taxYear);
       credits = interest.drafts;
       taxYear = interest.taxYear;
       credited = { amount: credit, tax: interest.tax };
@@ -447,7 +453,7 @@ export class BankingSystem {
       }
     }
     if (debit < 0) {
-      charges.push(this.#debitDraft(tick, account, debit, month));
+      charges.push(this.#debitDraft(tick, account, debit, debitPeriod.from, debitPeriod.to));
     }
     let balance = this.#player.balances.get(id) ?? 0;
     for (const draft of [...credits, ...charges]) {
@@ -719,12 +725,18 @@ export class BankingSystem {
       const amount = bookedInterest(accrual.pendingDebit);
       accrual.pendingDebit = 0;
       if (amount < 0) {
-        this.book(this.#debitDraft(tick, account, amount, month));
+        this.book(this.#debitDraft(tick, account, amount, month, month));
       }
     }
   }
 
-  #debitDraft(tick: Tick, account: Account, amount: Cents, month: CalendarMonth): TransactionDraft {
+  #debitDraft(
+    tick: Tick,
+    account: Account,
+    amount: Cents,
+    from: CalendarMonth,
+    to: CalendarMonth,
+  ): TransactionDraft {
     return {
       tick,
       type: account.kind === 'current' ? 'overdraft-interest' : 'debit-interest',
@@ -732,7 +744,7 @@ export class BankingSystem {
         { account: account.id, amount },
         { account: bankInterestAccount(account.bankId), amount: -amount },
       ],
-      params: { from: monthKey(month), to: monthKey(month) },
+      params: { from: monthKey(from), to: monthKey(to) },
     };
   }
 

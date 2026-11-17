@@ -2,7 +2,8 @@ import { inject, PendingTasks, Provider } from '@angular/core';
 
 import { PlayerLocks } from '@app/persistence/data-access/locks/player-locks';
 import { FakePlayerLocks } from '@app/persistence/data-access/testing/fake-player-locks';
-import { deriveSeedKey } from '@app/simulation/util/seed';
+import { deriveSeedKey, SeedKey } from '@app/simulation/util/seed';
+import { World } from '@app/world/domain/models/world.model';
 import { MINI_WORLD_CONFIG } from '@app/world/domain/testing/mini-world';
 import { generateWorld } from '@app/world/domain/world-generator';
 
@@ -43,7 +44,12 @@ export interface InProcessEngineOptions extends EngineHostOptions {
 /** Mini world of a seed (`world/domain/testing/mini-world.ts`): fast enough for page tests. */
 export function generateMiniWorld(seed: string): GeneratedWorld {
   const seedKey = deriveSeedKey(seed);
-  return { seedKey, world: generateWorld(seedKey, MINI_WORLD_CONFIG) };
+  return { seedKey, world: miniWorldOf(seedKey) };
+}
+
+/** Mini world of a seed key: the host option `createWorld` of the test seams. */
+export function miniWorldOf(seedKey: SeedKey): World {
+  return generateWorld(seedKey, MINI_WORLD_CONFIG);
 }
 
 /**
@@ -72,7 +78,7 @@ export class InProcessEngine {
         : (storage ?? new InMemoryEngineStorage());
     this.locks = locks ?? new FakePlayerLocks();
     // The candle job would recompute years of the mini world in one pass of the manual timeline.
-    this.#options = { createWorld: generateMiniWorld, candleBackfillFrom: null, ...hostOptions };
+    this.#options = { createWorld: miniWorldOf, candleBackfillFrom: null, ...hostOptions };
   }
 
   /** Prefix of the command IDs of the next `EngineService` on this engine (`s1`, `s2`, …). */

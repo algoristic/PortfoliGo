@@ -9,6 +9,7 @@ import {
   monthKey,
   monthOf,
   nextBankRunTick,
+  openInterestPeriod,
   previousMonth,
   startsQuarter,
 } from './bank-run-logic';
@@ -130,6 +131,82 @@ describe('bank-run-logic', () => {
           }
         }),
       );
+    });
+  });
+
+  describe('openInterestPeriod', () => {
+    // TS §7.4, Kontoabschluss (AP 7.3b): open interest period of a closing account
+    it.each<[string, 'monthly' | 'quarterly', string, string, string, string]>([
+      [
+        'after the run of May',
+        'monthly',
+        '01.04.2030',
+        'Di 14.05.2030 10:00',
+        '2030-05',
+        '2030-05',
+      ],
+      [
+        'before the run of May',
+        'monthly',
+        '01.04.2030',
+        'Mi 01.05.2030 05:59',
+        '2030-04',
+        '2030-04',
+      ],
+      ['at the run of May', 'monthly', '01.04.2030', 'Mi 01.05.2030 06:00', '2030-05', '2030-04'],
+      [
+        'on Saturday before the run of June',
+        'monthly',
+        '01.04.2030',
+        'Sa 01.06.2030 10:00',
+        '2030-05',
+        '2030-05',
+      ],
+      [
+        'in the middle of the quarter',
+        'quarterly',
+        '01.04.2030',
+        'Mi 15.05.2030 12:00',
+        '2030-04',
+        '2030-05',
+      ],
+      [
+        'before the run of July',
+        'quarterly',
+        '01.04.2030',
+        'Mo 01.07.2030 05:00',
+        '2030-04',
+        '2030-06',
+      ],
+      [
+        'after the run of July',
+        'quarterly',
+        '01.04.2030',
+        'Mo 01.07.2030 10:00',
+        '2030-07',
+        '2030-06',
+      ],
+      [
+        'opened in the quarter',
+        'quarterly',
+        '10.05.2030',
+        'Do 20.06.2030 10:00',
+        '2030-05',
+        '2030-06',
+      ],
+      ['in February', 'quarterly', '01.04.2030', 'Fr 14.02.2031 10:00', '2031-01', '2031-02'],
+      [
+        'before the run of January',
+        'quarterly',
+        '01.04.2030',
+        'Mi 01.01.2031 05:00',
+        '2030-10',
+        '2030-12',
+      ],
+    ])('%s (%s)', (_case, payout, opened, closing, from, to) => {
+      const [, day, time] = closing.split(' ');
+      const period = openInterestPeriod(payout, at(opened, '00:00'), at(day, time));
+      expect([monthKey(period.from), monthKey(period.to)]).toEqual([from, to]);
     });
   });
 

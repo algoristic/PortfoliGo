@@ -196,6 +196,7 @@ describe('ledger-logic', () => {
       'half a cent': 'transfer books -0.5 on acc-1',
       'an unsafe integer': 'transfer books -9007199254740992 on acc-1',
       'an unknown account': 'transfer books on unknown account acc-9',
+      'a balance beyond the safe integers': 'transfer leaves acc-2 at 9007199254740992',
     };
 
     // TS §7.2: rejected transactions (balances as after example 6)
@@ -237,6 +238,15 @@ describe('ledger-logic', () => {
           { account: EMPLOYER_ACCOUNT, amount: -100 },
         ],
       ],
+      // TS §7.1 (AP 7.3b): balances stay exact integers of cents
+      [
+        'a balance beyond the safe integers',
+        [
+          { account: ACC_1, amount: 100 },
+          { account: ACC_2, amount: Number.MAX_SAFE_INTEGER - 300_548 + 1 },
+          { account: MARKET_ACCOUNT, amount: -(Number.MAX_SAFE_INTEGER - 300_548 + 101) },
+        ],
+      ],
     ])('rejects %s and leaves the balances unchanged', (reason, postings) => {
       const balances: Balances = new Map([
         [ACC_1, 764_683],
@@ -250,6 +260,21 @@ describe('ledger-logic', () => {
         [ACC_2, 300_548],
       ]);
     });
+  });
+
+  it('books a balance up to the largest safe integer', () => {
+    const balances: Balances = new Map([[ACC_2, 300_548]]);
+    const amount = Number.MAX_SAFE_INTEGER - 300_548;
+    const transaction = bookTransaction(
+      balances,
+      1,
+      draft('transfer', [
+        { account: ACC_2, amount },
+        { account: MARKET_ACCOUNT, amount: -amount },
+      ]),
+    );
+    expect(transaction.postings[0].balanceAfter).toBe(Number.MAX_SAFE_INTEGER);
+    expect(balances.get(ACC_2)).toBe(Number.MAX_SAFE_INTEGER);
   });
 
   describe('properties', () => {

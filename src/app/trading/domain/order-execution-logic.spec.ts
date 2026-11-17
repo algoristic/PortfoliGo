@@ -425,6 +425,57 @@ describe('order-execution-logic', () => {
       ).toBe('amount-too-small');
     });
 
+    // TS §7.5, Mindest-Kurswert bei der Ausführung (AP 7.3b): bank without fees, fractions,
+    // clearing account 0,00 €
+    it.each<[string, OrderSide, number, number, string | null]>([
+      ['a purchase of 0,000049 at 100,00 € (0,00 €)', 'buy', 49, 100, 'order-value-too-small'],
+      ['a purchase of 0,01 at 99,99 € (1,00 €)', 'buy', 10_000, 99.99, 'insufficient-funds'],
+      ['a purchase of 0,0099 at 100,00 € (0,99 €)', 'buy', 9_900, 100, 'order-value-too-small'],
+      ['a sale of 0,000049 at 100,00 € (0,00 €)', 'sell', 49, 100, null],
+    ])('checks %s', (_case, side, quantity, price, expected) => {
+      const free = depot({ kind: 'free' }, 0, true);
+      const fill = orderFill({ side, size: { kind: 'quantity', quantity } }, price, free);
+      expect(
+        executionError({ side, reserved: 0 }, fill, {
+          atPriceFloor: false,
+          clearingBalance: 0,
+          reserved: 0,
+          holding: SHARE,
+        }),
+      ).toBe(expected);
+    });
+
+    it('executes the purchase of 0,01 at 99,99 € with 1,00 € on the clearing account', () => {
+      const free = depot({ kind: 'free' }, 0, true);
+      const fill = orderFill(
+        { side: 'buy', size: { kind: 'quantity', quantity: 10_000 } },
+        99.99,
+        free,
+      );
+      expect(fill.marketValue).toBe(100);
+      expect(
+        executionError({ side: 'buy', reserved: 0 }, fill, {
+          atPriceFloor: false,
+          clearingBalance: 100,
+          reserved: 0,
+          holding: 0,
+        }),
+      ).toBeNull();
+    });
+
+    it('rejects an order by amount whose market value stays below 1,00 €', () => {
+      // TS §7.5, Betragsorders: 5,00 € at 100,00 € with 4,90 € flat and fractions buy 0,001 (0,10 €)
+      const conditions = { ...FLAT_490, fractionalShares: true };
+      const fill = orderFill(
+        { side: 'buy', size: { kind: 'amount', amount: 500 } },
+        100,
+        conditions,
+      );
+      expect(
+        executionError({ side: 'buy', reserved: 500 }, fill, { ...context, reserved: 500 }),
+      ).toBe('order-value-too-small');
+    });
+
     it.each([
       [10 * SHARE, null],
       [9_500_000, 'insufficient-quantity'],

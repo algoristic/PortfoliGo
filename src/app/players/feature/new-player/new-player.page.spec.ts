@@ -133,6 +133,20 @@ describe('NewPlayerPage', () => {
     expect(queryByTestId(page, 'players.new.net-income-error')).toBeNull();
   });
 
+  it('rejects a seed with other characters at the field (TS §4.1)', async () => {
+    await enter('name', 'Anna');
+    await enter('seed', 'Café.1');
+    expect(textOf(byTestId(page, 'players.new.seed-error'))).toBe(
+      'Der Seed darf nur Buchstaben a–z, ä, ö, ü, ß, Ziffern, Leerzeichen, Bindestrich und Unterstrich enthalten.',
+    );
+    await act(() => click(byTestId(page, 'players.new.submit')));
+    expect(url()).toBe('/players/new');
+    expect(await profiles()).toEqual([]);
+
+    await enter('seed', 'Größe Übung_2');
+    expect(queryByTestId(page, 'players.new.seed-error')).toBeNull();
+  });
+
   it('hints at living costs above the income without blocking the form', async () => {
     await enter('living-costs', '2.500,01');
     expect(textOf(byTestId(page, 'players.new.living-costs-hint'))).toContain(

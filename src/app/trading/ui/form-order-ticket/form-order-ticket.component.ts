@@ -46,7 +46,7 @@ interface TicketStart {
  * preview with the engine's functions: price with the bank's mark-up, market value, order fee,
  * third-party costs, total, reservation and free money with the shortfall, for sales the gain or
  * loss, the tax and the credit after taxes. Notes for a closed exchange, a negative clearing
- * account and the price floor. Emits the order; the feature layer places it.
+ * account, the price floor and a sale whose costs exceed its market value. Emits the order; the feature layer places it.
  */
 @Component({
   selector: 'app-form-order-ticket',
@@ -138,6 +138,11 @@ export class FormOrderTicketComponent {
   marketClosed = computed(() => this.context().marketOpen === false);
   clearingNegative = computed(() => this.isBuy() && (this.depot()?.clearingBalance ?? 0) < 0);
   atPriceFloor = computed(() => this.isBuy() && this.context().atPriceFloor);
+  /** A sale whose costs exceed its market value debits the clearing account (TS §7.4). */
+  saleDebit = computed(() => {
+    const total = this.preview()?.fill.total ?? 0;
+    return !this.isBuy() && total < 0 ? -total : null;
+  });
   minDate = computed(() => toDateInputValue(this.context().tick));
   maxDate = computed(() =>
     toDateInputValue(dateTimeToTick(latestValidityDate(this.context().tick))),

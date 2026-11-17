@@ -844,6 +844,45 @@ describe('BankingSystem', () => {
         // −2.014,79 € at 9 % for 32 days: −15,8975… €
         ['debit-interest', 'acc-4', -1_590],
       ]);
+      // TS §7.4 (AP 7.3b): the open period runs from May to the day before closing, 01.06.
+      expect(
+        journal.filter(({ type }) => type.endsWith('-interest')).map(({ params }) => params),
+      ).toEqual([
+        { from: '2030-05', to: '2030-06' },
+        { from: '2030-05', to: '2030-06' },
+      ]);
+    });
+
+    // TS §7.4 (AP 7.3b, 7.1c-04): the booking names the whole open accrual of the quarter
+    it('US-BK-03: closes a quarterly savings account in the middle of the quarter', () => {
+      const engine = engineOf(funded, {
+        accounts: [{ kind: 'savings', bankId: 'b2', balance: 1_000_000 }],
+      });
+      // Wednesday, 15.05.2030: April was not paid out, the quarter runs until the end of June.
+      const closing = at({ year: 2030, month: 5, day: 15 }, 12);
+      engine.runUntil(closing);
+      expect(engine.drainTransactions().filter(({ type }) => type === 'credit-interest')).toEqual(
+        [],
+      );
+      const snapshot = engine.snapshot();
+      const journal: Transaction[] = [];
+      const banking = new BankingSystem(withTestBanks(world), snapshot.player, {
+        journal: (transaction) => journal.push(transaction),
+        emit: () => undefined,
+      });
+      banking.settleAccount('acc-2', closing);
+      // 10.000 € at 2 % for 01.04. to 14.05., 44 days: 24,1095… €
+      expect(journal.map(entry)).toEqual([
+        {
+          tick: closing,
+          type: 'credit-interest',
+          postings: [
+            ['acc-2', 2_411],
+            ['external:bank:b2:interest', -2_411],
+          ],
+          params: { from: '2030-04', to: '2030-05' },
+        },
+      ]);
     });
   });
 });

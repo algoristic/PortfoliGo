@@ -279,6 +279,7 @@ export function ticketFieldOf(code: OrderCommandError, model: OrderTicketModel):
     case 'invalid-amount':
       return 'amount';
     case 'insufficient-funds':
+    case 'order-value-too-small':
       return model.sizeKind === 'amount' ? 'amount' : 'quantity';
     case 'invalid-limit':
       return 'limit';

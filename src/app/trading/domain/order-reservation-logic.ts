@@ -38,6 +38,21 @@ export function orderReservation(
 }
 
 /**
+ * Market value of a buy order by quantity as the placement check estimates it (TS §7.5), without
+ * the buffer of the reservation: market orders at the ask, stop orders at the higher of ask and
+ * stop, limit and stop-limit orders at their limit; an order by amount counts its amount.
+ */
+export function estimatedOrderValue(
+  spec: Pick<OrderSpec, 'type' | 'size' | 'limit' | 'stop'>,
+  ask: number,
+): Cents {
+  if (spec.size.kind === 'amount') {
+    return spec.size.amount;
+  }
+  return marketValue(spec.size.quantity, estimatedPrice(spec, ask));
+}
+
+/**
  * Sum of the reservations of the active orders of a depot, i.e. of its clearing account; only
  * purchases reserve (`orderReservation`), so sales add 0.
  */
@@ -91,14 +106,19 @@ function estimatedVolume(
   quantity: MicroUnits,
   ask: number,
 ): Cents {
+  const volume = marketValue(quantity, estimatedPrice(spec, ask));
+  return spec.type === 'market' || spec.type === 'stop' ? buffered(volume) : volume;
+}
+
+function estimatedPrice(spec: Pick<OrderSpec, 'type' | 'limit' | 'stop'>, ask: number): number {
   switch (spec.type) {
     case 'market':
-      return buffered(marketValue(quantity, ask));
+      return ask;
     case 'stop':
-      return buffered(marketValue(quantity, Math.max(ask, required(spec.stop, 'stop'))));
+      return Math.max(ask, required(spec.stop, 'stop'));
     case 'limit':
     case 'stop-limit':
-      return marketValue(quantity, required(spec.limit, 'limit'));
+      return required(spec.limit, 'limit');
   }
 }
 

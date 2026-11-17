@@ -173,6 +173,7 @@ export class PlayersService {
           },
           playerId,
           this.#now(),
+          'import',
         );
         created = await this.#addProfile(profile);
       } catch (error) {

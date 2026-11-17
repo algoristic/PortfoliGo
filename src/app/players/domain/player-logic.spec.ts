@@ -54,12 +54,21 @@ describe('player-logic', () => {
   });
 
   describe('playerSeedError', () => {
-    // TS §4.1: the seed is free text, normalised by trimming
+    // TS §4.1: normalised by trimming and lower case; a new player's seed uses a fixed set of
+    // characters (table „Zeichensatz“)
     it.each([
       ['kupfer-falke-731', null],
+      ['  Kupfer-Falke-731 ', null],
       ['  X ', null],
+      ['Größe Übung_2', null],
+      ['\u1e9e', null],
+      ['a\u0308', null],
       ['', 'required'],
       [' \t ', 'required'],
+      ['seed.1', 'invalid-characters'],
+      ['café', 'invalid-characters'],
+      ['a\tb', 'invalid-characters'],
+      ['🦊', 'invalid-characters'],
     ])('checks %j: %s', (seed, expected) => {
       expect(playerSeedError(seed)).toBe(expected);
     });
@@ -209,6 +218,17 @@ describe('player-logic', () => {
       ],
     ])('rejects %s', (_label, input) => {
       expect(() => createPlayerProfile(input, 'p1', 0)).toThrow(/invalid input \([a-z-]+\)$/);
+    });
+
+    it('rejects a new seed with other characters but keeps it for an import', () => {
+      const input = { ...NEW_PLAYER, seed: 'Café.1' };
+      expect(() => createPlayerProfile(input, 'p1', 0)).toThrow(
+        'invalid input (invalid-characters)',
+      );
+      expect(createPlayerProfile(input, 'p1', 0, 'import').seed).toBe('café.1');
+      expect(() => createPlayerProfile({ ...input, seed: ' ' }, 'p1', 0, 'import')).toThrow(
+        'invalid input (required)',
+      );
     });
 
     it('names every broken rule', () => {

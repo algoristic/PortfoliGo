@@ -1,6 +1,6 @@
 import { PlayerLocks } from '@app/persistence/data-access/locks/player-locks';
 
-import { generateMiniWorld } from './in-process-engine-worker';
+import { miniWorldOf } from './in-process-engine-worker';
 import { ManualTimeline } from './manual-timeline';
 
 import {
@@ -73,7 +73,7 @@ export class HostHarness {
         storage: this.storage,
         locks: ports.locks,
       },
-      { createWorld: generateMiniWorld, candleBackfillFrom: null, ...options },
+      { createWorld: miniWorldOf, candleBackfillFrom: null, ...options },
     );
   }
 

@@ -78,7 +78,7 @@ export function exportFixtureContent(): PlayerExportContent {
   });
   apply({
     type: 'placeOrder',
-    order: { ...order, type: 'limit', limit: 0.01, validity: { kind: 'gtc' } },
+    order: { ...order, type: 'limit', limit: 1, validity: { kind: 'gtc' } },
   });
   engine.runUntil(EXPORT_FIXTURE_TICK);
   const transactions: Transaction[] = [...mini.journal, ...engine.drainTransactions()];

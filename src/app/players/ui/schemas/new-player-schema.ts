@@ -21,14 +21,25 @@ export const newPlayerSchema = schema<NewPlayerFormModel>((path) => {
   required(path.seed, {
     message: $localize`:@@uiPlayers-newPlayerSchema-seedRequired:Bitte gib einen Seed ein.`,
   });
-  validate(path.seed, ({ value }) =>
-    value() !== '' && playerSeedError(value()) === 'required'
-      ? {
+  validate(path.seed, ({ value }) => {
+    if (value() === '') {
+      return null;
+    }
+    switch (playerSeedError(value())) {
+      case 'required':
+        return {
           kind: 'required',
           message: $localize`:@@uiPlayers-newPlayerSchema-seedBlank:Bitte gib einen Seed ein.`,
-        }
-      : null,
-  );
+        };
+      case 'invalid-characters':
+        return {
+          kind: 'invalid-characters',
+          message: $localize`:@@uiPlayers-newPlayerSchema-seedCharacters:Der Seed darf nur Buchstaben a–z, ä, ö, ü, ß, Ziffern, Leerzeichen, Bindestrich und Unterstrich enthalten.`,
+        };
+      default:
+        return null;
+    }
+  });
   apply(path.startCapital, amountRangeSchema(START_CAPITAL_RANGE));
   apply(path.netIncome, amountRangeSchema(NET_INCOME_RANGE));
   apply(path.livingCosts, amountRangeSchema(LIVING_COSTS_RANGE));

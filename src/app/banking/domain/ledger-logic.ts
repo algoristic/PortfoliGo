@@ -37,7 +37,9 @@ export function isPlayerAccount(account: LedgerAccountId): account is AccountId 
 /**
  * Checks a transaction (TS §7.2), applies it to the balances and returns it with its running
  * number and the balance after each posting on a player account. An invalid transaction is an
- * engine bug: it throws and leaves the balances unchanged.
+ * engine bug: it throws and leaves the balances unchanged. Invalid are fewer than two postings,
+ * amounts that are not whole cents, unknown accounts, postings that don't sum to 0 and a balance
+ * after a posting beyond the safe integers (`Number.isSafeInteger`, TS §7.1).
  */
 export function bookTransaction(
   balances: Balances,
@@ -45,14 +47,25 @@ export function bookTransaction(
   draft: TransactionDraft,
 ): Transaction {
   checkPostings(balances, draft);
+  const after: Balances = new Map();
   const postings = draft.postings.map((posting): Posting => {
     if (!isPlayerAccount(posting.account)) {
       return { ...posting, balanceAfter: null };
     }
-    const balanceAfter = (balances.get(posting.account) as Cents) + posting.amount;
-    balances.set(posting.account, balanceAfter);
+    const balanceAfter =
+      (after.get(posting.account) ?? (balances.get(posting.account) as Cents)) + posting.amount;
+    // Beyond 2^53 cents a balance is no longer exact (TS §7.1); only extreme profiles get there.
+    if (!Number.isSafeInteger(balanceAfter)) {
+      throw new RangeError(
+        `bookTransaction: ${draft.type} leaves ${posting.account} at ${balanceAfter}`,
+      );
+    }
+    after.set(posting.account, balanceAfter);
     return { ...posting, balanceAfter };
   });
+  for (const [account, balance] of after) {
+    balances.set(account, balance);
+  }
   return { seq, ...draft, postings };
 }
 

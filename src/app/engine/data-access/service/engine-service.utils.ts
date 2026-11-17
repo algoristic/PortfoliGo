@@ -122,6 +122,15 @@ const isBackgroundMode = isOneOf(BACKGROUND_MODES);
 const isSeriesList: Check = isListOf(isCount);
 const isCandleResolution = isOneOf(CANDLE_RESOLUTIONS);
 
+/** Seed key of a profile: four unsigned 32-bit words (`deriveSeedKey`, TS §4.1). */
+function isSeedKey(value: unknown): boolean {
+  return (
+    Array.isArray(value) &&
+    value.length === 4 &&
+    value.every((word) => isCount(word) && (word as number) <= 0xffffffff)
+  );
+}
+
 function isChartSubscription(value: unknown): boolean {
   return hasFields(value, { series: isCount, interval: isCandleResolution });
 }
@@ -353,6 +362,7 @@ const COMMAND_PAYLOADS: Readonly<Record<EngineCommandMessage['type'], Check>> = 
     hasFields(payload, {
       playerId: (id) => isString(id) && id.length > 0,
       seed: isString,
+      seedKey: isOptional(isSeedKey),
       start: isStartConditions,
       minTick: isOptional(isCount),
       pendingCommandIds: isOptional(isListOf(isNonEmptyString)),

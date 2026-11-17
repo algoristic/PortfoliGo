@@ -4213,7 +4213,7 @@
         <target state="translated">Storage is full. The game has been paused. Export your game and delete old players; settings show the storage used under ‘App’.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">189</context>
+          <context context-type="linenumber">190</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-storageWarning" datatype="html">
@@ -4221,7 +4221,7 @@
         <target state="translated">Couldn’t save the game just now. PortfoliGo will keep trying.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">193</context>
+          <context context-type="linenumber">194</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-unloadFailure" datatype="html">
@@ -4229,7 +4229,7 @@
         <target state="translated">Couldn’t save the game when leaving.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">207</context>
+          <context context-type="linenumber">208</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-playerNotFound" datatype="html">
@@ -4237,7 +4237,7 @@
         <target state="translated">This player doesn’t exist.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">260</context>
+          <context context-type="linenumber">261</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-playerOutdated" datatype="html">
@@ -4245,7 +4245,7 @@
         <target state="translated">This player comes from an older version of PortfoliGo and can only be deleted.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">262</context>
+          <context context-type="linenumber">263</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureEngine-sessionEffects-playerUnavailable" datatype="html">
@@ -4253,7 +4253,7 @@
         <target state="translated">Couldn’t open the player.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/engine/feature/state/session.effects.ts</context>
-          <context context-type="linenumber">264</context>
+          <context context-type="linenumber">265</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureHelp-gameHelpPage-title" datatype="html">
@@ -9526,12 +9526,12 @@
           <context context-type="linenumber">79,82</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="uiMarket-instrumentProfile-cap" datatype="html">
-        <source>Höchstgewicht je Wert</source>
-        <target state="translated">Maximum weight per constituent</target>
+      <trans-unit id="uiMarket-instrumentProfile-capAtLaunch" datatype="html">
+        <source> Höchstgewicht bei Auflage </source>
+        <target state="translated">Maximum weight at launch</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
-          <context context-type="linenumber">88,89</context>
+          <context context-type="linenumber">89,91</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-noCap" datatype="html">
@@ -9539,7 +9539,7 @@
         <target state="translated">no cap</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
-          <context context-type="linenumber">91,93</context>
+          <context context-type="linenumber">93,95</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-indices" datatype="html">
@@ -9547,7 +9547,7 @@
         <target state="translated"> Index membership </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
-          <context context-type="linenumber">116,118</context>
+          <context context-type="linenumber">118,120</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-noIndices" datatype="html">
@@ -9555,7 +9555,7 @@
         <target state="translated"> The stock isn’t part of any index. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/market/ui/instrument-profile/instrument-profile.component.html</context>
-          <context context-type="linenumber">134,138</context>
+          <context context-type="linenumber">136,140</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiMarket-instrumentProfile-sector" datatype="html">
@@ -12264,12 +12264,20 @@
           <context context-type="linenumber">117</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiNotifications-notificationLabels-rejectionOrderValueTooSmall" datatype="html">
+        <source>Der Kurswert lag unter dem Mindestwert von <x id="minimum" equiv-text="formatCents(MIN_ORDER_VALUE)"/> für einen Kauf.</source>
+        <target state="translated">The market value was below the minimum of <x id="minimum" equiv-text="formatCents(MIN_ORDER_VALUE)"/> for a purchase.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
+          <context context-type="linenumber">119</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiNotifications-notificationLabels-rejectionInsufficientQuantity" datatype="html">
         <source>Im Depot liegen nicht genug freie Stücke.</source>
         <target state="translated">The brokerage account doesn’t hold enough free shares.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/notifications/ui/labels/notification-labels.ts</context>
-          <context context-type="linenumber">119</context>
+          <context context-type="linenumber">121</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiNotifications-notificationText-accountUncovered" datatype="html">
@@ -13403,7 +13411,15 @@
         <target state="translated">Enter a seed.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/players/ui/schemas/new-player-schema.ts</context>
-          <context context-type="linenumber">28</context>
+          <context context-type="linenumber">32</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiPlayers-newPlayerSchema-seedCharacters" datatype="html">
+        <source>Der Seed darf nur Buchstaben a–z, ä, ö, ü, ß, Ziffern, Leerzeichen, Bindestrich und Unterstrich enthalten.</source>
+        <target state="translated">The seed may only contain the letters a–z, ä, ö, ü, ß, digits, spaces, hyphens and underscores.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/players/ui/schemas/new-player-schema.ts</context>
+          <context context-type="linenumber">37</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiPlayers-playerNameSchema-required" datatype="html">
@@ -17154,12 +17170,20 @@
           <context context-type="linenumber">472,475</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiTrading-formOrderTicket-negativeCredit" datatype="html">
+        <source>Die Kosten sind höher als der Kurswert. Der Verkauf belastet das Verrechnungskonto mit <x id="INTERPOLATION" equiv-text="{{ debit | formatCents }}"/>; fällt es ins Minus, kosten das Sollzinsen, und neue Käufe sind gesperrt.</source>
+        <target state="translated">The costs are higher than the market value. The sale debits <x id="INTERPOLATION" equiv-text="{{ debit | formatCents }}"/> from the clearing account; if it goes into the red, debit interest accrues and new purchases are blocked.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
+          <context context-type="linenumber">480,482</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-previewEmpty" datatype="html">
         <source> Die Vorschau erscheint, sobald Stückzahl bzw. Betrag und die Kurse der Orderart feststehen. </source>
         <target state="translated"> The preview appears once the quantity or amount and the prices for the order type are known. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">479,483</context>
+          <context context-type="linenumber">488,492</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-decline" datatype="html">
@@ -17167,7 +17191,7 @@
         <target state="translated"> Cancel </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">493,495</context>
+          <context context-type="linenumber">502,504</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-submitBuy" datatype="html">
@@ -17175,7 +17199,7 @@
         <target state="translated">Buy</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">497,499</context>
+          <context context-type="linenumber">506,508</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-submitSell" datatype="html">
@@ -17183,7 +17207,7 @@
         <target state="translated">Sell</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.html</context>
-          <context context-type="linenumber">499,502</context>
+          <context context-type="linenumber">508,511</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-depotOption" datatype="html">
@@ -17199,7 +17223,7 @@
         <target state="translated">Buy <x id="name" equiv-text="name"/></target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.ts</context>
-          <context context-type="linenumber">148</context>
+          <context context-type="linenumber">153</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-formOrderTicket-sellHeading" datatype="html">
@@ -17207,7 +17231,7 @@
         <target state="translated">Sell <x id="name" equiv-text="name"/></target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/form-order-ticket/form-order-ticket.component.ts</context>
-          <context context-type="linenumber">149</context>
+          <context context-type="linenumber">154</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderBookRows-depot" datatype="html">
@@ -17247,7 +17271,7 @@
         <target state="translated">Buy</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">14</context>
+          <context context-type="linenumber">15</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-sell" datatype="html">
@@ -17255,7 +17279,7 @@
         <target state="translated">Sell</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">16</context>
+          <context context-type="linenumber">17</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-market" datatype="html">
@@ -17263,7 +17287,7 @@
         <target state="translated">Market (at best)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">24</context>
+          <context context-type="linenumber">25</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-limit" datatype="html">
@@ -17271,7 +17295,7 @@
         <target state="translated">Limit</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">26</context>
+          <context context-type="linenumber">27</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-stop" datatype="html">
@@ -17279,7 +17303,7 @@
         <target state="translated">Stop (stop-loss/stop-buy)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">28</context>
+          <context context-type="linenumber">29</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-stopLimit" datatype="html">
@@ -17287,7 +17311,7 @@
         <target state="translated">Stop-limit</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">30</context>
+          <context context-type="linenumber">31</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-statusOpen" datatype="html">
@@ -17295,7 +17319,7 @@
         <target state="translated">Open</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">38</context>
+          <context context-type="linenumber">39</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-statusTriggered" datatype="html">
@@ -17303,7 +17327,7 @@
         <target state="translated">Triggered</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">40</context>
+          <context context-type="linenumber">41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-statusExecuted" datatype="html">
@@ -17311,7 +17335,7 @@
         <target state="translated">Executed</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">42</context>
+          <context context-type="linenumber">43</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-statusCancelled" datatype="html">
@@ -17319,7 +17343,7 @@
         <target state="translated">Cancelled</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">44</context>
+          <context context-type="linenumber">45</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-statusExpired" datatype="html">
@@ -17327,7 +17351,7 @@
         <target state="translated">Expired</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">46</context>
+          <context context-type="linenumber">47</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-statusRejected" datatype="html">
@@ -17335,7 +17359,7 @@
         <target state="translated">Rejected</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">48</context>
+          <context context-type="linenumber">49</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-day" datatype="html">
@@ -17343,7 +17367,7 @@
         <target state="translated">Good for day</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">56</context>
+          <context context-type="linenumber">57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-date" datatype="html">
@@ -17351,7 +17375,7 @@
         <target state="translated">Good till date</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">58</context>
+          <context context-type="linenumber">59</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-gtc" datatype="html">
@@ -17359,7 +17383,7 @@
         <target state="translated">Good till cancelled (1 year)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">60</context>
+          <context context-type="linenumber">61</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-unknownDepot" datatype="html">
@@ -17367,7 +17391,7 @@
         <target state="translated">This brokerage account doesn’t exist.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">71</context>
+          <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-depotClosed" datatype="html">
@@ -17375,7 +17399,7 @@
         <target state="translated">This brokerage account is closed.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">73</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-unknownInstrument" datatype="html">
@@ -17383,7 +17407,7 @@
         <target state="translated">This security doesn’t exist.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">75</context>
+          <context context-type="linenumber">76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-notTradable" datatype="html">
@@ -17391,7 +17415,7 @@
         <target state="translated">Indices can’t be traded. Trade them via an ETF.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">77</context>
+          <context context-type="linenumber">78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-invalidQuantity" datatype="html">
@@ -17399,7 +17423,7 @@
         <target state="translated">The quantity must be greater than 0 (at most six decimal places).</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">79</context>
+          <context context-type="linenumber">80</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-invalidAmount" datatype="html">
@@ -17407,7 +17431,7 @@
         <target state="translated">The amount must be at least €0.01.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">81</context>
+          <context context-type="linenumber">82</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-amountOnlyForBuy" datatype="html">
@@ -17415,7 +17439,7 @@
         <target state="translated">You can only sell by quantity.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">83</context>
+          <context context-type="linenumber">84</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-fractionalNotAllowed" datatype="html">
@@ -17423,7 +17447,7 @@
         <target state="translated">This bank only buys whole shares.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">85</context>
+          <context context-type="linenumber">86</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-invalidLimit" datatype="html">
@@ -17431,7 +17455,7 @@
         <target state="translated">Enter a limit price greater than 0.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">87</context>
+          <context context-type="linenumber">88</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-invalidStop" datatype="html">
@@ -17439,7 +17463,7 @@
         <target state="translated">Enter a stop price greater than 0.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">89</context>
+          <context context-type="linenumber">90</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-invalidValidity" datatype="html">
@@ -17447,7 +17471,7 @@
         <target state="translated">The date can’t be in the past.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">91</context>
+          <context context-type="linenumber">92</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-validityTooLong" datatype="html">
@@ -17455,7 +17479,7 @@
         <target state="translated">An order is valid for at most one year.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">93</context>
+          <context context-type="linenumber">94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-insufficientQuantity" datatype="html">
@@ -17463,7 +17487,7 @@
         <target state="translated">There aren’t that many free shares in the portfolio (open sell orders are deducted).</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">95</context>
+          <context context-type="linenumber">96</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-priceFloor" datatype="html">
@@ -17471,7 +17495,7 @@
         <target state="translated">The price is at the price floor. Buying is blocked.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">97</context>
+          <context context-type="linenumber">98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-clearingNegative" datatype="html">
@@ -17479,7 +17503,7 @@
         <target state="translated">The settlement account is overdrawn. Balance it first, then you can buy again.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">99</context>
+          <context context-type="linenumber">100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-insufficientFunds" datatype="html">
@@ -17487,7 +17511,7 @@
         <target state="translated">The balance on the settlement account isn’t enough.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">102</context>
+          <context context-type="linenumber">103</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-insufficientFundsShortfall" datatype="html">
@@ -17495,7 +17519,7 @@
         <target state="translated">The balance on the settlement account isn’t enough; <x id="shortfall" equiv-text="formatCents(shortfall)"/> is missing.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">103</context>
+          <context context-type="linenumber">104</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-amountTooSmall" datatype="html">
@@ -17503,7 +17527,15 @@
         <target state="translated">After costs, the amount isn’t enough for a single share.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">105</context>
+          <context context-type="linenumber">106</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="uiTrading-orderLabels-orderValueTooSmall" datatype="html">
+        <source>Ein Kauf braucht einen Kurswert von mindestens <x id="minimum" equiv-text="formatCents(MIN_ORDER_VALUE)"/>.</source>
+        <target state="translated">A purchase needs a market value of at least <x id="minimum" equiv-text="formatCents(MIN_ORDER_VALUE)"/>.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
+          <context context-type="linenumber">108</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-unknownOrder" datatype="html">
@@ -17511,7 +17543,7 @@
         <target state="translated">This order doesn’t exist.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">107</context>
+          <context context-type="linenumber">110</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-orderNotActive" datatype="html">
@@ -17519,7 +17551,7 @@
         <target state="translated">The order is no longer open.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">109</context>
+          <context context-type="linenumber">112</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-orderLabels-stopTriggered" datatype="html">
@@ -17527,7 +17559,7 @@
         <target state="translated">The stop has already been triggered and can no longer be changed.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/trading/ui/labels/order-labels.ts</context>
-          <context context-type="linenumber">111</context>
+          <context context-type="linenumber">114</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiTrading-savingsPlanLabels-unknownDepot" datatype="html">

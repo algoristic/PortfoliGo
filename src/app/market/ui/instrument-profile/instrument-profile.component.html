@@ -85,7 +85,9 @@
         </dd>
       </div>
       <div class="flex justify-between gap-3 border-b border-border pb-1">
-        <dt class="text-fg-muted" i18n="@@uiMarket-instrumentProfile-cap">Höchstgewicht je Wert</dt>
+        <dt class="text-fg-muted" i18n="@@uiMarket-instrumentProfile-capAtLaunch">
+          Höchstgewicht bei Auflage
+        </dt>
         <dd class="text-right font-medium tabular-nums" data-testid="market.instrument.profile.cap">
           @if (_profile.capWeight === null) {
             <ng-container i18n="@@uiMarket-instrumentProfile-noCap">keine Kappung</ng-container>

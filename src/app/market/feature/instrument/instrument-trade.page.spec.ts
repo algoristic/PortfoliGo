@@ -189,7 +189,14 @@ describe('InstrumentPage trading', () => {
     // The sale previews gain and tax (US-HD-02): the credit after costs minus the debit.
     await act(() => click(byTestId(page, 'trading.trade-actions.sell')));
     expect(textOf(body('trading.order-ticket.free'))).toBe('Frei im Depot: 10 Stück');
+    // TS §7.4 (AP 7.3b): a millionth is worth 0,00 €, so the costs make the credit negative.
+    await act(() => typeText(body<HTMLInputElement>('trading.order-ticket.quantity'), '0,000001'));
+    expect(euros('trading.order-ticket.total')).toBe(cents(-(ORDER_FEE + EXCHANGE_FEE)));
+    expect(textOf(body('trading.order-ticket.negative-credit'))).toBe(
+      'Die Kosten sind höher als der Kurswert. Der Verkauf belastet das Verrechnungskonto mit 6,70 €; fällt es ins Minus, kosten das Sollzinsen, und neue Käufe sind gesperrt.',
+    );
     await act(() => click(body('trading.order-ticket.sell-all')));
+    expect(queryByTestId(document.body, 'trading.order-ticket.negative-credit')).toBeNull();
     const bid = parseEuros(textOf(body('trading.order-ticket.bid')));
     const credit = cents(cents(10 * bid) - ORDER_FEE - EXCHANGE_FEE);
     expect(euros('trading.order-ticket.total')).toBe(credit);
@@ -213,6 +220,15 @@ describe('InstrumentPage trading', () => {
   it('names the shortfall of a purchase the clearing account does not cover', async () => {
     await openDepotWithMoney();
     await act(() => click(byTestId(page, 'trading.trade-actions.buy')));
+    // TS §7.5 (AP 7.3b): a purchase needs at least 1,00 € market value.
+    await act(() => click(body('trading.order-ticket.size.amount')));
+    const amount = body<HTMLInputElement>('trading.order-ticket.amount');
+    await act(() => typeText(amount, '0,99'));
+    await act(() => amount.dispatchEvent(new Event('blur')));
+    expect(textOf(body('trading.order-ticket.amount-error'))).toBe(
+      'Ein Kauf braucht einen Kurswert von mindestens 1,00 €.',
+    );
+    await act(() => click(body('trading.order-ticket.size.quantity')));
     const quantity = body<HTMLInputElement>('trading.order-ticket.quantity');
     await act(() => typeText(quantity, '1000'));
     await act(() => quantity.dispatchEvent(new Event('blur')));

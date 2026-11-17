@@ -72,6 +72,8 @@ describe('SessionEffects', () => {
       expect(engine.loadPlayer).toHaveBeenCalledWith({
         playerId: 'p-a',
         seed: 'kupfer-falke-731',
+        // TS §4.1 (AP 7.3b): the stored key, not one derived anew from the seed
+        seedKey: [1, 2, 3, 4],
         start: PROFILE.start,
         minTick: 5_389_950,
       });

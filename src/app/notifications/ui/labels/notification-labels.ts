@@ -5,7 +5,7 @@ import {
 } from '@app/notifications/domain/models/notification.model';
 import { Cents } from '@app/shared/domain/models/money.model';
 import { formatCents } from '@app/shared/util/format';
-import { OrderRejection } from '@app/trading/domain/models/order.model';
+import { MIN_ORDER_VALUE, OrderRejection } from '@app/trading/domain/models/order.model';
 import { SavingsPlanFailure } from '@app/trading/domain/models/savings-plan.model';
 
 /** Names of the categories of the notification centre (PS US-BN-01, TS §12). */
@@ -115,6 +115,8 @@ export function orderRejectionLabel(reason: OrderRejection): string {
       return $localize`:@@uiNotifications-notificationLabels-rejectionPriceFloor:Der Kurs liegt an der Preisuntergrenze.`;
     case 'amount-too-small':
       return $localize`:@@uiNotifications-notificationLabels-rejectionAmountTooSmall:Der Betrag reicht nach Abzug der Kosten für keinen Kauf.`;
+    case 'order-value-too-small':
+      return $localize`:@@uiNotifications-notificationLabels-rejectionOrderValueTooSmall:Der Kurswert lag unter dem Mindestwert von ${formatCents(MIN_ORDER_VALUE)}:minimum: für einen Kauf.`;
     case 'insufficient-quantity':
       return $localize`:@@uiNotifications-notificationLabels-rejectionInsufficientQuantity:Im Depot liegen nicht genug freie Stücke.`;
   }

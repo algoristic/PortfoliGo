@@ -65,6 +65,23 @@ describe('EngineHost', () => {
       });
     });
 
+    it('builds the world from the stored seed key instead of the seed (TS §4.1)', async () => {
+      const harness = new HostHarness();
+      const stored = generateMiniWorld('mini-1');
+      const other = generateMiniWorld('mini-2');
+      await harness.send('loadPlayer', {
+        ...PLAYER,
+        seed: 'mini-2',
+        seedKey: Array.from(stored.seedKey),
+      });
+      const reply = await harness.send('query', { query: { kind: 'instruments' } });
+      const names = (reply as { data: { instruments: Array<{ name: string }> } }).data.instruments
+        .map(({ name }) => name)
+        .slice(0, stored.world.companies.length);
+      expect(names).toEqual(stored.world.companies.map(({ name }) => name));
+      expect(names).not.toEqual(other.world.companies.map(({ name }) => name));
+    });
+
     it('answers commands that need a player with player-not-loaded', async () => {
       const harness = new HostHarness();
       expect(await harness.send('setSpeed', { speed: '1h' })).toMatchObject({

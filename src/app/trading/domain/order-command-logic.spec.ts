@@ -136,10 +136,56 @@ describe('order-command-logic', () => {
       ],
       [
         'clearing account at 0',
-        { size: { kind: 'amount', amount: 1 } },
+        { size: { kind: 'amount', amount: 100 } },
         { clearingBalance: 0, reserved: 0 },
         'insufficient-funds',
       ],
+      // TS §7.5, Mindest-Kurswert (AP 7.3b)
+      ['amount 0,99 €', { size: { kind: 'amount', amount: 99 } }, {}, 'order-value-too-small'],
+      ['amount 1,00 €', { size: { kind: 'amount', amount: 100 } }, {}, null],
+      [
+        'market 0,00994 shares (0,99 € at the ask)',
+        shares(9_940),
+        { conditions: { ...BRANCH, fractionalShares: true } },
+        'order-value-too-small',
+      ],
+      [
+        'market 0,00995 shares (1,00 € at the ask)',
+        shares(9_950),
+        { conditions: { ...BRANCH, fractionalShares: true } },
+        null,
+      ],
+      [
+        'limit 0,10, 9 shares (0,90 €)',
+        { type: 'limit', limit: 0.1, ...shares(9 * SHARE) },
+        {},
+        'order-value-too-small',
+      ],
+      [
+        'limit 0,10, 10 shares (1,00 €)',
+        { type: 'limit', limit: 0.1, ...shares(10 * SHARE) },
+        {},
+        null,
+      ],
+      [
+        'stop 110, 0,0091 shares (1,001 € at the stop)',
+        { type: 'stop', stop: 110, ...shares(9_100) },
+        { conditions: { ...BRANCH, fractionalShares: true } },
+        null,
+      ],
+      [
+        'stop 99, 0,0099 shares (0,99 € at the ask)',
+        { type: 'stop', stop: 99, ...shares(9_900) },
+        { conditions: { ...BRANCH, fractionalShares: true } },
+        'order-value-too-small',
+      ],
+      [
+        'purchase of 0,001 shares at the price floor',
+        shares(1_000),
+        { atPriceFloor: true, conditions: { ...BRANCH, fractionalShares: true } },
+        'price-floor',
+      ],
+      ['sale of 0,001 shares (0,0999 € at the bid)', { ...SELL, ...shares(1_000) }, {}, null],
       ['14 shares, reservation 1.484,47 €', shares(14 * SHARE), {}, null],
       ['15 shares, reservation 1.589,58 €', shares(15 * SHARE), {}, 'insufficient-funds'],
     ])('checks %s', (_case, spec, context, expected) => {
@@ -187,6 +233,27 @@ describe('order-command-logic', () => {
       ['limit 148,70 (reservation +497,00 €, all free money)', LIMIT_ORDER, { limit: 148.7 }, null],
       ['limit 149 (reservation +500,00 €)', LIMIT_ORDER, { limit: 149 }, 'insufficient-funds'],
       ['limit 0', LIMIT_ORDER, { limit: 0 }, 'invalid-limit'],
+      // TS §7.5, Mindest-Kurswert (AP 7.3b)
+      ['limit 0,10 (1,00 €)', LIMIT_ORDER, { limit: 0.1 }, null],
+      ['limit 0,09 (0,90 €)', LIMIT_ORDER, { limit: 0.09 }, 'order-value-too-small'],
+      [
+        'the stop of a stop-limit order with limit 0,09',
+        { ...STOP_LIMIT, limit: 0.09, reserved: 1_390 },
+        { stop: 100 },
+        'order-value-too-small',
+      ],
+      [
+        'only the validity of a purchase below 1,00 €',
+        { ...LIMIT_ORDER, limit: 0.09, reserved: 1_390 },
+        { validity: { kind: 'gtc' } },
+        null,
+      ],
+      [
+        'the limit of a sale to 0,09',
+        { ...LIMIT_ORDER, side: 'sell', reserved: 0 },
+        { limit: 0.09 },
+        null,
+      ],
       ['stop on a limit order', LIMIT_ORDER, { stop: 95 }, 'invalid-stop'],
       [
         'validity yesterday',

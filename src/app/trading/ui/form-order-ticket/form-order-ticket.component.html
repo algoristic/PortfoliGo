@@ -474,6 +474,15 @@
               >
             </p>
           }
+          @if (saleDebit(); as debit) {
+            <p class="text-warning" data-testid="trading.order-ticket.negative-credit">
+              <ng-container i18n="@@uiTrading-formOrderTicket-negativeCredit"
+                >Die Kosten sind höher als der Kurswert. Der Verkauf belastet das Verrechnungskonto
+                mit {{ debit | formatCents }}; fällt es ins Minus, kosten das Sollzinsen, und neue
+                Käufe sind gesperrt.</ng-container
+              >
+            </p>
+          }
         } @else {
           <p class="text-fg-muted" i18n="@@uiTrading-formOrderTicket-previewEmpty">
             Die Vorschau erscheint, sobald Stückzahl bzw. Betrag und die Kurse der Orderart

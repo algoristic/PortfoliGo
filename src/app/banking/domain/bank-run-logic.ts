@@ -82,6 +82,38 @@ export function nextBankRunTick(
   return runTick;
 }
 
+/**
+ * Months of the interest a closing account still accrues at `tick` (TS §7.4, AP 7.3b): `from` is
+ * the first month no interest payout has settled yet — the month of the last payout bank run at or
+ * before `tick` (06:00 on the first bank working day of the month, of the quarter's first month for
+ * quarterly payout), never before the month the account was opened; `to` is the month of the day
+ * before `tick`, the last day that bears interest.
+ */
+export function openInterestPeriod(
+  payout: InterestPayout,
+  openedAt: Tick,
+  tick: Tick,
+): { from: CalendarMonth; to: CalendarMonth } {
+  let start = monthOf(tick);
+  while (payout === 'quarterly' && !startsQuarter(start)) {
+    start = previousMonth(start);
+  }
+  const run = firstBankWorkingDay(start.year, start.month) + BANK_RUN_TIME_OF_DAY;
+  if (tick < run) {
+    start = previousMonth(start);
+    while (payout === 'quarterly' && !startsQuarter(start)) {
+      start = previousMonth(start);
+    }
+  }
+  const opened = monthOf(openedAt);
+  const from = monthIndex(opened) > monthIndex(start) ? opened : start;
+  return { from, to: monthOf(startOfDay(tick) - 1) };
+}
+
+function monthIndex({ year, month }: CalendarMonth): number {
+  return year * 12 + month;
+}
+
 /** Whether the month is the first of a quarter (January, April, July, October). */
 export function startsQuarter({ month }: CalendarMonth): boolean {
   return (month - 1) % MONTHS_PER_QUARTER === 0;

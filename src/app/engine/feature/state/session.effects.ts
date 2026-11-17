@@ -96,6 +96,7 @@ export class SessionEffects {
             this.#engine.loadPlayer({
               playerId: profile.id,
               seed: profile.seed,
+              seedKey: profile.seedKey,
               start: profile.start,
               minTick,
             }),

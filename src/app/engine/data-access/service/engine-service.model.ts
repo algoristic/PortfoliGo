@@ -81,12 +81,19 @@ export interface EngineMessage<TType extends string, TPayload> {
 export type EmptyPayload = Record<string, never>;
 
 /**
- * Loads a player and starts the clock (TS §9.2). The worker reads the stored state; `seed` and
- * `start` come from the profile and are only used for a new player (no snapshot yet).
+ * Loads a player and starts the clock (TS §9.2). The worker reads the stored state; `seed`,
+ * `seedKey` and `start` come from the profile; `start` is only used for a new player (no snapshot
+ * yet).
  */
 export interface LoadPlayerPayload {
   playerId: string;
   seed: string;
+  /**
+   * Stored key of the profile (`PlayerProfile.seedKey`, four unsigned 32-bit words); the world comes
+   * from it instead of a key derived anew, so that a browser with other Unicode tables keeps the
+   * world (TS §4.1). Without it, the host derives the key from `seed`.
+   */
+  seedKey?: number[];
   start: StartConditions;
   /**
    * Tick of the last `clock` event the UI saw, from localStorage (E-08): the restore replays at

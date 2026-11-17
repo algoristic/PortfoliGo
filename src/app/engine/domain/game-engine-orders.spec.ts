@@ -78,6 +78,7 @@ const ORDER_BANKS: readonly Bank[] = [
   ...TEST_BANKS,
   broker('bf', depot({ kind: 'percent', rate: 0.0025, min: 1_000, max: 6_000 }, 300, false)),
   broker('bn', depot({ kind: 'flat', amount: 90 }, 0, true)),
+  broker('b0', depot({ kind: 'free' }, 0, true)),
   broker(
     'bd',
     depot({ kind: 'flat-plus-percent', amount: 490, rate: 0.0025, max: 6_990 }, 0, true),
@@ -520,6 +521,34 @@ describe('GameEngine orders', () => {
           lots: [{ buyTick: engine.tick, quantity, cost: total }],
         }),
       ]);
+    });
+
+    it('refuses purchases below 1,00 € market value when placed and when executed (7.1c-03)', () => {
+      // TS §7.5, Mindest-Kurswert: at a bank without fees 0,000049 shares at ask 100,10 € would
+      // cost 0,00 € (0,0049 € rounded) and hand out shares for nothing.
+      const engine = setup({
+        bank: 'b0',
+        balance: 200,
+        prices: {
+          [STOCK]: [
+            { tick: 0, price: 100 },
+            { tick: at(MON, 9), price: 49.95 },
+          ],
+        },
+        until: at(MON, 8),
+      });
+      expect(place(engine, shares(49))).toEqual({ ok: false, error: 'order-value-too-small' });
+      // 0,01 shares at ask 100,10 €: 1,00 € plus 5 % buffer reserved; at the open the ask is
+      // 50,00 € and the market value 0,50 €.
+      expect(place(engine, shares(10_000))).toEqual({ ok: true, orderId: 'ord-1' });
+      engine.runUntil(at(MON, 9, 30));
+      expect(order(engine, 'ord-1')).toMatchObject({
+        status: 'rejected',
+        rejection: 'order-value-too-small',
+        reserved: 0,
+      });
+      expect(balance(engine)).toBe(200);
+      expect(engine.player.positions).toEqual([]);
     });
 
     it('rejects an order by amount that buys nothing after costs', () => {

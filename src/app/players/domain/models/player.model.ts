@@ -63,5 +63,5 @@ export interface PlayerPreset {
 
 /** Codes of the checks; the `ui` layer maps them to texts. */
 export type PlayerNameError = 'required' | 'too-long';
-export type PlayerSeedError = 'required';
+export type PlayerSeedError = 'required' | 'invalid-characters';
 export type AmountRangeError = 'required' | 'not-whole-cents' | 'too-small' | 'too-large';

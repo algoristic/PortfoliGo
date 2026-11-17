@@ -9,7 +9,7 @@ What exists in the code, by topic. When an AP changes this area, work the change
 
 ## Domain (`players/domain`; AP 2.4, 6.1, PS US-SP-01, TS §9.1, §10)
 
-- Profile (`seedKey` as `number[]`), limits, defaults and presets of US-SP-01; `livingCostsExceedIncome`, `matchingPreset`, `isOutdated` (against `SIM_VERSION`/`SCHEMA_VERSION`).
+- Profile (`seedKey` as `number[]`; the worker builds the world from this stored key, AP 7.3b), limits, defaults and presets of US-SP-01; `playerSeedError` (`required`, `invalid-characters`: a new seed may only hold `a–z`, digits, `-`, `_`, space, `ä ö ü ß` after `normalizeSeed`, TS §4.1); `createPlayerProfile(…, origin)` skips the character rule for `'import'`; `livingCostsExceedIncome`, `matchingPreset`, `isOutdated` (against `SIM_VERSION`/`SCHEMA_VERSION`).
 - Export format v1: `PlayerExport`, `EXPORT_FORMAT_VERSION`, `IMPORT_ERRORS` (`models/player-export.model.ts`), `player-export-logic.ts` (build, file name, encode/decode), guards `player-export.utils.ts`, `player-import-logic.ts`. Frozen fixture `testing/export-v1.ts` (regenerate before 1.0 with `UPDATE_EXPORT_FIXTURE=1`). Worker side: `engine.md`.
 - `backup-logic.ts` (`backupReminderDue`, `parseBackupSettings`; `isInstant` checks only `Number.isFinite`, no conversion).
 

@@ -5,6 +5,7 @@ import { Cents, MICRO_UNITS_PER_UNIT, MicroUnits } from '@app/shared/domain/mode
 import { BidAsk } from '@app/shared/domain/models/quote.model';
 
 import {
+  MIN_ORDER_VALUE,
   Order,
   ORDER_SIDES,
   ORDER_TYPES,
@@ -15,7 +16,7 @@ import {
   OrderType,
   OrderValidity,
 } from './models/order.model';
-import { orderReservation } from './order-reservation-logic';
+import { estimatedOrderValue, orderReservation } from './order-reservation-logic';
 import { validityError } from './order-validity-logic';
 
 /** State the engine looks up before checking a new order. */
@@ -56,8 +57,9 @@ export function freeFunds(clearingBalance: Cents, reserved: Cents): Cents {
 
 /**
  * Checks a new order (TS §7.5, US-HD-01–03) in this order: tradable instrument, size, limit and
- * stop, validity; a sale against the free shares; a purchase against the price floor (E-22), a
- * negative clearing account and its reservation against the free money (`freeFunds`). `null` if
+ * stop, validity; a sale against the free shares; a purchase against the price floor (E-22), the
+ * minimum market value (`MIN_ORDER_VALUE`), a negative clearing account and its reservation
+ * against the free money (`freeFunds`). `null` if
  * the order is accepted; the engine then stores `orderExpiry` and `orderReservation`.
  */
 export function orderPlacementError(
@@ -80,6 +82,9 @@ export function orderPlacementError(
   if (context.atPriceFloor) {
     return 'price-floor';
   }
+  if (estimatedOrderValue(spec, context.quote.ask) < MIN_ORDER_VALUE) {
+    return 'order-value-too-small';
+  }
   if (context.clearingBalance < 0) {
     return 'clearing-account-negative';
   }
@@ -92,7 +97,8 @@ export function orderPlacementError(
 /**
  * Checks a change of limit, stop or validity (US-HD-04): only active orders, only prices the order
  * type has, no stop change after the trigger; the validity counts from the change. A purchase must
- * cover the growth of its reservation (`changedReservation`) with the free money.
+ * keep the minimum market value with a new limit or stop and cover the growth of its reservation
+ * (`changedReservation`) with the free money.
  */
 export function orderChangeError(
   order: Order,
@@ -111,6 +117,13 @@ export function orderChangeError(
     (change.validity ? validityError(change.validity, context.tick) : null);
   if (error !== null) {
     return error;
+  }
+  if (
+    order.side === 'buy' &&
+    (change.limit !== undefined || change.stop !== undefined) &&
+    estimatedOrderValue(changed, context.ask) < MIN_ORDER_VALUE
+  ) {
+    return 'order-value-too-small';
   }
   const growth =
     changedReservation(order, change, context.ask, context.conditions) - order.reserved;

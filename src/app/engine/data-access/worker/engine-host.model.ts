@@ -300,8 +300,11 @@ export const DEFAULT_ENGINE_HOST_CONFIG: EngineHostConfig = {
 };
 
 export interface EngineHostOptions {
-  /** World of a seed; defaults to the standard world (`generateWorld`). Tests pass the mini world. */
-  createWorld?: (seed: string) => GeneratedWorld;
+  /**
+   * World of a seed key; defaults to the standard world (`generateWorld`). Tests pass the mini
+   * world.
+   */
+  createWorld?: (seedKey: SeedKey) => World;
   /** Price port of the engine; defaults to the `PriceSource`. */
   prices?: PricePortFactory;
   config?: Partial<EngineHostConfig>;

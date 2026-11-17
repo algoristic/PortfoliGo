@@ -294,6 +294,7 @@ const arbCommand: fc.Arbitrary<EngineCommandMessage> = fc.oneof(
         playerId: arbId,
         seed: fc.string(),
         start: fc.record({ startCapital: arbCount, netIncome: arbCount, livingCosts: arbCount }),
+        seedKey: fc.array(fc.nat({ max: 0xffffffff }), { minLength: 4, maxLength: 4 }),
         minTick: arbCount,
       },
       { requiredKeys: ['playerId', 'seed', 'start'] },
@@ -835,6 +836,9 @@ describe('engine protocol guards', () => {
       ['a player id that is not a string', loadPlayer({ playerId: 7 })],
       ['a negative lower bound of the tick', loadPlayer({ minTick: -1 })],
       ['a lower bound of the tick given as a string', loadPlayer({ minTick: '5' })],
+      ['a seed key with three words', loadPlayer({ seedKey: [1, 2, 3] })],
+      ['a seed key with a word above 32 bits', loadPlayer({ seedKey: [1, 2, 3, 2 ** 32] })],
+      ['a seed key with a negative word', loadPlayer({ seedKey: [1, 2, 3, -1] })],
       ['a visibility that is not a boolean', command('setVisibility', { visible: 'yes' })],
       ['a frozen flag that is not a boolean', command('setFrozen', { frozen: 1 })],
       [
@@ -1026,6 +1030,7 @@ describe('engine protocol guards', () => {
       ['a jump to tick 0', command('jumpTo', { target: { kind: 'date', tick: 0 } })],
       ['zero start conditions', loadPlayer({})],
       ['a lower bound of the tick', loadPlayer({ minTick: 5_389_920 })],
+      ['a seed key', loadPlayer({ seedKey: [0, 1, 0xffffffff, 7] })],
       ['a depot to open', command('openAccount', { bankId: 'b3', kind: 'depot' })],
       ['a closing without target', command('closeAccount', { accountId: 'acc-12' })],
       // The engine answers these with its own codes (`invalid-amount`, `purpose-too-long`).

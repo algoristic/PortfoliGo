@@ -1,5 +1,6 @@
 import { formatCents } from '@app/shared/util/format';
 import {
+  MIN_ORDER_VALUE,
   OrderCommandError,
   OrderSide,
   OrderStatus,
@@ -103,6 +104,8 @@ export function orderCommandErrorLabel(code: OrderCommandError, shortfall: numbe
         : $localize`:@@uiTrading-orderLabels-insufficientFundsShortfall:Das Guthaben auf dem Verrechnungskonto reicht nicht, es fehlen ${formatCents(shortfall)}:shortfall:.`;
     case 'amount-too-small':
       return $localize`:@@uiTrading-orderLabels-amountTooSmall:Der Betrag reicht nach Abzug der Kosten für kein Stück.`;
+    case 'order-value-too-small':
+      return $localize`:@@uiTrading-orderLabels-orderValueTooSmall:Ein Kauf braucht einen Kurswert von mindestens ${formatCents(MIN_ORDER_VALUE)}:minimum:.`;
     case 'unknown-order':
       return $localize`:@@uiTrading-orderLabels-unknownOrder:Diese Order gibt es nicht.`;
     case 'order-not-active':

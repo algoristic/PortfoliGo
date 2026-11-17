@@ -8,8 +8,10 @@ import { PlayerLock, PlayerLocks } from '@app/persistence/data-access/locks/play
 import { PlayerExport } from '@app/players/domain/models/player-export.model';
 import { decodePlayerExport } from '@app/players/domain/player-export-logic';
 import { importedGame, MarketHistoryRun } from '@app/players/domain/player-import-logic';
+import { deriveSeedKey, SeedKey } from '@app/simulation/util/seed';
+import { World } from '@app/world/domain/models/world.model';
 
-import { EngineStorage, GeneratedWorld, StoredClock } from './engine-host.model';
+import { EngineStorage, StoredClock } from './engine-host.model';
 
 import {
   EngineCommandPayloads,
@@ -30,7 +32,7 @@ export interface PlayerImportPorts {
   /** Interval of the `progress` events. */
   progressIntervalMs: number;
   progress(payload: ProgressPayload): void;
-  createWorld(seed: string): GeneratedWorld;
+  createWorld(seedKey: SeedKey): World;
   prices?: PricePortFactory;
 }
 
@@ -93,8 +95,8 @@ async function importGame(
   ports: PlayerImportPorts,
 ): Promise<ImportedPlayer> {
   const world = structureCall(() => {
-    const generated = ports.createWorld(exported.player.seed);
-    return createGameWorld(generated.seedKey, generated.world);
+    const seedKey = deriveSeedKey(exported.player.seed);
+    return createGameWorld(seedKey, ports.createWorld(seedKey));
   });
   const run = await historyRun(world, exported.market.day, ports);
   const imported = structureCall(() => importedGame(world.context, exported, run));

@@ -45,9 +45,22 @@ export function playerNameError(name: string): PlayerNameError | null {
   return length > PLAYER_NAME_MAX_LENGTH ? 'too-long' : null;
 }
 
-/** The seed must not be empty after normalisation (TS §4.1). */
+/**
+ * Characters of a new player's seed after normalisation (TS §4.1): their lower case and NFC are
+ * the same in every Unicode version a browser may have.
+ */
+const SEED_CHARACTERS = /^[a-z0-9_ äöüß-]+$/;
+
+/**
+ * The seed of a new player must not be empty after normalisation and may only contain
+ * `SEED_CHARACTERS` (TS §4.1, PS NF-05). Imported players keep any seed.
+ */
 export function playerSeedError(seed: string): PlayerSeedError | null {
-  return normalizeSeed(seed) === '' ? 'required' : null;
+  const normalized = normalizeSeed(seed);
+  if (normalized === '') {
+    return 'required';
+  }
+  return SEED_CHARACTERS.test(normalized) ? null : 'invalid-characters';
 }
 
 /** An amount in whole cents within the range; `null` is an empty field. */
@@ -104,16 +117,21 @@ export function isOutdated(
   );
 }
 
-/** The profile of a new player; throws if the input breaks a rule (the form checks it first). */
+/**
+ * The profile of a new player; throws if the input breaks a rule (the form checks it first). An
+ * imported player (`origin` `import`) keeps any non-empty seed (TS §4.1).
+ */
 export function createPlayerProfile(
   input: NewPlayer,
   id: string,
   createdAt: number,
+  origin: 'new' | 'import' = 'new',
 ): PlayerProfile {
   const { startCapital, netIncome, livingCosts } = input.start;
+  const seedError = playerSeedError(input.seed);
   const problems = [
     playerNameError(input.name),
-    playerSeedError(input.seed),
+    origin === 'new' || seedError !== 'invalid-characters' ? seedError : null,
     amountRangeError(startCapital, START_CAPITAL_RANGE),
     amountRangeError(netIncome, NET_INCOME_RANGE),
     amountRangeError(livingCosts, LIVING_COSTS_RANGE),

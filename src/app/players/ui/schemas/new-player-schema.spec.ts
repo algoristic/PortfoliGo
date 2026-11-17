@@ -32,6 +32,7 @@ describe('newPlayerSchema', () => {
     ['a name of 41 characters', { name: 'x'.repeat(41) }, 'name', ['too-long']],
     ['an empty seed', { seed: '' }, 'seed', ['required']],
     ['a seed of blanks', { seed: ' \t' }, 'seed', ['required']],
+    ['a seed with a dot', { seed: 'seed.1' }, 'seed', ['invalid-characters']],
     ['an empty start capital', { startCapital: null }, 'startCapital', ['required']],
     ['a negative start capital', { startCapital: -1 }, 'startCapital', ['too-small']],
     ['1.000.000,01 € start capital', { startCapital: 100_000_001 }, 'startCapital', ['too-large']],

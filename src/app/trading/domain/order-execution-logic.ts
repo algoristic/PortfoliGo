@@ -11,7 +11,13 @@ import { Cents, MICRO_UNITS_PER_UNIT, MicroUnits } from '@app/shared/domain/mode
 import { BidAsk } from '@app/shared/domain/models/quote.model';
 import { eurosToCentsDown, marketValue } from '@app/shared/domain/money-logic';
 
-import { Order, OrderDecision, OrderFill, OrderRejection } from './models/order.model';
+import {
+  MIN_ORDER_VALUE,
+  Order,
+  OrderDecision,
+  OrderFill,
+  OrderRejection,
+} from './models/order.model';
 import { PositionSale } from './models/position.model';
 
 /** What decides an active order's fate in a tick. */
@@ -141,7 +147,8 @@ export function orderFill(
 
 /**
  * Why an order is rejected at execution, or `null` (TS §7.5): a purchase of an instrument at the
- * price floor (E-22), an order by amount that buys nothing, a debit above the available amount of
+ * price floor (E-22), an order by amount that buys nothing, a purchase whose booked market value
+ * is below `MIN_ORDER_VALUE` (TS §7.5), a debit above the available amount of
  * the clearing account minus the other orders' reservations (this order's own is released), or a
  * sale above the holding.
  */
@@ -158,6 +165,9 @@ export function executionError(
   }
   if (fill.quantity === 0) {
     return 'amount-too-small';
+  }
+  if (fill.marketValue < MIN_ORDER_VALUE) {
+    return 'order-value-too-small';
   }
   const otherReservations = context.reserved - order.reserved;
   const free =
