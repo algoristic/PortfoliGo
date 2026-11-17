@@ -32,16 +32,28 @@ export interface PerformanceState {
   day: number;
   /** Net worth at the end of the previous day (`V_start`). */
   dayStartValue: Cents;
-  /** External flows of the running day so far (`CF_day`): income − living costs. */
+  /** Net external flows of the running day so far (`CF_day`): income − living costs. */
   dayFlow: Cents;
+  /**
+   * External outflows of the running day so far (`CF⁻ ≤ 0`, E-43): they count at the end of the
+   * day, the inflows `CF⁺ = dayFlow − dayOutflow` at its start.
+   */
+  dayOutflow: Cents;
   /** External flows of all days before the running one. */
   totalFlow: Cents;
   /** Chained growth factor of the time-weighted return up to the start of the running day. */
   index: number;
-  /** Days before the running one left out of the chain (`V_start + CF_day ≤ 0`). */
+  /**
+   * Days before the running one left out of the chain (TS §7.9, E-43): those the player's or the
+   * benchmark's return cannot chain, counted once.
+   */
   skippedDays: number;
   /** `index` at the end of the previous year (the start in the first year). */
   yearStartIndex: number;
+  /** First day of the running year in the game (1 January, or the start in the first year). */
+  yearStartDay: number;
+  /** `skippedDays` at the end of the previous year (0 in the first year). */
+  yearStartSkippedDays: number;
   /** `null` in a world without a world index. */
   benchmark: BenchmarkState | null;
 }
@@ -82,10 +94,13 @@ export interface PortfolioValues {
   securities: Cents;
 }
 
-/** Time-weighted returns of a period (US-PF-05); ratios, not percent. */
+/**
+ * Time-weighted returns of a period (US-PF-05); ratios, not percent. `null` (display „–“) when at
+ * least half of the period's days were left out of the chain (`MAX_SKIPPED_SHARE`, E-43).
+ */
 export interface PeriodReturns {
   /** Since the start of the game. */
-  sinceStart: number;
+  sinceStart: number | null;
   /** Since the end of the previous year (since the start in the first year); `null` after a total loss. */
   yearToDate: number | null;
   /** Annualised over the calendar days since the start (act/365); `null` before a full year. */
@@ -111,6 +126,11 @@ export interface PerformanceFigures {
   returns: PeriodReturns;
   /** Days left out of the chain, today included when it cannot be chained (TS §7.9). */
   skippedDays: number;
+  /**
+   * At least half of the days since the start or in the running year were left out: the returns of
+   * that period show „–“ (E-43).
+   */
+  mostlySkipped: boolean;
   benchmark: { value: Cents; returns: PeriodReturns } | null;
 }
 

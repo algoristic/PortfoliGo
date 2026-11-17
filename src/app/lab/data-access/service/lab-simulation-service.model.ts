@@ -54,9 +54,13 @@ export interface ComputedStatistics {
   durationMs: number;
 }
 
-/** Golden-master checksums computed in this engine for the self-test (TS §4.6, §14.2). */
+/**
+ * Golden-master checksums and the checksum of the player state computed in this engine for the
+ * self-test (TS §4.6, §14.2, §15).
+ */
 export interface ComputedChecksums {
   checksums: GoldenChecksums;
+  player: string;
   durationMs: number;
 }
 

@@ -188,6 +188,7 @@
   <app-panel heading="Selbsttest" i18n-heading="@@featureLab-simulationPage-selfTest">
     <app-self-test
       [checksums]="selfTest?.checksums ?? null"
+      [playerChecksum]="selfTest?.player ?? null"
       [durationMs]="selfTest?.durationMs"
       [running]="runningSelfTest ?? false"
       (clickedRun)="onRunSelfTest()"></app-self-test>

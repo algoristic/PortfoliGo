@@ -439,8 +439,8 @@ Als Anwender möchte ich die Entwicklung meines Vermögens über die Zeit sehen,
 **US-PF-05 – Performance und Benchmark** · Stufe 1 · M
 Als Anwender möchte ich meine Rendite mit einer einfachen Alternative vergleichen, damit ich meine Strategie bewerten kann.
 
-- Zeitgewichtete Rendite seit Spielbeginn, im laufenden Jahr und annualisiert. Einkommen und Lebenshaltungskosten verfälschen sie nicht.
-- Benchmark: Schattenportfolio, in das Startkapital und alle Netto-Zuflüsse ohne Kosten in den Weltindex geflossen wären – Vergleich als Chart und Kennzahl.
+- Zeitgewichtete Rendite seit Spielbeginn, im laufenden Jahr und annualisiert. Einkommen und Lebenshaltungskosten verfälschen sie nicht. Feste Kosten wie die Kontoführung zählen als Rendite auf das Vermögen vor der Lebenshaltung; Tage mit negativem Vermögen zählen nicht, und fehlt so mindestens die Hälfte der Tage eines Zeitraums, zeigt die Anzeige „–“ mit Hinweis (E-43).
+- Benchmark: Schattenportfolio, in das Startkapital und alle Netto-Zuflüsse ohne Kosten in den Weltindex geflossen wären – Vergleich als Chart und Kennzahl. Solange es investiert ist, ist seine Rendite die Indexrendite; Portfolio und Benchmark lassen dieselben Tage aus.
 - Zweite Vergleichsgröße (E-28): das Vermögen, wenn alle Zuflüsse auf dem Gehaltskonto geblieben wären. Die Benchmark ist kostenlos, steuerfrei und voll investiert und deshalb kaum zu schlagen; die zweite Größe zeigt, was das Investieren gebracht hat.
 
 **US-PF-06 – Positionsdetail** · Stufe 1 · M

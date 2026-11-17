@@ -56,16 +56,46 @@ export function externalFlow(postings: readonly PostingDraft[]): Cents {
 }
 
 /**
- * Return of a day with the external flows at its start (TS §7.9): `V_end / (V_start + CF) − 1`.
- * `null` when `V_start + CF ≤ 0`: the day is left out of the chain. A day end below 0 counts as
- * −100 % (the factor never turns negative).
+ * Share of left-out days from which the returns of a period show „–“ (E-43): from half of its
+ * days on, the chained days no longer describe the period.
  */
-export function dailyReturn(start: number, flow: number, end: number): number | null {
-  const base = start + flow;
-  if (!(base > 0)) {
+export const MAX_SKIPPED_SHARE = 0.5;
+
+/**
+ * Return of a day (TS §7.9, E-43): inflows at its start, outflows at its end,
+ * `(V_end − CF⁻) / (V_start + CF⁺) − 1` with `outflow` = `CF⁻ ≤ 0`. Fixed costs on the day of the
+ * living costs thus meet the value before them, not a base near 0. `null` (left out of the chain)
+ * when `V_start + CF⁺ ≤ 0` or `V_end < 0`; the factor is then never negative.
+ */
+export function dailyReturn(
+  start: number,
+  inflow: number,
+  outflow: number,
+  end: number,
+): number | null {
+  const base = start + inflow;
+  if (!(base > 0) || end < 0) {
     return null;
   }
-  return Math.max(end / base, 0) - 1;
+  return (end - outflow) / base - 1;
+}
+
+/**
+ * Return of a benchmark day (TS §7.9, E-43): all flows at its end, `(B_end − CF) / B_start − 1`,
+ * because the shadow portfolio buys and sells only at the close. `null` when `B_start ≤ 0` (no
+ * units, a negative cash amount) or `B_end − CF < 0` (a waiting withdrawal larger than the units).
+ */
+export function benchmarkReturn(start: number, flow: number, end: number): number | null {
+  const value = end - flow;
+  if (!(start > 0) || value < 0) {
+    return null;
+  }
+  return value / start - 1;
+}
+
+/** Whether `skipped` of `days` days (≥ 1) are too many for a return of the period (E-43). */
+export function isMostlySkipped(skipped: number, days: number): boolean {
+  return skipped >= days * MAX_SKIPPED_SHARE;
 }
 
 /** Annualised return over `days` calendar days (act/365); `null` before a full year. */
@@ -80,13 +110,29 @@ export function annualizedReturn(total: number, days: number): number | null {
   return detExp((detLog(growth) * DAYS_PER_YEAR) / days) - 1;
 }
 
-/** Returns since the start, since the year start and annualised from chained growth factors. */
-export function periodReturns(index: number, yearStartIndex: number, days: number): PeriodReturns {
+/** Periods whose returns show „–“ because at least half of their days were left out (E-43). */
+export interface SkippedPeriods {
+  sinceStart: boolean;
+  yearToDate: boolean;
+}
+
+const NOTHING_SKIPPED: SkippedPeriods = { sinceStart: false, yearToDate: false };
+
+/**
+ * Returns since the start, since the year start and annualised from chained growth factors; a
+ * period in `skipped` has none.
+ */
+export function periodReturns(
+  index: number,
+  yearStartIndex: number,
+  days: number,
+  skipped: SkippedPeriods = NOTHING_SKIPPED,
+): PeriodReturns {
   const sinceStart = index - 1;
   return {
-    sinceStart,
-    yearToDate: yearStartIndex > 0 ? index / yearStartIndex - 1 : null,
-    annualized: annualizedReturn(sinceStart, days),
+    sinceStart: skipped.sinceStart ? null : sinceStart,
+    yearToDate: skipped.yearToDate || !(yearStartIndex > 0) ? null : index / yearStartIndex - 1,
+    annualized: skipped.sinceStart ? null : annualizedReturn(sinceStart, days),
   };
 }
 
@@ -96,16 +142,20 @@ export function startPerformance(
   startValue: Cents,
   withBenchmark: boolean,
 ): PerformanceState {
+  const day = dayIndex(tick);
   return {
     startTick: tick,
     startValue,
-    day: dayIndex(tick),
+    day,
     dayStartValue: startValue,
     dayFlow: 0,
+    dayOutflow: 0,
     totalFlow: 0,
     index: 1,
     skippedDays: 0,
     yearStartIndex: 1,
+    yearStartDay: day,
+    yearStartSkippedDays: 0,
     benchmark: withBenchmark
       ? {
           units: 0,
@@ -119,7 +169,10 @@ export function startPerformance(
   };
 }
 
-/** Adds an external flow to the running day; the benchmark invests it at the next close. */
+/**
+ * Adds the external flow of a transaction to the running day: an inflow counts at the start of the
+ * day, an outflow at its end (E-43). The benchmark invests it at the next close.
+ */
 export function addFlow(state: PerformanceState, flow: Cents): PerformanceState {
   if (flow === 0) {
     return state;
@@ -128,6 +181,7 @@ export function addFlow(state: PerformanceState, flow: Cents): PerformanceState 
   return {
     ...state,
     dayFlow: state.dayFlow + flow,
+    dayOutflow: flow < 0 ? state.dayOutflow + flow : state.dayOutflow,
     benchmark: benchmark === null ? null : { ...benchmark, pending: benchmark.pending + flow },
   };
 }
@@ -158,50 +212,56 @@ function yearOfDay(day: number): number {
   return tickToDateTime(dayStartTick(day)).year;
 }
 
-function closeBenchmarkDay(
-  benchmark: BenchmarkState,
-  flow: Cents,
-  newYear: boolean,
-): BenchmarkState {
-  const end = benchmarkValue(benchmark);
-  const r = dailyReturn(benchmark.dayStartValue, flow, end);
-  const index = r === null ? benchmark.index : benchmark.index * (1 + r);
-  return {
-    ...benchmark,
-    dayStartValue: end,
-    index,
-    yearStartIndex: newYear ? index : benchmark.yearStartIndex,
-  };
+/** Return of the running day so far, `null` when it is left out (TS §7.9, E-43). */
+function playerReturn(state: PerformanceState, end: number): number | null {
+  return dailyReturn(state.dayStartValue, state.dayFlow - state.dayOutflow, state.dayOutflow, end);
 }
 
 /**
  * Ends the running day with the values at its end (TS §3.8 step 4, §7.9): chains its return, adds
- * its flows and starts the next day. The point is the day of the daily series.
+ * its flows and starts the next day. A day that the player's or the benchmark's return cannot
+ * chain is left out of both (E-43). The point is the day of the daily series.
  */
 export function closeDay(
   state: PerformanceState,
   end: PortfolioValues,
 ): { state: PerformanceState; point: DailyPoint } {
   const netWorth = end.cash + end.securities;
-  const r = dailyReturn(state.dayStartValue, state.dayFlow, netWorth);
-  const index = r === null ? state.index : state.index * (1 + r);
-  const skippedDays = state.skippedDays + (r === null ? 1 : 0);
+  const { benchmark } = state;
+  const r = playerReturn(state, netWorth);
+  const benchmarkEnd = benchmark === null ? 0 : benchmarkValue(benchmark);
+  const rb =
+    benchmark === null ? 0 : benchmarkReturn(benchmark.dayStartValue, state.dayFlow, benchmarkEnd);
+  const skipped = r === null || rb === null;
+  const index = skipped ? state.index : state.index * (1 + r);
+  const skippedDays = state.skippedDays + (skipped ? 1 : 0);
   const totalFlow = state.totalFlow + state.dayFlow;
   const nextDay = state.day + 1;
   const newYear = yearOfDay(nextDay) !== yearOfDay(state.day);
-  const benchmark =
-    state.benchmark === null ? null : closeBenchmarkDay(state.benchmark, state.dayFlow, newYear);
+  let nextBenchmark: BenchmarkState | null = null;
+  if (benchmark !== null) {
+    const benchmarkIndex = skipped ? benchmark.index : benchmark.index * (1 + rb);
+    nextBenchmark = {
+      ...benchmark,
+      dayStartValue: benchmarkEnd,
+      index: benchmarkIndex,
+      yearStartIndex: newYear ? benchmarkIndex : benchmark.yearStartIndex,
+    };
+  }
   return {
     state: {
       ...state,
       day: nextDay,
       dayStartValue: netWorth,
       dayFlow: 0,
+      dayOutflow: 0,
       totalFlow,
       index,
       skippedDays,
       yearStartIndex: newYear ? index : state.yearStartIndex,
-      benchmark,
+      yearStartDay: newYear ? nextDay : state.yearStartDay,
+      yearStartSkippedDays: newYear ? skippedDays : state.yearStartSkippedDays,
+      benchmark: nextBenchmark,
     },
     point: {
       day: state.day,
@@ -214,8 +274,8 @@ export function closeDay(
       comparison: state.startValue + totalFlow,
       index,
       skippedDays,
-      benchmarkValue: benchmark === null ? null : roundHalfAwayFromZero(benchmark.dayStartValue),
-      benchmarkIndex: benchmark?.index ?? null,
+      benchmarkValue: nextBenchmark === null ? null : roundHalfAwayFromZero(benchmarkEnd),
+      benchmarkIndex: nextBenchmark?.index ?? null,
     },
   };
 }
@@ -233,20 +293,30 @@ export function performanceFigures(
   benchmarkPrice: number | null = null,
 ): PerformanceFigures {
   const netWorth = now.cash + now.securities;
-  const r = dailyReturn(state.dayStartValue, state.dayFlow, netWorth);
-  const index = r === null ? state.index : state.index * (1 + r);
+  const { benchmark } = state;
+  const r = playerReturn(state, netWorth);
+  const benchmarkNow = benchmark === null ? 0 : benchmarkValue(benchmark, benchmarkPrice);
+  const rb =
+    benchmark === null ? 0 : benchmarkReturn(benchmark.dayStartValue, state.dayFlow, benchmarkNow);
+  const todaySkipped = r === null || rb === null;
+  const index = todaySkipped ? state.index : state.index * (1 + r);
   const totalFlow = state.totalFlow + state.dayFlow;
   const comparison = state.startValue + totalFlow;
   const days = (tick - state.startTick) / TICKS_PER_DAY;
-  const { benchmark } = state;
+  const skippedDays = state.skippedDays + (todaySkipped ? 1 : 0);
+  const skipped: SkippedPeriods = {
+    sinceStart: isMostlySkipped(skippedDays, state.day - dayIndex(state.startTick) + 1),
+    yearToDate: isMostlySkipped(
+      skippedDays - state.yearStartSkippedDays,
+      state.day - state.yearStartDay + 1,
+    ),
+  };
   let benchmarkFigures: PerformanceFigures['benchmark'] = null;
   if (benchmark !== null) {
-    const value = benchmarkValue(benchmark, benchmarkPrice);
-    const rb = dailyReturn(benchmark.dayStartValue, state.dayFlow, value);
-    const benchmarkIndex = rb === null ? benchmark.index : benchmark.index * (1 + rb);
+    const benchmarkIndex = todaySkipped ? benchmark.index : benchmark.index * (1 + rb);
     benchmarkFigures = {
-      value: roundHalfAwayFromZero(value),
-      returns: periodReturns(benchmarkIndex, benchmark.yearStartIndex, days),
+      value: roundHalfAwayFromZero(benchmarkNow),
+      returns: periodReturns(benchmarkIndex, benchmark.yearStartIndex, days, skipped),
     };
   }
   return {
@@ -264,8 +334,9 @@ export function performanceFigures(
       ratio: r,
       flow: state.dayFlow,
     },
-    returns: periodReturns(index, state.yearStartIndex, days),
-    skippedDays: state.skippedDays + (r === null ? 1 : 0),
+    returns: periodReturns(index, state.yearStartIndex, days, skipped),
+    skippedDays,
+    mostlySkipped: skipped.sinceStart || skipped.yearToDate,
     benchmark: benchmarkFigures,
   };
 }

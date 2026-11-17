@@ -10,6 +10,7 @@ export const SIM_VERSION = 1;
  * monthly values (AP 3.2). 4: notification counter, read state and auto-pause settings (AP 3.6).
  * 5: watchlist (AP 4.4). 6: orders, lots, distributions, custody fees, tax years, standing orders,
  * savings plans, daily series and the new monthly values (M5). 7: background speed and deadline
- * (AP 6.7).
+ * (AP 6.7). 8: return convention E-43 (outflows of the running day, year start day and its
+ * left-out days; stored chains and daily points of the old convention would stay wrong, AP 7.3c).
  */
-export const SCHEMA_VERSION = 7;
+export const SCHEMA_VERSION = 8;

@@ -1,3 +1,4 @@
+import { computePlayerChecksum } from '@app/engine/domain/player-golden-master';
 import { computeGoldenChecksums, GOLDEN_SEED } from '@app/market/domain/golden-master';
 
 import { LabWorkerRequest, LabWorkerResponse } from './lab-simulation-service.model';
@@ -80,10 +81,11 @@ export class LabWorkerSession {
         // Needs no world: the self-test generates the golden world itself.
         const start = this.#clock();
         const checksums = computeGoldenChecksums(GOLDEN_SEED);
+        const player = computePlayerChecksum();
         return {
           id: request.id,
           type: 'golden',
-          result: { checksums, durationMs: this.#clock() - start },
+          result: { checksums, player, durationMs: this.#clock() - start },
         };
       }
       case 'seed-run': {

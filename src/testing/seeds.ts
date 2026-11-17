@@ -7,6 +7,8 @@ import { COMPARISON_SEEDS } from '@app/lab/domain/seed-comparison';
 export const TEST_SEEDS = {
   /** Mini world of the property tests (`world/domain/testing/mini-world.ts`). */
   mini: 'mini-1',
+  /** Mini world of the engine scenario „500 € Startkapital“ (AP 7.3c, review 7.1c-01). */
+  smallBase: 'mini-2',
   /** Page tests of the lab. */
   page: 'page-test',
   /** Statistical tests on fixed seeds. */

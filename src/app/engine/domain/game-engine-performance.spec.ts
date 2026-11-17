@@ -171,7 +171,7 @@ describe('GameEngine performance', () => {
   });
 
   describe('time-weighted return (US-PF-05)', () => {
-    it('chains every day with its flows at the start', () => {
+    it('chains every day with the inflows at its start and the outflows at its end (E-43)', () => {
       const engine = setup(
         MINI_START_CONDITIONS.startCapital,
         [
@@ -182,17 +182,23 @@ describe('GameEngine performance', () => {
         50,
       );
       const { points } = run(engine, at(2030, 6, 2));
+      // Salary and living costs never fall on the same day, so the sign of a day's flow tells them
+      // apart.
+      expect(points.some(({ flow }) => flow < 0)).toBe(true);
       let index = 1;
       let previous = MINI_START_CONDITIONS.startCapital + 50 * 10_000;
       for (const entry of points) {
-        index *= entry.netWorth / (previous + entry.flow);
+        index *=
+          entry.flow >= 0
+            ? entry.netWorth / (previous + entry.flow)
+            : (entry.netWorth - entry.flow) / previous;
         previous = entry.netWorth;
         expect(entry.index).toBeCloseTo(index, 9);
       }
       expect(points.at(-1)?.skippedDays).toBe(0);
     });
 
-    it('leaves out the days with V_start + CF ≤ 0 (no start capital, living costs before salary)', () => {
+    it('leaves out the days with a negative net worth (no start capital, living costs before salary)', () => {
       const engine = setup(0);
       const { points } = run(engine, at(2030, 5, 2));
       const april = points.filter(({ day }) => day < dayIndex(at(2030, 4, 30)));
@@ -202,18 +208,23 @@ describe('GameEngine performance', () => {
         Array.from({ length: 29 }, (_, i) => i + 1),
       );
       expect(april.every(({ index }) => index === 1)).toBe(true);
+      // On the salary day the player could chain the day, but the benchmark starts it with a
+      // negative cash amount: both leave it out.
       const salaryDay = points[29];
       expect(salaryDay.flow).toBe(MINI_START_CONDITIONS.netIncome);
-      expect(salaryDay.skippedDays).toBe(29);
-      expect(salaryDay.index).toBeCloseTo(
-        salaryDay.netWorth / (april[28].netWorth + salaryDay.flow),
-        12,
-      );
+      expect(salaryDay.netWorth).toBeGreaterThan(0);
+      expect(april[28].benchmarkValue).toBeLessThan(0);
+      expect(salaryDay.skippedDays).toBe(30);
+      expect(salaryDay.index).toBe(1);
+      // 01.05.: the living costs make the day end negative again.
+      expect(points[30].netWorth).toBeLessThan(0);
+      expect(points[30].skippedDays).toBe(31);
       const figures = engine.performanceFigures(engine.securitiesValue());
-      const last = points[points.length - 1];
-      expect(figures.skippedDays).toBe(
-        last.skippedDays + (last.netWorth + figures.today.flow <= 0 ? 1 : 0),
-      );
+      expect(figures.today.ratio).toBeNull();
+      expect(figures.skippedDays).toBe(32);
+      expect(figures.mostlySkipped).toBe(true);
+      expect(figures.returns.sinceStart).toBeNull();
+      expect(figures.benchmark?.returns.sinceStart).toBeNull();
     });
 
     it('measures the year to date from the end of 31 December', () => {
@@ -229,7 +240,7 @@ describe('GameEngine performance', () => {
       const { points } = run(engine, at(2031, 1, 20, 12));
       const yearEnd = points.find(({ day }) => day === dayIndex(at(2030, 12, 31)));
       const figures = engine.performanceFigures(engine.securitiesValue());
-      const index = 1 + figures.returns.sinceStart;
+      const index = 1 + (figures.returns.sinceStart ?? Number.NaN);
       expect(yearEnd).toBeDefined();
       expect(figures.returns.yearToDate).toBeCloseTo(
         index / (yearEnd?.index ?? Number.NaN) - 1,
@@ -271,6 +282,57 @@ describe('GameEngine performance', () => {
       const comparison = figures.comparison;
       expect(figures.benchmark?.value).toBe(Math.round(comparison * 1.1));
       expect(figures.benchmark?.returns.sinceStart).toBeCloseTo(0.1, 12);
+    });
+  });
+
+  // Review 7.1c-01/-02, E-43: a cash-only player with 500 € start capital, 2.500 € income and
+  // 1.800 € living costs on the real market of the mini world for five years. The old convention
+  // gave −8,73 % p. a. (one day −32 %) and a benchmark of +15 % against a world index at −34 %.
+  describe('US-PF-05: 500 € start capital (E-43)', () => {
+    it('has no outlier day and gives the benchmark the index return on the chained days', () => {
+      const { seedKey, world: mini } = miniWorld(TEST_SEEDS.smallBase);
+      const small = createGameWorld(seedKey, mini);
+      const until = at(2035, 4, 1);
+      const player = GameEngine.start(small, {
+        startCapital: 50_000,
+        netIncome: 250_000,
+        livingCosts: 180_000,
+      });
+      player.runUntil(until);
+      const points = player.drainDailyPoints();
+      // Reference: a rich player without flows, whose benchmark is the pure index.
+      const rich = GameEngine.start(small, { startCapital: 1e9, netIncome: 0, livingCosts: 0 });
+      rich.runUntil(until);
+      const reference = rich.drainDailyPoints();
+      expect(reference.at(-1)?.skippedDays).toBe(0);
+      expect(points).toHaveLength(reference.length);
+
+      // April and May 2030: the living costs make every day end negative until the salary, and
+      // the benchmark starts the salary day with negative cash. From June on every day counts.
+      const twoMonths = dayIndex(at(2030, 6, 1)) - dayIndex(at(2030, 4, 1));
+      expect(points.map(({ skippedDays }) => skippedDays)).toEqual(
+        points.map((_, i) => Math.min(i + 1, twoMonths)),
+      );
+
+      let previous = 1;
+      let worst = 0;
+      let benchmark = 1;
+      points.forEach((entry, i) => {
+        worst = Math.min(worst, entry.index / previous - 1);
+        previous = entry.index;
+        if (i > 0 && entry.skippedDays === points[i - 1].skippedDays) {
+          benchmark *=
+            (reference[i].benchmarkIndex ?? Number.NaN) /
+            (reference[i - 1].benchmarkIndex ?? Number.NaN);
+        }
+      });
+      expect(worst).toBeGreaterThan(-0.02);
+      expect((points.at(-1)?.benchmarkIndex ?? Number.NaN) / benchmark).toBeCloseTo(1, 9);
+
+      const figures = player.performanceFigures(player.securitiesValue());
+      expect(figures.mostlySkipped).toBe(false);
+      expect(figures.returns.annualized).toBeGreaterThan(-0.02);
+      expect(figures.returns.annualized).toBeLessThanOrEqual(0);
     });
   });
 

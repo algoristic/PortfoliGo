@@ -662,7 +662,7 @@ function isAbsenceReport(value: unknown): boolean {
 
 function isPeriodReturns(value: unknown): boolean {
   return hasFields(value, {
-    sinceStart: isFiniteNumber,
+    sinceStart: isNullOr(isFiniteNumber),
     yearToDate: isNullOr(isFiniteNumber),
     annualized: isNullOr(isFiniteNumber),
   });
@@ -683,6 +683,7 @@ function isPerformanceFigures(value: unknown): boolean {
       hasFields(today, { change: isCents, ratio: isNullOr(isFiniteNumber), flow: isCents }),
     returns: isPeriodReturns,
     skippedDays: isCount,
+    mostlySkipped: isBoolean,
     benchmark: isNullOr((benchmark) =>
       hasFields(benchmark, { value: isCents, returns: isPeriodReturns }),
     ),

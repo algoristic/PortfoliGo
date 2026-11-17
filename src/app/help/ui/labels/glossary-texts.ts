@@ -229,14 +229,14 @@ export function glossaryText(id: GlossaryTermId): GlossaryText {
         term: $localize`:@@uiHelp-glossaryTexts-twr-term:Zeitgewichtete Rendite`,
         keywords: $localize`:@@uiHelp-glossaryTexts-twr-keywords:TWR Rendite Performance`,
         short: $localize`:@@uiHelp-glossaryTexts-twr-short:Die Rendite deines Vermögens ohne den Einfluss von Gehalt und Lebenshaltung. Sie misst nur, wie sich dein angelegtes Geld entwickelt hat.`,
-        details: $localize`:@@uiHelp-glossaryTexts-twr-details:Das Spiel rechnet für jeden Tag die Rendite nach den Zu- und Abflüssen und verkettet die Tage. Zinsen, Gebühren, Steuern und Dividenden zählen zur Rendite. Aufs Jahr umgerechnet wird sie erst nach 365 Tagen.`,
+        details: $localize`:@@uiHelp-glossaryTexts-twr-details:Das Spiel rechnet für jeden Tag die Rendite und verkettet die Tage: Gehalt zählt ab Tagesbeginn mit, Lebenshaltung erst am Tagesende. Zinsen, Gebühren, Steuern und Dividenden zählen zur Rendite. Tage mit negativem Vermögen zählen nicht; fehlt so mindestens die Hälfte der Tage, zeigt das Spiel „–“. Aufs Jahr umgerechnet wird sie erst nach 365 Tagen.`,
       };
     case 'benchmark':
       return {
         term: $localize`:@@uiHelp-glossaryTexts-benchmark-term:Benchmark`,
         keywords: $localize`:@@uiHelp-glossaryTexts-benchmark-keywords:Vergleich Vergleichsindex Ohne Anlegen`,
         short: $localize`:@@uiHelp-glossaryTexts-benchmark-short:Ein Vergleichsdepot, das alles Geld ohne Kosten und Steuern in den Welt-Performanceindex steckt. Daran siehst du, ob du besser warst als der Markt.`,
-        details: $localize`:@@uiHelp-glossaryTexts-benchmark-details:Startkapital und jeder Nettozufluss werden zum Tagesschluss gekauft. Die zweite Vergleichsgröße „Ohne Anlegen“ zeigt, was du hättest, wenn alles auf dem Gehaltskonto geblieben wäre.`,
+        details: $localize`:@@uiHelp-glossaryTexts-benchmark-details:Startkapital und jeder Nettozufluss werden zum Tagesschluss gekauft, Abflüsse dort verkauft. Ihre Rendite ist deshalb genau die des Index, solange das Vergleichsdepot Geld hat. Die zweite Vergleichsgröße „Ohne Anlegen“ zeigt, was du hättest, wenn alles auf dem Gehaltskonto geblieben wäre.`,
       };
     case 'volatility':
       return {

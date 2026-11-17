@@ -283,6 +283,7 @@ describe('labReducer', () => {
         gameStart: 'f',
         worlds: 'g',
       },
+      player: 'h',
       durationMs: 1500,
     };
 

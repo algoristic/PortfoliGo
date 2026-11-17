@@ -265,7 +265,7 @@ describe('DashboardPage', () => {
     expect(
       Math.abs(
         parseGermanNumber(text(performance, 'dashboard.performance.since-start')) -
-          now.returns.sinceStart,
+          (now.returns.sinceStart ?? Number.NaN),
       ),
     ).toBeLessThanOrEqual(0.00005 + 1e-12);
     expect(text(performance, 'dashboard.performance.annualized')).toBe('–');

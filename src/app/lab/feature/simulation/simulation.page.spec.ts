@@ -1,6 +1,7 @@
 import { RouterTestingHarness } from '@angular/router/testing';
 
 import { Tick, TICKS_PER_DAY } from '@app/clock/domain/models/time.model';
+import { PLAYER_CHECKSUM } from '@app/engine/domain/player-golden-master';
 import { GOLDEN_CHECKSUM_IDS, GOLDEN_CHECKSUMS } from '@app/market/domain/golden-master';
 import { CandleResolution } from '@app/market/domain/models/candle.model';
 
@@ -394,8 +395,10 @@ describe('SimulationPage', () => {
         );
         expect(textOf(byTestId(page, `lab.simulation.self-test.${id}.status`))).toBe('stimmt');
       }
+      expect(textOf(byTestId(page, 'lab.simulation.self-test.player.value'))).toBe(PLAYER_CHECKSUM);
+      expect(textOf(byTestId(page, 'lab.simulation.self-test.player.status'))).toBe('stimmt');
       expect(textOf(byTestId(page, 'lab.simulation.self-test.result'))).toBe(
-        'Alle 7 Prüfsummen stimmen.',
+        'Alle 8 Prüfsummen stimmen.',
       );
       expect(queryByTestId(page, 'lab.simulation.game-time')).toBeNull();
     });

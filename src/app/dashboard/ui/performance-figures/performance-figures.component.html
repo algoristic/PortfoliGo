@@ -106,8 +106,17 @@
       <p
         class="mt-2 text-xs text-warning"
         data-testid="dashboard.performance.skipped"
-        i18n="@@uiDashboard-performanceFigures-skipped">
-        {{ _figures.skippedDays }} Tage mit Vermögen von höchstens 0 € zählen nicht zur Rendite.
+        i18n="@@uiDashboard-performanceFigures-skippedDays">
+        {{ _figures.skippedDays }} Tage mit negativem Vermögen (bei dir oder in der Benchmark)
+        zählen nicht zur Rendite.
+      </p>
+    }
+    @if (_figures.mostlySkipped) {
+      <p
+        class="mt-2 text-xs text-warning"
+        data-testid="dashboard.performance.mostly-skipped"
+        i18n="@@uiDashboard-performanceFigures-mostlySkipped">
+        Mindestens die Hälfte der Tage zählt nicht, deshalb zeigt die Rendite dafür „–“.
       </p>
     }
   } @else {

@@ -133,7 +133,7 @@ describe('EngineHost import', () => {
       .map(({ payload }) => payload.trading)
       .find((part) => part !== undefined);
     expect(trading?.orders.filter(({ status }) => status === 'open')).toMatchObject([
-      { instrumentId: SHARE.id, type: 'limit', limit: 0.01 },
+      { instrumentId: SHARE.id, type: 'limit', limit: 1 },
     ]);
     expect(trading?.depots.flatMap(({ positions }) => positions)).toMatchObject([
       { instrumentId: SHARE.id, quantity: 1_000_000 },
