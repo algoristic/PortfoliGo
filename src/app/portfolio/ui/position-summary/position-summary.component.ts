@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
 
 import { PositionDetail } from '@app/portfolio/domain/models/position-detail.model';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { FormatPricePipe } from '@app/shared/ui/pipes/format-price/format-price.pipe';
 import { FormatQuantityPipe } from '@app/shared/ui/pipes/format-quantity/format-quantity.pipe';
@@ -15,6 +16,7 @@ import { ValueFlashDirective } from '@app/shared/ui/value-flash/value-flash.dire
 @Component({
   selector: 'app-position-summary',
   imports: [
+    CardDirective,
     FormatCentsPipe,
     FormatPricePipe,
     FormatQuantityPipe,

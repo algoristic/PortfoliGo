@@ -1,6 +1,7 @@
 import { DIALOG_DATA, DialogRef } from '@angular/cdk/dialog';
 import { Component, computed, DOCUMENT, inject, linkedSignal, signal } from '@angular/core';
 
+import { CardDirective } from '@app/shared/ui/card/card.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { rankSearch } from '@app/shared/util/search-ranking';
 import { nextActiveIndex } from '@app/shell/domain/command-palette-logic';
@@ -22,7 +23,7 @@ const LISTBOX_ID = 'command-palette-list';
  */
 @Component({
   selector: 'app-dialog-command-palette',
-  imports: [IconDirective],
+  imports: [CardDirective, IconDirective],
   templateUrl: './dialog-command-palette.component.html',
   host: { class: 'block' },
 })

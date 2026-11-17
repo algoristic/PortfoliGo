@@ -29,7 +29,8 @@
       </h2>
       @for (entry of group.entries; track entry.id) {
         <article
-          class="scroll-mt-32 rounded-lg border border-border bg-surface p-4 aria-[current=location]:border-accent"
+          appCard
+          class="scroll-mt-32 aria-[current=location]:border-accent"
           [attr.aria-current]="entry.id === _targetId ? 'location' : null"
           [id]="entry.anchorId"
           [attr.data-testid]="'help.glossary.' + entry.id">

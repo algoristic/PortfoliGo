@@ -51,7 +51,7 @@
         >
         <select
           id="trading-order-ticket-depot"
-          class="h-10 rounded-md border border-border bg-surface px-2 text-fg aria-invalid:border-down"
+          appSelect
           cdkFocusInitial
           aria-describedby="trading-order-ticket-depot-errors"
           data-testid="trading.order-ticket.depot"
@@ -182,7 +182,9 @@
           <div class="flex gap-2">
             <input
               id="trading-order-ticket-quantity"
-              class="h-10 min-w-0 flex-1 rounded-md border border-border bg-surface px-3 text-right text-fg tabular-nums aria-invalid:border-down"
+              appInput
+              numeric
+              class="min-w-0 flex-1 text-right"
               type="text"
               inputmode="decimal"
               autocomplete="off"
@@ -241,7 +243,7 @@
           </div>
           <select
             id="trading-order-ticket-type"
-            class="h-10 rounded-md border border-border bg-surface px-2 text-fg"
+            appSelect
             data-testid="trading.order-ticket.type"
             [formField]="ticketForm.type">
             @for (option of typeOptions; track option.type) {
@@ -262,7 +264,7 @@
           </div>
           <select
             id="trading-order-ticket-validity"
-            class="h-10 rounded-md border border-border bg-surface px-2 text-fg"
+            appSelect
             data-testid="trading.order-ticket.validity"
             [formField]="ticketForm.validity">
             @for (option of validityOptions; track option.kind) {
@@ -281,7 +283,9 @@
             >
             <input
               id="trading-order-ticket-stop"
-              class="h-10 rounded-md border border-border bg-surface px-3 text-right text-fg tabular-nums aria-invalid:border-down"
+              appInput
+              numeric
+              class="text-right"
               type="text"
               inputmode="decimal"
               autocomplete="off"
@@ -309,7 +313,9 @@
             >
             <input
               id="trading-order-ticket-limit"
-              class="h-10 rounded-md border border-border bg-surface px-3 text-right text-fg tabular-nums aria-invalid:border-down"
+              appInput
+              numeric
+              class="text-right"
               type="text"
               inputmode="decimal"
               autocomplete="off"
@@ -337,7 +343,7 @@
             >
             <input
               id="trading-order-ticket-date"
-              class="h-10 rounded-md border border-border bg-surface px-3 text-fg aria-invalid:border-down"
+              appInput
               type="date"
               aria-describedby="trading-order-ticket-date-errors"
               data-testid="trading.order-ticket.validity-date"

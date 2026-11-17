@@ -11,6 +11,7 @@ import { RouterModule } from '@angular/router';
 
 import { GLOSSARY_TERMS } from '@app/help/domain/glossary';
 import { GLOSSARY_TERM_IDS } from '@app/help/domain/models/glossary.model';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { searchScore } from '@app/shared/util/search-ranking';
 
@@ -27,7 +28,7 @@ const ANCHOR_PREFIX = 'glossary-';
  */
 @Component({
   selector: 'app-glossary',
-  imports: [RouterModule, IconDirective],
+  imports: [CardDirective, RouterModule, IconDirective],
   templateUrl: './glossary.component.html',
   host: { class: 'block' },
 })

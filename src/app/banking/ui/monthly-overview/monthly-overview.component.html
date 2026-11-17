@@ -1,18 +1,23 @@
 <div
-  class="relative overflow-x-auto rounded-lg border border-border bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-  role="region"
-  tabindex="0"
+  appCard
+  padding="none"
+  appTableScroll
+  class="relative"
   data-testid="banking.monthly.table"
   [attr.aria-label]="label">
-  <table class="w-full border-collapse text-sm">
+  <table appTable>
     <caption class="sr-only">{{ label }}</caption>
     <thead>
       <tr class="border-b border-border align-bottom">
-        <th scope="col" class="sticky left-0 z-10 bg-surface px-3 py-2 text-left font-medium">
+        <th
+          scope="col"
+          appTableCell
+          align="start"
+          class="sticky left-0 z-10 bg-surface font-medium">
           <span i18n="@@uiBanking-monthlyOverview-month">Monat</span>
         </th>
         @for (column of columns; track column.id) {
-          <th scope="col" class="px-3 py-2 text-right font-medium">{{ column.label }}</th>
+          <th scope="col" appTableCell align="end" class="font-medium">{{ column.label }}</th>
         }
       </tr>
     </thead>
@@ -23,7 +28,10 @@
           [attr.data-testid]="'banking.monthly.row.' + row.id">
           <th
             scope="row"
-            class="sticky left-0 z-10 bg-surface px-3 py-2 text-left font-normal whitespace-nowrap">
+            appTableCell
+            align="start"
+            nowrap
+            class="sticky left-0 z-10 bg-surface font-normal">
             <span data-testid="banking.monthly.row.month">{{ row.label }}</span>
             @if (row.running) {
               <app-badge
@@ -36,7 +44,10 @@
           </th>
           @for (cell of row.cells; track cell.id) {
             <td
-              class="px-3 py-2 text-right whitespace-nowrap tabular-nums"
+              appTableCell
+              align="end"
+              nowrap
+              numeric
               [attr.data-testid]="'banking.monthly.row.' + cell.id">
               {{ cell.value }}
             </td>

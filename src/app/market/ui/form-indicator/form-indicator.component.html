@@ -10,7 +10,9 @@
       <span class="text-fg-muted" i18n="@@uiMarket-formIndicator-kind">Indikator</span>
       <select
         #kindSelect
-        class="h-8 rounded-md border border-border bg-bg px-2 text-fg"
+        appSelect
+        fieldSize="sm"
+        background="bg"
         data-testid="market.instrument.indicator-form.kind"
         (change)="onSelectKind(kindSelect.value)">
         @for (kind of kinds; track kind) {
@@ -35,7 +37,11 @@
     <input
       id="market-indicator-period"
       type="number"
-      class="h-8 w-20 rounded-md border border-border bg-bg px-2 text-fg tabular-nums aria-invalid:border-down"
+      appInput
+      fieldSize="sm"
+      background="bg"
+      numeric
+      class="w-20"
       inputmode="numeric"
       aria-describedby="market-indicator-period-errors"
       data-testid="market.instrument.indicator-form.period"
@@ -53,7 +59,10 @@
       >
       <select
         id="market-indicator-multiplier"
-        class="h-8 rounded-md border border-border bg-bg px-2 text-fg tabular-nums"
+        appSelect
+        fieldSize="sm"
+        background="bg"
+        numeric
         data-testid="market.instrument.indicator-form.multiplier"
         [formField]="indicatorForm.multiplier">
         @for (multiplier of multipliers; track multiplier) {

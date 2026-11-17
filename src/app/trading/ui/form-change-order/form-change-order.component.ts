@@ -6,8 +6,10 @@ import { toDateInputValue } from '@app/clock/domain/game-time-input';
 import { FormatGameTimePipe } from '@app/clock/ui/pipes/format-game-time/format-game-time.pipe';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { DialogComponent } from '@app/shared/ui/dialog/dialog.component';
+import { InputDirective } from '@app/shared/ui/input/input.directive';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { FormatQuantityPipe } from '@app/shared/ui/pipes/format-quantity/format-quantity.pipe';
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
 import { ORDER_VALIDITY_KINDS, OrderChange } from '@app/trading/domain/models/order.model';
 import { latestValidityDate } from '@app/trading/domain/order-validity-logic';
 
@@ -31,6 +33,8 @@ import { hasLimit, hasStop } from '../schemas/order-ticket-schema';
 @Component({
   selector: 'app-form-change-order',
   imports: [
+    SelectDirective,
+    InputDirective,
     ButtonDirective,
     DialogComponent,
     FormField,

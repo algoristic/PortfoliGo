@@ -5,6 +5,7 @@ import { INSTRUMENT_KINDS } from '@app/market/domain/models/instrument.model';
 import { YieldRange } from '@app/market/domain/models/screener.model';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
+import { InputDirective } from '@app/shared/ui/input/input.directive';
 import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
 import { formatAmountInput, parseAmountInput } from '@app/shared/util/amount-input';
 import {
@@ -46,7 +47,7 @@ type YieldBound = 'min' | 'max';
  */
 @Component({
   selector: 'app-screener-filter',
-  imports: [ButtonDirective, IconDirective, FormatNumberPipe],
+  imports: [InputDirective, ButtonDirective, IconDirective, FormatNumberPipe],
   templateUrl: './screener-filter.component.html',
   host: { class: 'block' },
 })

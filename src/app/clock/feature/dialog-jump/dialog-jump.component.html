@@ -73,7 +73,9 @@
             <span class="sr-only" i18n="@@featureClock-dialogJump-dateLabel">Datum</span>
             <input
               type="date"
-              class="h-10 rounded-md border border-border bg-surface px-3 text-fg tabular-nums disabled:opacity-50 aria-invalid:border-down"
+              appInput
+              numeric
+              class="disabled:opacity-50"
               aria-describedby="clock-jump-dialog-date-errors"
               data-testid="clock.jump-dialog.date"
               [attr.min]="minDate"
@@ -85,7 +87,9 @@
             <span class="sr-only" i18n="@@featureClock-dialogJump-timeLabel">Uhrzeit</span>
             <input
               type="time"
-              class="h-10 rounded-md border border-border bg-surface px-3 text-fg tabular-nums disabled:opacity-50"
+              appInput
+              numeric
+              class="disabled:opacity-50"
               data-testid="clock.jump-dialog.time"
               [formField]="jumpForm.time" />
           </label>

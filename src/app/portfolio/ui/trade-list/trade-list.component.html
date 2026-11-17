@@ -5,7 +5,8 @@
   <ul class="flex flex-col gap-3" data-testid="portfolio.position.trades" [attr.aria-label]="label">
     @for (trade of _rows; track trade.id) {
       <li
-        class="rounded-lg border border-border bg-surface p-3"
+        appCard
+        padding="sm"
         data-testid="portfolio.position.trades.row"
         [attr.data-side]="trade.side"
         [attr.data-savings-plan]="trade.savingsPlan">
@@ -48,45 +49,55 @@
   </ul>
 } @else {
   <div
-    class="overflow-x-auto rounded-lg border border-border bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-    role="region"
-    tabindex="0"
+    appCard
+    padding="none"
+    appTableScroll
     data-testid="portfolio.position.trades"
     [attr.aria-label]="label">
-    <table class="w-full border-collapse text-sm">
+    <table appTable>
       <caption class="sr-only">{{ label }}</caption>
       <thead>
         <tr class="border-b border-border text-left align-bottom">
-          <th scope="col" class="px-3 py-2 font-medium" i18n="@@uiPortfolio-tradeList-time">
+          <th scope="col" appTableCell class="font-medium" i18n="@@uiPortfolio-tradeList-time">
             Ausführung
           </th>
-          <th scope="col" class="px-3 py-2 font-medium" i18n="@@uiPortfolio-tradeList-side">Art</th>
+          <th scope="col" appTableCell class="font-medium" i18n="@@uiPortfolio-tradeList-side"
+            >Art</th
+          >
           @if (_showDepot) {
-            <th scope="col" class="px-3 py-2 font-medium" i18n="@@uiPortfolio-tradeList-depot">
+            <th scope="col" appTableCell class="font-medium" i18n="@@uiPortfolio-tradeList-depot">
               Depot
             </th>
           }
           <th
             scope="col"
-            class="px-3 py-2 text-right font-medium"
+            appTableCell
+            align="end"
+            class="font-medium"
             i18n="@@uiPortfolio-tradeList-quantity">
             Stück
           </th>
           <th
             scope="col"
-            class="px-3 py-2 text-right font-medium"
+            appTableCell
+            align="end"
+            class="font-medium"
             i18n="@@uiPortfolio-tradeList-price">
             Kurs
           </th>
           <th
             scope="col"
-            class="px-3 py-2 text-right font-medium"
+            appTableCell
+            align="end"
+            class="font-medium"
             i18n="@@uiPortfolio-tradeList-costs">
             Kosten
           </th>
           <th
             scope="col"
-            class="px-3 py-2 text-right font-medium"
+            appTableCell
+            align="end"
+            class="font-medium"
             i18n="@@uiPortfolio-tradeList-total">
             Betrag
           </th>
@@ -101,35 +112,51 @@
             [attr.data-savings-plan]="trade.savingsPlan">
             <th
               scope="row"
-              class="px-3 py-2 text-left font-normal whitespace-nowrap tabular-nums"
+              appTableCell
+              align="start"
+              nowrap
+              numeric
+              class="font-normal"
               data-testid="portfolio.position.trades.row.time">
               {{ trade.tick | formatGameTime }}
             </th>
-            <td class="px-3 py-2" data-testid="portfolio.position.trades.row.side">
+            <td appTableCell data-testid="portfolio.position.trades.row.side">
               {{ trade.sideLabel }}
             </td>
             @if (_showDepot) {
-              <td class="px-3 py-2" data-testid="portfolio.position.trades.row.depot">
+              <td appTableCell data-testid="portfolio.position.trades.row.depot">
                 {{ trade.depot }}
               </td>
             }
             <td
-              class="px-3 py-2 text-right whitespace-nowrap tabular-nums"
+              appTableCell
+              align="end"
+              nowrap
+              numeric
               data-testid="portfolio.position.trades.row.quantity">
               {{ trade.quantity | formatQuantity }}
             </td>
             <td
-              class="px-3 py-2 text-right whitespace-nowrap tabular-nums"
+              appTableCell
+              align="end"
+              nowrap
+              numeric
               data-testid="portfolio.position.trades.row.price">
               {{ trade.price | formatPrice }}
             </td>
             <td
-              class="px-3 py-2 text-right whitespace-nowrap tabular-nums"
+              appTableCell
+              align="end"
+              nowrap
+              numeric
               data-testid="portfolio.position.trades.row.costs">
               {{ trade.costs | formatCents }}
             </td>
             <td
-              class="px-3 py-2 text-right whitespace-nowrap tabular-nums"
+              appTableCell
+              align="end"
+              nowrap
+              numeric
               data-testid="portfolio.position.trades.row.total">
               {{ trade.total | formatCents }}
             </td>

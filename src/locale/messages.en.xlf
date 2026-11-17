@@ -5976,6 +5976,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-fields" datatype="html">
         <source>Eingabefeld und Auswahl</source>
+        <target state="translated">Input field and select</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">245</context>
@@ -5983,6 +5984,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-inputLabel" datatype="html">
         <source>Name (<x id="INTERPOLATION" equiv-text="{{ size }}"/>)</source>
+        <target state="translated">Name (<x id="INTERPOLATION" equiv-text="{{ size }}"/>)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">253,254</context>
@@ -5990,6 +5992,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-selectLabel" datatype="html">
         <source>Intervall (<x id="INTERPOLATION" equiv-text="{{ size }}"/>)</source>
+        <target state="translated">Interval (<x id="INTERPOLATION" equiv-text="{{ size }}"/>)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">276,277</context>
@@ -5997,6 +6000,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-selectDaily" datatype="html">
         <source>Täglich</source>
+        <target state="translated">Daily</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">283,284</context>
@@ -6004,6 +6008,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-selectWeekly" datatype="html">
         <source> Wöchentlich </source>
+        <target state="translated"> Weekly </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">285,287</context>
@@ -6011,6 +6016,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-inputNumeric" datatype="html">
         <source>Stück (numerisch, Hintergrund bg)</source>
+        <target state="translated">Shares (numeric, background bg)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">295,298</context>
@@ -6018,6 +6024,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-inputInvalid" datatype="html">
         <source>Ungültig (aria-invalid)</source>
+        <target state="translated">Invalid (aria-invalid)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">313,316</context>
@@ -6025,6 +6032,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tables" datatype="html">
         <source>Tabellen</source>
+        <target state="translated">Tables</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">325</context>
@@ -6032,6 +6040,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tableName" datatype="html">
         <source> Name </source>
+        <target state="translated"> Name </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">344,346</context>
@@ -6039,6 +6048,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tableQuantity" datatype="html">
         <source> Stück </source>
+        <target state="translated"> Shares </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">352,354</context>
@@ -6046,6 +6056,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tablePrice" datatype="html">
         <source> Kurs </source>
+        <target state="translated"> Price </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">360,362</context>
@@ -6053,6 +6064,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-cards" datatype="html">
         <source>Karten</source>
+        <target state="translated">Cards</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">383</context>
@@ -6060,6 +6072,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-cardPadding" datatype="html">
         <source>Abstand <x id="INTERPOLATION" equiv-text="{{ padding }}"/></source>
+        <target state="translated">Padding <x id="INTERPOLATION" equiv-text="{{ padding }}"/></target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">388,389</context>
@@ -6067,6 +6080,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-cardRaised" datatype="html">
         <source>Erhöhte Fläche</source>
+        <target state="translated">Raised surface</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.html</context>
           <context context-type="linenumber">393,398</context>
@@ -6226,6 +6240,7 @@
       </trans-unit>
       <trans-unit id="featureLab-componentsPage-tableLabel" datatype="html">
         <source>Beispieltabelle</source>
+        <target state="translated">Sample table</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/feature/components/components.page.ts</context>
           <context context-type="linenumber">168</context>
@@ -6628,7 +6643,7 @@
         <target state="translated">Measure</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.html</context>
-          <context context-type="linenumber">18,19</context>
+          <context context-type="linenumber">20,21</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-stocks" datatype="html">
@@ -6636,7 +6651,7 @@
         <target state="translated">All stocks</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.html</context>
-          <context context-type="linenumber">19,20</context>
+          <context context-type="linenumber">21,22</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-worldIndex" datatype="html">
@@ -6644,7 +6659,7 @@
         <target state="translated">World index</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.html</context>
-          <context context-type="linenumber">20,22</context>
+          <context context-type="linenumber">22,24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-bridge" datatype="html">
@@ -6652,7 +6667,7 @@
         <target state="translated">Bridge</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.html</context>
-          <context context-type="linenumber">22,23</context>
+          <context context-type="linenumber">24,25</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-reference" datatype="html">
@@ -6660,7 +6675,7 @@
         <target state="translated">Reference</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.html</context>
-          <context context-type="linenumber">25,29</context>
+          <context context-type="linenumber">27,31</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-referenceLegend" datatype="html">
@@ -6668,7 +6683,7 @@
         <target state="translated"> Bridge and reference: the same stocks of the exchange with the most constituents, once from the Brownian bridges, once simulated minute by minute. They should agree up to sampling variation. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.html</context>
-          <context context-type="linenumber">58,63</context>
+          <context context-type="linenumber">60,65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-profile" datatype="html">
@@ -6676,7 +6691,7 @@
         <target state="translated"> Intraday volatility profile (13 segments of the trading hours) </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.html</context>
-          <context context-type="linenumber">65,67</context>
+          <context context-type="linenumber">67,69</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-profileRatio" datatype="html">
@@ -6684,7 +6699,7 @@
         <target state="translated">Open and close ÷ midday</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.html</context>
-          <context context-type="linenumber">80,81</context>
+          <context context-type="linenumber">82,83</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-throughput" datatype="html">
@@ -6692,7 +6707,7 @@
         <target state="translated">Minute paths of all series</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.html</context>
-          <context context-type="linenumber">88,89</context>
+          <context context-type="linenumber">90,91</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-marketDaysPerSecond" datatype="html">
@@ -6700,7 +6715,7 @@
         <target state="translated">Market days/s</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.html</context>
-          <context context-type="linenumber">92,95</context>
+          <context context-type="linenumber">94,97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-minuteVolatility" datatype="html">
@@ -6708,7 +6723,7 @@
         <target state="translated">Volatility of minute returns p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">75</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-dailyRange" datatype="html">
@@ -6716,7 +6731,7 @@
         <target state="translated">Daily range (high − low) ÷ open</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.ts</context>
-          <context context-type="linenumber">67</context>
+          <context context-type="linenumber">76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-intradayStatistics-sessionVolatility" datatype="html">
@@ -6724,7 +6739,7 @@
         <target state="translated">Volatility open → close p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/intraday-statistics/intraday-statistics.component.ts</context>
-          <context context-type="linenumber">68</context>
+          <context context-type="linenumber">77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-labNav-navLabel" datatype="html">
@@ -6740,7 +6755,7 @@
         <target state="translated">Measure</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">8,9</context>
+          <context context-type="linenumber">10,11</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-years" datatype="html">
@@ -6748,7 +6763,7 @@
         <target state="translated">+<x id="INTERPOLATION" equiv-text="{{ column.years }}"/> years</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">12,13</context>
+          <context context-type="linenumber">14,15</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-limit" datatype="html">
@@ -6756,7 +6771,7 @@
         <target state="translated">Limit from +50 years</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">17,20</context>
+          <context context-type="linenumber">19,22</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-legend" datatype="html">
@@ -6764,7 +6779,7 @@
         <target state="translated"> As of the close of the last market day before the game start, or before the same date n years later. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">44,48</context>
+          <context context-type="linenumber">47,51</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-hint" datatype="html">
@@ -6772,7 +6787,7 @@
         <target state="translated"> For the other reference dates, keep simulating (up to 100 years after the game start) and compute the statistics from the epoch. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">52,57</context>
+          <context context-type="linenumber">55,60</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-window" datatype="html">
@@ -6780,7 +6795,7 @@
         <target state="translated"> Rolling windows </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">64,66</context>
+          <context context-type="linenumber">69,71</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-count" datatype="html">
@@ -6788,7 +6803,7 @@
         <target state="translated">Count</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">66,67</context>
+          <context context-type="linenumber">71,72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-min" datatype="html">
@@ -6796,7 +6811,7 @@
         <target state="translated">Minimum</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">67,68</context>
+          <context context-type="linenumber">72,73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-median" datatype="html">
@@ -6804,7 +6819,7 @@
         <target state="translated">Median</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">68,69</context>
+          <context context-type="linenumber">73,74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-max" datatype="html">
@@ -6812,7 +6827,7 @@
         <target state="translated">Maximum</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">69,70</context>
+          <context context-type="linenumber">74,75</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-medianLimit" datatype="html">
@@ -6820,7 +6835,7 @@
         <target state="translated"> Limit of the median </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">71,74</context>
+          <context context-type="linenumber">75,79</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-windowYears" datatype="html">
@@ -6828,7 +6843,7 @@
         <target state="translated">(<x id="INTERPOLATION" equiv-text="{{ row.years }}"/> years)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">81,82</context>
+          <context context-type="linenumber">84,85</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-topFive" datatype="html">
@@ -6836,7 +6851,7 @@
         <target state="translated">Share of the five largest constituents in the world index</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">91</context>
+          <context context-type="linenumber">94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-belowOneEuro" datatype="html">
@@ -6844,7 +6859,7 @@
         <target state="translated">Stocks below €1 (all)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">92</context>
+          <context context-type="linenumber">95</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-belowOneEuroLarge" datatype="html">
@@ -6852,7 +6867,7 @@
         <target state="translated">Large caps below €1</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">93</context>
+          <context context-type="linenumber">96</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-belowOneEuroMid" datatype="html">
@@ -6860,7 +6875,7 @@
         <target state="translated">Mid caps below €1</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">94</context>
+          <context context-type="linenumber">97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-belowOneEuroSmall" datatype="html">
@@ -6868,7 +6883,7 @@
         <target state="translated">Small caps below €1</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">95</context>
+          <context context-type="linenumber">98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-atFloor" datatype="html">
@@ -6876,7 +6891,7 @@
         <target state="translated">Stocks at the price floor</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">96</context>
+          <context context-type="linenumber">99</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-maxPrice" datatype="html">
@@ -6884,7 +6899,7 @@
         <target state="translated">Highest stock price</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">97</context>
+          <context context-type="linenumber">100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-indexVolatility" datatype="html">
@@ -6892,7 +6907,7 @@
         <target state="translated">World index, volatility of the last 261 days</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">98</context>
+          <context context-type="linenumber">101</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-windowReturn" datatype="html">
@@ -6900,7 +6915,7 @@
         <target state="translated">World index (total return), return p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">99</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-windowVolatility" datatype="html">
@@ -6908,7 +6923,7 @@
         <target state="translated">World index, volatility p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">100</context>
+          <context context-type="linenumber">103</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-windowDividendYield" datatype="html">
@@ -6916,7 +6931,7 @@
         <target state="translated">World index, dividend yield p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">101</context>
+          <context context-type="linenumber">104</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-period" datatype="html">
@@ -6956,7 +6971,7 @@
         <target state="translated">Measure</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">58,59</context>
+          <context context-type="linenumber">62,63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-value" datatype="html">
@@ -6964,7 +6979,7 @@
         <target state="translated"> Measured value </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">59,60</context>
+          <context context-type="linenumber">63,64</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-target" datatype="html">
@@ -6972,7 +6987,7 @@
         <target state="translated">Target</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">60,61</context>
+          <context context-type="linenumber">64,65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-status" datatype="html">
@@ -6980,7 +6995,7 @@
         <target state="translated">Status</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">61,64</context>
+          <context context-type="linenumber">65,68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-intraday" datatype="html">
@@ -6988,7 +7003,7 @@
         <target state="translated"> Intraday (last market days of the period) </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">89,91</context>
+          <context context-type="linenumber">94,96</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-longTerm" datatype="html">
@@ -6996,7 +7011,7 @@
         <target state="translated"> Long-term behaviour </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">96,98</context>
+          <context context-type="linenumber">101,103</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-phases" datatype="html">
@@ -7004,7 +7019,7 @@
         <target state="translated"> Market phases </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">102,104</context>
+          <context context-type="linenumber">107,109</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-distribution" datatype="html">
@@ -7012,7 +7027,7 @@
         <target state="translated"> Distribution of daily returns </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">111,113</context>
+          <context context-type="linenumber">116,118</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-sizeVolatility" datatype="html">
@@ -7020,7 +7035,7 @@
         <target state="translated"> Volatility of stocks p.a. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">118,120</context>
+          <context context-type="linenumber">123,125</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-size" datatype="html">
@@ -7028,7 +7043,7 @@
         <target state="translated">Size</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">123,124</context>
+          <context context-type="linenumber">128,129</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-count" datatype="html">
@@ -7036,7 +7051,7 @@
         <target state="translated">Count</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">124,125</context>
+          <context context-type="linenumber">129,130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-p10" datatype="html">
@@ -7044,7 +7059,7 @@
         <target state="translated">10%</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">125,126</context>
+          <context context-type="linenumber">130,131</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-median" datatype="html">
@@ -7052,7 +7067,7 @@
         <target state="translated">Median</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">126,127</context>
+          <context context-type="linenumber">131,132</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-p90" datatype="html">
@@ -7060,7 +7075,7 @@
         <target state="translated">90%</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">127,129</context>
+          <context context-type="linenumber">132,134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-correlations" datatype="html">
@@ -7068,7 +7083,7 @@
         <target state="translated"> Correlation of daily returns by sector (stocks of the same region) </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">147,149</context>
+          <context context-type="linenumber">152,154</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-drawdowns" datatype="html">
@@ -7076,7 +7091,7 @@
         <target state="translated"> Drawdowns of the world index (total return, from 20%) </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">154,157</context>
+          <context context-type="linenumber">159,162</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-maxDrawdown" datatype="html">
@@ -7084,7 +7099,7 @@
         <target state="translated">Maximum drawdown</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">157,158</context>
+          <context context-type="linenumber">162,163</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-peak" datatype="html">
@@ -7092,7 +7107,7 @@
         <target state="translated">Peak</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">166,167</context>
+          <context context-type="linenumber">171,172</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-trough" datatype="html">
@@ -7100,7 +7115,7 @@
         <target state="translated">Trough</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">167,168</context>
+          <context context-type="linenumber">172,173</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-recovery" datatype="html">
@@ -7108,7 +7123,7 @@
         <target state="translated">Recovered</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">168,169</context>
+          <context context-type="linenumber">173,174</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-depth" datatype="html">
@@ -7116,7 +7131,7 @@
         <target state="translated">Loss</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">169,172</context>
+          <context context-type="linenumber">174,177</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-hint" datatype="html">
@@ -7124,7 +7139,7 @@
         <target state="translated"> Computes the key figures of the selected period from the daily support points. Recompute after each simulation. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.html</context>
-          <context context-type="linenumber">187,192</context>
+          <context context-type="linenumber">192,197</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-startEpoch" datatype="html">
@@ -7132,7 +7147,7 @@
         <target state="translated">From epoch</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">81</context>
+          <context context-type="linenumber">87</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-startGame" datatype="html">
@@ -7140,7 +7155,7 @@
         <target state="translated">From game start</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">82</context>
+          <context context-type="linenumber">88</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-statusOk" datatype="html">
@@ -7148,7 +7163,7 @@
         <target state="translated">on target</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">85</context>
+          <context context-type="linenumber">91</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-statusOff" datatype="html">
@@ -7156,7 +7171,7 @@
         <target state="translated">off target</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">86</context>
+          <context context-type="linenumber">92</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-statusShort" datatype="html">
@@ -7164,7 +7179,7 @@
         <target state="translated">too short</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">87</context>
+          <context context-type="linenumber">93</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-statusInfo" datatype="html">
@@ -7172,7 +7187,7 @@
         <target state="translated">Info</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">88</context>
+          <context context-type="linenumber">94</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-sizeLarge" datatype="html">
@@ -7180,7 +7195,7 @@
         <target state="translated">Large caps</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">91</context>
+          <context context-type="linenumber">97</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-sizeMid" datatype="html">
@@ -7188,7 +7203,7 @@
         <target state="translated">Mid caps</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">92</context>
+          <context context-type="linenumber">98</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-sizeSmall" datatype="html">
@@ -7196,7 +7211,7 @@
         <target state="translated">Small caps</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">93</context>
+          <context context-type="linenumber">99</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldReturn" datatype="html">
@@ -7204,7 +7219,7 @@
         <target state="translated">World index (total return), geometric return p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">96</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldPriceReturn" datatype="html">
@@ -7212,7 +7227,7 @@
         <target state="translated">World index (price), geometric return p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">97</context>
+          <context context-type="linenumber">103</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldVolatility" datatype="html">
@@ -7220,7 +7235,7 @@
         <target state="translated">World index, volatility p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">98</context>
+          <context context-type="linenumber">104</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldVolatilityWeekly" datatype="html">
@@ -7228,7 +7243,7 @@
         <target state="translated">World index, volatility p.a. (weekly returns)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">99</context>
+          <context context-type="linenumber">105</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldVolatilityMonthly" datatype="html">
@@ -7236,7 +7251,7 @@
         <target state="translated">World index, volatility p.a. (monthly returns)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">100</context>
+          <context context-type="linenumber">106</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldAutocorrelationLag1" datatype="html">
@@ -7244,7 +7259,7 @@
         <target state="translated">World index, autocorrelation of daily returns, lag 1</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">101</context>
+          <context context-type="linenumber">107</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldMaxDrawdown" datatype="html">
@@ -7252,7 +7267,7 @@
         <target state="translated">World index (total return), maximum drawdown</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">102</context>
+          <context context-type="linenumber">108</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldLongestUnderwater" datatype="html">
@@ -7260,7 +7275,7 @@
         <target state="translated">World index (total return), longest time below the high (years)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">103</context>
+          <context context-type="linenumber">109</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldWorst30yReturn" datatype="html">
@@ -7268,7 +7283,7 @@
         <target state="translated">World index (total return), worst 30-year window p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">104</context>
+          <context context-type="linenumber">110</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetRegionVolatility" datatype="html">
@@ -7276,7 +7291,7 @@
         <target state="translated">Regional indices (broad), volatility p.a. (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">105</context>
+          <context context-type="linenumber">111</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetRegionMaxDrawdown" datatype="html">
@@ -7284,7 +7299,7 @@
         <target state="translated">Regional indices (broad), maximum drawdown (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">106</context>
+          <context context-type="linenumber">112</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetRegionCorrelation" datatype="html">
@@ -7292,7 +7307,7 @@
         <target state="translated">Regional indices (broad), correlation of monthly returns (mean)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">107</context>
+          <context context-type="linenumber">113</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetLargeVolatility" datatype="html">
@@ -7300,7 +7315,7 @@
         <target state="translated">Large caps, volatility p.a. (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">108</context>
+          <context context-type="linenumber">114</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetMidVolatility" datatype="html">
@@ -7308,7 +7323,7 @@
         <target state="translated">Mid caps, volatility p.a. (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">109</context>
+          <context context-type="linenumber">115</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetSmallVolatility" datatype="html">
@@ -7316,7 +7331,7 @@
         <target state="translated">Small caps, volatility p.a. (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">110</context>
+          <context context-type="linenumber">116</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetCorrelationWithinLarge" datatype="html">
@@ -7324,7 +7339,7 @@
         <target state="translated">Correlation within a sector (daily, large caps per region)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">111</context>
+          <context context-type="linenumber">117</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetCorrelationBetweenLarge" datatype="html">
@@ -7332,7 +7347,7 @@
         <target state="translated">Correlation between sectors (daily, large caps per region)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">112</context>
+          <context context-type="linenumber">118</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetCorrelationWithin" datatype="html">
@@ -7340,7 +7355,7 @@
         <target state="translated">Correlation within a sector (daily, per region)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">113</context>
+          <context context-type="linenumber">119</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetCorrelationBetween" datatype="html">
@@ -7348,7 +7363,7 @@
         <target state="translated">Correlation between sectors (daily, per region)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">114</context>
+          <context context-type="linenumber">120</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWeeklyCorrelationWithin" datatype="html">
@@ -7356,7 +7371,7 @@
         <target state="translated">Correlation within a sector (weekly, all)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">115</context>
+          <context context-type="linenumber">121</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWeeklyCorrelationBetween" datatype="html">
@@ -7364,7 +7379,7 @@
         <target state="translated">Correlation between sectors (weekly, all)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">116</context>
+          <context context-type="linenumber">122</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetBearMarkets" datatype="html">
@@ -7372,7 +7387,7 @@
         <target state="translated">Bear markets of the world index per year</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">117</context>
+          <context context-type="linenumber">123</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetBearMarketsCommon" datatype="html">
@@ -7380,7 +7395,7 @@
         <target state="translated">Bear markets of the world index per year (common count, price index)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">118</context>
+          <context context-type="linenumber">124</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldKurtosis" datatype="html">
@@ -7388,7 +7403,7 @@
         <target state="translated">World index, kurtosis of daily returns</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">119</context>
+          <context context-type="linenumber">125</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetStockKurtosis" datatype="html">
@@ -7396,7 +7411,7 @@
         <target state="translated">Stocks, kurtosis of daily returns (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">120</context>
+          <context context-type="linenumber">126</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetStockAutocorrelationLag1" datatype="html">
@@ -7404,7 +7419,7 @@
         <target state="translated">Stocks, autocorrelation of daily returns, lag 1 (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">121</context>
+          <context context-type="linenumber">127</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetStockMaxPrice" datatype="html">
@@ -7412,7 +7427,7 @@
         <target state="translated">Stocks, highest price in the period (€)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">122</context>
+          <context context-type="linenumber">128</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetEqualWeightPremium" datatype="html">
@@ -7420,7 +7435,7 @@
         <target state="translated">Excess return of the equal weight (rebalanced yearly) over the world index p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">123</context>
+          <context context-type="linenumber">129</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetDrawdownStrategyPremium" datatype="html">
@@ -7428,7 +7443,7 @@
         <target state="translated">Excess return of the 20 stocks furthest below their high (yearly) p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">124</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetNegative30yShare" datatype="html">
@@ -7436,7 +7451,7 @@
         <target state="translated">Stocks with a negative return over 30 years (share)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">125</context>
+          <context context-type="linenumber">131</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetClusteringLag1" datatype="html">
@@ -7444,7 +7459,7 @@
         <target state="translated">Volatility clustering: autocorrelation of r², lag 1</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">126</context>
+          <context context-type="linenumber">132</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetClusteringMean" datatype="html">
@@ -7452,7 +7467,7 @@
         <target state="translated">Volatility clustering: autocorrelation of r², lags 1–20</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">127</context>
+          <context context-type="linenumber">133</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldDividendYield" datatype="html">
@@ -7460,7 +7475,7 @@
         <target state="translated">World index, dividend yield p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">128</context>
+          <context context-type="linenumber">134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetStockDividendYieldMedian" datatype="html">
@@ -7468,7 +7483,7 @@
         <target state="translated">Stocks, dividend yield p.a. (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">129</context>
+          <context context-type="linenumber">135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetStockDividendYieldMax" datatype="html">
@@ -7476,7 +7491,7 @@
         <target state="translated">Stocks, dividend yield p.a. (maximum)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">130</context>
+          <context context-type="linenumber">136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetIntradayProfileMedian" datatype="html">
@@ -7484,7 +7499,7 @@
         <target state="translated">Intraday profile: volatility at open and close ÷ midday (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">131</context>
+          <context context-type="linenumber">137</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareWorld" datatype="html">
@@ -7492,7 +7507,7 @@
         <target state="translated">Overnight share of variance, world index</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">132</context>
+          <context context-type="linenumber">138</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareNorthAmerica" datatype="html">
@@ -7500,7 +7515,7 @@
         <target state="translated">Overnight share of variance, North America (broad index)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">133</context>
+          <context context-type="linenumber">139</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareEurope" datatype="html">
@@ -7508,7 +7523,7 @@
         <target state="translated">Overnight share of variance, Europe (broad index)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">134</context>
+          <context context-type="linenumber">140</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareAsiaPacific" datatype="html">
@@ -7516,7 +7531,7 @@
         <target state="translated">Overnight share of variance, Asia-Pacific (broad index)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">135</context>
+          <context context-type="linenumber">141</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareEmergingMarkets" datatype="html">
@@ -7524,7 +7539,7 @@
         <target state="translated">Overnight share of variance, emerging markets (broad index)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">136</context>
+          <context context-type="linenumber">142</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareStocks" datatype="html">
@@ -7532,7 +7547,7 @@
         <target state="translated">Overnight share of variance, stocks (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">137</context>
+          <context context-type="linenumber">143</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-phaseTimeline-typical" datatype="html">
@@ -7628,7 +7643,7 @@
         <target state="translated">Seed</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.html</context>
-          <context context-type="linenumber">39,40</context>
+          <context context-type="linenumber">43,44</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seedComparison-legend" datatype="html">
@@ -7636,7 +7651,7 @@
         <target state="translated"> Windows: median over all 10- or 30-year windows from the epoch, each shifted by one year. Reference dates: close of the last market day before the game start plus n years. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.html</context>
-          <context context-type="linenumber">65,69</context>
+          <context context-type="linenumber">69,73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seedComparison-return10" datatype="html">
@@ -7644,7 +7659,7 @@
         <target state="translated">Return (10 y)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.ts</context>
-          <context context-type="linenumber">45</context>
+          <context context-type="linenumber">55</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seedComparison-volatility10" datatype="html">
@@ -7652,7 +7667,7 @@
         <target state="translated">Volatility (10 y)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.ts</context>
-          <context context-type="linenumber">50</context>
+          <context context-type="linenumber">60</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seedComparison-dividendYield10" datatype="html">
@@ -7660,7 +7675,7 @@
         <target state="translated">Dividend yield (10 y)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.ts</context>
-          <context context-type="linenumber">55</context>
+          <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seedComparison-return30" datatype="html">
@@ -7668,7 +7683,7 @@
         <target state="translated">Return (30 y)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.ts</context>
-          <context context-type="linenumber">60</context>
+          <context context-type="linenumber">70</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seedComparison-volatility30" datatype="html">
@@ -7676,7 +7691,7 @@
         <target state="translated">Volatility (30 y)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">75</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seedComparison-topFive50" datatype="html">
@@ -7684,7 +7699,7 @@
         <target state="translated">Top 5 (+50 y)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.ts</context>
-          <context context-type="linenumber">70</context>
+          <context context-type="linenumber">80</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seedComparison-topFive100" datatype="html">
@@ -7692,7 +7707,7 @@
         <target state="translated">Top 5 (+100 y)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.ts</context>
-          <context context-type="linenumber">75</context>
+          <context context-type="linenumber">85</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seedComparison-belowOneEuro100" datatype="html">
@@ -7700,7 +7715,7 @@
         <target state="translated">Below €1 (+100 y)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.ts</context>
-          <context context-type="linenumber">80</context>
+          <context context-type="linenumber">90</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seedComparison-atFloor100" datatype="html">
@@ -7708,7 +7723,7 @@
         <target state="translated">Floor (+100 y)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.ts</context>
-          <context context-type="linenumber">85</context>
+          <context context-type="linenumber">95</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seedComparison-crisisShare" datatype="html">
@@ -7716,7 +7731,7 @@
         <target state="translated">Crisis share</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.ts</context>
-          <context context-type="linenumber">90</context>
+          <context context-type="linenumber">100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seedComparison-median" datatype="html">
@@ -7724,7 +7739,7 @@
         <target state="translated">Median</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/seed-comparison/seed-comparison.component.ts</context>
-          <context context-type="linenumber">118</context>
+          <context context-type="linenumber">128</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-selfTest-description" datatype="html">
@@ -7772,7 +7787,7 @@
         <target state="translated">All <x id="total" equiv-text="total"/> checksums match.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/self-test/self-test.component.ts</context>
-          <context context-type="linenumber">55</context>
+          <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-selfTest-resultMismatch" datatype="html">
@@ -7780,7 +7795,7 @@
         <target state="translated"><x id="count" equiv-text="count"/> of <x id="total" equiv-text="total"/> checksums differ.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/self-test/self-test.component.ts</context>
-          <context context-type="linenumber">56</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-selfTest-world" datatype="html">
@@ -7788,7 +7803,7 @@
         <target state="translated">World</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/self-test/self-test.component.ts</context>
-          <context context-type="linenumber">60</context>
+          <context context-type="linenumber">72</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-selfTest-prices" datatype="html">
@@ -7796,7 +7811,7 @@
         <target state="translated">Opening and closing prices 2020</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/self-test/self-test.component.ts</context>
-          <context context-type="linenumber">61</context>
+          <context context-type="linenumber">73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-selfTest-minutes" datatype="html">
@@ -7804,7 +7819,7 @@
         <target state="translated">Minute prices (sample 2020)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/self-test/self-test.component.ts</context>
-          <context context-type="linenumber">62</context>
+          <context context-type="linenumber">74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-selfTest-indices" datatype="html">
@@ -7812,7 +7827,7 @@
         <target state="translated">Indices 2020</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/self-test/self-test.component.ts</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">75</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-selfTest-etfs" datatype="html">
@@ -7820,7 +7835,7 @@
         <target state="translated">ETFs 2020</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/self-test/self-test.component.ts</context>
-          <context context-type="linenumber">64</context>
+          <context context-type="linenumber">76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-selfTest-gameStart" datatype="html">
@@ -7828,7 +7843,7 @@
         <target state="translated">Market state at game start</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/self-test/self-test.component.ts</context>
-          <context context-type="linenumber">65</context>
+          <context context-type="linenumber">77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-selfTest-worlds" datatype="html">
@@ -7836,7 +7851,7 @@
         <target state="translated">Worlds of <x id="count" equiv-text="SELF_TEST_WORLD_SEEDS"/> further seeds</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/self-test/self-test.component.ts</context>
-          <context context-type="linenumber">66</context>
+          <context context-type="linenumber">78</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-selfTest-match" datatype="html">
@@ -7844,7 +7859,7 @@
         <target state="translated">matches</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/self-test/self-test.component.ts</context>
-          <context context-type="linenumber">68</context>
+          <context context-type="linenumber">80</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-selfTest-mismatch" datatype="html">
@@ -7852,7 +7867,7 @@
         <target state="translated">differs</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/self-test/self-test.component.ts</context>
-          <context context-type="linenumber">69</context>
+          <context context-type="linenumber">81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-seriesChart-series" datatype="html">
@@ -8316,7 +8331,7 @@
         <target state="translated">Companies</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.ts</context>
-          <context context-type="linenumber">45</context>
+          <context context-type="linenumber">51</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-tabIndices" datatype="html">
@@ -8324,7 +8339,7 @@
         <target state="translated">Indices</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.ts</context>
-          <context context-type="linenumber">47</context>
+          <context context-type="linenumber">53</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-tabEtfs" datatype="html">
@@ -8332,7 +8347,7 @@
         <target state="translated">ETFs</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.ts</context>
-          <context context-type="linenumber">48</context>
+          <context context-type="linenumber">54</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-tabBanks" datatype="html">
@@ -8340,7 +8355,7 @@
         <target state="translated">Banks</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.ts</context>
-          <context context-type="linenumber">49</context>
+          <context context-type="linenumber">55</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-tabsLabel" datatype="html">
@@ -8348,7 +8363,7 @@
         <target state="translated">World</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.ts</context>
-          <context context-type="linenumber">51</context>
+          <context context-type="linenumber">57</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-worldTables-openInChart" datatype="html">
@@ -8356,7 +8371,7 @@
         <target state="translated">Open in chart</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/world-tables/world-tables.component.ts</context>
-          <context context-type="linenumber">52</context>
+          <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="featureMarket-instrumentChart-failed" datatype="html">

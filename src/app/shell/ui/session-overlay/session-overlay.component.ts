@@ -12,6 +12,7 @@ import { RouterModule } from '@angular/router';
 
 import { SessionStatus } from '@app/engine/domain/models/session.model';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { FormatPercentPipe } from '@app/shared/ui/pipes/format-percent/format-percent.pipe';
 
@@ -21,7 +22,14 @@ import { FormatPercentPipe } from '@app/shared/ui/pipes/format-percent/format-pe
  */
 @Component({
   selector: 'app-session-overlay',
-  imports: [RouterModule, CdkTrapFocus, ButtonDirective, IconDirective, FormatPercentPipe],
+  imports: [
+    CardDirective,
+    RouterModule,
+    CdkTrapFocus,
+    ButtonDirective,
+    IconDirective,
+    FormatPercentPipe,
+  ],
   templateUrl: './session-overlay.component.html',
   host: { class: 'block' },
 })

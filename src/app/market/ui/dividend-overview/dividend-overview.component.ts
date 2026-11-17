@@ -4,6 +4,10 @@ import { FormatGameDatePipe } from '@app/clock/ui/pipes/format-game-date/format-
 import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableHeadDirective } from '@app/shared/ui/table/table-head.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
+
 import { DividendsView } from '../models/instrument-view.model';
 
 /**
@@ -13,7 +17,14 @@ import { DividendsView } from '../models/instrument-view.model';
  */
 @Component({
   selector: 'app-dividend-overview',
-  imports: [EmptyStateComponent, FormatCentsPipe, FormatGameDatePipe],
+  imports: [
+    TableHeadDirective,
+    TableCellDirective,
+    TableDirective,
+    EmptyStateComponent,
+    FormatCentsPipe,
+    FormatGameDatePipe,
+  ],
   templateUrl: './dividend-overview.component.html',
   host: { class: 'block' },
 })

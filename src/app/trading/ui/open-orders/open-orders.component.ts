@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { FormatGameTimePipe } from '@app/clock/ui/pipes/format-game-time/format-game-time.pipe';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
 import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
@@ -21,6 +22,7 @@ import { DepotReservation, OrderBookEntry } from '../models/order-book.model';
 @Component({
   selector: 'app-open-orders',
   imports: [
+    CardDirective,
     RouterLink,
     BadgeComponent,
     ButtonDirective,

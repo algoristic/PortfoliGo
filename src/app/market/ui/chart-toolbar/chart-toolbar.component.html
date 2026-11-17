@@ -28,7 +28,9 @@
     <span class="text-fg-muted" i18n="@@uiMarket-chartToolbar-resolution">Auflösung</span>
     <select
       #resolutionSelect
-      class="h-8 rounded-md border border-border bg-bg px-2 text-fg"
+      appSelect
+      fieldSize="sm"
+      background="bg"
       data-testid="market.instrument.chart.resolution"
       (change)="onSelectResolution(resolutionSelect.value)">
       @for (option of resolutionOptions(); track option.value) {
@@ -96,7 +98,9 @@
       <input
         #dateInput
         type="date"
-        class="h-8 rounded-md border border-border bg-bg px-2 text-fg"
+        appInput
+        fieldSize="sm"
+        background="bg"
         [value]="dateValue()"
         [min]="minDate"
         [max]="maxDate()"

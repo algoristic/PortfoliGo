@@ -10,7 +10,10 @@ import { transferSchema } from '@app/banking/ui/schemas/transfer-schema';
 import { AmountInputComponent } from '@app/shared/ui/amount-input/amount-input.component';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { DialogComponent } from '@app/shared/ui/dialog/dialog.component';
+import { InputDirective } from '@app/shared/ui/input/input.directive';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
+
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
 
 import { TransferDialogData, TransferDialogResult } from './dialog-transfer.model';
 
@@ -21,6 +24,8 @@ import { TransferDialogData, TransferDialogResult } from './dialog-transfer.mode
 @Component({
   selector: 'app-dialog-transfer',
   imports: [
+    SelectDirective,
+    InputDirective,
     DialogComponent,
     ButtonDirective,
     FormField,

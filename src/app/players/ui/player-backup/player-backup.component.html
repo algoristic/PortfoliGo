@@ -37,7 +37,7 @@
     >
     <select
       id="settings-player-backup-interval"
-      class="h-10 rounded-md border border-border bg-surface px-2 text-fg"
+      appSelect
       data-testid="settings.player.backup-interval"
       [disabled]="!_backup"
       (change)="onSelectInterval($event)">

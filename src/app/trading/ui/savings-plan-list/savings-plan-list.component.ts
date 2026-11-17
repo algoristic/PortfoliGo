@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormatGameTimePipe } from '@app/clock/ui/pipes/format-game-time/format-game-time.pipe';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { SavingsPlanId } from '@app/trading/domain/models/savings-plan.model';
@@ -22,6 +23,7 @@ import {
 @Component({
   selector: 'app-savings-plan-list',
   imports: [
+    CardDirective,
     RouterModule,
     BadgeComponent,
     ButtonDirective,

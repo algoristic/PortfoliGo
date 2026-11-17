@@ -10,6 +10,8 @@ import {
   BackgroundSettingsChange,
 } from '@app/engine/domain/models/game-state.model';
 
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
+
 import {
   BackgroundModeOption,
   BackgroundPauseAfterOption,
@@ -22,7 +24,7 @@ import {
  */
 @Component({
   selector: 'app-player-settings',
-  imports: [],
+  imports: [SelectDirective],
   templateUrl: './player-settings.component.html',
   host: { class: 'block' },
 })

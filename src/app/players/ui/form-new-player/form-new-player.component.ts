@@ -9,6 +9,8 @@ import { AmountInputComponent } from '@app/shared/ui/amount-input/amount-input.c
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 
+import { InputDirective } from '@app/shared/ui/input/input.directive';
+
 import { NewPlayerFormModel } from '../models/new-player-form.model';
 import { newPlayerSchema } from '../schemas/new-player-schema';
 
@@ -16,6 +18,7 @@ import { newPlayerSchema } from '../schemas/new-player-schema';
 @Component({
   selector: 'app-form-new-player',
   imports: [
+    InputDirective,
     RouterModule,
     FormField,
     FormRoot,

@@ -8,12 +8,15 @@ import {
   PositionTotals,
 } from '@app/portfolio/domain/models/portfolio.model';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { FormatPercentPipe } from '@app/shared/ui/pipes/format-percent/format-percent.pipe';
 import { FormatPricePipe } from '@app/shared/ui/pipes/format-price/format-price.pipe';
 import { FormatQuantityPipe } from '@app/shared/ui/pipes/format-quantity/format-quantity.pipe';
 import { PriceChangeComponent } from '@app/shared/ui/price-change/price-change.component';
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
+import { TableScrollDirective } from '@app/shared/ui/table/table-scroll.directive';
 import { ValueFlashDirective } from '@app/shared/ui/value-flash/value-flash.directive';
 
 import { positionColumnLabel } from '../labels/portfolio-labels';
@@ -45,6 +48,9 @@ interface RowView extends PositionRow {
 @Component({
   selector: 'app-position-table',
   imports: [
+    TableScrollDirective,
+    CardDirective,
+    SelectDirective,
     RouterModule,
     ButtonDirective,
     IconDirective,

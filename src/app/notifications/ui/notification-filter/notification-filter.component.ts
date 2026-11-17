@@ -7,12 +7,14 @@ import {
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
+
 import { notificationCategoryLabel } from '../labels/notification-labels';
 
 /** Filter of the notification centre by category and „Alle als gelesen markieren“ (US-BN-01). */
 @Component({
   selector: 'app-notification-filter',
-  imports: [ButtonDirective, IconDirective],
+  imports: [SelectDirective, ButtonDirective, IconDirective],
   templateUrl: './notification-filter.component.html',
   host: { class: 'block' },
 })

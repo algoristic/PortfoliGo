@@ -12,6 +12,9 @@ import { AllocationEntry } from '@app/portfolio/domain/models/allocation.model';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { FormatPercentPipe } from '@app/shared/ui/pipes/format-percent/format-percent.pipe';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableHeadDirective } from '@app/shared/ui/table/table-head.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
 import { TabPanelDirective } from '@app/shared/ui/tabs/tab-panel.directive';
 import { TabsComponent } from '@app/shared/ui/tabs/tabs.component';
 import { TabItem } from '@app/shared/ui/tabs/tabs.model';
@@ -49,6 +52,9 @@ interface Split {
 @Component({
   selector: 'app-allocation',
   imports: [
+    TableHeadDirective,
+    TableCellDirective,
+    TableDirective,
     NgTemplateOutlet,
     DonutComponent,
     FormatCentsPipe,

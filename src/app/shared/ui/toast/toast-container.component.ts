@@ -2,6 +2,7 @@ import { Component, input, output } from '@angular/core';
 
 import { Toast, ToastTone } from './toast.model';
 
+import { CardDirective } from '../card/card.directive';
 import { IconDirective } from '../icon/icon.directive';
 
 const TONE_CLASSES: Record<ToastTone, string> = {
@@ -20,7 +21,7 @@ const TONE_ICONS: Record<ToastTone, string> = {
 
 @Component({
   selector: 'app-toast-container',
-  imports: [IconDirective],
+  imports: [CardDirective, IconDirective],
   templateUrl: './toast-container.component.html',
   host: { class: 'block w-full' },
 })

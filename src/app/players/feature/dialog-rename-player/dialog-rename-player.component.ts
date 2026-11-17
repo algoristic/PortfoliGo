@@ -4,6 +4,7 @@ import { apply, form, FormField, FormRoot } from '@angular/forms/signals';
 
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { DialogComponent } from '@app/shared/ui/dialog/dialog.component';
+import { InputDirective } from '@app/shared/ui/input/input.directive';
 
 import {
   RenamePlayerDialogData,
@@ -15,7 +16,7 @@ import { playerNameSchema } from '../../ui/schemas/player-name-schema';
 
 @Component({
   selector: 'app-dialog-rename-player',
-  imports: [DialogComponent, ButtonDirective, FormField, FormRoot],
+  imports: [DialogComponent, ButtonDirective, FormField, FormRoot, InputDirective],
   templateUrl: './dialog-rename-player.component.html',
   host: { class: 'block' },
 })

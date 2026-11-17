@@ -7,6 +7,9 @@ import {
   IncomeCostsYear,
 } from '@app/banking/domain/models/income-costs.model';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
 import { formatCents } from '@app/shared/util/format';
 
 import { perLocale } from '@app/shared/util/locale';
@@ -24,7 +27,7 @@ const monthFormat = perLocale(
  */
 @Component({
   selector: 'app-income-costs',
-  imports: [BadgeComponent],
+  imports: [TableCellDirective, TableDirective, CardDirective, BadgeComponent],
   templateUrl: './income-costs.component.html',
   host: { class: 'block' },
 })

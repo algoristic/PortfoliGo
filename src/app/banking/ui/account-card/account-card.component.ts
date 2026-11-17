@@ -6,6 +6,7 @@ import { AccountView } from '@app/engine/domain/models/account-view.model';
 import { TermHintComponent } from '@app/help/ui/term-hint/term-hint.component';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { Bank } from '@app/world/domain/models/bank.model';
@@ -21,6 +22,7 @@ import { AccountKindLabelPipe } from '../pipes/account-kind-label/account-kind-l
 @Component({
   selector: 'app-account-card',
   imports: [
+    CardDirective,
     TermHintComponent,
     RouterLink,
     BadgeComponent,

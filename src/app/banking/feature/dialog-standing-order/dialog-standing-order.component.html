@@ -16,7 +16,7 @@
         >
         <select
           id="banking-standing-order-from"
-          class="h-10 rounded-md border border-border bg-surface px-2 text-fg aria-invalid:border-down"
+          appSelect
           cdkFocusInitial
           aria-describedby="banking-standing-order-from-errors"
           data-testid="banking.standing-order-dialog.from"
@@ -47,7 +47,7 @@
         >
         <select
           id="banking-standing-order-to"
-          class="h-10 rounded-md border border-border bg-surface px-2 text-fg aria-invalid:border-down"
+          appSelect
           aria-describedby="banking-standing-order-to-errors"
           data-testid="banking.standing-order-dialog.to"
           [attr.aria-invalid]="_to.touched() && _to.invalid()"
@@ -99,7 +99,8 @@
           >
           <select
             id="banking-standing-order-day"
-            class="h-10 rounded-md border border-border bg-surface px-2 text-fg tabular-nums aria-invalid:border-down"
+            appSelect
+            numeric
             aria-describedby="banking-standing-order-day-hint banking-standing-order-day-errors"
             data-testid="banking.standing-order-dialog.day"
             [attr.aria-invalid]="_day.touched() && _day.invalid()"
@@ -136,7 +137,7 @@
         >
         <input
           id="banking-standing-order-purpose"
-          class="h-10 rounded-md border border-border bg-surface px-3 text-fg aria-invalid:border-down"
+          appInput
           autocomplete="off"
           aria-describedby="banking-standing-order-purpose-hint banking-standing-order-purpose-errors"
           data-testid="banking.standing-order-dialog.purpose"

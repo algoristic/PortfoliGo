@@ -1,13 +1,14 @@
 import { Component, computed, input } from '@angular/core';
 
 import { MISSING_VALUE } from '../../util/format';
+import { CardDirective } from '../card/card.directive';
 import { PriceChangeComponent } from '../price-change/price-change.component';
 import { PriceChangeMode } from '../price-change/price-change.model';
 
 /** Key figure: label, formatted value with an optional unit (not next to `–`) and change. */
 @Component({
   selector: 'app-stat-tile',
-  imports: [PriceChangeComponent],
+  imports: [CardDirective, PriceChangeComponent],
   templateUrl: './stat-tile.component.html',
   host: { class: 'block' },
 })

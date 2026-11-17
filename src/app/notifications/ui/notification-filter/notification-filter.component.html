@@ -10,7 +10,8 @@
     >
     <select
       id="notifications-center-category"
-      class="h-10 rounded-md border border-border bg-surface px-2 text-sm text-fg"
+      appSelect
+      class="text-sm"
       data-testid="notifications.center.category"
       (change)="onSelectCategory($event)">
       <option value="" [selected]="_category === null">{{ allLabel }}</option>

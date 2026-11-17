@@ -3,19 +3,19 @@
 <app-tabs [tabs]="tabs" [label]="tabsLabel" testId="lab.simulation.world-tabs">
   <ng-template appTabPanel="companies">
     <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm" data-testid="lab.simulation.companies">
-        <thead class="text-xs text-fg-muted">
+      <table appTable density="compact" class="text-left" data-testid="lab.simulation.companies">
+        <thead appTableHead>
           <tr>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-ticker">Ticker</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-name">Name</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-isin">ISIN</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-country">Land</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-sector">Sektor</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-size">Größe</th>
-            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-risk">Risiko</th>
-            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-startPrice"> Startkurs </th>
-            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-marketCap"> Marktkap. </th>
-            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-dividendYield">
+            <th appTableCell i18n="@@uiLab-worldTables-ticker">Ticker</th>
+            <th appTableCell i18n="@@uiLab-worldTables-name">Name</th>
+            <th appTableCell i18n="@@uiLab-worldTables-isin">ISIN</th>
+            <th appTableCell i18n="@@uiLab-worldTables-country">Land</th>
+            <th appTableCell i18n="@@uiLab-worldTables-sector">Sektor</th>
+            <th appTableCell i18n="@@uiLab-worldTables-size">Größe</th>
+            <th appTableCell align="end" i18n="@@uiLab-worldTables-risk">Risiko</th>
+            <th appTableCell align="end" i18n="@@uiLab-worldTables-startPrice"> Startkurs </th>
+            <th appTableCell align="end" i18n="@@uiLab-worldTables-marketCap"> Marktkap. </th>
+            <th appTableCell align="end" i18n="@@uiLab-worldTables-dividendYield">
               Div.-Rendite
             </th>
           </tr>
@@ -25,7 +25,7 @@
             <tr
               class="cursor-pointer border-t border-border hover:bg-surface-raised"
               (click)="onSelectRow(company.id)">
-              <td class="px-2 py-1 font-medium">
+              <td appTableCell class="font-medium">
                 <button
                   type="button"
                   class="text-accent hover:underline"
@@ -34,15 +34,15 @@
                   {{ company.ticker }}
                 </button>
               </td>
-              <td class="px-2 py-1">{{ company.name }}</td>
-              <td class="px-2 py-1 text-fg-muted">{{ company.isin }}</td>
-              <td class="px-2 py-1">{{ company.countryId }}</td>
-              <td class="px-2 py-1">{{ company.sectorId }}</td>
-              <td class="px-2 py-1">{{ company.size }}</td>
-              <td class="px-2 py-1 text-right">{{ company.riskClass }}</td>
-              <td class="px-2 py-1 text-right">{{ company.startPrice | formatPrice }}</td>
-              <td class="px-2 py-1 text-right">{{ company.marketCap / 100 | formatCompact }} €</td>
-              <td class="px-2 py-1 text-right">{{ company.dividendYield | formatPercent }}</td>
+              <td appTableCell>{{ company.name }}</td>
+              <td appTableCell class="text-fg-muted">{{ company.isin }}</td>
+              <td appTableCell>{{ company.countryId }}</td>
+              <td appTableCell>{{ company.sectorId }}</td>
+              <td appTableCell>{{ company.size }}</td>
+              <td appTableCell align="end">{{ company.riskClass }}</td>
+              <td appTableCell align="end">{{ company.startPrice | formatPrice }}</td>
+              <td appTableCell align="end">{{ company.marketCap / 100 | formatCompact }} €</td>
+              <td appTableCell align="end">{{ company.dividendYield | formatPercent }}</td>
             </tr>
           }
         </tbody>
@@ -52,15 +52,15 @@
 
   <ng-template appTabPanel="indices">
     <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm" data-testid="lab.simulation.indices">
-        <thead class="text-xs text-fg-muted">
+      <table appTable density="compact" class="text-left" data-testid="lab.simulation.indices">
+        <thead appTableHead>
           <tr>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-ticker">Ticker</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-name">Name</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-kind">Art</th>
-            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-constituents"> Werte </th>
-            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-capWeight"> Kappung </th>
-            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-baseValue"> Basis </th>
+            <th appTableCell i18n="@@uiLab-worldTables-ticker">Ticker</th>
+            <th appTableCell i18n="@@uiLab-worldTables-name">Name</th>
+            <th appTableCell i18n="@@uiLab-worldTables-kind">Art</th>
+            <th appTableCell align="end" i18n="@@uiLab-worldTables-constituents"> Werte </th>
+            <th appTableCell align="end" i18n="@@uiLab-worldTables-capWeight"> Kappung </th>
+            <th appTableCell align="end" i18n="@@uiLab-worldTables-baseValue"> Basis </th>
           </tr>
         </thead>
         <tbody class="tabular-nums">
@@ -68,7 +68,7 @@
             <tr
               class="cursor-pointer border-t border-border hover:bg-surface-raised"
               (click)="onSelectRow(index.id)">
-              <td class="px-2 py-1 font-medium">
+              <td appTableCell class="font-medium">
                 <button
                   type="button"
                   class="text-accent hover:underline"
@@ -77,13 +77,13 @@
                   {{ index.ticker }}
                 </button>
               </td>
-              <td class="px-2 py-1">{{ index.name }}</td>
-              <td class="px-2 py-1">{{ index.kind }}</td>
-              <td class="px-2 py-1 text-right">{{ index.constituentCount }}</td>
-              <td class="px-2 py-1 text-right">
+              <td appTableCell>{{ index.name }}</td>
+              <td appTableCell>{{ index.kind }}</td>
+              <td appTableCell align="end">{{ index.constituentCount }}</td>
+              <td appTableCell align="end">
                 {{ index.capWeight | formatPercent: 0 }}
               </td>
-              <td class="px-2 py-1 text-right">{{ index.baseValue }}</td>
+              <td appTableCell align="end">{{ index.baseValue }}</td>
             </tr>
           }
         </tbody>
@@ -93,17 +93,17 @@
 
   <ng-template appTabPanel="etfs">
     <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm" data-testid="lab.simulation.etfs">
-        <thead class="text-xs text-fg-muted">
+      <table appTable density="compact" class="text-left" data-testid="lab.simulation.etfs">
+        <thead appTableHead>
           <tr>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-ticker">Ticker</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-name">Name</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-issuer">Emittent</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-index">Index</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-distribution">Ertrag</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-replication">Replikation</th>
-            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-ter">TER</th>
-            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-startPrice"> Startkurs </th>
+            <th appTableCell i18n="@@uiLab-worldTables-ticker">Ticker</th>
+            <th appTableCell i18n="@@uiLab-worldTables-name">Name</th>
+            <th appTableCell i18n="@@uiLab-worldTables-issuer">Emittent</th>
+            <th appTableCell i18n="@@uiLab-worldTables-index">Index</th>
+            <th appTableCell i18n="@@uiLab-worldTables-distribution">Ertrag</th>
+            <th appTableCell i18n="@@uiLab-worldTables-replication">Replikation</th>
+            <th appTableCell align="end" i18n="@@uiLab-worldTables-ter">TER</th>
+            <th appTableCell align="end" i18n="@@uiLab-worldTables-startPrice"> Startkurs </th>
           </tr>
         </thead>
         <tbody class="tabular-nums">
@@ -111,7 +111,7 @@
             <tr
               class="cursor-pointer border-t border-border hover:bg-surface-raised"
               (click)="onSelectRow(etf.id)">
-              <td class="px-2 py-1 font-medium">
+              <td appTableCell class="font-medium">
                 <button
                   type="button"
                   class="text-accent hover:underline"
@@ -120,19 +120,19 @@
                   {{ etf.ticker }}
                 </button>
               </td>
-              <td class="px-2 py-1">{{ etf.name }}</td>
-              <td class="px-2 py-1">{{ etf.issuerName }}</td>
-              <td class="px-2 py-1">{{ etf.indexName }}</td>
-              <td class="px-2 py-1">
+              <td appTableCell>{{ etf.name }}</td>
+              <td appTableCell>{{ etf.issuerName }}</td>
+              <td appTableCell>{{ etf.indexName }}</td>
+              <td appTableCell>
                 @if (etf.distributing) {
                   <ng-container i18n="@@uiLab-worldTables-distributing">ausschüttend</ng-container>
                 } @else {
                   <ng-container i18n="@@uiLab-worldTables-accumulating">thesaurierend</ng-container>
                 }
               </td>
-              <td class="px-2 py-1">{{ etf.replication }}</td>
-              <td class="px-2 py-1 text-right">{{ etf.ter | formatPercent }}</td>
-              <td class="px-2 py-1 text-right">{{ etf.startPrice | formatPrice }}</td>
+              <td appTableCell>{{ etf.replication }}</td>
+              <td appTableCell align="end">{{ etf.ter | formatPercent }}</td>
+              <td appTableCell align="end">{{ etf.startPrice | formatPrice }}</td>
             </tr>
           }
         </tbody>
@@ -142,28 +142,28 @@
 
   <ng-template appTabPanel="banks">
     <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm" data-testid="lab.simulation.banks">
-        <thead class="text-xs text-fg-muted">
+      <table appTable density="compact" class="text-left" data-testid="lab.simulation.banks">
+        <thead appTableHead>
           <tr>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-name">Name</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-bankType">Typ</th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-venue">Handelsplatz</th>
-            <th class="px-2 py-1 text-right" i18n="@@uiLab-worldTables-spreadMarkup">
+            <th appTableCell i18n="@@uiLab-worldTables-name">Name</th>
+            <th appTableCell i18n="@@uiLab-worldTables-bankType">Typ</th>
+            <th appTableCell i18n="@@uiLab-worldTables-venue">Handelsplatz</th>
+            <th appTableCell align="end" i18n="@@uiLab-worldTables-spreadMarkup">
               Spread-Aufschlag
             </th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-fractionalShares"> Bruchstücke </th>
-            <th class="px-2 py-1" i18n="@@uiLab-worldTables-savingsAccount"> Tagesgeld </th>
+            <th appTableCell i18n="@@uiLab-worldTables-fractionalShares"> Bruchstücke </th>
+            <th appTableCell i18n="@@uiLab-worldTables-savingsAccount"> Tagesgeld </th>
           </tr>
         </thead>
         <tbody class="tabular-nums">
           @for (bank of _overview.banks; track bank.id) {
             <tr class="border-t border-border">
-              <td class="px-2 py-1 font-medium">{{ bank.name }}</td>
-              <td class="px-2 py-1">{{ bank.type }}</td>
-              <td class="px-2 py-1">{{ bank.venue }}</td>
-              <td class="px-2 py-1 text-right">{{ bank.spreadMarkup | formatPercent }}</td>
-              <td class="px-2 py-1">{{ bank.fractionalShares ? '✓' : '–' }}</td>
-              <td class="px-2 py-1">{{ bank.hasSavingsAccount ? '✓' : '–' }}</td>
+              <td appTableCell class="font-medium">{{ bank.name }}</td>
+              <td appTableCell>{{ bank.type }}</td>
+              <td appTableCell>{{ bank.venue }}</td>
+              <td appTableCell align="end">{{ bank.spreadMarkup | formatPercent }}</td>
+              <td appTableCell>{{ bank.fractionalShares ? '✓' : '–' }}</td>
+              <td appTableCell>{{ bank.hasSavingsAccount ? '✓' : '–' }}</td>
             </tr>
           }
         </tbody>

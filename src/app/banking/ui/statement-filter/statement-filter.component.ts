@@ -3,6 +3,10 @@ import { Component, computed, input, output } from '@angular/core';
 import { TransactionType } from '@app/banking/domain/models/ledger.model';
 import { StatementPeriod } from '@app/banking/domain/models/statement.model';
 
+import { InputDirective } from '@app/shared/ui/input/input.directive';
+
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
+
 import {
   STATEMENT_FILTER_TYPES,
   StatementPeriodOption,
@@ -14,7 +18,7 @@ import { transactionTypeLabel } from '../labels/banking-labels';
 /** Filter of the statement (US-BK-06): period, type and a search over purpose, banks and amounts. */
 @Component({
   selector: 'app-statement-filter',
-  imports: [],
+  imports: [SelectDirective, InputDirective],
   templateUrl: './statement-filter.component.html',
   host: { class: 'block' },
 })

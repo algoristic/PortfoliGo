@@ -1,7 +1,8 @@
 <ul class="grid grid-cols-1 gap-3 lg:grid-cols-2" data-testid="trading.savings-plans.list">
   @for (row of rows(); track row.id) {
     <li
-      class="flex min-w-0 flex-col gap-2 rounded-lg border border-border bg-surface p-4"
+      appCard
+      class="flex min-w-0 flex-col gap-2"
       [attr.data-testid]="'trading.savings-plans.' + row.id">
       <div class="flex flex-wrap items-baseline justify-between gap-2">
         <a

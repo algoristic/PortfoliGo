@@ -242,6 +242,159 @@
     </div>
   </app-panel>
 
+  <app-panel heading="Eingabefeld und Auswahl" i18n-heading="@@featureLab-componentsPage-fields">
+    <div class="grid gap-4 sm:grid-cols-2">
+      @for (size of fieldSizes; track size) {
+        <div class="flex flex-col gap-1">
+          <label
+            class="text-sm font-medium"
+            i18n="@@featureLab-componentsPage-inputLabel"
+            [attr.for]="'lab-components-input-' + size"
+            >Name ({{ size }})</label
+          >
+          @if (size === 'auto') {
+            <textarea
+              appInput
+              fieldSize="auto"
+              rows="2"
+              [attr.id]="'lab-components-input-' + size"
+              [attr.data-testid]="'lab.components.input.' + size"></textarea>
+          } @else {
+            <input
+              appInput
+              autocomplete="off"
+              [fieldSize]="size"
+              [attr.id]="'lab-components-input-' + size"
+              [attr.data-testid]="'lab.components.input.' + size" />
+          }
+        </div>
+        <div class="flex flex-col gap-1">
+          <label
+            class="text-sm font-medium"
+            i18n="@@featureLab-componentsPage-selectLabel"
+            [attr.for]="'lab-components-select-' + size"
+            >Intervall ({{ size }})</label
+          >
+          <select
+            appSelect
+            [fieldSize]="size"
+            [attr.id]="'lab-components-select-' + size"
+            [attr.data-testid]="'lab.components.select.' + size">
+            <option value="daily" i18n="@@featureLab-componentsPage-selectDaily">Täglich</option>
+            <option value="weekly" i18n="@@featureLab-componentsPage-selectWeekly">
+              Wöchentlich
+            </option>
+          </select>
+        </div>
+      }
+      <div class="flex flex-col gap-1">
+        <label
+          class="text-sm font-medium"
+          for="lab-components-input-numeric"
+          i18n="@@featureLab-componentsPage-inputNumeric"
+          >Stück (numerisch, Hintergrund bg)</label
+        >
+        <input
+          id="lab-components-input-numeric"
+          appInput
+          numeric
+          background="bg"
+          class="text-right"
+          inputmode="numeric"
+          autocomplete="off"
+          value="120"
+          data-testid="lab.components.input.numeric" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label
+          class="text-sm font-medium"
+          for="lab-components-input-invalid"
+          i18n="@@featureLab-componentsPage-inputInvalid"
+          >Ungültig (aria-invalid)</label
+        >
+        <input
+          id="lab-components-input-invalid"
+          appInput
+          autocomplete="off"
+          aria-invalid="true"
+          data-testid="lab.components.input.invalid" />
+      </div>
+    </div>
+  </app-panel>
+
+  <app-panel heading="Tabellen" i18n-heading="@@featureLab-componentsPage-tables">
+    <div class="flex flex-col gap-6">
+      @for (density of tableDensities; track density) {
+        <div
+          appCard
+          padding="none"
+          appTableScroll
+          [attr.aria-label]="tableLabel + ' (' + density + ')'"
+          [attr.data-testid]="'lab.components.table.' + density">
+          <table appTable [density]="density">
+            <caption class="sr-only">{{ tableLabel }} ({{ density }})</caption>
+            <thead appTableHead>
+              <tr class="border-b border-border">
+                <th
+                  scope="col"
+                  appTableCell
+                  align="start"
+                  class="font-medium"
+                  i18n="@@featureLab-componentsPage-tableName">
+                  Name
+                </th>
+                <th
+                  scope="col"
+                  appTableCell
+                  align="end"
+                  class="font-medium"
+                  i18n="@@featureLab-componentsPage-tableQuantity">
+                  Stück
+                </th>
+                <th
+                  scope="col"
+                  appTableCell
+                  align="end"
+                  class="font-medium"
+                  i18n="@@featureLab-componentsPage-tablePrice">
+                  Kurs
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of tableRows; track row.id) {
+                <tr class="border-b border-border last:border-b-0">
+                  <th scope="row" appTableCell align="start" class="font-normal">
+                    {{ row.name }}
+                  </th>
+                  <td appTableCell align="end" nowrap numeric>
+                    {{ row.quantity | formatNumber }}
+                  </td>
+                  <td appTableCell align="end" nowrap numeric>{{ row.price | formatPrice }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </app-panel>
+
+  <app-panel heading="Karten" i18n-heading="@@featureLab-componentsPage-cards">
+    <div class="grid gap-4 sm:grid-cols-2">
+      @for (padding of cardPaddings; track padding) {
+        <div appCard [padding]="padding" [attr.data-testid]="'lab.components.card.' + padding">
+          <span class="text-sm" i18n="@@featureLab-componentsPage-cardPadding"
+            >Abstand {{ padding }}</span
+          >
+        </div>
+      }
+      <div appCard surface="raised" padding="sm" data-testid="lab.components.card.raised">
+        <span class="text-sm" i18n="@@featureLab-componentsPage-cardRaised">Erhöhte Fläche</span>
+      </div>
+    </div>
+  </app-panel>
+
   <app-panel heading="Sparkline und Donut" i18n-heading="@@featureLab-componentsPage-charts">
     <div class="flex flex-wrap items-center gap-8">
       <div class="flex flex-col gap-2 text-sm">

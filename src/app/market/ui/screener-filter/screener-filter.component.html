@@ -7,7 +7,8 @@
     <input
       id="market-screener-search"
       type="search"
-      class="h-10 min-w-0 rounded-md border border-border bg-surface px-3 text-sm text-fg"
+      appInput
+      class="min-w-0 text-sm"
       autocomplete="off"
       data-testid="market.screener.filter.search"
       [maxLength]="maxSearchLength"
@@ -73,7 +74,9 @@
       <input
         type="text"
         inputmode="decimal"
-        class="h-10 w-24 rounded-md border border-border bg-surface px-3 text-sm text-fg tabular-nums aria-invalid:border-down"
+        appInput
+        numeric
+        class="w-24 text-sm"
         data-testid="market.screener.filter.yield-min"
         [attr.aria-invalid]="_invalid.min"
         [value]="yieldMin()"
@@ -84,7 +87,9 @@
       <input
         type="text"
         inputmode="decimal"
-        class="h-10 w-24 rounded-md border border-border bg-surface px-3 text-sm text-fg tabular-nums aria-invalid:border-down"
+        appInput
+        numeric
+        class="w-24 text-sm"
         data-testid="market.screener.filter.yield-max"
         [attr.aria-invalid]="_invalid.max"
         [value]="yieldMax()"

@@ -20,11 +20,15 @@ import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { BADGE_TONES } from '@app/shared/ui/badge/badge.model';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { BUTTON_VARIANTS } from '@app/shared/ui/button/button.model';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
+import { CARD_PADDINGS } from '@app/shared/ui/card/card.model';
 import { openConfirmDialog } from '@app/shared/ui/dialog-confirm/dialog-confirm.utils';
 import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
 import { HelpHintComponent } from '@app/shared/ui/help-hint/help-hint.component';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { IconButtonDirective } from '@app/shared/ui/icon-button/icon-button.directive';
+import { InputDirective } from '@app/shared/ui/input/input.directive';
+import { FIELD_SIZES } from '@app/shared/ui/input/input.model';
 import { MenuItemDirective } from '@app/shared/ui/menu/menu-item.directive';
 import { MenuDirective } from '@app/shared/ui/menu/menu.directive';
 import { NavItem } from '@app/shared/ui/nav-link/nav-item.model';
@@ -33,8 +37,14 @@ import { PanelComponent } from '@app/shared/ui/panel/panel.component';
 import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
 import { FormatPricePipe } from '@app/shared/ui/pipes/format-price/format-price.pipe';
 import { PriceChangeComponent } from '@app/shared/ui/price-change/price-change.component';
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
 import { StatTileComponent } from '@app/shared/ui/stat-tile/stat-tile.component';
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableHeadDirective } from '@app/shared/ui/table/table-head.directive';
+import { TableScrollDirective } from '@app/shared/ui/table/table-scroll.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
+import { TABLE_DENSITIES } from '@app/shared/ui/table/table.model';
 import { TabPanelDirective } from '@app/shared/ui/tabs/tab-panel.directive';
 import { TabsComponent } from '@app/shared/ui/tabs/tabs.component';
 import { TabItem } from '@app/shared/ui/tabs/tabs.model';
@@ -47,9 +57,11 @@ import { formatCents } from '@app/shared/util/format';
 @Component({
   selector: 'app-components-page',
   imports: [
+    TableScrollDirective,
     AmountInputComponent,
     BadgeComponent,
     ButtonDirective,
+    CardDirective,
     ChartColorPickerComponent,
     DonutComponent,
     EmptyStateComponent,
@@ -59,6 +71,7 @@ import { formatCents } from '@app/shared/util/format';
     HelpHintComponent,
     IconButtonDirective,
     IconDirective,
+    InputDirective,
     Menu,
     MenuDirective,
     MenuItem,
@@ -67,9 +80,13 @@ import { formatCents } from '@app/shared/util/format';
     NavLinkDirective,
     PanelComponent,
     PriceChangeComponent,
+    SelectDirective,
     SkeletonComponent,
     SparklineComponent,
     StatTileComponent,
+    TableCellDirective,
+    TableDirective,
+    TableHeadDirective,
     TabPanelDirective,
     RouterModule,
     TabsComponent,
@@ -87,6 +104,14 @@ export class ComponentsPage {
   buttonVariants = BUTTON_VARIANTS;
   badgeTones = BADGE_TONES;
   toastTones = TOAST_TONES;
+  fieldSizes = FIELD_SIZES;
+  tableDensities = TABLE_DENSITIES;
+  cardPaddings = CARD_PADDINGS;
+  tableRows = [
+    { id: 'corvan', name: 'Corvan Systems', quantity: 120, price: 42.5 },
+    { id: 'helvar', name: 'Helvar Energie', quantity: 35, price: 118.2 },
+    { id: 'world', name: 'Weltindex ETF', quantity: 1500, price: 8.734 },
+  ];
   changes = [0.0129, -0.0451, 0, -0.00004];
   sparklineRising = [100, 101.5, 100.8, 102.4, 103.1, 102.7, 104.2];
   sparklineFalling = [104, 103.2, 103.8, 102.1, 101.4, 101.9, 100.6];
@@ -140,6 +165,7 @@ export class ComponentsPage {
   confirmMessage = $localize`:@@featureLab-componentsPage-confirmMessage:Der Spieler wird endgültig gelöscht.`;
   confirmLabel = $localize`:@@featureLab-componentsPage-confirmLabel:Löschen`;
   navLabel = $localize`:@@featureLab-componentsPage-navLabel:Beispielnavigation`;
+  tableLabel = $localize`:@@featureLab-componentsPage-tableLabel:Beispieltabelle`;
 
   onShowToast(tone: ToastTone): void {
     this.#toastService.show(tone, `${this.toastMessage} (${tone})`);

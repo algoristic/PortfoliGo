@@ -17,7 +17,10 @@ import {
 import { ChartColorPickerComponent } from '@app/charts/ui/chart-color-picker/chart-color-picker.component';
 import { ChartColor } from '@app/charts/ui/models/chart-color.model';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { InputDirective } from '@app/shared/ui/input/input.directive';
 import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
+
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
 
 import { IndicatorFormModel, SubmittedIndicator } from './form-indicator.model';
 
@@ -38,7 +41,15 @@ interface IndicatorModelSource {
  */
 @Component({
   selector: 'app-form-indicator',
-  imports: [ButtonDirective, ChartColorPickerComponent, FormField, FormRoot, FormatNumberPipe],
+  imports: [
+    SelectDirective,
+    InputDirective,
+    ButtonDirective,
+    ChartColorPickerComponent,
+    FormField,
+    FormRoot,
+    FormatNumberPipe,
+  ],
   templateUrl: './form-indicator.component.html',
   host: { class: 'block' },
 })

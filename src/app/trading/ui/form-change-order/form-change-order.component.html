@@ -52,7 +52,9 @@
             >
             <input
               id="trading-change-order-limit"
-              class="h-10 rounded-md border border-border bg-surface px-3 text-right text-fg tabular-nums aria-invalid:border-down"
+              appInput
+              numeric
+              class="text-right"
               type="text"
               inputmode="decimal"
               autocomplete="off"
@@ -81,7 +83,9 @@
             >
             <input
               id="trading-change-order-stop"
-              class="h-10 rounded-md border border-border bg-surface px-3 text-right text-fg tabular-nums disabled:text-fg-muted aria-invalid:border-down"
+              appInput
+              numeric
+              class="text-right disabled:text-fg-muted"
               type="text"
               inputmode="decimal"
               autocomplete="off"
@@ -117,7 +121,7 @@
           <select
             id="trading-change-order-validity"
             cdkFocusInitial
-            class="h-10 rounded-md border border-border bg-surface px-2 text-fg"
+            appSelect
             data-testid="trading.change-order.validity"
             [formField]="changeForm.validity">
             @for (option of validityOptions; track option.kind) {
@@ -136,7 +140,7 @@
             >
             <input
               id="trading-change-order-date"
-              class="h-10 rounded-md border border-border bg-surface px-3 text-fg aria-invalid:border-down"
+              appInput
               type="date"
               aria-describedby="trading-change-order-date-errors"
               data-testid="trading.change-order.validity-date"

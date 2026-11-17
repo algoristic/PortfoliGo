@@ -11,7 +11,8 @@
     >
     <select
       id="banking-statement-period"
-      class="h-10 rounded-md border border-border bg-surface px-2 text-sm text-fg"
+      appSelect
+      class="text-sm"
       data-testid="banking.statement.filter.period"
       (change)="onSelectPeriod($event)">
       @for (option of periodOptions; track option.id) {
@@ -29,7 +30,8 @@
     >
     <select
       id="banking-statement-type"
-      class="h-10 rounded-md border border-border bg-surface px-2 text-sm text-fg"
+      appSelect
+      class="text-sm"
       data-testid="banking.statement.filter.type"
       (change)="onSelectType($event)">
       @for (option of typeOptions; track option.id) {
@@ -50,7 +52,8 @@
     <input
       id="banking-statement-search"
       type="search"
-      class="h-10 min-w-0 rounded-md border border-border bg-surface px-3 text-sm text-fg"
+      appInput
+      class="min-w-0 text-sm"
       autocomplete="off"
       data-testid="banking.statement.filter.search"
       [placeholder]="searchPlaceholder"

@@ -7,6 +7,9 @@ import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
 import { FormatPercentPipe } from '@app/shared/ui/pipes/format-percent/format-percent.pipe';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableHeadDirective } from '@app/shared/ui/table/table-head.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
 import { formatNumber, formatOptional, formatPercent } from '@app/shared/util/format';
 import { SizeClass } from '@app/world/domain/models/taxonomy.model';
 
@@ -39,6 +42,9 @@ const STATUS_TONES: Record<TargetStatus, BadgeTone> = {
 @Component({
   selector: 'app-market-statistics',
   imports: [
+    TableHeadDirective,
+    TableCellDirective,
+    TableDirective,
     BadgeComponent,
     ButtonDirective,
     CorrelationMatrixComponent,

@@ -7,10 +7,12 @@ import { TermHintComponent } from '@app/help/ui/term-hint/term-hint.component';
 import { AmountInputComponent } from '@app/shared/ui/amount-input/amount-input.component';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { DialogComponent } from '@app/shared/ui/dialog/dialog.component';
+import { InputDirective } from '@app/shared/ui/input/input.directive';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { FormatPricePipe } from '@app/shared/ui/pipes/format-price/format-price.pipe';
 import { FormatQuantityPipe } from '@app/shared/ui/pipes/format-quantity/format-quantity.pipe';
 import { FormatSignedCentsPipe } from '@app/shared/ui/pipes/format-signed-cents/format-signed-cents.pipe';
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
 import { formatQuantity } from '@app/shared/util/format';
 import {
   ORDER_TYPES,
@@ -49,6 +51,8 @@ interface TicketStart {
 @Component({
   selector: 'app-form-order-ticket',
   imports: [
+    SelectDirective,
+    InputDirective,
     TermHintComponent,
     AmountInputComponent,
     ButtonDirective,

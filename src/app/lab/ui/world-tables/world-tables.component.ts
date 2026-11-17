@@ -3,6 +3,9 @@ import { Component, computed, input, output } from '@angular/core';
 import { FormatCompactPipe } from '@app/shared/ui/pipes/format-compact/format-compact.pipe';
 import { FormatPercentPipe } from '@app/shared/ui/pipes/format-percent/format-percent.pipe';
 import { FormatPricePipe } from '@app/shared/ui/pipes/format-price/format-price.pipe';
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableHeadDirective } from '@app/shared/ui/table/table-head.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
 import { TabPanelDirective } from '@app/shared/ui/tabs/tab-panel.directive';
 import { TabsComponent } from '@app/shared/ui/tabs/tabs.component';
 import { TabItem } from '@app/shared/ui/tabs/tabs.model';
@@ -16,6 +19,9 @@ import { WorldOverview } from '../../domain/models/world-overview.model';
 @Component({
   selector: 'app-world-tables',
   imports: [
+    TableHeadDirective,
+    TableCellDirective,
+    TableDirective,
     FormatCompactPipe,
     FormatPercentPipe,
     FormatPricePipe,

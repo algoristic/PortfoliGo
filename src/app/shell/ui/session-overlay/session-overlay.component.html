@@ -8,7 +8,9 @@
     aria-labelledby="session-overlay-heading"
     aria-describedby="session-overlay-text"
     tabindex="-1"
-    class="flex w-full max-w-sm flex-col items-center gap-4 rounded-lg border border-border bg-surface p-6 text-center focus:outline-none"
+    appCard
+    padding="lg"
+    class="flex w-full max-w-sm flex-col items-center gap-4 text-center focus:outline-none"
     data-testid="shell.session-overlay">
     @switch (_status) {
       @case ('locked') {

@@ -7,6 +7,9 @@ import { CHART_COLOR_BACKGROUND_CLASSES } from '@app/charts/ui/models/chart-colo
 import { regionLabels } from '@app/clock/ui/labels/region-labels';
 import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
 import { FormatPercentPipe } from '@app/shared/ui/pipes/format-percent/format-percent.pipe';
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableHeadDirective } from '@app/shared/ui/table/table-head.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
 import { RegionId, SectorId } from '@app/world/domain/models/taxonomy.model';
 
 import { sectorLabel } from '../labels/taxonomy-labels';
@@ -36,7 +39,15 @@ interface Split {
  */
 @Component({
   selector: 'app-index-composition',
-  imports: [RouterModule, DonutComponent, FormatNumberPipe, FormatPercentPipe],
+  imports: [
+    TableHeadDirective,
+    TableCellDirective,
+    TableDirective,
+    RouterModule,
+    DonutComponent,
+    FormatNumberPipe,
+    FormatPercentPipe,
+  ],
   templateUrl: './index-composition.component.html',
   host: { class: 'block' },
 })

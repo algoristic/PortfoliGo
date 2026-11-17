@@ -1,5 +1,6 @@
 import { Component, input, output } from '@angular/core';
 
+import { CardDirective } from '../card/card.directive';
 import { IconDirective } from '../icon/icon.directive';
 
 /**
@@ -10,7 +11,7 @@ import { IconDirective } from '../icon/icon.directive';
  */
 @Component({
   selector: 'app-dialog',
-  imports: [IconDirective],
+  imports: [CardDirective, IconDirective],
   templateUrl: './dialog.component.html',
   styleUrl: './dialog.component.scss',
   host: { class: 'block' },

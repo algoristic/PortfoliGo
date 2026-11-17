@@ -4,6 +4,7 @@ import { StandingOrderId } from '@app/banking/domain/models/standing-order.model
 import { FormatGameDatePipe } from '@app/clock/ui/pipes/format-game-date/format-game-date.pipe';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { formatCents } from '@app/shared/util/format';
@@ -23,7 +24,14 @@ import { accountTitle } from '../labels/banking-labels';
  */
 @Component({
   selector: 'app-standing-order-list',
-  imports: [BadgeComponent, ButtonDirective, IconDirective, FormatCentsPipe, FormatGameDatePipe],
+  imports: [
+    CardDirective,
+    BadgeComponent,
+    ButtonDirective,
+    IconDirective,
+    FormatCentsPipe,
+    FormatGameDatePipe,
+  ],
   templateUrl: './standing-order-list.component.html',
   host: { class: 'block' },
 })

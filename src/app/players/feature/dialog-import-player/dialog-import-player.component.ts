@@ -6,6 +6,8 @@ import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { DialogComponent } from '@app/shared/ui/dialog/dialog.component';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 
+import { InputDirective } from '@app/shared/ui/input/input.directive';
+
 import {
   ImportFile,
   ImportPlayerDialogResult,
@@ -18,7 +20,7 @@ import {
  */
 @Component({
   selector: 'app-dialog-import-player',
-  imports: [DialogComponent, ButtonDirective, IconDirective, FormField, FormRoot],
+  imports: [InputDirective, DialogComponent, ButtonDirective, IconDirective, FormField, FormRoot],
   templateUrl: './dialog-import-player.component.html',
   host: { class: 'block' },
 })

@@ -1,16 +1,26 @@
 @let _composition = composition();
 
 <h3 class="mb-2 text-sm font-semibold" i18n="@@uiMarket-indexComposition-top">Größte Positionen</h3>
-<table class="w-full text-sm" data-testid="market.instrument.composition.top">
+<table appTable density="flush" data-testid="market.instrument.composition.top">
   <caption class="sr-only" i18n="@@uiMarket-indexComposition-topCaption">
     Größte Positionen mit ihrem Gewicht im Index
   </caption>
   <thead>
-    <tr class="border-b border-border text-xs text-fg-muted">
-      <th scope="col" class="py-1 text-left font-medium" i18n="@@uiMarket-indexComposition-name">
+    <tr appTableHead class="border-b border-border">
+      <th
+        scope="col"
+        appTableCell
+        align="start"
+        class="font-medium"
+        i18n="@@uiMarket-indexComposition-name">
         Wertpapier
       </th>
-      <th scope="col" class="py-1 text-right font-medium" i18n="@@uiMarket-indexComposition-weight">
+      <th
+        scope="col"
+        appTableCell
+        align="end"
+        class="font-medium"
+        i18n="@@uiMarket-indexComposition-weight">
         Gewicht
       </th>
     </tr>
@@ -21,7 +31,7 @@
         class="border-b border-border"
         data-testid="market.instrument.composition.top.row"
         [attr.data-instrument-id]="position.id">
-        <td class="max-w-0 truncate py-1 pr-2">
+        <td appTableCell class="max-w-0 truncate pr-2">
           <a
             class="hover:underline"
             data-testid="market.instrument.composition.top.name"
@@ -29,9 +39,7 @@
             >{{ position.name }}</a
           >
         </td>
-        <td
-          class="py-1 text-right tabular-nums"
-          data-testid="market.instrument.composition.top.weight">
+        <td appTableCell align="end" numeric data-testid="market.instrument.composition.top.weight">
           {{ position.weight | formatPercent: 2 }}
         </td>
       </tr>

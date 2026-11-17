@@ -15,6 +15,7 @@ import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { PanelComponent } from '@app/shared/ui/panel/panel.component';
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
 import { SavingsPlanId } from '@app/trading/domain/models/savings-plan.model';
 import { TradingFacade } from '@app/trading/feature/state/trading.facade';
@@ -34,6 +35,7 @@ const ALL_DEPOTS = 'all';
 @Component({
   selector: 'app-portfolio-page',
   imports: [
+    SelectDirective,
     CommonModule,
     RouterModule,
     AllocationComponent,

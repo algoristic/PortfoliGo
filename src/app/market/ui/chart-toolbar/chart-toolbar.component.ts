@@ -10,6 +10,8 @@ import { CANDLE_RESOLUTIONS, CandleResolution } from '@app/market/domain/models/
 import { CHART_RANGES, ChartRange } from '@app/market/domain/models/chart.model';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
+import { InputDirective } from '@app/shared/ui/input/input.directive';
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
 
 /** A resolution in the select: „Auto“ or one the period allows. */
 interface ResolutionOption {
@@ -25,7 +27,7 @@ interface ResolutionOption {
  */
 @Component({
   selector: 'app-chart-toolbar',
-  imports: [ButtonDirective, FormatGameDatePipe, IconDirective],
+  imports: [SelectDirective, InputDirective, ButtonDirective, FormatGameDatePipe, IconDirective],
   templateUrl: './chart-toolbar.component.html',
   host: { class: 'block' },
 })

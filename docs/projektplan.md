@@ -195,7 +195,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 7.3c  | Korrekturen: Rendite und Benchmark                 | offen     | 7.1c                      |
 | 7.3d  | Korrekturen: Modelländerung Marktmodell            | offen     | 7.3a                      |
 | 7.3e  | Korrekturen: Neukalibrierung                       | offen     | 7.3d                      |
-| 7.4   | UI-Bausteine vereinheitlichen                      | offen     | 6.6                       |
+| 7.4   | UI-Bausteine vereinheitlichen                      | fertig    | 6.6                       |
 | 7.5   | UI-Overhaul: Vorlage auswerten                     | offen     | 7.3b, 7.3c, 7.4           |
 | 7.6   | UI-Overhaul: Design-Grundlage                      | offen     | 7.5                       |
 | 7.7   | UI-Overhaul: Shell, Navigation, Spielerbereich     | offen     | 7.6                       |
@@ -597,7 +597,7 @@ flowchart TD
   AP10_2b --> AP10_15
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP7_1a,AP7_1b,AP7_1c,AP7_2,AP7_3a done
+  class AP7_1a,AP7_1b,AP7_1c,AP7_2,AP7_3a,AP7_4 done
   class AP6_6 active
 ```
 

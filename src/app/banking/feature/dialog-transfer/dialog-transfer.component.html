@@ -15,7 +15,7 @@
         >
         <select
           id="banking-transfer-from"
-          class="h-10 rounded-md border border-border bg-surface px-2 text-fg aria-invalid:border-down"
+          appSelect
           cdkFocusInitial
           aria-describedby="banking-transfer-available banking-transfer-from-errors"
           data-testid="banking.transfer-dialog.from"
@@ -51,7 +51,7 @@
         >
         <select
           id="banking-transfer-to"
-          class="h-10 rounded-md border border-border bg-surface px-2 text-fg aria-invalid:border-down"
+          appSelect
           aria-describedby="banking-transfer-to-errors"
           data-testid="banking.transfer-dialog.to"
           [attr.aria-invalid]="_to.touched() && _to.invalid()"
@@ -100,7 +100,7 @@
         >
         <input
           id="banking-transfer-purpose"
-          class="h-10 rounded-md border border-border bg-surface px-3 text-fg aria-invalid:border-down"
+          appInput
           autocomplete="off"
           aria-describedby="banking-transfer-purpose-hint banking-transfer-purpose-errors"
           data-testid="banking.transfer-dialog.purpose"

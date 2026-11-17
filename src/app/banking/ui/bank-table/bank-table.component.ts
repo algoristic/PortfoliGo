@@ -7,7 +7,11 @@ import {
   orderCost,
 } from '@app/banking/domain/bank-comparison-logic';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableScrollDirective } from '@app/shared/ui/table/table-scroll.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
 import { formatCents } from '@app/shared/util/format';
 import { Bank } from '@app/world/domain/models/bank.model';
 
@@ -70,7 +74,14 @@ const COLUMN_CLASSES: Record<BankTableColumnId, string> = {
  */
 @Component({
   selector: 'app-bank-table',
-  imports: [ButtonDirective, IconDirective],
+  imports: [
+    TableScrollDirective,
+    TableCellDirective,
+    TableDirective,
+    CardDirective,
+    ButtonDirective,
+    IconDirective,
+  ],
   templateUrl: './bank-table.component.html',
   host: { class: 'block' },
 })

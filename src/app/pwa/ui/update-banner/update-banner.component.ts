@@ -2,6 +2,7 @@ import { Component, input, output } from '@angular/core';
 
 import { AppUpdateEvent } from '@app/pwa/domain/models/pwa.model';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 
 /**
@@ -10,7 +11,7 @@ import { IconDirective } from '@app/shared/ui/icon/icon.directive';
  */
 @Component({
   selector: 'app-update-banner',
-  imports: [ButtonDirective, IconDirective],
+  imports: [CardDirective, ButtonDirective, IconDirective],
   templateUrl: './update-banner.component.html',
   host: { class: 'block' },
 })

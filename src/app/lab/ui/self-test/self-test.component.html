@@ -36,24 +36,25 @@
     <app-skeleton class="h-32" [block]="true"></app-skeleton>
   } @else if (_rows.length > 0) {
     <div class="overflow-x-auto">
-      <table class="w-full text-left text-sm">
-        <thead class="text-xs text-fg-muted">
+      <table appTable density="compact" class="text-left">
+        <thead appTableHead>
           <tr>
-            <th class="px-2 py-1" i18n="@@uiLab-selfTest-checksum">Prüfsumme</th>
-            <th class="px-2 py-1" i18n="@@uiLab-selfTest-value">Wert</th>
-            <th class="px-2 py-1" i18n="@@uiLab-selfTest-status">Status</th>
+            <th appTableCell i18n="@@uiLab-selfTest-checksum">Prüfsumme</th>
+            <th appTableCell i18n="@@uiLab-selfTest-value">Wert</th>
+            <th appTableCell i18n="@@uiLab-selfTest-status">Status</th>
           </tr>
         </thead>
         <tbody>
           @for (row of _rows; track row.id) {
             <tr class="border-t border-border">
-              <td class="px-2 py-1">{{ row.label }}</td>
+              <td appTableCell>{{ row.label }}</td>
               <td
-                class="px-2 py-1 font-mono text-xs break-all"
+                appTableCell
+                class="font-mono text-xs break-all"
                 [attr.data-testid]="'lab.simulation.self-test.' + row.id + '.value'">
                 {{ row.value }}
               </td>
-              <td class="px-2 py-1">
+              <td appTableCell>
                 <app-badge
                   [tone]="row.matches ? 'up' : 'down'"
                   [attr.data-testid]="'lab.simulation.self-test.' + row.id + '.status'"

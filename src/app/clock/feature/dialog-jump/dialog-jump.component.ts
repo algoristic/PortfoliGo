@@ -14,12 +14,21 @@ import { JumpTarget } from '@app/engine/domain/models/jump-target.model';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { DialogComponent } from '@app/shared/ui/dialog/dialog.component';
 
+import { InputDirective } from '@app/shared/ui/input/input.directive';
+
 import { JumpDialogData, JumpDialogResult, JumpFormModel } from './dialog-jump.model';
 
 /** Targets of a jump (PS US-ZT-05, TS §3.7); the engine checks the target again. */
 @Component({
   selector: 'app-dialog-jump',
-  imports: [DialogComponent, ButtonDirective, FormField, FormRoot, FormatGameTimePipe],
+  imports: [
+    InputDirective,
+    DialogComponent,
+    ButtonDirective,
+    FormField,
+    FormRoot,
+    FormatGameTimePipe,
+  ],
   templateUrl: './dialog-jump.component.html',
   host: { class: 'block' },
 })

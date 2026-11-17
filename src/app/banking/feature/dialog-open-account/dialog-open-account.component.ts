@@ -11,6 +11,7 @@ import { AccountConditionsComponent } from '@app/banking/ui/account-conditions/a
 import { bankTypeLabel, openableAccountKindLabel } from '@app/banking/ui/labels/banking-labels';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { DialogComponent } from '@app/shared/ui/dialog/dialog.component';
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
 import { Bank } from '@app/world/domain/models/bank.model';
 
 import {
@@ -25,7 +26,14 @@ import {
  */
 @Component({
   selector: 'app-dialog-open-account',
-  imports: [DialogComponent, ButtonDirective, FormField, FormRoot, AccountConditionsComponent],
+  imports: [
+    SelectDirective,
+    DialogComponent,
+    ButtonDirective,
+    FormField,
+    FormRoot,
+    AccountConditionsComponent,
+  ],
   templateUrl: './dialog-open-account.component.html',
   host: { class: 'block' },
 })

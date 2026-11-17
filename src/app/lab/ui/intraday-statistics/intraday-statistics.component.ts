@@ -2,6 +2,9 @@ import { Component, computed, input } from '@angular/core';
 
 import { FormatGameDatePipe } from '@app/clock/ui/pipes/format-game-date/format-game-date.pipe';
 import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableHeadDirective } from '@app/shared/ui/table/table-head.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
 import { formatNumber, formatOptional, formatPercent } from '@app/shared/util/format';
 
 import { IntradayRowView, ProfileBar } from './intraday-statistics.model';
@@ -17,7 +20,13 @@ const MS_PER_SECOND = 1000;
  */
 @Component({
   selector: 'app-intraday-statistics',
-  imports: [FormatGameDatePipe, FormatNumberPipe],
+  imports: [
+    TableHeadDirective,
+    TableCellDirective,
+    TableDirective,
+    FormatGameDatePipe,
+    FormatNumberPipe,
+  ],
   templateUrl: './intraday-statistics.component.html',
   host: { class: 'block' },
 })

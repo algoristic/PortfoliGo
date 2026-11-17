@@ -34,7 +34,8 @@
           >
           <select
             id="settings-player-background-speed"
-            class="h-10 rounded-md border border-border bg-surface px-2 text-fg tabular-nums"
+            appSelect
+            numeric
             data-testid="settings.player.background-speed"
             (change)="onSelectSpeed($event)">
             @for (option of speedOptions(); track option.id) {
@@ -53,7 +54,8 @@
           >
           <select
             id="settings-player-background-pause-after"
-            class="h-10 rounded-md border border-border bg-surface px-2 text-fg tabular-nums"
+            appSelect
+            numeric
             data-testid="settings.player.background-pause-after"
             (change)="onSelectPauseAfter($event)">
             @for (option of pauseAfterOptions(); track option.value) {

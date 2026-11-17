@@ -33,22 +33,26 @@
 
   @if (_rows.length > 0) {
     <div class="overflow-x-auto">
-      <table class="w-full text-right text-sm tabular-nums" data-testid="lab.simulation.seeds">
-        <thead class="text-xs text-fg-muted">
+      <table
+        appTable
+        density="compact"
+        class="text-right tabular-nums"
+        data-testid="lab.simulation.seeds">
+        <thead appTableHead>
           <tr>
-            <th class="px-2 py-1 text-left" i18n="@@uiLab-seedComparison-seed">Seed</th>
+            <th appTableCell align="start" i18n="@@uiLab-seedComparison-seed">Seed</th>
             @for (column of columns; track column.id) {
-              <th class="px-2 py-1">{{ column.label }}</th>
+              <th appTableCell>{{ column.label }}</th>
             }
           </tr>
         </thead>
         <tbody>
           @for (row of _rows; track row.key) {
             <tr class="border-t border-border">
-              <td class="px-2 py-1 text-left">{{ row.label }}</td>
+              <td appTableCell align="start">{{ row.label }}</td>
               @for (cell of row.cells; track cell.id) {
                 <td
-                  class="px-2 py-1"
+                  appTableCell
                   [attr.data-testid]="'lab.simulation.seeds.' + row.key + '.' + cell.id">
                   {{ cell.text }}
                 </td>

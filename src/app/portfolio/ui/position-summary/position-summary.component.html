@@ -1,7 +1,7 @@
 @let _detail = detail();
 
 <dl class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+  <div appCard class="flex flex-col gap-1">
     <dt class="text-xs font-medium text-fg-muted" i18n="@@uiPortfolio-positionSummary-quantity">
       Stück
     </dt>
@@ -9,7 +9,7 @@
       {{ _detail.quantity | formatQuantity }}
     </dd>
   </div>
-  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+  <div appCard class="flex flex-col gap-1">
     <dt class="text-xs font-medium text-fg-muted" i18n="@@uiPortfolio-positionSummary-averageCost">
       Einstandskurs
     </dt>
@@ -17,7 +17,7 @@
       {{ _detail.averageCost | formatPrice }}
     </dd>
   </div>
-  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+  <div appCard class="flex flex-col gap-1">
     <dt class="text-xs font-medium text-fg-muted" i18n="@@uiPortfolio-positionSummary-cost">
       Einstandswert
     </dt>
@@ -25,7 +25,7 @@
       {{ _detail.cost | formatCents }}
     </dd>
   </div>
-  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+  <div appCard class="flex flex-col gap-1">
     <dt class="text-xs font-medium text-fg-muted" i18n="@@uiPortfolio-positionSummary-value">
       Wert
     </dt>
@@ -35,7 +35,7 @@
       }}</span>
     </dd>
   </div>
-  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+  <div appCard class="flex flex-col gap-1">
     <dt class="text-xs font-medium text-fg-muted" i18n="@@uiPortfolio-positionSummary-gain">
       Gewinn/Verlust
     </dt>
@@ -58,7 +58,7 @@
       }
     </dd>
   </div>
-  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+  <div appCard class="flex flex-col gap-1">
     <dt class="text-xs font-medium text-fg-muted" i18n="@@uiPortfolio-positionSummary-realizedGain">
       Realisiert
     </dt>
@@ -66,7 +66,7 @@
       {{ _detail.realizedGain | formatSignedCents }}
     </dd>
   </div>
-  <div class="flex flex-col gap-1 rounded-lg border border-border bg-surface p-4">
+  <div appCard class="flex flex-col gap-1">
     <dt
       class="text-xs font-medium text-fg-muted"
       i18n="@@uiPortfolio-positionSummary-distributions">

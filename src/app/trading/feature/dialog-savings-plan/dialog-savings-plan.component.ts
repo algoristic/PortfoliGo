@@ -10,6 +10,7 @@ import { DialogComponent } from '@app/shared/ui/dialog/dialog.component';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
 import { FormatPricePipe } from '@app/shared/ui/pipes/format-price/format-price.pipe';
 import { FormatQuantityPipe } from '@app/shared/ui/pipes/format-quantity/format-quantity.pipe';
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
 import {
   SAVINGS_PLAN_FIRST_DAY,
   SAVINGS_PLAN_LAST_DAY,
@@ -33,6 +34,7 @@ import { TradingFacade } from '../state/trading.facade';
 @Component({
   selector: 'app-dialog-savings-plan',
   imports: [
+    SelectDirective,
     DialogComponent,
     ButtonDirective,
     FormField,

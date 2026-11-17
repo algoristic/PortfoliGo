@@ -13,6 +13,10 @@ import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
 
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableHeadDirective } from '@app/shared/ui/table/table-head.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
+
 import { SelfTestRow } from './self-test.model';
 
 /**
@@ -21,7 +25,15 @@ import { SelfTestRow } from './self-test.model';
  */
 @Component({
   selector: 'app-self-test',
-  imports: [BadgeComponent, ButtonDirective, FormatNumberPipe, SkeletonComponent],
+  imports: [
+    TableHeadDirective,
+    TableCellDirective,
+    TableDirective,
+    BadgeComponent,
+    ButtonDirective,
+    FormatNumberPipe,
+    SkeletonComponent,
+  ],
   templateUrl: './self-test.component.html',
   host: { class: 'block' },
 })

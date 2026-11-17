@@ -16,6 +16,7 @@ import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { EmptyStateComponent } from '@app/shared/ui/empty-state/empty-state.component';
 import { IconDirective } from '@app/shared/ui/icon/icon.directive';
 import { PanelComponent } from '@app/shared/ui/panel/panel.component';
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
 import { TradingFacade } from '@app/trading/feature/state/trading.facade';
 import { TradeActionsComponent } from '@app/trading/ui/trade-actions/trade-actions.component';
@@ -34,6 +35,7 @@ const ALL_DEPOTS = 'all';
 @Component({
   selector: 'app-position-page',
   imports: [
+    SelectDirective,
     CommonModule,
     RouterModule,
     ButtonDirective,

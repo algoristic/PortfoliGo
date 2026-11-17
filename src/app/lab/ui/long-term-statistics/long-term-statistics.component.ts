@@ -1,6 +1,9 @@
 import { Component, computed, input } from '@angular/core';
 
 import { FormatGameDatePipe } from '@app/clock/ui/pipes/format-game-date/format-game-date.pipe';
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableHeadDirective } from '@app/shared/ui/table/table-head.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
 import { formatOptional, formatPercent, formatPrice, MISSING_VALUE } from '@app/shared/util/format';
 
 import { CheckpointColumn, CheckpointRowView, WindowRowView } from './long-term-statistics.model';
@@ -19,7 +22,7 @@ type WindowMeasure = 'totalReturn' | 'volatility' | 'dividendYield';
 /** Long-term behaviour of the market (TS §6.9, E-22): checkpoints and rolling windows. */
 @Component({
   selector: 'app-long-term-statistics',
-  imports: [FormatGameDatePipe],
+  imports: [TableHeadDirective, TableCellDirective, TableDirective, FormatGameDatePipe],
   templateUrl: './long-term-statistics.component.html',
   host: { class: 'block' },
 })

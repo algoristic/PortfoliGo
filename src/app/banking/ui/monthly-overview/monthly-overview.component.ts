@@ -2,6 +2,10 @@ import { Component, computed, input } from '@angular/core';
 
 import { savingsRate } from '@app/banking/domain/monthly-values-logic';
 import { BadgeComponent } from '@app/shared/ui/badge/badge.component';
+import { CardDirective } from '@app/shared/ui/card/card.directive';
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableScrollDirective } from '@app/shared/ui/table/table-scroll.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
 import { formatCents, formatOptional, formatPercent } from '@app/shared/util/format';
 
 import { perLocale } from '@app/shared/util/locale';
@@ -29,7 +33,13 @@ const monthFormat = perLocale(
  */
 @Component({
   selector: 'app-monthly-overview',
-  imports: [BadgeComponent],
+  imports: [
+    TableScrollDirective,
+    TableCellDirective,
+    TableDirective,
+    CardDirective,
+    BadgeComponent,
+  ],
   templateUrl: './monthly-overview.component.html',
   host: { class: 'block' },
 })

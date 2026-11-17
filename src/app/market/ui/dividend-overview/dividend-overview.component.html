@@ -69,24 +69,30 @@
       tabindex="0"
       role="region"
       [attr.aria-label]="historyLabel">
-      <table class="w-full text-sm" data-testid="market.instrument.dividends.history">
+      <table appTable density="flush" data-testid="market.instrument.dividends.history">
         <thead class="sticky top-0 bg-surface">
-          <tr class="border-b border-border text-xs text-fg-muted">
+          <tr appTableHead class="border-b border-border">
             <th
               scope="col"
-              class="py-1 text-left font-medium"
+              appTableCell
+              align="start"
+              class="font-medium"
               i18n="@@uiMarket-dividendOverview-historyExDay">
               Ex-Tag
             </th>
             <th
               scope="col"
-              class="py-1 text-left font-medium"
+              appTableCell
+              align="start"
+              class="font-medium"
               i18n="@@uiMarket-dividendOverview-historyPaymentDay">
               Zahltag
             </th>
             <th
               scope="col"
-              class="py-1 text-right font-medium"
+              appTableCell
+              align="end"
+              class="font-medium"
               i18n="@@uiMarket-dividendOverview-historyAmount">
               Betrag je Stück
             </th>
@@ -97,13 +103,13 @@
             <tr
               class="border-b border-border tabular-nums"
               data-testid="market.instrument.dividends.history.row">
-              <td class="py-1" data-testid="market.instrument.dividends.history.ex-day">
+              <td appTableCell data-testid="market.instrument.dividends.history.ex-day">
                 {{ payment.exTick | formatGameDate }}
               </td>
-              <td class="py-1" data-testid="market.instrument.dividends.history.payment-day">
+              <td appTableCell data-testid="market.instrument.dividends.history.payment-day">
                 {{ payment.paymentTick | formatGameDate }}
               </td>
-              <td class="py-1 text-right" data-testid="market.instrument.dividends.history.amount">
+              <td appTableCell align="end" data-testid="market.instrument.dividends.history.amount">
                 {{ payment.cents | formatCents }}
               </td>
             </tr>

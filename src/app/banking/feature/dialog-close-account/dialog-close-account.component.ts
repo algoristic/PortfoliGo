@@ -7,6 +7,7 @@ import { accountTitle, transactionTypeLabel } from '@app/banking/ui/labels/banki
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { DialogComponent } from '@app/shared/ui/dialog/dialog.component';
 import { FormatCentsPipe } from '@app/shared/ui/pipes/format-cents/format-cents.pipe';
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
 import { formatSignedCents } from '@app/shared/util/format';
 
 import {
@@ -24,7 +25,14 @@ import { bankCommandErrorMessage } from '../state/banking-errors.utils';
  */
 @Component({
   selector: 'app-dialog-close-account',
-  imports: [DialogComponent, ButtonDirective, FormField, FormRoot, FormatCentsPipe],
+  imports: [
+    SelectDirective,
+    DialogComponent,
+    ButtonDirective,
+    FormField,
+    FormRoot,
+    FormatCentsPipe,
+  ],
   templateUrl: './dialog-close-account.component.html',
   host: { class: 'block' },
 })

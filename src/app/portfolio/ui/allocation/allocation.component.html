@@ -11,20 +11,24 @@
         class="size-36 shrink-0"
         [segments]="split.segments"
         [label]="split.label"></app-donut>
-      <table class="w-full min-w-0 flex-1 text-sm">
+      <table appTable density="flush" class="min-w-0 flex-1">
         <caption class="sr-only">{{ split.label }}</caption>
         <thead>
-          <tr class="border-b border-border text-xs text-fg-muted">
-            <th scope="col" class="py-1 text-left font-medium">{{ split.heading }}</th>
+          <tr appTableHead class="border-b border-border">
+            <th scope="col" appTableCell align="start" class="font-medium">{{ split.heading }}</th>
             <th
               scope="col"
-              class="py-1 text-right font-medium"
+              appTableCell
+              align="end"
+              class="font-medium"
               i18n="@@uiPortfolio-allocation-value">
               Wert
             </th>
             <th
               scope="col"
-              class="py-1 pl-3 text-right font-medium"
+              appTableCell
+              align="end"
+              class="pl-3 font-medium"
               i18n="@@uiPortfolio-allocation-share">
               Anteil
             </th>
@@ -36,7 +40,7 @@
               class="border-b border-border last:border-b-0"
               [attr.data-testid]="'portfolio.allocation.' + split.id + '.item'"
               [attr.data-key]="row.key">
-              <th scope="row" class="py-1 pr-2 text-left font-normal">
+              <th scope="row" appTableCell align="start" class="pr-2 font-normal">
                 <span class="flex items-center gap-2">
                   <span
                     class="size-3 shrink-0 rounded-sm"
@@ -48,12 +52,19 @@
                 </span>
               </th>
               <td
-                class="py-1 text-right whitespace-nowrap tabular-nums"
+                appTableCell
+                align="end"
+                nowrap
+                numeric
                 data-testid="portfolio.allocation.item.value">
                 {{ row.value | formatCents }}
               </td>
               <td
-                class="py-1 pl-3 text-right whitespace-nowrap text-fg-muted tabular-nums"
+                appTableCell
+                align="end"
+                nowrap
+                numeric
+                class="pl-3 text-fg-muted"
                 data-testid="portfolio.allocation.item.share">
                 {{ row.share | formatPercent: 1 }}
               </td>

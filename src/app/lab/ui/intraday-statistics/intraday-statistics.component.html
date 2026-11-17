@@ -11,41 +11,43 @@
 
   <div class="overflow-x-auto">
     <table
-      class="w-full text-right text-sm tabular-nums"
+      appTable
+      density="compact"
+      class="text-right tabular-nums"
       data-testid="lab.simulation.statistics.intraday">
-      <thead class="text-xs text-fg-muted">
+      <thead appTableHead>
         <tr>
-          <th class="px-2 py-1 text-left" i18n="@@uiLab-intradayStatistics-measure">Größe</th>
-          <th class="px-2 py-1" i18n="@@uiLab-intradayStatistics-stocks">Alle Aktien</th>
-          <th class="px-2 py-1" i18n="@@uiLab-intradayStatistics-worldIndex">Weltindex</th>
-          <th class="px-2 py-1">
+          <th appTableCell align="start" i18n="@@uiLab-intradayStatistics-measure">Größe</th>
+          <th appTableCell i18n="@@uiLab-intradayStatistics-stocks">Alle Aktien</th>
+          <th appTableCell i18n="@@uiLab-intradayStatistics-worldIndex">Weltindex</th>
+          <th appTableCell>
             <ng-container i18n="@@uiLab-intradayStatistics-bridge">Brücke</ng-container>
             ({{ _statistics.reference.exchangeId }}, {{ _statistics.reference.shares }})
           </th>
-          <th class="px-2 py-1" i18n="@@uiLab-intradayStatistics-reference">Referenz</th>
+          <th appTableCell i18n="@@uiLab-intradayStatistics-reference">Referenz</th>
         </tr>
       </thead>
       <tbody>
         @for (row of rows(); track row.id) {
           <tr class="border-t border-border">
-            <td class="px-2 py-1 text-left">{{ row.label }}</td>
+            <td appTableCell align="start">{{ row.label }}</td>
             <td
-              class="px-2 py-1"
+              appTableCell
               [attr.data-testid]="'lab.simulation.statistics.intraday.' + row.id + '.stocks'">
               {{ row.stocks }}
             </td>
             <td
-              class="px-2 py-1"
+              appTableCell
               [attr.data-testid]="'lab.simulation.statistics.intraday.' + row.id + '.world-index'">
               {{ row.worldIndex }}
             </td>
             <td
-              class="px-2 py-1"
+              appTableCell
               [attr.data-testid]="'lab.simulation.statistics.intraday.' + row.id + '.bridge'">
               {{ row.bridge }}
             </td>
             <td
-              class="px-2 py-1"
+              appTableCell
               [attr.data-testid]="'lab.simulation.statistics.intraday.' + row.id + '.reference'">
               {{ row.reference }}
             </td>

@@ -15,6 +15,9 @@ import { AmountInputComponent } from '@app/shared/ui/amount-input/amount-input.c
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { DialogComponent } from '@app/shared/ui/dialog/dialog.component';
 
+import { InputDirective } from '@app/shared/ui/input/input.directive';
+import { SelectDirective } from '@app/shared/ui/select/select.directive';
+
 import { StandingOrderDialogData, StandingOrderDialogResult } from './dialog-standing-order.model';
 
 /**
@@ -24,7 +27,15 @@ import { StandingOrderDialogData, StandingOrderDialogResult } from './dialog-sta
  */
 @Component({
   selector: 'app-dialog-standing-order',
-  imports: [DialogComponent, ButtonDirective, FormField, FormRoot, AmountInputComponent],
+  imports: [
+    SelectDirective,
+    InputDirective,
+    DialogComponent,
+    ButtonDirective,
+    FormField,
+    FormRoot,
+    AmountInputComponent,
+  ],
   templateUrl: './dialog-standing-order.component.html',
   host: { class: 'block' },
 })

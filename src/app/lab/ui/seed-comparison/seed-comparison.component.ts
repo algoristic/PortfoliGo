@@ -4,6 +4,9 @@ import { median } from '@app/analysis/domain/statistics-logic';
 import { ButtonDirective } from '@app/shared/ui/button/button.directive';
 import { FormatNumberPipe } from '@app/shared/ui/pipes/format-number/format-number.pipe';
 import { SkeletonComponent } from '@app/shared/ui/skeleton/skeleton.component';
+import { TableCellDirective } from '@app/shared/ui/table/table-cell.directive';
+import { TableHeadDirective } from '@app/shared/ui/table/table-head.directive';
+import { TableDirective } from '@app/shared/ui/table/table.directive';
 import { formatOptional, formatPercent } from '@app/shared/util/format';
 
 import { SeedColumn, SeedRowView } from './seed-comparison.model';
@@ -24,7 +27,14 @@ interface ColumnDefinition extends SeedColumn {
  */
 @Component({
   selector: 'app-seed-comparison',
-  imports: [ButtonDirective, FormatNumberPipe, SkeletonComponent],
+  imports: [
+    TableHeadDirective,
+    TableCellDirective,
+    TableDirective,
+    ButtonDirective,
+    FormatNumberPipe,
+    SkeletonComponent,
+  ],
   templateUrl: './seed-comparison.component.html',
   host: { class: 'block' },
 })
