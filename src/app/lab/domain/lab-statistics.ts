@@ -146,6 +146,14 @@ export function computeLabStatistics(
     'stock-autocorrelation-lag1': median(
       sample.stockReturns.map((returns) => autocorrelation(returns, 1)),
     ),
+    'stock-abs-autocorrelation-lag1': median(
+      sample.stockReturns.map((returns) =>
+        autocorrelation(
+          returns.map((value) => Math.abs(value)),
+          1,
+        ),
+      ),
+    ),
     'stock-max-price': sample.maxPrice,
     'equal-weight-premium': premiums.equalWeight,
     'drawdown-strategy-premium': premiums.drawdownStrategy,

@@ -10,14 +10,16 @@ import { World } from '@app/world/domain/models/world.model';
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { createEtfLayout, EtfLayout } from './etf-layout';
 import {
-  cumulativeDividendDrag,
   decayWeight,
   dividendDrag,
   dividendDragAt,
   expectedLogPath,
-  idioVariance,
+  idioVariances,
+  TransientShockWeights,
+  transientShockWeights,
   yieldFromDrag,
 } from './idio-path-logic';
+import { idioVolNormalization, idioVolScale, stationaryPhaseShares } from './idio-volatility-logic';
 import { createIndexLayout, IndexLayout } from './index-layout';
 import { marketDaysBefore } from './market-calendar';
 import {
@@ -84,16 +86,30 @@ export interface MarketContext {
   /** Expected jumps per trading day (λ_i · Δ_T) and `exp(−λ_i · Δ_T)` per instrument. */
   dailyJumpRate: Float64Array;
   noJumpProbability: Float64Array;
-  /** √(overnight share) and √(1 − overnight share) of the idiosyncratic variance. */
+  /**
+   * Square roots of the overnight and the session share of the idiosyncratic diffusion variance of
+   * a day, and the weights of both shocks in the transient part (TS §6.4, E-22 new).
+   */
   sqrtOvernightShare: number;
   sqrtSessionShare: number;
+  transientWeights: TransientShockWeights;
   /**
-   * Per instrument: idiosyncratic variance `v_i`, zero-beta drift `(1 − β_i) · r_z` (E-32) and
-   * `λ_i · Δ_T · μ_J`.
+   * Per instrument (TS §6.4): permanent diffusion variance `(1 − w)·σ_i²`, transient variance
+   * `v_T,i = w·σ_i²`, jump variance `λ_i·(μ_J² + σ_J²)`, zero-beta drift `(1 − β_i)·r_z` (E-32) and
+   * `λ_i·Δ_T·μ_J`.
    */
-  idioVariance: Float64Array;
+  permanentVariance: Float64Array;
+  transientVariance: Float64Array;
+  jumpVariance: Float64Array;
   zeroBetaDrift: Float64Array;
   jumpDrift: Float64Array;
+  /**
+   * Stationary mean `M` of `(s_world / s̄_world)^{2φ}`, by which the volatility scale of a day is
+   * normalised (TS §6.4, 7.1b-02).
+   */
+  idioVolNormalization: number;
+  /** Volatility scale of the last requested world factor volatility (`idioDayScale`). */
+  idioScale: { worldVol: number; scale: number };
   /**
    * Dividend lifecycle per instrument (TS §6.5, E-33): years `t_0` of market days before the start
    * of the payments (`Infinity` without a dividend), expected log markdown p. a. at the start and in
@@ -102,7 +118,10 @@ export interface MarketContext {
   dividendStartYears: Float64Array;
   startDrag: Float64Array;
   longRunDrag: Float64Array;
-  /** Share `1 − e^{−θ·Δ_T}` of the deviation from the expected path that `U_i` loses per day. */
+  /**
+   * Share `1 − e^{−θ·Δ_T}` of the deviation from its expected path that the transient part `T_i`
+   * loses per day (E-22 new).
+   */
   reversionDecay: number;
   /** Volatility target of the world factor in the reference phase (`s̄_world`, E-23). */
   referenceWorldVol: number;
@@ -124,7 +143,10 @@ export interface IdioPathDay {
   day: number;
   /** Years `t` of market days before the day. */
   years: number;
-  /** Alpha weights `h(t)`, `h(t + Δ_T)` and variance weights `g(t)`, `g(t + Δ_T)`. */
+  /**
+   * Alpha weights `h(t)`, `h(t + Δ_T)` and variance weights `g(t)`, `g(t + Δ_T)` of the transient
+   * part `T_i`.
+   */
   alphaBefore: number;
   alphaAfter: number;
   varianceBefore: number;
@@ -148,7 +170,20 @@ export function createMarketContext(
   const sqrtIntervalYears = intervalYears.map((years) => Math.sqrt(years));
   const lifecycle = config.dividendLifecycle;
   const theta = config.idioReversion;
+  const transientShare = config.idioTransientShare;
+  if (!(transientShare >= 0 && transientShare <= 1)) {
+    throw new RangeError(`createMarketContext: idioTransientShare ${transientShare} out of range`);
+  }
   const indices = createIndexLayout(world, layout);
+  const variances = Array.from(layout.idioVol, (vol, i) =>
+    idioVariances(
+      vol,
+      transientShare,
+      layout.jumpIntensity[i],
+      layout.jumpMean[i],
+      layout.jumpSd[i],
+    ),
+  );
   const context: MarketContext = {
     seedKey,
     layout,
@@ -195,9 +230,10 @@ export function createMarketContext(
     noJumpProbability: layout.jumpIntensity.map((lambda) => detExp(-(lambda * dayYears))),
     sqrtOvernightShare: Math.sqrt(config.overnightShare),
     sqrtSessionShare: Math.sqrt(1 - config.overnightShare),
-    idioVariance: layout.idioVol.map((vol, i) =>
-      idioVariance(vol, layout.jumpIntensity[i], layout.jumpMean[i], layout.jumpSd[i]),
-    ),
+    transientWeights: transientShockWeights(config.overnightShare, transientShare),
+    permanentVariance: Float64Array.from(variances, (variance) => variance.permanent),
+    transientVariance: Float64Array.from(variances, (variance) => variance.transient),
+    jumpVariance: Float64Array.from(variances, (variance) => variance.jumps),
     zeroBetaDrift: Float64Array.from(
       layout.instrumentIds,
       (_, i) =>
@@ -222,6 +258,8 @@ export function createMarketContext(
     ),
     reversionDecay: 1 - detExp(-theta * dayYears),
     referenceWorldVol: 0,
+    idioVolNormalization: 1,
+    idioScale: { worldVol: Number.NaN, scale: 1 },
     idioPath: {
       day: -1,
       years: 0,
@@ -260,6 +298,17 @@ export function createMarketContext(
   }
   context.referenceWorldVol = detExp(
     context.logVolTargets[WORLD_FACTOR * MARKET_PHASE_COUNT + referenceIndex],
+  );
+  const worldFactor = config.factors.world;
+  context.idioVolNormalization = idioVolNormalization(
+    stationaryPhaseShares(context.phaseLeaveProbability, context.phaseNextWeights),
+    MARKET_PHASES.map(
+      (_, p) =>
+        detExp(context.logVolTargets[WORLD_FACTOR * MARKET_PHASE_COUNT + p]) /
+        context.referenceWorldVol,
+    ),
+    (worldFactor.volOfVol * worldFactor.volOfVol) / (2 * worldFactor.volReversion),
+    config.idioVolCoupling,
   );
   return context;
 }
@@ -317,28 +366,31 @@ export function idioPathAt(context: MarketContext, day: number): IdioPathDay {
 }
 
 /**
- * Target `μ_i(t) = m_i(t) − D_i(t − t_0)` of the return of `U_i` at the start of the day of `path`
- * (TS §6.4, §6.5): expected path with decaying alpha, zero-beta drift and compensator, minus the
- * expected log markdown of the dividends paid so far (E-22, E-32, E-33).
+ * Target `τ_i(t) = −½·v_T,i·g(t)` of the return of the transient part `T_i` at the start of the day
+ * of `path` (TS §6.4, E-22 new), so that `E[e^{T}] = 1` up to second order. Dividends, jumps and
+ * the permanent part never return.
  */
-export function idioTargetAt(context: MarketContext, i: number, path: IdioPathDay): number {
-  const expected = expectedLogPath(
-    context.layout.alpha[i],
-    path.alphaBefore,
-    context.zeroBetaDrift[i],
-    path.years,
-    context.idioVariance[i],
-    path.varianceBefore,
-  );
-  return (
-    expected -
-    cumulativeDividendDrag(
-      context.startDrag[i],
-      context.longRunDrag[i],
-      context.config.dividendLifecycle.yieldReversion,
-      path.years - context.dividendStartYears[i],
-    )
-  );
+export function transientTargetAt(context: MarketContext, i: number, path: IdioPathDay): number {
+  return expectedLogPath(0, 0, 0, path.years, context.transientVariance[i], path.varianceBefore);
+}
+
+/**
+ * Factor on the idiosyncratic volatility of the day whose world factor volatility is `worldVol`
+ * (TS §6.4, 7.1b-02); 1 without coupling. Cached for the last value, because all instruments of a
+ * day step share it.
+ */
+export function idioDayScale(context: MarketContext, worldVol: number): number {
+  const cache = context.idioScale;
+  if (cache.worldVol !== worldVol) {
+    cache.scale = idioVolScale(
+      worldVol,
+      context.referenceWorldVol,
+      context.config.idioVolCoupling,
+      context.idioVolNormalization,
+    );
+    cache.worldVol = worldVol;
+  }
+  return cache.scale;
 }
 
 /**

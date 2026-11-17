@@ -25,7 +25,7 @@ type Check = (value: unknown) => boolean;
 const SPEED_IDS: readonly unknown[] = SPEEDS.map(({ id }) => id);
 
 /** Market arrays per instrument, per index and per ETF (`MarketState`). */
-const INSTRUMENT_ARRAYS = ['idioClose', 'logClose', 'dividendCents'] as const;
+const INSTRUMENT_ARRAYS = ['idioClose', 'idioTransient', 'logClose', 'dividendCents'] as const;
 const FACTOR_ARRAYS = ['trend', 'logVol', 'level'] as const;
 const ETF_ARRAYS = ['etfScale', 'etfPot'] as const;
 

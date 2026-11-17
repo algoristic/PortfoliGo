@@ -928,6 +928,7 @@
     "uiLab-marketStatistics-targetWorldKurtosis": "World index, kurtosis of daily returns",
     "uiLab-marketStatistics-targetStockKurtosis": "Stocks, kurtosis of daily returns (median)",
     "uiLab-marketStatistics-targetStockAutocorrelationLag1": "Stocks, autocorrelation of daily returns, lag 1 (median)",
+    "uiLab-marketStatistics-targetStockAbsAutocorrelationLag1": "Stocks, autocorrelation of absolute daily returns, lag 1 (median)",
     "uiLab-marketStatistics-targetStockMaxPrice": "Stocks, highest price in the period (€)",
     "uiLab-marketStatistics-targetEqualWeightPremium": "Excess return of the equal weight (rebalanced yearly) over the world index p.a.",
     "uiLab-marketStatistics-targetDrawdownStrategyPremium": "Excess return of the 20 stocks furthest below their high (yearly) p.a.",

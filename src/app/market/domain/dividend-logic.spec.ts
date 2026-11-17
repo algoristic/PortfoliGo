@@ -168,13 +168,15 @@ describe('dividend logic', () => {
   });
 
   describe('dividendCents', () => {
-    // Yield × close ÷ payments per year in euros, rounded half away from zero to cents (TS §6.5,
-    // §7.1).
+    // Yield × close ÷ payments per year in euros with four decimals, rounded half away from zero
+    // to a hundredth of a cent (TS §6.5, 7.1b-09).
     it.each([
-      { yield: 0.03, frequency: 'quarterly', close: 50, euros: '0.375', cents: 38 },
+      { yield: 0.03, frequency: 'quarterly', close: 50, euros: '0.375', cents: 37.5 },
       { yield: 0.03, frequency: 'annual', close: 50, euros: '1.50', cents: 150 },
-      { yield: 0.02, frequency: 'semi-annual', close: 10.05, euros: '0.1005', cents: 10 },
-      { yield: 0.01, frequency: 'quarterly', close: 0.5, euros: '0.00125', cents: 0 },
+      { yield: 0.02, frequency: 'semi-annual', close: 10.05, euros: '0.1005', cents: 10.05 },
+      { yield: 0.01, frequency: 'quarterly', close: 0.5, euros: '0.00125', cents: 0.13 },
+      { yield: 0.025, frequency: 'quarterly', close: 0.79, euros: '0.0049375', cents: 0.49 },
+      { yield: 0.0123, frequency: 'annual', close: 87.65, euros: '1.078095', cents: 107.81 },
     ] as const)(
       'pays $cents cents for $yield at $close € ($frequency, $euros €)',
       ({ yield: targetYield, frequency, close, cents }) => {

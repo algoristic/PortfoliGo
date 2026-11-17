@@ -7430,12 +7430,20 @@
           <context context-type="linenumber">127</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiLab-marketStatistics-targetStockAbsAutocorrelationLag1" datatype="html">
+        <source>Aktien, Autokorrelation der Beträge der Tagesrenditen, Lag 1 (Median)</source>
+        <target state="translated">Stocks, autocorrelation of absolute daily returns, lag 1 (median)</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
+          <context context-type="linenumber">128</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetStockMaxPrice" datatype="html">
         <source>Aktien, Höchstkurs im Zeitraum (€)</source>
         <target state="translated">Stocks, highest price in the period (€)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">128</context>
+          <context context-type="linenumber">129</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetEqualWeightPremium" datatype="html">
@@ -7443,7 +7451,7 @@
         <target state="translated">Excess return of the equal weight (rebalanced yearly) over the world index p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">129</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetDrawdownStrategyPremium" datatype="html">
@@ -7451,7 +7459,7 @@
         <target state="translated">Excess return of the 20 stocks furthest below their high (yearly) p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">130</context>
+          <context context-type="linenumber">131</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetNegative30yShare" datatype="html">
@@ -7459,7 +7467,7 @@
         <target state="translated">Stocks with a negative return over 30 years (share)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">131</context>
+          <context context-type="linenumber">132</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetClusteringLag1" datatype="html">
@@ -7467,7 +7475,7 @@
         <target state="translated">Volatility clustering: autocorrelation of r², lag 1</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">132</context>
+          <context context-type="linenumber">133</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetClusteringMean" datatype="html">
@@ -7475,7 +7483,7 @@
         <target state="translated">Volatility clustering: autocorrelation of r², lags 1–20</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">133</context>
+          <context context-type="linenumber">134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldDividendYield" datatype="html">
@@ -7483,7 +7491,7 @@
         <target state="translated">World index, dividend yield p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">134</context>
+          <context context-type="linenumber">135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetStockDividendYieldMedian" datatype="html">
@@ -7491,7 +7499,7 @@
         <target state="translated">Stocks, dividend yield p.a. (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">135</context>
+          <context context-type="linenumber">136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetStockDividendYieldMax" datatype="html">
@@ -7499,7 +7507,7 @@
         <target state="translated">Stocks, dividend yield p.a. (maximum)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">136</context>
+          <context context-type="linenumber">137</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetIntradayProfileMedian" datatype="html">
@@ -7507,7 +7515,7 @@
         <target state="translated">Intraday profile: volatility at open and close ÷ midday (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">137</context>
+          <context context-type="linenumber">138</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareWorld" datatype="html">
@@ -7515,7 +7523,7 @@
         <target state="translated">Overnight share of variance, world index</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">138</context>
+          <context context-type="linenumber">139</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareNorthAmerica" datatype="html">
@@ -7523,7 +7531,7 @@
         <target state="translated">Overnight share of variance, North America (broad index)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">139</context>
+          <context context-type="linenumber">140</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareEurope" datatype="html">
@@ -7531,7 +7539,7 @@
         <target state="translated">Overnight share of variance, Europe (broad index)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">140</context>
+          <context context-type="linenumber">141</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareAsiaPacific" datatype="html">
@@ -7539,7 +7547,7 @@
         <target state="translated">Overnight share of variance, Asia-Pacific (broad index)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">141</context>
+          <context context-type="linenumber">142</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareEmergingMarkets" datatype="html">
@@ -7547,7 +7555,7 @@
         <target state="translated">Overnight share of variance, emerging markets (broad index)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">142</context>
+          <context context-type="linenumber">143</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareStocks" datatype="html">
@@ -7555,7 +7563,7 @@
         <target state="translated">Overnight share of variance, stocks (median)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">143</context>
+          <context context-type="linenumber">144</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-phaseTimeline-typical" datatype="html">

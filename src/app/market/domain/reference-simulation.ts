@@ -3,8 +3,14 @@ import { normal } from '@app/simulation/util/distributions';
 import { createStream } from '@app/simulation/util/random-stream';
 
 import { profileWeights } from './bridge-logic';
-import { factorPathAt, idioPathAt, idioTargetAt, MarketContext } from './market-context';
-import { LOADINGS_PER_INSTRUMENT } from './market-layout';
+import {
+  factorPathAt,
+  idioDayScale,
+  idioPathAt,
+  MarketContext,
+  transientTargetAt,
+} from './market-context';
+import { LOADINGS_PER_INSTRUMENT, WORLD_FACTOR } from './market-layout';
 import { MarketDay } from './models/market-day.model';
 import { priceFromLog } from './price-logic';
 
@@ -14,8 +20,10 @@ import { priceFromLog } from './price-logic';
  * day step (trend and volatility of each factor per day, return of the level to its path,
  * activity profile of each factor) and
  * the intraday profile of the idiosyncratic variance. `U_i` follows the drift of the day step
- * (expected path and return to it, spread evenly over the session). Jumps occur in each session
- * minute with probability `λ / (261 · L)`.
+ * (permanent drift with compensator, return of the transient part `T_i`, spread evenly over the
+ * session) with the volatility scale of the day; the transient part takes its fixed shares of the
+ * overnight and the session shocks (TS §6.4). Jumps occur in each session minute with probability
+ * `λ / (261 · L)`.
  * The instruments must share their trading hours. Used by the lab (TS §14.2) and the
  * calibration suite; its streams (`lab/reference/…`) never feed back into the market.
  */
@@ -25,6 +33,9 @@ export class ReferenceSimulation {
   readonly #factors: readonly number[];
   readonly #level: Float64Array;
   readonly #idio: Float64Array;
+  readonly #transient: Float64Array;
+  /** Session shock of the day per instrument, `Σ √share · z` over the minutes. */
+  readonly #sessionShock: Float64Array;
   readonly #open: number;
   readonly #close: number;
   /** Share of the idiosyncratic session variance per step from minute j to j + 1. */
@@ -51,6 +62,8 @@ export class ReferenceSimulation {
     this.#factors = [...factors].sort((a, b) => a - b);
     this.#level = new Float64Array(layout.factorIds.length);
     this.#idio = new Float64Array(layout.instrumentIds.length);
+    this.#transient = new Float64Array(layout.instrumentIds.length);
+    this.#sessionShock = new Float64Array(layout.instrumentIds.length);
     this.#open = layout.boundaries[layout.openBoundary[instruments[0]]];
     this.#close = layout.boundaries[layout.closeBoundary[instruments[0]]];
     for (const i of instruments) {
@@ -118,22 +131,31 @@ export class ReferenceSimulation {
       }
     };
 
-    const path = idioPathAt(this.#context, day.day);
-    const drift = this.#instruments.map((i) => {
-      const variance = this.#context.idioVariance[i];
-      return (
+    const context = this.#context;
+    const path = idioPathAt(context, day.day);
+    const scale = idioDayScale(context, day.factorVols[WORLD_FACTOR]);
+    const transientDrift = this.#instruments.map(
+      (i) =>
+        -0.5 * context.transientVariance[i] * (path.varianceAfter - path.varianceBefore) -
+        context.reversionDecay * (this.#transient[i] - transientTargetAt(context, i, path)),
+    );
+    const drift = this.#instruments.map(
+      (i, n) =>
         layout.alpha[i] * (path.alphaAfter - path.alphaBefore) +
-        this.#context.zeroBetaDrift[i] * dayYears -
-        0.5 * variance * (path.varianceAfter - path.varianceBefore) -
-        this.#context.reversionDecay * (this.#idio[i] - idioTargetAt(this.#context, i, path)) -
-        this.#context.jumpDrift[i]
-      );
-    });
+        context.zeroBetaDrift[i] * dayYears -
+        0.5 * (context.permanentVariance[i] * scale * scale + context.jumpVariance[i]) * dayYears -
+        context.jumpDrift[i] +
+        transientDrift[n],
+    );
 
     moveFactors(0, open);
+    const { overnight, session } = context.transientWeights;
     for (const i of this.#instruments) {
-      this.#idio[i] +=
-        this.#context.sqrtOvernightShare * layout.idioVol[i] * sqrtDayYears * normal(instrumentRng);
+      const dayVol = layout.idioVol[i] * scale * sqrtDayYears;
+      const shock = normal(instrumentRng);
+      this.#idio[i] += context.sqrtOvernightShare * dayVol * shock;
+      this.#transient[i] += overnight * dayVol * shock;
+      this.#sessionShock[i] = 0;
     }
     const prices = this.#instruments.map(() => new Float64Array(length + 1));
     for (let j = 0; j <= length; j++) {
@@ -141,13 +163,11 @@ export class ReferenceSimulation {
         moveFactors(open + j - 1, open + j);
         const share = this.#minuteShare[j - 1];
         this.#instruments.forEach((i, n) => {
-          const vol = layout.idioVol[i];
+          const z = normal(instrumentRng);
+          this.#sessionShock[i] += Math.sqrt(share) * z;
           this.#idio[i] +=
             drift[n] / length +
-            this.#context.sqrtSessionShare *
-              vol *
-              Math.sqrt(dayYears * share) *
-              normal(instrumentRng);
+            context.sqrtSessionShare * layout.idioVol[i] * scale * Math.sqrt(dayYears * share) * z;
           const jumpProbability = layout.jumpIntensity[i] / (config.tradingDaysPerYear * length);
           if (instrumentRng.nextFloat53() < jumpProbability) {
             this.#idio[i] += normal(instrumentRng, layout.jumpMean[i], layout.jumpSd[i]);
@@ -164,6 +184,11 @@ export class ReferenceSimulation {
       });
     }
     moveFactors(this.#close, MINUTES_PER_DAY);
+    this.#instruments.forEach((i, n) => {
+      this.#transient[i] +=
+        transientDrift[n] +
+        session * layout.idioVol[i] * scale * sqrtDayYears * this.#sessionShock[i];
+    });
     return prices;
   }
 }

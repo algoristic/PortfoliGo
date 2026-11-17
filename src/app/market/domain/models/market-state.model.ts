@@ -4,11 +4,16 @@ import { MarketPhase } from './market-config.model';
 export interface InstrumentState {
   /** Idiosyncratic log component `U_i` per instrument at the last close. */
   idioClose: Float64Array;
+  /** Transient part `T_i` of `U_i` per instrument at the last close (TS §6.4, E-22 new). */
+  idioTransient: Float64Array;
   /** Log price per instrument at the last close; `c_i` before the first trading day. */
   logClose: Float64Array;
   /** Next scheduled ex-date per instrument, −1 without a dividend. */
   nextExDay: Int32Array;
-  /** Announced dividend for `nextExDay` in cents, `NaN` until the announcement. */
+  /**
+   * Announced dividend per share for `nextExDay` in cents with two decimals (euros with four,
+   * TS §6.5), `NaN` until the announcement.
+   */
   dividendCents: Float64Array;
 }
 

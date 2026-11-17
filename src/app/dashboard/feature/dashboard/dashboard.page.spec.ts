@@ -281,9 +281,14 @@ describe('DashboardPage', () => {
       (values.livingCosts + values.fees + values.debitInterest + values.taxes) / 100,
     );
 
-    // The share is the one top position, linked to its detail.
-    const top = byTestId(page, 'dashboard.top-positions.row');
-    expect(top.dataset['instrumentId']).toBe(COMPANY.id);
+    // The share is a top position, linked to its detail (the savings plan may have bought the ETF
+    // while the jumps waited for the share's exchange).
+    const top = [
+      ...page.querySelectorAll<HTMLElement>('[data-testid="dashboard.top-positions.row"]'),
+    ].find((row) => row.dataset['instrumentId'] === COMPANY.id);
+    if (top === undefined) {
+      throw new Error('no top position of the share');
+    }
     expect(byTestId(top, 'dashboard.top-positions.row.name').getAttribute('href')).toContain(
       `/portfolio/${COMPANY.id}`,
     );

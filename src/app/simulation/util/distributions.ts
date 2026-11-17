@@ -65,11 +65,15 @@ export function poisson(rng: RandomStream, lambda: number, expMinusLambda?: numb
   let k = 0;
   let p = expMinusLambda ?? detExp(-lambda);
   let cumulative = p;
-  // p reaches 0 long before k overflows; the check ends the loop if rounding keeps F below u.
-  while (u >= cumulative && p > 0) {
+  // Rounding can keep F below u for good (7.1a-13): the search ends as soon as F stops growing.
+  while (u >= cumulative) {
     k++;
     p = (p * lambda) / k;
-    cumulative += p;
+    const next = cumulative + p;
+    if (next === cumulative) {
+      break;
+    }
+    cumulative = next;
   }
   return k;
 }

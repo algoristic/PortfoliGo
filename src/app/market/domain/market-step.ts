@@ -92,6 +92,7 @@ export function createMarketState(context: MarketContext): MarketState {
     day: 0,
     ...initialFactorState(context),
     idioClose: new Float64Array(count),
+    idioTransient: new Float64Array(count),
     logClose: layout.logBase.slice(),
     nextExDay: Int32Array.from(layout.dividends, (dividend) =>
       dividend === null

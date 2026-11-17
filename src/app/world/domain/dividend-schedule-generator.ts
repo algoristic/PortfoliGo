@@ -42,12 +42,13 @@ export function drawDividendSchedule(rng: RandomStream, perYear: number): Divide
 
 /**
  * First day of the month in which a company starts to pay: exponentially distributed with mean
- * `meanYears` after the epoch, rounded down to whole months.
+ * `meanYears` after the epoch, rounded up to the first of a later month (7.1a-10), so a later
+ * payer never starts at the epoch.
  */
 export function drawStartDay(rng: RandomStream, meanYears: number): number {
   const epoch = tickToDateTime(dayStartTick(0));
   const months =
-    epoch.month - 1 + Math.floor(-meanYears * detLog(1 - rng.nextFloat53()) * MONTHS_PER_YEAR);
+    epoch.month + Math.floor(-meanYears * detLog(1 - rng.nextFloat53()) * MONTHS_PER_YEAR);
   return dayIndex(
     dateTimeToTick({
       year: epoch.year + Math.floor(months / MONTHS_PER_YEAR),

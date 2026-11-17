@@ -70,7 +70,8 @@ export function calibrationReport(title: string, runs: CalibrationRun[]): string
       const inBand =
         (target.min === undefined || value >= target.min) &&
         (target.max === undefined || value <= target.max);
-      band = `${target.min ?? ''}…${target.max ?? ''} ${inBand ? 'ok' : 'OFF'}`;
+      const open = target.openUntil === undefined ? '' : ` (open until ${target.openUntil})`;
+      band = `${target.min ?? ''}…${target.max ?? ''} ${inBand ? 'ok' : 'OFF'}${open}`;
     }
     lines.push(
       `${target.id}: prehistory ${summary(prehistory)} | 110 years ${summary(long)} | ${band}`,

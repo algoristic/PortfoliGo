@@ -5,12 +5,13 @@ import { normal, poisson, uniformInt } from '@app/simulation/util/distributions'
 import { announcementDay, dividendCents, exDayOnOrAfter, exMarkdown } from './dividend-logic';
 import {
   dividendYieldAt,
+  idioDayScale,
   idioPathAt,
   IdioPathDay,
-  idioTargetAt,
   MarketContext,
+  transientTargetAt,
 } from './market-context';
-import { LOADINGS_PER_INSTRUMENT } from './market-layout';
+import { LOADINGS_PER_INSTRUMENT, WORLD_FACTOR } from './market-layout';
 import { MarketDay } from './models/market-day.model';
 import { InstrumentState } from './models/market-state.model';
 import { priceFromLog } from './price-logic';
@@ -22,10 +23,14 @@ const MAX_ANNOUNCEMENT_CALENDAR_DAYS = 28;
  * Day step of instrument i (TS §6.4, §6.5) after the factor step of the same day. Writes open,
  * close, jumps and dividend events into `out` and advances the instrument's part of `state`.
  *
+ * `U_i` is the sum of a permanent random walk and a transient part `T_i` that returns to its
+ * expected path (E-22 new); the diffusion of the day scales with the world factor volatility
+ * (7.1b-02).
+ *
  * Stream `market/instrument/<id>/<day>`, draw order: overnight shock, session shock, number of
- * jumps, then minute and size of each jump. The bridge uses a separate stream. Dividends draw
- * nothing: the amount follows from the close before the announcement, the markdown is applied
- * at the open after the overnight shock.
+ * jumps, then minute and size of each jump; the transient part takes fixed shares of both shocks.
+ * The bridge uses a separate stream. Dividends draw nothing: the amount follows from the close before the
+ * announcement, the markdown is applied at the open after the overnight shock.
  */
 export function stepInstrument(
   context: MarketContext,
@@ -36,7 +41,8 @@ export function stepInstrument(
 ): void {
   const { layout, sqrtDayYears } = context;
   const rng = context.instrumentStreams[i].create(day);
-  const vol = layout.idioVol[i];
+  const dayScale = idioDayScale(context, out.factorVols[WORLD_FACTOR]);
+  const vol = layout.idioVol[i] * dayScale;
   const overnightShock = normal(rng);
   const sessionShock = normal(rng);
   const jumpCount = poisson(rng, context.dailyJumpRate[i], context.noJumpProbability[i]);
@@ -100,21 +106,30 @@ export function stepInstrument(
     state.nextExDay[i] = exDayOnOrAfter(dividend.schedule, dividend.frequency, day + 1);
     state.dividendCents[i] = Number.NaN;
   }
-  // Expected path m(t) = α·h(t) + (1 − β)·r_z·t − ½·v·g(t) (decaying alpha, zero-beta drift,
-  // compensator of diffusion and jumps) and the return of the deviation from μ(t) = m(t) − D(t),
-  // so paid dividends are not recovered (TS §6.4, §6.5, E-22, E-32, E-33).
-  const alpha = layout.alpha[i];
-  const variance = context.idioVariance[i];
-  const target = idioTargetAt(context, i, path);
+  // Transient part: its share of both shocks (no extra draw) and the return to τ(t) = −½·v_T·g(t)
+  // with the compensator of its variance (E-22 new).
+  const transient = state.idioTransient[i];
+  const { overnight, session } = context.transientWeights;
+  const transientDrift =
+    -0.5 * context.transientVariance[i] * (path.varianceAfter - path.varianceBefore) -
+    context.reversionDecay * (transient - transientTargetAt(context, i, path));
+  const transientClose =
+    transient +
+    transientDrift +
+    vol * sqrtDayYears * (overnight * overnightShock + session * sessionShock);
+  // Permanent part: decaying alpha, zero-beta drift and the full compensator of the day's diffusion
+  // variance and of the jumps; dividend markdowns stay (TS §6.4, E-22 new, E-32). U keeps both shocks.
+  const permanentVariance =
+    context.permanentVariance[i] * dayScale * dayScale + context.jumpVariance[i];
   const idioClose =
     idioOpen +
-    alpha * (path.alphaAfter - path.alphaBefore) +
+    layout.alpha[i] * (path.alphaAfter - path.alphaBefore) +
     context.zeroBetaDrift[i] * context.dayYears -
-    0.5 * variance * (path.varianceAfter - path.varianceBefore) -
-    context.reversionDecay * (state.idioClose[i] - target) +
+    0.5 * permanentVariance * context.dayYears +
     context.sqrtSessionShare * vol * sqrtDayYears * sessionShock +
     jumpSum -
-    context.jumpDrift[i];
+    context.jumpDrift[i] +
+    transientDrift;
 
   const logClose = layout.logBase[i] + factorClose + idioClose;
   out.idioOpen[i] = idioOpen;
@@ -122,6 +137,7 @@ export function stepInstrument(
   out.logOpen[i] = layout.logBase[i] + factorOpen + idioOpen;
   out.logClose[i] = logClose;
   state.idioClose[i] = idioClose;
+  state.idioTransient[i] = transientClose;
   state.logClose[i] = logClose;
 }
 

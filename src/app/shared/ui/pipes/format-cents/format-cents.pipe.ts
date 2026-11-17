@@ -5,7 +5,7 @@ import { formatCents, formatOptional } from '../../../util/format';
 
 @Pipe({ name: 'formatCents' })
 export class FormatCentsPipe implements PipeTransform {
-  transform(cents: Cents | null | undefined): string {
-    return formatOptional(cents, formatCents);
+  transform(cents: Cents | null | undefined, maxFractionDigits = 2): string {
+    return formatOptional(cents, (value) => formatCents(value, maxFractionDigits));
   }
 }

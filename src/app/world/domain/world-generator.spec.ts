@@ -108,6 +108,23 @@ describe('generateWorld', () => {
         }
       });
     });
+
+    it('allocates the companies to industries by weight, so no sector stays empty (7.1a-03)', () => {
+      // Largest remainder: every count differs from its exact share by less than one.
+      const total = sum(INDUSTRIES.map((industry) => industry.weight));
+      forAnyWorld((world) => {
+        for (const industry of INDUSTRIES) {
+          const exact = (config.companies.count * industry.weight) / total;
+          const count = world.companies.filter(
+            (company) => company.industryId === industry.id,
+          ).length;
+          expect(Math.abs(count - exact), industry.id).toBeLessThan(1);
+        }
+        for (const sectorId of SECTOR_IDS) {
+          expect(world.companies.some((company) => company.sectorId === sectorId)).toBe(true);
+        }
+      });
+    });
   });
 
   describe('names and identifiers', () => {
@@ -223,6 +240,39 @@ describe('generateWorld', () => {
       });
     });
 
+    it('draws the dividend yield of a payer from its industry range times the style factor, capped before the draw (7.1a-09)', () => {
+      const { dividendStyleFactor, maxDividendYield } = config.companies;
+      const industries = new Map(INDUSTRIES.map((industry) => [industry.id, industry]));
+      let payers = 0;
+      let atCap = 0;
+      forAnyWorld((world) => {
+        for (const company of world.companies) {
+          const { yield: dividendYield } = company.dividend;
+          if (dividendYield === 0) {
+            continue;
+          }
+          const [low, high] = industries.get(company.industryId)?.dividendYield ?? [NaN, NaN];
+          const factor = dividendStyleFactor[company.style];
+          // On the grid of 0.01 %, at least 0.1 %.
+          const grid = 0.00005 + 1e-12;
+          expectIn(
+            dividendYield,
+            [
+              Math.max(0.001, Math.min(low * factor, maxDividendYield) - grid),
+              Math.max(0.001, Math.min(high * factor, maxDividendYield) + grid),
+            ],
+            'dividend yield',
+          );
+          payers++;
+          if (dividendYield === maxDividendYield) {
+            atCap++;
+          }
+        }
+      });
+      // Before AP 7.3d, 7.6 % of the payers sat exactly at the cap; uniform draws hit it rarely.
+      expect(atCap / payers).toBeLessThan(0.02);
+    });
+
     it('gives every company the frequency of its region and a yearly ex-date rhythm', () => {
       forAnyWorld((world) => {
         for (const company of world.companies) {
@@ -232,11 +282,12 @@ describe('generateWorld', () => {
           expect(frequency).toBe(region?.dividendFrequency);
           expectIn(schedule?.firstMonth, [1, 12 / DIVIDENDS_PER_YEAR[frequency]], 'first month');
           expectIn(schedule?.day, [1, LAST_SCHEDULE_DAY], 'day');
-          // Payers pay from the epoch, the others from the first day of a later month (E-33).
+          // Payers pay from the epoch, the others from the first day of a later month (E-33,
+          // 7.1a-10).
           if (dividendYield > 0) {
             expect(startDay).toBe(0);
           } else {
-            expect(startDay).toBeGreaterThanOrEqual(0);
+            expect(startDay).toBeGreaterThan(0);
             expect(tickToDateTime(dayStartTick(startDay)).day).toBe(1);
           }
         }
@@ -252,27 +303,20 @@ describe('generateWorld', () => {
         expect(ofKind('world')).toBe(1);
         expect(ofKind('region-broad')).toBe(REGION_IDS.length);
         expect(ofKind('region-leading')).toBe(REGION_IDS.length);
-        // One sector index per sector with shares; a sector can stay empty (TS §5.5, 7.1a-04).
-        const occupied = SECTOR_IDS.filter((sectorId) =>
-          world.companies.some((company) => company.sectorId === sectorId),
-        );
         expect(
           world.indices.filter((index) => index.kind === 'sector').map((index) => index.sectorId),
-        ).toEqual(occupied);
+        ).toEqual([...SECTOR_IDS]);
         expect(ofKind('small-cap')).toBe(1);
         expect(ofKind('dividend')).toBe(1);
+        expect(world.indices).toHaveLength(22);
       });
     });
 
-    it('leaves out the index of an empty sector (TS §5.2, §5.5)', () => {
-      // `empty-13280` (AP 7.1a): no real-estate share, so 21 instead of 22 indices.
+    it('fills every sector in the world that had an empty one before AP 7.3d', () => {
+      // `empty-13280` (AP 7.1a) had no real-estate share while industries were drawn per company.
       const world = generateWorld(deriveSeedKey('empty-13280'));
-      expect(world.companies.some((company) => company.sectorId === 'real-estate')).toBe(false);
-      expect(world.indices).toHaveLength(21);
-      expect(world.indices.some((index) => index.sectorId === 'real-estate')).toBe(false);
-      expect(world.indices.filter((index) => index.kind === 'sector')).toHaveLength(
-        SECTOR_IDS.length - 1,
-      );
+      expect(world.indices).toHaveLength(22);
+      expect(world.indices.some((index) => index.sectorId === 'real-estate')).toBe(true);
     });
 
     it('selects the constituents by the rule of each index', () => {

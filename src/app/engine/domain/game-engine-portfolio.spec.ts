@@ -85,6 +85,14 @@ interface Setup {
 
 type WithoutStamp<T> = T extends unknown ? Omit<T, 'id' | 'tick'> : never;
 
+/**
+ * Credit of `shares` shares for a dividend per share in cents with two decimals (TS §6.5, 7.1b-09),
+ * rounded half up to whole cents (TS §7.4).
+ */
+function payout(cents: number, shares: number): number {
+  return Math.round((Math.round(cents * 100) * shares) / 100);
+}
+
 describe('GameEngine positions, payouts and custody fee', () => {
   let world: GameWorld;
   let start: GameSnapshot;
@@ -269,12 +277,12 @@ describe('GameEngine positions, payouts and custody fee', () => {
           accountId: CLEARING,
           quantity: 10 * SHARE,
           cents,
-          amount: 10 * cents,
+          amount: payout(cents, 10),
           exTick: tick,
           paymentTick,
         },
       ]);
-      expect(engine.player.positions[0].distributions).toBe(10 * cents);
+      expect(engine.player.positions[0].distributions).toBe(payout(cents, 10));
       engine.runUntil(paymentTick - 1);
       expect(payouts(engine.drainTransactions())).toEqual([]);
       engine.drainEvents();
@@ -285,16 +293,16 @@ describe('GameEngine positions, payouts and custody fee', () => {
           tick: paymentTick,
           type: 'dividend',
           postings: [
-            [CLEARING, 10 * cents],
-            [`external:issuer:${instrumentId}`, -10 * cents],
+            [CLEARING, payout(cents, 10)],
+            [`external:issuer:${instrumentId}`, -payout(cents, 10)],
           ],
           refs: { depotId: DEPOT, instrumentId },
           params: { quantity: 10 * SHARE, cents },
         },
       ]);
-      expect(engine.player.balances.get(CLEARING)).toBe(10 * cents);
+      expect(engine.player.balances.get(CLEARING)).toBe(payout(cents, 10));
       expect(engine.player.pendingDistributions).toEqual([]);
-      expect(engine.player.monthlyValues.dividends).toBe(10 * cents);
+      expect(engine.player.monthlyValues.dividends).toBe(payout(cents, 10));
       expect(engine.drainEvents().filter(({ type }) => type === 'distribution-paid')).toEqual([
         {
           type: 'distribution-paid',
@@ -304,7 +312,7 @@ describe('GameEngine positions, payouts and custody fee', () => {
           depotId: DEPOT,
           instrumentId,
           quantity: 10 * SHARE,
-          amount: 10 * cents,
+          amount: payout(cents, 10),
           tax: 0,
         },
       ]);
@@ -318,7 +326,7 @@ describe('GameEngine positions, payouts and custody fee', () => {
             depotId: DEPOT,
             instrumentId,
             quantity: 10 * SHARE,
-            amount: 10 * cents,
+            amount: payout(cents, 10),
             tax: 0,
           },
         }),
@@ -346,7 +354,7 @@ describe('GameEngine positions, payouts and custody fee', () => {
           .drainTransactions()
           .filter(({ type }) => type === 'dividend')
           .map(({ postings }) => postings[0].amount),
-      ).toEqual([10 * cents]);
+      ).toEqual([payout(cents, 10)]);
     });
 
     it('does not pay a purchase at the open of the ex-date', () => {
@@ -367,7 +375,7 @@ describe('GameEngine positions, payouts and custody fee', () => {
       const engine = setup({ held: { [instrumentId]: 2_500_000 } });
       engine.runUntil(paymentTick);
       // 2,5 shares × cents, rounded half away from zero
-      const amount = Math.round(2.5 * cents);
+      const amount = payout(cents, 2.5);
       expect(payouts(engine.drainTransactions())).toEqual([
         {
           tick: paymentTick,
@@ -399,16 +407,16 @@ describe('GameEngine positions, payouts and custody fee', () => {
           amount,
         ]),
       ).toEqual([
-        [DEPOT, CLEARING, 10 * cents],
-        ['dep-5', 'acc-4', 4 * cents],
+        [DEPOT, CLEARING, payout(cents, 10)],
+        ['dep-5', 'acc-4', payout(cents, 4)],
       ]);
       const tasks = engine
         .snapshot()
         .scheduler.heap.filter(({ kind }) => kind === 'distribution-payment');
       expect(tasks.map(({ tick: due }) => due)).toEqual([paymentTick]);
       engine.runUntil(paymentTick);
-      expect(engine.player.balances.get(CLEARING)).toBe(10 * cents);
-      expect(engine.player.balances.get('acc-4')).toBe(4 * cents);
+      expect(engine.player.balances.get(CLEARING)).toBe(payout(cents, 10));
+      expect(engine.player.balances.get('acc-4')).toBe(payout(cents, 4));
     });
 
     it('earns nothing for a holding whose payout rounds to 0', () => {
@@ -457,7 +465,12 @@ describe('GameEngine positions, payouts and custody fee', () => {
       expect(engine.player.balances.get(CLEARING)).toBe(0);
       expect(engine.closingPreview(CLEARING)).toEqual({
         ok: true,
-        preview: { bookings: [], remainder: 0, pendingDistributions: 10 * cents, blockers: [] },
+        preview: {
+          bookings: [],
+          remainder: 0,
+          pendingDistributions: payout(cents, 10),
+          blockers: [],
+        },
       });
       expect(apply(engine, { type: 'closeAccount', accountId: CLEARING })).toEqual({
         ok: false,
@@ -472,8 +485,8 @@ describe('GameEngine positions, payouts and custody fee', () => {
       const credited = engine.drainTransactions().filter(({ type }) => type === 'dividend');
       // The other depot's payout stays with its own clearing account.
       expect(credited.map(({ postings }) => postings[0])).toEqual([
-        expect.objectContaining({ account: 'acc-1', amount: 10 * cents }),
-        expect.objectContaining({ account: 'acc-4', amount: cents }),
+        expect.objectContaining({ account: 'acc-1', amount: payout(cents, 10) }),
+        expect.objectContaining({ account: 'acc-4', amount: payout(cents, 1) }),
       ]);
       expect(credited[0].refs).toEqual({ depotId: DEPOT, instrumentId });
       expect(engine.player.balances.get(CLEARING)).toBe(0);

@@ -11,8 +11,8 @@ import {
   fillBridge,
   profileWeights,
 } from './bridge-logic';
-import { MarketContext } from './market-context';
-import { LOADINGS_PER_INSTRUMENT, MarketLayout } from './market-layout';
+import { idioDayScale, MarketContext } from './market-context';
+import { LOADINGS_PER_INSTRUMENT, MarketLayout, WORLD_FACTOR } from './market-layout';
 import { MarketDay } from './models/market-day.model';
 import { priceFromLog } from './price-logic';
 import { seriesRef } from './series';
@@ -30,7 +30,10 @@ export interface CurveTables {
   bridgeSuffix: Uint8Array;
   /** Session bridge per instrument (shared between sessions of the same length). */
   sessionTables: readonly BridgeTable[];
-  /** Standard deviation of the idiosyncratic session move without drift and jumps. */
+  /**
+   * Standard deviation of the idiosyncratic session move without drift and jumps at the mean
+   * volatility; the bridge multiplies it with the scale of the day (TS §6.4).
+   */
   sessionScale: Float64Array;
 }
 
@@ -698,7 +701,7 @@ function fillSessionIdio(
     0,
     day.idioClose[i] - day.idioOpen[i] - jumpSum,
     tables.sessionTables[i],
-    tables.sessionScale[i],
+    tables.sessionScale[i] * idioDayScale(tables.context, day.factorVols[WORLD_FACTOR]),
     tables.instrumentBridgeStreams[i].create(day.day, tables.bridgeSuffix),
     last,
   );

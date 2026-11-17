@@ -46,6 +46,7 @@ export const MUTATION_SHARDS = [
     'src/app/analysis/domain/drawdown-logic.ts',
     'src/app/analysis/domain/indicator-logic.ts',
     'src/app/market/domain/idio-path-logic.ts',
+    'src/app/market/domain/idio-volatility-logic.ts',
     'src/app/engine/domain/throttle-logic.ts',
     'src/app/engine/data-access/service/engine-service.utils.ts',
     'src/app/banking/domain/bank-run-logic.ts',

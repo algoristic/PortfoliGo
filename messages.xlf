@@ -6497,116 +6497,123 @@
           <context context-type="linenumber">127</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="uiLab-marketStatistics-targetStockAbsAutocorrelationLag1" datatype="html">
+        <source>Aktien, Autokorrelation der Beträge der Tagesrenditen, Lag 1 (Median)</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
+          <context context-type="linenumber">128</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetStockMaxPrice" datatype="html">
         <source>Aktien, Höchstkurs im Zeitraum (€)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">128</context>
+          <context context-type="linenumber">129</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetEqualWeightPremium" datatype="html">
         <source>Mehrrendite der Gleichgewichtung (jährlich umgeschichtet) gegen den Weltindex p. a.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">129</context>
+          <context context-type="linenumber">130</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetDrawdownStrategyPremium" datatype="html">
         <source>Mehrrendite der 20 Aktien mit dem größten Abstand zum Hoch (jährlich) p. a.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">130</context>
+          <context context-type="linenumber">131</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetNegative30yShare" datatype="html">
         <source>Aktien mit negativer Rendite über 30 Jahre (Anteil)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">131</context>
+          <context context-type="linenumber">132</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetClusteringLag1" datatype="html">
         <source>Volatilitäts-Cluster: Autokorrelation r², Lag 1</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">132</context>
+          <context context-type="linenumber">133</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetClusteringMean" datatype="html">
         <source>Volatilitäts-Cluster: Autokorrelation r², Lag 1–20</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">133</context>
+          <context context-type="linenumber">134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetWorldDividendYield" datatype="html">
         <source>Weltindex, Dividendenrendite p. a.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">134</context>
+          <context context-type="linenumber">135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetStockDividendYieldMedian" datatype="html">
         <source>Aktien, Dividendenrendite p. a. (Median)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">135</context>
+          <context context-type="linenumber">136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetStockDividendYieldMax" datatype="html">
         <source>Aktien, Dividendenrendite p. a. (Maximum)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">136</context>
+          <context context-type="linenumber">137</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetIntradayProfileMedian" datatype="html">
         <source>Tagesverlauf: Volatilität zu Eröffnung und Schluss ÷ Mitte (Median)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">137</context>
+          <context context-type="linenumber">138</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareWorld" datatype="html">
         <source>Overnight-Anteil der Varianz, Weltindex</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">138</context>
+          <context context-type="linenumber">139</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareNorthAmerica" datatype="html">
         <source>Overnight-Anteil der Varianz, Nordamerika (breiter Index)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">139</context>
+          <context context-type="linenumber">140</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareEurope" datatype="html">
         <source>Overnight-Anteil der Varianz, Europa (breiter Index)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">140</context>
+          <context context-type="linenumber">141</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareAsiaPacific" datatype="html">
         <source>Overnight-Anteil der Varianz, Asien-Pazifik (breiter Index)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">141</context>
+          <context context-type="linenumber">142</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareEmergingMarkets" datatype="html">
         <source>Overnight-Anteil der Varianz, Schwellenländer (breiter Index)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">142</context>
+          <context context-type="linenumber">143</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-targetOvernightShareStocks" datatype="html">
         <source>Overnight-Anteil der Varianz, Aktien (Median)</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/market-statistics/market-statistics.component.ts</context>
-          <context context-type="linenumber">143</context>
+          <context context-type="linenumber">144</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-phaseTimeline-typical" datatype="html">

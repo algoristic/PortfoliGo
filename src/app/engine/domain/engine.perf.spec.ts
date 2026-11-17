@@ -67,8 +67,10 @@ describe('engine performance', () => {
           instrumentId,
           side: 'buy',
           type: 'limit',
-          size: { kind: 'quantity', quantity: 10_000_000 },
-          limit: 0.5,
+          // 100 shares at 0.02 € stay above the minimum order value of 1 € and are never reached
+          // (since AP 7.3d one order at 0.50 € no longer stays open for the whole year).
+          size: { kind: 'quantity', quantity: 100_000_000 },
+          limit: 0.02,
           stop: null,
           validity: { kind: 'gtc' },
         },

@@ -1,12 +1,12 @@
 import fc from 'fast-check';
 
 import {
-  cumulativeDividendDrag,
   decayWeight,
   dividendDrag,
   dividendDragAt,
   expectedLogPath,
-  idioVariance,
+  idioVariances,
+  transientShockWeights,
   yieldFromDrag,
 } from './idio-path-logic';
 
@@ -17,8 +17,10 @@ const HALF_LIFE_25 = Math.LN2 / 25;
 const ZERO_BETA_RETURN = 0.05;
 
 describe('idio-path-logic', () => {
-  // TS §6.4 (E-22, E-32): v = σ² + λ·(μ_J² + σ_J²) with μ_J = −1 %, h(t) = (1 − e^{−κ_α·t}) / κ_α,
-  // g(t) = (1 − e^{−2θt}) / (2θ), m(t) = α·h(t) + (1 − β)·r_z·t − ½·v·g(t) with r_z = 5 %.
+  // TS §6.4 (E-22 new, E-32): v_P = (1 − w)·σ² + λ·(μ_J² + σ_J²) with μ_J = −1 %, v_T = w·σ²,
+  // h(t) = (1 − e^{−κ_α·t}) / κ_α, g(t) = (1 − e^{−2θt}) / (2θ) and the expected path
+  // m(t) = α·h(t) + (1 − β)·r_z·t − ½·v_P·t − ½·v_T·g(t) with r_z = 5 %: the permanent part with the
+  // full compensator, the transient part with the compensator of its return.
   it.each([
     {
       alpha: 0,
@@ -26,10 +28,12 @@ describe('idio-path-logic', () => {
       vol: 0.2,
       lambda: 0,
       sd: 0.1,
+      share: 0,
       theta: 0,
       kappa: 0,
       years: 1,
-      v: 0.04,
+      vP: 0.04,
+      vT: 0,
       h: 1,
       g: 1,
       m: -0.02,
@@ -40,10 +44,12 @@ describe('idio-path-logic', () => {
       vol: 0.2,
       lambda: 4,
       sd: 0.1,
+      share: 0,
       theta: 0,
       kappa: 0,
       years: 10,
-      v: 0.0804,
+      vP: 0.0804,
+      vT: 0,
       h: 10,
       g: 10,
       m: -0.202,
@@ -54,13 +60,15 @@ describe('idio-path-logic', () => {
       vol: 0.2,
       lambda: 4,
       sd: 0.1,
+      share: 0.2,
       theta: HALF_LIFE_15,
       kappa: 0,
       years: 10,
-      v: 0.0804,
+      vP: 0.0724,
+      vT: 0.008,
       h: 10,
       g: 6.526209,
-      m: -0.062354,
+      m: -0.188105,
     },
     {
       alpha: 0.02,
@@ -68,13 +76,15 @@ describe('idio-path-logic', () => {
       vol: 0.2,
       lambda: 4,
       sd: 0.1,
+      share: 0.2,
       theta: HALF_LIFE_15,
       kappa: HALF_LIFE_10,
       years: 10,
-      v: 0.0804,
+      vP: 0.0724,
+      vT: 0.008,
       h: 7.213475,
       g: 6.526209,
-      m: -0.118084,
+      m: -0.243835,
     },
     {
       alpha: -0.01,
@@ -82,13 +92,15 @@ describe('idio-path-logic', () => {
       vol: 0.4,
       lambda: 5,
       sd: 0.12,
+      share: 0.2,
       theta: HALF_LIFE_15,
       kappa: HALF_LIFE_10,
       years: 100,
-      v: 0.2325,
+      vP: 0.2005,
+      vT: 0.032,
       h: 14.412862,
       g: 10.819164,
-      m: -1.401856,
+      m: -10.342235,
     },
     {
       alpha: 0,
@@ -96,13 +108,15 @@ describe('idio-path-logic', () => {
       vol: 0.3,
       lambda: 2,
       sd: 0.06,
+      share: 0.2,
       theta: 0.1,
       kappa: 0,
       years: 50,
-      v: 0.0974,
+      vP: 0.0794,
+      vT: 0.018,
       h: 50,
       g: 4.999773,
-      m: -0.243489,
+      m: -2.029998,
     },
     {
       alpha: 0,
@@ -110,10 +124,12 @@ describe('idio-path-logic', () => {
       vol: 0.2,
       lambda: 0,
       sd: 0.1,
+      share: 0,
       theta: 0,
       kappa: 0,
       years: 10,
-      v: 0.04,
+      vP: 0.04,
+      vT: 0,
       h: 10,
       g: 10,
       m: -0.4,
@@ -124,13 +140,15 @@ describe('idio-path-logic', () => {
       vol: 0.2,
       lambda: 4,
       sd: 0.1,
+      share: 0.2,
       theta: HALF_LIFE_15,
       kappa: HALF_LIFE_10,
       years: 10,
-      v: 0.0804,
+      vP: 0.0724,
+      vT: 0.008,
       h: 7.213475,
       g: 6.526209,
-      m: 0.081916,
+      m: -0.043835,
     },
     {
       alpha: -0.01,
@@ -138,29 +156,68 @@ describe('idio-path-logic', () => {
       vol: 0.4,
       lambda: 5,
       sd: 0.12,
+      share: 0.2,
       theta: HALF_LIFE_15,
       kappa: HALF_LIFE_10,
       years: 100,
-      v: 0.2325,
+      vP: 0.2005,
+      vT: 0.032,
       h: 14.412862,
       g: 10.819164,
-      m: -2.401856,
+      m: -11.342235,
     },
   ])(
-    'gives v = $v, h = $h, g = $g and m = $m after $years years for β = $beta',
-    ({ alpha, beta, vol, lambda, sd, theta, kappa, years, v, h, g, m }) => {
-      const variance = idioVariance(vol, lambda, -0.01, sd);
+    'gives v_P = $vP, v_T = $vT, h = $h, g = $g and m = $m after $years years for β = $beta and w = $share',
+    ({ alpha, beta, vol, lambda, sd, share, theta, kappa, years, vP, vT, h, g, m }) => {
+      const variances = idioVariances(vol, share, lambda, -0.01, sd);
+      const permanent = variances.permanent + variances.jumps;
       const alphaWeight = decayWeight(kappa, years);
       const varianceWeight = decayWeight(2 * theta, years);
-      expect(variance).toBeCloseTo(v, 6);
+      expect(permanent).toBeCloseTo(vP, 6);
+      expect(variances.transient).toBeCloseTo(vT, 6);
       expect(alphaWeight).toBeCloseTo(h, 5);
       expect(varianceWeight).toBeCloseTo(g, 5);
       const drift = (1 - beta) * ZERO_BETA_RETURN;
-      expect(
-        expectedLogPath(alpha, alphaWeight, drift, years, variance, varianceWeight),
-      ).toBeCloseTo(m, 5);
+      const path =
+        expectedLogPath(alpha, alphaWeight, drift, years, permanent, years) +
+        expectedLogPath(0, 0, 0, years, variances.transient, varianceWeight);
+      expect(path).toBeCloseTo(m, 5);
     },
   );
+
+  // TS §6.4 (E-22 new): weights of the overnight and the session shock in the transient part.
+  it.each([
+    { o: 0.25, w: 0.2, overnight: 0.44641016, session: -0.02679492 },
+    { o: 0.25, w: 0, overnight: 0, session: 0 },
+    { o: 0.25, w: 0.25, overnight: 0.5, session: 0 },
+    { o: 0.25, w: 0.5, overnight: 0.6830127, session: 0.1830127 },
+    { o: 0.25, w: 1, overnight: 0.5, session: 0.8660254 },
+    { o: 0.3, w: 0.2, overnight: 0.44420852, session: -0.05175702 },
+  ])(
+    'gives the transient weights $overnight / $session for o = $o and w = $w',
+    ({ o, w, overnight, session }) => {
+      const weights = transientShockWeights(o, w);
+      expect(weights.overnight).toBeCloseTo(overnight, 8);
+      expect(weights.session).toBeCloseTo(session, 8);
+    },
+  );
+
+  it('splits the shocks into independent parts with the variances w and 1 − w', () => {
+    fc.assert(
+      fc.property(
+        fc.double({ min: 0, max: 1, noNaN: true }),
+        fc.double({ min: 0, max: 1, noNaN: true }),
+        (o, w) => {
+          const { overnight, session } = transientShockWeights(o, w);
+          const permanentOvernight = Math.sqrt(o) - overnight;
+          const permanentSession = Math.sqrt(1 - o) - session;
+          expect(overnight ** 2 + session ** 2).toBeCloseTo(w, 12);
+          expect(permanentOvernight ** 2 + permanentSession ** 2).toBeCloseTo(1 - w, 12);
+          expect(overnight * permanentOvernight + session * permanentSession).toBeCloseTo(0, 12);
+        },
+      ),
+    );
+  });
 
   it('approaches t for a vanishing rate and 1 / r in the long run', () => {
     expect(decayWeight(1e-9, 20)).toBeCloseTo(20, 5);
@@ -180,8 +237,8 @@ describe('idio-path-logic', () => {
     expect(dividendDrag(y, f)).toBeCloseTo(drag, 8);
   });
 
-  // TS §6.5 (E-33): ỹ(d) = ỹ_∞ + (ỹ_0 − ỹ_∞)·e^{−κ_y·d}, D(d) = ỹ_∞·d + (ỹ_0 − ỹ_∞)·(1 − e^{−κ_y·d})/κ_y
-  // and y = f·(1 − e^{−ỹ/f}), with ỹ_∞ the drag of 2.5 % and κ_y = ln 2 / 25 unless noted.
+  // TS §6.5 (E-33): ỹ(d) = ỹ_∞ + (ỹ_0 − ỹ_∞)·e^{−κ_y·d} and y = f·(1 − e^{−ỹ/f}), with ỹ_∞ the drag
+  // of 2.5 % and κ_y = ln 2 / 25 unless noted.
   it.each([
     {
       f: 1,
@@ -190,7 +247,6 @@ describe('idio-path-logic', () => {
       kappa: HALF_LIFE_25,
       d: 0,
       drag: 0.061875404,
-      total: 0,
       y: 0.06,
     },
     {
@@ -200,7 +256,6 @@ describe('idio-path-logic', () => {
       kappa: HALF_LIFE_25,
       d: 10,
       drag: 0.053023285,
-      total: 0.572450784,
       y: 0.05164207,
     },
     {
@@ -210,7 +265,6 @@ describe('idio-path-logic', () => {
       kappa: HALF_LIFE_25,
       d: 25,
       drag: 0.043596606,
-      total: 1.292213476,
       y: 0.042659935,
     },
     {
@@ -220,7 +274,6 @@ describe('idio-path-logic', () => {
       kappa: HALF_LIFE_25,
       d: 50,
       drag: 0.034457207,
-      total: 2.254792813,
       y: 0.033870318,
     },
     {
@@ -230,7 +283,6 @@ describe('idio-path-logic', () => {
       kappa: HALF_LIFE_25,
       d: 25,
       drag: 0.017545486,
-      total: 0.355266999,
       y: 0.017507062,
     },
     {
@@ -240,7 +292,6 @@ describe('idio-path-logic', () => {
       kappa: HALF_LIFE_25,
       d: 10,
       drag: 0.006091696,
-      total: 0.03186416,
       y: 0.006082428,
     },
     {
@@ -250,32 +301,19 @@ describe('idio-path-logic', () => {
       kappa: 0,
       d: 30,
       drag: 0.040405415,
-      total: 1.212162439,
       y: 0.04,
     },
   ])(
-    'gives the drag $drag, the total $total and the yield $y after $d years of payments',
-    ({ f, start, longRun, kappa, d, drag, total, y }) => {
+    'gives the drag $drag and the yield $y after $d years of payments',
+    ({ f, start, longRun, kappa, d, drag, y }) => {
       const current = dividendDragAt(start, longRun, kappa, d);
       expect(current).toBeCloseTo(drag, 8);
-      // The inputs are rounded to 9 digits; over 50 years that moves the total by up to 1e-8.
-      expect(cumulativeDividendDrag(start, longRun, kappa, d)).toBeCloseTo(total, 7);
       expect(yieldFromDrag(current, f)).toBeCloseTo(y, 8);
     },
   );
 
-  it('accumulates no markdown before the payments start', () => {
-    expect(cumulativeDividendDrag(0.03, 0.025, HALF_LIFE_25, 0)).toBe(0);
-    expect(cumulativeDividendDrag(0.03, 0.025, HALF_LIFE_25, -3)).toBe(0);
-    expect(cumulativeDividendDrag(0.03, 0.025, HALF_LIFE_25, -Infinity)).toBe(0);
-  });
-
-  it('approaches the long-run drag and grows by it in the long run', () => {
+  it('approaches the long-run drag in the long run', () => {
     expect(dividendDragAt(0.06, 0.025, HALF_LIFE_25, 2000)).toBeCloseTo(0.025, 12);
-    const slope =
-      cumulativeDividendDrag(0.06, 0.025, HALF_LIFE_25, 2001) -
-      cumulativeDividendDrag(0.06, 0.025, HALF_LIFE_25, 2000);
-    expect(slope).toBeCloseTo(0.025, 10);
   });
 
   it('gives no yield without a markdown or without payments', () => {

@@ -7,7 +7,12 @@ import { generateWorld } from '@app/world/domain/world-generator';
 import { DEFAULT_MARKET_CONFIG } from './default-market-config';
 import { GOLDEN_SEED } from './golden-master';
 import { isMarketDay } from './market-calendar';
-import { activityIntervalYears, createMarketContext, factorPathAt } from './market-context';
+import {
+  activityIntervalYears,
+  createMarketContext,
+  factorPathAt,
+  idioDayScale,
+} from './market-context';
 import { createMarketLayout, factorId, MarketLayout, WORLD_FACTOR } from './market-layout';
 import { MarketConfig } from './models/market-config.model';
 
@@ -202,5 +207,38 @@ describe('factorPathAt', () => {
     );
     expect(path.convexity[industry]).toBeCloseTo((g(years + DAY_YEARS) - g(years)) / DAY_YEARS, 9);
     expect(path.convexity[industry]).toBeLessThan(1);
+  });
+});
+
+describe('createMarketContext: idiosyncratic part (TS §6.4, E-22 new, 7.1b-02)', () => {
+  const seedKey = deriveSeedKey(GOLDEN_SEED);
+
+  it('normalises the volatility scale with M of the standard market', () => {
+    // M = 1.225508 for φ = 0.5 (TS §6.4, computed from the phase table of TS §6.3).
+    const context = createMarketContext(seedKey, world);
+    expect(context.idioVolNormalization).toBeCloseTo(1.225508, 5);
+    expect(idioDayScale(context, DEFAULT_MARKET_CONFIG.phases.crisis.volTarget)).toBeCloseTo(
+      1.595143,
+      5,
+    );
+  });
+
+  it('splits the diffusion variance into a permanent and a transient part', () => {
+    const context = createMarketContext(seedKey, world);
+    const w = DEFAULT_MARKET_CONFIG.idioTransientShare;
+    const i = 7;
+    const vol = layout.idioVol[i];
+    expect(context.transientVariance[i]).toBeCloseTo(w * vol * vol, 15);
+    expect(context.permanentVariance[i]).toBeCloseTo((1 - w) * vol * vol, 15);
+    // TS §6.4: w = 0.2 and o = 0.25 give the transient weights 0.446410 and −0.026795.
+    expect(context.transientWeights.overnight).toBeCloseTo(0.44641016, 8);
+    expect(context.transientWeights.session).toBeCloseTo(-0.02679492, 8);
+  });
+
+  it('refuses a transient share outside [0, 1]', () => {
+    for (const share of [-0.1, 1.2, Number.NaN]) {
+      const config: MarketConfig = { ...DEFAULT_MARKET_CONFIG, idioTransientShare: share };
+      expect(() => createMarketContext(seedKey, world, config)).toThrow(RangeError);
+    }
   });
 });

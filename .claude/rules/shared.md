@@ -28,6 +28,7 @@ What exists in the code, by topic. When an AP changes this area, work the change
 - `shared/domain`: money types, rounding (`money-logic.ts`), price grid (`price-step-logic.ts`).
 - `shared/util/format.ts` with `MISSING_VALUE` `–` and `formatOptional`; pipes in `shared/ui/pipes` (game date/time pipes in `clock/ui/pipes`): one per `format*` function (cents, price, number, percent, their signed variants, compact, compact euros `1,2 Mrd. €`, quantity in millionths, wall-clock date-time, bytes; PS §10.4). Non-obvious: `formatSignedPrice` uses its price's decimals, `formatFixedPrice` given decimals (e.g. spread).
 - Minus sign: signed formats and `formatPercent` use the typographic minus (`−12,3 %`); `formatCents`, `formatPrice`, `formatNumber` still use the hyphen-minus.
+- `formatCents(cents, maxFractionDigits = 2)` / pipe `formatCents: 4` shows fractions of a cent (dividends per share, AP 7.3d: `0,0049 €`).
 - Also `changeDirection` (`up`/`down`/`flat`), `contrastRatio` (`#/lab/tokens`).
 - `shared/util/search-ranking.ts` (`normalizeSearchText`, `searchTokens`, `searchScore`, `rankSearch`, `MATCH_TIERS`; table in TS §11.4) ranks the command palette and the glossary search (AP 6.5).
 

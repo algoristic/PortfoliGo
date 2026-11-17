@@ -91,6 +91,10 @@ describe('ETFs', () => {
       let rises = 0;
       for (const day of days) {
         for (let j = 1; j < boundaryCount; j++) {
+          // On its own ex-date the ETF pays the pot out at its open first.
+          if (day.etfExCents[distributing] > 0 && etfs.openBoundary[distributing] === j) {
+            continue;
+          }
           const before = day.etfPot[distributing * boundaryCount + j - 1];
           const after = day.etfPot[distributing * boundaryCount + j];
           let exHere = false;

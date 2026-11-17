@@ -82,8 +82,22 @@ export interface MarketConfig {
   factors: Readonly<Record<FactorKind, FactorParams>>;
   /** Share of the idiosyncratic daily variance in the overnight shock (TS §6.4). */
   overnightShare: number;
-  /** Speed `θ` p. a. at which `U_i` returns to its expected path (TS §6.4, E-22); 0 = none. */
+  /**
+   * Speed `θ` p. a. at which the transient part `T_i` of `U_i` returns to its expected path
+   * (TS §6.4, E-22); 0 = none.
+   */
   idioReversion: number;
+  /**
+   * Share `w` of the daily diffusion variance of `U_i` that goes into its transient part `T_i`
+   * (TS §6.4, E-22 new); the rest, jumps and dividend markdowns are permanent. At most
+   * `1 − overnightShare`, because the transient shock lies in the session.
+   */
+  idioTransientShare: number;
+  /**
+   * Exponent `φ` of the volatility clustering of `U_i` (TS §6.4, 7.1b-02): the diffusion variance of
+   * a day scales with `(s_world / s̄_world)^{2φ}`, normalised to a stationary mean of 1; 0 = constant.
+   */
+  idioVolCoupling: number;
   /** Rate `κ_α` p. a. at which the alpha of a share decays (TS §6.4, E-22); 0 = permanent. */
   alphaDecay: number;
   /**

@@ -108,7 +108,7 @@ describe('GameEngine upcoming', () => {
         paymentTick: payment,
         perShare: exDate.cents,
         quantity: 3_000_000,
-        expected: 3 * exDate.cents,
+        expected: Math.round((Math.round(exDate.cents * 100) * 3) / 100),
         earned: false,
       },
     ]);
@@ -123,7 +123,7 @@ describe('GameEngine upcoming', () => {
       {
         kind: 'dividend-payment',
         tick: payment,
-        amount: 3 * exDate.cents,
+        amount: Math.round((Math.round(exDate.cents * 100) * 3) / 100),
         perShare: undefined,
         instrumentId: exDate.instrumentId,
       },
@@ -143,7 +143,7 @@ describe('GameEngine upcoming', () => {
         paymentTick: payment,
         perShare: exDate.cents,
         quantity: 3_000_000,
-        expected: 3 * exDate.cents,
+        expected: Math.round((Math.round(exDate.cents * 100) * 3) / 100),
         earned: true,
       },
     ]);
@@ -151,7 +151,7 @@ describe('GameEngine upcoming', () => {
       {
         kind: 'dividend-payment',
         tick: payment,
-        amount: 3 * exDate.cents,
+        amount: Math.round((Math.round(exDate.cents * 100) * 3) / 100),
         perShare: undefined,
         instrumentId: exDate.instrumentId,
       },

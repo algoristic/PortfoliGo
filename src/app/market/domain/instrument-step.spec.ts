@@ -6,7 +6,7 @@ import { ANNOUNCEMENT_LEAD_DAYS, dividendCents } from './dividend-logic';
 import { stepInstrument } from './instrument-step';
 import { isMarketDay } from './market-calendar';
 import { MarketContext } from './market-context';
-import { InstrumentDividend } from './market-layout';
+import { InstrumentDividend, WORLD_FACTOR } from './market-layout';
 import { restoreMarket, snapshotMarket } from './market-snapshot';
 import { advanceMarket, createMarketDay, createMarketState } from './market-step';
 import { MarketState } from './models/market-state.model';
@@ -117,6 +117,54 @@ describe('stepInstrument', () => {
     expect(second.jumpStart[42]).toBe(5);
   });
 
+  it('scales the diffusion of the day with (s_world / s̄_world)^φ (TS §6.4, 7.1b-02)', () => {
+    // The overnight shock has no drift: four times the world factor volatility moves it 4^φ times.
+    const { idioVolCoupling, phases, referencePhase } = DEFAULT_MARKET_CONFIG;
+    const reference = phases[referencePhase].volTarget;
+    const day = 100;
+    const moves = [reference, 4 * reference].map((worldVol) => {
+      const state = createMarketState(context);
+      const out = createMarketDay(context);
+      out.factorVols[WORLD_FACTOR] = worldVol;
+      stepInstrument(context, 42, day, state, out);
+      return out.idioOpen[42] - out.prevIdioClose[42];
+    });
+    expect(moves[1] / moves[0]).toBeCloseTo(4 ** idioVolCoupling, 12);
+  });
+
+  it('keeps the transient part apart and adds its change to U (E-22 new)', () => {
+    const state = createMarketState(context);
+    state.idioTransient[42] = 0.2;
+    state.idioClose[42] = 0.5;
+    const out = createMarketDay(context);
+    out.factorVols[WORLD_FACTOR] = DEFAULT_MARKET_CONFIG.phases.normal.volTarget;
+    const same = restoreMarket(snapshotMarket(state));
+    same.idioTransient[42] = 0;
+    same.idioClose[42] = 0.3;
+    const sameOut = createMarketDay(context);
+    sameOut.factorVols[WORLD_FACTOR] = DEFAULT_MARKET_CONFIG.phases.normal.volTarget;
+    stepInstrument(context, 42, 100, state, out);
+    stepInstrument(context, 42, 100, same, sameOut);
+    // Only T returns: 0.2 more T at the start leaves e^{−θ·Δ_T}·0.2 more of T and of U.
+    const kept = Math.exp(-DEFAULT_MARKET_CONFIG.idioReversion / 261) * 0.2;
+    expect(state.idioTransient[42] - same.idioTransient[42]).toBeCloseTo(kept, 12);
+    expect(state.idioClose[42] - same.idioClose[42]).toBeCloseTo(kept, 12);
+    // 0.2 more of the permanent part stays whole.
+    const permanent = restoreMarket(snapshotMarket(same));
+    permanent.idioClose[42] = 0.5;
+    const permanentOut = createMarketDay(context);
+    permanentOut.factorVols[WORLD_FACTOR] = DEFAULT_MARKET_CONFIG.phases.normal.volTarget;
+    const base = restoreMarket(snapshotMarket(same));
+    base.idioClose[42] = 0.3;
+    base.idioTransient[42] = 0;
+    permanent.idioTransient[42] = 0;
+    const baseOut = createMarketDay(context);
+    baseOut.factorVols[WORLD_FACTOR] = DEFAULT_MARKET_CONFIG.phases.normal.volTarget;
+    stepInstrument(context, 42, 101, permanent, permanentOut);
+    stepInstrument(context, 42, 101, base, baseOut);
+    expect(permanent.idioClose[42] - base.idioClose[42]).toBeCloseTo(0.2, 12);
+  });
+
   it('includes the jumps of the day in the close', () => {
     const state = createMarketState(context);
     const day = createMarketDay(context);
@@ -172,16 +220,27 @@ describe('stepInstrument', () => {
       }
     });
 
-    it('announces an amount that does not depend on the announcement day', () => {
-      // Changing everything that is drawn or computed for the announcement day leaves the amount.
+    it('announces an amount that does not depend on the draws and prices of the announcement day', () => {
+      // Other draws (a later day) and other factor levels and volatilities: only the target yield
+      // of the day and the previous close enter (TS §6.5).
+      const dividend = context.layout.dividends[payer];
+      if (dividend === null) {
+        throw new Error('test setup: no dividend payer');
+      }
       const announcementDay = announcements[announcements.length - 1].day;
       const before = stateAt(announcementDay);
-      const plain = stepCopy(before, payer, announcementDay);
       const shifted = restoreMarket(snapshotMarket(before));
       const out = createMarketDay(context);
       out.factorLevels.fill(0.5);
+      out.factorVols.fill(0.3);
       stepInstrument(context, payer, announcementDay + 7, shifted, out);
-      expect(out.announcedCents[payer]).toBe(plain.out.announcedCents[payer]);
+      expect(out.announcedCents[payer]).toBe(
+        dividendCents(
+          lifecycleYield(dividend, announcementDay + 7),
+          dividend.frequency,
+          priceFromLog(before.logClose[payer], FLOOR),
+        ),
+      );
     });
 
     it('has the ex-dates of its frequency in every year once the payments started', () => {

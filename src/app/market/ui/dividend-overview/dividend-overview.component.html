@@ -35,7 +35,7 @@
       </dd>
       <dd class="font-medium tabular-nums" data-testid="market.instrument.dividends.next.amount">
         @if (next.cents !== null) {
-          {{ next.cents | formatCents }}
+          {{ next.cents | formatCents: 4 }}
         } @else if (_dividends.kind === 'etf') {
           <span
             class="text-xs font-normal text-fg-muted"
@@ -110,7 +110,7 @@
                 {{ payment.paymentTick | formatGameDate }}
               </td>
               <td appTableCell align="end" data-testid="market.instrument.dividends.history.amount">
-                {{ payment.cents | formatCents }}
+                {{ payment.cents | formatCents: 4 }}
               </td>
             </tr>
           }

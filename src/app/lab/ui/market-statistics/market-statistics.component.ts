@@ -125,6 +125,7 @@ export class MarketStatisticsComponent {
     'world-kurtosis': $localize`:@@uiLab-marketStatistics-targetWorldKurtosis:Weltindex, Kurtosis der Tagesrenditen`,
     'stock-kurtosis': $localize`:@@uiLab-marketStatistics-targetStockKurtosis:Aktien, Kurtosis der Tagesrenditen (Median)`,
     'stock-autocorrelation-lag1': $localize`:@@uiLab-marketStatistics-targetStockAutocorrelationLag1:Aktien, Autokorrelation der Tagesrenditen, Lag 1 (Median)`,
+    'stock-abs-autocorrelation-lag1': $localize`:@@uiLab-marketStatistics-targetStockAbsAutocorrelationLag1:Aktien, Autokorrelation der Beträge der Tagesrenditen, Lag 1 (Median)`,
     'stock-max-price': $localize`:@@uiLab-marketStatistics-targetStockMaxPrice:Aktien, Höchstkurs im Zeitraum (€)`,
     'equal-weight-premium': $localize`:@@uiLab-marketStatistics-targetEqualWeightPremium:Mehrrendite der Gleichgewichtung (jährlich umgeschichtet) gegen den Weltindex p. a.`,
     'drawdown-strategy-premium': $localize`:@@uiLab-marketStatistics-targetDrawdownStrategyPremium:Mehrrendite der 20 Aktien mit dem größten Abstand zum Hoch (jährlich) p. a.`,

@@ -193,7 +193,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 7.3a  | Korrekturen: Absicherung und Messung               | fertig    | 7.1a, 7.1b                |
 | 7.3b  | Korrekturen: kleine Korrekturen und Doku           | fertig    | 7.1a, 7.1b, 7.1c, 7.2     |
 | 7.3c  | Korrekturen: Rendite und Benchmark                 | fertig    | 7.1c                      |
-| 7.3d  | Korrekturen: Modelländerung Marktmodell            | offen     | 7.3a                      |
+| 7.3d  | Korrekturen: Modelländerung Marktmodell            | fertig    | 7.3a                      |
 | 7.3e  | Korrekturen: Neukalibrierung                       | offen     | 7.3d                      |
 | 7.4   | UI-Bausteine vereinheitlichen                      | fertig    | 6.6                       |
 | 7.5   | UI-Overhaul: Vorlage auswerten                     | offen     | 7.3b, 7.3c, 7.4           |
@@ -597,7 +597,7 @@ flowchart TD
   AP10_2b --> AP10_15
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP7_1a,AP7_1b,AP7_1c,AP7_2,AP7_3a,AP7_3b,AP7_3c,AP7_4 done
+  class AP7_1a,AP7_1b,AP7_1c,AP7_2,AP7_3a,AP7_3b,AP7_3c,AP7_3d,AP7_4 done
   class AP6_6 active
 ```
 
@@ -1330,7 +1330,7 @@ Jeder Push auf `main` deployt; jedes Teil-AP trägt deshalb seinen Versionssprun
   - `U_i` nach E-22 neu, Weg (a): dauerhafter Anteil mit vollem Kompensator und kleiner vorübergehender Anteil (Ausgangswert rund 20 % der Varianz); Rückkehr der Unterfaktoren `θ_k` prüfen (7.1b-01).
   - Volatilitäts-Clustering der Einzelaktien: `σ_i` mit einem gedämpften Marktzustand skalieren, Kompensator mit der Tagesvarianz; Info-Zeile „ACF(|r|, 1) im Median der Aktien“ (7.1b-02).
   - Dividende je Aktie mit vier Nachkommastellen, Gutschrift auf Cent (7.1b-09).
-  - Optional Kappung der Indizes zum Spielstart statt zur Epoche (7.1b-04).
+  - ~~Optional Kappung der Indizes zum Spielstart statt zur Epoche (7.1b-04).~~ Entfällt (PO): Die Kappung bleibt zur Epoche.
   - Welt: Sektorbesetzung per Größtrestverfahren (7.1a-03, die Ausnahme aus AP 7.3a entfällt wieder), Dividendenrendite ohne Punktmasse an der Obergrenze (7.1a-09), Nichtzahler mit `startDay > 0` (7.1a-10), Abbruch der Poisson-Inversion (7.1a-13).
   - Betroffene Kalibrierungsziele als „offen bis AP 7.3e“ (wie E-39).
 - **Abnahme:** Beispieltabellen in TS §6.4 neu und unabhängig nachgerechnet; die Prämien-Info-Ziele aus AP 7.3a zeigen die Wirkung (Gleichgewichtung und „tiefste Abstände“ nahe dem realen Bereich); Determinismus-Vertrag; Golden Master neu eingefroren, `SIM_VERSION` 2.

@@ -535,6 +535,10 @@ describe('InstrumentPage', () => {
     all('market.instrument.dividends.history.ex-day').forEach((cell, index) =>
       expect(textOf(cell)).toBe(date(dividends.history[index].exDay)),
     );
+    // Amounts per share with up to four decimal places, exactly the engine's (TS §6.5).
+    all('market.instrument.dividends.history.amount').forEach((cell, index) =>
+      expect(parseEuros(textOf(cell))).toBeCloseTo(dividends.history[index].cents / 100, 6),
+    );
     if (dividends.next !== null) {
       expect(text('market.instrument.dividends.next.ex-day')).toBe(date(dividends.next.exDay));
       expect(text('market.instrument.dividends.next.payment-day')).toBe(
@@ -543,8 +547,9 @@ describe('InstrumentPage', () => {
       if (dividends.next.cents === null) {
         expect(text('market.instrument.dividends.next.amount')).toBe('noch nicht angekündigt');
       } else {
-        expect(parseEuros(text('market.instrument.dividends.next.amount'))).toBe(
+        expect(parseEuros(text('market.instrument.dividends.next.amount'))).toBeCloseTo(
           dividends.next.cents / 100,
+          6,
         );
       }
     }
@@ -574,10 +579,16 @@ describe('InstrumentPage', () => {
     expect(queryByTestId(page, 'market.instrument.closed')).toBeNull();
     const opened = text('market.instrument.last');
     await act(() => click(byTestId(page, 'shell.header.toggle-pause')));
-    await run(3_000);
+    // The last price moves by whole cents and may come back, so every second counts.
+    const seen = new Set<string>();
+    for (let second = 0; second < 3; second++) {
+      await run(1_000);
+      seen.add(text('market.instrument.last'));
+    }
     await act(() => click(byTestId(page, 'shell.header.toggle-pause')));
     await run(500);
-    expect(text('market.instrument.last')).not.toBe(opened);
+    seen.delete(opened);
+    expect(seen.size).toBeGreaterThan(0);
     expect(flashes.length).toBeGreaterThan(0);
     expect(flashes.every((flash) => flash === 'up' || flash === 'down')).toBe(true);
   });

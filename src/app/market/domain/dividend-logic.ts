@@ -5,8 +5,8 @@ import {
   isBankWorkingDay,
   tickToDateTime,
 } from '@app/clock/domain/calendar-logic';
-import { Cents } from '@app/shared/domain/models/money.model';
-import { eurosToCents } from '@app/shared/domain/money-logic';
+import { Cents, CENTS_PER_EURO } from '@app/shared/domain/models/money.model';
+import { roundHalfAwayFromZero } from '@app/shared/domain/money-logic';
 import { detLog } from '@app/simulation/util/det-math';
 import { DividendSchedule } from '@app/world/domain/models/company.model';
 import { DividendFrequency, DIVIDENDS_PER_YEAR } from '@app/world/domain/models/taxonomy.model';
@@ -19,6 +19,8 @@ export const ANNOUNCEMENT_LEAD_DAYS = 20;
 export const PAYMENT_LAG_DAYS = 2;
 
 const MONTHS_PER_YEAR = 12;
+/** A dividend per share has four decimals in euros, two in cents (TS §6.5). */
+const HUNDREDTHS_PER_CENT = 100;
 
 /** First ex-date on or after `day`: the first market day on or after a scheduled date. */
 export function exDayOnOrAfter(
@@ -65,15 +67,18 @@ export function paymentDay(exDay: number): number {
 }
 
 /**
- * Dividend per share in cents: target yield × close before the announcement ÷ frequency
- * (TS §6.5). The prices of the announcement day itself never enter.
+ * Dividend per share in cents with two decimals, i.e. euros with four (TS §6.5, 7.1b-09): target
+ * yield × close before the announcement ÷ frequency, rounded half away from zero to a hundredth of
+ * a cent. The credit rounds to whole cents (`distributionAmount`). The prices of the announcement
+ * day itself never enter.
  */
 export function dividendCents(
   targetYield: number,
   frequency: DividendFrequency,
   lastClose: number,
 ): Cents {
-  return eurosToCents((targetYield * lastClose) / DIVIDENDS_PER_YEAR[frequency]);
+  const euros = (targetYield * lastClose) / DIVIDENDS_PER_YEAR[frequency];
+  return roundHalfAwayFromZero(euros * CENTS_PER_EURO * HUNDREDTHS_PER_CENT) / HUNDREDTHS_PER_CENT;
 }
 
 /**

@@ -24,6 +24,7 @@ const RULE_SPECS = [
   'src/app/market/domain/price-logic.spec.ts',
   'src/app/market/domain/index-layout.spec.ts',
   'src/app/market/domain/idio-path-logic.spec.ts',
+  'src/app/market/domain/idio-volatility-logic.spec.ts',
   'src/app/market/domain/market-calendar.spec.ts',
   'src/app/market/domain/performance-logic.spec.ts',
   'src/app/market/domain/screener-logic.spec.ts',

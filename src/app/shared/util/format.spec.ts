@@ -27,6 +27,17 @@ describe('format', () => {
       expect(formatCents(-5)).toBe(`-0,05${NBSP}€`);
       expect(formatCents(0)).toBe(`0,00${NBSP}€`);
     });
+
+    // TS §6.5, §11.9: a dividend per share has up to four decimal places in euros.
+    it.each([
+      [0.49, `0,0049${NBSP}€`],
+      [37.5, `0,375${NBSP}€`],
+      [150, `1,50${NBSP}€`],
+      [10.05, `0,1005${NBSP}€`],
+      [0.13, `0,0013${NBSP}€`],
+    ])('formats %d cents with up to four decimal places as %s', (cents, expected) => {
+      expect(formatCents(cents, 4)).toBe(expected);
+    });
   });
 
   describe('formatPrice', () => {
@@ -187,6 +198,7 @@ describe('format', () => {
     it.each<[string, () => string, string]>([
       ['formatCents(123456)', () => formatCents(123456), '€1,234.56'],
       ['formatCents(-5)', () => formatCents(-5), '-€0.05'],
+      ['formatCents(0.49, 4)', () => formatCents(0.49, 4), '€0.0049'],
       ['formatPrice(123.4)', () => formatPrice(123.4), '€123.40'],
       ['formatPrice(8.002, 3)', () => formatPrice(8.002, 3), '€8.002'],
       ['formatPrice(0.5, 4)', () => formatPrice(0.5, 4), '€0.5000'],

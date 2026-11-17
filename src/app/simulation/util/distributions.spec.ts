@@ -200,6 +200,13 @@ describe('distributions', () => {
       );
     });
 
+    it('ends the search when rounding keeps the distribution function below u (7.1a-13)', () => {
+      // The largest uniform 1 − 2⁻⁵³; before AP 7.3d λ = 3/252 ran on to k = 94 until p reached 0.
+      const top = { nextFloat53: () => 1 - 2 ** -53 } as unknown as RandomStream;
+      expect(poisson(top, 3 / 252)).toBeLessThanOrEqual(10);
+      expect(poisson(top, 1)).toBeLessThanOrEqual(25);
+    });
+
     it('throws for lambda outside the supported range', () => {
       const rng = createStream(seedKey, 'poisson/invalid');
       expect(() => poisson(rng, -1)).toThrow(RangeError);

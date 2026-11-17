@@ -33,9 +33,18 @@ export function formatOptional<T extends number>(
     : format(value);
 }
 
-/** Formats an amount of cents as euros, e.g. `123456` → `1.234,56 €`. */
-export function formatCents(cents: number): string {
-  return numberFormat({ style: 'currency', currency: 'EUR' }).format(cents / 100);
+/**
+ * Formats an amount of cents as euros, e.g. `123456` → `1.234,56 €`. `maxFractionDigits` (2–4)
+ * shows fractions of a cent where they exist, e.g. a dividend per share (TS §6.5): `0.49` with 4 →
+ * `0,0049 €`, `37.5` → `0,375 €`, `150` → `1,50 €`.
+ */
+export function formatCents(cents: number, maxFractionDigits = 2): string {
+  return numberFormat({
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: maxFractionDigits,
+  }).format(cents / 100);
 }
 
 /** Formats a price in euros with a fixed number of decimal places, e.g. `8.002` → `8,002 €`. */

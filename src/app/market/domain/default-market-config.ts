@@ -65,7 +65,12 @@ export const DEFAULT_MARKET_CONFIG: MarketConfig = {
     size: { ...SUB_FACTOR, trendTarget: 0.015, trendVol: 0.02, volTarget: 0.04 },
   },
   overnightShare: 0.25,
+  // E-22 new (AP 7.3d): a fifth of the diffusion variance of U_i is transient and returns with a
+  // half-life of 10 years; the rest is a random walk. Start values, tuned in AP 7.3e.
   idioReversion: Math.LN2 / 10,
+  idioTransientShare: 0.2,
+  // Damped coupling of the idiosyncratic volatility to the world factor (7.1b-02).
+  idioVolCoupling: 0.5,
   alphaDecay: Math.LN2 / 7,
   zeroBetaReturn: 0.05,
   closedActivity: 0,

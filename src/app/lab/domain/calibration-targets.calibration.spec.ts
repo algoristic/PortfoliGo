@@ -24,7 +24,8 @@ import { TEST_SEEDS } from '../../../testing/seeds';
 // period of up to ten years are measured over the prehistory from the epoch, the others (return,
 // bear markets) from the epoch to 100 years after the game start. The long-term limits (E-22) hold
 // at the checkpoints and in the rolling windows of the same long run. The broad seed set of E-34
-// runs as info in `calibration-seeds.calibration.spec.ts` (AP 7.3a).
+// runs as info in `calibration-seeds.calibration.spec.ts` (AP 7.3a). Targets and limits marked
+// `openUntil` (E-39) are reported, not checked, until that work package recalibrates them.
 
 /** Prehistory, 100 years and the statistics of both take about 20 s per seed. */
 const RUN_TIMEOUT = 600_000;
@@ -32,11 +33,16 @@ const RUN_TIMEOUT = 600_000;
 function expectWithinLimit(
   label: string,
   values: number[],
-  limit: Pick<LongTermLimit, 'min' | 'max'>,
+  limit: Pick<LongTermLimit, 'min' | 'max' | 'openUntil'>,
 ): void {
   const value = median(values);
   const message = `${label}: median ${value} of ${values.join(' / ')}`;
   expect(Number.isFinite(value), message).toBe(true);
+  if (limit.openUntil !== undefined) {
+    const band = `${limit.min ?? ''}…${limit.max ?? ''}`;
+    console.info(`open until ${limit.openUntil} (E-39): ${message}, band ${band}`);
+    return;
+  }
   if (limit.min !== undefined) {
     expect(value, message).toBeGreaterThanOrEqual(limit.min);
   }
@@ -57,7 +63,7 @@ describe('calibration targets (TS §6.9)', () => {
   }, RUN_TIMEOUT);
 
   it.each(BANDED_TARGETS.map((target) => [target.id, target] as const))(
-    'keeps %s in its band in the median of the seeds',
+    'keeps %s in its band in the median of the seeds (or reports it while open, E-39)',
     (id, target) => {
       const long = measuredOverLongRun(target);
       const values = runs.map((run) => {

@@ -318,9 +318,9 @@ describe('GameEngine properties', () => {
     );
     world = { ...engine.world, world: { ...engine.world.world, banks } };
     const { companies, indices, etfs } = mini;
-    // The positions get dividends of `stk-0003` (ex 28.05.2030) and a distribution of the
-    // distributing `etf-0004` (ex 14.05.2030) within the runs.
-    instruments = [companies[2].id, `${indices[0].id}-tr`, etfs[3].id, companies[1].id];
+    // The positions get dividends of `stk-0013` (ex 14.05.2030) and a distribution of the
+    // distributing `etf-0005` (ex 19.05.2030) within the runs.
+    instruments = [companies[12].id, `${indices[0].id}-tr`, etfs[4].id, companies[1].id];
     const books = withBooks(engine.snapshot(), {
       accounts: [
         { kind: 'savings', bankId: 'b1', balance: 30_000_000 },
@@ -333,7 +333,7 @@ describe('GameEngine properties', () => {
     books.player.positions = [
       {
         depotId: 'dep-7',
-        instrumentId: companies[2].id,
+        instrumentId: companies[12].id,
         quantity: 15_500_000,
         lots: [
           { buyTick: 0, quantity: 10_000_000, cost: 123_456 },
@@ -344,7 +344,7 @@ describe('GameEngine properties', () => {
       },
       {
         depotId: 'dep-7',
-        instrumentId: etfs[3].id,
+        instrumentId: etfs[4].id,
         quantity: 8_000_000,
         lots: [{ buyTick: 0, quantity: 8_000_000, cost: 40_001 }],
         realizedGain: 0,

@@ -28,6 +28,7 @@ import {
   Country,
   CYCLICALITIES,
   Cyclicality,
+  Industry,
   RiskClass,
   SizeClass,
   Style,
@@ -61,6 +62,43 @@ function drawCountries(rng: RandomStream, config: CompanyConfig): Country[] {
     }
   });
   return shuffle(rng, countries);
+}
+
+/**
+ * Industry of every company (TS §5.2, 7.1a-03): counts allocated by weight like the countries and
+ * shuffled, so every sector keeps its share in every world and none stays empty.
+ */
+function drawIndustries(rng: RandomStream, count: number): Industry[] {
+  const counts = allocateByLargestRemainder(
+    count,
+    INDUSTRIES.map((industry) => industry.weight),
+  );
+  const industries: Industry[] = [];
+  INDUSTRIES.forEach((industry, index) => {
+    for (let i = 0; i < counts[index]; i++) {
+      industries.push(industry);
+    }
+  });
+  return shuffle(rng, industries);
+}
+
+/**
+ * Target dividend yield of a payer at the epoch (TS §5.4, 7.1a-09): uniform in the industry's range
+ * scaled by the style factor, with the upper end capped at `maxDividendYield` before the draw, so
+ * that no yields pile up at the cap; on the grid of 0.01 %, at least 0.1 %.
+ */
+function drawDividendYield(
+  rng: RandomStream,
+  range: readonly [number, number],
+  styleFactor: number,
+  config: CompanyConfig,
+): number {
+  const low = Math.min(range[0] * styleFactor, config.maxDividendYield);
+  const high = Math.min(range[1] * styleFactor, config.maxDividendYield);
+  return Math.max(
+    MIN_DIVIDEND_YIELD,
+    roundToGrid(uniformIn(rng, [low, high]), YIELD_STEPS_PER_UNIT),
+  );
 }
 
 function sizeClass(marketCapEuros: number, config: CompanyConfig): SizeClass {
@@ -119,14 +157,15 @@ export function generateCompanies(
   config: CompanyConfig,
   registries: GenerationRegistries,
 ): Company[] {
-  const industryWeights = INDUSTRIES.map((industry) => industry.weight);
-  return drawCountries(rng, config).map((country, index) => {
+  const countries = drawCountries(rng, config);
+  const industries = drawIndustries(rng, config.count);
+  return countries.map((country, index) => {
     const region = REGIONS.find((candidate) => candidate.id === country.regionId);
     const exchange = EXCHANGES.find((candidate) => candidate.countryId === country.id);
     if (!region || !exchange) {
       throw new Error(`generateCompanies: incomplete taxonomy for ${country.id}`);
     }
-    const industry = INDUSTRIES[weightedIndex(rng, industryWeights)];
+    const industry = industries[index];
 
     const industryWord =
       rng.nextFloat53() < INDUSTRY_WORD_SHARE ? pick(rng, industry.nameStems) : null;
@@ -151,16 +190,7 @@ export function generateCompanies(
 
     const paysDividend = rng.nextFloat53() >= industry.noDividendShare;
     const dividendYield = paysDividend
-      ? Math.max(
-          MIN_DIVIDEND_YIELD,
-          roundToGrid(
-            Math.min(
-              config.maxDividendYield,
-              uniformIn(rng, industry.dividendYield) * config.dividendStyleFactor[style],
-            ),
-            YIELD_STEPS_PER_UNIT,
-          ),
-        )
+      ? drawDividendYield(rng, industry.dividendYield, config.dividendStyleFactor[style], config)
       : 0;
 
     const worldBeta = uniformIn(rng, config.worldBeta[cyclicality]);
