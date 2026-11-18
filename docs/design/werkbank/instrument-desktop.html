@@ -1,0 +1,2693 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Werkbank – Instrument (Desktop)</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap"
+      rel="stylesheet" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          13px/1.4 Inter,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        color-scheme: dark;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      h1,
+      h2,
+      h3,
+      p,
+      ul {
+        margin: 0;
+        padding: 0;
+      }
+      ul {
+        list-style: none;
+      }
+      :focus-visible {
+        outline: 1px solid var(--focus);
+        outline-offset: -1px;
+      }
+      .ic {
+        width: 1em;
+        height: 1em;
+        flex: none;
+        display: inline-block;
+        vertical-align: -0.125em;
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+      }
+      .up {
+        color: var(--up);
+      }
+      .down {
+        color: var(--down);
+      }
+      .mut {
+        color: var(--mut);
+      }
+      .xc {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        --xc-y: 60px;
+        outline-offset: -1px;
+      }
+      .xc-pane {
+        position: relative;
+        display: flex;
+        min-height: 0;
+        border-bottom: 1px solid var(--grid-strong);
+      }
+      .xc-main {
+        flex: 1;
+      }
+      .xc-plot {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        cursor: crosshair;
+      }
+      .xc-plot > svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .xc-y {
+        position: relative;
+        width: var(--xc-y);
+        flex: none;
+        border-left: 1px solid var(--grid-strong);
+        font-size: 11px;
+        color: var(--mut);
+        font-variant-numeric: tabular-nums;
+      }
+      .xc-y span,
+      .xc-y b {
+        position: absolute;
+        left: 0;
+        right: 0;
+        padding: 0 6px;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        font-weight: 400;
+      }
+      .xc-y b {
+        color: #0c0e12;
+        background: var(--c);
+        padding: 1px 6px;
+        z-index: 1;
+      }
+      .xc-x {
+        position: relative;
+        height: 24px;
+        flex: none;
+        margin-right: var(--xc-y);
+        font-size: 11px;
+        color: var(--mut);
+        font-variant-numeric: tabular-nums;
+      }
+      .xc-x span {
+        position: absolute;
+        top: 5px;
+        transform: translateX(-50%);
+        white-space: nowrap;
+      }
+      .xc-v {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 0;
+        border-left: 1px dashed var(--cross);
+        pointer-events: none;
+      }
+      .xc-h {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 0;
+        border-top: 1px dashed var(--cross);
+        pointer-events: none;
+      }
+      .xc-yl,
+      .xc-xl {
+        position: absolute;
+        background: var(--cross-bg);
+        color: var(--cross-fg);
+        font-size: 11px;
+        padding: 1px 6px;
+        white-space: nowrap;
+        z-index: 2;
+        pointer-events: none;
+      }
+      .xc-yl {
+        left: 0;
+        right: 0;
+        transform: translateY(-50%);
+      }
+      .xc-xl {
+        top: 3px;
+        transform: translateX(-50%);
+      }
+      .xc [hidden] {
+        display: none;
+      }
+      .xc-line {
+        position: absolute;
+        left: 10px;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 1px 6px;
+        font-size: 11px;
+        background: var(--surface);
+        border: 1px solid var(--c);
+        color: var(--fg);
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .xc-mark {
+        position: absolute;
+        transform: translate(-50%, 0);
+        color: var(--c);
+        font-size: 10px;
+        line-height: 1;
+        text-align: center;
+        pointer-events: none;
+        font-weight: 600;
+      }
+      .xc-tag {
+        position: absolute;
+        left: 8px;
+        top: 4px;
+        font-size: 11px;
+        color: var(--mut);
+        pointer-events: none;
+      }
+      .leg {
+        position: absolute;
+        left: 8px;
+        top: 6px;
+        z-index: 1;
+        pointer-events: none;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .leg-r {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0 8px;
+        align-items: baseline;
+        font-variant-numeric: tabular-nums;
+      }
+      .leg-r i {
+        font-style: normal;
+        color: var(--mut);
+      }
+      .leg-d {
+        display: inline-block;
+        width: 10px;
+        height: 2px;
+        margin-right: 5px;
+        vertical-align: middle;
+        background: var(--c);
+      }
+      :root {
+        --bg: #0b0d10;
+        --surface: #0b0d10;
+        --panel: #121519;
+        --raised: #181c22;
+        --sel: #1a1e24;
+        --line: #262b33;
+        --line-s: #1f242b;
+        --line-2: #2f353e;
+        --fg: #e9ecef;
+        --fg-2: #c9ced5;
+        --mut: #9aa3ad;
+        --acc: #f2a93b;
+        --acc-fg: #0b0d10;
+        --up: #33d17a;
+        --down: #ff6b6b;
+        --up-c: #33d17a;
+        --down-c: #ff6b6b;
+        --line-c: #4a86ff;
+        --grid: #171b21;
+        --grid-strong: #262b33;
+        --cross: #9aa3ad;
+        --cross-bg: #2f353e;
+        --cross-fg: #fff;
+        --c1: #4a86ff;
+        --c2: #c653b8;
+        --bar: #5c6672;
+        --focus: #f2a93b;
+        --mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+      }
+      body {
+        font-family:
+          'IBM Plex Sans',
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .m,
+      .num {
+        font-family: var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .lb {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        color: var(--mut);
+        text-transform: uppercase;
+      }
+      .xc {
+        touch-action: pan-y;
+      }
+      .xc-y,
+      .xc-x,
+      .xc-yl,
+      .xc-xl,
+      .xc-line,
+      .leg-r {
+        font-family: var(--mono);
+      }
+      .xc-y {
+        font-size: 10.5px;
+      }
+      .xc-line {
+        font-size: 10.5px;
+      }
+      .leg {
+        font-size: 11.5px;
+        padding: 1px 4px;
+        margin: -1px -4px;
+        background: color-mix(in srgb, var(--bg) 80%, transparent);
+      }
+      .leg b {
+        font-family: 'IBM Plex Sans', sans-serif;
+      }
+      .lg-act {
+        display: none;
+      }
+      .xc.act .lg-act {
+        display: flex;
+      }
+      .xc.act .lg-idle {
+        display: none;
+      }
+      .pz {
+        display: none;
+      }
+      .paused .pz {
+        display: inline;
+      }
+      .paused .run {
+        display: none;
+      }
+
+      .wb {
+        height: 100vh;
+        min-height: 700px;
+        min-width: 1240px;
+        display: grid;
+        grid-template-rows: 44px 27px minmax(0, 1fr) 24px;
+        --rail: 74px;
+        --pri: 236px;
+        --sec: 292px;
+        --pn: 236px;
+        background: var(--bg);
+        overflow: hidden;
+      }
+      .wb.no-pri {
+        --pri: 0px;
+      }
+      .wb.no-sec {
+        --sec: 0px;
+      }
+      .wb.no-pn {
+        --pn: 0px;
+      }
+      .wb.no-vol .xc-pane:not(.xc-main) {
+        display: none;
+      }
+      .hd {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-right: 6px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+        min-width: 0;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: var(--rail);
+        flex: none;
+        justify-content: center;
+        height: 100%;
+        border-right: 1px solid var(--line);
+      }
+      .logo i {
+        width: 12px;
+        height: 12px;
+        background: var(--acc);
+        display: block;
+      }
+      .brand {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+      }
+      .mnu {
+        display: flex;
+        align-items: center;
+      }
+      .mnu button {
+        padding: 4px 7px;
+        font-size: 12.5px;
+        color: var(--fg-2);
+      }
+      .mnu button:hover,
+      .ib:hover {
+        background: var(--raised);
+      }
+      .burger {
+        display: none;
+      }
+      .ib {
+        width: 28px;
+        height: 28px;
+        display: inline-grid;
+        place-items: center;
+        color: var(--fg-2);
+        font-size: 14px;
+        flex: none;
+      }
+      .ib.on {
+        color: var(--acc);
+      }
+      .clk {
+        display: flex;
+        align-items: stretch;
+        height: 30px;
+        font-family: var(--mono);
+        border: 1px solid var(--line-2);
+        background: var(--bg);
+        flex: none;
+      }
+      .clk > * {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 8px;
+        border-left: 1px solid var(--line-2);
+        font-size: 11.5px;
+        white-space: nowrap;
+      }
+      .clk > :first-child {
+        border-left: 0;
+      }
+      .clk .time {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .clk .date {
+        color: var(--mut);
+        margin-right: 2px;
+        font-size: 11px;
+      }
+      .clk .pause {
+        color: var(--acc);
+        font-size: 13px;
+        width: 30px;
+        justify-content: center;
+        padding: 0;
+      }
+      .clk .sp {
+        padding: 0 2px;
+        gap: 0;
+      }
+      .clk .sp .ib {
+        width: 22px;
+        height: 26px;
+        font-size: 12px;
+      }
+      .clk .sp b {
+        font-weight: 400;
+        min-width: 62px;
+        text-align: center;
+      }
+      .clk button:hover {
+        background: var(--raised);
+      }
+      .cc {
+        flex: 1;
+        min-width: 180px;
+        max-width: 360px;
+        height: 30px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 6px 0 9px;
+        border: 1px solid var(--line-2);
+        background: var(--bg);
+        color: var(--mut);
+        font-size: 12.5px;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .cc span {
+        flex: 1;
+        text-align: left;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .cc kbd {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        border: 1px solid var(--line-2);
+        padding: 0 4px;
+      }
+      .hr {
+        display: flex;
+        align-items: center;
+        gap: 1px;
+        flex: none;
+      }
+      .hr .sepv {
+        width: 1px;
+        height: 18px;
+        background: var(--line);
+        margin: 0 5px;
+      }
+      .bell {
+        position: relative;
+      }
+      .bell em {
+        position: absolute;
+        right: 0;
+        top: 0;
+        min-width: 13px;
+        height: 13px;
+        padding: 0 2px;
+        background: var(--acc);
+        color: var(--acc-fg);
+        font: 600 9px/13px var(--mono);
+        text-align: center;
+      }
+      .me {
+        width: 26px;
+        height: 26px;
+        display: grid;
+        place-items: center;
+        margin-left: 4px;
+        background: var(--raised);
+        border: 1px solid var(--line-2);
+        font: 600 11.5px var(--mono);
+      }
+      .tk {
+        display: flex;
+        background: #0e1014;
+        border-bottom: 1px solid var(--line);
+        font: 11px/26px var(--mono);
+        white-space: nowrap;
+        overflow: hidden;
+        font-variant-numeric: tabular-nums;
+      }
+      .tk div {
+        display: flex;
+        gap: 7px;
+        padding: 0 13px;
+        border-right: 1px solid var(--line);
+      }
+      .tk span {
+        color: var(--mut);
+      }
+      .tk .up {
+        color: var(--up);
+      }
+      .tk .down {
+        color: var(--down);
+      }
+      .mid {
+        display: grid;
+        grid-template-columns: var(--rail) var(--pri) minmax(0, 1fr) var(--sec);
+        min-height: 0;
+      }
+      .rl {
+        display: flex;
+        flex-direction: column;
+        background: var(--panel);
+        border-right: 1px solid var(--line);
+        padding: 4px 0;
+      }
+      .rl a,
+      .rl button {
+        position: relative;
+        width: 100%;
+        height: 56px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        color: var(--mut);
+        font-size: 10px;
+        border-left: 2px solid transparent;
+        border-right: 2px solid transparent;
+      }
+      .rl .ic {
+        font-size: 18px;
+      }
+      .rl a:hover,
+      .rl button:hover {
+        color: var(--fg);
+      }
+      .rl .on {
+        color: var(--acc);
+        background: var(--sel);
+        border-left-color: var(--acc);
+      }
+      .rl em {
+        position: absolute;
+        left: calc(50% + 5px);
+        top: 6px;
+        min-width: 14px;
+        height: 14px;
+        background: var(--acc);
+        color: var(--acc-fg);
+        font: 600 9.5px/14px var(--mono);
+        text-align: center;
+      }
+      .rl .gap {
+        flex: 1;
+      }
+      .sb {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        min-width: 0;
+        background: var(--panel);
+        border-right: 1px solid var(--line);
+        overflow: hidden;
+      }
+      .sb2 {
+        border-right: 0;
+        border-left: 1px solid var(--line);
+      }
+      .no-pri .sb:not(.sb2),
+      .no-sec .sb2 {
+        border: 0;
+      }
+      .sb-h {
+        height: 32px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 6px 0 12px;
+        white-space: nowrap;
+      }
+      .sb-h div {
+        display: flex;
+      }
+      .sb-b {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+      }
+      .fold > button {
+        width: 100%;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0 10px 0 6px;
+        border-top: 1px solid var(--line);
+        background: var(--panel);
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        white-space: nowrap;
+      }
+      .fold > button .ic {
+        font-size: 10px;
+        color: var(--mut);
+        transition: none;
+      }
+      .fold > button .r {
+        margin-left: auto;
+        font: 400 10.5px var(--mono);
+        color: var(--mut);
+      }
+      .fold > button .t {
+        font: 500 10.5px var(--mono);
+        letter-spacing: 0.08em;
+        color: var(--fg-2);
+      }
+      .fold.shut > .fb {
+        display: none;
+      }
+      .fold.shut > button .ic {
+        transform: rotate(-90deg);
+      }
+      .fb {
+        padding-bottom: 4px;
+      }
+      .fb.pad {
+        padding: 6px 12px 10px;
+      }
+      .w-h,
+      .w-r {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 66px 62px;
+        gap: 4px;
+        align-items: center;
+        padding: 0 10px 0 12px;
+      }
+      .w-h {
+        height: 22px;
+        font: 10px var(--mono);
+        letter-spacing: 0.05em;
+        color: var(--mut);
+        text-align: right;
+        text-transform: uppercase;
+      }
+      .w-h span:first-child {
+        text-align: left;
+      }
+      .w-r {
+        height: 26px;
+        font: 12px var(--mono);
+        font-variant-numeric: tabular-nums;
+        text-align: right;
+        position: relative;
+      }
+      .w-r:hover {
+        background: var(--raised);
+      }
+      .w-r.on {
+        background: var(--sel);
+      }
+      .w-r.on::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--acc);
+      }
+      .w-r > :first-child {
+        text-align: left;
+        font-weight: 500;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .pr .w-h,
+      .pr .w-r {
+        grid-template-columns: minmax(0, 1fr) 72px 56px;
+      }
+      .ce {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) var(--pn);
+        min-width: 0;
+        min-height: 0;
+      }
+      .ed {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        min-width: 0;
+        background: var(--bg);
+        container: ed/inline-size;
+      }
+      .tabs {
+        height: 32px;
+        flex: none;
+        display: flex;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+        overflow: hidden;
+      }
+      .tab {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 10px;
+        font-size: 12.5px;
+        color: var(--mut);
+        border-right: 1px solid var(--line);
+        white-space: nowrap;
+        position: relative;
+      }
+      .tab:hover {
+        color: var(--fg);
+      }
+      .tab .ic {
+        font-size: 12px;
+      }
+      .tab .x {
+        font-size: 10px;
+        opacity: 0;
+      }
+      .tab.on {
+        background: var(--bg);
+        color: var(--fg);
+      }
+      .tab.on .x {
+        opacity: 0.8;
+      }
+      .tab.on::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 2px;
+        background: var(--acc);
+      }
+      .tab.on::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 1px;
+        background: var(--bg);
+      }
+      .tabs .end {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        padding-right: 4px;
+      }
+      .qh {
+        flex: none;
+        display: flex;
+        align-items: stretch;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel);
+        min-height: 60px;
+      }
+      .qh > div {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1px;
+        padding: 0 13px;
+        border-left: 1px solid var(--line);
+        white-space: nowrap;
+        min-width: 0;
+      }
+      .qh > div:first-child {
+        border-left: 0;
+        flex: 1 1 auto;
+      }
+      .qh h1 {
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 1.25;
+      }
+      .qh .s {
+        font: 10.5px var(--mono);
+        letter-spacing: 0.04em;
+        color: var(--mut);
+      }
+      .qh .v {
+        font: 12.5px var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .qh .big {
+        font: 600 23px/1.1 var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .qh .ch {
+        font: 11.5px var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .qh .act {
+        flex-direction: row;
+        align-items: center;
+        gap: 2px;
+        padding: 0 6px;
+      }
+      .dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--up);
+        margin-right: 5px;
+      }
+      .dot.off {
+        background: none;
+        border: 1px solid var(--mut);
+      }
+      @container ed (max-width:790px) {
+        .q-day {
+          display: none !important;
+        }
+      }
+      @container ed (max-width:660px) {
+        .q-tr {
+          display: none !important;
+        }
+      }
+      @container ed (max-width:440px) {
+        .q-fx {
+          display: none !important;
+        }
+        .qh .big {
+          font-size: 20px;
+        }
+        .grp .kp .hero {
+          font-size: 14px;
+        }
+        .grp .kp div {
+          padding: 6px 9px 7px;
+        }
+      }
+      .cb {
+        height: 32px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 8px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .sg {
+        display: inline-flex;
+        border: 1px solid var(--line-2);
+        flex: none;
+      }
+      .sg button {
+        height: 22px;
+        padding: 0 7px;
+        font: 11px var(--mono);
+        color: var(--mut);
+      }
+      .sg button + button {
+        border-left: 1px solid var(--line-2);
+      }
+      .sg button:hover {
+        color: var(--fg);
+      }
+      .sg .on {
+        background: var(--sel);
+        color: var(--acc);
+        font-weight: 600;
+      }
+      .cb .end {
+        margin-left: auto;
+        display: flex;
+        gap: 6px;
+      }
+      .tb {
+        height: 24px;
+        padding: 0 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 1px solid var(--line-2);
+        font: 11px var(--mono);
+        letter-spacing: 0.03em;
+        color: var(--fg-2);
+        white-space: nowrap;
+      }
+      .tb:hover {
+        background: var(--raised);
+      }
+      .tb.on {
+        color: var(--acc);
+      }
+      .tb.dash {
+        border-style: dashed;
+        color: var(--mut);
+      }
+      .tb.pri {
+        background: var(--acc);
+        border-color: var(--acc);
+        color: var(--acc-fg);
+        font-weight: 600;
+      }
+      .cv {
+        flex: 1;
+        min-height: 0;
+        position: relative;
+      }
+      .cv > div {
+        height: 100%;
+      }
+      .groups {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      }
+      .grp {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+        container: ed/inline-size;
+      }
+      .grp + .grp {
+        border-left: 1px solid var(--line);
+      }
+      .kp {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        flex: none;
+        gap: 1px;
+        background: var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .kp div {
+        background: var(--panel);
+        padding: 6px 11px 7px;
+        min-width: 0;
+        white-space: nowrap;
+      }
+      .kp strong {
+        display: block;
+        font: 600 14px/1.35 var(--mono);
+        font-variant-numeric: tabular-nums;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .kp .hero {
+        font-size: 17px;
+      }
+      .pn {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        border-top: 1px solid var(--line);
+        background: var(--panel);
+        overflow: hidden;
+        container: pn/inline-size;
+      }
+      .no-pn .pn {
+        border: 0;
+      }
+      .pn-t {
+        height: 30px;
+        flex: none;
+        display: flex;
+        align-items: stretch;
+        padding: 0 6px;
+        font: 11px var(--mono);
+        letter-spacing: 0.05em;
+        color: var(--mut);
+        white-space: nowrap;
+      }
+      .pn-t button {
+        padding: 0 8px;
+        position: relative;
+        letter-spacing: inherit;
+      }
+      .pn-t button:hover {
+        color: var(--fg);
+      }
+      .pn-t .on {
+        color: var(--fg);
+      }
+      .pn-t .on::after {
+        content: '';
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        bottom: 0;
+        height: 2px;
+        background: var(--acc);
+      }
+      .pn-t i {
+        font-style: normal;
+        color: var(--mut);
+        margin-left: 5px;
+      }
+      .ab2 {
+        height: 26px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        padding: 0 14px;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        font-size: 11.5px;
+        color: var(--mut);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .ab2 b {
+        font: 500 12px var(--mono);
+        font-variant-numeric: tabular-nums;
+        color: var(--fg);
+        margin-left: 5px;
+      }
+      .ab2 b.up {
+        color: var(--up);
+      }
+      @container pn (max-width:900px) {
+        .tt .o1,
+        .ab2 .opt {
+          display: none;
+        }
+      }
+      @container pn (max-width:780px) {
+        .tt .opt,
+        .sy small,
+        .ab2 .o2 {
+          display: none;
+        }
+      }
+      .pn-b {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+      }
+      .pn-b > div {
+        min-height: 100%;
+      }
+      .tt {
+        width: 100%;
+        border-collapse: collapse;
+        font: 12px var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .tt th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--panel);
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--mut);
+        text-align: right;
+        padding: 4px 9px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      .tt td {
+        height: 25px;
+        padding: 0 9px;
+        text-align: right;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--line-s);
+      }
+      .tt th:first-child,
+      .tt td:first-child,
+      .tt .l {
+        text-align: left;
+      }
+      .tt tr:hover td {
+        background: var(--raised);
+      }
+      .tt tr.on td {
+        background: var(--sel);
+      }
+      .tt tfoot td {
+        font-weight: 600;
+        border-bottom: 0;
+      }
+      .sy {
+        font-weight: 500;
+      }
+      .sy small {
+        font:
+          400 11.5px 'IBM Plex Sans',
+          sans-serif;
+        color: var(--mut);
+        margin-left: 7px;
+      }
+      .tag {
+        display: inline-block;
+        padding: 0 5px;
+        font-size: 10.5px;
+        line-height: 16px;
+        border: 1px solid var(--line-2);
+        color: var(--fg-2);
+      }
+      .mb {
+        height: 19px;
+        padding: 0 6px;
+        margin-left: 3px;
+        border: 1px solid var(--line-2);
+        font: 10.5px var(--mono);
+        color: var(--fg-2);
+      }
+      .mb:hover {
+        background: var(--raised);
+      }
+      .st {
+        display: flex;
+        justify-content: space-between;
+        background: var(--panel);
+        border-top: 1px solid var(--line);
+        font: 11px var(--mono);
+        color: var(--mut);
+        white-space: nowrap;
+      }
+      .st div {
+        display: flex;
+        min-width: 0;
+      }
+      .st span {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 10px;
+        border-right: 1px solid var(--line);
+      }
+      .st div + div span {
+        border-right: 0;
+        border-left: 1px solid var(--line);
+      }
+      .st b {
+        font-weight: 400;
+        color: var(--fg-2);
+        margin-right: 5px;
+      }
+      .tkt {
+        padding: 0 12px 12px;
+      }
+      .sd {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 1px solid var(--line-2);
+        margin-bottom: 9px;
+      }
+      .sd button {
+        height: 32px;
+        font: 600 11.5px var(--mono);
+        letter-spacing: 0.06em;
+        color: var(--mut);
+      }
+      .sd .on {
+        background: var(--acc);
+        color: var(--acc-fg);
+      }
+      .ot {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border: 1px solid var(--line-2);
+      }
+      .ot button {
+        height: 27px;
+        font: 11px var(--mono);
+        letter-spacing: 0.04em;
+        color: var(--mut);
+      }
+      .ot button + button {
+        border-left: 1px solid var(--line-2);
+      }
+      .ot .on {
+        background: var(--sel);
+        color: var(--acc);
+        font-weight: 600;
+      }
+      .fl {
+        display: block;
+        margin: 0 0 3px;
+      }
+      .fi {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 6px;
+        padding: 0 8px;
+        background: var(--bg);
+        border: 1px solid var(--line-2);
+        font: 12px var(--mono);
+        margin-bottom: 9px;
+        white-space: nowrap;
+      }
+      .fi.q {
+        padding: 0;
+        font-size: 13px;
+      }
+      .fi.q span {
+        flex: 1;
+        text-align: center;
+      }
+      .fi.q button {
+        width: 30px;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        color: var(--fg-2);
+      }
+      .fi.q button:hover {
+        background: var(--raised);
+      }
+      .two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .ot + .fl,
+      .two {
+        margin-top: 9px;
+      }
+      .cost {
+        padding: 7px 9px;
+        background: var(--bg);
+        border: 1px solid var(--line-2);
+      }
+      .kv {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font-size: 12px;
+        line-height: 20px;
+        white-space: nowrap;
+      }
+      .kv > :first-child {
+        color: var(--mut);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .kv > :last-child {
+        font-family: var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .kv.tot {
+        font-weight: 600;
+        border-top: 1px solid var(--line);
+        margin-top: 3px;
+        padding-top: 3px;
+      }
+      .kv.tot > :first-child {
+        color: var(--fg);
+      }
+      .cta {
+        width: 100%;
+        height: 36px;
+        margin-top: 9px;
+        background: var(--acc);
+        color: var(--acc-fg);
+        font: 600 12px var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .cta:hover {
+        background: #ffc56b;
+      }
+      .cta:disabled {
+        background: var(--raised);
+        color: var(--mut);
+        cursor: not-allowed;
+      }
+      .oo {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-top: 9px;
+        padding: 6px 8px;
+        border: 1px solid var(--line-2);
+        border-left: 2px solid var(--acc);
+        font-size: 11.5px;
+        color: var(--mut);
+      }
+      .oo b {
+        display: block;
+        font-weight: 500;
+        color: var(--fg);
+      }
+      .oo a,
+      .oo button {
+        font: 11px var(--mono);
+        color: var(--acc);
+      }
+      .note2 {
+        padding: 10px;
+        border: 1px solid var(--line-2);
+        font-size: 12px;
+        color: var(--fg-2);
+      }
+      .pf {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--line);
+        border: 1px solid var(--line);
+      }
+      .pf div {
+        background: var(--panel);
+        padding: 4px 2px;
+        text-align: center;
+        font: 12px var(--mono);
+      }
+      .pf small {
+        display: block;
+        font:
+          10.5px 'IBM Plex Sans',
+          sans-serif;
+        color: var(--mut);
+      }
+      .prose {
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--fg-2);
+      }
+      .al {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 2px 8px;
+        align-items: center;
+        margin-bottom: 7px;
+        font-size: 12px;
+      }
+      .al > :nth-child(2) {
+        font-family: var(--mono);
+      }
+      .al i {
+        grid-column: 1/-1;
+        height: 3px;
+        background: var(--line);
+        display: block;
+      }
+      .al i::before {
+        content: '';
+        display: block;
+        height: 100%;
+        width: var(--w);
+        background: var(--bar);
+      }
+      .warn {
+        display: flex;
+        gap: 5px;
+        font-size: 11.5px;
+        color: var(--acc);
+      }
+      .log div {
+        display: flex;
+        gap: 14px;
+        height: 24px;
+        align-items: center;
+        padding: 0 12px;
+        border-bottom: 1px solid var(--line-s);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .log .d {
+        font: 11.5px var(--mono);
+        color: var(--mut);
+        width: 88px;
+      }
+      .log .k {
+        font: 10.5px var(--mono);
+        letter-spacing: 0.06em;
+        color: var(--mut);
+        width: 86px;
+        text-transform: uppercase;
+      }
+      @media (max-width: 1400px) {
+        .mnu button {
+          display: none;
+        }
+        .burger {
+          display: inline-grid;
+        }
+        .cc {
+          max-width: 300px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="i-list" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+      </symbol>
+      <symbol id="i-pause-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5" />
+      </symbol>
+      <symbol id="i-play-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393" />
+      </symbol>
+      <symbol id="i-dash" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+      </symbol>
+      <symbol id="i-skip-end-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.693 3.3 4 3.678 4 4.308v7.384c0 .63.692 1.01 1.233.697L11.5 8.753V12a.5.5 0 0 0 1 0z" />
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+      </symbol>
+      <symbol id="i-layout-sidebar" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm5-1v12h9a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM4 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h2z" />
+      </symbol>
+      <symbol id="i-layout-split" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm8.5-1v12H14a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zm-1 0H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h5.5z" />
+      </symbol>
+      <symbol id="i-layout-sidebar-reverse" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M16 3a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2zm-5-1v12H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 0h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-2z" />
+      </symbol>
+      <symbol id="i-bell" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
+      </symbol>
+      <symbol id="i-grid-1x2" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M6 1H1v14h5zm9 0h-5v5h5zm0 9v5h-5v-5zM0 1a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm9 0a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1zm1 8a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1z" />
+      </symbol>
+      <symbol id="i-graph-up" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07" />
+      </symbol>
+      <symbol id="i-briefcase" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5m1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0M1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5" />
+      </symbol>
+      <symbol id="i-bank" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="m8 0 6.61 3h.89a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H15v7a.5.5 0 0 1 .485.38l.5 2a.498.498 0 0 1-.485.62H.5a.498.498 0 0 1-.485-.62l.5-2A.5.5 0 0 1 1 13V6H.5a.5.5 0 0 1-.5-.5v-2A.5.5 0 0 1 .5 3h.89zM3.777 3h8.447L8 1zM2 6v7h1V6zm2 0v7h2.5V6zm3.5 0v7h1V6zm2 0v7H12V6zM13 6v7h1V6zm2-1V4H1v1zm-.39 9H1.39l-.25 1h13.72z" />
+      </symbol>
+      <symbol id="i-list-check" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0" />
+      </symbol>
+      <symbol id="i-receipt" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M1.92.506a.5.5 0 0 1 .434.14L3 1.293l.646-.647a.5.5 0 0 1 .708 0L5 1.293l.646-.647a.5.5 0 0 1 .708 0L7 1.293l.646-.647a.5.5 0 0 1 .708 0L9 1.293l.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .801.13l.5 1A.5.5 0 0 1 15 2v12a.5.5 0 0 1-.053.224l-.5 1a.5.5 0 0 1-.8.13L13 14.707l-.646.647a.5.5 0 0 1-.708 0L11 14.707l-.646.647a.5.5 0 0 1-.708 0L9 14.707l-.646.647a.5.5 0 0 1-.708 0L7 14.707l-.646.647a.5.5 0 0 1-.708 0L5 14.707l-.646.647a.5.5 0 0 1-.708 0L3 14.707l-.646.647a.5.5 0 0 1-.801-.13l-.5-1A.5.5 0 0 1 1 14V2a.5.5 0 0 1 .053-.224l.5-1a.5.5 0 0 1 .367-.27m.217 1.338L2 2.118v11.764l.137.274.51-.51a.5.5 0 0 1 .707 0l.646.647.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.509.509.137-.274V2.118l-.137-.274-.51.51a.5.5 0 0 1-.707 0L12 1.707l-.646.647a.5.5 0 0 1-.708 0L10 1.707l-.646.647a.5.5 0 0 1-.708 0L8 1.707l-.646.647a.5.5 0 0 1-.708 0L6 1.707l-.646.647a.5.5 0 0 1-.708 0L4 1.707l-.646.647a.5.5 0 0 1-.708 0z" />
+        <path
+          d="M3 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5m8-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5" />
+      </symbol>
+      <symbol id="i-sliders" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z" />
+      </symbol>
+      <symbol id="i-plus-lg" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
+      </symbol>
+      <symbol id="i-three-dots" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3" />
+      </symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+      </symbol>
+      <symbol id="i-bar-chart-line" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1zm1 12h2V2h-2zm-3 0V7H7v7zm-5 0v-3H2v3z" />
+      </symbol>
+      <symbol id="i-x-lg" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+      </symbol>
+      <symbol id="i-star-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z" />
+      </symbol>
+      <symbol id="i-arrow-repeat" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9" />
+        <path
+          fill-rule="evenodd"
+          d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z" />
+      </symbol>
+      <symbol id="i-x" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+      </symbol>
+    </svg>
+    <div class="wb" style="">
+      <header class="hd">
+        <a class="logo" href="../index.html" aria-label="Zur Mockup-Übersicht"><i></i></a>
+        <span class="brand">PORTFOLIGO</span>
+        <nav class="mnu" aria-label="Menü"
+          ><button class="ib burger" aria-label="Menü" title="Menü"
+            ><svg class="ic" aria-hidden="true"><use href="#i-list"></use></svg></button
+          ><button>Spielstand</button><button>Ansicht</button><button>Zeit</button
+          ><button>Handel</button><button>Hilfe</button></nav
+        >
+        <div class="clk" role="group" aria-label="Spielzeit"
+          ><div><span class="date">MO 20.10.2031</span><span class="time">10:42</span></div
+          ><button class="pause" data-pause aria-label="Pause"
+            ><span class="run"
+              ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></span
+            ><span class="pz"
+              ><svg class="ic" aria-hidden="true">
+                <use href="#i-play-fill"></use></svg></span></button
+          ><div class="sp"
+            ><button class="ib" aria-label="Langsamer" title="Langsamer" data-sp="-1"
+              ><svg class="ic" aria-hidden="true"><use href="#i-dash"></use></svg></button
+            ><b><span class="run sp-v">10 min/s</span><span class="pz">Pausiert</span></b
+            ><button class="ib" aria-label="Schneller" title="Schneller" data-sp="1"
+              ><svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg></button></div
+          ><button
+            ><svg class="ic" aria-hidden="true"><use href="#i-skip-end-fill"></use></svg
+            >VORSPULEN</button
+          ></div
+        >
+        <button class="cc"
+          ><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg
+          ><span>Befehl, Wertpapier oder Seite …</span><kbd>Strg K</kbd></button
+        >
+        <div class="hr"
+          ><button
+            class="ib on"
+            aria-label="Primäre Seitenleiste umschalten"
+            title="Primäre Seitenleiste umschalten"
+            data-tg="no-pri"
+            aria-pressed="true"
+            ><svg class="ic" aria-hidden="true"><use href="#i-layout-sidebar"></use></svg></button
+          ><button
+            class="ib on"
+            aria-label="Panel umschalten"
+            title="Panel umschalten"
+            data-tg="no-pn"
+            aria-pressed="true"
+            ><svg class="ic" aria-hidden="true"><use href="#i-layout-split"></use></svg></button
+          ><button
+            class="ib on"
+            aria-label="Sekundäre Seitenleiste umschalten"
+            title="Sekundäre Seitenleiste umschalten"
+            data-tg="no-sec"
+            aria-pressed="true"
+            ><svg class="ic" aria-hidden="true">
+              <use href="#i-layout-sidebar-reverse"></use></svg></button
+          ><span class="sepv"></span
+          ><button class="ib bell" aria-label="3 ungelesene Meldungen"
+            ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg><em>3</em></button
+          ><button class="me" aria-label="Spielermenü: Alex">A</button></div
+        >
+      </header>
+      <div class="tk" aria-label="Indizes"
+        ><div
+          ><span>TALVAR WORLD</span>3.412,80<b class="up" style="font-weight: 400">+0,74 %</b></div
+        ><div><span>BELMAR 40</span>14.208,55<b class="up" style="font-weight: 400">+0,62 %</b></div
+        ><div
+          ><span>OSTREL 100</span>8.951,20<b class="down" style="font-weight: 400">−0,21 %</b
+          ><span>Vortag</span></div
+        ><div
+          ><span>KYRIN 50</span>2.304,66<b class="up" style="font-weight: 400">+1,08 %</b
+          ><span>Schluss</span></div
+        ><div
+          ><span>SUDAR 30</span>1.187,42<b class="up" style="font-weight: 400">+0,35 %</b></div
+        ></div
+      >
+      <div class="mid"
+        ><nav class="rl" aria-label="Bereiche"
+          ><button class=""
+            ><svg class="ic" aria-hidden="true"><use href="#i-grid-1x2"></use></svg
+            >Übersicht</button
+          ><a class="on" href="instrument-desktop.html" aria-current="page"
+            ><svg class="ic" aria-hidden="true"><use href="#i-graph-up"></use></svg>Märkte</a
+          ><a class="" href="depot-desktop.html"
+            ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>Depot</a
+          ><button class=""
+            ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg>Konten</button
+          ><button class=""
+            ><svg class="ic" aria-hidden="true"><use href="#i-list-check"></use></svg>Orders<em
+              >2</em
+            ></button
+          ><button class=""
+            ><svg class="ic" aria-hidden="true"><use href="#i-receipt"></use></svg>Steuern</button
+          ><span class="gap"></span
+          ><button class=""
+            ><svg class="ic" aria-hidden="true"><use href="#i-sliders"></use></svg
+            >Einstellungen</button
+          ></nav
+        ><aside class="sb" aria-label="Primäre Seitenleiste"
+          ><div class="sb-h"
+            ><span class="lb">Märkte</span
+            ><div
+              ><button class="ib" aria-label="Wert hinzufügen" title="Wert hinzufügen"
+                ><svg class="ic" aria-hidden="true"><use href="#i-plus-lg"></use></svg></button
+              ><button class="ib" aria-label="Mehr" title="Mehr"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-three-dots"></use></svg></button></div></div
+          ><div class="sb-b">
+            <section class="fold"
+              ><button data-fold aria-expanded="true"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg
+                ><span class="t">WATCHLIST</span><span class="r">4</span></button
+              ><div class="fb"
+                ><div class="w-h"><span>Wert</span><span>Kurs</span><span>Heute</span></div
+                ><a class="w-r on" href="instrument-desktop.html" aria-current="true"
+                  ><span title="CRVN">CRVN</span><span>87,42</span
+                  ><span class="up">+3,15 %</span></a
+                ><div class="w-r"
+                  ><span title="ORLA">ORLA</span><span>4,128</span
+                  ><span class="down">−1,85 %</span></div
+                ><div class="w-r"
+                  ><span title="DRVO">DRVO</span><span>0,8734</span
+                  ><span class="up">+5,40 %</span></div
+                ><div class="w-r"
+                  ><span title="LMTR">LMTR</span><span>46,90</span
+                  ><span class="up">+0,12 %</span></div
+                ></div
+              ></section
+            >
+            <section class="fold"
+              ><button data-fold aria-expanded="true"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg
+                ><span class="t">DEPOT</span><span class="r">5</span></button
+              ><div class="fb"
+                ><div class="w-r"
+                  ><span title="TLVW">TLVW</span><span>70,11</span
+                  ><span class="up">+0,84 %</span></div
+                ><a class="w-r" href="depot-desktop.html"
+                  ><span title="HLVN">HLVN</span><span>260,36</span
+                  ><span class="up">+2,71 %</span></a
+                ><div class="w-r"
+                  ><span title="SLMK">SLMK</span><span>43,53</span
+                  ><span class="down">−1,12 %</span></div
+                ><div class="w-r"
+                  ><span title="KLVH">KLVH</span><span>56,58</span
+                  ><span class="up">+0,46 %</span></div
+                ><div class="w-r"
+                  ><span title="NRVN">NRVN</span><span>16,73</span
+                  ><span class="down">−0,38 %</span></div
+                ></div
+              ></section
+            >
+            <section class="fold"
+              ><button data-fold aria-expanded="true"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg
+                ><span class="t">INDIZES</span><span class="r">5</span></button
+              ><div class="fb"
+                ><div class="w-r"
+                  ><span title="TALVAR WORLD">TALVAR WORLD</span><span>3.412,80</span
+                  ><span class="up">+0,74 %</span></div
+                ><div class="w-r"
+                  ><span title="BELMAR 40">BELMAR 40</span><span>14.208,55</span
+                  ><span class="up">+0,62 %</span></div
+                ><div class="w-r"
+                  ><span title="OSTREL 100">OSTREL 100</span><span>8.951,20</span
+                  ><span class="down">−0,21 %</span></div
+                ><div class="w-r"
+                  ><span title="KYRIN 50">KYRIN 50</span><span>2.304,66</span
+                  ><span class="up">+1,08 %</span></div
+                ><div class="w-r"
+                  ><span title="SUDAR 30">SUDAR 30</span><span>1.187,42</span
+                  ><span class="up">+0,35 %</span></div
+                ></div
+              ></section
+            ></div
+          ></aside
+        >
+        <main class="ce"
+          ><section class="ed" aria-label="Editor"
+            ><div class="tabs" role="tablist"
+              ><div class="tab on" role="tab" aria-selected="true"
+                ><svg class="ic" aria-hidden="true"><use href="#i-bar-chart-line"></use></svg>Corvan
+                Systems<span class="x"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-x-lg"></use></svg></span></div
+              ><a class="tab" role="tab" href="depot-desktop.html"
+                ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>Depot<span
+                  class="x"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-x-lg"></use></svg></span></a
+              ><a class="tab" role="tab" href="depot-desktop.html"
+                ><svg class="ic" aria-hidden="true"><use href="#i-bar-chart-line"></use></svg
+                >Halvion AG<span class="x"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-x-lg"></use></svg></span></a
+              ><div class="end"
+                ><button class="ib" aria-label="Editor teilen" title="Editor teilen"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="#i-layout-split"></use></svg></button
+                ><button class="ib" aria-label="Mehr" title="Mehr"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="#i-three-dots"></use></svg></button></div
+            ></div>
+            <header class="qh"
+              ><div><h1>Corvan Systems</h1><span class="s">CRVN · XB0004417320 · BELMAR</span></div
+              ><div
+                ><span class="big">87,42 €</span><span class="ch up">+2,67 € · +3,15 %</span></div
+              ><div class="q-fx"
+                ><span class="lb">Geld · Brief</span><span class="v">87,38 · 87,46</span
+                ><span class="s">SPREAD 0,09 %</span></div
+              ><div class="q-day"
+                ><span class="lb">Tag Hoch · Tief</span><span class="v">87,82 · 84,32</span
+                ><span class="s">VORTAG 84,75</span></div
+              ><div class="q-tr"
+                ><span class="lb">Handel</span
+                ><span class="v"><i class="dot"></i>offen bis 17:30</span
+                ><span class="s">VOL. 201 TSD.</span></div
+              ><div class="act"
+                ><button
+                  class="ib on"
+                  aria-label="In der Watchlist"
+                  title="In der Watchlist"
+                  aria-pressed="true"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-star-fill"></use></svg></button
+                ><button class="ib" aria-label="Sparplan anlegen" title="Sparplan anlegen"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="#i-arrow-repeat"></use></svg></button></div
+            ></header>
+            <div class="cb"
+              ><div class="sg" role="tablist" aria-label="Zeitraum"
+                ><button>1T</button><button>5T</button
+                ><button role="tab" data-t="rng:1M" aria-selected="false" class="">1M</button
+                ><button role="tab" data-t="rng:6M" aria-selected="true" class="on">6M</button
+                ><button role="tab" data-t="rng:1J" aria-selected="false" class="">1J</button
+                ><button>5J</button><button>MAX</button></div
+              ><div class="sg" aria-label="Darstellung"
+                ><button>LINIE</button><button>FLÄCHE</button
+                ><button class="on">KERZEN</button></div
+              ><div class="end"
+                ><button class="tb on" data-tg="no-vol" aria-pressed="true">VOLUMEN</button
+                ><button class="tb dash">+ INDIKATOR</button></div
+              ></div
+            >
+            <div class="cv"
+              ><div data-p="rng:1M" class="" hidden
+                ><div
+                  class="xc"
+                  tabindex="0"
+                  data-xc='{"t":"candle","p":2,"lo":73.393,"hi":88.637,"r":[["19.09.31",79.2,79.79,78.98,79.6,362],["22.09.31",79.42,79.52,78.47,78.61,395],["23.09.31",78.66,78.86,77.07,77.67,501],["24.09.31",77.51,79.87,77.49,79.15,511],["25.09.31",79.03,79.24,76.32,76.66,568],["26.09.31",76.55,77.27,76.07,77.05,413],["29.09.31",77.68,77.89,74.21,74.68,607],["30.09.31",74.68,76.69,74.54,76.65,496],["01.10.31",76.7,77.6,76.69,77.5,389],["02.10.31",77.71,79.89,76.81,79.89,612],["03.10.31",80.53,81.38,79.72,79.81,406],["06.10.31",79.74,81.39,79.27,80.96,472],["07.10.31",80.76,81.34,80.75,81.19,304],["08.10.31",81.99,82.51,79.69,80.78,589],["09.10.31",80.31,81.88,79.55,81.6,531],["10.10.31",81.48,82.54,79.98,80.48,487],["13.10.31",80.69,80.95,80.23,80.6,406],["14.10.31",81.34,83.02,81.21,82.18,509],["15.10.31",81.86,83.53,81.35,82.88,511],["16.10.31",82.08,83.23,81.15,82.94,499],["17.10.31",83.16,85.94,82.88,84.75,546],["20.10.31",84.57,87.82,84.32,87.42,201]]}'
+                  ><div class="xc-pane xc-main"
+                    ><div class="xc-plot"
+                      ><svg
+                        viewBox="0 0 1000 1000"
+                        preserveAspectRatio="none"
+                        role="img"
+                        aria-label="Tageskerzen eines Monats bis 87,42 €, gleitende Durchschnitte, Kauflimit 84,00 € und Volumen">
+                        <path
+                          d="M0 960.2H1000M0 829H1000M0 697.8H1000M0 566.6H1000M0 435.4H1000M0 304.2H1000M0 173H1000M0 41.8H1000M104.2 0V1000M312.5 0V1000M520.8 0V1000M729.2 0V1000"
+                          stroke="var(--grid)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M0 304.2H1000"
+                          stroke="var(--acc)"
+                          stroke-width="1"
+                          stroke-dasharray="5 4"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M20.8 580.4V633.5M145.8 575.1V731.3M229.2 745.7V824.4M312.5 783.7V924.8M354.2 724V783.7M395.8 573.8V775.9M479.2 475.4V614.5M520.8 478.7V517.4M604.2 443.3V596.1M729.2 368.5V487.2M770.8 335V478M812.5 354.7V491.1M854.2 176.9V377.7M895.8 53.6V283.2"
+                          stroke="var(--up-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M6.7 592.8h28.3v26.2h-28.3zM131.7 622.3h28.3v107.6h-28.3zM215 760.1h28.3v32.8h-28.3zM298.3 786.4h28.3v129.2h-28.3zM340 730.6h28.3v52.5h-28.3zM381.7 573.8h28.3v143h-28.3zM465 503.6h28.3v80h-28.3zM506.7 488.5h28.3v28.2h-28.3zM590 461.6h28.3v84.6h-28.3zM715 423.6h28.3v55.1h-28.3zM756.7 377.7h28.3v66.9h-28.3zM798.3 373.7h28.3v56.4h-28.3zM840 255h28.3v104.3h-28.3zM881.7 79.8h28.3v187h-28.3z"
+                          fill="var(--up-c)"></path>
+                        <path
+                          d="M62.5 598.1V667M104.2 641.4V758.8M187.5 616.4V808M270.8 705V946.4M437.5 476.1V585M562.5 401.9V586.9M645.8 400V567.9M687.5 504.3V551.5"
+                          stroke="var(--down-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M48.3 604.6h28.3v53.1h-28.3zM90 654.5h28.3v64.9h-28.3zM173.3 630.2h28.3v155.5h-28.3zM256.7 718.8h28.3v196.8h-28.3zM423.3 531.8h28.3v47.2h-28.3zM548.3 436h28.3v79.4h-28.3zM631.7 469.5h28.3v65.6h-28.3zM673.3 521.3h28.3v5.9h-28.3z"
+                          fill="var(--down-c)"></path>
+                        <path
+                          d="M20.8 471.3L62.5 485L104.2 502L145.8 507.8L187.5 521.3L229.2 531.3L270.8 547.8L312.5 562L354.2 580.7L395.8 593.5L437.5 607.1L479.2 612L520.8 615.8L562.5 620.2L604.2 620.3L645.8 623.6L687.5 622.2L729.2 615.6L770.8 608.8L812.5 596.5L854.2 579.6L895.8 550.7"
+                          fill="none"
+                          stroke="var(--c1)"
+                          stroke-width="1.25"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M20.8 368.1L62.5 379.5L104.2 392.8L145.8 401.8L187.5 416.9L229.2 430.3L270.8 449.3L312.5 462.6L354.2 473.1L395.8 477L437.5 481L479.2 481.9L520.8 482.2L562.5 483.5L604.2 482.6L645.8 484.7L687.5 486.3L729.2 483.9L770.8 479.7L812.5 475.6L854.2 466.9L895.8 451.7"
+                          fill="none"
+                          stroke="var(--c2)"
+                          stroke-width="1.25"
+                          vector-effect="non-scaling-stroke"></path></svg
+                      ><div class="leg"
+                        ><div class="leg-r"
+                          ><b style="font-weight: 600">Corvan Systems</b><i>Tageskerzen · Belmar</i
+                          ><i>E</i><span data-k="o">84,57</span><i>H</i><span data-k="h">87,82</span
+                          ><i>T</i><span data-k="l">84,32</span><i>S</i><span data-k="c">87,42</span
+                          ><span data-k="chg" class="up">+2,67 (+3,15 %)</span></div
+                        ><div class="leg-r" style="gap: 0 12px"
+                          ><span><span class="leg-d" style="--c: var(--c1)"></span>SMA 20</span
+                          ><span
+                            ><span class="leg-d" style="--c: var(--c2)"></span>EMA 50</span
+                          ></div
+                        ></div
+                      ><div class="xc-line" style="top: 30.4%; --c: var(--acc)"
+                        ><b style="font-weight: 600; color: var(--acc)">Kauf Limit</b> 10 Stück
+                        <svg class="ic" aria-hidden="true"><use href="#i-x"></use></svg></div></div
+                    ><div class="xc-y"
+                      ><span style="top: 96%">74,00</span><span style="top: 82.9%">76,00</span
+                      ><span style="top: 69.8%">78,00</span><span style="top: 56.7%">80,00</span
+                      ><span style="top: 43.5%">82,00</span><span style="top: 17.3%">86,00</span
+                      ><b style="top: 8%; --c: var(--up-c)">87,42</b
+                      ><b style="top: 30.4%; --c: var(--acc); --tag-fg: #0c0e12">L 84,00</b></div
+                    ></div
+                  ><div class="xc-pane" style="height: 50px"
+                    ><div class="xc-plot"
+                      ><svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+                        <path
+                          d="M6.7 462.3h28.3V1000h-28.3zM131.7 240.9h28.3V1000h-28.3zM215 386.5h28.3V1000h-28.3zM298.3 263.2h28.3V1000h-28.3zM340 422.2h28.3V1000h-28.3zM381.7 90.9h28.3V1000h-28.3zM465 298.9h28.3V1000h-28.3zM506.7 548.4h28.3V1000h-28.3zM590 211.2h28.3V1000h-28.3zM715 243.9h28.3V1000h-28.3zM756.7 240.9h28.3V1000h-28.3zM798.3 258.8h28.3V1000h-28.3zM840 188.9h28.3V1000h-28.3zM881.7 701.4h28.3V1000h-28.3z"
+                          fill="var(--up-c)"
+                          opacity=".5"></path>
+                        <path
+                          d="M48.3 413.3h28.3V1000h-28.3zM90 255.8h28.3V1000h-28.3zM173.3 156.3h28.3V1000h-28.3zM256.7 98.3h28.3V1000h-28.3zM423.3 396.9h28.3V1000h-28.3zM548.3 125.1h28.3V1000h-28.3zM631.7 276.6h28.3V1000h-28.3zM673.3 396.9h28.3V1000h-28.3z"
+                          fill="var(--down-c)"
+                          opacity=".5"></path></svg
+                      ><div class="xc-tag"
+                        >Volumen <span data-k="v" class="num">201 Tsd.</span></div
+                      ></div
+                    ><div class="xc-y"><span style="top: 12%">0,6 Mio.</span></div></div
+                  ><div class="xc-x"
+                    ><span style="left: calc((100%) * 0.1042)">23.09.</span
+                    ><span style="left: calc((100%) * 0.3125)">30.09.</span
+                    ><span style="left: calc((100%) * 0.5208)">07.10.</span
+                    ><span style="left: calc((100%) * 0.7292)">14.10.</span></div
+                  ></div
+                ></div
+              ><div data-p="rng:6M" class=""
+                ><div
+                  class="xc"
+                  tabindex="0"
+                  data-xc='{"t":"candle","p":5,"lo":73.269,"hi":90.841,"r":[["28.04.31",80.24,80.33,79.32,79.84,588],["29.04.31",79.84,80.85,79.58,80.51,468],["30.04.31",80.52,80.82,78.39,79.19,312],["01.05.31",79.21,80.88,78.73,80.4,529],["02.05.31",80.26,81.21,79.75,80.64,403],["05.05.31",80.51,80.97,79.97,80.87,556],["06.05.31",80.64,80.79,80.54,80.55,443],["07.05.31",80.63,81.05,80.12,80.18,453],["08.05.31",80.13,80.22,78.63,79.43,476],["09.05.31",79.09,80.14,79.08,79.76,613],["12.05.31",80.03,80.8,79.77,80.2,343],["13.05.31",80.26,80.41,79.38,79.75,323],["14.05.31",79.41,80.62,79,80.37,403],["15.05.31",80.25,80.37,78.94,79.55,572],["16.05.31",79.16,79.82,79.03,79.71,606],["19.05.31",79.56,81.25,78.66,80.84,666],["20.05.31",81.03,82.39,80.81,82.12,677],["21.05.31",81.91,81.92,81.52,81.71,994],["22.05.31",81.89,82.03,80.24,80.39,430],["23.05.31",80.83,80.85,80.28,80.83,412],["26.05.31",80.65,80.82,78.22,78.46,431],["27.05.31",78.29,79.65,78.01,79.26,401],["28.05.31",79.56,79.97,78.29,78.35,503],["29.05.31",78.4,78.78,77.7,78.09,490],["30.05.31",78.1,78.52,77.79,77.96,497],["02.06.31",77.92,78.41,77.38,77.78,574],["03.06.31",77.4,77.76,76.98,77.45,531],["04.06.31",77.28,79.52,76.81,79.17,413],["05.06.31",79.07,79.32,79.05,79.14,437],["06.06.31",79.12,79.88,78.96,79.32,405],["09.06.31",79.22,79.77,78.77,79.17,283],["10.06.31",79.12,79.35,78.78,79.04,443],["11.06.31",79.15,79.75,77.53,78.61,389],["12.06.31",78.92,79.5,76.95,77.83,724],["13.06.31",77.69,77.78,77.08,77.5,368],["16.06.31",77.51,80.23,77.46,79.57,734],["17.06.31",79.4,80.79,78.73,80.57,437],["18.06.31",80.46,81.05,79.72,80.18,542],["19.06.31",80.18,81.19,80.07,80.46,937],["20.06.31",80.73,81.18,80.01,80.5,427],["23.06.31",80.68,81.02,79.73,80,478],["24.06.31",80.04,81.86,79.89,80.95,396],["25.06.31",80.92,82.06,80.85,81.82,275],["26.06.31",81.82,82.01,80.73,80.84,447],["27.06.31",80.91,82.95,80.21,82.55,505],["30.06.31",82.6,83.13,82.1,82.14,575],["01.07.31",81.79,82.03,81.31,81.58,552],["02.07.31",81.75,82.89,81.64,82.41,543],["03.07.31",82.66,82.93,81.9,82.32,438],["04.07.31",82.17,84.52,81.59,83.56,279],["07.07.31",83.65,84.53,83.14,84.18,440],["08.07.31",84.14,84.89,83.25,84.57,229],["09.07.31",85.04,85.99,84.92,84.95,512],["10.07.31",84.88,85.19,84.55,84.97,395],["11.07.31",84.91,85.8,84.77,85.76,369],["14.07.31",85.74,86.33,85.24,86.26,804],["15.07.31",85.83,86.92,85.28,86.53,427],["16.07.31",86.38,89.34,86.25,88.08,436],["17.07.31",88.08,88.32,86.96,87.13,663],["18.07.31",86.94,87.29,86.3,86.61,461],["21.07.31",86.21,88.04,86.11,87.45,506],["22.07.31",87.18,88.12,86.67,87.25,535],["23.07.31",87.55,87.96,86.79,86.96,391],["24.07.31",87.35,88.17,86.09,86.5,380],["25.07.31",86.57,88.36,86.12,87.67,535],["28.07.31",87.95,89.22,87.73,88.73,369],["29.07.31",88.11,89.9,87.6,88.7,434],["30.07.31",88.91,89.8,87.69,88.22,844],["31.07.31",87.74,87.84,86.5,87.45,428],["01.08.31",87.5,88.75,87.25,88.42,631],["04.08.31",88.56,89.57,87.67,87.96,399],["05.08.31",88.08,89.8,87.86,89.5,375],["06.08.31",89.5,89.8,87.77,88.32,604],["07.08.31",88.63,89.8,87.11,87.16,506],["08.08.31",87.39,87.55,86.95,87.15,693],["11.08.31",87.22,87.76,86.63,86.66,873],["12.08.31",86.79,86.86,85.71,86.71,660],["13.08.31",86.51,88.13,85.08,87.99,564],["14.08.31",87.81,89.03,86.79,87.42,846],["15.08.31",87.73,88.06,87.41,87.71,623],["18.08.31",87.97,88.06,86.04,86.52,570],["19.08.31",85.95,86.56,85.43,86.26,252],["20.08.31",86.43,86.92,84.47,85.26,430],["21.08.31",84.77,85.21,84.69,85.14,490],["22.08.31",85.02,85.26,83.29,83.5,487],["25.08.31",83.25,83.52,82.27,82.8,421],["26.08.31",82.95,82.97,82.48,82.86,342],["27.08.31",82.98,83.88,80.69,80.9,362],["28.08.31",80.64,81.18,80.45,80.79,468],["29.08.31",80.55,81.91,79.29,80.1,532],["01.09.31",80.3,80.35,79.26,79.71,453],["02.09.31",79.93,81.06,79.92,80.96,395],["03.09.31",81.01,83.56,80.99,83.22,389],["04.09.31",83.64,83.84,83.6,83.78,445],["05.09.31",83.98,84.11,83.28,83.96,721],["08.09.31",84.09,84.68,82.1,82.45,363],["09.09.31",82.65,82.92,82.33,82.34,270],["10.09.31",82.32,83.12,82.08,82.14,297],["11.09.31",82.07,82.56,81.37,81.61,608],["12.09.31",81.73,82.21,81.41,81.49,509],["15.09.31",81.67,81.75,79.87,80.19,445],["16.09.31",80.3,80.5,78.93,80.15,558],["17.09.31",80.46,81.49,80.14,80.81,477],["18.09.31",81.04,81.47,78.45,79.2,507],["19.09.31",79.2,79.79,78.98,79.6,362],["22.09.31",79.42,79.52,78.47,78.61,395],["23.09.31",78.66,78.86,77.07,77.67,501],["24.09.31",77.51,79.87,77.49,79.15,511],["25.09.31",79.03,79.24,76.32,76.66,568],["26.09.31",76.55,77.27,76.07,77.05,413],["29.09.31",77.68,77.89,74.21,74.68,607],["30.09.31",74.68,76.69,74.54,76.65,496],["01.10.31",76.7,77.6,76.69,77.5,389],["02.10.31",77.71,79.89,76.81,79.89,612],["03.10.31",80.53,81.38,79.72,79.81,406],["06.10.31",79.74,81.39,79.27,80.96,472],["07.10.31",80.76,81.34,80.75,81.19,304],["08.10.31",81.99,82.51,79.69,80.78,589],["09.10.31",80.31,81.88,79.55,81.6,531],["10.10.31",81.48,82.54,79.98,80.48,487],["13.10.31",80.69,80.95,80.23,80.6,406],["14.10.31",81.34,83.02,81.21,82.18,509],["15.10.31",81.86,83.53,81.35,82.88,511],["16.10.31",82.08,83.23,81.15,82.94,499],["17.10.31",83.16,85.94,82.88,84.75,546],["20.10.31",84.57,87.82,84.32,87.42,201]]}'
+                  ><div class="xc-pane xc-main"
+                    ><div class="xc-plot"
+                      ><svg
+                        viewBox="0 0 1000 1000"
+                        preserveAspectRatio="none"
+                        role="img"
+                        aria-label="Tageskerzen über sechs Monate bis 87,42 €, gleitende Durchschnitte, Kauflimit 84,00 € und Volumen">
+                        <path
+                          d="M0 901.5H1000M0 759.2H1000M0 616.9H1000M0 474.7H1000M0 332.4H1000M0 190.1H1000M0 47.9H1000M26.7 0V1000M194.7 0V1000M355 0V1000M530.5 0V1000M690.8 0V1000M858.8 0V1000"
+                          stroke="var(--grid)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M0 389.3H1000"
+                          stroke="var(--acc)"
+                          stroke-width="1"
+                          stroke-dasharray="5 4"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M11.5 568.6V640.8M26.7 566.9V689.2M34.4 548.1V631.2M42 561.7V618.6M72.5 609V669.3M80.2 571.4V630M95.4 581.7V673.8M110.7 627.2V672.1M118.3 545.8V693.2M126 480.9V570.8M148.9 568.6V601M164.1 636.9V730.2M202.3 744.4V788.8M209.9 644.3V798.5M217.6 655.6V671M225.2 623.8V676.1M271 603.9V761.5M278.6 572V689.2M293.9 549.2V613M316.8 511.1V623.2M324.4 499.7V568.6M339.7 449.1V605M362.6 452.5V523.6M377.9 359.7V526.5M385.5 359.2V438.3M393.1 338.7V432M408.4 321.6V358M416 286.9V345.5M423.7 256.7V318.8M431.3 223.2V316.5M438.9 85.4V261.3M461.8 159.4V269.2M469.5 154.9V237.4M492.4 141.2V268.7M500 92.3V177.1M507.6 53.6V184.5M530.5 119V204.4M545.8 59.3V169.7M591.6 154.3V327.9M622.1 243.6V307.9M637.4 320.5V350.1M675.6 549.8V591.3M698.5 556.6V621.5M706.1 414.4V560.6M713.7 398.4V412.1M782.4 532.2V609M797.7 628.9V675M820.6 624.3V759.8M835.9 772.3V840.6M851.1 805.3V927.6M858.8 753.5V805.3M866.4 623.2V798.5M881.7 537.8V658.5M889.3 540.7V574.3M904.6 510V642.5M927.5 445.1V548.1M935.1 416.1V540.1M942.7 433.1V551.5M950.4 278.9V453.1M958 171.9V371.1"
+                          stroke="var(--up-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M8.9 587.9h5.2v38.1h-5.2zM24.1 594.2h5.2v67.7h-5.2zM31.8 580.5h5.2v21.6h-5.2zM39.4 567.4h5.2v20.5h-5.2zM69.9 630.6h5.2v38.1h-5.2zM77.6 605.6h5.2v9.7h-5.2zM92.8 595.9h5.2v54.6h-5.2zM108.1 633.4h5.2v31.3h-5.2zM115.7 569.1h5.2v72.8h-5.2zM123.4 496.3h5.2v62h-5.2zM146.3 569.7h5.2v2h-5.2zM161.5 659.1h5.2v55.2h-5.2zM199.7 762.1h5.2v2.8h-5.2zM207.3 664.2h5.2v107.6h-5.2zM215 665.9h5.2v4h-5.2zM222.6 655.6h5.2v11.4h-5.2zM268.4 641.4h5.2v117.2h-5.2zM276 584.5h5.2v66.6h-5.2zM291.3 590.8h5.2v15.9h-5.2zM314.2 562.9h5.2v51.8h-5.2zM321.8 513.4h5.2v51.2h-5.2zM337.1 471.8h5.2v93.3h-5.2zM360 479.8h5.2v37.6h-5.2zM375.3 414.4h5.2v79.1h-5.2zM382.9 379.1h5.2v30.2h-5.2zM390.5 356.9h5.2v24.5h-5.2zM405.8 334.1h5.2v5.1h-5.2zM413.4 289.2h5.2v48.4h-5.2zM421.1 260.7h5.2v29.6h-5.2zM428.7 245.3h5.2v39.8h-5.2zM436.3 157.1h5.2v96.7h-5.2zM459.2 193h5.2v70.6h-5.2zM466.9 204.4h5.2v4h-5.2zM489.8 180.5h5.2v62.6h-5.2zM497.4 120.2h5.2v44.4h-5.2zM505 121.9h5.2v33.6h-5.2zM527.9 137.8h5.2v52.4h-5.2zM543.2 76.3h5.2v80.8h-5.2zM589 162.3h5.2v84.2h-5.2zM619.5 260.7h5.2v17.6h-5.2zM634.8 324.4h5.2v21.1h-5.2zM673 572h5.2v8.5h-5.2zM695.9 562.3h5.2v58.6h-5.2zM703.5 433.7h5.2v125.8h-5.2zM711.1 401.8h5.2v8h-5.2zM779.8 570.8h5.2v19.9h-5.2zM795.1 639.7h5.2v22.8h-5.2zM818 665.3h5.2v93.3h-5.2zM833.3 784.8h5.2v28.5h-5.2zM848.5 807.6h5.2v112.1h-5.2zM856.2 759.2h5.2v45.5h-5.2zM863.8 623.2h5.2v124.1h-5.2zM879.1 562.3h5.2v69.4h-5.2zM886.7 549.2h5.2v24.5h-5.2zM902 525.9h5.2v73.4h-5.2zM924.9 492.9h5.2v47.8h-5.2zM932.5 453.1h5.2v58h-5.2zM940.2 449.6h5.2v48.9h-5.2zM947.8 346.6h5.2v90.5h-5.2zM955.4 194.7h5.2v162.2h-5.2z"
+                          fill="var(--up-c)"></path>
+                        <path
+                          d="M3.8 598.2V655.6M19.1 570.3V708.6M49.6 572V586.2M57.3 557.2V610.1M64.9 604.4V694.9M87.8 593.6V652.2M103.1 595.9V677.3M133.6 507.7V530.4M141.2 501.4V603.3M156.5 570.3V718.2M171.8 618.6V714.3M179.4 686.4V747.8M187 701.2V742.7M194.7 707.4V766M232.8 630V686.9M240.5 653.9V686.4M248.1 631.2V757.5M255.7 645.4V790.5M263.4 743.3V783.1M286.3 557.2V632.9M301.5 549.8V616.4M309.2 558.9V632.3M332.1 502.6V575.4M347.3 438.8V497.4M355 501.4V542.4M370.2 450.2V508.8M400.8 276.1V337M446.6 143.5V220.9M454.2 202.1V258.4M477.1 164V230.5M484.7 152V270.4M515.3 59.3V179.3M522.9 170.8V247.1M538.2 72.4V180.5M553.4 59.3V174.8M561.1 59.3V212.3M568.7 187.3V221.4M576.3 175.4V239.7M584 226.6V292M599.2 103.1V230.5M606.9 158.3V195.3M614.5 158.3V273.2M629.8 223.2V362.6M645 317.6V429.7M652.7 416.6V487.8M660.3 447.9V475.8M667.9 396.1V577.7M683.2 508.3V657.3M690.8 597V659.1M721.4 383.1V430.3M729 350.6V497.4M736.6 450.8V484.4M744.3 439.4V498.6M751.9 471.3V539M759.5 491.2V536.7M767.2 517.4V624.3M774.8 588.5V677.8M790.1 533.3V705.1M805.3 644.3V704M813 681.8V783.7M828.2 660.2V826.4M843.5 737V946.4M874 538.4V632.9M896.9 474.1V634.6M912.2 472.4V618.1M919.8 562.9V603.9"
+                          stroke="var(--down-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M1.2 603.3h5.2v22.8h-5.2zM16.5 587.4h5.2v75.7h-5.2zM47 580.5h5.2v5.1h-5.2zM54.7 581.1h5.2v25.6h-5.2zM62.3 609.5h5.2v39.8h-5.2zM85.2 602.1h5.2v29h-5.2zM100.5 602.7h5.2v39.8h-5.2zM131 508.3h5.2v11.4h-5.2zM138.6 509.4h5.2v85.4h-5.2zM153.9 580h5.2v124.6h-5.2zM169.2 642h5.2v68.9h-5.2zM176.8 708h5.2v17.6h-5.2zM184.4 725.1h5.2v8h-5.2zM192.1 735.3h5.2v8h-5.2zM230.2 661.3h5.2v2.8h-5.2zM237.9 667h5.2v4.6h-5.2zM245.5 665.3h5.2v30.7h-5.2zM253.1 678.4h5.2v62h-5.2zM260.8 748.4h5.2v10.8h-5.2zM283.7 590.8h5.2v15.9h-5.2zM298.9 575.4h5.2v13.1h-5.2zM306.6 578.2h5.2v38.7h-5.2zM329.5 513.4h5.2v55.8h-5.2zM344.7 469h5.2v26.2h-5.2zM352.4 515.1h5.2v12h-5.2zM367.6 465.6h5.2v19.3h-5.2zM398.2 330.1h5.2v5.1h-5.2zM444 157.1h5.2v54.1h-5.2zM451.6 222h5.2v18.8h-5.2zM474.5 187.3h5.2v33.6h-5.2zM482.1 198.7h5.2v48.4h-5.2zM512.7 109.9h5.2v39.3h-5.2zM520.3 176.5h5.2v16.5h-5.2zM535.6 129.8h5.2v34.1h-5.2zM550.8 76.3h5.2v67.1h-5.2zM558.5 125.8h5.2v83.7h-5.2zM566.1 196.4h5.2v13.7h-5.2zM573.7 206.1h5.2v31.9h-5.2zM581.4 230.5h5.2v4.6h-5.2zM596.6 172.5h5.2v22.2h-5.2zM604.3 177.1h5.2v2h-5.2zM611.9 163.4h5.2v82.5h-5.2zM627.2 251h5.2v66.6h-5.2zM642.4 331.3h5.2v86.5h-5.2zM650.1 432h5.2v25.6h-5.2zM657.7 449.1h5.2v5.1h-5.2zM665.3 447.4h5.2v118.4h-5.2zM680.6 585.6h5.2v25.6h-5.2zM688.2 599.9h5.2v33.6h-5.2zM718.8 390.5h5.2v2h-5.2zM726.4 384.2h5.2v93.3h-5.2zM734 466.1h5.2v17.6h-5.2zM741.7 484.9h5.2v10.2h-5.2zM749.3 499.1h5.2v26.2h-5.2zM756.9 518.5h5.2v13.7h-5.2zM764.6 521.9h5.2v84.2h-5.2zM772.2 599.9h5.2v8.5h-5.2zM787.5 557.8h5.2v104.7h-5.2zM802.7 649.9h5.2v46.1h-5.2zM810.4 693.2h5.2v56.3h-5.2zM825.6 672.1h5.2v134.9h-5.2zM840.9 749h5.2v170.7h-5.2zM871.5 586.8h5.2v41h-5.2zM894.4 503.7h5.2v68.9h-5.2zM909.6 532.7h5.2v56.9h-5.2zM917.3 577.7h5.2v5.1h-5.2z"
+                          fill="var(--down-c)"></path>
+                        <path
+                          d="M3.8 729.9L11.5 719.1L19.1 714.9L26.7 704.8L34.4 692.4L42 681.1L49.6 673.3L57.3 664.3L64.9 658.1L72.5 652.3L80.2 643.3L87.8 637.2L95.4 631L103.1 627.1L110.7 626.2L118.3 620L126 610.1L133.6 603.4L141.2 600.3L148.9 597.5L156.5 601.4L164.1 605L171.8 607.4L179.4 613.9L187 621.6L194.7 630.3L202.3 639.2L209.9 642L217.6 642.9L225.2 644.1L232.8 647L240.5 649.1L248.1 654.1L255.7 659L263.4 665.3L271 668.9L278.6 673.3L286.3 677.6L293.9 677.4L301.5 678.4L309.2 674L316.8 669.2L324.4 659.3L332.1 651.5L339.7 638.4L347.3 626L355 614.3L362.6 605L370.2 596L377.9 583.9L385.5 569.7L393.1 553.9L400.8 535.9L408.4 515.6L416 492.1L423.7 473.1L431.3 456.1L438.9 433.6L446.6 414.6L454.2 397.3L461.8 376.1L469.5 358.1L477.1 343.5L484.7 327.4L492.4 312.8L500 294.1L507.6 273.8L515.3 257.3L522.9 242.7L530.5 228.9L538.2 218.1L545.8 204.1L553.4 194.5L561.1 188.3L568.7 184.3L576.3 183.2L584 182.7L591.6 182.9L599.2 182.1L606.9 179L614.5 181.6L622.1 184.4L629.8 189.3L637.4 193.1L645 205L652.7 221.9L660.3 238.5L667.9 259.3L675.6 278.3L683.2 301.9L690.8 325.4L698.5 349.7L706.1 364.2L713.7 373.8L721.4 382.9L729 394.9L736.6 407.3L744.3 424L751.9 440.5L759.5 458.2L767.2 476.2L774.8 493.6L782.4 506.3L790.1 523.2L797.7 534.3L805.3 546.2L813 560.9L820.6 565.9L828.2 577.7L835.9 586.4L843.5 600.7L851.1 612.9L858.8 629.2L866.4 640.3L874 652.1L881.7 656.3L889.3 659.6L896.9 663.5L904.6 663.5L912.2 666.4L919.8 665.2L927.5 659.4L935.1 653.5L942.7 642.9L950.4 628.2L958 603.2"
+                          fill="none"
+                          stroke="var(--c1)"
+                          stroke-width="1.25"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M3.8 814L11.5 805.1L19.1 799.6L26.7 791.5L34.4 783.2L42 774.8L49.6 767.4L57.3 761.1L64.9 756.7L72.5 751.7L80.2 746L87.8 741.5L95.4 735.8L103.1 732.1L110.7 728.3L118.3 722L126 713.2L133.6 705.6L141.2 701.2L148.9 696.1L156.5 696.4L164.1 694.9L171.8 695.6L179.4 696.7L187 698.2L194.7 699.9L202.3 702.4L209.9 700.9L217.6 699.5L225.2 697.8L232.8 696.5L240.5 695.5L248.1 695.5L255.7 697.3L263.4 699.7L271 697.4L278.6 693L286.3 689.6L293.9 685.7L301.5 681.9L309.2 679.4L316.8 674.8L324.4 668.5L332.1 664.6L339.7 657L347.3 650.7L355 645.8L362.6 639.3L370.2 633.3L377.9 624.7L385.5 615L393.1 604.9L400.8 594.3L408.4 584.1L416 572.6L423.7 560.3L431.3 548L438.9 532.7L446.6 520.1L454.2 509.1L461.8 496.7L469.5 485.2L477.1 474.9L484.7 465.9L492.4 454.7L500 441.6L507.6 429.1L515.3 418.1L522.9 409.3L530.5 398.6L538.2 389.4L545.8 377.2L553.4 368L561.1 361.8L568.7 355.8L576.3 351.2L584 346.6L591.6 339.4L599.2 333.7L606.9 327.6L614.5 324.4L622.1 321.9L629.8 321.8L637.4 321.9L645 325.6L652.7 330.8L660.3 335.6L667.9 344.7L675.6 353.6L683.2 363.7L690.8 374.3L698.5 381.6L706.1 383.7L713.7 384.4L721.4 384.7L729 388.3L736.6 392.1L744.3 396.1L751.9 401.2L759.5 406.3L767.2 414.1L774.8 421.8L782.4 427.6L790.1 436.8L797.7 444.8L805.3 454.6L813 466.2L820.6 474L828.2 487.1L835.9 498.7L843.5 515.2L851.1 526.7L858.8 535.8L866.4 539.3L874 542.7L881.7 543.5L889.3 543.7L896.9 544.8L904.6 544.1L912.2 545.9L919.8 547.3L927.5 545.2L935.1 541.6L942.7 538L950.4 530.5L958 517.3"
+                          fill="none"
+                          stroke="var(--c2)"
+                          stroke-width="1.25"
+                          vector-effect="non-scaling-stroke"></path></svg
+                      ><div class="leg"
+                        ><div class="leg-r"
+                          ><b style="font-weight: 600">Corvan Systems</b><i>Tageskerzen · Belmar</i
+                          ><i>E</i><span data-k="o">84,57</span><i>H</i><span data-k="h">87,82</span
+                          ><i>T</i><span data-k="l">84,32</span><i>S</i><span data-k="c">87,42</span
+                          ><span data-k="chg" class="up">+2,67 (+3,15 %)</span></div
+                        ><div class="leg-r" style="gap: 0 12px"
+                          ><span><span class="leg-d" style="--c: var(--c1)"></span>SMA 20</span
+                          ><span
+                            ><span class="leg-d" style="--c: var(--c2)"></span>EMA 50</span
+                          ></div
+                        ></div
+                      ><div class="xc-line" style="top: 38.9%; --c: var(--acc)"
+                        ><b style="font-weight: 600; color: var(--acc)">Kauf Limit</b> 10 Stück
+                        <svg class="ic" aria-hidden="true"><use href="#i-x"></use></svg></div></div
+                    ><div class="xc-y"
+                      ><span style="top: 90.1%">75,00</span><span style="top: 75.9%">77,50</span
+                      ><span style="top: 61.7%">80,00</span><span style="top: 47.5%">82,50</span
+                      ><span style="top: 33.2%">85,00</span><span style="top: 4.8%">90,00</span
+                      ><b style="top: 19.5%; --c: var(--up-c)">87,42</b
+                      ><b style="top: 38.9%; --c: var(--acc); --tag-fg: #0c0e12">L 84,00</b></div
+                    ></div
+                  ><div class="xc-pane" style="height: 50px"
+                    ><div class="xc-plot"
+                      ><svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+                        <path
+                          d="M8.9 572h5.2V1000h-5.2zM24.1 516.2h5.2V1000h-5.2zM31.8 631.4h5.2V1000h-5.2zM39.4 491.5h5.2V1000h-5.2zM69.9 439.4h5.2V1000h-5.2zM77.6 686.3h5.2V1000h-5.2zM92.8 631.4h5.2V1000h-5.2zM108.1 445.8h5.2V1000h-5.2zM115.7 390.9h5.2V1000h-5.2zM123.4 380.8h5.2V1000h-5.2zM146.3 623.2h5.2V1000h-5.2zM161.5 633.3h5.2V1000h-5.2zM199.7 514.4h5.2V1000h-5.2zM207.3 622.3h5.2V1000h-5.2zM215 600.3h5.2V1000h-5.2zM222.6 629.6h5.2V1000h-5.2zM268.4 328.7h5.2V1000h-5.2zM276 600.3h5.2V1000h-5.2zM291.3 143h5.2V1000h-5.2zM314.2 637.8h5.2V1000h-5.2zM321.8 748.5h5.2V1000h-5.2zM337.1 538.1h5.2V1000h-5.2zM360 503.4h5.2V1000h-5.2zM375.3 744.8h5.2V1000h-5.2zM382.9 597.6h5.2V1000h-5.2zM390.5 790.6h5.2V1000h-5.2zM405.8 638.7h5.2V1000h-5.2zM413.4 662.5h5.2V1000h-5.2zM421.1 264.7h5.2V1000h-5.2zM428.7 609.5h5.2V1000h-5.2zM436.3 601.2h5.2V1000h-5.2zM459.2 537.2h5.2V1000h-5.2zM466.9 510.7h5.2V1000h-5.2zM489.8 510.7h5.2V1000h-5.2zM497.4 662.5h5.2V1000h-5.2zM505 603.1h5.2V1000h-5.2zM527.9 422.9h5.2V1000h-5.2zM543.2 657h5.2V1000h-5.2zM589 484.2h5.2V1000h-5.2zM619.5 769.5h5.2V1000h-5.2zM634.8 551.9h5.2V1000h-5.2zM673 572h5.2V1000h-5.2zM695.9 638.7h5.2V1000h-5.2zM703.5 644.2h5.2V1000h-5.2zM711.1 593h5.2V1000h-5.2zM779.8 563.7h5.2V1000h-5.2zM795.1 668.9h5.2V1000h-5.2zM818 532.7h5.2V1000h-5.2zM833.3 622.3h5.2V1000h-5.2zM848.5 546.4h5.2V1000h-5.2zM856.2 644.2h5.2V1000h-5.2zM863.8 440.3h5.2V1000h-5.2zM879.1 568.3h5.2V1000h-5.2zM886.7 722h5.2V1000h-5.2zM902 514.4h5.2V1000h-5.2zM924.9 534.5h5.2V1000h-5.2zM932.5 532.7h5.2V1000h-5.2zM940.2 543.6h5.2V1000h-5.2zM947.8 500.6h5.2V1000h-5.2zM955.4 816.2h5.2V1000h-5.2z"
+                          fill="var(--up-c)"
+                          opacity=".5"></path>
+                        <path
+                          d="M1.2 462.2h5.2V1000h-5.2zM16.5 714.7h5.2V1000h-5.2zM47 594.8h5.2V1000h-5.2zM54.7 585.7h5.2V1000h-5.2zM62.3 564.7h5.2V1000h-5.2zM85.2 704.6h5.2V1000h-5.2zM100.5 476.9h5.2V1000h-5.2zM131 90.9h5.2V1000h-5.2zM138.6 606.7h5.2V1000h-5.2zM153.9 605.8h5.2V1000h-5.2zM169.2 540h5.2V1000h-5.2zM176.8 551.9h5.2V1000h-5.2zM184.4 545.5h5.2V1000h-5.2zM192.1 475h5.2V1000h-5.2zM230.2 741.2h5.2V1000h-5.2zM237.9 594.8h5.2V1000h-5.2zM245.5 644.2h5.2V1000h-5.2zM253.1 337.8h5.2V1000h-5.2zM260.8 663.4h5.2V1000h-5.2zM283.7 504.3h5.2V1000h-5.2zM298.9 609.5h5.2V1000h-5.2zM306.6 562.8h5.2V1000h-5.2zM329.5 591.2h5.2V1000h-5.2zM344.7 474.1h5.2V1000h-5.2zM352.4 495.2h5.2V1000h-5.2zM367.6 599.4h5.2V1000h-5.2zM398.2 531.7h5.2V1000h-5.2zM444 393.6h5.2V1000h-5.2zM451.6 578.4h5.2V1000h-5.2zM474.5 642.4h5.2V1000h-5.2zM482.1 652.5h5.2V1000h-5.2zM512.7 228.1h5.2V1000h-5.2zM520.3 608.6h5.2V1000h-5.2zM535.6 635.1h5.2V1000h-5.2zM550.8 447.6h5.2V1000h-5.2zM558.5 537.2h5.2V1000h-5.2zM566.1 366.2h5.2V1000h-5.2zM573.7 201.6h5.2V1000h-5.2zM581.4 396.4h5.2V1000h-5.2zM596.6 226.3h5.2V1000h-5.2zM604.3 430.2h5.2V1000h-5.2zM611.9 478.7h5.2V1000h-5.2zM627.2 606.7h5.2V1000h-5.2zM642.4 554.6h5.2V1000h-5.2zM650.1 615h5.2V1000h-5.2zM657.7 687.2h5.2V1000h-5.2zM665.3 668.9h5.2V1000h-5.2zM680.6 513.4h5.2V1000h-5.2zM688.2 585.7h5.2V1000h-5.2zM718.8 340.6h5.2V1000h-5.2zM726.4 668h5.2V1000h-5.2zM734 753.1h5.2V1000h-5.2zM741.7 728.4h5.2V1000h-5.2zM749.3 443.9h5.2V1000h-5.2zM756.9 534.5h5.2V1000h-5.2zM764.6 593h5.2V1000h-5.2zM772.2 489.7h5.2V1000h-5.2zM787.5 536.3h5.2V1000h-5.2zM802.7 638.7h5.2V1000h-5.2zM810.4 541.8h5.2V1000h-5.2zM825.6 480.5h5.2V1000h-5.2zM840.9 444.9h5.2V1000h-5.2zM871.5 628.7h5.2V1000h-5.2zM894.4 461.3h5.2V1000h-5.2zM909.6 554.6h5.2V1000h-5.2zM917.3 628.7h5.2V1000h-5.2z"
+                          fill="var(--down-c)"
+                          opacity=".5"></path></svg
+                      ><div class="xc-tag"
+                        >Volumen <span data-k="v" class="num">201 Tsd.</span></div
+                      ></div
+                    ><div class="xc-y"><span style="top: 12%">1,0 Mio.</span></div></div
+                  ><div class="xc-x"
+                    ><span style="left: calc((100%) * 0.0267)">Mai</span
+                    ><span style="left: calc((100%) * 0.1947)">Jun</span
+                    ><span style="left: calc((100%) * 0.355)">Jul</span
+                    ><span style="left: calc((100%) * 0.5305)">Aug</span
+                    ><span style="left: calc((100%) * 0.6908)">Sep</span
+                    ><span style="left: calc((100%) * 0.8588)">Okt</span></div
+                  ></div
+                ></div
+              ><div data-p="rng:1J" class="" hidden
+                ><div
+                  class="xc"
+                  tabindex="0"
+                  data-xc='{"t":"candle","p":8,"lo":59.478,"hi":91.622,"r":[["18.10.30",66.08,66.18,65.39,66.08,661],["21.10.30",66.06,66.11,65.58,65.84,355],["22.10.30",66.21,66.58,65.73,65.79,485],["23.10.30",65.66,66.09,65.64,65.75,296],["24.10.30",65.5,66.78,65.14,66.15,597],["25.10.30",66.26,66.57,64.39,64.8,464],["28.10.30",64.64,64.92,62.81,63.39,776],["29.10.30",63.32,63.4,63.01,63.22,554],["30.10.30",63.13,63.4,61.78,62.1,589],["31.10.30",62.28,62.44,62.08,62.37,526],["01.11.30",62.53,62.99,61.63,62.06,637],["04.11.30",62.22,62.53,61.3,61.6,404],["05.11.30",61.6,62.03,61.3,61.6,422],["06.11.30",61.6,62.25,61.3,61.94,558],["07.11.30",61.85,62.25,61.78,62.23,431],["08.11.30",61.82,62.69,61.45,62.62,821],["11.11.30",62.58,62.9,61.96,62.06,401],["12.11.30",61.83,63,61.56,62.1,550],["13.11.30",62.06,62.81,61.3,61.6,590],["14.11.30",61.6,62.14,61.2,61.9,302],["15.11.30",61.91,62.63,61.84,62.06,780],["18.11.30",62.49,62.74,61.3,61.6,538],["19.11.30",61.6,61.85,61.3,61.6,426],["20.11.30",61.6,62.34,61.3,61.69,444],["21.11.30",61.7,62.1,61.3,62.08,546],["22.11.30",61.95,62.77,61.92,62.64,405],["25.11.30",62.26,62.64,61.72,62.4,369],["26.11.30",62.62,63.18,61.31,62.97,431],["27.11.30",62.69,64.85,62.19,64.5,415],["28.11.30",64.45,65.26,64.45,65.02,581],["29.11.30",64.83,66.68,64.66,66.02,487],["02.12.30",65.94,66.63,65.93,66.29,419],["03.12.30",66.25,66.77,65.6,65.95,234],["04.12.30",65.68,66.57,65.49,66.04,284],["05.12.30",66.2,66.24,65.34,65.37,378],["06.12.30",65.17,67.32,64.92,66.66,418],["09.12.30",67,68.14,66.9,67.31,430],["10.12.30",67.19,67.4,65.74,66.37,533],["11.12.30",66.29,66.66,65.8,66.52,687],["12.12.30",66.18,67.44,65.7,66.69,347],["13.12.30",66.63,67.4,66.48,67.01,571],["16.12.30",66.85,68.42,66.63,67.73,360],["17.12.30",67.6,69.41,67.27,68.81,392],["18.12.30",68.42,69.52,68.32,68.93,516],["19.12.30",68.87,69.61,68.39,68.58,392],["20.12.30",68.7,70.03,68.49,69.73,387],["23.12.30",69.69,70.52,69.52,70.03,402],["24.12.30",69.79,71.51,69.18,70.8,530],["25.12.30",70.9,71.02,70.85,71,527],["26.12.30",71.05,71.91,70.32,71.7,537],["27.12.30",71.39,72.37,71.26,72.3,491],["30.12.30",72.35,72.39,71.36,71.7,390],["31.12.30",71.77,71.87,71.75,71.83,331],["01.01.31",71.66,72.46,70.93,72.12,276],["02.01.31",72.42,72.97,70.83,71.31,483],["03.01.31",71.38,72.52,71.17,71.35,438],["06.01.31",71.52,71.54,70.91,71.37,676],["07.01.31",71.29,71.91,71.07,71.51,632],["08.01.31",71.5,71.55,70.66,71.28,348],["09.01.31",71.13,71.56,70.29,70.34,457],["10.01.31",70.32,71.36,70.28,71.18,282],["13.01.31",71.27,71.38,69.51,70.07,330],["14.01.31",70.29,71.02,70.13,70.38,263],["15.01.31",70.41,70.9,69.65,70.19,362],["16.01.31",69.97,70.32,69.41,70.31,540],["17.01.31",70.21,71.36,69.75,71.18,486],["20.01.31",71.67,71.84,71.14,71.42,328],["21.01.31",71.49,71.6,70.93,70.97,305],["22.01.31",70.69,71.34,70.29,71.3,611],["23.01.31",71.24,72.31,71.05,71.59,503],["24.01.31",71.35,72.46,70.94,72.22,338],["27.01.31",72.09,73.54,71.64,73.31,344],["28.01.31",73.27,74.81,72.52,74.64,357],["29.01.31",74.73,75.1,74.56,74.75,554],["30.01.31",74.41,76.34,73.92,75.24,315],["31.01.31",75.13,75.28,75,75.27,401],["03.02.31",75.38,75.76,73.41,73.68,294],["04.02.31",74.05,75.75,73.59,75.49,430],["05.02.31",75.42,75.61,74.36,74.58,526],["06.02.31",74.73,75.28,73.59,74.83,403],["07.02.31",74.84,75.06,74.41,74.85,414],["10.02.31",74.82,76.33,74.69,76.22,364],["11.02.31",76.1,77.6,75.7,77.25,439],["12.02.31",77.23,77.86,76.15,76.7,428],["13.02.31",76.82,76.86,75.93,76.13,619],["14.02.31",75.98,77.09,75.69,76.8,630],["17.02.31",76.46,77.22,75.89,76.14,465],["18.02.31",75.84,77.56,75.55,77.24,299],["19.02.31",77.23,77.7,76.86,77.6,346],["20.02.31",77.56,78.29,77.14,77.15,447],["21.02.31",76.76,77.58,76.02,76.4,1141],["24.02.31",76.43,76.71,75.7,75.88,353],["25.02.31",75.69,76.31,75.53,76,450],["26.02.31",76.25,76.89,76.14,76.65,354],["27.02.31",76.64,76.71,76.01,76.44,462],["28.02.31",76.34,77.2,76.08,76.99,478],["03.03.31",76.9,77.27,75.49,75.72,768],["04.03.31",75.65,76.63,75.33,76.37,427],["05.03.31",76.26,77.62,76.1,77.05,543],["06.03.31",76.81,76.99,75.91,76.51,551],["07.03.31",76.74,77.34,76.73,77.26,698],["10.03.31",77.17,77.65,75.47,75.62,505],["11.03.31",75.65,76.5,74.92,75.53,357],["12.03.31",75.71,75.98,74.83,75.11,560],["13.03.31",75.17,75.88,74.62,75.44,398],["14.03.31",75.58,75.62,74.39,74.42,553],["17.03.31",74.26,74.81,73.65,73.98,442],["18.03.31",73.9,75.03,73.47,74.69,580],["19.03.31",74.66,75.4,74.61,74.8,755],["20.03.31",74.89,76.08,73.13,73.33,417],["21.03.31",72.78,73.4,72.5,73.4,417],["24.03.31",73.59,74.67,73.36,74.42,556],["25.03.31",74.61,75.25,74.25,75.07,610],["26.03.31",74.83,75.14,73.93,74.35,479],["27.03.31",74.44,75.39,74.09,75.17,447],["28.03.31",75.24,77.03,75.09,76.55,352],["31.03.31",76.55,77.31,75.35,75.83,371],["01.04.31",76.12,78.16,75.73,76.72,604],["02.04.31",76.66,78.1,76.24,77.69,520],["03.04.31",77.71,78.22,76.53,76.85,850],["04.04.31",76.88,77.34,76.06,76.29,304],["07.04.31",76.16,76.99,75.81,76.89,790],["08.04.31",77.27,78.43,76.87,77.83,518],["09.04.31",77.4,77.58,76.99,77,392],["10.04.31",76.52,77.29,75.62,77.25,451],["11.04.31",77.21,77.98,76.69,77.74,288],["14.04.31",77.3,78.03,77.02,77.03,469],["15.04.31",76.71,77.75,76.68,77.59,581],["16.04.31",77.68,78.39,77.43,78.2,518],["17.04.31",78.37,78.5,77.7,78.17,309],["18.04.31",78.38,79.62,78.2,79.41,396],["21.04.31",79.61,79.75,78.5,78.64,430],["22.04.31",78.8,79.09,78.18,78.66,270],["23.04.31",78.28,79.46,77.66,79.35,602],["24.04.31",79.35,79.54,79.13,79.31,397],["25.04.31",79.3,80.5,78.87,79.83,398],["28.04.31",80.24,80.33,79.32,79.84,588],["29.04.31",79.84,80.85,79.58,80.51,468],["30.04.31",80.52,80.82,78.39,79.19,312],["01.05.31",79.21,80.88,78.73,80.4,529],["02.05.31",80.26,81.21,79.75,80.64,403],["05.05.31",80.51,80.97,79.97,80.87,556],["06.05.31",80.64,80.79,80.54,80.55,443],["07.05.31",80.63,81.05,80.12,80.18,453],["08.05.31",80.13,80.22,78.63,79.43,476],["09.05.31",79.09,80.14,79.08,79.76,613],["12.05.31",80.03,80.8,79.77,80.2,343],["13.05.31",80.26,80.41,79.38,79.75,323],["14.05.31",79.41,80.62,79,80.37,403],["15.05.31",80.25,80.37,78.94,79.55,572],["16.05.31",79.16,79.82,79.03,79.71,606],["19.05.31",79.56,81.25,78.66,80.84,666],["20.05.31",81.03,82.39,80.81,82.12,677],["21.05.31",81.91,81.92,81.52,81.71,994],["22.05.31",81.89,82.03,80.24,80.39,430],["23.05.31",80.83,80.85,80.28,80.83,412],["26.05.31",80.65,80.82,78.22,78.46,431],["27.05.31",78.29,79.65,78.01,79.26,401],["28.05.31",79.56,79.97,78.29,78.35,503],["29.05.31",78.4,78.78,77.7,78.09,490],["30.05.31",78.1,78.52,77.79,77.96,497],["02.06.31",77.92,78.41,77.38,77.78,574],["03.06.31",77.4,77.76,76.98,77.45,531],["04.06.31",77.28,79.52,76.81,79.17,413],["05.06.31",79.07,79.32,79.05,79.14,437],["06.06.31",79.12,79.88,78.96,79.32,405],["09.06.31",79.22,79.77,78.77,79.17,283],["10.06.31",79.12,79.35,78.78,79.04,443],["11.06.31",79.15,79.75,77.53,78.61,389],["12.06.31",78.92,79.5,76.95,77.83,724],["13.06.31",77.69,77.78,77.08,77.5,368],["16.06.31",77.51,80.23,77.46,79.57,734],["17.06.31",79.4,80.79,78.73,80.57,437],["18.06.31",80.46,81.05,79.72,80.18,542],["19.06.31",80.18,81.19,80.07,80.46,937],["20.06.31",80.73,81.18,80.01,80.5,427],["23.06.31",80.68,81.02,79.73,80,478],["24.06.31",80.04,81.86,79.89,80.95,396],["25.06.31",80.92,82.06,80.85,81.82,275],["26.06.31",81.82,82.01,80.73,80.84,447],["27.06.31",80.91,82.95,80.21,82.55,505],["30.06.31",82.6,83.13,82.1,82.14,575],["01.07.31",81.79,82.03,81.31,81.58,552],["02.07.31",81.75,82.89,81.64,82.41,543],["03.07.31",82.66,82.93,81.9,82.32,438],["04.07.31",82.17,84.52,81.59,83.56,279],["07.07.31",83.65,84.53,83.14,84.18,440],["08.07.31",84.14,84.89,83.25,84.57,229],["09.07.31",85.04,85.99,84.92,84.95,512],["10.07.31",84.88,85.19,84.55,84.97,395],["11.07.31",84.91,85.8,84.77,85.76,369],["14.07.31",85.74,86.33,85.24,86.26,804],["15.07.31",85.83,86.92,85.28,86.53,427],["16.07.31",86.38,89.34,86.25,88.08,436],["17.07.31",88.08,88.32,86.96,87.13,663],["18.07.31",86.94,87.29,86.3,86.61,461],["21.07.31",86.21,88.04,86.11,87.45,506],["22.07.31",87.18,88.12,86.67,87.25,535],["23.07.31",87.55,87.96,86.79,86.96,391],["24.07.31",87.35,88.17,86.09,86.5,380],["25.07.31",86.57,88.36,86.12,87.67,535],["28.07.31",87.95,89.22,87.73,88.73,369],["29.07.31",88.11,89.9,87.6,88.7,434],["30.07.31",88.91,89.8,87.69,88.22,844],["31.07.31",87.74,87.84,86.5,87.45,428],["01.08.31",87.5,88.75,87.25,88.42,631],["04.08.31",88.56,89.57,87.67,87.96,399],["05.08.31",88.08,89.8,87.86,89.5,375],["06.08.31",89.5,89.8,87.77,88.32,604],["07.08.31",88.63,89.8,87.11,87.16,506],["08.08.31",87.39,87.55,86.95,87.15,693],["11.08.31",87.22,87.76,86.63,86.66,873],["12.08.31",86.79,86.86,85.71,86.71,660],["13.08.31",86.51,88.13,85.08,87.99,564],["14.08.31",87.81,89.03,86.79,87.42,846],["15.08.31",87.73,88.06,87.41,87.71,623],["18.08.31",87.97,88.06,86.04,86.52,570],["19.08.31",85.95,86.56,85.43,86.26,252],["20.08.31",86.43,86.92,84.47,85.26,430],["21.08.31",84.77,85.21,84.69,85.14,490],["22.08.31",85.02,85.26,83.29,83.5,487],["25.08.31",83.25,83.52,82.27,82.8,421],["26.08.31",82.95,82.97,82.48,82.86,342],["27.08.31",82.98,83.88,80.69,80.9,362],["28.08.31",80.64,81.18,80.45,80.79,468],["29.08.31",80.55,81.91,79.29,80.1,532],["01.09.31",80.3,80.35,79.26,79.71,453],["02.09.31",79.93,81.06,79.92,80.96,395],["03.09.31",81.01,83.56,80.99,83.22,389],["04.09.31",83.64,83.84,83.6,83.78,445],["05.09.31",83.98,84.11,83.28,83.96,721],["08.09.31",84.09,84.68,82.1,82.45,363],["09.09.31",82.65,82.92,82.33,82.34,270],["10.09.31",82.32,83.12,82.08,82.14,297],["11.09.31",82.07,82.56,81.37,81.61,608],["12.09.31",81.73,82.21,81.41,81.49,509],["15.09.31",81.67,81.75,79.87,80.19,445],["16.09.31",80.3,80.5,78.93,80.15,558],["17.09.31",80.46,81.49,80.14,80.81,477],["18.09.31",81.04,81.47,78.45,79.2,507],["19.09.31",79.2,79.79,78.98,79.6,362],["22.09.31",79.42,79.52,78.47,78.61,395],["23.09.31",78.66,78.86,77.07,77.67,501],["24.09.31",77.51,79.87,77.49,79.15,511],["25.09.31",79.03,79.24,76.32,76.66,568],["26.09.31",76.55,77.27,76.07,77.05,413],["29.09.31",77.68,77.89,74.21,74.68,607],["30.09.31",74.68,76.69,74.54,76.65,496],["01.10.31",76.7,77.6,76.69,77.5,389],["02.10.31",77.71,79.89,76.81,79.89,612],["03.10.31",80.53,81.38,79.72,79.81,406],["06.10.31",79.74,81.39,79.27,80.96,472],["07.10.31",80.76,81.34,80.75,81.19,304],["08.10.31",81.99,82.51,79.69,80.78,589],["09.10.31",80.31,81.88,79.55,81.6,531],["10.10.31",81.48,82.54,79.98,80.48,487],["13.10.31",80.69,80.95,80.23,80.6,406],["14.10.31",81.34,83.02,81.21,82.18,509],["15.10.31",81.86,83.53,81.35,82.88,511],["16.10.31",82.08,83.23,81.15,82.94,499],["17.10.31",83.16,85.94,82.88,84.75,546],["20.10.31",84.57,87.82,84.32,87.42,201]]}'
+                  ><div class="xc-pane xc-main"
+                    ><div class="xc-plot"
+                      ><svg
+                        viewBox="0 0 1000 1000"
+                        preserveAspectRatio="none"
+                        role="img"
+                        aria-label="Tageskerzen über ein Jahr bis 87,42 €, gleitende Durchschnitte, Kauflimit 84,00 € und Volumen">
+                        <path
+                          d="M0 983.8H1000M0 828.2H1000M0 672.7H1000M0 517.1H1000M0 361.6H1000M0 206H1000M0 50.5H1000M38.9 0V1000M116.7 0V1000M198.1 0V1000M283.3 0V1000M357.4 0V1000M435.2 0V1000M516.7 0V1000M598.1 0V1000M675.9 0V1000M761.1 0V1000M838.9 0V1000M920.4 0V1000"
+                          stroke="var(--grid)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M0 237.1H1000"
+                          stroke="var(--acc)"
+                          stroke-width="1"
+                          stroke-dasharray="5 4"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M1.9 791.5V816.1M13 794.3V808.3M16.7 772.8V823.9M35.2 907.9V919.1M46.3 920.6V943.3M50 913.8V943.3M53.7 913.8V928.4M57.4 900.1V938.7M64.8 890.4V935.2M72.2 917.2V946.4M75.9 901.9V926.5M83.3 926.2V943.3M87 911V943.3M90.7 918.4V943.3M94.4 897.6V924M98.1 901.6V930.3M101.9 884.8V943M105.6 832.9V915.6M109.3 820.1V845.3M113 775.9V838.8M116.7 777.5V799.3M124.1 779.4V813M131.5 756V830.7M135.2 730.5V769.1M142.6 776.6V803.3M146.3 752.3V806.4M150 753.5V782.2M153.7 721.8V777.5M157.4 691V757.6M161.1 687.6V724.9M168.5 671.7V719.6M172.2 656.5V687.6M175.9 625.7V698.2M179.6 640.9V646.2M183.3 613.2V662.7M187 598.9V633.5M194.4 614.5V618.2M198.1 596.1V643.7M213 613.2V639.4M224.1 630.4V663.9M231.5 640.9V668.6M238.9 662.7V691M242.6 630.4V680.4M253.7 631V663.6M257.4 600.8V640M261.1 596.1V643.4M264.8 562.5V621.6M268.5 523V594.3M272.2 514V530.8M275.9 475.4V550.7M279.6 508.4V517.1M287 493.8V561M294.4 508.4V561M298.1 515.2V535.5M301.9 475.7V526.8M305.6 436.2V495.3M316.7 452.1V495.6M324.1 437.5V500M327.8 433.1V459.2M342.6 476.4V500.6M346.3 458.3V481.6M353.7 448.7V483.5M361.1 466.4V506.8M364.8 435.6V482.9M372.2 444.3V463.3M387 489.7V528.9M398.1 516.2V564.7M401.9 504.7V529.2M409.3 566.9V594.9M413 527.4V568.1M416.7 509.3V540.4M424.1 505V545.4M427.8 454V514.3M435.2 418.8V494.4M438.9 420.7V478.5M450 455.2V491.9M453.7 410.4V458.9M461.1 445.9V497.8M464.8 424.4V464.5M472.2 431.6V464.8M475.9 411.6V441.5M483.3 373.4V417.6M494.4 378.4V434.4M501.9 346V396.7M509.3 335.1V374.6M516.7 334.2V401.1M520.4 323.9V369.3M524.1 331.4V362.5M538.9 357.2V390.2M542.6 336.7V368.7M550 342.3V392.7M557.4 367.2V391.7M561.1 322.7V403.2M564.8 287.2V336.4M575.9 335.1V352.8M583.3 372.4V423.5M601.9 431.2V455.5M605.6 376.5V460.8M609.3 382.7V391.1M613 365.3V393.9M635.2 354.4V440.6M638.9 337V401.1M646.3 324.5V359.4M657.4 303.7V365M661.1 297.5V335.1M668.5 269.8V355M679.6 271.7V310.5M687 220.9V312.1M690.7 220.6V263.9M694.4 209.4V260.5M701.9 200.1V220M705.6 181.1V213.2M709.3 164.6V198.5M713 146.3V197.3M716.7 71V167.1M727.8 111.4V171.5M731.5 108.9V154.1M742.6 101.5V171.2M746.3 74.7V121.1M750 53.6V125.1M761.1 89.3V136M768.5 56.7V117M790.7 108.6V203.5M805.6 157.5V192.6M813 199.5V215.7M831.5 324.9V347.6M842.6 328.6V364M846.3 250.8V330.8M850 242.1V249.6M883.3 315.2V357.2M890.7 368.1V393.3M901.9 365.6V439.6M909.3 446.5V483.8M916.7 464.5V531.4M920.4 436.2V464.5M924.1 365V460.8M931.5 318.3V384.3M935.2 319.9V338.2M942.6 303.1V375.6M953.7 267.6V323.9M957.4 251.7V319.6M961.1 261.1V325.8M964.8 176.8V272M968.5 118.3V227.2"
+                          stroke="var(--up-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M0.6 794.6h2.5v2h-2.5zM11.7 804.9h2.5v2.8h-2.5zM15.4 792.4h2.5v20.2h-2.5zM33.9 910h2.5v2.8h-2.5zM45 934h2.5v2h-2.5zM48.7 923.4h2.5v10.6h-2.5zM52.4 914.4h2.5v11.8h-2.5zM56.1 902.3h2.5v24.9h-2.5zM63.6 918.4h2.5v8.4h-2.5zM71 924.7h2.5v9.3h-2.5zM74.7 919.7h2.5v4.7h-2.5zM82.1 934h2.5v2h-2.5zM85.8 931.2h2.5v2.8h-2.5zM89.5 919.1h2.5v11.8h-2.5zM93.2 901.6h2.5v21.5h-2.5zM96.9 909.1h2.5v4.4h-2.5zM100.6 891.4h2.5v10.9h-2.5zM104.3 843.8h2.5v56.3h-2.5zM108 827.6h2.5v17.7h-2.5zM111.7 796.5h2.5v37h-2.5zM115.4 788.1h2.5v10.9h-2.5zM122.8 795.9h2.5v11.2h-2.5zM130.2 776.6h2.5v46.4h-2.5zM133.9 756.3h2.5v9.6h-2.5zM141.3 780.9h2.5v7.2h-2.5zM145 775.6h2.5v15.9h-2.5zM148.7 765.7h2.5v11.8h-2.5zM152.4 743.3h2.5v27.4h-2.5zM156.1 709.7h2.5v37.6h-2.5zM159.9 705.9h2.5v15.9h-2.5zM167.3 681.1h2.5v32h-2.5zM171 671.7h2.5v10.6h-2.5zM174.7 647.8h2.5v31.4h-2.5zM178.4 641.6h2.5v3.1h-2.5zM182.1 619.8h2.5v20.2h-2.5zM185.8 601.1h2.5v28.3h-2.5zM193.2 615.7h2.5v2h-2.5zM196.9 606.7h2.5v14.3h-2.5zM211.7 625.7h2.5v6.8h-2.5zM222.8 636h2.5v26.8h-2.5zM230.2 660.8h2.5v2.8h-2.5zM237.6 663h2.5v10.6h-2.5zM241.3 636h2.5v30.2h-2.5zM252.4 632.2h2.5v19h-2.5zM256.1 623.2h2.5v10.9h-2.5zM259.9 603.6h2.5v27.1h-2.5zM263.6 569.7h2.5v38h-2.5zM267.3 528.3h2.5v42.6h-2.5zM271 524.9h2.5v2h-2.5zM274.7 509.6h2.5v25.8h-2.5zM278.4 508.7h2.5v4.4h-2.5zM285.8 501.9h2.5v44.8h-2.5zM293.2 522.4h2.5v3.1h-2.5zM296.9 521.8h2.5v2h-2.5zM300.6 479.2h2.5v43.6h-2.5zM304.3 447.1h2.5v35.8h-2.5zM315.4 461.1h2.5v25.5h-2.5zM322.8 447.4h2.5v43.6h-2.5zM326.5 436.2h2.5v11.5h-2.5zM341.3 486h2.5v9.6h-2.5zM345 465.8h2.5v12.4h-2.5zM352.4 455.2h2.5v20.2h-2.5zM359.9 474.5h2.5v22.4h-2.5zM363.6 453.3h2.5v24.6h-2.5zM371 446.8h2.5v16.2h-2.5zM385.8 503.4h2.5v8.4h-2.5zM396.9 526.8h2.5v24.6h-2.5zM400.6 523.3h2.5v4.4h-2.5zM408 566.9h2.5v19.3h-2.5zM411.7 535.2h2.5v25.8h-2.5zM415.4 514.9h2.5v14.3h-2.5zM422.8 511.8h2.5v22.7h-2.5zM426.5 468.9h2.5v40.8h-2.5zM433.9 463.6h2.5v18.7h-2.5zM437.6 433.4h2.5v32h-2.5zM448.7 458.3h2.5v22.7h-2.5zM452.4 429.1h2.5v17.4h-2.5zM459.9 447.1h2.5v22.7h-2.5zM463.6 431.9h2.5v16.5h-2.5zM471 436.5h2.5v27.4h-2.5zM474.7 417.6h2.5v16.2h-2.5zM482.1 379.9h2.5v32h-2.5zM493.2 381.8h2.5v33.3h-2.5zM500.6 366.8h2.5v16.5h-2.5zM508 345.7h2.5v20.8h-2.5zM515.4 349.1h2.5v37h-2.5zM519.1 341.7h2.5v11.8h-2.5zM522.8 334.5h2.5v11.2h-2.5zM537.6 369h2.5v20.8h-2.5zM541.3 355.3h2.5v5.3h-2.5zM548.7 350h2.5v29.9h-2.5zM556.1 370.6h2.5v17.1h-2.5zM559.9 335.4h2.5v39.8h-2.5zM563.6 295.6h2.5v33.9h-2.5zM574.7 335.7h2.5v2h-2.5zM582.1 384.6h2.5v30.2h-2.5zM600.6 440.9h2.5v2h-2.5zM604.3 387.4h2.5v58.8h-2.5zM608 388.3h2.5v2.2h-2.5zM611.7 382.7h2.5v6.2h-2.5zM633.9 374.9h2.5v64.1h-2.5zM637.6 343.8h2.5v36.4h-2.5zM645 347.2h2.5v8.7h-2.5zM656.1 332h2.5v28.3h-2.5zM659.9 304.9h2.5v28h-2.5zM667.3 282.2h2.5v51h-2.5zM678.4 286.6h2.5v20.5h-2.5zM685.8 250.8h2.5v43.2h-2.5zM689.5 231.5h2.5v16.5h-2.5zM693.2 219.4h2.5v13.4h-2.5zM700.6 206.9h2.5v2.8h-2.5zM704.3 182.4h2.5v26.4h-2.5zM708 166.8h2.5v16.2h-2.5zM711.7 158.4h2.5v21.8h-2.5zM715.4 110.2h2.5v52.9h-2.5zM726.5 129.8h2.5v38.6h-2.5zM730.2 136h2.5v2.2h-2.5zM741.3 122.9h2.5v34.2h-2.5zM745 90h2.5v24.3h-2.5zM748.7 90.9h2.5v18.4h-2.5zM759.9 99.6h2.5v28.6h-2.5zM767.3 66h2.5v44.2h-2.5zM789.5 113h2.5v46h-2.5zM804.3 166.8h2.5v9.6h-2.5zM811.7 201.7h2.5v11.5h-2.5zM830.2 337h2.5v4.7h-2.5zM841.3 331.7h2.5v32h-2.5zM845 261.4h2.5v68.8h-2.5zM848.7 244h2.5v4.4h-2.5zM882.1 336.4h2.5v10.9h-2.5zM889.5 374h2.5v12.4h-2.5zM900.6 388h2.5v51h-2.5zM908 453.3h2.5v15.6h-2.5zM915.4 465.8h2.5v61.3h-2.5zM919.1 439.3h2.5v24.9h-2.5zM922.8 365h2.5v67.8h-2.5zM930.2 331.7h2.5v38h-2.5zM933.9 324.5h2.5v13.4h-2.5zM941.3 311.8h2.5v40.1h-2.5zM952.4 293.7h2.5v26.1h-2.5zM956.1 272h2.5v31.7h-2.5zM959.9 270.1h2.5v26.8h-2.5zM963.6 213.8h2.5v49.5h-2.5zM967.3 130.7h2.5v88.7h-2.5z"
+                          fill="var(--up-c)"></path>
+                        <path
+                          d="M5.6 793.7V810.2M9.3 779.1V805.5M20.4 779.4V847.2M24.1 830.7V896.3M27.8 878V890.1M31.5 878V928.4M38.9 890.7V933.1M42.6 905.1V943.3M61.1 893.5V922.8M68.5 896.3V943.3M79.6 898.5V943.3M120.4 773.1V809.5M127.8 789.6V817.6M138.9 753.5V805.2M164.8 684.8V722.7M190.7 598.3V630.4M201.9 580.3V646.8M205.6 594.3V636.3M209.3 624.8V644.4M216.7 624.4V652.1M220.4 624.1V663.6M227.8 629.7V687.9M235.2 644.7V683.5M246.3 615.4V637.2M250 622.9V643.7M283.3 493.5V566.6M290.7 498.1V537M309.3 428.1V481.3M313 459.2V488.2M320.4 448V489.4M331.5 414.8V450.5M335.2 436.8V485.4M338.9 463.9V495.3M350 463.9V485.7M357.4 446.5V501.9M368.5 455.2V488.8M375.9 434.7V502.5M379.6 470.4V519.6M383.3 486.6V522.4M390.7 497.8V536.1M394.4 523V559.1M405.6 483.5V575.3M420.4 512.8V550.4M431.5 445.2V506.2M442.6 416.9V469.5M446.3 444.3V484.1M457.4 436.8V455.2M468.5 422.8V454.3M479.6 408.2V433.1M487 369.3V408.2M490.7 389.9V418.2M498.1 375.9V388.6M505.6 351.3V382.7M513 336.1V411.6M527.8 337V344.8M531.5 328.9V357.8M535.2 354.7V404.2M546.3 348.8V380.8M553.7 350V394.5M568.5 301.8V314.3M572.2 298.4V354.1M579.6 336.1V416.9M587 362.5V414.8M590.7 399.5V433.1M594.4 407.6V430.3M598.1 411V443.1M616.7 368.7V399.8M620.4 381.8V399.5M624.1 369.3V438.4M627.8 377.1V456.4M631.5 430.6V452.4M642.6 328.9V370.3M650 324.9V361.2M653.7 329.8V370M664.8 299V338.9M672.2 264.2V296.2M675.9 298.4V320.8M683.3 270.4V302.5M698.1 175.2V208.5M720.4 102.7V145M724.1 134.8V165.6M735.2 113.9V150.3M738.9 107.4V172.1M753.7 56.7V122.3M757.4 117.7V159.3M764.8 63.8V122.9M772.2 56.7V119.8M775.9 56.7V140.4M779.6 126.7V145.3M783.3 120.1V155.3M787 148.1V183.9M794.4 80.6V150.3M798.1 110.8V131M801.9 110.8V173.7M809.3 146.3V222.5M816.7 197.9V259.2M820.4 252.1V290.9M824.1 269.2V284.4M827.8 240.9V340.1M835.2 302.1V383.6M838.9 350.7V384.6M853.7 233.7V259.5M857.4 216V296.2M861.1 270.7V289.1M864.8 264.5V296.9M868.5 281.9V318.9M872.2 292.8V317.7M875.9 307.1V365.6M879.6 346V394.8M887 315.8V409.8M894.4 376.5V409.2M898.1 397V452.7M905.6 385.2V476M913 427.2V541.7M927.8 318.6V370.3M938.9 283.5V371.2M946.3 282.5V362.2M950 332V354.4"
+                          stroke="var(--down-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M4.3 795.2h2.5v6.8h-2.5zM8 790.6h2.5v13.1h-2.5zM19.1 789h2.5v45.4h-2.5zM22.8 839.4h2.5v38.9h-2.5zM26.5 880.5h2.5v3.1h-2.5zM30.2 886.4h2.5v32h-2.5zM37.6 905.1h2.5v14.6h-2.5zM41.3 914.7h2.5v19.3h-2.5zM59.9 903.5h2.5v16.2h-2.5zM67.3 919.7h2.5v14.3h-2.5zM78.4 906.3h2.5v27.7h-2.5zM119.1 789.3h2.5v9.3h-2.5zM126.5 790.9h2.5v25.8h-2.5zM137.6 760.1h2.5v25.5h-2.5zM163.6 707.8h2.5v9h-2.5zM189.5 599.6h2.5v20.2h-2.5zM200.6 597.4h2.5v34.5h-2.5zM204.3 629.7h2.5v2h-2.5zM208 625.4h2.5v4.7h-2.5zM215.4 626h2.5v6.8h-2.5zM219.1 637.5h2.5v24.6h-2.5zM226.5 633.2h2.5v37.3h-2.5zM233.9 659.9h2.5v6.8h-2.5zM245 620.7h2.5v7.8h-2.5zM248.7 626.3h2.5v16.2h-2.5zM282.1 505.3h2.5v52.9h-2.5zM289.5 504h2.5v26.1h-2.5zM308 447.7h2.5v16.5h-2.5zM311.7 460.5h2.5v21.5h-2.5zM319.1 471.7h2.5v10h-2.5zM330.2 437.5h2.5v12.8h-2.5zM333.9 462.4h2.5v11.2h-2.5zM337.6 472.6h2.5v17.1h-2.5zM348.7 466.1h2.5v6.2h-2.5zM356.1 458h2.5v36.7h-2.5zM367.3 460.8h2.5v9.3h-2.5zM374.7 449.6h2.5v48.2h-2.5zM378.4 496.9h2.5v3.7h-2.5zM382.1 495h2.5v18.7h-2.5zM389.5 499.1h2.5v36.1h-2.5zM393.2 540.1h2.5v8.7h-2.5zM404.3 520.5h2.5v48.5h-2.5zM419.1 522.4h2.5v14.9h-2.5zM430.2 468.9h2.5v22.4h-2.5zM441.3 432.8h2.5v26.8h-2.5zM445 458.6h2.5v18.4h-2.5zM456.1 442.4h2.5v12.4h-2.5zM467.3 445.6h2.5v8.4h-2.5zM478.4 412.3h2.5v6.2h-2.5zM485.8 373.7h2.5v30.2h-2.5zM489.5 398.9h2.5v4.4h-2.5zM496.9 381.8h2.5v2h-2.5zM504.3 354.1h2.5v12.4h-2.5zM511.7 345.4h2.5v41.4h-2.5zM526.5 341.7h2.5v2.8h-2.5zM530.2 342h2.5v14h-2.5zM533.9 357.5h2.5v21.8h-2.5zM545 353.5h2.5v15.9h-2.5zM552.4 353.8h2.5v21.8h-2.5zM567.3 302.1h2.5v6.2h-2.5zM571 302.8h2.5v46.7h-2.5zM578.4 341.3h2.5v68.1h-2.5zM585.8 375.2h2.5v37.6h-2.5zM589.5 411.3h2.5v9.6h-2.5zM593.2 420.7h2.5v4.4h-2.5zM596.9 426.3h2.5v4.4h-2.5zM615.4 385.8h2.5v2h-2.5zM619.1 388.9h2.5v2.5h-2.5zM622.8 388h2.5v16.8h-2.5zM626.5 395.2h2.5v33.9h-2.5zM630.2 433.4h2.5v5.9h-2.5zM641.3 347.2h2.5v8.7h-2.5zM648.7 338.9h2.5v7.2h-2.5zM652.4 340.4h2.5v21.2h-2.5zM663.6 304.9h2.5v30.5h-2.5zM671 280.7h2.5v14.3h-2.5zM674.7 305.9h2.5v6.5h-2.5zM682.1 278.8h2.5v10.6h-2.5zM696.9 204.8h2.5v2.8h-2.5zM719.1 110.2h2.5v29.6h-2.5zM722.8 145.7h2.5v10.3h-2.5zM733.9 126.7h2.5v18.4h-2.5zM737.6 132.9h2.5v26.4h-2.5zM752.4 84.4h2.5v21.5h-2.5zM756.1 120.8h2.5v9h-2.5zM763.6 95.3h2.5v18.7h-2.5zM771 66h2.5v36.7h-2.5zM774.7 93.1h2.5v45.7h-2.5zM778.4 131.7h2.5v7.5h-2.5zM782.1 136.9h2.5v17.4h-2.5zM785.8 150.3h2.5v2.5h-2.5zM793.2 118.6h2.5v12.1h-2.5zM796.9 121.1h2.5v2h-2.5zM800.6 113.6h2.5v45.1h-2.5zM808 161.5h2.5v36.4h-2.5zM815.4 205.4h2.5v47.3h-2.5zM819.1 260.5h2.5v14h-2.5zM822.8 269.8h2.5v2.8h-2.5zM826.5 268.9h2.5v64.7h-2.5zM833.9 344.4h2.5v14h-2.5zM837.6 352.2h2.5v18.4h-2.5zM852.4 237.7h2.5v2h-2.5zM856.1 234.3h2.5v51h-2.5zM859.9 279.1h2.5v9.6h-2.5zM863.6 289.4h2.5v5.6h-2.5zM867.3 297.2h2.5v14.3h-2.5zM871 307.7h2.5v7.5h-2.5zM874.7 309.6h2.5v46h-2.5zM878.4 352.2h2.5v4.7h-2.5zM885.8 329.2h2.5v57.2h-2.5zM893.2 379.6h2.5v25.2h-2.5zM896.9 403.2h2.5v30.8h-2.5zM904.3 391.7h2.5v73.7h-2.5zM911.7 433.7h2.5v93.3h-2.5zM926.5 345.1h2.5v22.4h-2.5zM937.6 299.7h2.5v37.6h-2.5zM945 315.5h2.5v31.1h-2.5zM948.7 340.1h2.5v2.8h-2.5z"
+                          fill="var(--down-c)"></path>
+                        <path
+                          d="M72.2 882.3L75.9 888.6L79.6 895.2L83.3 901.7L87 908L90.7 914.4L94.4 917.7L98.1 919.3L101.9 919.6L105.6 915.9L109.3 911.8L113 905.6L116.7 898.3L120.4 891.6L124.1 885.2L127.8 880.3L131.5 874L135.2 865.9L138.9 859.2L142.6 851.6L146.3 844.1L150 836.4L153.7 826.9L157.4 815.7L161.1 804.4L164.8 794.3L168.5 783.3L172.2 771.4L175.9 759.2L179.6 749.1L183.3 738.7L187 728.9L190.7 720.5L194.4 711.4L198.1 701.9L201.9 692.7L205.6 685.4L209.3 679.1L213 671.1L216.7 663.7L220.4 658L224.1 651.5L227.8 647.9L231.5 645.4L235.2 643.5L238.9 640.8L242.6 638.5L246.3 636.4L250 636.1L253.7 635.6L257.4 635.8L261.1 635.9L264.8 633.4L268.5 629L272.2 625L275.9 618.8L279.6 612.7L283.3 609.1L287 603L290.7 597.8L294.4 590.8L298.1 585.1L301.9 575.6L305.6 564.9L309.3 554.8L313 545.7L316.7 537L320.4 529.6L324.1 519.9L327.8 510.1L331.5 501.4L335.2 494.9L338.9 490.9L342.6 488.8L346.3 485.8L350 484L353.7 481.3L357.4 478.1L361.1 476.8L364.8 472.9L368.5 470.3L372.2 466.6L375.9 467.5L379.6 470.2L383.3 472.6L387 473.7L390.7 477.4L394.4 480.8L398.1 484.7L401.9 489.1L405.6 495L409.3 499.7L413 502L416.7 503.4L420.4 507L424.1 509L427.8 509.7L431.5 509.5L435.2 508.9L438.9 507.9L442.6 507.4L446.3 508.9L450 507L453.7 503.4L457.4 500.4L461.1 497.6L464.8 492.5L468.5 487.7L472.2 483.2L475.9 477.9L479.6 470.4L483.3 461L487 454.5L490.7 448.9L494.4 441.1L498.1 434.7L501.9 429.6L505.6 423.3L509.3 417.4L513 415.1L516.7 409.6L520.4 402.8L524.1 396.6L527.8 392.4L531.5 387.4L535.2 384.1L538.9 380.9L542.6 376L546.3 372.6L550 369.2L553.7 367.1L557.4 366.6L561.1 363.2L564.8 357.8L568.5 354.2L572.2 352.5L575.9 350.9L579.6 353.1L583.3 355L587 356.3L590.7 359.9L594.4 364.1L598.1 368.9L601.9 373.7L605.6 375.3L609.3 375.7L613 376.4L616.7 378L620.4 379.1L624.1 381.9L627.8 384.5L631.5 388L635.2 389.9L638.9 392.4L642.6 394.7L646.3 394.6L650 395.1L653.7 392.7L657.4 390.1L661.1 384.7L664.8 380.4L668.5 373.3L672.2 366.5L675.9 360.1L679.6 355.1L683.3 350.1L687 343.5L690.7 335.7L694.4 327.1L698.1 317.3L701.9 306.2L705.6 293.3L709.3 282.9L713 273.6L716.7 261.3L720.4 251L724.1 241.5L727.8 229.9L731.5 220.1L735.2 212.1L738.9 203.3L742.6 195.3L746.3 185.1L750 174L753.7 164.9L757.4 157L761.1 149.4L764.8 143.5L768.5 135.9L772.2 130.6L775.9 127.2L779.6 125L783.3 124.4L787 124.1L790.7 124.3L794.4 123.8L798.1 122.1L801.9 123.6L805.6 125.1L809.3 127.8L813 129.9L816.7 136.4L820.4 145.6L824.1 154.7L827.8 166L831.5 176.4L835.2 189.4L838.9 202.2L842.6 215.5L846.3 223.4L850 228.7L853.7 233.6L857.4 240.2L861.1 247L864.8 256.1L868.5 265.1L872.2 274.8L875.9 284.6L879.6 294.1L883.3 301.1L887 310.3L890.7 316.4L894.4 322.9L898.1 330.9L901.9 333.7L905.6 340.1L909.3 344.8L913 352.7L916.7 359.4L920.4 368.3L924.1 374.3L927.8 380.8L931.5 383.1L935.2 384.9L938.9 387L942.6 387L946.3 388.6L950 387.9L953.7 384.8L957.4 381.6L961.1 375.7L964.8 367.7L968.5 354"
+                          fill="none"
+                          stroke="var(--c1)"
+                          stroke-width="1.25"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M183.3 788.2L187 780.8L190.7 774.5L194.4 768.3L198.1 762L201.9 756.9L205.6 751.9L209.3 747.1L213 742.4L216.7 738.1L220.4 735.1L224.1 731.2L227.8 728.8L231.5 726.2L235.2 723.8L238.9 721.4L242.6 718.1L246.3 714.6L250 711.7L253.7 708.6L257.4 705.3L261.1 701.3L264.8 696.1L268.5 689.5L272.2 683.1L275.9 676.3L279.6 669.7L283.3 665.3L287 658.9L290.7 653.9L294.4 648.7L298.1 643.7L301.9 637.3L305.6 629.8L309.3 623.3L313 617.8L316.7 611.7L320.4 606.6L324.1 600.3L327.8 593.9L331.5 588.2L335.2 583.7L338.9 580.1L342.6 576.4L346.3 572L350 568.1L353.7 563.7L357.4 561L361.1 557.6L364.8 553.5L368.5 550.2L372.2 546.2L375.9 544.3L379.6 542.6L383.3 541.4L387 540L390.7 539.8L394.4 540.1L398.1 539.6L401.9 539L405.6 540.1L409.3 541.2L413 541L416.7 539.9L420.4 539.8L424.1 538.7L427.8 536L431.5 534.2L435.2 531.5L438.9 527.6L442.6 525L446.3 523.1L450 520.5L453.7 516.9L457.4 514.5L461.1 511.9L464.8 508.7L468.5 506.6L472.2 503.8L475.9 500.5L479.6 497.2L483.3 492.6L487 489.2L490.7 485.8L494.4 481.7L498.1 477.8L501.9 473.5L505.6 469.3L509.3 464.4L513 461.4L516.7 457L520.4 452.5L524.1 447.8L527.8 443.8L531.5 440.3L535.2 438L538.9 435.2L542.6 432.1L546.3 429.7L550 426.5L553.7 424.5L557.4 422.4L561.1 419L564.8 414.2L568.5 410L572.2 407.6L575.9 404.8L579.6 405L583.3 404.2L587 404.5L590.7 405.2L594.4 406L598.1 406.9L601.9 408.3L605.6 407.4L609.3 406.7L613 405.8L616.7 405L620.4 404.5L624.1 404.5L627.8 405.5L631.5 406.8L635.2 405.6L638.9 403.1L642.6 401.3L646.3 399.2L650 397.1L653.7 395.7L657.4 393.2L661.1 389.7L664.8 387.6L668.5 383.5L672.2 380L675.9 377.3L679.6 373.8L683.3 370.5L687 365.8L690.7 360.5L694.4 355L698.1 349.2L701.9 343.6L705.6 337.3L709.3 330.6L713 323.9L716.7 315.5L720.4 308.6L724.1 302.6L727.8 295.8L731.5 289.6L735.2 283.9L738.9 279L742.6 272.9L746.3 265.7L750 258.9L753.7 252.9L757.4 248L761.1 242.2L764.8 237.2L768.5 230.5L772.2 225.5L775.9 222.1L779.6 218.8L783.3 216.3L787 213.8L790.7 209.8L794.4 206.7L798.1 203.4L801.9 201.7L805.6 200.3L809.3 200.2L813 200.2L816.7 202.3L820.4 205.1L824.1 207.8L827.8 212.7L831.5 217.6L835.2 223.1L838.9 228.9L842.6 232.9L846.3 234L850 234.4L853.7 234.6L857.4 236.6L861.1 238.6L864.8 240.8L868.5 243.6L872.2 246.4L875.9 250.7L879.6 254.9L883.3 258.1L887 263.1L890.7 267.4L894.4 272.8L898.1 279.1L901.9 283.4L905.6 290.6L909.3 296.9L913 306L916.7 312.2L920.4 317.2L924.1 319.1L927.8 321L931.5 321.4L935.2 321.5L938.9 322.1L942.6 321.7L946.3 322.7L950 323.5L953.7 322.3L957.4 320.4L961.1 318.4L964.8 314.3L968.5 307.1"
+                          fill="none"
+                          stroke="var(--c2)"
+                          stroke-width="1.25"
+                          vector-effect="non-scaling-stroke"></path></svg
+                      ><div class="leg"
+                        ><div class="leg-r"
+                          ><b style="font-weight: 600">Corvan Systems</b><i>Tageskerzen · Belmar</i
+                          ><i>E</i><span data-k="o">84,57</span><i>H</i><span data-k="h">87,82</span
+                          ><i>T</i><span data-k="l">84,32</span><i>S</i><span data-k="c">87,42</span
+                          ><span data-k="chg" class="up">+2,67 (+3,15 %)</span></div
+                        ><div class="leg-r" style="gap: 0 12px"
+                          ><span><span class="leg-d" style="--c: var(--c1)"></span>SMA 20</span
+                          ><span
+                            ><span class="leg-d" style="--c: var(--c2)"></span>EMA 50</span
+                          ></div
+                        ></div
+                      ><div class="xc-line" style="top: 23.7%; --c: var(--acc)"
+                        ><b style="font-weight: 600; color: var(--acc)">Kauf Limit</b> 10 Stück
+                        <svg class="ic" aria-hidden="true"><use href="#i-x"></use></svg></div></div
+                    ><div class="xc-y"
+                      ><span style="top: 98.4%">60,00</span><span style="top: 82.8%">65,00</span
+                      ><span style="top: 67.3%">70,00</span><span style="top: 51.7%">75,00</span
+                      ><span style="top: 36.2%">80,00</span><span style="top: 5%">90,00</span
+                      ><b style="top: 13.1%; --c: var(--up-c)">87,42</b
+                      ><b style="top: 23.7%; --c: var(--acc); --tag-fg: #0c0e12">L 84,00</b></div
+                    ></div
+                  ><div class="xc-pane" style="height: 50px"
+                    ><div class="xc-plot"
+                      ><svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+                        <path
+                          d="M0.6 473.3h2.5V1000h-2.5zM11.7 764.2h2.5V1000h-2.5zM15.4 524.3h2.5V1000h-2.5zM33.9 580.9h2.5V1000h-2.5zM45 663.8h2.5V1000h-2.5zM48.7 555.4h2.5V1000h-2.5zM52.4 656.6h2.5V1000h-2.5zM56.1 345.9h2.5V1000h-2.5zM63.6 561.8h2.5V1000h-2.5zM71 759.4h2.5V1000h-2.5zM74.7 378.5h2.5V1000h-2.5zM82.1 660.6h2.5V1000h-2.5zM85.8 646.2h2.5V1000h-2.5zM89.5 565h2.5V1000h-2.5zM93.2 677.3h2.5V1000h-2.5zM96.9 706h2.5V1000h-2.5zM100.6 656.6h2.5V1000h-2.5zM104.3 669.3h2.5V1000h-2.5zM108 537.1h2.5V1000h-2.5zM111.7 612h2.5V1000h-2.5zM115.4 666.2h2.5V1000h-2.5zM122.8 773.7h2.5V1000h-2.5zM130.2 667h2.5V1000h-2.5zM133.9 657.4h2.5V1000h-2.5zM141.3 452.6h2.5V1000h-2.5zM145 723.5h2.5V1000h-2.5zM148.7 545.1h2.5V1000h-2.5zM152.4 713.2h2.5V1000h-2.5zM156.1 687.7h2.5V1000h-2.5zM159.9 588.9h2.5V1000h-2.5zM167.3 691.7h2.5V1000h-2.5zM171 679.7h2.5V1000h-2.5zM174.7 577.7h2.5V1000h-2.5zM178.4 580.1h2.5V1000h-2.5zM182.1 572.1h2.5V1000h-2.5zM185.8 608.8h2.5V1000h-2.5zM193.2 736.3h2.5V1000h-2.5zM196.9 780.1h2.5V1000h-2.5zM211.7 496.5h2.5V1000h-2.5zM222.8 775.3h2.5V1000h-2.5zM230.2 790.5h2.5V1000h-2.5zM237.6 569.8h2.5V1000h-2.5zM241.3 612.8h2.5V1000h-2.5zM252.4 513.2h2.5V1000h-2.5zM256.1 599.2h2.5V1000h-2.5zM259.9 730.7h2.5V1000h-2.5zM263.6 725.9h2.5V1000h-2.5zM267.3 715.6h2.5V1000h-2.5zM271 558.6h2.5V1000h-2.5zM274.7 749h2.5V1000h-2.5zM278.4 680.5h2.5V1000h-2.5zM285.8 657.4h2.5V1000h-2.5zM293.2 678.9h2.5V1000h-2.5zM296.9 670.1h2.5V1000h-2.5zM300.6 710h2.5V1000h-2.5zM304.3 650.2h2.5V1000h-2.5zM315.4 498h2.5V1000h-2.5zM322.8 761.8h2.5V1000h-2.5zM326.5 724.3h2.5V1000h-2.5zM341.3 641.5h2.5V1000h-2.5zM345 718h2.5V1000h-2.5zM352.4 619.2h2.5V1000h-2.5zM359.9 659.8h2.5V1000h-2.5zM363.6 567.4h2.5V1000h-2.5zM371 443.9h2.5V1000h-2.5zM385.8 682.9h2.5V1000h-2.5zM396.9 537.9h2.5V1000h-2.5zM400.6 398.5h2.5V1000h-2.5zM408 667.8h2.5V1000h-2.5zM411.7 557h2.5V1000h-2.5zM415.4 514h2.5V1000h-2.5zM422.8 643.9h2.5V1000h-2.5zM426.5 719.5h2.5V1000h-2.5zM433.9 518.8h2.5V1000h-2.5zM437.6 585.7h2.5V1000h-2.5zM448.7 370.6h2.5V1000h-2.5zM452.4 587.3h2.5V1000h-2.5zM459.9 640.7h2.5V1000h-2.5zM463.6 770.5h2.5V1000h-2.5zM471 537.1h2.5V1000h-2.5zM474.7 587.3h2.5V1000h-2.5zM482.1 684.5h2.5V1000h-2.5zM493.2 520.4h2.5V1000h-2.5zM500.6 682.9h2.5V1000h-2.5zM508 627.1h2.5V1000h-2.5zM515.4 578.5h2.5V1000h-2.5zM519.1 678.9h2.5V1000h-2.5zM522.8 557h2.5V1000h-2.5zM537.6 511.6h2.5V1000h-2.5zM541.3 726.7h2.5V1000h-2.5zM548.7 678.9h2.5V1000h-2.5zM556.1 517.2h2.5V1000h-2.5zM559.9 469.4h2.5V1000h-2.5zM563.6 460.6h2.5V1000h-2.5zM574.7 671.7h2.5V1000h-2.5zM582.1 680.5h2.5V1000h-2.5zM600.6 576.9h2.5V1000h-2.5zM604.3 670.9h2.5V1000h-2.5zM608 651.8h2.5V1000h-2.5zM611.7 677.3h2.5V1000h-2.5zM633.9 415.2h2.5V1000h-2.5zM637.6 651.8h2.5V1000h-2.5zM645 253.4h2.5V1000h-2.5zM656.1 684.5h2.5V1000h-2.5zM659.9 780.9h2.5V1000h-2.5zM667.3 597.6h2.5V1000h-2.5zM678.4 567.4h2.5V1000h-2.5zM685.8 777.7h2.5V1000h-2.5zM689.5 649.4h2.5V1000h-2.5zM693.2 817.5h2.5V1000h-2.5zM700.6 685.3h2.5V1000h-2.5zM704.3 706h2.5V1000h-2.5zM708 359.4h2.5V1000h-2.5zM711.7 659.8h2.5V1000h-2.5zM715.4 652.6h2.5V1000h-2.5zM726.5 596.8h2.5V1000h-2.5zM730.2 573.7h2.5V1000h-2.5zM741.3 573.7h2.5V1000h-2.5zM745 706h2.5V1000h-2.5zM748.7 654.2h2.5V1000h-2.5zM759.9 497.3h2.5V1000h-2.5zM767.3 701.2h2.5V1000h-2.5zM789.5 550.6h2.5V1000h-2.5zM804.3 799.2h2.5V1000h-2.5zM811.7 609.6h2.5V1000h-2.5zM830.2 627.1h2.5V1000h-2.5zM841.3 685.3h2.5V1000h-2.5zM845 690.1h2.5V1000h-2.5zM848.7 645.4h2.5V1000h-2.5zM882.1 620h2.5V1000h-2.5zM889.5 711.6h2.5V1000h-2.5zM900.6 592.9h2.5V1000h-2.5zM908 670.9h2.5V1000h-2.5zM915.4 604.8h2.5V1000h-2.5zM919.1 690.1h2.5V1000h-2.5zM922.8 512.4h2.5V1000h-2.5zM930.2 623.9h2.5V1000h-2.5zM933.9 757.8h2.5V1000h-2.5zM941.3 576.9h2.5V1000h-2.5zM952.4 594.5h2.5V1000h-2.5zM956.1 592.9h2.5V1000h-2.5zM959.9 602.4h2.5V1000h-2.5zM963.6 565h2.5V1000h-2.5zM967.3 839.9h2.5V1000h-2.5z"
+                          fill="var(--up-c)"
+                          opacity=".5"></path>
+                        <path
+                          d="M4.3 717.2h2.5V1000h-2.5zM8 613.6h2.5V1000h-2.5zM19.1 630.3h2.5V1000h-2.5zM22.8 381.7h2.5V1000h-2.5zM26.5 558.6h2.5V1000h-2.5zM30.2 530.7h2.5V1000h-2.5zM37.6 492.5h2.5V1000h-2.5zM41.3 678.1h2.5V1000h-2.5zM59.9 680.5h2.5V1000h-2.5zM67.3 529.9h2.5V1000h-2.5zM78.4 571.3h2.5V1000h-2.5zM119.1 813.6h2.5V1000h-2.5zM126.5 698.8h2.5V1000h-2.5zM137.6 575.3h2.5V1000h-2.5zM163.6 687.7h2.5V1000h-2.5zM189.5 689.3h2.5V1000h-2.5zM200.6 615.2h2.5V1000h-2.5zM204.3 651h2.5V1000h-2.5zM208 461.4h2.5V1000h-2.5zM215.4 722.7h2.5V1000h-2.5zM219.1 635.9h2.5V1000h-2.5zM226.5 737.1h2.5V1000h-2.5zM233.9 711.6h2.5V1000h-2.5zM245 738.7h2.5V1000h-2.5zM248.7 757h2.5V1000h-2.5zM282.1 765.8h2.5V1000h-2.5zM289.5 580.9h2.5V1000h-2.5zM308 659h2.5V1000h-2.5zM311.7 506.8h2.5V1000h-2.5zM319.1 629.5h2.5V1000h-2.5zM330.2 643.9h2.5V1000h-2.5zM333.9 90.9h2.5V1000h-2.5zM337.6 718.7h2.5V1000h-2.5zM348.7 631.9h2.5V1000h-2.5zM356.1 388.1h2.5V1000h-2.5zM367.3 561h2.5V1000h-2.5zM374.7 597.6h2.5V1000h-2.5zM378.4 715.6h2.5V1000h-2.5zM382.1 553.8h2.5V1000h-2.5zM389.5 559.4h2.5V1000h-2.5zM393.2 647.8h2.5V1000h-2.5zM404.3 667.8h2.5V1000h-2.5zM419.1 618.4h2.5V1000h-2.5zM430.2 704.4h2.5V1000h-2.5zM441.3 322.8h2.5V1000h-2.5zM445 757.8h2.5V1000h-2.5zM456.1 687.7h2.5V1000h-2.5zM467.3 626.3h2.5V1000h-2.5zM478.4 753.8h2.5V1000h-2.5zM485.8 657.4h2.5V1000h-2.5zM489.5 784.9h2.5V1000h-2.5zM496.9 683.7h2.5V1000h-2.5zM504.3 531.5h2.5V1000h-2.5zM511.7 751.4h2.5V1000h-2.5zM526.5 647h2.5V1000h-2.5zM530.2 639.1h2.5V1000h-2.5zM533.9 620.7h2.5V1000h-2.5zM545 742.6h2.5V1000h-2.5zM552.4 544.3h2.5V1000h-2.5zM567.3 208h2.5V1000h-2.5zM571 657.4h2.5V1000h-2.5zM578.4 656.6h2.5V1000h-2.5zM585.8 599.2h2.5V1000h-2.5zM589.5 609.6h2.5V1000h-2.5zM593.2 604h2.5V1000h-2.5zM596.9 542.7h2.5V1000h-2.5zM615.4 774.5h2.5V1000h-2.5zM619.1 647h2.5V1000h-2.5zM622.8 690.1h2.5V1000h-2.5zM626.5 423.2h2.5V1000h-2.5zM630.2 706.8h2.5V1000h-2.5zM641.3 568.2h2.5V1000h-2.5zM648.7 659.8h2.5V1000h-2.5zM652.4 619.2h2.5V1000h-2.5zM663.6 643.9h2.5V1000h-2.5zM671 541.9h2.5V1000h-2.5zM674.7 560.2h2.5V1000h-2.5zM682.1 651h2.5V1000h-2.5zM696.9 592.1h2.5V1000h-2.5zM719.1 471.8h2.5V1000h-2.5zM722.8 632.7h2.5V1000h-2.5zM733.9 688.5h2.5V1000h-2.5zM737.6 697.2h2.5V1000h-2.5zM752.4 327.5h2.5V1000h-2.5zM756.1 659h2.5V1000h-2.5zM763.6 682.1h2.5V1000h-2.5zM771 518.8h2.5V1000h-2.5zM774.7 596.8h2.5V1000h-2.5zM778.4 447.9h2.5V1000h-2.5zM782.1 304.4h2.5V1000h-2.5zM785.8 474.1h2.5V1000h-2.5zM793.2 326h2.5V1000h-2.5zM796.9 503.6h2.5V1000h-2.5zM800.6 545.9h2.5V1000h-2.5zM808 657.4h2.5V1000h-2.5zM815.4 612h2.5V1000h-2.5zM819.1 664.6h2.5V1000h-2.5zM822.8 727.5h2.5V1000h-2.5zM826.5 711.6h2.5V1000h-2.5zM833.9 576.1h2.5V1000h-2.5zM837.6 639.1h2.5V1000h-2.5zM852.4 425.5h2.5V1000h-2.5zM856.1 710.8h2.5V1000h-2.5zM859.9 784.9h2.5V1000h-2.5zM863.6 763.4h2.5V1000h-2.5zM867.3 515.6h2.5V1000h-2.5zM871 594.5h2.5V1000h-2.5zM874.7 645.4h2.5V1000h-2.5zM878.4 555.4h2.5V1000h-2.5zM885.8 596h2.5V1000h-2.5zM893.2 685.3h2.5V1000h-2.5zM896.9 600.8h2.5V1000h-2.5zM904.3 547.4h2.5V1000h-2.5zM911.7 516.4h2.5V1000h-2.5zM926.5 676.5h2.5V1000h-2.5zM937.6 530.7h2.5V1000h-2.5zM945 612h2.5V1000h-2.5zM948.7 676.5h2.5V1000h-2.5z"
+                          fill="var(--down-c)"
+                          opacity=".5"></path></svg
+                      ><div class="xc-tag"
+                        >Volumen <span data-k="v" class="num">201 Tsd.</span></div
+                      ></div
+                    ><div class="xc-y"><span style="top: 12%">1,1 Mio.</span></div></div
+                  ><div class="xc-x"
+                    ><span style="left: calc((100%) * 0.0389)">Nov</span
+                    ><span style="left: calc((100%) * 0.1167)">Dez</span
+                    ><span style="left: calc((100%) * 0.1981)">2031</span
+                    ><span style="left: calc((100%) * 0.2833)">Feb</span
+                    ><span style="left: calc((100%) * 0.3574)">Mär</span
+                    ><span style="left: calc((100%) * 0.4352)">Apr</span
+                    ><span style="left: calc((100%) * 0.5167)">Mai</span
+                    ><span style="left: calc((100%) * 0.5981)">Jun</span
+                    ><span style="left: calc((100%) * 0.6759)">Jul</span
+                    ><span style="left: calc((100%) * 0.7611)">Aug</span
+                    ><span style="left: calc((100%) * 0.8389)">Sep</span
+                    ><span style="left: calc((100%) * 0.9204)">Okt</span></div
+                  ></div
+                ></div
+              ></div
+            ></section
+          ><section class="pn" aria-label="Panel"
+            ><div class="pn-t" role="tablist"
+              ><button role="tab" data-t="pn:pos" aria-selected="true" class="on"
+                >POSITIONEN<i>5</i></button
+              ><button role="tab" data-t="pn:ord" aria-selected="false" class=""
+                >ORDERS<i>2</i></button
+              ><button role="tab" data-t="pn:his" aria-selected="false" class="">HISTORIE</button
+              ><button role="tab" data-t="pn:kon" aria-selected="false" class=""
+                >KONTEN<i>3</i></button
+              ><button role="tab" data-t="pn:dem" aria-selected="false" class=""
+                >DEMNÄCHST<i>5</i></button
+              ><button role="tab" data-t="pn:pro" aria-selected="false" class=""
+                >PROTOKOLL</button
+              ></div
+            >
+            <div class="ab2"
+              ><span>Depotwert<b>18.282,56 €</b></span
+              ><span>Verfügbar Quintrade<b>504,69 €</b></span
+              ><span class="o2">Reserviert<b>844,90 €</b></span
+              ><span>Unrealisiert<b class="up">+1.535,46 € (+9,2 %)</b></span
+              ><span class="opt">Heute<b class="up">+147,38 €</b></span></div
+            >
+            <div class="pn-b"
+              ><div data-p="pn:pos" class=""
+                ><table class="tt"
+                  ><thead
+                    ><tr
+                      ><th>Wert</th><th>Stück</th><th class="o1">Einstand</th><th>Kurs</th
+                      ><th>Wert €</th><th class="opt">Heute €</th><th>Heute %</th><th>G/V €</th
+                      ><th>G/V %</th><th class="opt">Anteil</th></tr
+                    ></thead
+                  ><tbody
+                    ><tr class=""
+                      ><td
+                        ><span class="sy">TLVW<small>Talvar World ETF</small></span></td
+                      ><td>120</td><td class="o1">63,05</td><td>70,11</td><td>8.413,20</td
+                      ><td class="opt up">+70,08</td><td class="up">+0,84 %</td
+                      ><td class="up">+847,20</td><td class="up">+11,2 %</td
+                      ><td class="opt">46,0 %</td></tr
+                    ><tr class=""
+                      ><td
+                        ><span class="sy">HLVN<small>Halvion AG</small></span></td
+                      ><td>15</td><td class="o1">208,96</td><td>260,36</td><td>3.905,40</td
+                      ><td class="opt up">+103,04</td><td class="up">+2,71 %</td
+                      ><td class="up">+771,00</td><td class="up">+24,6 %</td
+                      ><td class="opt">21,4 %</td></tr
+                    ><tr class=""
+                      ><td
+                        ><span class="sy">SLMK<small>Selmark Energie AG</small></span></td
+                      ><td>60</td><td class="o1">46,46</td><td>43,53</td><td>2.611,80</td
+                      ><td class="opt down">−29,58</td><td class="down">−1,12 %</td
+                      ><td class="down">−175,80</td><td class="down">−6,3 %</td
+                      ><td class="opt">14,3 %</td></tr
+                    ><tr class=""
+                      ><td
+                        ><span class="sy">KLVH<small>Kalveth Health SE</small></span></td
+                      ><td>35</td><td class="o1">54,46</td><td>56,58</td><td>1.980,30</td
+                      ><td class="opt up">+9,07</td><td class="up">+0,46 %</td
+                      ><td class="up">+74,20</td><td class="up">+3,9 %</td
+                      ><td class="opt">10,8 %</td></tr
+                    ><tr class=""
+                      ><td
+                        ><span class="sy">NRVN<small>Norvane Versorgung AG</small></span></td
+                      ><td>82</td><td class="o1">16,50</td><td>16,73</td><td>1.371,86</td
+                      ><td class="opt down">−5,23</td><td class="down">−0,38 %</td
+                      ><td class="up">+18,86</td><td class="up">+1,4 %</td
+                      ><td class="opt">7,5 %</td></tr
+                    ></tbody
+                  ><tfoot
+                    ><tr
+                      ><td>Summe</td><td></td><td class="o1">16.747,10</td><td></td
+                      ><td>18.282,56</td><td class="opt up">+147,38</td><td class="up">+0,81 %</td
+                      ><td class="up">+1.535,46</td><td class="up">+9,2 %</td
+                      ><td class="opt">100 %</td></tr
+                    ></tfoot
+                  ></table
+                ></div
+              ><div data-p="pn:ord" class="" hidden
+                ><table class="tt"
+                  ><thead
+                    ><tr
+                      ><th>Wert</th><th class="l">Seite</th><th class="l">Typ</th><th>Stück</th
+                      ><th>Limit/Stop</th><th>Kurs</th><th>Abstand</th><th class="l opt">Gültig</th
+                      ><th class="l o1">Bindung</th><th></th></tr></thead
+                  ><tbody
+                    ><tr
+                      ><td><span class="sy" title="Corvan Systems">CRVN</span></td
+                      ><td class="l"><span class="tag">Kauf</span></td
+                      ><td class="l">Limit</td><td>10</td><td>84,00</td><td>87,42</td><td>−3,9 %</td
+                      ><td class="l opt">bis 31.10.</td><td class="l o1">844,90 € reserviert</td
+                      ><td
+                        ><button class="mb">Ändern</button><button class="mb">Streichen</button></td
+                      ></tr
+                    ><tr
+                      ><td><span class="sy" title="Selmark Energie AG">SLMK</span></td
+                      ><td class="l"><span class="tag">Verkauf</span></td
+                      ><td class="l">Stop</td><td>60</td><td>40,00</td><td>43,53</td><td>−8,1 %</td
+                      ><td class="l opt">auf Widerruf</td><td class="l o1">60 Stück gesperrt</td
+                      ><td
+                        ><button class="mb">Ändern</button><button class="mb">Streichen</button></td
+                      ></tr
+                    ></tbody
+                  ></table
+                ></div
+              ><div data-p="pn:his" class="" hidden
+                ><table class="tt"
+                  ><thead
+                    ><tr
+                      ><th>Zeit</th><th class="l">Seite</th><th class="l">Typ</th><th>Stück</th
+                      ><th class="l">Wert</th><th class="l">Status</th><th class="opt">Kurs</th
+                      ><th>Betrag €</th></tr
+                    ></thead
+                  ><tbody
+                    ><tr
+                      ><td>17.10. 16:12</td><td class="l"><span class="tag">Verkauf</span></td
+                      ><td class="l">Markt</td><td>20</td><td class="l">Selmark Energie AG</td
+                      ><td class="l">ausgeführt</td><td class="opt">44,05</td
+                      ><td class="up">+876,10</td></tr
+                    ><tr
+                      ><td>12.10. 14:30</td><td class="l"><span class="tag">Verkauf</span></td
+                      ><td class="l">Limit 270,00</td><td>5</td><td class="l">Halvion AG</td
+                      ><td class="l">gestrichen</td><td class="opt">–</td><td class="">–</td></tr
+                    ><tr
+                      ><td>30.09. 17:30</td><td class="l"><span class="tag">Kauf</span></td
+                      ><td class="l">Limit 74,00</td><td>10</td><td class="l">Corvan Systems</td
+                      ><td class="l">abgelaufen</td><td class="opt">–</td><td class="">–</td></tr
+                    ><tr
+                      ><td>25.09. 13:05</td><td class="l"><span class="tag">Kauf</span></td
+                      ><td class="l">Limit 3,950</td><td>200</td><td class="l">Orelia Pharma</td
+                      ><td class="l">gestrichen</td><td class="opt">–</td><td class="">–</td></tr
+                    ><tr
+                      ><td>12.08. 10:14</td><td class="l"><span class="tag">Kauf</span></td
+                      ><td class="l">Markt</td><td>35</td><td class="l">Kalveth Health SE</td
+                      ><td class="l">ausgeführt</td><td class="opt">54,32</td
+                      ><td class="down">−1.906,10</td></tr
+                    ></tbody
+                  ></table
+                ></div
+              ><div data-p="pn:kon" class="" hidden
+                ><table class="tt"
+                  ><thead
+                    ><tr
+                      ><th>Konto</th><th class="l">Bank</th><th>Saldo</th><th>Reserviert</th
+                      ><th>Verfügbar</th><th>Habenzins</th><th class="opt">Kontoführung</th></tr
+                    ></thead
+                  ><tbody
+                    ><tr
+                      ><td>Girokonto</td><td class="l">Belent Bank</td><td>1.367,51</td><td>–</td
+                      ><td>1.367,51</td><td>0,00 %</td><td class="opt">4,90 €/Monat</td></tr
+                    ><tr
+                      ><td>Tagesgeld</td><td class="l">Valum Direktbank</td><td>3.512,64</td
+                      ><td>–</td><td>3.512,64</td><td>2,30 %</td><td class="opt">0,00 €</td></tr
+                    ><tr
+                      ><td>Verrechnungskonto</td><td class="l">Quintrade</td><td>1.349,59</td
+                      ><td>844,90</td><td>504,69</td><td>0,00 %</td><td class="opt">0,00 €</td></tr
+                    ></tbody
+                  ></table
+                ></div
+              ><div data-p="pn:dem" class="" hidden
+                ><table class="tt"
+                  ><thead
+                    ><tr><th>Datum</th><th class="l">Termin</th><th>Betrag €</th></tr></thead
+                  ><tbody
+                    ><tr
+                      ><td>Fr. 24.10.</td><td class="l">Dividende Norvane</td
+                      ><td class="up">+28,70</td></tr
+                    ><tr
+                      ><td>Fr. 31.10.</td><td class="l">Gehalt</td><td class="up">+2.500,00</td></tr
+                    ><tr
+                      ><td>Sa. 01.11.</td><td class="l">Lebenshaltung (geschätzt)</td
+                      ><td class="">−1.800,00</td></tr
+                    ><tr
+                      ><td>Sa. 01.11.</td><td class="l">Sparplan Talvar World</td
+                      ><td class="">−250,00</td></tr
+                    ><tr
+                      ><td>Mo. 03.11.</td><td class="l">Kontoführung</td><td class="">−4,90</td></tr
+                    ></tbody
+                  ></table
+                ></div
+              ><div data-p="pn:pro" class="" hidden
+                ><div class="log"
+                  ><div
+                    ><span class="d">20.10. 09:12</span><span class="k">Order</span
+                    ><span
+                      >Kauf Limit 84,00 · 10 × Corvan Systems aufgegeben · 844,90 € reserviert</span
+                    ></div
+                  ><div
+                    ><span class="d">17.10. 16:12</span><span class="k">Order</span
+                    ><span>Verkauf 20 × Selmark Energie AG zu 44,05 · +876,10 €</span></div
+                  ><div
+                    ><span class="d">15.10. 08:00</span><span class="k">Dividende</span
+                    ><span>Kalveth Health SE +18,90 €</span></div
+                  ><div
+                    ><span class="d">12.10. 14:30</span><span class="k">Order</span
+                    ><span>Verkauf Limit 270,00 · 5 × Halvion AG gestrichen</span></div
+                  ><div
+                    ><span class="d">01.10. 09:00</span><span class="k">Sparplan</span
+                    ><span>Talvar World ETF 250,00 €</span></div
+                  ><div
+                    ><span class="d">01.10. 00:00</span><span class="k">Lastschrift</span
+                    ><span>Lebenshaltung −1.812,40 €</span></div
+                  ></div
+                ></div
+              ></div
+            ></section
+          ></main
+        >
+        <aside class="sb sb2" aria-label="Sekundäre Seitenleiste"
+          ><div class="sb-h"
+            ><span class="lb">Order · Corvan Systems</span
+            ><div
+              ><button class="ib" aria-label="Mehr" title="Mehr"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-three-dots"></use></svg></button></div></div
+          ><div class="sb-b"
+            ><div class="tkt"
+              ><div class="sd" role="tablist" aria-label="Seite"
+                ><button role="tab" data-t="side:buy" aria-selected="true" class="on">KAUFEN</button
+                ><button role="tab" data-t="side:sell" aria-selected="false" class=""
+                  >VERKAUFEN</button
+                ></div
+              ><div data-p="side:buy" class="tb-w"
+                ><span class="lb fl">Konto</span
+                ><div class="fi"
+                  >Quintrade · Verrechnung<svg class="ic" aria-hidden="true">
+                    <use href="#i-chevron-down"></use></svg
+                ></div>
+                <span class="lb fl">Ordertyp</span
+                ><div class="ot"
+                  ><button class="on">Markt</button><button>Limit</button><button>Stop</button></div
+                >
+                <div class="two"
+                  ><div
+                    ><span class="lb fl">Stück</span
+                    ><div class="fi q"
+                      ><button data-q="-1" aria-label="Ein Stück weniger"
+                        ><svg class="ic" aria-hidden="true"><use href="#i-dash"></use></svg></button
+                      ><span data-o="q">5</span
+                      ><button data-q="1" aria-label="Ein Stück mehr"
+                        ><svg class="ic" aria-hidden="true">
+                          <use href="#i-plus"></use></svg></button></div></div
+                  ><div
+                    ><span class="lb fl">Ausführung</span><div class="fi">sofort · Brief</div></div
+                  ></div
+                >
+                <div class="cost"
+                  ><div class="kv"
+                    ><span data-o="kl">Kurswert (5 × 87,46)</span
+                    ><span data-o="kw">437,30 €</span></div
+                  ><div class="kv"><span>Orderentgelt</span><span>4,90 €</span></div
+                  ><div class="kv tot"
+                    ><span>Gesamt ca.</span><span data-o="tot">442,20 €</span></div
+                  ><div class="kv"
+                    ><span>Verfügbar danach</span><span data-o="rest">62,49 €</span></div
+                  ></div
+                >
+                <button class="cta" data-cta>Kauforder prüfen</button></div
+              >
+              <div data-p="side:sell" hidden
+                ><p class="note2"
+                  >Du hältst keine Corvan-Anteile. Verkaufen geht erst mit einer Position.</p
+                ></div
+              ><div class="oo"
+                ><span><b>Kauf Limit 10 × 84,00</b>bis 31.10. · 844,90 € reserviert</span
+                ><button>ÄNDERN</button></div
+              ></div
+            >
+            <section class="fold"
+              ><button data-fold aria-expanded="true"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg
+                ><span class="t">KENNZAHLEN</span></button
+              ><div class="fb pad"
+                ><div class="kv"><span>Marktkapitalisierung</span><span>12,4 Mrd. €</span></div
+                ><div class="kv"><span>KGV</span><span>24,3</span></div
+                ><div class="kv"><span>Dividendenrendite</span><span>1,8 %</span></div
+                ><div class="kv"><span>Beta</span><span>1,24</span></div
+                ><div class="kv"><span>Volatilität 1 J.</span><span>31 %</span></div
+                ><div class="kv"><span>52 Wochen</span><span>61,20 – 89,90</span></div
+                ><div class="kv"><span>Volumen heute</span><span>201 Tsd.</span></div
+                ><div class="kv"><span>Ø Volumen</span><span>482 Tsd.</span></div
+                ><div class="kv"><span>Streubesitz</span><span>78 %</span></div></div
+              ></section
+            >
+            <section class="fold"
+              ><button data-fold aria-expanded="true"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg
+                ><span class="t">PERFORMANCE</span></button
+              ><div class="fb pad"
+                ><div class="pf"
+                  ><div><span class="up">+3,15 %</span><small>1 Tag</small></div
+                  ><div><span class="up">+8,5 %</span><small>5 Tage</small></div
+                  ><div><span class="up">+9,8 %</span><small>1 Monat</small></div
+                  ><div><span class="up">+21,7 %</span><small>lfd. Jahr</small></div
+                  ><div><span class="up">+32,3 %</span><small>1 Jahr</small></div
+                  ><div><span class="up">+118,4 %</span><small>5 Jahre</small></div></div
+                ></div
+              ></section
+            >
+            <section class="fold"
+              ><button data-fold aria-expanded="true"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg
+                ><span class="t">DIVIDENDEN</span><span class="r">jährlich · 1,8 %</span></button
+              ><div class="fb pad"
+                ><div class="kv"><span>2031 (Ex 12.05.)</span><span>1,56 €</span></div
+                ><div class="kv"><span>2030</span><span>1,42 €</span></div
+                ><div class="kv"><span>2029</span><span>1,30 €</span></div
+                ><div class="kv"><span>Nächster Ex-Tag</span><span>Mai 2032</span></div></div
+              ></section
+            >
+            <section class="fold"
+              ><button data-fold aria-expanded="true"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg
+                ><span class="t">PROFIL</span></button
+              ><div class="fb pad"
+                ><p class="prose"
+                  >Herausforderer der großen Anbieter von Industriesoftware: Corvan entwickelt
+                  Steuerungssoftware und Sensorik für Fabriken und Logistikzentren.</p
+                ></div
+              ></section
+            ></div
+          ></aside
+        ></div
+      >
+      <footer class="st"
+        ><div
+          ><span><i class="dot"></i><b>EUROPA</b>offen bis 17:30</span
+          ><span><i class="dot"></i><b>SCHWELLENLÄNDER</b>offen bis 16:00</span
+          ><span><i class="dot off"></i><b>NORDAMERIKA</b>ab 15:30</span
+          ><span><i class="dot off"></i><b>ASIEN-PAZIFIK</b>geschlossen</span></div
+        ><div
+          ><span>Alex</span><span>Seed salbei-lotse-910</span><span>Gespeichert 10:42</span></div
+        ></footer
+      >
+    </div>
+    <script>
+      (function () {
+        var de = function (v, d) {
+          return v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
+        };
+        var dp = function (v) {
+          return v >= 10 ? 2 : v >= 1 ? 3 : 4;
+        };
+        var sg = function (v, d) {
+          return (v > 0 ? '+' : v < 0 ? '\u2212' : '') + de(Math.abs(v), d);
+        };
+        document.querySelectorAll('[data-xc]').forEach(function (el) {
+          var D = JSON.parse(el.dataset.xc);
+          var plots = Array.prototype.slice.call(el.querySelectorAll('.xc-plot'));
+          var mk = function (c, p) {
+            var e = document.createElement('div');
+            e.className = c;
+            e.hidden = true;
+            p.appendChild(e);
+            return e;
+          };
+          var vs = plots.map(function (p) {
+            return mk('xc-v', p);
+          });
+          var hl = mk('xc-h', plots[0]);
+          var yl = mk('xc-yl', el.querySelector('.xc-y'));
+          var xl = mk('xc-xl', el.querySelector('.xc-x'));
+          var set = function (k, t, cls) {
+            el.querySelectorAll('[data-k="' + k + '"]').forEach(function (e) {
+              e.textContent = t;
+              if (cls !== undefined) {
+                e.classList.remove('up', 'down');
+                if (cls) e.classList.add(cls);
+              }
+            });
+          };
+          var legend = function (i) {
+            var r = D.r[i];
+            set('d', r[0]);
+            if (D.t === 'multi') {
+              D.n.forEach(function (_, s) {
+                var v = r[s + 1];
+                set('s' + s, sg(v, 1) + ' %');
+              });
+              return;
+            }
+            var prev = i ? D.r[i - 1][4] : r[1];
+            var d = dp(r[4]);
+            set('o', de(r[1], d));
+            set('h', de(r[2], d));
+            set('l', de(r[3], d));
+            set('c', de(r[4], d));
+            var c = r[4] - prev;
+            set(
+              'chg',
+              sg(c, d) + ' (' + sg((c / prev) * 100, 2) + ' %)',
+              c > 0 ? 'up' : c < 0 ? 'down' : '',
+            );
+            set('v', de(r[5], 0) + ' Tsd.');
+          };
+          var cur = D.r.length - 1;
+          var show = function (i, cy) {
+            cur = i;
+            var box = plots[0].getBoundingClientRect();
+            var left = ((i + 0.5) / (D.r.length + D.p)) * box.width;
+            vs.forEach(function (v) {
+              v.hidden = false;
+              v.style.left = left + 'px';
+            });
+            xl.hidden = false;
+            xl.style.left = left + 'px';
+            xl.textContent = D.r[i][0];
+            if (cy !== null && cy >= box.top && cy <= box.bottom) {
+              var y = cy - box.top;
+              hl.hidden = yl.hidden = false;
+              hl.style.top = yl.style.top = y + 'px';
+              var val = D.hi - (y / box.height) * (D.hi - D.lo);
+              yl.textContent = D.t === 'multi' ? sg(val, 1) + ' %' : de(val, dp(val));
+            } else {
+              hl.hidden = yl.hidden = true;
+            }
+            legend(i);
+          };
+          var hide = function () {
+            vs.concat([hl, yl, xl]).forEach(function (e) {
+              e.hidden = true;
+            });
+            cur = D.r.length - 1;
+            legend(cur);
+          };
+          el.addEventListener('pointermove', function (e) {
+            var box = plots[0].getBoundingClientRect();
+            var i = Math.floor(((e.clientX - box.left) / box.width) * (D.r.length + D.p));
+            show(Math.max(0, Math.min(D.r.length - 1, i)), e.clientY);
+          });
+          el.addEventListener('pointerleave', hide);
+          el.addEventListener('blur', hide);
+          el.addEventListener('keydown', function (e) {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            e.preventDefault();
+            show(
+              Math.max(0, Math.min(D.r.length - 1, cur + (e.key === 'ArrowLeft' ? -1 : 1))),
+              null,
+            );
+          });
+        });
+        var pal = document.querySelector('[data-palette]');
+        if (pal) {
+          document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') pal.hidden = true;
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+              e.preventDefault();
+              pal.hidden = !pal.hidden;
+            }
+          });
+          pal.addEventListener('click', function (e) {
+            if (e.target === pal) pal.hidden = true;
+          });
+        }
+      })();
+
+      (function () {
+        var all = function (s, r) {
+          return Array.prototype.slice.call((r || document).querySelectorAll(s));
+        };
+        var de = function (v) {
+          return v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+        var activate = function (g, k) {
+          all('[data-t^="' + g + ':"]').forEach(function (b) {
+            var on = b.dataset.t === g + ':' + k;
+            b.classList.toggle('on', on);
+            b.setAttribute('aria-selected', on);
+          });
+          all('[data-p^="' + g + ':"]').forEach(function (p) {
+            p.hidden = p.dataset.p !== g + ':' + k;
+          });
+        };
+        var speeds = ['1 s/s', '1 min/s', '10 min/s', '1 h/s', '2 h/s', '4 h/s', '1 d/s', '1 w/s'];
+        var speed = 2;
+        var setSpeed = function (i) {
+          speed = Math.max(0, Math.min(speeds.length - 1, i));
+          all('.sp-v').forEach(function (e) {
+            e.textContent = speeds[speed];
+          });
+          all('[data-speed]').forEach(function (b) {
+            var on = +b.dataset.speed === speed;
+            b.classList.toggle('on', on);
+            b.setAttribute('aria-pressed', on);
+          });
+        };
+        var qty = 5;
+        var PRICE = 87.46,
+          FEE = 4.9,
+          AVAIL = 504.69;
+        var ticket = function () {
+          var kw = qty * PRICE,
+            tot = kw + FEE,
+            rest = AVAIL - tot,
+            ok = rest >= 0;
+          var out = function (k, t) {
+            all('[data-o="' + k + '"]').forEach(function (e) {
+              e.textContent = t;
+            });
+          };
+          out('q', qty);
+          out('kl', 'Kurswert (' + qty + ' × 87,46)');
+          out('kw', de(kw) + ' €');
+          out('tot', de(tot) + ' €');
+          out('rest', (ok ? '' : '\u2212') + de(Math.abs(rest)) + ' €');
+          all('[data-o="rest"]').forEach(function (e) {
+            e.classList.toggle('down', !ok);
+          });
+          all('[data-cta]').forEach(function (b) {
+            b.disabled = !ok;
+            b.textContent = ok ? 'Kauforder prüfen' : 'Guthaben reicht nicht';
+          });
+        };
+        document.addEventListener('click', function (e) {
+          var hit = function (s) {
+            return e.target.closest ? e.target.closest(s) : null;
+          };
+          var x;
+          if ((x = hit('[data-t]'))) {
+            var a = x.dataset.t.split(':');
+            activate(a[0], a[1]);
+          }
+          if ((x = hit('[data-set]'))) {
+            var b = x.dataset.set.split(':');
+            activate(b[0], b[1]);
+          }
+          if ((x = hit('[data-tg]'))) {
+            var off = document.querySelector('.wb').classList.toggle(x.dataset.tg);
+            x.setAttribute('aria-pressed', !off);
+            x.classList.toggle('on', !off);
+          }
+          if (hit('[data-pause]')) {
+            var p = document.body.classList.toggle('paused');
+            all('[data-pause]').forEach(function (b) {
+              b.setAttribute('aria-label', p ? 'Weiter' : 'Pause');
+            });
+          }
+          if ((x = hit('[data-speed]'))) setSpeed(+x.dataset.speed);
+          if ((x = hit('[data-sp]'))) setSpeed(speed + +x.dataset.sp);
+          if ((x = hit('[data-fold]'))) {
+            var s = x.parentNode.classList.toggle('shut');
+            x.setAttribute('aria-expanded', !s);
+          }
+          if ((x = hit('[data-q]'))) {
+            qty = Math.max(1, Math.min(99, qty + +x.dataset.q));
+            ticket();
+          }
+        });
+        all('[data-xc]').forEach(function (el) {
+          var on = function () {
+            el.classList.add('act');
+          };
+          var off = function () {
+            el.classList.remove('act');
+          };
+          el.addEventListener('pointerdown', on);
+          el.addEventListener('pointermove', on);
+          el.addEventListener('keydown', on);
+          el.addEventListener('pointerleave', off);
+          el.addEventListener('blur', off);
+        });
+      })();
+    </script>
+  </body>
+</html>

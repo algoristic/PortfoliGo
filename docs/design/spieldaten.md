@@ -1,6 +1,6 @@
 # Spielstand der Mockups
 
-Gemeinsame Daten aller Seiten in `terminal/`.
+Gemeinsame Daten aller Seiten in `terminal/`, `editor/`, `charting/`, `hybrid/` und `werkbank/`.
 
 Stand: Mo., 20.10.2031, 10:42 · Spieler Alex · Seed salbei-lotse-910 · 3 ungelesene Meldungen.
 Alle Zahlen sind aufeinander abgestimmt. Wer die Mockups erweitert, bleibt bei diesen Werten.
@@ -89,3 +89,18 @@ Geld 87,38 · Brief 87,46 · Spread 0,08 € (0,09 %) · Volumen heute 201 Tsd. 
 Performance: 1T +3,15 % · 5T +8,5 % · 1M +9,8 % · lfd. J. +21,7 % · 1J +32,3 % · 5J +118,4 %.
 Dividende jährlich: 2029 1,30 € · 2030 1,42 € · 2031 1,56 € (Ex 12.05., Zahltag 14.05.) · nächster Ex-Tag voraussichtlich Mai 2032, noch nicht angekündigt.
 Ticket-Beispiel: Kauf Markt 5 Stück zum Brief 87,46 = 437,30 € + 4,90 € = 442,20 € · verfügbar 504,69 € → danach 62,49 €.
+
+## Ergänzungen für die Entwürfe E–H
+
+Kürzel: Talvar World ETF TLVW · Halvion AG HLVN · Selmark Energie AG SLMK · Kalveth Health SE KLVH · Norvane Versorgung AG NRVN · Orelia Pharma ORLA · Dravo Mining DRVO · Lumetra Logistik LMTR.
+
+Watchlist (Kurs · heute): Corvan Systems 87,42 · +3,15 % · Orelia Pharma 4,128 · −1,85 % · Dravo Mining 0,8734 · +5,40 % · Lumetra Logistik 46,90 · +0,12 %.
+Indizes (Stand · heute): Talvar World 3.412,80 · +0,74 % · Belmar 40 14.208,55 · +0,62 % · Ostrel 100 8.951,20 · −0,21 % (Vortag) · Kyrin 50 2.304,66 · +1,08 % (Schluss) · Sudar 30 1.187,42 · +0,35 %.
+Börsen: Europa offen bis 17:30 · Schwellenländer offen bis 16:00 · Nordamerika ab 15:30 · Asien-Pazifik geschlossen. Tempo 10 min/s.
+Die absolute Tagesänderung in den Watchlists ist aus Kurs und Prozentwert abgeleitet, bei Depotwerten aus „Heute €“ je Stück.
+
+Kursreihen (Tageskerzen, Montag bis Freitag):
+
+- Corvan Systems, 18.10.2030 bis 20.10.2031. Der letzte Monat entspricht `terminal/instrument-desktop.html`. Davor ist die Reihe erfunden und trifft die Stützwerte: Schluss 18.10.2030 66,08 (1 J.) · Schluss 31.12.2030 71,83 (lfd. J.) · Tief 61,20 am 14.11.2030 · Hoch 89,90 am 29.07.2031. Mittleres Volumen 482 Tsd., heute 201 Tsd.
+- Halvion AG, 02.01. bis 20.10.2031, erfunden: Tief 188,40 am 20.02. · Kauftage 14.04. (Spanne enthält 199,80) und 01.08. (enthält 225,32) · Vortag 253,49 · heute Eröffnung 254,10, Hoch 262,10, Tief 253,40, Schluss 260,36.
+- Wertentwicklung Depot und Benchmark: dieselben Kurven wie in `terminal/depot-desktop.html`, Endwerte +8,1 % und +9,5 %.

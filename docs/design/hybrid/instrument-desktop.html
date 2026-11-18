@@ -1,0 +1,2595 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hybrid – Instrument (Desktop)</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap"
+      rel="stylesheet" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          13px/1.4 Inter,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        color-scheme: dark;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      h1,
+      h2,
+      h3,
+      p,
+      ul {
+        margin: 0;
+        padding: 0;
+      }
+      ul {
+        list-style: none;
+      }
+      :focus-visible {
+        outline: 1px solid var(--focus);
+        outline-offset: -1px;
+      }
+      .ic {
+        width: 1em;
+        height: 1em;
+        flex: none;
+        display: inline-block;
+        vertical-align: -0.125em;
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+      }
+      .up {
+        color: var(--up);
+      }
+      .down {
+        color: var(--down);
+      }
+      .mut {
+        color: var(--mut);
+      }
+      .xc {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        --xc-y: 60px;
+        outline-offset: -1px;
+      }
+      .xc-pane {
+        position: relative;
+        display: flex;
+        min-height: 0;
+        border-bottom: 1px solid var(--grid-strong);
+      }
+      .xc-main {
+        flex: 1;
+      }
+      .xc-plot {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        cursor: crosshair;
+      }
+      .xc-plot > svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .xc-y {
+        position: relative;
+        width: var(--xc-y);
+        flex: none;
+        border-left: 1px solid var(--grid-strong);
+        font-size: 11px;
+        color: var(--mut);
+        font-variant-numeric: tabular-nums;
+      }
+      .xc-y span,
+      .xc-y b {
+        position: absolute;
+        left: 0;
+        right: 0;
+        padding: 0 6px;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        font-weight: 400;
+      }
+      .xc-y b {
+        color: #0c0e12;
+        background: var(--c);
+        padding: 1px 6px;
+        z-index: 1;
+      }
+      .xc-x {
+        position: relative;
+        height: 24px;
+        flex: none;
+        margin-right: var(--xc-y);
+        font-size: 11px;
+        color: var(--mut);
+        font-variant-numeric: tabular-nums;
+      }
+      .xc-x span {
+        position: absolute;
+        top: 5px;
+        transform: translateX(-50%);
+        white-space: nowrap;
+      }
+      .xc-v {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 0;
+        border-left: 1px dashed var(--cross);
+        pointer-events: none;
+      }
+      .xc-h {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 0;
+        border-top: 1px dashed var(--cross);
+        pointer-events: none;
+      }
+      .xc-yl,
+      .xc-xl {
+        position: absolute;
+        background: var(--cross-bg);
+        color: var(--cross-fg);
+        font-size: 11px;
+        padding: 1px 6px;
+        white-space: nowrap;
+        z-index: 2;
+        pointer-events: none;
+      }
+      .xc-yl {
+        left: 0;
+        right: 0;
+        transform: translateY(-50%);
+      }
+      .xc-xl {
+        top: 3px;
+        transform: translateX(-50%);
+      }
+      .xc [hidden] {
+        display: none;
+      }
+      .xc-line {
+        position: absolute;
+        left: 10px;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 1px 6px;
+        font-size: 11px;
+        background: var(--surface);
+        border: 1px solid var(--c);
+        color: var(--fg);
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .xc-mark {
+        position: absolute;
+        transform: translate(-50%, 0);
+        color: var(--c);
+        font-size: 10px;
+        line-height: 1;
+        text-align: center;
+        pointer-events: none;
+        font-weight: 600;
+      }
+      .xc-tag {
+        position: absolute;
+        left: 8px;
+        top: 4px;
+        font-size: 11px;
+        color: var(--mut);
+        pointer-events: none;
+      }
+      .leg {
+        position: absolute;
+        left: 8px;
+        top: 6px;
+        z-index: 1;
+        pointer-events: none;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .leg-r {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0 8px;
+        align-items: baseline;
+        font-variant-numeric: tabular-nums;
+      }
+      .leg-r i {
+        font-style: normal;
+        color: var(--mut);
+      }
+      .leg-d {
+        display: inline-block;
+        width: 10px;
+        height: 2px;
+        margin-right: 5px;
+        vertical-align: middle;
+        background: var(--c);
+      }
+      :root {
+        --bg: #131722;
+        --surface: #131722;
+        --panel: #131722;
+        --side: #171b26;
+        --bar: #10131b;
+        --line: #262a35;
+        --line-2: #363a45;
+        --line-s: #1e222d;
+        --fg: #e1e4ea;
+        --fg-2: #d1d4dc;
+        --mut: #8f94a1;
+        --acc: #2962ff;
+        --acc-l: #6d94ff;
+        --acc-fg: #fff;
+        --hover: #1e222d;
+        --sel: #1b2545;
+        --input: #1e222d;
+        --btn2: #2a2e39;
+        --status: #10131b;
+        --status-fg: #b4b8c4;
+        --av: #2a2e39;
+        --pill: #2a2e39;
+        --up: #22ab94;
+        --down: #f7626e;
+        --up-c: #089981;
+        --down-c: #f23645;
+        --line-c: #2962ff;
+        --warn: #e0a526;
+        --focus: #2962ff;
+        --grid: #1c202b;
+        --grid-strong: #2a2e39;
+        --cross: #787b86;
+        --cross-bg: #363a45;
+        --cross-fg: #fff;
+        --c1: #3f7cff;
+        --c2: #d9751a;
+        --c4: #9a66f2;
+        --page: #0b0e14;
+      }
+      .wb {
+        height: 100vh;
+        min-height: 700px;
+        min-width: 1240px;
+        display: grid;
+        grid-template-rows: 35px minmax(0, 1fr) 22px;
+        background: var(--bg);
+        overflow: hidden;
+        position: relative;
+      }
+      .tb {
+        display: grid;
+        grid-template-columns: 1fr minmax(240px, 340px) 1fr;
+        align-items: center;
+        background: var(--bar);
+        border-bottom: 1px solid var(--line);
+        font-size: 12.5px;
+        gap: 8px;
+      }
+      .tb-l,
+      .tb-r {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        height: 100%;
+      }
+      .tb-r {
+        justify-content: flex-end;
+        gap: 2px;
+        padding-right: 6px;
+      }
+      .logo {
+        width: 40px;
+        height: 100%;
+        display: grid;
+        place-items: center;
+        flex: none;
+      }
+      .logo span {
+        width: 16px;
+        height: 16px;
+        background: var(--acc);
+        display: grid;
+        place-items: center;
+        color: var(--acc-fg);
+        font-size: 10px;
+        font-weight: 700;
+        border-radius: 3px;
+      }
+      .mn {
+        padding: 3px 7px;
+        border-radius: 4px;
+        color: var(--fg-2);
+      }
+      .mn:hover,
+      .ib:hover {
+        background: var(--hover);
+      }
+      .cc {
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: 100%;
+        border: 1px solid var(--line-2);
+        border-radius: 5px;
+        background: var(--input);
+        color: var(--mut);
+        font-size: 12px;
+      }
+      .cc kbd,
+      .kb {
+        font: inherit;
+        font-size: 11px;
+        color: var(--mut);
+        border: 1px solid var(--line-2);
+        border-radius: 3px;
+        padding: 0 4px;
+      }
+      .ib {
+        width: 24px;
+        height: 24px;
+        display: inline-grid;
+        place-items: center;
+        border-radius: 4px;
+        color: var(--fg-2);
+        font-size: 14px;
+      }
+      .tc {
+        display: flex;
+        align-items: center;
+        height: 26px;
+        border: 1px solid var(--line-2);
+        border-radius: 5px;
+        background: var(--input);
+        margin-right: 8px;
+        padding: 0 2px;
+      }
+      .tc .ib {
+        width: 22px;
+        height: 22px;
+        font-size: 13px;
+      }
+      .tc .pause {
+        color: var(--acc-l);
+      }
+      .tc .sp {
+        padding: 0 2px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .tc .now {
+        padding: 0 8px 0 7px;
+        margin-left: 4px;
+        border-left: 1px solid var(--line-2);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .tc .ff {
+        width: auto;
+        padding: 0 6px;
+        display: inline-flex;
+        gap: 4px;
+        font-size: 12px;
+      }
+      .mid {
+        display: grid;
+        grid-template-columns: 48px var(--pri, 256px) minmax(0, 1fr) var(--sec, 300px);
+        min-height: 0;
+      }
+      .ab {
+        display: flex;
+        flex-direction: column;
+        background: var(--bar);
+        border-right: 1px solid var(--line);
+      }
+      .ab a,
+      .ab button {
+        position: relative;
+        height: 46px;
+        display: grid;
+        place-items: center;
+        font-size: 21px;
+        color: var(--mut);
+        border-left: 2px solid transparent;
+        width: 100%;
+      }
+      .ab a:hover,
+      .ab button:hover {
+        color: var(--fg);
+      }
+      .ab .on {
+        color: var(--fg);
+        border-left-color: var(--acc-l);
+      }
+      .ab .bdg {
+        position: absolute;
+        right: 7px;
+        bottom: 7px;
+        min-width: 15px;
+        height: 15px;
+        padding: 0 3px;
+        border-radius: 8px;
+        background: var(--acc);
+        color: var(--acc-fg);
+        font-size: 9.5px;
+        line-height: 15px;
+        font-weight: 600;
+        text-align: center;
+      }
+      .ab .sp {
+        flex: 1;
+      }
+      .sb {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        background: var(--side);
+        border-right: 1px solid var(--line);
+        overflow: hidden;
+      }
+      .sb2 {
+        border-right: 0;
+        border-left: 1px solid var(--line);
+      }
+      .sb-h {
+        height: 35px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 8px 0 18px;
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        color: var(--mut);
+      }
+      .sb-h .acts {
+        display: flex;
+      }
+      .sb-b {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+      }
+      .sc-h {
+        height: 22px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 6px 0 2px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        color: var(--fg-2);
+        border-top: 1px solid var(--line);
+        position: sticky;
+        top: 0;
+        background: var(--side);
+        z-index: 1;
+      }
+      .sc-h .r {
+        margin-left: auto;
+        font-weight: 400;
+        color: var(--mut);
+        font-variant-numeric: tabular-nums;
+      }
+      .tr {
+        height: 22px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding-right: 8px;
+        font-size: 12.5px;
+        color: var(--fg-2);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .tr:hover {
+        background: var(--hover);
+      }
+      .tr.sel {
+        background: var(--sel);
+        color: #fff;
+      }
+      .tr .nm {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+      }
+      .tr .r {
+        margin-left: auto;
+        padding-left: 8px;
+        font-size: 11.5px;
+        font-variant-numeric: tabular-nums;
+        color: var(--mut);
+      }
+      .tr .r.up {
+        color: var(--up);
+      }
+      .tr .r.down {
+        color: var(--down);
+      }
+      .tr .ic {
+        color: var(--mut);
+      }
+      .ce {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) var(--pn, 190px);
+        min-width: 0;
+        min-height: 0;
+      }
+      .ed {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        min-width: 0;
+        background: var(--bg);
+      }
+      .tabs {
+        height: 35px;
+        flex: none;
+        display: flex;
+        background: var(--side);
+        border-bottom: 1px solid var(--line);
+        overflow: hidden;
+      }
+      .tab {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 10px;
+        font-size: 12.5px;
+        color: var(--mut);
+        border-right: 1px solid var(--line);
+        white-space: nowrap;
+        position: relative;
+      }
+      .tab .ic {
+        font-size: 13px;
+      }
+      .tab .x {
+        opacity: 0;
+        font-size: 12px;
+        margin-left: 3px;
+      }
+      .tab.on {
+        background: var(--bg);
+        color: var(--fg);
+      }
+      .tab.on::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 1px;
+        background: var(--acc-l);
+      }
+      .tab.on::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 1px;
+        background: var(--bg);
+      }
+      .tab.on .x,
+      .tab:hover .x {
+        opacity: 1;
+      }
+      .tab i {
+        font-style: italic;
+      }
+      .tabs .end {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        padding-right: 6px;
+      }
+      .cr {
+        height: 22px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        padding: 0 12px;
+        font-size: 12px;
+        color: var(--mut);
+        background: var(--bg);
+      }
+      .cr .ic {
+        font-size: 10px;
+      }
+      .cr b {
+        font-weight: 400;
+        color: var(--fg-2);
+      }
+      .pn {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        border-top: 1px solid var(--line);
+        background: var(--panel);
+      }
+      .pn-t {
+        height: 32px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 8px;
+        font-size: 11px;
+        letter-spacing: 0.03em;
+        color: var(--mut);
+      }
+      .pn-t button {
+        height: 100%;
+        padding: 0 8px;
+        letter-spacing: inherit;
+        position: relative;
+        white-space: nowrap;
+      }
+      .pn-t button:hover {
+        color: var(--fg);
+      }
+      .pn-t .on {
+        color: var(--fg);
+      }
+      .pn-t .on::after {
+        content: '';
+        position: absolute;
+        left: 8px;
+        right: 8px;
+        bottom: 4px;
+        height: 1px;
+        background: var(--acc-l);
+      }
+      .pn-t .c {
+        display: inline-block;
+        min-width: 15px;
+        padding: 0 4px;
+        margin-left: 5px;
+        border-radius: 8px;
+        background: var(--line-2);
+        font-size: 10px;
+        text-align: center;
+        color: var(--fg);
+      }
+      .pn-t .end {
+        margin-left: auto;
+        display: flex;
+      }
+      .pn-b {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+      }
+      .st {
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+        background: var(--status);
+        color: var(--status-fg);
+        font-size: 12px;
+        border-top: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      .st div {
+        display: flex;
+        min-width: 0;
+      }
+      .st span,
+      .st button {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 7px;
+      }
+      .st button:hover {
+        background: var(--hover);
+      }
+      .st .rm {
+        background: var(--acc);
+        color: var(--acc-fg);
+        padding: 0 10px;
+      }
+      .st .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0.45;
+      }
+      .st .dot.o {
+        background: var(--up);
+        opacity: 1;
+      }
+      .fld {
+        padding: 0 14px 12px;
+      }
+      .fld label,
+      .fld .lb {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 2px;
+        color: var(--fg-2);
+      }
+      .fld small {
+        display: block;
+        color: var(--mut);
+        font-size: 11.5px;
+        margin-bottom: 5px;
+      }
+      .inp {
+        height: 26px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 7px;
+        background: var(--input);
+        border: 1px solid var(--line-2);
+        border-radius: 3px;
+        font-size: 12.5px;
+      }
+      .seg {
+        display: flex;
+        border: 1px solid var(--line-2);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .seg button {
+        flex: 1;
+        height: 24px;
+        font-size: 12px;
+        color: var(--mut);
+      }
+      .seg button + button {
+        border-left: 1px solid var(--line-2);
+      }
+      .seg .on {
+        background: var(--sel);
+        color: #fff;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 26px;
+        padding: 0 12px;
+        border-radius: 3px;
+        font-size: 12.5px;
+        background: var(--btn2);
+        color: var(--fg);
+      }
+      .btn:hover {
+        filter: brightness(1.15);
+      }
+      .btn.pri {
+        background: var(--acc);
+        color: var(--acc-fg);
+      }
+      .phs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 32px;
+        justify-content: center;
+        padding: 24px;
+        min-height: 100%;
+        background: var(--page, #0d0d0d);
+      }
+      .phw h2 {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--mut);
+        margin-bottom: 8px;
+      }
+      .ph {
+        width: 390px;
+        max-width: 100vw;
+        height: 844px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--bg);
+        border: 1px solid var(--line);
+      }
+      @media (max-width: 440px) {
+        .phs {
+          padding: 0;
+          gap: 0;
+        }
+        .phw h2 {
+          display: none;
+        }
+        .ph {
+          border: 0;
+        }
+      }
+      .p-top {
+        height: 44px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 6px;
+        background: var(--bar);
+        border-bottom: 1px solid var(--line);
+      }
+      .p-top .ib {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+      }
+      .p-top .ti {
+        flex: 1;
+        min-width: 0;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 9px;
+        background: var(--input);
+        border: 1px solid var(--line-2);
+        border-radius: 5px;
+        font-size: 12.5px;
+        color: var(--mut);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .p-time {
+        height: 34px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 8px;
+        background: var(--side);
+        border-bottom: 1px solid var(--line);
+        font-size: 12px;
+      }
+      .p-time .ib {
+        width: 30px;
+        height: 28px;
+        font-size: 15px;
+      }
+      .p-time .pause {
+        color: var(--acc-l);
+      }
+      .p-time .r {
+        margin-left: auto;
+        color: var(--mut);
+      }
+      .p-b {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+      }
+      .p-ab {
+        height: 54px;
+        flex: none;
+        display: flex;
+        background: var(--bar);
+        border-top: 1px solid var(--line);
+      }
+      .p-ab a,
+      .p-ab button {
+        flex: 1;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        color: var(--mut);
+        font-size: 10px;
+        border-top: 2px solid transparent;
+      }
+      .p-ab .ic {
+        font-size: 19px;
+      }
+      .p-ab .on {
+        color: var(--fg);
+        border-top-color: var(--acc-l);
+      }
+      .p-ab .bdg {
+        position: absolute;
+        top: 4px;
+        left: calc(50% + 5px);
+        min-width: 14px;
+        height: 14px;
+        border-radius: 7px;
+        padding: 0 3px;
+        background: var(--acc);
+        color: var(--acc-fg);
+        font-size: 9px;
+        line-height: 14px;
+        text-align: center;
+      }
+      .p-st {
+        height: 20px;
+        flex: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 8px;
+        background: var(--status);
+        color: var(--status-fg);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+      .p-st span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .wl-h,
+      .wl-r {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 62px 54px 58px;
+        gap: 4px;
+        align-items: center;
+        padding: 0 10px;
+      }
+      .wl.c .wl-h,
+      .wl.c .wl-r {
+        grid-template-columns: minmax(0, 1fr) 62px 56px;
+      }
+      .wl.c .chg {
+        display: none;
+      }
+      .wl-h {
+        height: 24px;
+        font-size: 11px;
+        color: var(--mut);
+        text-align: right;
+      }
+      .wl-h span:first-child {
+        text-align: left;
+      }
+      .wl-g {
+        height: 24px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 8px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        color: var(--mut);
+      }
+      .wl-r {
+        height: 27px;
+        font-size: 12px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        cursor: pointer;
+        position: relative;
+      }
+      .wl-r:hover {
+        background: var(--hover);
+      }
+      .wl-r.on {
+        background: var(--sel);
+      }
+      .wl-r.on::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--acc-l);
+      }
+      .wl-s {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        text-align: left;
+        min-width: 0;
+        font-weight: 500;
+      }
+      .wl-s em {
+        font-style: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .av {
+        width: 16px;
+        height: 16px;
+        flex: none;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 8.5px;
+        font-weight: 700;
+        background: var(--av);
+        color: var(--fg);
+      }
+      .wg {
+        padding: 10px 12px;
+        border-top: 1px solid var(--line);
+      }
+      .wg h3 {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 7px;
+      }
+      .wg h3 span {
+        font-weight: 400;
+        color: var(--mut);
+      }
+      .kv {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 12px;
+        line-height: 21px;
+        font-variant-numeric: tabular-nums;
+      }
+      .kv > span:first-child {
+        color: var(--mut);
+      }
+      .kv.tot {
+        font-weight: 600;
+        border-top: 1px solid var(--line);
+        margin-top: 3px;
+        padding-top: 3px;
+      }
+      .kv.tot > span:first-child {
+        color: var(--fg);
+      }
+      .q2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        position: relative;
+        margin-bottom: 8px;
+      }
+      .q2 button {
+        height: 44px;
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        line-height: 1.25;
+        font-variant-numeric: tabular-nums;
+        font-size: 14px;
+        font-weight: 600;
+        border: 1px solid var(--line-2);
+        color: var(--fg);
+      }
+      .q2 small {
+        font-size: 10.5px;
+        font-weight: 400;
+        color: var(--mut);
+      }
+      .q2 .on {
+        background: var(--acc);
+        border-color: var(--acc);
+        color: #fff;
+      }
+      .q2 .on small {
+        color: #e3e9ff;
+      }
+      .q2 i {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-style: normal;
+        background: var(--panel);
+        border: 1px solid var(--line-2);
+        border-radius: 3px;
+        padding: 0 4px;
+        font-size: 10.5px;
+        color: var(--mut);
+      }
+      .seg2 {
+        display: flex;
+        gap: 14px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 8px;
+        font-size: 12.5px;
+        color: var(--mut);
+      }
+      .seg2 button {
+        padding: 3px 0 5px;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+      }
+      .seg2 .on {
+        color: var(--fg);
+        border-bottom-color: var(--acc-l);
+      }
+      .f-l {
+        font-size: 11.5px;
+        color: var(--mut);
+        margin-bottom: 3px;
+        display: block;
+      }
+      .f-i {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 8px;
+        margin-bottom: 8px;
+        border: 1px solid var(--line-2);
+        border-radius: 4px;
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+      }
+      .f-i .ib2 {
+        display: inline-flex;
+        gap: 8px;
+        color: var(--mut);
+      }
+      .cta2 {
+        width: 100%;
+        height: 36px;
+        margin-top: 8px;
+        border-radius: 4px;
+        background: var(--acc);
+        color: #fff;
+        font-weight: 600;
+      }
+      .oo {
+        margin-top: 8px;
+        padding: 6px 8px;
+        border: 1px solid var(--line-2);
+        border-left: 2px solid var(--acc-l);
+        border-radius: 3px;
+        font-size: 11.5px;
+        color: var(--mut);
+      }
+      .oo b {
+        display: block;
+        color: var(--fg);
+        font-weight: 500;
+      }
+      .d-h {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-weight: 600;
+      }
+      .d-p {
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.2;
+        margin-top: 3px;
+      }
+      .d-p small {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--mut);
+        margin-left: 3px;
+      }
+      .d-s {
+        font-size: 11.5px;
+        color: var(--mut);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 2px;
+      }
+      .d-s i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--up);
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+      }
+      .tile {
+        padding: 5px 2px;
+        text-align: center;
+        border-radius: 3px;
+        background: color-mix(in srgb, var(--up) 13%, transparent);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      .tile small {
+        display: block;
+        font-size: 10.5px;
+        color: var(--mut);
+      }
+      .prose {
+        font-size: 12px;
+        color: var(--fg-2);
+        line-height: 1.5;
+      }
+      .ab2 {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 0 12px;
+        height: 30px;
+        font-size: 12px;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--line);
+        font-variant-numeric: tabular-nums;
+        overflow: hidden;
+      }
+      .ab2 span {
+        color: var(--mut);
+      }
+      .ab2 b {
+        font-weight: 500;
+        color: var(--fg);
+        margin-left: 4px;
+      }
+      .ab2 b.up {
+        color: var(--up);
+      }
+      .tt {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      .tt th {
+        position: sticky;
+        top: 0;
+        background: var(--panel);
+        font-weight: 400;
+        color: var(--mut);
+        text-align: right;
+        padding: 4px 10px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        z-index: 1;
+      }
+      .tt td {
+        text-align: right;
+        padding: 0 10px;
+        height: 27px;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--line-s);
+      }
+      .tt th:first-child,
+      .tt td:first-child {
+        text-align: left;
+      }
+      .tt tr:hover td {
+        background: var(--hover);
+      }
+      .tt tr.on td {
+        background: var(--sel);
+      }
+      .tt .l {
+        text-align: left;
+      }
+      .tt tfoot td {
+        font-weight: 600;
+        border-bottom: 0;
+      }
+      .sy {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 500;
+      }
+      .sy small {
+        font-weight: 400;
+        color: var(--mut);
+        font-size: 11px;
+      }
+      .pill {
+        display: inline-block;
+        padding: 0 6px;
+        border-radius: 3px;
+        line-height: 17px;
+        font-size: 11px;
+        background: var(--pill);
+        color: var(--fg-2);
+      }
+      .pill.b {
+        color: var(--acc-l);
+        background: color-mix(in srgb, var(--acc-l) 16%, transparent);
+      }
+      .mb {
+        height: 21px;
+        padding: 0 7px;
+        border: 1px solid var(--line-2);
+        border-radius: 3px;
+        font-size: 11px;
+        color: var(--fg-2);
+        margin-left: 3px;
+      }
+      .mb:hover {
+        background: var(--hover);
+      }
+      .al {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 44px;
+        gap: 1px 8px;
+        font-size: 12px;
+        align-items: center;
+        margin-bottom: 7px;
+      }
+      .al span:nth-child(2) {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .al i {
+        grid-column: 1/-1;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--line);
+        overflow: hidden;
+        display: block;
+      }
+      .al i::before {
+        content: '';
+        display: block;
+        height: 100%;
+        width: var(--w);
+        background: var(--acc-l);
+        border-radius: 2px;
+      }
+      .note {
+        font-size: 11.5px;
+        color: var(--warn);
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+      }
+      .qt {
+        display: flex;
+        gap: 2px;
+        margin-top: 5px;
+        pointer-events: auto;
+        align-items: stretch;
+        font-variant-numeric: tabular-nums;
+      }
+      .qt button {
+        min-width: 74px;
+        padding: 2px 8px;
+        border-radius: 3px;
+        line-height: 1.2;
+        text-align: left;
+        font-size: 12.5px;
+        font-weight: 600;
+        background: var(--surface);
+        border: 1px solid var(--line-2);
+      }
+      .qt button:last-child {
+        text-align: right;
+        border-color: var(--acc-l);
+        color: var(--acc-l);
+      }
+      .qt small {
+        display: block;
+        font-size: 10px;
+        font-weight: 400;
+        color: var(--mut);
+      }
+      .qt span {
+        align-self: center;
+        font-size: 10.5px;
+        color: var(--mut);
+        padding: 0 4px;
+      }
+      .stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 26px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--line);
+        font-variant-numeric: tabular-nums;
+      }
+      .stats div {
+        font-size: 11.5px;
+        color: var(--mut);
+        white-space: nowrap;
+      }
+      .stats strong {
+        display: block;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--fg);
+      }
+      .stats strong.up {
+        color: var(--up);
+      }
+      .rg {
+        height: 30px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 8px;
+        font-size: 12px;
+        color: var(--mut);
+        border-top: 1px solid var(--line);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .rg button {
+        padding: 2px 7px;
+        border-radius: 3px;
+      }
+      .rg button:hover {
+        background: var(--hover);
+        color: var(--fg);
+      }
+      .rg .on {
+        color: var(--acc-l);
+      }
+      .rg .end {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .rg .dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--mut);
+        margin-right: 4px;
+      }
+      .rg .dot.o {
+        background: var(--up);
+      }
+
+      .wl-g {
+        background: var(--side);
+        position: sticky;
+        top: 0;
+      }
+      .wg {
+        padding: 8px 14px 10px;
+      }
+      .bar-c {
+        height: 32px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 1px;
+        padding: 0 6px;
+        border-bottom: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--fg-2);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .bar-c button {
+        height: 24px;
+        padding: 0 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 3px;
+      }
+      .bar-c button:hover {
+        background: var(--hover);
+      }
+      .bar-c .on {
+        color: var(--acc-l);
+      }
+      .bar-c b {
+        font-weight: 600;
+      }
+      .bar-c .sep {
+        width: 1px;
+        height: 16px;
+        background: var(--line);
+        margin: 0 5px;
+        flex: none;
+      }
+      .bar-c .end {
+        margin-left: auto;
+        display: flex;
+      }
+      .cv {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+      }
+      .gut {
+        width: 36px;
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+        padding: 4px 0;
+        border-right: 1px solid var(--line);
+      }
+      .gut button {
+        width: 26px;
+        height: 26px;
+        display: grid;
+        place-items: center;
+        border-radius: 3px;
+        color: var(--fg-2);
+        font-size: 14px;
+      }
+      .gut button:hover {
+        background: var(--hover);
+      }
+      .gut .on {
+        color: var(--acc-l);
+        background: var(--sel);
+      }
+      .gut hr {
+        width: 18px;
+        border: 0;
+        border-top: 1px solid var(--line);
+        margin: 3px 0;
+      }
+      .cv > .fill {
+        flex: 1;
+        min-width: 0;
+        position: relative;
+      }
+      .groups {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      }
+      .grp {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+      }
+      .grp + .grp {
+        border-left: 1px solid var(--line);
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, auto);
+        justify-content: space-between;
+        gap: 6px 14px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--line);
+        font-variant-numeric: tabular-nums;
+      }
+      .stats div {
+        font-size: 11px;
+        color: var(--mut);
+        white-space: nowrap;
+      }
+      .stats strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--fg);
+      }
+      .stats strong.up {
+        color: var(--up);
+      }
+      .m-c {
+        flex: 1;
+        min-height: 0;
+        --xc-y: 50px;
+      }
+      .m-bar {
+        height: 32px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        border-bottom: 1px solid var(--line);
+        font-size: 12.5px;
+        color: var(--mut);
+      }
+      .m-bar .on {
+        color: var(--acc-l);
+      }
+      .m-tr {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        padding: 7px 8px;
+        flex: none;
+        border-top: 1px solid var(--line);
+      }
+      .m-tr button {
+        height: 42px;
+        border-radius: 3px;
+        line-height: 1.2;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        border: 1px solid var(--line-2);
+      }
+      .m-tr .buy {
+        background: var(--acc);
+        border-color: var(--acc);
+        color: #fff;
+      }
+      .m-tr small {
+        display: block;
+        font-weight: 400;
+        font-size: 11px;
+        opacity: 0.85;
+      }
+      .m-sh {
+        flex: none;
+        height: 178px;
+        display: flex;
+        flex-direction: column;
+        border-top: 1px solid var(--line);
+        background: var(--panel);
+      }
+      .m-sh .pn-t {
+        height: 30px;
+        overflow: hidden;
+      }
+      .m-pr {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0 8px;
+        padding: 6px 12px;
+        border-bottom: 1px solid var(--line-s);
+        font-size: 12.5px;
+        font-variant-numeric: tabular-nums;
+      }
+      .m-pr small {
+        font-size: 11px;
+        color: var(--mut);
+      }
+      .m-pr small.up {
+        color: var(--up);
+      }
+      .m-pr small.down {
+        color: var(--down);
+      }
+      .m-pr .rt {
+        text-align: right;
+      }
+      .m-hd {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      .m-hd .big {
+        font-size: 22px;
+        font-weight: 600;
+      }
+      .m-chart {
+        height: 176px;
+        --xc-y: 50px;
+        border-bottom: 1px solid var(--line);
+      }
+      @media (max-width: 1400px) {
+        .ab2 > span:nth-child(n + 4),
+        .bar-c .end {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="i-search" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+      </symbol>
+      <symbol id="i-pause-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5" />
+      </symbol>
+      <symbol id="i-skip-end-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.693 3.3 4 3.678 4 4.308v7.384c0 .63.692 1.01 1.233.697L11.5 8.753V12a.5.5 0 0 0 1 0z" />
+      </symbol>
+      <symbol id="i-dash" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+      </symbol>
+      <symbol id="i-layout-sidebar" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm5-1v12h9a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zM4 2H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h2z" />
+      </symbol>
+      <symbol id="i-layout-split" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M0 3a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm8.5-1v12H14a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1zm-1 0H2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h5.5z" />
+      </symbol>
+      <symbol id="i-layout-sidebar-reverse" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M16 3a2 2 0 0 0-2-2H2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2zm-5-1v12H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm1 0h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-2z" />
+      </symbol>
+      <symbol id="i-star" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
+      </symbol>
+      <symbol id="i-briefcase" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5m1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0M1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5" />
+      </symbol>
+      <symbol id="i-graph-up-arrow" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M0 0h1v15h15v1H0zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5" />
+      </symbol>
+      <symbol id="i-arrow-left-right" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5" />
+      </symbol>
+      <symbol id="i-bank" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="m8 0 6.61 3h.89a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H15v7a.5.5 0 0 1 .485.38l.5 2a.498.498 0 0 1-.485.62H.5a.498.498 0 0 1-.485-.62l.5-2A.5.5 0 0 1 1 13V6H.5a.5.5 0 0 1-.5-.5v-2A.5.5 0 0 1 .5 3h.89zM3.777 3h8.447L8 1zM2 6v7h1V6zm2 0v7h2.5V6zm3.5 0v7h1V6zm2 0v7H12V6zM13 6v7h1V6zm2-1V4H1v1zm-.39 9H1.39l-.25 1h13.72z" />
+      </symbol>
+      <symbol id="i-percent" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M13.442 2.558a.625.625 0 0 1 0 .884l-10 10a.625.625 0 1 1-.884-.884l10-10a.625.625 0 0 1 .884 0M4.5 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m0 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5m7 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m0 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
+      </symbol>
+      <symbol id="i-person-circle" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+        <path
+          fill-rule="evenodd"
+          d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1" />
+      </symbol>
+      <symbol id="i-gear" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0" />
+        <path
+          d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z" />
+      </symbol>
+      <symbol id="i-plus-lg" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
+      </symbol>
+      <symbol id="i-three-dots" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3" />
+      </symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+      </symbol>
+      <symbol id="i-bar-chart-line" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M11 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h1V7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7h1zm1 12h2V2h-2zm-3 0V7H7v7zm-5 0v-3H2v3z" />
+      </symbol>
+      <symbol id="i-x-lg" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+      </symbol>
+      <symbol id="i-bar-chart-steps" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" />
+      </symbol>
+      <symbol id="i-graph-up" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07" />
+      </symbol>
+      <symbol id="i-activity" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2" />
+      </symbol>
+      <symbol id="i-alarm" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8.5 5.5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9z" />
+        <path
+          d="M6.5 0a.5.5 0 0 0 0 1H7v1.07a7.001 7.001 0 0 0-3.273 12.474l-.602.602a.5.5 0 0 0 .707.708l.746-.746A6.97 6.97 0 0 0 8 16a6.97 6.97 0 0 0 3.422-.892l.746.746a.5.5 0 0 0 .707-.708l-.601-.602A7.001 7.001 0 0 0 9 2.07V1h.5a.5.5 0 0 0 0-1zm1.038 3.018a6 6 0 0 1 .924 0 6 6 0 1 1-.924 0M0 3.5c0 .753.333 1.429.86 1.887A8.04 8.04 0 0 1 4.387 1.86 2.5 2.5 0 0 0 0 3.5M13.5 1c-.753 0-1.429.333-1.887.86a8.04 8.04 0 0 1 3.527 3.527A2.5 2.5 0 0 0 13.5 1" />
+      </symbol>
+      <symbol id="i-crosshair" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8.5.5a.5.5 0 0 0-1 0v.518A7 7 0 0 0 1.018 7.5H.5a.5.5 0 0 0 0 1h.518A7 7 0 0 0 7.5 14.982v.518a.5.5 0 0 0 1 0v-.518A7 7 0 0 0 14.982 8.5h.518a.5.5 0 0 0 0-1h-.518A7 7 0 0 0 8.5 1.018zm-6.48 7A6 6 0 0 1 7.5 2.02v.48a.5.5 0 0 0 1 0v-.48a6 6 0 0 1 5.48 5.48h-.48a.5.5 0 0 0 0 1h.48a6 6 0 0 1-5.48 5.48v-.48a.5.5 0 0 0-1 0v.48A6 6 0 0 1 2.02 8.5h.48a.5.5 0 0 0 0-1zM8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4" />
+      </symbol>
+      <symbol id="i-slash-lg" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0" />
+      </symbol>
+      <symbol id="i-distribute-vertical" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M1 1.5a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 0-1h-13a.5.5 0 0 0-.5.5m0 13a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 0-1h-13a.5.5 0 0 0-.5.5" />
+        <path d="M2 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
+      </symbol>
+      <symbol id="i-fonts" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M12.258 3h-8.51l-.083 2.46h.479c.26-1.544.758-1.783 2.693-1.845l.424-.013v7.827c0 .663-.144.82-1.3.923v.52h4.082v-.52c-1.162-.103-1.306-.26-1.306-.923V3.602l.431.013c1.934.062 2.434.301 2.693 1.846h.479z" />
+      </symbol>
+      <symbol id="i-rulers" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5v-1H2v-1h4v-1H4v-1h2v-1H2v-1h4V9H4V8h2V7H2V6h4V2h1v4h1V4h1v2h1V2h1v4h1V4h1v2h1V2h1v4h1V1a1 1 0 0 0-1-1z" />
+      </symbol>
+      <symbol id="i-magnet" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 1a7 7 0 0 0-7 7v3h4V8a3 3 0 0 1 6 0v3h4V8a7 7 0 0 0-7-7m7 11h-4v3h4zM5 12H1v3h4zM0 8a8 8 0 1 1 16 0v8h-6V8a2 2 0 1 0-4 0v8H0z" />
+      </symbol>
+      <symbol id="i-eye" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+        <path
+          d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+      </symbol>
+      <symbol id="i-trash" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+        <path
+          d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+      </symbol>
+      <symbol id="i-x" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+      </symbol>
+      <symbol id="i-chevron-up" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z" />
+      </symbol>
+      <symbol id="i-person-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6" />
+      </symbol>
+      <symbol id="i-tag" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M6 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0m-1 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0" />
+        <path
+          d="M2 1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 1 6.586V2a1 1 0 0 1 1-1m0 5.586 7 7L13.586 9l-7-7H2z" />
+      </symbol>
+      <symbol id="i-check2" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0" />
+      </symbol>
+      <symbol id="i-exclamation-triangle" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z" />
+        <path
+          d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
+      </symbol>
+      <symbol id="i-info-circle" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+        <path
+          d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0" />
+      </symbol>
+      <symbol id="i-bell" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
+      </symbol>
+    </svg>
+    <div class="wb" style="--pri: 248px; --sec: 288px; --pn: 252px">
+      <header class="tb">
+        <div class="tb-l"
+          ><a class="logo" href="../index.html" aria-label="Zur Mockup-Übersicht"><span>P</span></a
+          ><nav style="display: flex" aria-label="Menü"
+            ><button class="mn">Spielstand</button><button class="mn">Ansicht</button
+            ><button class="mn">Zeit</button><button class="mn">Handel</button
+            ><button class="mn">Konten</button><button class="mn">Hilfe</button></nav
+          ></div
+        >
+        <button class="cc"
+          ><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg>Corvan Systems —
+          PortfoliGo<kbd>Strg K</kbd></button
+        >
+        <div class="tb-r"
+          ><div class="tc" role="group" aria-label="Spielzeit"
+            ><button class="ib pause" aria-label="Pause" title="Pause"
+              ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></button
+            ><button class="ib ff" title="Vorspulen"
+              ><svg class="ic" aria-hidden="true"><use href="#i-skip-end-fill"></use></svg
+              >Vorspulen</button
+            ><button class="ib" aria-label="Langsamer" title="Langsamer"
+              ><svg class="ic" aria-hidden="true"><use href="#i-dash"></use></svg></button
+            ><span class="sp num">10 min/s</span
+            ><button class="ib" aria-label="Schneller" title="Schneller"
+              ><svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg></button
+            ><span class="now num">Mo., 20.10.2031, 10:42</span></div
+          ><button class="ib" aria-label="Primäre Seitenleiste" title="Primäre Seitenleiste"
+            ><svg class="ic" aria-hidden="true"><use href="#i-layout-sidebar"></use></svg></button
+          ><button class="ib" aria-label="Panel" title="Panel"
+            ><svg class="ic" aria-hidden="true"><use href="#i-layout-split"></use></svg></button
+          ><button class="ib" aria-label="Sekundäre Seitenleiste" title="Sekundäre Seitenleiste"
+            ><svg class="ic" aria-hidden="true">
+              <use href="#i-layout-sidebar-reverse"></use></svg></button
+        ></div>
+      </header>
+      <div class="mid">
+        <nav class="ab" aria-label="Aktivitäten"
+          ><a
+            class="on"
+            href="instrument-desktop.html"
+            aria-label="Watchlist"
+            title="Watchlist"
+            aria-current="page"
+            ><svg class="ic" aria-hidden="true"><use href="#i-star"></use></svg></a
+          ><a class="" href="depot-desktop.html" aria-label="Depot" title="Depot"
+            ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg></a
+          ><button class="" aria-label="Märkte" title="Märkte"
+            ><svg class="ic" aria-hidden="true"><use href="#i-graph-up-arrow"></use></svg></button
+          ><button class="" aria-label="Orders" title="Orders"
+            ><svg class="ic" aria-hidden="true"><use href="#i-arrow-left-right"></use></svg
+            ><span class="bdg">2</span></button
+          ><button class="" aria-label="Konten &amp; Banken" title="Konten &amp; Banken"
+            ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg></button
+          ><button class="" aria-label="Steuern" title="Steuern"
+            ><svg class="ic" aria-hidden="true"><use href="#i-percent"></use></svg></button
+          ><div class="sp"></div
+          ><button class="" aria-label="Spieler Alex" title="Spieler Alex"
+            ><svg class="ic" aria-hidden="true"><use href="#i-person-circle"></use></svg></button
+          ><button class="" aria-label="Einstellungen" title="Einstellungen"
+            ><svg class="ic" aria-hidden="true"><use href="#i-gear"></use></svg></button
+        ></nav>
+        <aside class="sb" aria-label="Primäre Seitenleiste"
+          ><div class="sb-h"
+            ><span>WATCHLIST</span
+            ><span class="acts"
+              ><button class="ib" aria-label="Hinzufügen" title="Hinzufügen"
+                ><svg class="ic" aria-hidden="true"><use href="#i-plus-lg"></use></svg></button
+              ><button class="ib" aria-label="Mehr" title="Mehr"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-three-dots"></use></svg></button></span></div
+          ><div class="sb-b"
+            ><div class="wl c">
+              <div class="wl-h"
+                ><span>Symbol</span><span>Letzter</span><span class="chg">Änd.</span
+                ><span>Änd. %</span></div
+              >
+              <div class="wl-g"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg
+                >WATCHLIST</div
+              ><a class="wl-r on" href="instrument-desktop.html"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">C</span
+                  ><em title="Corvan Systems">CRVN</em></span
+                ><span>87,42</span><span class="chg up">+2,67</span
+                ><span class="up">+3,15 %</span></a
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">O</span
+                  ><em title="Orelia Pharma">ORLA</em></span
+                ><span>4,128</span><span class="chg down">−0,078</span
+                ><span class="down">−1,85 %</span></div
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">D</span
+                  ><em title="Dravo Mining">DRVO</em></span
+                ><span>0,8734</span><span class="chg up">+0,0447</span
+                ><span class="up">+5,40 %</span></div
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">L</span
+                  ><em title="Lumetra Logistik">LMTR</em></span
+                ><span>46,90</span><span class="chg up">+0,06</span
+                ><span class="up">+0,12 %</span></div
+              >
+              <div class="wl-g"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg
+                >DEPOT</div
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">T</span
+                  ><em title="Talvar World ETF">TLVW</em></span
+                ><span>70,11</span><span class="chg up">+0,58</span
+                ><span class="up">+0,84 %</span></div
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">H</span
+                  ><em title="Halvion AG">HLVN</em></span
+                ><span>260,36</span><span class="chg up">+6,87</span
+                ><span class="up">+2,71 %</span></div
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">S</span
+                  ><em title="Selmark Energie AG">SLMK</em></span
+                ><span>43,53</span><span class="chg down">−0,49</span
+                ><span class="down">−1,12 %</span></div
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">K</span
+                  ><em title="Kalveth Health SE">KLVH</em></span
+                ><span>56,58</span><span class="chg up">+0,26</span
+                ><span class="up">+0,46 %</span></div
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">N</span
+                  ><em title="Norvane Versorgung AG">NRVN</em></span
+                ><span>16,73</span><span class="chg down">−0,06</span
+                ><span class="down">−0,38 %</span></div
+              >
+              <div class="wl-g"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg
+                >INDIZES</div
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">T</span
+                  ><em title="TALVAR WORLD">TALVAR WORLD</em></span
+                ><span>3.412,80</span><span class="chg up">+25,07</span
+                ><span class="up">+0,74 %</span></div
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">B</span
+                  ><em title="BELMAR 40">BELMAR 40</em></span
+                ><span>14.208,55</span><span class="chg up">+87,55</span
+                ><span class="up">+0,62 %</span></div
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">O</span
+                  ><em title="OSTREL 100">OSTREL 100</em></span
+                ><span>8.951,20</span><span class="chg down">−18,84</span
+                ><span class="down">−0,21 %</span></div
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">K</span
+                  ><em title="KYRIN 50">KYRIN 50</em></span
+                ><span>2.304,66</span><span class="chg up">+24,62</span
+                ><span class="up">+1,08 %</span></div
+              ><div class="wl-r"
+                ><span class="wl-s"
+                  ><span class="av" aria-hidden="true">S</span
+                  ><em title="SUDAR 30">SUDAR 30</em></span
+                ><span>1.187,42</span><span class="chg up">+4,14</span
+                ><span class="up">+0,35 %</span></div
+              >
+            </div></div
+          ></aside
+        >
+        <main class="ce"
+          ><section class="ed" aria-label="Editor"
+            ><div class="tabs" role="tablist"
+              ><div class="tab on" role="tab" aria-selected="true"
+                ><svg class="ic" aria-hidden="true"><use href="#i-bar-chart-line"></use></svg>Corvan
+                Systems<span class="x"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-x-lg"></use></svg></span></div
+              ><a class="tab" role="tab" href="depot-desktop.html"
+                ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>Depot<span
+                  class="x"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-x-lg"></use></svg></span></a
+              ><a class="tab" role="tab" href="depot-desktop.html"
+                ><svg class="ic" aria-hidden="true"><use href="#i-bar-chart-line"></use></svg
+                >Halvion AG<span class="x"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-x-lg"></use></svg></span></a
+              ><div class="end"
+                ><button class="ib" aria-label="Editor teilen" title="Editor teilen"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="#i-layout-split"></use></svg></button
+                ><button class="ib" aria-label="Mehr" title="Mehr"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="#i-three-dots"></use></svg></button></div
+            ></div>
+            <div class="bar-c"
+              ><button><b>CRVN</b></button
+              ><span class="sep"></span><button>Auto</button><button>1 Std</button
+              ><button class="on">1 Tag</button><button>1 Wo</button><span class="sep"></span
+              ><button aria-label="Kerzen" class="on"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-bar-chart-steps"></use></svg></button
+              ><button aria-label="Linie"
+                ><svg class="ic" aria-hidden="true"><use href="#i-graph-up"></use></svg></button
+              ><span class="sep"></span
+              ><button
+                ><svg class="ic" aria-hidden="true"><use href="#i-activity"></use></svg
+                >Indikatoren</button
+              ><button
+                ><svg class="ic" aria-hidden="true"><use href="#i-alarm"></use></svg>Alarm</button
+              ><span class="sep"></span><button class="">1T</button><button class="">5T</button
+              ><button class="">1M</button><button class="on">6M</button><button class="">1J</button
+              ><button class="">5J</button><button class="">Max</button
+              ><span class="end"><button>%</button><button>log</button></span></div
+            >
+            <div class="cv"
+              ><nav class="gut" aria-label="Zeichenwerkzeuge"
+                ><button class="on" aria-label="Fadenkreuz" title="Fadenkreuz"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-crosshair"></use></svg></button
+                ><button class="" aria-label="Trendlinie" title="Trendlinie"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-slash-lg"></use></svg></button
+                ><button class="" aria-label="Horizontale Linie" title="Horizontale Linie"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="#i-distribute-vertical"></use></svg></button
+                ><button class="" aria-label="Text" title="Text"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-fonts"></use></svg></button
+                ><button class="" aria-label="Messen" title="Messen"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-rulers"></use></svg></button
+                ><hr /><button class="" aria-label="Magnet" title="Magnet"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-magnet"></use></svg></button
+                ><button class="" aria-label="Ausblenden" title="Ausblenden"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-eye"></use></svg></button
+                ><button class="" aria-label="Löschen" title="Löschen"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="#i-trash"></use></svg></button></nav
+              ><div class="fill"
+                ><div
+                  class="xc"
+                  tabindex="0"
+                  data-xc='{"t":"candle","p":5,"lo":73.269,"hi":90.841,"r":[["28.04.31",80.24,80.33,79.32,79.84,588],["29.04.31",79.84,80.85,79.58,80.51,468],["30.04.31",80.52,80.82,78.39,79.19,312],["01.05.31",79.21,80.88,78.73,80.4,529],["02.05.31",80.26,81.21,79.75,80.64,403],["05.05.31",80.51,80.97,79.97,80.87,556],["06.05.31",80.64,80.79,80.54,80.55,443],["07.05.31",80.63,81.05,80.12,80.18,453],["08.05.31",80.13,80.22,78.63,79.43,476],["09.05.31",79.09,80.14,79.08,79.76,613],["12.05.31",80.03,80.8,79.77,80.2,343],["13.05.31",80.26,80.41,79.38,79.75,323],["14.05.31",79.41,80.62,79,80.37,403],["15.05.31",80.25,80.37,78.94,79.55,572],["16.05.31",79.16,79.82,79.03,79.71,606],["19.05.31",79.56,81.25,78.66,80.84,666],["20.05.31",81.03,82.39,80.81,82.12,677],["21.05.31",81.91,81.92,81.52,81.71,994],["22.05.31",81.89,82.03,80.24,80.39,430],["23.05.31",80.83,80.85,80.28,80.83,412],["26.05.31",80.65,80.82,78.22,78.46,431],["27.05.31",78.29,79.65,78.01,79.26,401],["28.05.31",79.56,79.97,78.29,78.35,503],["29.05.31",78.4,78.78,77.7,78.09,490],["30.05.31",78.1,78.52,77.79,77.96,497],["02.06.31",77.92,78.41,77.38,77.78,574],["03.06.31",77.4,77.76,76.98,77.45,531],["04.06.31",77.28,79.52,76.81,79.17,413],["05.06.31",79.07,79.32,79.05,79.14,437],["06.06.31",79.12,79.88,78.96,79.32,405],["09.06.31",79.22,79.77,78.77,79.17,283],["10.06.31",79.12,79.35,78.78,79.04,443],["11.06.31",79.15,79.75,77.53,78.61,389],["12.06.31",78.92,79.5,76.95,77.83,724],["13.06.31",77.69,77.78,77.08,77.5,368],["16.06.31",77.51,80.23,77.46,79.57,734],["17.06.31",79.4,80.79,78.73,80.57,437],["18.06.31",80.46,81.05,79.72,80.18,542],["19.06.31",80.18,81.19,80.07,80.46,937],["20.06.31",80.73,81.18,80.01,80.5,427],["23.06.31",80.68,81.02,79.73,80,478],["24.06.31",80.04,81.86,79.89,80.95,396],["25.06.31",80.92,82.06,80.85,81.82,275],["26.06.31",81.82,82.01,80.73,80.84,447],["27.06.31",80.91,82.95,80.21,82.55,505],["30.06.31",82.6,83.13,82.1,82.14,575],["01.07.31",81.79,82.03,81.31,81.58,552],["02.07.31",81.75,82.89,81.64,82.41,543],["03.07.31",82.66,82.93,81.9,82.32,438],["04.07.31",82.17,84.52,81.59,83.56,279],["07.07.31",83.65,84.53,83.14,84.18,440],["08.07.31",84.14,84.89,83.25,84.57,229],["09.07.31",85.04,85.99,84.92,84.95,512],["10.07.31",84.88,85.19,84.55,84.97,395],["11.07.31",84.91,85.8,84.77,85.76,369],["14.07.31",85.74,86.33,85.24,86.26,804],["15.07.31",85.83,86.92,85.28,86.53,427],["16.07.31",86.38,89.34,86.25,88.08,436],["17.07.31",88.08,88.32,86.96,87.13,663],["18.07.31",86.94,87.29,86.3,86.61,461],["21.07.31",86.21,88.04,86.11,87.45,506],["22.07.31",87.18,88.12,86.67,87.25,535],["23.07.31",87.55,87.96,86.79,86.96,391],["24.07.31",87.35,88.17,86.09,86.5,380],["25.07.31",86.57,88.36,86.12,87.67,535],["28.07.31",87.95,89.22,87.73,88.73,369],["29.07.31",88.11,89.9,87.6,88.7,434],["30.07.31",88.91,89.8,87.69,88.22,844],["31.07.31",87.74,87.84,86.5,87.45,428],["01.08.31",87.5,88.75,87.25,88.42,631],["04.08.31",88.56,89.57,87.67,87.96,399],["05.08.31",88.08,89.8,87.86,89.5,375],["06.08.31",89.5,89.8,87.77,88.32,604],["07.08.31",88.63,89.8,87.11,87.16,506],["08.08.31",87.39,87.55,86.95,87.15,693],["11.08.31",87.22,87.76,86.63,86.66,873],["12.08.31",86.79,86.86,85.71,86.71,660],["13.08.31",86.51,88.13,85.08,87.99,564],["14.08.31",87.81,89.03,86.79,87.42,846],["15.08.31",87.73,88.06,87.41,87.71,623],["18.08.31",87.97,88.06,86.04,86.52,570],["19.08.31",85.95,86.56,85.43,86.26,252],["20.08.31",86.43,86.92,84.47,85.26,430],["21.08.31",84.77,85.21,84.69,85.14,490],["22.08.31",85.02,85.26,83.29,83.5,487],["25.08.31",83.25,83.52,82.27,82.8,421],["26.08.31",82.95,82.97,82.48,82.86,342],["27.08.31",82.98,83.88,80.69,80.9,362],["28.08.31",80.64,81.18,80.45,80.79,468],["29.08.31",80.55,81.91,79.29,80.1,532],["01.09.31",80.3,80.35,79.26,79.71,453],["02.09.31",79.93,81.06,79.92,80.96,395],["03.09.31",81.01,83.56,80.99,83.22,389],["04.09.31",83.64,83.84,83.6,83.78,445],["05.09.31",83.98,84.11,83.28,83.96,721],["08.09.31",84.09,84.68,82.1,82.45,363],["09.09.31",82.65,82.92,82.33,82.34,270],["10.09.31",82.32,83.12,82.08,82.14,297],["11.09.31",82.07,82.56,81.37,81.61,608],["12.09.31",81.73,82.21,81.41,81.49,509],["15.09.31",81.67,81.75,79.87,80.19,445],["16.09.31",80.3,80.5,78.93,80.15,558],["17.09.31",80.46,81.49,80.14,80.81,477],["18.09.31",81.04,81.47,78.45,79.2,507],["19.09.31",79.2,79.79,78.98,79.6,362],["22.09.31",79.42,79.52,78.47,78.61,395],["23.09.31",78.66,78.86,77.07,77.67,501],["24.09.31",77.51,79.87,77.49,79.15,511],["25.09.31",79.03,79.24,76.32,76.66,568],["26.09.31",76.55,77.27,76.07,77.05,413],["29.09.31",77.68,77.89,74.21,74.68,607],["30.09.31",74.68,76.69,74.54,76.65,496],["01.10.31",76.7,77.6,76.69,77.5,389],["02.10.31",77.71,79.89,76.81,79.89,612],["03.10.31",80.53,81.38,79.72,79.81,406],["06.10.31",79.74,81.39,79.27,80.96,472],["07.10.31",80.76,81.34,80.75,81.19,304],["08.10.31",81.99,82.51,79.69,80.78,589],["09.10.31",80.31,81.88,79.55,81.6,531],["10.10.31",81.48,82.54,79.98,80.48,487],["13.10.31",80.69,80.95,80.23,80.6,406],["14.10.31",81.34,83.02,81.21,82.18,509],["15.10.31",81.86,83.53,81.35,82.88,511],["16.10.31",82.08,83.23,81.15,82.94,499],["17.10.31",83.16,85.94,82.88,84.75,546],["20.10.31",84.57,87.82,84.32,87.42,201]]}'
+                  ><div class="xc-pane xc-main"
+                    ><div class="xc-plot"
+                      ><svg
+                        viewBox="0 0 1000 1000"
+                        preserveAspectRatio="none"
+                        role="img"
+                        aria-label="Tageskerzen über sechs Monate bis 87,42 €, gleitende Durchschnitte, Kauflimit 84,00 € und Volumen">
+                        <path
+                          d="M0 901.5H1000M0 759.2H1000M0 616.9H1000M0 474.7H1000M0 332.4H1000M0 190.1H1000M0 47.9H1000M26.7 0V1000M194.7 0V1000M355 0V1000M530.5 0V1000M690.8 0V1000M858.8 0V1000"
+                          stroke="var(--grid)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M0 389.3H1000"
+                          stroke="var(--acc-l)"
+                          stroke-width="1"
+                          stroke-dasharray="5 4"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M11.5 568.6V640.8M26.7 566.9V689.2M34.4 548.1V631.2M42 561.7V618.6M72.5 609V669.3M80.2 571.4V630M95.4 581.7V673.8M110.7 627.2V672.1M118.3 545.8V693.2M126 480.9V570.8M148.9 568.6V601M164.1 636.9V730.2M202.3 744.4V788.8M209.9 644.3V798.5M217.6 655.6V671M225.2 623.8V676.1M271 603.9V761.5M278.6 572V689.2M293.9 549.2V613M316.8 511.1V623.2M324.4 499.7V568.6M339.7 449.1V605M362.6 452.5V523.6M377.9 359.7V526.5M385.5 359.2V438.3M393.1 338.7V432M408.4 321.6V358M416 286.9V345.5M423.7 256.7V318.8M431.3 223.2V316.5M438.9 85.4V261.3M461.8 159.4V269.2M469.5 154.9V237.4M492.4 141.2V268.7M500 92.3V177.1M507.6 53.6V184.5M530.5 119V204.4M545.8 59.3V169.7M591.6 154.3V327.9M622.1 243.6V307.9M637.4 320.5V350.1M675.6 549.8V591.3M698.5 556.6V621.5M706.1 414.4V560.6M713.7 398.4V412.1M782.4 532.2V609M797.7 628.9V675M820.6 624.3V759.8M835.9 772.3V840.6M851.1 805.3V927.6M858.8 753.5V805.3M866.4 623.2V798.5M881.7 537.8V658.5M889.3 540.7V574.3M904.6 510V642.5M927.5 445.1V548.1M935.1 416.1V540.1M942.7 433.1V551.5M950.4 278.9V453.1M958 171.9V371.1"
+                          stroke="var(--up-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M8.9 587.9h5.2v38.1h-5.2zM24.1 594.2h5.2v67.7h-5.2zM31.8 580.5h5.2v21.6h-5.2zM39.4 567.4h5.2v20.5h-5.2zM69.9 630.6h5.2v38.1h-5.2zM77.6 605.6h5.2v9.7h-5.2zM92.8 595.9h5.2v54.6h-5.2zM108.1 633.4h5.2v31.3h-5.2zM115.7 569.1h5.2v72.8h-5.2zM123.4 496.3h5.2v62h-5.2zM146.3 569.7h5.2v2h-5.2zM161.5 659.1h5.2v55.2h-5.2zM199.7 762.1h5.2v2.8h-5.2zM207.3 664.2h5.2v107.6h-5.2zM215 665.9h5.2v4h-5.2zM222.6 655.6h5.2v11.4h-5.2zM268.4 641.4h5.2v117.2h-5.2zM276 584.5h5.2v66.6h-5.2zM291.3 590.8h5.2v15.9h-5.2zM314.2 562.9h5.2v51.8h-5.2zM321.8 513.4h5.2v51.2h-5.2zM337.1 471.8h5.2v93.3h-5.2zM360 479.8h5.2v37.6h-5.2zM375.3 414.4h5.2v79.1h-5.2zM382.9 379.1h5.2v30.2h-5.2zM390.5 356.9h5.2v24.5h-5.2zM405.8 334.1h5.2v5.1h-5.2zM413.4 289.2h5.2v48.4h-5.2zM421.1 260.7h5.2v29.6h-5.2zM428.7 245.3h5.2v39.8h-5.2zM436.3 157.1h5.2v96.7h-5.2zM459.2 193h5.2v70.6h-5.2zM466.9 204.4h5.2v4h-5.2zM489.8 180.5h5.2v62.6h-5.2zM497.4 120.2h5.2v44.4h-5.2zM505 121.9h5.2v33.6h-5.2zM527.9 137.8h5.2v52.4h-5.2zM543.2 76.3h5.2v80.8h-5.2zM589 162.3h5.2v84.2h-5.2zM619.5 260.7h5.2v17.6h-5.2zM634.8 324.4h5.2v21.1h-5.2zM673 572h5.2v8.5h-5.2zM695.9 562.3h5.2v58.6h-5.2zM703.5 433.7h5.2v125.8h-5.2zM711.1 401.8h5.2v8h-5.2zM779.8 570.8h5.2v19.9h-5.2zM795.1 639.7h5.2v22.8h-5.2zM818 665.3h5.2v93.3h-5.2zM833.3 784.8h5.2v28.5h-5.2zM848.5 807.6h5.2v112.1h-5.2zM856.2 759.2h5.2v45.5h-5.2zM863.8 623.2h5.2v124.1h-5.2zM879.1 562.3h5.2v69.4h-5.2zM886.7 549.2h5.2v24.5h-5.2zM902 525.9h5.2v73.4h-5.2zM924.9 492.9h5.2v47.8h-5.2zM932.5 453.1h5.2v58h-5.2zM940.2 449.6h5.2v48.9h-5.2zM947.8 346.6h5.2v90.5h-5.2zM955.4 194.7h5.2v162.2h-5.2z"
+                          fill="var(--up-c)"></path>
+                        <path
+                          d="M3.8 598.2V655.6M19.1 570.3V708.6M49.6 572V586.2M57.3 557.2V610.1M64.9 604.4V694.9M87.8 593.6V652.2M103.1 595.9V677.3M133.6 507.7V530.4M141.2 501.4V603.3M156.5 570.3V718.2M171.8 618.6V714.3M179.4 686.4V747.8M187 701.2V742.7M194.7 707.4V766M232.8 630V686.9M240.5 653.9V686.4M248.1 631.2V757.5M255.7 645.4V790.5M263.4 743.3V783.1M286.3 557.2V632.9M301.5 549.8V616.4M309.2 558.9V632.3M332.1 502.6V575.4M347.3 438.8V497.4M355 501.4V542.4M370.2 450.2V508.8M400.8 276.1V337M446.6 143.5V220.9M454.2 202.1V258.4M477.1 164V230.5M484.7 152V270.4M515.3 59.3V179.3M522.9 170.8V247.1M538.2 72.4V180.5M553.4 59.3V174.8M561.1 59.3V212.3M568.7 187.3V221.4M576.3 175.4V239.7M584 226.6V292M599.2 103.1V230.5M606.9 158.3V195.3M614.5 158.3V273.2M629.8 223.2V362.6M645 317.6V429.7M652.7 416.6V487.8M660.3 447.9V475.8M667.9 396.1V577.7M683.2 508.3V657.3M690.8 597V659.1M721.4 383.1V430.3M729 350.6V497.4M736.6 450.8V484.4M744.3 439.4V498.6M751.9 471.3V539M759.5 491.2V536.7M767.2 517.4V624.3M774.8 588.5V677.8M790.1 533.3V705.1M805.3 644.3V704M813 681.8V783.7M828.2 660.2V826.4M843.5 737V946.4M874 538.4V632.9M896.9 474.1V634.6M912.2 472.4V618.1M919.8 562.9V603.9"
+                          stroke="var(--down-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M1.2 603.3h5.2v22.8h-5.2zM16.5 587.4h5.2v75.7h-5.2zM47 580.5h5.2v5.1h-5.2zM54.7 581.1h5.2v25.6h-5.2zM62.3 609.5h5.2v39.8h-5.2zM85.2 602.1h5.2v29h-5.2zM100.5 602.7h5.2v39.8h-5.2zM131 508.3h5.2v11.4h-5.2zM138.6 509.4h5.2v85.4h-5.2zM153.9 580h5.2v124.6h-5.2zM169.2 642h5.2v68.9h-5.2zM176.8 708h5.2v17.6h-5.2zM184.4 725.1h5.2v8h-5.2zM192.1 735.3h5.2v8h-5.2zM230.2 661.3h5.2v2.8h-5.2zM237.9 667h5.2v4.6h-5.2zM245.5 665.3h5.2v30.7h-5.2zM253.1 678.4h5.2v62h-5.2zM260.8 748.4h5.2v10.8h-5.2zM283.7 590.8h5.2v15.9h-5.2zM298.9 575.4h5.2v13.1h-5.2zM306.6 578.2h5.2v38.7h-5.2zM329.5 513.4h5.2v55.8h-5.2zM344.7 469h5.2v26.2h-5.2zM352.4 515.1h5.2v12h-5.2zM367.6 465.6h5.2v19.3h-5.2zM398.2 330.1h5.2v5.1h-5.2zM444 157.1h5.2v54.1h-5.2zM451.6 222h5.2v18.8h-5.2zM474.5 187.3h5.2v33.6h-5.2zM482.1 198.7h5.2v48.4h-5.2zM512.7 109.9h5.2v39.3h-5.2zM520.3 176.5h5.2v16.5h-5.2zM535.6 129.8h5.2v34.1h-5.2zM550.8 76.3h5.2v67.1h-5.2zM558.5 125.8h5.2v83.7h-5.2zM566.1 196.4h5.2v13.7h-5.2zM573.7 206.1h5.2v31.9h-5.2zM581.4 230.5h5.2v4.6h-5.2zM596.6 172.5h5.2v22.2h-5.2zM604.3 177.1h5.2v2h-5.2zM611.9 163.4h5.2v82.5h-5.2zM627.2 251h5.2v66.6h-5.2zM642.4 331.3h5.2v86.5h-5.2zM650.1 432h5.2v25.6h-5.2zM657.7 449.1h5.2v5.1h-5.2zM665.3 447.4h5.2v118.4h-5.2zM680.6 585.6h5.2v25.6h-5.2zM688.2 599.9h5.2v33.6h-5.2zM718.8 390.5h5.2v2h-5.2zM726.4 384.2h5.2v93.3h-5.2zM734 466.1h5.2v17.6h-5.2zM741.7 484.9h5.2v10.2h-5.2zM749.3 499.1h5.2v26.2h-5.2zM756.9 518.5h5.2v13.7h-5.2zM764.6 521.9h5.2v84.2h-5.2zM772.2 599.9h5.2v8.5h-5.2zM787.5 557.8h5.2v104.7h-5.2zM802.7 649.9h5.2v46.1h-5.2zM810.4 693.2h5.2v56.3h-5.2zM825.6 672.1h5.2v134.9h-5.2zM840.9 749h5.2v170.7h-5.2zM871.5 586.8h5.2v41h-5.2zM894.4 503.7h5.2v68.9h-5.2zM909.6 532.7h5.2v56.9h-5.2zM917.3 577.7h5.2v5.1h-5.2z"
+                          fill="var(--down-c)"></path>
+                        <path
+                          d="M3.8 729.9L11.5 719.1L19.1 714.9L26.7 704.8L34.4 692.4L42 681.1L49.6 673.3L57.3 664.3L64.9 658.1L72.5 652.3L80.2 643.3L87.8 637.2L95.4 631L103.1 627.1L110.7 626.2L118.3 620L126 610.1L133.6 603.4L141.2 600.3L148.9 597.5L156.5 601.4L164.1 605L171.8 607.4L179.4 613.9L187 621.6L194.7 630.3L202.3 639.2L209.9 642L217.6 642.9L225.2 644.1L232.8 647L240.5 649.1L248.1 654.1L255.7 659L263.4 665.3L271 668.9L278.6 673.3L286.3 677.6L293.9 677.4L301.5 678.4L309.2 674L316.8 669.2L324.4 659.3L332.1 651.5L339.7 638.4L347.3 626L355 614.3L362.6 605L370.2 596L377.9 583.9L385.5 569.7L393.1 553.9L400.8 535.9L408.4 515.6L416 492.1L423.7 473.1L431.3 456.1L438.9 433.6L446.6 414.6L454.2 397.3L461.8 376.1L469.5 358.1L477.1 343.5L484.7 327.4L492.4 312.8L500 294.1L507.6 273.8L515.3 257.3L522.9 242.7L530.5 228.9L538.2 218.1L545.8 204.1L553.4 194.5L561.1 188.3L568.7 184.3L576.3 183.2L584 182.7L591.6 182.9L599.2 182.1L606.9 179L614.5 181.6L622.1 184.4L629.8 189.3L637.4 193.1L645 205L652.7 221.9L660.3 238.5L667.9 259.3L675.6 278.3L683.2 301.9L690.8 325.4L698.5 349.7L706.1 364.2L713.7 373.8L721.4 382.9L729 394.9L736.6 407.3L744.3 424L751.9 440.5L759.5 458.2L767.2 476.2L774.8 493.6L782.4 506.3L790.1 523.2L797.7 534.3L805.3 546.2L813 560.9L820.6 565.9L828.2 577.7L835.9 586.4L843.5 600.7L851.1 612.9L858.8 629.2L866.4 640.3L874 652.1L881.7 656.3L889.3 659.6L896.9 663.5L904.6 663.5L912.2 666.4L919.8 665.2L927.5 659.4L935.1 653.5L942.7 642.9L950.4 628.2L958 603.2"
+                          fill="none"
+                          stroke="var(--c1)"
+                          stroke-width="1.25"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M3.8 814L11.5 805.1L19.1 799.6L26.7 791.5L34.4 783.2L42 774.8L49.6 767.4L57.3 761.1L64.9 756.7L72.5 751.7L80.2 746L87.8 741.5L95.4 735.8L103.1 732.1L110.7 728.3L118.3 722L126 713.2L133.6 705.6L141.2 701.2L148.9 696.1L156.5 696.4L164.1 694.9L171.8 695.6L179.4 696.7L187 698.2L194.7 699.9L202.3 702.4L209.9 700.9L217.6 699.5L225.2 697.8L232.8 696.5L240.5 695.5L248.1 695.5L255.7 697.3L263.4 699.7L271 697.4L278.6 693L286.3 689.6L293.9 685.7L301.5 681.9L309.2 679.4L316.8 674.8L324.4 668.5L332.1 664.6L339.7 657L347.3 650.7L355 645.8L362.6 639.3L370.2 633.3L377.9 624.7L385.5 615L393.1 604.9L400.8 594.3L408.4 584.1L416 572.6L423.7 560.3L431.3 548L438.9 532.7L446.6 520.1L454.2 509.1L461.8 496.7L469.5 485.2L477.1 474.9L484.7 465.9L492.4 454.7L500 441.6L507.6 429.1L515.3 418.1L522.9 409.3L530.5 398.6L538.2 389.4L545.8 377.2L553.4 368L561.1 361.8L568.7 355.8L576.3 351.2L584 346.6L591.6 339.4L599.2 333.7L606.9 327.6L614.5 324.4L622.1 321.9L629.8 321.8L637.4 321.9L645 325.6L652.7 330.8L660.3 335.6L667.9 344.7L675.6 353.6L683.2 363.7L690.8 374.3L698.5 381.6L706.1 383.7L713.7 384.4L721.4 384.7L729 388.3L736.6 392.1L744.3 396.1L751.9 401.2L759.5 406.3L767.2 414.1L774.8 421.8L782.4 427.6L790.1 436.8L797.7 444.8L805.3 454.6L813 466.2L820.6 474L828.2 487.1L835.9 498.7L843.5 515.2L851.1 526.7L858.8 535.8L866.4 539.3L874 542.7L881.7 543.5L889.3 543.7L896.9 544.8L904.6 544.1L912.2 545.9L919.8 547.3L927.5 545.2L935.1 541.6L942.7 538L950.4 530.5L958 517.3"
+                          fill="none"
+                          stroke="var(--c2)"
+                          stroke-width="1.25"
+                          vector-effect="non-scaling-stroke"></path></svg
+                      ><div class="leg"
+                        ><div class="leg-r"
+                          ><b style="font-weight: 600">Corvan Systems</b><i>Tageskerzen · Belmar</i
+                          ><i>E</i><span data-k="o">84,57</span><i>H</i><span data-k="h">87,82</span
+                          ><i>T</i><span data-k="l">84,32</span><i>S</i><span data-k="c">87,42</span
+                          ><span data-k="chg" class="up">+2,67 (+3,15 %)</span></div
+                        ><div class="leg-r" style="gap: 0 12px"
+                          ><span><span class="leg-d" style="--c: var(--c1)"></span>SMA 20</span
+                          ><span
+                            ><span class="leg-d" style="--c: var(--c2)"></span>EMA 50</span
+                          ></div
+                        ><div class="qt"
+                          ><button><small>Verkaufen</small>87,38</button><span>0,08</span
+                          ><button><small>Kaufen</small>87,46</button></div
+                        ></div
+                      ><div class="xc-line" style="top: 38.9%; --c: var(--acc-l)"
+                        ><b style="font-weight: 600; color: var(--acc-l)">Kauf Limit</b> 10 Stück
+                        <svg class="ic" aria-hidden="true"><use href="#i-x"></use></svg></div></div
+                    ><div class="xc-y"
+                      ><span style="top: 90.1%">75,00</span><span style="top: 75.9%">77,50</span
+                      ><span style="top: 61.7%">80,00</span><span style="top: 47.5%">82,50</span
+                      ><span style="top: 33.2%">85,00</span><span style="top: 4.8%">90,00</span
+                      ><b style="top: 19.5%; --c: var(--up-c)">87,42</b
+                      ><b style="top: 38.9%; --c: var(--acc-l); --tag-fg: #0c0e12">84,00</b></div
+                    ></div
+                  ><div class="xc-pane" style="height: 52px"
+                    ><div class="xc-plot"
+                      ><svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+                        <path
+                          d="M8.9 572h5.2V1000h-5.2zM24.1 516.2h5.2V1000h-5.2zM31.8 631.4h5.2V1000h-5.2zM39.4 491.5h5.2V1000h-5.2zM69.9 439.4h5.2V1000h-5.2zM77.6 686.3h5.2V1000h-5.2zM92.8 631.4h5.2V1000h-5.2zM108.1 445.8h5.2V1000h-5.2zM115.7 390.9h5.2V1000h-5.2zM123.4 380.8h5.2V1000h-5.2zM146.3 623.2h5.2V1000h-5.2zM161.5 633.3h5.2V1000h-5.2zM199.7 514.4h5.2V1000h-5.2zM207.3 622.3h5.2V1000h-5.2zM215 600.3h5.2V1000h-5.2zM222.6 629.6h5.2V1000h-5.2zM268.4 328.7h5.2V1000h-5.2zM276 600.3h5.2V1000h-5.2zM291.3 143h5.2V1000h-5.2zM314.2 637.8h5.2V1000h-5.2zM321.8 748.5h5.2V1000h-5.2zM337.1 538.1h5.2V1000h-5.2zM360 503.4h5.2V1000h-5.2zM375.3 744.8h5.2V1000h-5.2zM382.9 597.6h5.2V1000h-5.2zM390.5 790.6h5.2V1000h-5.2zM405.8 638.7h5.2V1000h-5.2zM413.4 662.5h5.2V1000h-5.2zM421.1 264.7h5.2V1000h-5.2zM428.7 609.5h5.2V1000h-5.2zM436.3 601.2h5.2V1000h-5.2zM459.2 537.2h5.2V1000h-5.2zM466.9 510.7h5.2V1000h-5.2zM489.8 510.7h5.2V1000h-5.2zM497.4 662.5h5.2V1000h-5.2zM505 603.1h5.2V1000h-5.2zM527.9 422.9h5.2V1000h-5.2zM543.2 657h5.2V1000h-5.2zM589 484.2h5.2V1000h-5.2zM619.5 769.5h5.2V1000h-5.2zM634.8 551.9h5.2V1000h-5.2zM673 572h5.2V1000h-5.2zM695.9 638.7h5.2V1000h-5.2zM703.5 644.2h5.2V1000h-5.2zM711.1 593h5.2V1000h-5.2zM779.8 563.7h5.2V1000h-5.2zM795.1 668.9h5.2V1000h-5.2zM818 532.7h5.2V1000h-5.2zM833.3 622.3h5.2V1000h-5.2zM848.5 546.4h5.2V1000h-5.2zM856.2 644.2h5.2V1000h-5.2zM863.8 440.3h5.2V1000h-5.2zM879.1 568.3h5.2V1000h-5.2zM886.7 722h5.2V1000h-5.2zM902 514.4h5.2V1000h-5.2zM924.9 534.5h5.2V1000h-5.2zM932.5 532.7h5.2V1000h-5.2zM940.2 543.6h5.2V1000h-5.2zM947.8 500.6h5.2V1000h-5.2zM955.4 816.2h5.2V1000h-5.2z"
+                          fill="var(--up-c)"
+                          opacity=".5"></path>
+                        <path
+                          d="M1.2 462.2h5.2V1000h-5.2zM16.5 714.7h5.2V1000h-5.2zM47 594.8h5.2V1000h-5.2zM54.7 585.7h5.2V1000h-5.2zM62.3 564.7h5.2V1000h-5.2zM85.2 704.6h5.2V1000h-5.2zM100.5 476.9h5.2V1000h-5.2zM131 90.9h5.2V1000h-5.2zM138.6 606.7h5.2V1000h-5.2zM153.9 605.8h5.2V1000h-5.2zM169.2 540h5.2V1000h-5.2zM176.8 551.9h5.2V1000h-5.2zM184.4 545.5h5.2V1000h-5.2zM192.1 475h5.2V1000h-5.2zM230.2 741.2h5.2V1000h-5.2zM237.9 594.8h5.2V1000h-5.2zM245.5 644.2h5.2V1000h-5.2zM253.1 337.8h5.2V1000h-5.2zM260.8 663.4h5.2V1000h-5.2zM283.7 504.3h5.2V1000h-5.2zM298.9 609.5h5.2V1000h-5.2zM306.6 562.8h5.2V1000h-5.2zM329.5 591.2h5.2V1000h-5.2zM344.7 474.1h5.2V1000h-5.2zM352.4 495.2h5.2V1000h-5.2zM367.6 599.4h5.2V1000h-5.2zM398.2 531.7h5.2V1000h-5.2zM444 393.6h5.2V1000h-5.2zM451.6 578.4h5.2V1000h-5.2zM474.5 642.4h5.2V1000h-5.2zM482.1 652.5h5.2V1000h-5.2zM512.7 228.1h5.2V1000h-5.2zM520.3 608.6h5.2V1000h-5.2zM535.6 635.1h5.2V1000h-5.2zM550.8 447.6h5.2V1000h-5.2zM558.5 537.2h5.2V1000h-5.2zM566.1 366.2h5.2V1000h-5.2zM573.7 201.6h5.2V1000h-5.2zM581.4 396.4h5.2V1000h-5.2zM596.6 226.3h5.2V1000h-5.2zM604.3 430.2h5.2V1000h-5.2zM611.9 478.7h5.2V1000h-5.2zM627.2 606.7h5.2V1000h-5.2zM642.4 554.6h5.2V1000h-5.2zM650.1 615h5.2V1000h-5.2zM657.7 687.2h5.2V1000h-5.2zM665.3 668.9h5.2V1000h-5.2zM680.6 513.4h5.2V1000h-5.2zM688.2 585.7h5.2V1000h-5.2zM718.8 340.6h5.2V1000h-5.2zM726.4 668h5.2V1000h-5.2zM734 753.1h5.2V1000h-5.2zM741.7 728.4h5.2V1000h-5.2zM749.3 443.9h5.2V1000h-5.2zM756.9 534.5h5.2V1000h-5.2zM764.6 593h5.2V1000h-5.2zM772.2 489.7h5.2V1000h-5.2zM787.5 536.3h5.2V1000h-5.2zM802.7 638.7h5.2V1000h-5.2zM810.4 541.8h5.2V1000h-5.2zM825.6 480.5h5.2V1000h-5.2zM840.9 444.9h5.2V1000h-5.2zM871.5 628.7h5.2V1000h-5.2zM894.4 461.3h5.2V1000h-5.2zM909.6 554.6h5.2V1000h-5.2zM917.3 628.7h5.2V1000h-5.2z"
+                          fill="var(--down-c)"
+                          opacity=".5"></path></svg
+                      ><div class="xc-tag"
+                        >Volumen <span data-k="v" class="num">201 Tsd.</span></div
+                      ></div
+                    ><div class="xc-y"><span style="top: 12%">1,0 Mio.</span></div></div
+                  ><div class="xc-x"
+                    ><span style="left: calc((100%) * 0.0267)">Mai</span
+                    ><span style="left: calc((100%) * 0.1947)">Jun</span
+                    ><span style="left: calc((100%) * 0.355)">Jul</span
+                    ><span style="left: calc((100%) * 0.5305)">Aug</span
+                    ><span style="left: calc((100%) * 0.6908)">Sep</span
+                    ><span style="left: calc((100%) * 0.8588)">Okt</span></div
+                  ></div
+                ></div
+              ></div
+            ></section
+          ><section class="pn" aria-label="Panel"
+            ><div class="pn-t" role="tablist"
+              ><button role="tab" aria-selected="true" class="on"
+                >POSITIONEN<span class="c">5</span></button
+              ><button role="tab" aria-selected="false" class=""
+                >ORDERS<span class="c">2</span></button
+              ><button role="tab" aria-selected="false" class="">HISTORIE</button
+              ><button role="tab" aria-selected="false" class=""
+                >KONTEN<span class="c">3</span></button
+              ><button role="tab" aria-selected="false" class="">SCREENER</button
+              ><button role="tab" aria-selected="false" class=""
+                >DEMNÄCHST<span class="c">5</span></button
+              ><button role="tab" aria-selected="false" class="">PROTOKOLL</button
+              ><div class="end"
+                ><button class="ib" aria-label="Panel maximieren" title="Panel maximieren"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-chevron-up"></use></svg></button
+                ><button class="ib" aria-label="Panel schließen" title="Panel schließen"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="#i-x-lg"></use></svg></button></div></div
+            ><div class="ab2"
+              ><span>Depotwert<b>18.282,56 €</b></span
+              ><span>Verfügbar Quintrade<b>504,69 €</b></span
+              ><span>Reserviert<b>844,90 €</b></span
+              ><span>Unrealisiert<b class="up">+1.535,46 € (+9,2 %)</b></span
+              ><span>Heute<b class="up">+147,38 €</b></span></div
+            ><div class="pn-b"
+              ><table class="tt"
+                ><thead
+                  ><tr
+                    ><th>Symbol</th><th>Stück</th><th>Kurs</th><th>Wert €</th><th>Heute €</th
+                    ><th>Heute %</th><th>G/V €</th><th>G/V %</th><th>Anteil</th></tr
+                  ></thead
+                ><tbody
+                  ><tr class=""
+                    ><td
+                      ><span class="sy"
+                        ><span class="av" aria-hidden="true">T</span>TLVW<small
+                          >Talvar World ETF</small
+                        ></span
+                      ></td
+                    ><td>120</td><td>70,11</td><td>8.413,20</td><td class="up">+70,08</td
+                    ><td class="up">+0,84 %</td><td class="up">+847,20</td
+                    ><td class="up">+11,2 %</td><td>46,0 %</td></tr
+                  ><tr class=""
+                    ><td
+                      ><span class="sy"
+                        ><span class="av" aria-hidden="true">H</span>HLVN<small
+                          >Halvion AG</small
+                        ></span
+                      ></td
+                    ><td>15</td><td>260,36</td><td>3.905,40</td><td class="up">+103,04</td
+                    ><td class="up">+2,71 %</td><td class="up">+771,00</td
+                    ><td class="up">+24,6 %</td><td>21,4 %</td></tr
+                  ><tr class=""
+                    ><td
+                      ><span class="sy"
+                        ><span class="av" aria-hidden="true">S</span>SLMK<small
+                          >Selmark Energie AG</small
+                        ></span
+                      ></td
+                    ><td>60</td><td>43,53</td><td>2.611,80</td><td class="down">−29,58</td
+                    ><td class="down">−1,12 %</td><td class="down">−175,80</td
+                    ><td class="down">−6,3 %</td><td>14,3 %</td></tr
+                  ><tr class=""
+                    ><td
+                      ><span class="sy"
+                        ><span class="av" aria-hidden="true">K</span>KLVH<small
+                          >Kalveth Health SE</small
+                        ></span
+                      ></td
+                    ><td>35</td><td>56,58</td><td>1.980,30</td><td class="up">+9,07</td
+                    ><td class="up">+0,46 %</td><td class="up">+74,20</td><td class="up">+3,9 %</td
+                    ><td>10,8 %</td></tr
+                  ><tr class=""
+                    ><td
+                      ><span class="sy"
+                        ><span class="av" aria-hidden="true">N</span>NRVN<small
+                          >Norvane Versorgung AG</small
+                        ></span
+                      ></td
+                    ><td>82</td><td>16,73</td><td>1.371,86</td><td class="down">−5,23</td
+                    ><td class="down">−0,38 %</td><td class="up">+18,86</td
+                    ><td class="up">+1,4 %</td><td>7,5 %</td></tr
+                  ></tbody
+                ><tfoot
+                  ><tr
+                    ><td>Summe</td><td></td><td></td><td>18.282,56</td><td class="up">+147,38</td
+                    ><td class="up">+0,81 %</td><td class="up">+1.535,46</td
+                    ><td class="up">+9,2 %</td><td>100 %</td></tr
+                  ></tfoot
+                ></table
+              ></div
+            ></section
+          ></main
+        >
+        <aside class="sb sb2" aria-label="Sekundäre Seitenleiste"
+          ><div class="sb-h"
+            ><span>ORDER</span
+            ><span class="acts"
+              ><button class="ib" aria-label="Mehr" title="Mehr"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-three-dots"></use></svg></button></span></div
+          ><div class="sb-b"
+            ><section
+              ><div class="sc-h"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg>CORVAN
+                SYSTEMS</div
+              ><div class="wg" style="border: 0"
+                ><div class="q2"
+                  ><button><small>Verkaufen</small>87,38</button
+                  ><button class="on"><small>Kaufen</small>87,46</button><i>0,08</i></div
+                >
+                <div class="seg2"
+                  ><button class="on">Markt</button><button>Limit</button><button>Stop</button></div
+                >
+                <span class="f-l">Konto</span
+                ><div class="f-i"
+                  >Quintrade · Verrechnung<svg class="ic" aria-hidden="true">
+                    <use href="#i-chevron-down"></use></svg
+                ></div>
+                <span class="f-l">Stück</span
+                ><div class="f-i"
+                  >5<span class="ib2"
+                    ><svg class="ic" aria-hidden="true"><use href="#i-dash"></use></svg
+                    ><svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg></span
+                ></div>
+                <div class="kv"><span>Kurswert (5 × 87,46)</span><span>437,30 €</span></div
+                ><div class="kv"><span>Orderentgelt</span><span>4,90 €</span></div
+                ><div class="kv tot"><span>Gesamt ca.</span><span>442,20 €</span></div
+                ><div class="kv"><span>Verfügbar → danach</span><span>504,69 → 62,49 €</span></div>
+                <button class="cta2">Kauforder prüfen</button>
+                <div class="oo"
+                  ><b>Kauf Limit 10 × 84,00</b>offen bis 31.10. · 844,90 € reserviert</div
+                ></div
+              ></section
+            ><section
+              ><div class="sc-h"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg
+                >DETAILS</div
+              ><div class="wg" style="border: 0"
+                ><div class="d-h"
+                  ><span class="av" aria-hidden="true">C</span>Corvan Systems
+                  <span class="pill">CRVN</span></div
+                >
+                <div class="d-p num">87,42<small>EUR</small></div
+                ><div class="up num">+2,67 (+3,15 %)</div
+                ><div class="d-s"><i></i>Handel offen bis 17:30 · Börse Belmar</div></div
+              >
+              <div class="wg" style="border: 0"
+                ><h3>Performance</h3
+                ><div class="tiles"
+                  ><div class="tile"><span class="up">+3,15 %</span><small>1 Tag</small></div
+                  ><div class="tile"><span class="up">+8,5 %</span><small>5 Tage</small></div
+                  ><div class="tile"><span class="up">+9,8 %</span><small>1 Monat</small></div
+                  ><div class="tile"><span class="up">+21,7 %</span><small>lfd. Jahr</small></div
+                  ><div class="tile"><span class="up">+32,3 %</span><small>1 Jahr</small></div
+                  ><div class="tile"
+                    ><span class="up">+118,4 %</span><small>5 Jahre</small></div
+                  ></div
+                ></div
+              >
+              <div class="wg" style="border: 0"
+                ><h3>Kennzahlen</h3
+                ><div class="kv"><span>Marktkapitalisierung</span><span>12,4 Mrd. €</span></div
+                ><div class="kv"><span>KGV</span><span>24,3</span></div
+                ><div class="kv"><span>Dividendenrendite</span><span>1,8 %</span></div
+                ><div class="kv"><span>Beta</span><span>1,24</span></div
+                ><div class="kv"><span>Volatilität 1 J.</span><span>31 %</span></div
+                ><div class="kv"><span>52 Wochen</span><span>61,20 – 89,90</span></div
+                ><div class="kv"><span>Volumen heute</span><span>201 Tsd.</span></div
+                ><div class="kv"><span>Ø Volumen</span><span>482 Tsd.</span></div
+                ><div class="kv"><span>Streubesitz</span><span>78 %</span></div></div
+              >
+              <div class="wg" style="border: 0"
+                ><h3>Dividende <span>jährlich</span></h3
+                ><div class="kv"><span>2031 (Ex 12.05.)</span><span>1,56 €</span></div
+                ><div class="kv"><span>2030</span><span>1,42 €</span></div
+                ><div class="kv"><span>2029</span><span>1,30 €</span></div></div
+              >
+              <div class="wg" style="border: 0"
+                ><h3>Profil</h3
+                ><p class="prof2 prose"
+                  >Herausforderer der großen Anbieter von Industriesoftware: Corvan entwickelt
+                  Steuerungssoftware und Sensorik für Fabriken und Logistikzentren.</p
+                ></div
+              ></section
+            ></div
+          ></aside
+        >
+      </div>
+      <footer class="st"
+        ><div
+          ><span class="rm"
+            ><svg class="ic" aria-hidden="true"><use href="#i-person-fill"></use></svg>Alex</span
+          ><span
+            ><svg class="ic" aria-hidden="true"><use href="#i-tag"></use></svg
+            >salbei-lotse-910</span
+          ><button
+            ><svg class="ic" aria-hidden="true"><use href="#i-check2"></use></svg>Gespeichert
+            10:42</button
+          ><button
+            ><svg class="ic" aria-hidden="true"><use href="#i-exclamation-triangle"></use></svg>1
+            <svg class="ic" aria-hidden="true"><use href="#i-info-circle"></use></svg>3</button
+          ></div
+        >
+        <div
+          ><span title="Europa offen bis 17:30"><i class="dot o"></i>Europa offen bis 17:30</span
+          ><span title="Schwellenländer offen bis 16:00"
+            ><i class="dot o"></i>Schwellenländer offen bis 16:00</span
+          ><span title="Nordamerika ab 15:30"><i class="dot"></i>Nordamerika ab 15:30</span
+          ><span title="Asien-Pazifik geschlossen"
+            ><i class="dot"></i>Asien-Pazifik geschlossen</span
+          ><span>EUR</span
+          ><button aria-label="3 ungelesene Meldungen"
+            ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg>3</button
+          ></div
+        ></footer
+      >
+    </div>
+    <script>
+      (function () {
+        var de = function (v, d) {
+          return v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
+        };
+        var dp = function (v) {
+          return v >= 10 ? 2 : v >= 1 ? 3 : 4;
+        };
+        var sg = function (v, d) {
+          return (v > 0 ? '+' : v < 0 ? '\u2212' : '') + de(Math.abs(v), d);
+        };
+        document.querySelectorAll('[data-xc]').forEach(function (el) {
+          var D = JSON.parse(el.dataset.xc);
+          var plots = Array.prototype.slice.call(el.querySelectorAll('.xc-plot'));
+          var mk = function (c, p) {
+            var e = document.createElement('div');
+            e.className = c;
+            e.hidden = true;
+            p.appendChild(e);
+            return e;
+          };
+          var vs = plots.map(function (p) {
+            return mk('xc-v', p);
+          });
+          var hl = mk('xc-h', plots[0]);
+          var yl = mk('xc-yl', el.querySelector('.xc-y'));
+          var xl = mk('xc-xl', el.querySelector('.xc-x'));
+          var set = function (k, t, cls) {
+            el.querySelectorAll('[data-k="' + k + '"]').forEach(function (e) {
+              e.textContent = t;
+              if (cls !== undefined) {
+                e.classList.remove('up', 'down');
+                if (cls) e.classList.add(cls);
+              }
+            });
+          };
+          var legend = function (i) {
+            var r = D.r[i];
+            set('d', r[0]);
+            if (D.t === 'multi') {
+              D.n.forEach(function (_, s) {
+                var v = r[s + 1];
+                set('s' + s, sg(v, 1) + ' %');
+              });
+              return;
+            }
+            var prev = i ? D.r[i - 1][4] : r[1];
+            var d = dp(r[4]);
+            set('o', de(r[1], d));
+            set('h', de(r[2], d));
+            set('l', de(r[3], d));
+            set('c', de(r[4], d));
+            var c = r[4] - prev;
+            set(
+              'chg',
+              sg(c, d) + ' (' + sg((c / prev) * 100, 2) + ' %)',
+              c > 0 ? 'up' : c < 0 ? 'down' : '',
+            );
+            set('v', de(r[5], 0) + ' Tsd.');
+          };
+          var cur = D.r.length - 1;
+          var show = function (i, cy) {
+            cur = i;
+            var box = plots[0].getBoundingClientRect();
+            var left = ((i + 0.5) / (D.r.length + D.p)) * box.width;
+            vs.forEach(function (v) {
+              v.hidden = false;
+              v.style.left = left + 'px';
+            });
+            xl.hidden = false;
+            xl.style.left = left + 'px';
+            xl.textContent = D.r[i][0];
+            if (cy !== null && cy >= box.top && cy <= box.bottom) {
+              var y = cy - box.top;
+              hl.hidden = yl.hidden = false;
+              hl.style.top = yl.style.top = y + 'px';
+              var val = D.hi - (y / box.height) * (D.hi - D.lo);
+              yl.textContent = D.t === 'multi' ? sg(val, 1) + ' %' : de(val, dp(val));
+            } else {
+              hl.hidden = yl.hidden = true;
+            }
+            legend(i);
+          };
+          var hide = function () {
+            vs.concat([hl, yl, xl]).forEach(function (e) {
+              e.hidden = true;
+            });
+            cur = D.r.length - 1;
+            legend(cur);
+          };
+          el.addEventListener('pointermove', function (e) {
+            var box = plots[0].getBoundingClientRect();
+            var i = Math.floor(((e.clientX - box.left) / box.width) * (D.r.length + D.p));
+            show(Math.max(0, Math.min(D.r.length - 1, i)), e.clientY);
+          });
+          el.addEventListener('pointerleave', hide);
+          el.addEventListener('blur', hide);
+          el.addEventListener('keydown', function (e) {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            e.preventDefault();
+            show(
+              Math.max(0, Math.min(D.r.length - 1, cur + (e.key === 'ArrowLeft' ? -1 : 1))),
+              null,
+            );
+          });
+        });
+        var pal = document.querySelector('[data-palette]');
+        if (pal) {
+          document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') pal.hidden = true;
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+              e.preventDefault();
+              pal.hidden = !pal.hidden;
+            }
+          });
+          pal.addEventListener('click', function (e) {
+            if (e.target === pal) pal.hidden = true;
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

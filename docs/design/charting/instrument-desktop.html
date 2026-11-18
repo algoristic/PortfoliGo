@@ -1,0 +1,2108 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Charting – Instrument (Desktop)</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap"
+      rel="stylesheet" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          13px/1.4 Inter,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        color-scheme: dark;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      h1,
+      h2,
+      h3,
+      p,
+      ul {
+        margin: 0;
+        padding: 0;
+      }
+      ul {
+        list-style: none;
+      }
+      :focus-visible {
+        outline: 1px solid var(--focus);
+        outline-offset: -1px;
+      }
+      .ic {
+        width: 1em;
+        height: 1em;
+        flex: none;
+        display: inline-block;
+        vertical-align: -0.125em;
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+      }
+      .up {
+        color: var(--up);
+      }
+      .down {
+        color: var(--down);
+      }
+      .mut {
+        color: var(--mut);
+      }
+      .xc {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        --xc-y: 60px;
+        outline-offset: -1px;
+      }
+      .xc-pane {
+        position: relative;
+        display: flex;
+        min-height: 0;
+        border-bottom: 1px solid var(--grid-strong);
+      }
+      .xc-main {
+        flex: 1;
+      }
+      .xc-plot {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        cursor: crosshair;
+      }
+      .xc-plot > svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .xc-y {
+        position: relative;
+        width: var(--xc-y);
+        flex: none;
+        border-left: 1px solid var(--grid-strong);
+        font-size: 11px;
+        color: var(--mut);
+        font-variant-numeric: tabular-nums;
+      }
+      .xc-y span,
+      .xc-y b {
+        position: absolute;
+        left: 0;
+        right: 0;
+        padding: 0 6px;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        font-weight: 400;
+      }
+      .xc-y b {
+        color: #0c0e12;
+        background: var(--c);
+        padding: 1px 6px;
+        z-index: 1;
+      }
+      .xc-x {
+        position: relative;
+        height: 24px;
+        flex: none;
+        margin-right: var(--xc-y);
+        font-size: 11px;
+        color: var(--mut);
+        font-variant-numeric: tabular-nums;
+      }
+      .xc-x span {
+        position: absolute;
+        top: 5px;
+        transform: translateX(-50%);
+        white-space: nowrap;
+      }
+      .xc-v {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 0;
+        border-left: 1px dashed var(--cross);
+        pointer-events: none;
+      }
+      .xc-h {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 0;
+        border-top: 1px dashed var(--cross);
+        pointer-events: none;
+      }
+      .xc-yl,
+      .xc-xl {
+        position: absolute;
+        background: var(--cross-bg);
+        color: var(--cross-fg);
+        font-size: 11px;
+        padding: 1px 6px;
+        white-space: nowrap;
+        z-index: 2;
+        pointer-events: none;
+      }
+      .xc-yl {
+        left: 0;
+        right: 0;
+        transform: translateY(-50%);
+      }
+      .xc-xl {
+        top: 3px;
+        transform: translateX(-50%);
+      }
+      .xc [hidden] {
+        display: none;
+      }
+      .xc-line {
+        position: absolute;
+        left: 10px;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 1px 6px;
+        font-size: 11px;
+        background: var(--surface);
+        border: 1px solid var(--c);
+        color: var(--fg);
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .xc-mark {
+        position: absolute;
+        transform: translate(-50%, 0);
+        color: var(--c);
+        font-size: 10px;
+        line-height: 1;
+        text-align: center;
+        pointer-events: none;
+        font-weight: 600;
+      }
+      .xc-tag {
+        position: absolute;
+        left: 8px;
+        top: 4px;
+        font-size: 11px;
+        color: var(--mut);
+        pointer-events: none;
+      }
+      .leg {
+        position: absolute;
+        left: 8px;
+        top: 6px;
+        z-index: 1;
+        pointer-events: none;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .leg-r {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0 8px;
+        align-items: baseline;
+        font-variant-numeric: tabular-nums;
+      }
+      .leg-r i {
+        font-style: normal;
+        color: var(--mut);
+      }
+      .leg-d {
+        display: inline-block;
+        width: 10px;
+        height: 2px;
+        margin-right: 5px;
+        vertical-align: middle;
+        background: var(--c);
+      }
+      :root {
+        --bg: #0b0e14;
+        --panel: #131722;
+        --surface: #131722;
+        --line: #2a2e39;
+        --line-2: #363a45;
+        --line-s: #1e222d;
+        --fg: #e1e4ea;
+        --fg-2: #d1d4dc;
+        --mut: #8f94a1;
+        --acc: #2962ff;
+        --acc-l: #6d94ff;
+        --hover: #1e222d;
+        --sel: #1b2545;
+        --av: #2a2e39;
+        --pill: #2a2e39;
+        --up: #22ab94;
+        --down: #f7626e;
+        --up-c: #089981;
+        --down-c: #f23645;
+        --line-c: #2962ff;
+        --warn: #e0a526;
+        --focus: #2962ff;
+        --grid: #1c202b;
+        --grid-strong: #2a2e39;
+        --cross: #787b86;
+        --cross-bg: #363a45;
+        --cross-fg: #fff;
+        --c1: #3f7cff;
+        --c2: #d9751a;
+        --c4: #9a66f2;
+      }
+      .wl-h,
+      .wl-r {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 62px 54px 58px;
+        gap: 4px;
+        align-items: center;
+        padding: 0 10px;
+      }
+      .wl.c .wl-h,
+      .wl.c .wl-r {
+        grid-template-columns: minmax(0, 1fr) 62px 56px;
+      }
+      .wl.c .chg {
+        display: none;
+      }
+      .wl-h {
+        height: 24px;
+        font-size: 11px;
+        color: var(--mut);
+        text-align: right;
+      }
+      .wl-h span:first-child {
+        text-align: left;
+      }
+      .wl-g {
+        height: 24px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 8px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        color: var(--mut);
+      }
+      .wl-r {
+        height: 27px;
+        font-size: 12px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        cursor: pointer;
+        position: relative;
+      }
+      .wl-r:hover {
+        background: var(--hover);
+      }
+      .wl-r.on {
+        background: var(--sel);
+      }
+      .wl-r.on::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--acc-l);
+      }
+      .wl-s {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        text-align: left;
+        min-width: 0;
+        font-weight: 500;
+      }
+      .wl-s em {
+        font-style: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .av {
+        width: 16px;
+        height: 16px;
+        flex: none;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 8.5px;
+        font-weight: 700;
+        background: var(--av);
+        color: var(--fg);
+      }
+      .wg {
+        padding: 10px 12px;
+        border-top: 1px solid var(--line);
+      }
+      .wg h3 {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 7px;
+      }
+      .wg h3 span {
+        font-weight: 400;
+        color: var(--mut);
+      }
+      .kv {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 12px;
+        line-height: 21px;
+        font-variant-numeric: tabular-nums;
+      }
+      .kv > span:first-child {
+        color: var(--mut);
+      }
+      .kv.tot {
+        font-weight: 600;
+        border-top: 1px solid var(--line);
+        margin-top: 3px;
+        padding-top: 3px;
+      }
+      .kv.tot > span:first-child {
+        color: var(--fg);
+      }
+      .q2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        position: relative;
+        margin-bottom: 8px;
+      }
+      .q2 button {
+        height: 44px;
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        line-height: 1.25;
+        font-variant-numeric: tabular-nums;
+        font-size: 14px;
+        font-weight: 600;
+        border: 1px solid var(--line-2);
+        color: var(--fg);
+      }
+      .q2 small {
+        font-size: 10.5px;
+        font-weight: 400;
+        color: var(--mut);
+      }
+      .q2 .on {
+        background: var(--acc);
+        border-color: var(--acc);
+        color: #fff;
+      }
+      .q2 .on small {
+        color: #e3e9ff;
+      }
+      .q2 i {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-style: normal;
+        background: var(--panel);
+        border: 1px solid var(--line-2);
+        border-radius: 3px;
+        padding: 0 4px;
+        font-size: 10.5px;
+        color: var(--mut);
+      }
+      .seg2 {
+        display: flex;
+        gap: 14px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 8px;
+        font-size: 12.5px;
+        color: var(--mut);
+      }
+      .seg2 button {
+        padding: 3px 0 5px;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+      }
+      .seg2 .on {
+        color: var(--fg);
+        border-bottom-color: var(--acc-l);
+      }
+      .f-l {
+        font-size: 11.5px;
+        color: var(--mut);
+        margin-bottom: 3px;
+        display: block;
+      }
+      .f-i {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 8px;
+        margin-bottom: 8px;
+        border: 1px solid var(--line-2);
+        border-radius: 4px;
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+      }
+      .f-i .ib2 {
+        display: inline-flex;
+        gap: 8px;
+        color: var(--mut);
+      }
+      .cta2 {
+        width: 100%;
+        height: 36px;
+        margin-top: 8px;
+        border-radius: 4px;
+        background: var(--acc);
+        color: #fff;
+        font-weight: 600;
+      }
+      .oo {
+        margin-top: 8px;
+        padding: 6px 8px;
+        border: 1px solid var(--line-2);
+        border-left: 2px solid var(--acc-l);
+        border-radius: 3px;
+        font-size: 11.5px;
+        color: var(--mut);
+      }
+      .oo b {
+        display: block;
+        color: var(--fg);
+        font-weight: 500;
+      }
+      .d-h {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-weight: 600;
+      }
+      .d-p {
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.2;
+        margin-top: 3px;
+      }
+      .d-p small {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--mut);
+        margin-left: 3px;
+      }
+      .d-s {
+        font-size: 11.5px;
+        color: var(--mut);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 2px;
+      }
+      .d-s i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--up);
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+      }
+      .tile {
+        padding: 5px 2px;
+        text-align: center;
+        border-radius: 3px;
+        background: color-mix(in srgb, var(--up) 13%, transparent);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      .tile small {
+        display: block;
+        font-size: 10.5px;
+        color: var(--mut);
+      }
+      .prose {
+        font-size: 12px;
+        color: var(--fg-2);
+        line-height: 1.5;
+      }
+      .ab2 {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 0 12px;
+        height: 30px;
+        font-size: 12px;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--line);
+        font-variant-numeric: tabular-nums;
+        overflow: hidden;
+      }
+      .ab2 span {
+        color: var(--mut);
+      }
+      .ab2 b {
+        font-weight: 500;
+        color: var(--fg);
+        margin-left: 4px;
+      }
+      .ab2 b.up {
+        color: var(--up);
+      }
+      .tt {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      .tt th {
+        position: sticky;
+        top: 0;
+        background: var(--panel);
+        font-weight: 400;
+        color: var(--mut);
+        text-align: right;
+        padding: 4px 10px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        z-index: 1;
+      }
+      .tt td {
+        text-align: right;
+        padding: 0 10px;
+        height: 27px;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--line-s);
+      }
+      .tt th:first-child,
+      .tt td:first-child {
+        text-align: left;
+      }
+      .tt tr:hover td {
+        background: var(--hover);
+      }
+      .tt tr.on td {
+        background: var(--sel);
+      }
+      .tt .l {
+        text-align: left;
+      }
+      .tt tfoot td {
+        font-weight: 600;
+        border-bottom: 0;
+      }
+      .sy {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 500;
+      }
+      .sy small {
+        font-weight: 400;
+        color: var(--mut);
+        font-size: 11px;
+      }
+      .pill {
+        display: inline-block;
+        padding: 0 6px;
+        border-radius: 3px;
+        line-height: 17px;
+        font-size: 11px;
+        background: var(--pill);
+        color: var(--fg-2);
+      }
+      .pill.b {
+        color: var(--acc-l);
+        background: color-mix(in srgb, var(--acc-l) 16%, transparent);
+      }
+      .mb {
+        height: 21px;
+        padding: 0 7px;
+        border: 1px solid var(--line-2);
+        border-radius: 3px;
+        font-size: 11px;
+        color: var(--fg-2);
+        margin-left: 3px;
+      }
+      .mb:hover {
+        background: var(--hover);
+      }
+      .al {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 44px;
+        gap: 1px 8px;
+        font-size: 12px;
+        align-items: center;
+        margin-bottom: 7px;
+      }
+      .al span:nth-child(2) {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .al i {
+        grid-column: 1/-1;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--line);
+        overflow: hidden;
+        display: block;
+      }
+      .al i::before {
+        content: '';
+        display: block;
+        height: 100%;
+        width: var(--w);
+        background: var(--acc-l);
+        border-radius: 2px;
+      }
+      .note {
+        font-size: 11.5px;
+        color: var(--warn);
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+      }
+      .qt {
+        display: flex;
+        gap: 2px;
+        margin-top: 5px;
+        pointer-events: auto;
+        align-items: stretch;
+        font-variant-numeric: tabular-nums;
+      }
+      .qt button {
+        min-width: 74px;
+        padding: 2px 8px;
+        border-radius: 3px;
+        line-height: 1.2;
+        text-align: left;
+        font-size: 12.5px;
+        font-weight: 600;
+        background: var(--surface);
+        border: 1px solid var(--line-2);
+      }
+      .qt button:last-child {
+        text-align: right;
+        border-color: var(--acc-l);
+        color: var(--acc-l);
+      }
+      .qt small {
+        display: block;
+        font-size: 10px;
+        font-weight: 400;
+        color: var(--mut);
+      }
+      .qt span {
+        align-self: center;
+        font-size: 10.5px;
+        color: var(--mut);
+        padding: 0 4px;
+      }
+      .stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 26px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--line);
+        font-variant-numeric: tabular-nums;
+      }
+      .stats div {
+        font-size: 11.5px;
+        color: var(--mut);
+        white-space: nowrap;
+      }
+      .stats strong {
+        display: block;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--fg);
+      }
+      .stats strong.up {
+        color: var(--up);
+      }
+      .rg {
+        height: 30px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 8px;
+        font-size: 12px;
+        color: var(--mut);
+        border-top: 1px solid var(--line);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .rg button {
+        padding: 2px 7px;
+        border-radius: 3px;
+      }
+      .rg button:hover {
+        background: var(--hover);
+        color: var(--fg);
+      }
+      .rg .on {
+        color: var(--acc-l);
+      }
+      .rg .end {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .rg .dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--mut);
+        margin-right: 4px;
+      }
+      .rg .dot.o {
+        background: var(--up);
+      }
+
+      .tv {
+        height: 100vh;
+        min-height: 700px;
+        min-width: 1240px;
+        display: grid;
+        grid-template-rows: 44px minmax(0, 1fr);
+        gap: 4px;
+        overflow: hidden;
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 8px;
+        background: var(--panel);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .sep {
+        width: 1px;
+        height: 22px;
+        background: var(--line);
+        margin: 0 5px;
+        flex: none;
+      }
+      .tbn {
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 8px;
+        border-radius: 4px;
+        color: var(--fg-2);
+      }
+      .tbn:hover {
+        background: var(--hover);
+      }
+      .tbn .ic {
+        font-size: 15px;
+      }
+      .tbn.on {
+        color: var(--acc-l);
+      }
+      .lg {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--acc);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        margin-right: 6px;
+        font-size: 13px;
+      }
+      .sym {
+        font-weight: 600;
+      }
+      .clock {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        height: 32px;
+        padding: 0 4px;
+        background: var(--hover);
+        border-radius: 4px;
+      }
+      .clock .tbn {
+        height: 26px;
+        padding: 0 6px;
+      }
+      .clock b {
+        font-weight: 500;
+        padding: 0 6px;
+      }
+      .av2 {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--line-2);
+        display: grid;
+        place-items: center;
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .trade {
+        height: 30px;
+        padding: 0 14px;
+        border-radius: 4px;
+        background: var(--acc);
+        color: #fff;
+        font-weight: 600;
+        margin-left: 6px;
+      }
+      .bdgw {
+        position: relative;
+      }
+      .bdgw em {
+        position: absolute;
+        right: 1px;
+        top: 1px;
+        min-width: 14px;
+        height: 14px;
+        border-radius: 7px;
+        font-style: normal;
+        font-size: 9.5px;
+        line-height: 14px;
+        text-align: center;
+        background: var(--down-c);
+        color: #fff;
+        padding: 0 3px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 44px minmax(0, 1fr) 304px 44px;
+        grid-template-rows: minmax(0, 1fr) var(--bp, 254px);
+        gap: 4px;
+        min-height: 0;
+        grid-template-areas: 't c r s' 'p p r s';
+      }
+      .pnl {
+        background: var(--panel);
+        min-height: 0;
+        min-width: 0;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .tools {
+        grid-area: t;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 5px 0;
+        gap: 1px;
+      }
+      .tools button,
+      .strip a,
+      .strip button {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 4px;
+        color: var(--fg-2);
+        font-size: 16px;
+        position: relative;
+      }
+      .tools button:hover,
+      .strip a:hover,
+      .strip button:hover {
+        background: var(--hover);
+      }
+      .tools .on,
+      .strip .on {
+        color: var(--acc-l);
+        background: var(--sel);
+      }
+      .tools hr {
+        width: 22px;
+        border: 0;
+        border-top: 1px solid var(--line);
+        margin: 4px 0;
+      }
+      .cw {
+        grid-area: c;
+        display: flex;
+        flex-direction: column;
+      }
+      .cw > .fill {
+        flex: 1;
+        min-height: 0;
+      }
+      .floatc {
+        position: absolute;
+        left: 50%;
+        bottom: var(--float, 34px);
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 3px;
+        background: var(--hover);
+        border: 1px solid var(--line-2);
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 2;
+        white-space: nowrap;
+      }
+      .floatc button {
+        height: 24px;
+        min-width: 26px;
+        padding: 0 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border-radius: 3px;
+      }
+      .floatc button:hover {
+        background: var(--line);
+      }
+      .floatc .pz {
+        color: var(--acc-l);
+      }
+      .floatc span {
+        padding: 0 6px;
+        color: var(--mut);
+      }
+      .side {
+        grid-area: r;
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+      }
+      .side-h {
+        height: 38px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        font-weight: 600;
+      }
+      .side-h .ic {
+        color: var(--mut);
+      }
+      .strip {
+        grid-area: s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+        padding: 5px 0;
+      }
+      .strip .sp {
+        flex: 1;
+      }
+      .strip em {
+        position: absolute;
+        right: 2px;
+        top: 2px;
+        min-width: 13px;
+        height: 13px;
+        border-radius: 7px;
+        font-style: normal;
+        font-size: 9px;
+        line-height: 13px;
+        background: var(--acc);
+        color: #fff;
+        text-align: center;
+        padding: 0 2px;
+      }
+      .bp {
+        grid-area: p;
+        display: flex;
+        flex-direction: column;
+      }
+      .bp-t {
+        height: 34px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 6px;
+        border-bottom: 1px solid var(--line);
+        font-size: 12.5px;
+        color: var(--mut);
+      }
+      .bp-t button {
+        height: 26px;
+        padding: 0 9px;
+        border-radius: 4px;
+        white-space: nowrap;
+      }
+      .bp-t button:hover {
+        background: var(--hover);
+      }
+      .bp-t .on {
+        color: var(--fg);
+        background: var(--hover);
+      }
+      .bp-t .c {
+        margin-left: 5px;
+        color: var(--mut);
+      }
+      .bp-t .end {
+        margin-left: auto;
+        display: flex;
+      }
+      .bp-b {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+      }
+      .cmp {
+        display: flex;
+        gap: 14px;
+        font-size: 12px;
+      }
+      .phs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 32px;
+        justify-content: center;
+        padding: 24px;
+        min-height: 100%;
+      }
+      .phw h2 {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--mut);
+        margin-bottom: 8px;
+      }
+      .ph {
+        width: 390px;
+        max-width: 100vw;
+        height: 844px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--panel);
+        border: 1px solid var(--line);
+      }
+      @media (max-width: 440px) {
+        .phs {
+          padding: 0;
+          gap: 0;
+        }
+        .phw h2 {
+          display: none;
+        }
+        .ph {
+          border: 0;
+        }
+      }
+      .m-t {
+        height: 46px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 6px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      .m-t h1 {
+        font-size: 15px;
+        font-weight: 600;
+        flex: 1;
+        padding-left: 6px;
+      }
+      .m-tm {
+        height: 32px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 6px;
+        font-size: 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      .m-tm .tbn {
+        height: 28px;
+        padding: 0 6px;
+      }
+      .m-tm .pz {
+        color: var(--acc-l);
+      }
+      .m-tm .r {
+        margin-left: auto;
+        color: var(--mut);
+      }
+      .m-b {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+      }
+      .m-c {
+        flex: 1;
+        min-height: 0;
+        --xc-y: 52px;
+      }
+      .m-rg {
+        height: 34px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        font-size: 12.5px;
+        color: var(--mut);
+        border-top: 1px solid var(--line);
+      }
+      .m-rg .on {
+        color: var(--acc-l);
+      }
+      .m-tr {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        padding: 8px;
+        flex: none;
+        border-top: 1px solid var(--line);
+      }
+      .m-tr button {
+        height: 44px;
+        border-radius: 4px;
+        line-height: 1.2;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        border: 1px solid var(--line-2);
+      }
+      .m-tr .buy {
+        background: var(--acc);
+        border-color: var(--acc);
+        color: #fff;
+      }
+      .m-tr small {
+        display: block;
+        font-weight: 400;
+        font-size: 11px;
+        opacity: 0.85;
+      }
+      .m-n {
+        height: 54px;
+        flex: none;
+        display: flex;
+        border-top: 1px solid var(--line);
+      }
+      .m-n a,
+      .m-n button {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        font-size: 10px;
+        color: var(--mut);
+      }
+      .m-n .ic {
+        font-size: 18px;
+      }
+      .m-n .on {
+        color: var(--acc-l);
+      }
+      .m-hd {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      .m-hd .big {
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .m-pr {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0 8px;
+        padding: 7px 12px;
+        border-bottom: 1px solid var(--line-s);
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+      }
+      .m-pr small {
+        font-size: 11.5px;
+        color: var(--mut);
+      }
+      .m-pr small.up {
+        color: var(--up);
+      }
+      .m-pr small.down {
+        color: var(--down);
+      }
+      .m-pr .rt {
+        text-align: right;
+      }
+      .m-chart {
+        height: 190px;
+        --xc-y: 52px;
+        border-bottom: 1px solid var(--line);
+      }
+      .m-wl .wl-r {
+        height: 44px;
+        font-size: 13px;
+      }
+      .m-wl .wl-h,
+      .m-wl .wl-r {
+        grid-template-columns: minmax(0, 1fr) 72px 68px;
+      }
+      .m-wl .av {
+        width: 24px;
+        height: 24px;
+        font-size: 11px;
+      }
+      @media (max-width: 1400px) {
+        .ab2 > span:last-child,
+        .rg .end > span:nth-child(2) {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="i-list" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+      </symbol>
+      <symbol id="i-plus-circle" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+        <path
+          d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+      </symbol>
+      <symbol id="i-bar-chart-steps" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M.5 0a.5.5 0 0 1 .5.5v15a.5.5 0 0 1-1 0V.5A.5.5 0 0 1 .5 0M2 1.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-4a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1-.5-.5zm2 4a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-7a.5.5 0 0 1-.5-.5z" />
+      </symbol>
+      <symbol id="i-activity" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2" />
+      </symbol>
+      <symbol id="i-alarm" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8.5 5.5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9z" />
+        <path
+          d="M6.5 0a.5.5 0 0 0 0 1H7v1.07a7.001 7.001 0 0 0-3.273 12.474l-.602.602a.5.5 0 0 0 .707.708l.746-.746A6.97 6.97 0 0 0 8 16a6.97 6.97 0 0 0 3.422-.892l.746.746a.5.5 0 0 0 .707-.708l-.601-.602A7.001 7.001 0 0 0 9 2.07V1h.5a.5.5 0 0 0 0-1zm1.038 3.018a6 6 0 0 1 .924 0 6 6 0 1 1-.924 0M0 3.5c0 .753.333 1.429.86 1.887A8.04 8.04 0 0 1 4.387 1.86 2.5 2.5 0 0 0 0 3.5M13.5 1c-.753 0-1.429.333-1.887.86a8.04 8.04 0 0 1 3.527 3.527A2.5 2.5 0 0 0 13.5 1" />
+      </symbol>
+      <symbol id="i-layout-three-columns" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M0 1.5A1.5 1.5 0 0 1 1.5 0h13A1.5 1.5 0 0 1 16 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 14.5zM1.5 1a.5.5 0 0 0-.5.5v13a.5.5 0 0 0 .5.5H5V1zM10 15V1H6v14zm1 0h3.5a.5.5 0 0 0 .5-.5v-13a.5.5 0 0 0-.5-.5H11z" />
+      </symbol>
+      <symbol id="i-pause-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5" />
+      </symbol>
+      <symbol id="i-check2" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0" />
+      </symbol>
+      <symbol id="i-bell" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
+      </symbol>
+      <symbol id="i-crosshair" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8.5.5a.5.5 0 0 0-1 0v.518A7 7 0 0 0 1.018 7.5H.5a.5.5 0 0 0 0 1h.518A7 7 0 0 0 7.5 14.982v.518a.5.5 0 0 0 1 0v-.518A7 7 0 0 0 14.982 8.5h.518a.5.5 0 0 0 0-1h-.518A7 7 0 0 0 8.5 1.018zm-6.48 7A6 6 0 0 1 7.5 2.02v.48a.5.5 0 0 0 1 0v-.48a6 6 0 0 1 5.48 5.48h-.48a.5.5 0 0 0 0 1h.48a6 6 0 0 1-5.48 5.48v-.48a.5.5 0 0 0-1 0v.48A6 6 0 0 1 2.02 8.5h.48a.5.5 0 0 0 0-1zM8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4" />
+      </symbol>
+      <symbol id="i-slash-lg" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M13.854 2.146a.5.5 0 0 1 0 .708l-11 11a.5.5 0 0 1-.708-.708l11-11a.5.5 0 0 1 .708 0" />
+      </symbol>
+      <symbol id="i-distribute-vertical" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M1 1.5a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 0-1h-13a.5.5 0 0 0-.5.5m0 13a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 0-1h-13a.5.5 0 0 0-.5.5" />
+        <path d="M2 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z" />
+      </symbol>
+      <symbol id="i-pencil" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325" />
+      </symbol>
+      <symbol id="i-fonts" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M12.258 3h-8.51l-.083 2.46h.479c.26-1.544.758-1.783 2.693-1.845l.424-.013v7.827c0 .663-.144.82-1.3.923v.52h4.082v-.52c-1.162-.103-1.306-.26-1.306-.923V3.602l.431.013c1.934.062 2.434.301 2.693 1.846h.479z" />
+      </symbol>
+      <symbol id="i-rulers" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5v-1H2v-1h4v-1H4v-1h2v-1H2v-1h4V9H4V8h2V7H2V6h4V2h1v4h1V4h1v2h1V2h1v4h1V4h1v2h1V2h1v4h1V1a1 1 0 0 0-1-1z" />
+      </symbol>
+      <symbol id="i-zoom-in" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11M13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0" />
+        <path
+          d="M10.344 11.742q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1 6.5 6.5 0 0 1-1.398 1.4z" />
+        <path
+          fill-rule="evenodd"
+          d="M6.5 3a.5.5 0 0 1 .5.5V6h2.5a.5.5 0 0 1 0 1H7v2.5a.5.5 0 0 1-1 0V7H3.5a.5.5 0 0 1 0-1H6V3.5a.5.5 0 0 1 .5-.5" />
+      </symbol>
+      <symbol id="i-magnet" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 1a7 7 0 0 0-7 7v3h4V8a3 3 0 0 1 6 0v3h4V8a7 7 0 0 0-7-7m7 11h-4v3h4zM5 12H1v3h4zM0 8a8 8 0 1 1 16 0v8h-6V8a2 2 0 1 0-4 0v8H0z" />
+      </symbol>
+      <symbol id="i-lock" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M8 0a4 4 0 0 1 4 4v2.05a2.5 2.5 0 0 1 2 2.45v5a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 2 13.5v-5a2.5 2.5 0 0 1 2-2.45V4a4 4 0 0 1 4-4M4.5 7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7zM8 1a3 3 0 0 0-3 3v2h6V4a3 3 0 0 0-3-3" />
+      </symbol>
+      <symbol id="i-eye" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z" />
+        <path
+          d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0" />
+      </symbol>
+      <symbol id="i-trash" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+        <path
+          d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+      </symbol>
+      <symbol id="i-x" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708" />
+      </symbol>
+      <symbol id="i-dash" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+      </symbol>
+      <symbol id="i-skip-end-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.693 3.3 4 3.678 4 4.308v7.384c0 .63.692 1.01 1.233.697L11.5 8.753V12a.5.5 0 0 0 1 0z" />
+      </symbol>
+      <symbol id="i-calendar3" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857z" />
+        <path
+          d="M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2" />
+      </symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+      </symbol>
+      <symbol id="i-plus-lg" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
+      </symbol>
+      <symbol id="i-three-dots" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3" />
+      </symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+      </symbol>
+      <symbol id="i-star" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
+      </symbol>
+      <symbol id="i-briefcase" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5m1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0M1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5" />
+      </symbol>
+      <symbol id="i-arrow-left-right" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5" />
+      </symbol>
+      <symbol id="i-bank" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="m8 0 6.61 3h.89a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H15v7a.5.5 0 0 1 .485.38l.5 2a.498.498 0 0 1-.485.62H.5a.498.498 0 0 1-.485-.62l.5-2A.5.5 0 0 1 1 13V6H.5a.5.5 0 0 1-.5-.5v-2A.5.5 0 0 1 .5 3h.89zM3.777 3h8.447L8 1zM2 6v7h1V6zm2 0v7h2.5V6zm3.5 0v7h1V6zm2 0v7H12V6zM13 6v7h1V6zm2-1V4H1v1zm-.39 9H1.39l-.25 1h13.72z" />
+      </symbol>
+      <symbol id="i-graph-up-arrow" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M0 0h1v15h15v1H0zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5" />
+      </symbol>
+      <symbol id="i-percent" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M13.442 2.558a.625.625 0 0 1 0 .884l-10 10a.625.625 0 1 1-.884-.884l10-10a.625.625 0 0 1 .884 0M4.5 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m0 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5m7 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m0 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
+      </symbol>
+      <symbol id="i-question-circle" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+        <path
+          d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286m1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94" />
+      </symbol>
+      <symbol id="i-gear" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0" />
+        <path
+          d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z" />
+      </symbol>
+      <symbol id="i-chevron-up" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z" />
+      </symbol>
+    </svg>
+    <div class="tv">
+      <header class="top"
+        ><a class="lg" href="../index.html" aria-label="Zur Mockup-Übersicht">P</a
+        ><button class="tbn" aria-label="Menü"
+          ><svg class="ic" aria-hidden="true"><use href="#i-list"></use></svg></button
+        ><span class="sep"></span
+        ><button class="tbn sym"
+          ><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg>CRVN</button
+        ><button class="tbn" aria-label="Vergleichen"
+          ><svg class="ic" aria-hidden="true"><use href="#i-plus-circle"></use></svg></button
+        ><span class="sep"></span><button class="tbn">Auto</button><button class="tbn">1 Min</button
+        ><button class="tbn">1 Std</button><button class="tbn on">1 Tag</button
+        ><button class="tbn">1 Wo</button><span class="sep"></span
+        ><button class="tbn" aria-label="Kerzen"
+          ><svg class="ic" aria-hidden="true"><use href="#i-bar-chart-steps"></use></svg></button
+        ><button class="tbn"
+          ><svg class="ic" aria-hidden="true"><use href="#i-activity"></use></svg
+          >Indikatoren</button
+        ><button class="tbn"
+          ><svg class="ic" aria-hidden="true"><use href="#i-alarm"></use></svg>Alarm</button
+        ><button class="tbn" aria-label="Layout"
+          ><svg class="ic" aria-hidden="true">
+            <use href="#i-layout-three-columns"></use></svg></button
+        ><span style="flex: 1"></span>
+        <div class="clock num" role="group" aria-label="Spielzeit"
+          ><button class="tbn" style="color: var(--acc-l)" aria-label="Pause"
+            ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></button
+          ><b>Mo., 20.10.2031, 10:42</b></div
+        ><span class="sep"></span>
+        <span class="mut" style="font-size: 12px; padding: 0 6px"
+          ><svg class="ic" aria-hidden="true"><use href="#i-check2"></use></svg> Gespeichert
+          10:42</span
+        ><button class="tbn bdgw" aria-label="3 Meldungen"
+          ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg><em>3</em></button
+        ><span class="av2" title="Spieler Alex">A</span
+        ><button class="trade">Handeln</button></header
+      >
+      <div class="grid">
+        <nav class="pnl tools" aria-label="Zeichenwerkzeuge"
+          ><button class="on" aria-label="Fadenkreuz" title="Fadenkreuz"
+            ><svg class="ic" aria-hidden="true"><use href="#i-crosshair"></use></svg></button
+          ><button class="" aria-label="Trendlinie" title="Trendlinie"
+            ><svg class="ic" aria-hidden="true"><use href="#i-slash-lg"></use></svg></button
+          ><button class="" aria-label="Horizontale Linie" title="Horizontale Linie"
+            ><svg class="ic" aria-hidden="true">
+              <use href="#i-distribute-vertical"></use></svg></button
+          ><button class="" aria-label="Pinsel" title="Pinsel"
+            ><svg class="ic" aria-hidden="true"><use href="#i-pencil"></use></svg></button
+          ><button class="" aria-label="Text" title="Text"
+            ><svg class="ic" aria-hidden="true"><use href="#i-fonts"></use></svg></button
+          ><button class="" aria-label="Messen" title="Messen"
+            ><svg class="ic" aria-hidden="true"><use href="#i-rulers"></use></svg></button
+          ><button class="" aria-label="Zoom" title="Zoom"
+            ><svg class="ic" aria-hidden="true"><use href="#i-zoom-in"></use></svg></button
+          ><hr /><button class="" aria-label="Magnet" title="Magnet"
+            ><svg class="ic" aria-hidden="true"><use href="#i-magnet"></use></svg></button
+          ><button class="" aria-label="Sperren" title="Sperren"
+            ><svg class="ic" aria-hidden="true"><use href="#i-lock"></use></svg></button
+          ><button class="" aria-label="Ausblenden" title="Ausblenden"
+            ><svg class="ic" aria-hidden="true"><use href="#i-eye"></use></svg></button
+          ><button class="" aria-label="Löschen" title="Löschen"
+            ><svg class="ic" aria-hidden="true"><use href="#i-trash"></use></svg></button
+        ></nav>
+        <section class="pnl cw" aria-label="Chart"
+          ><div class="fill" style="position: relative; --float: 158px"
+            ><div
+              class="xc"
+              tabindex="0"
+              data-xc='{"t":"candle","p":6,"lo":73.269,"hi":90.841,"r":[["28.04.31",80.24,80.33,79.32,79.84,588],["29.04.31",79.84,80.85,79.58,80.51,468],["30.04.31",80.52,80.82,78.39,79.19,312],["01.05.31",79.21,80.88,78.73,80.4,529],["02.05.31",80.26,81.21,79.75,80.64,403],["05.05.31",80.51,80.97,79.97,80.87,556],["06.05.31",80.64,80.79,80.54,80.55,443],["07.05.31",80.63,81.05,80.12,80.18,453],["08.05.31",80.13,80.22,78.63,79.43,476],["09.05.31",79.09,80.14,79.08,79.76,613],["12.05.31",80.03,80.8,79.77,80.2,343],["13.05.31",80.26,80.41,79.38,79.75,323],["14.05.31",79.41,80.62,79,80.37,403],["15.05.31",80.25,80.37,78.94,79.55,572],["16.05.31",79.16,79.82,79.03,79.71,606],["19.05.31",79.56,81.25,78.66,80.84,666],["20.05.31",81.03,82.39,80.81,82.12,677],["21.05.31",81.91,81.92,81.52,81.71,994],["22.05.31",81.89,82.03,80.24,80.39,430],["23.05.31",80.83,80.85,80.28,80.83,412],["26.05.31",80.65,80.82,78.22,78.46,431],["27.05.31",78.29,79.65,78.01,79.26,401],["28.05.31",79.56,79.97,78.29,78.35,503],["29.05.31",78.4,78.78,77.7,78.09,490],["30.05.31",78.1,78.52,77.79,77.96,497],["02.06.31",77.92,78.41,77.38,77.78,574],["03.06.31",77.4,77.76,76.98,77.45,531],["04.06.31",77.28,79.52,76.81,79.17,413],["05.06.31",79.07,79.32,79.05,79.14,437],["06.06.31",79.12,79.88,78.96,79.32,405],["09.06.31",79.22,79.77,78.77,79.17,283],["10.06.31",79.12,79.35,78.78,79.04,443],["11.06.31",79.15,79.75,77.53,78.61,389],["12.06.31",78.92,79.5,76.95,77.83,724],["13.06.31",77.69,77.78,77.08,77.5,368],["16.06.31",77.51,80.23,77.46,79.57,734],["17.06.31",79.4,80.79,78.73,80.57,437],["18.06.31",80.46,81.05,79.72,80.18,542],["19.06.31",80.18,81.19,80.07,80.46,937],["20.06.31",80.73,81.18,80.01,80.5,427],["23.06.31",80.68,81.02,79.73,80,478],["24.06.31",80.04,81.86,79.89,80.95,396],["25.06.31",80.92,82.06,80.85,81.82,275],["26.06.31",81.82,82.01,80.73,80.84,447],["27.06.31",80.91,82.95,80.21,82.55,505],["30.06.31",82.6,83.13,82.1,82.14,575],["01.07.31",81.79,82.03,81.31,81.58,552],["02.07.31",81.75,82.89,81.64,82.41,543],["03.07.31",82.66,82.93,81.9,82.32,438],["04.07.31",82.17,84.52,81.59,83.56,279],["07.07.31",83.65,84.53,83.14,84.18,440],["08.07.31",84.14,84.89,83.25,84.57,229],["09.07.31",85.04,85.99,84.92,84.95,512],["10.07.31",84.88,85.19,84.55,84.97,395],["11.07.31",84.91,85.8,84.77,85.76,369],["14.07.31",85.74,86.33,85.24,86.26,804],["15.07.31",85.83,86.92,85.28,86.53,427],["16.07.31",86.38,89.34,86.25,88.08,436],["17.07.31",88.08,88.32,86.96,87.13,663],["18.07.31",86.94,87.29,86.3,86.61,461],["21.07.31",86.21,88.04,86.11,87.45,506],["22.07.31",87.18,88.12,86.67,87.25,535],["23.07.31",87.55,87.96,86.79,86.96,391],["24.07.31",87.35,88.17,86.09,86.5,380],["25.07.31",86.57,88.36,86.12,87.67,535],["28.07.31",87.95,89.22,87.73,88.73,369],["29.07.31",88.11,89.9,87.6,88.7,434],["30.07.31",88.91,89.8,87.69,88.22,844],["31.07.31",87.74,87.84,86.5,87.45,428],["01.08.31",87.5,88.75,87.25,88.42,631],["04.08.31",88.56,89.57,87.67,87.96,399],["05.08.31",88.08,89.8,87.86,89.5,375],["06.08.31",89.5,89.8,87.77,88.32,604],["07.08.31",88.63,89.8,87.11,87.16,506],["08.08.31",87.39,87.55,86.95,87.15,693],["11.08.31",87.22,87.76,86.63,86.66,873],["12.08.31",86.79,86.86,85.71,86.71,660],["13.08.31",86.51,88.13,85.08,87.99,564],["14.08.31",87.81,89.03,86.79,87.42,846],["15.08.31",87.73,88.06,87.41,87.71,623],["18.08.31",87.97,88.06,86.04,86.52,570],["19.08.31",85.95,86.56,85.43,86.26,252],["20.08.31",86.43,86.92,84.47,85.26,430],["21.08.31",84.77,85.21,84.69,85.14,490],["22.08.31",85.02,85.26,83.29,83.5,487],["25.08.31",83.25,83.52,82.27,82.8,421],["26.08.31",82.95,82.97,82.48,82.86,342],["27.08.31",82.98,83.88,80.69,80.9,362],["28.08.31",80.64,81.18,80.45,80.79,468],["29.08.31",80.55,81.91,79.29,80.1,532],["01.09.31",80.3,80.35,79.26,79.71,453],["02.09.31",79.93,81.06,79.92,80.96,395],["03.09.31",81.01,83.56,80.99,83.22,389],["04.09.31",83.64,83.84,83.6,83.78,445],["05.09.31",83.98,84.11,83.28,83.96,721],["08.09.31",84.09,84.68,82.1,82.45,363],["09.09.31",82.65,82.92,82.33,82.34,270],["10.09.31",82.32,83.12,82.08,82.14,297],["11.09.31",82.07,82.56,81.37,81.61,608],["12.09.31",81.73,82.21,81.41,81.49,509],["15.09.31",81.67,81.75,79.87,80.19,445],["16.09.31",80.3,80.5,78.93,80.15,558],["17.09.31",80.46,81.49,80.14,80.81,477],["18.09.31",81.04,81.47,78.45,79.2,507],["19.09.31",79.2,79.79,78.98,79.6,362],["22.09.31",79.42,79.52,78.47,78.61,395],["23.09.31",78.66,78.86,77.07,77.67,501],["24.09.31",77.51,79.87,77.49,79.15,511],["25.09.31",79.03,79.24,76.32,76.66,568],["26.09.31",76.55,77.27,76.07,77.05,413],["29.09.31",77.68,77.89,74.21,74.68,607],["30.09.31",74.68,76.69,74.54,76.65,496],["01.10.31",76.7,77.6,76.69,77.5,389],["02.10.31",77.71,79.89,76.81,79.89,612],["03.10.31",80.53,81.38,79.72,79.81,406],["06.10.31",79.74,81.39,79.27,80.96,472],["07.10.31",80.76,81.34,80.75,81.19,304],["08.10.31",81.99,82.51,79.69,80.78,589],["09.10.31",80.31,81.88,79.55,81.6,531],["10.10.31",81.48,82.54,79.98,80.48,487],["13.10.31",80.69,80.95,80.23,80.6,406],["14.10.31",81.34,83.02,81.21,82.18,509],["15.10.31",81.86,83.53,81.35,82.88,511],["16.10.31",82.08,83.23,81.15,82.94,499],["17.10.31",83.16,85.94,82.88,84.75,546],["20.10.31",84.57,87.82,84.32,87.42,201]]}'
+              ><div class="xc-pane xc-main"
+                ><div class="xc-plot"
+                  ><svg
+                    viewBox="0 0 1000 1000"
+                    preserveAspectRatio="none"
+                    role="img"
+                    aria-label="Tageskerzen über sechs Monate bis 87,42 €, gleitende Durchschnitte, Kauflimit 84,00 €, Volumen und RSI">
+                    <path
+                      d="M0 958.4H1000M0 844.6H1000M0 730.8H1000M0 616.9H1000M0 503.1H1000M0 389.3H1000M0 275.5H1000M0 161.7H1000M0 47.9H1000M26.5 0V1000M193.2 0V1000M352.3 0V1000M526.5 0V1000M685.6 0V1000M852.3 0V1000"
+                      stroke="var(--grid)"
+                      fill="none"
+                      vector-effect="non-scaling-stroke"></path>
+                    <path
+                      d="M0 389.3H1000"
+                      stroke="var(--acc-l)"
+                      stroke-width="1"
+                      stroke-dasharray="5 4"
+                      vector-effect="non-scaling-stroke"></path>
+                    <path
+                      d="M11.4 568.6V640.8M26.5 566.9V689.2M34.1 548.1V631.2M41.7 561.7V618.6M72 609V669.3M79.5 571.4V630M94.7 581.7V673.8M109.8 627.2V672.1M117.4 545.8V693.2M125 480.9V570.8M147.7 568.6V601M162.9 636.9V730.2M200.8 744.4V788.8M208.3 644.3V798.5M215.9 655.6V671M223.5 623.8V676.1M268.9 603.9V761.5M276.5 572V689.2M291.7 549.2V613M314.4 511.1V623.2M322 499.7V568.6M337.1 449.1V605M359.8 452.5V523.6M375 359.7V526.5M382.6 359.2V438.3M390.2 338.7V432M405.3 321.6V358M412.9 286.9V345.5M420.5 256.7V318.8M428 223.2V316.5M435.6 85.4V261.3M458.3 159.4V269.2M465.9 154.9V237.4M488.6 141.2V268.7M496.2 92.3V177.1M503.8 53.6V184.5M526.5 119V204.4M541.7 59.3V169.7M587.1 154.3V327.9M617.4 243.6V307.9M632.6 320.5V350.1M670.5 549.8V591.3M693.2 556.6V621.5M700.8 414.4V560.6M708.3 398.4V412.1M776.5 532.2V609M791.7 628.9V675M814.4 624.3V759.8M829.5 772.3V840.6M844.7 805.3V927.6M852.3 753.5V805.3M859.8 623.2V798.5M875 537.8V658.5M882.6 540.7V574.3M897.7 510V642.5M920.5 445.1V548.1M928 416.1V540.1M935.6 433.1V551.5M943.2 278.9V453.1M950.8 171.9V371.1"
+                      stroke="var(--up-c)"
+                      fill="none"
+                      vector-effect="non-scaling-stroke"></path>
+                    <path
+                      d="M8.8 587.9h5.2v38.1h-5.2zM23.9 594.2h5.2v67.7h-5.2zM31.5 580.5h5.2v21.6h-5.2zM39.1 567.4h5.2v20.5h-5.2zM69.4 630.6h5.2v38.1h-5.2zM77 605.6h5.2v9.7h-5.2zM92.1 595.9h5.2v54.6h-5.2zM107.3 633.4h5.2v31.3h-5.2zM114.8 569.1h5.2v72.8h-5.2zM122.4 496.3h5.2v62h-5.2zM145.2 569.7h5.2v2h-5.2zM160.3 659.1h5.2v55.2h-5.2zM198.2 762.1h5.2v2.8h-5.2zM205.8 664.2h5.2v107.6h-5.2zM213.3 665.9h5.2v4h-5.2zM220.9 655.6h5.2v11.4h-5.2zM266.4 641.4h5.2v117.2h-5.2zM273.9 584.5h5.2v66.6h-5.2zM289.1 590.8h5.2v15.9h-5.2zM311.8 562.9h5.2v51.8h-5.2zM319.4 513.4h5.2v51.2h-5.2zM334.5 471.8h5.2v93.3h-5.2zM357.3 479.8h5.2v37.6h-5.2zM372.4 414.4h5.2v79.1h-5.2zM380 379.1h5.2v30.2h-5.2zM387.6 356.9h5.2v24.5h-5.2zM402.7 334.1h5.2v5.1h-5.2zM410.3 289.2h5.2v48.4h-5.2zM417.9 260.7h5.2v29.6h-5.2zM425.5 245.3h5.2v39.8h-5.2zM433 157.1h5.2v96.7h-5.2zM455.8 193h5.2v70.6h-5.2zM463.3 204.4h5.2v4h-5.2zM486.1 180.5h5.2v62.6h-5.2zM493.6 120.2h5.2v44.4h-5.2zM501.2 121.9h5.2v33.6h-5.2zM523.9 137.8h5.2v52.4h-5.2zM539.1 76.3h5.2v80.8h-5.2zM584.5 162.3h5.2v84.2h-5.2zM614.8 260.7h5.2v17.6h-5.2zM630 324.4h5.2v21.1h-5.2zM667.9 572h5.2v8.5h-5.2zM690.6 562.3h5.2v58.6h-5.2zM698.2 433.7h5.2v125.8h-5.2zM705.8 401.8h5.2v8h-5.2zM773.9 570.8h5.2v19.9h-5.2zM789.1 639.7h5.2v22.8h-5.2zM811.8 665.3h5.2v93.3h-5.2zM827 784.8h5.2v28.5h-5.2zM842.1 807.6h5.2v112.1h-5.2zM849.7 759.2h5.2v45.5h-5.2zM857.3 623.2h5.2v124.1h-5.2zM872.4 562.3h5.2v69.4h-5.2zM880 549.2h5.2v24.5h-5.2zM895.2 525.9h5.2v73.4h-5.2zM917.9 492.9h5.2v47.8h-5.2zM925.5 453.1h5.2v58h-5.2zM933 449.6h5.2v48.9h-5.2zM940.6 346.6h5.2v90.5h-5.2zM948.2 194.7h5.2v162.2h-5.2z"
+                      fill="var(--up-c)"></path>
+                    <path
+                      d="M3.8 598.2V655.6M18.9 570.3V708.6M49.2 572V586.2M56.8 557.2V610.1M64.4 604.4V694.9M87.1 593.6V652.2M102.3 595.9V677.3M132.6 507.7V530.4M140.2 501.4V603.3M155.3 570.3V718.2M170.5 618.6V714.3M178 686.4V747.8M185.6 701.2V742.7M193.2 707.4V766M231.1 630V686.9M238.6 653.9V686.4M246.2 631.2V757.5M253.8 645.4V790.5M261.4 743.3V783.1M284.1 557.2V632.9M299.2 549.8V616.4M306.8 558.9V632.3M329.5 502.6V575.4M344.7 438.8V497.4M352.3 501.4V542.4M367.4 450.2V508.8M397.7 276.1V337M443.2 143.5V220.9M450.8 202.1V258.4M473.5 164V230.5M481.1 152V270.4M511.4 59.3V179.3M518.9 170.8V247.1M534.1 72.4V180.5M549.2 59.3V174.8M556.8 59.3V212.3M564.4 187.3V221.4M572 175.4V239.7M579.5 226.6V292M594.7 103.1V230.5M602.3 158.3V195.3M609.8 158.3V273.2M625 223.2V362.6M640.2 317.6V429.7M647.7 416.6V487.8M655.3 447.9V475.8M662.9 396.1V577.7M678 508.3V657.3M685.6 597V659.1M715.9 383.1V430.3M723.5 350.6V497.4M731.1 450.8V484.4M738.6 439.4V498.6M746.2 471.3V539M753.8 491.2V536.7M761.4 517.4V624.3M768.9 588.5V677.8M784.1 533.3V705.1M799.2 644.3V704M806.8 681.8V783.7M822 660.2V826.4M837.1 737V946.4M867.4 538.4V632.9M890.2 474.1V634.6M905.3 472.4V618.1M912.9 562.9V603.9"
+                      stroke="var(--down-c)"
+                      fill="none"
+                      vector-effect="non-scaling-stroke"></path>
+                    <path
+                      d="M1.2 603.3h5.2v22.8h-5.2zM16.4 587.4h5.2v75.7h-5.2zM46.7 580.5h5.2v5.1h-5.2zM54.2 581.1h5.2v25.6h-5.2zM61.8 609.5h5.2v39.8h-5.2zM84.5 602.1h5.2v29h-5.2zM99.7 602.7h5.2v39.8h-5.2zM130 508.3h5.2v11.4h-5.2zM137.6 509.4h5.2v85.4h-5.2zM152.7 580h5.2v124.6h-5.2zM167.9 642h5.2v68.9h-5.2zM175.5 708h5.2v17.6h-5.2zM183 725.1h5.2v8h-5.2zM190.6 735.3h5.2v8h-5.2zM228.5 661.3h5.2v2.8h-5.2zM236.1 667h5.2v4.6h-5.2zM243.6 665.3h5.2v30.7h-5.2zM251.2 678.4h5.2v62h-5.2zM258.8 748.4h5.2v10.8h-5.2zM281.5 590.8h5.2v15.9h-5.2zM296.7 575.4h5.2v13.1h-5.2zM304.2 578.2h5.2v38.7h-5.2zM327 513.4h5.2v55.8h-5.2zM342.1 469h5.2v26.2h-5.2zM349.7 515.1h5.2v12h-5.2zM364.8 465.6h5.2v19.3h-5.2zM395.2 330.1h5.2v5.1h-5.2zM440.6 157.1h5.2v54.1h-5.2zM448.2 222h5.2v18.8h-5.2zM470.9 187.3h5.2v33.6h-5.2zM478.5 198.7h5.2v48.4h-5.2zM508.8 109.9h5.2v39.3h-5.2zM516.4 176.5h5.2v16.5h-5.2zM531.5 129.8h5.2v34.1h-5.2zM546.7 76.3h5.2v67.1h-5.2zM554.2 125.8h5.2v83.7h-5.2zM561.8 196.4h5.2v13.7h-5.2zM569.4 206.1h5.2v31.9h-5.2zM577 230.5h5.2v4.6h-5.2zM592.1 172.5h5.2v22.2h-5.2zM599.7 177.1h5.2v2h-5.2zM607.3 163.4h5.2v82.5h-5.2zM622.4 251h5.2v66.6h-5.2zM637.6 331.3h5.2v86.5h-5.2zM645.2 432h5.2v25.6h-5.2zM652.7 449.1h5.2v5.1h-5.2zM660.3 447.4h5.2v118.4h-5.2zM675.5 585.6h5.2v25.6h-5.2zM683 599.9h5.2v33.6h-5.2zM713.3 390.5h5.2v2h-5.2zM720.9 384.2h5.2v93.3h-5.2zM728.5 466.1h5.2v17.6h-5.2zM736.1 484.9h5.2v10.2h-5.2zM743.6 499.1h5.2v26.2h-5.2zM751.2 518.5h5.2v13.7h-5.2zM758.8 521.9h5.2v84.2h-5.2zM766.4 599.9h5.2v8.5h-5.2zM781.5 557.8h5.2v104.7h-5.2zM796.7 649.9h5.2v46.1h-5.2zM804.2 693.2h5.2v56.3h-5.2zM819.4 672.1h5.2v134.9h-5.2zM834.5 749h5.2v170.7h-5.2zM864.8 586.8h5.2v41h-5.2zM887.6 503.7h5.2v68.9h-5.2zM902.7 532.7h5.2v56.9h-5.2zM910.3 577.7h5.2v5.1h-5.2z"
+                      fill="var(--down-c)"></path>
+                    <path
+                      d="M3.8 729.9L11.4 719.1L18.9 714.9L26.5 704.8L34.1 692.4L41.7 681.1L49.2 673.3L56.8 664.3L64.4 658.1L72 652.3L79.5 643.3L87.1 637.2L94.7 631L102.3 627.1L109.8 626.2L117.4 620L125 610.1L132.6 603.4L140.2 600.3L147.7 597.5L155.3 601.4L162.9 605L170.5 607.4L178 613.9L185.6 621.6L193.2 630.3L200.8 639.2L208.3 642L215.9 642.9L223.5 644.1L231.1 647L238.6 649.1L246.2 654.1L253.8 659L261.4 665.3L268.9 668.9L276.5 673.3L284.1 677.6L291.7 677.4L299.2 678.4L306.8 674L314.4 669.2L322 659.3L329.5 651.5L337.1 638.4L344.7 626L352.3 614.3L359.8 605L367.4 596L375 583.9L382.6 569.7L390.2 553.9L397.7 535.9L405.3 515.6L412.9 492.1L420.5 473.1L428 456.1L435.6 433.6L443.2 414.6L450.8 397.3L458.3 376.1L465.9 358.1L473.5 343.5L481.1 327.4L488.6 312.8L496.2 294.1L503.8 273.8L511.4 257.3L518.9 242.7L526.5 228.9L534.1 218.1L541.7 204.1L549.2 194.5L556.8 188.3L564.4 184.3L572 183.2L579.5 182.7L587.1 182.9L594.7 182.1L602.3 179L609.8 181.6L617.4 184.4L625 189.3L632.6 193.1L640.2 205L647.7 221.9L655.3 238.5L662.9 259.3L670.5 278.3L678 301.9L685.6 325.4L693.2 349.7L700.8 364.2L708.3 373.8L715.9 382.9L723.5 394.9L731.1 407.3L738.6 424L746.2 440.5L753.8 458.2L761.4 476.2L768.9 493.6L776.5 506.3L784.1 523.2L791.7 534.3L799.2 546.2L806.8 560.9L814.4 565.9L822 577.7L829.5 586.4L837.1 600.7L844.7 612.9L852.3 629.2L859.8 640.3L867.4 652.1L875 656.3L882.6 659.6L890.2 663.5L897.7 663.5L905.3 666.4L912.9 665.2L920.5 659.4L928 653.5L935.6 642.9L943.2 628.2L950.8 603.2"
+                      fill="none"
+                      stroke="var(--c1)"
+                      stroke-width="1.25"
+                      vector-effect="non-scaling-stroke"></path>
+                    <path
+                      d="M3.8 814L11.4 805.1L18.9 799.6L26.5 791.5L34.1 783.2L41.7 774.8L49.2 767.4L56.8 761.1L64.4 756.7L72 751.7L79.5 746L87.1 741.5L94.7 735.8L102.3 732.1L109.8 728.3L117.4 722L125 713.2L132.6 705.6L140.2 701.2L147.7 696.1L155.3 696.4L162.9 694.9L170.5 695.6L178 696.7L185.6 698.2L193.2 699.9L200.8 702.4L208.3 700.9L215.9 699.5L223.5 697.8L231.1 696.5L238.6 695.5L246.2 695.5L253.8 697.3L261.4 699.7L268.9 697.4L276.5 693L284.1 689.6L291.7 685.7L299.2 681.9L306.8 679.4L314.4 674.8L322 668.5L329.5 664.6L337.1 657L344.7 650.7L352.3 645.8L359.8 639.3L367.4 633.3L375 624.7L382.6 615L390.2 604.9L397.7 594.3L405.3 584.1L412.9 572.6L420.5 560.3L428 548L435.6 532.7L443.2 520.1L450.8 509.1L458.3 496.7L465.9 485.2L473.5 474.9L481.1 465.9L488.6 454.7L496.2 441.6L503.8 429.1L511.4 418.1L518.9 409.3L526.5 398.6L534.1 389.4L541.7 377.2L549.2 368L556.8 361.8L564.4 355.8L572 351.2L579.5 346.6L587.1 339.4L594.7 333.7L602.3 327.6L609.8 324.4L617.4 321.9L625 321.8L632.6 321.9L640.2 325.6L647.7 330.8L655.3 335.6L662.9 344.7L670.5 353.6L678 363.7L685.6 374.3L693.2 381.6L700.8 383.7L708.3 384.4L715.9 384.7L723.5 388.3L731.1 392.1L738.6 396.1L746.2 401.2L753.8 406.3L761.4 414.1L768.9 421.8L776.5 427.6L784.1 436.8L791.7 444.8L799.2 454.6L806.8 466.2L814.4 474L822 487.1L829.5 498.7L837.1 515.2L844.7 526.7L852.3 535.8L859.8 539.3L867.4 542.7L875 543.5L882.6 543.7L890.2 544.8L897.7 544.1L905.3 545.9L912.9 547.3L920.5 545.2L928 541.6L935.6 538L943.2 530.5L950.8 517.3"
+                      fill="none"
+                      stroke="var(--c2)"
+                      stroke-width="1.25"
+                      vector-effect="non-scaling-stroke"></path></svg
+                  ><div class="leg"
+                    ><div class="leg-r"
+                      ><b style="font-weight: 600">Corvan Systems</b><i>Tageskerzen · Belmar</i
+                      ><i>E</i><span data-k="o">84,57</span><i>H</i><span data-k="h">87,82</span
+                      ><i>T</i><span data-k="l">84,32</span><i>S</i><span data-k="c">87,42</span
+                      ><span data-k="chg" class="up">+2,67 (+3,15 %)</span></div
+                    ><div class="leg-r" style="gap: 0 12px"
+                      ><span><span class="leg-d" style="--c: var(--c1)"></span>SMA 20</span
+                      ><span><span class="leg-d" style="--c: var(--c2)"></span>EMA 50</span></div
+                    ><div class="qt"
+                      ><button><small>Verkaufen</small>87,38</button><span>0,08</span
+                      ><button><small>Kaufen</small>87,46</button></div
+                    ></div
+                  ><div class="xc-line" style="top: 38.9%; --c: var(--acc-l)"
+                    ><b style="font-weight: 600; color: var(--acc-l)">Kauf Limit</b> 10 Stück
+                    <svg class="ic" aria-hidden="true"><use href="#i-x"></use></svg></div></div
+                ><div class="xc-y"
+                  ><span style="top: 95.8%">74,00</span><span style="top: 84.5%">76,00</span
+                  ><span style="top: 73.1%">78,00</span><span style="top: 61.7%">80,00</span
+                  ><span style="top: 50.3%">82,00</span><span style="top: 27.6%">86,00</span
+                  ><span style="top: 4.8%">90,00</span
+                  ><b style="top: 19.5%; --c: var(--up-c)">87,42</b
+                  ><b style="top: 38.9%; --c: var(--acc-l); --tag-fg: #0c0e12">84,00</b></div
+                ></div
+              ><div class="xc-pane" style="height: 58px"
+                ><div class="xc-plot"
+                  ><svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+                    <path
+                      d="M8.8 572h5.2V1000h-5.2zM23.9 516.2h5.2V1000h-5.2zM31.5 631.4h5.2V1000h-5.2zM39.1 491.5h5.2V1000h-5.2zM69.4 439.4h5.2V1000h-5.2zM77 686.3h5.2V1000h-5.2zM92.1 631.4h5.2V1000h-5.2zM107.3 445.8h5.2V1000h-5.2zM114.8 390.9h5.2V1000h-5.2zM122.4 380.8h5.2V1000h-5.2zM145.2 623.2h5.2V1000h-5.2zM160.3 633.3h5.2V1000h-5.2zM198.2 514.4h5.2V1000h-5.2zM205.8 622.3h5.2V1000h-5.2zM213.3 600.3h5.2V1000h-5.2zM220.9 629.6h5.2V1000h-5.2zM266.4 328.7h5.2V1000h-5.2zM273.9 600.3h5.2V1000h-5.2zM289.1 143h5.2V1000h-5.2zM311.8 637.8h5.2V1000h-5.2zM319.4 748.5h5.2V1000h-5.2zM334.5 538.1h5.2V1000h-5.2zM357.3 503.4h5.2V1000h-5.2zM372.4 744.8h5.2V1000h-5.2zM380 597.6h5.2V1000h-5.2zM387.6 790.6h5.2V1000h-5.2zM402.7 638.7h5.2V1000h-5.2zM410.3 662.5h5.2V1000h-5.2zM417.9 264.7h5.2V1000h-5.2zM425.5 609.5h5.2V1000h-5.2zM433 601.2h5.2V1000h-5.2zM455.8 537.2h5.2V1000h-5.2zM463.3 510.7h5.2V1000h-5.2zM486.1 510.7h5.2V1000h-5.2zM493.6 662.5h5.2V1000h-5.2zM501.2 603.1h5.2V1000h-5.2zM523.9 422.9h5.2V1000h-5.2zM539.1 657h5.2V1000h-5.2zM584.5 484.2h5.2V1000h-5.2zM614.8 769.5h5.2V1000h-5.2zM630 551.9h5.2V1000h-5.2zM667.9 572h5.2V1000h-5.2zM690.6 638.7h5.2V1000h-5.2zM698.2 644.2h5.2V1000h-5.2zM705.8 593h5.2V1000h-5.2zM773.9 563.7h5.2V1000h-5.2zM789.1 668.9h5.2V1000h-5.2zM811.8 532.7h5.2V1000h-5.2zM827 622.3h5.2V1000h-5.2zM842.1 546.4h5.2V1000h-5.2zM849.7 644.2h5.2V1000h-5.2zM857.3 440.3h5.2V1000h-5.2zM872.4 568.3h5.2V1000h-5.2zM880 722h5.2V1000h-5.2zM895.2 514.4h5.2V1000h-5.2zM917.9 534.5h5.2V1000h-5.2zM925.5 532.7h5.2V1000h-5.2zM933 543.6h5.2V1000h-5.2zM940.6 500.6h5.2V1000h-5.2zM948.2 816.2h5.2V1000h-5.2z"
+                      fill="var(--up-c)"
+                      opacity=".5"></path>
+                    <path
+                      d="M1.2 462.2h5.2V1000h-5.2zM16.4 714.7h5.2V1000h-5.2zM46.7 594.8h5.2V1000h-5.2zM54.2 585.7h5.2V1000h-5.2zM61.8 564.7h5.2V1000h-5.2zM84.5 704.6h5.2V1000h-5.2zM99.7 476.9h5.2V1000h-5.2zM130 90.9h5.2V1000h-5.2zM137.6 606.7h5.2V1000h-5.2zM152.7 605.8h5.2V1000h-5.2zM167.9 540h5.2V1000h-5.2zM175.5 551.9h5.2V1000h-5.2zM183 545.5h5.2V1000h-5.2zM190.6 475h5.2V1000h-5.2zM228.5 741.2h5.2V1000h-5.2zM236.1 594.8h5.2V1000h-5.2zM243.6 644.2h5.2V1000h-5.2zM251.2 337.8h5.2V1000h-5.2zM258.8 663.4h5.2V1000h-5.2zM281.5 504.3h5.2V1000h-5.2zM296.7 609.5h5.2V1000h-5.2zM304.2 562.8h5.2V1000h-5.2zM327 591.2h5.2V1000h-5.2zM342.1 474.1h5.2V1000h-5.2zM349.7 495.2h5.2V1000h-5.2zM364.8 599.4h5.2V1000h-5.2zM395.2 531.7h5.2V1000h-5.2zM440.6 393.6h5.2V1000h-5.2zM448.2 578.4h5.2V1000h-5.2zM470.9 642.4h5.2V1000h-5.2zM478.5 652.5h5.2V1000h-5.2zM508.8 228.1h5.2V1000h-5.2zM516.4 608.6h5.2V1000h-5.2zM531.5 635.1h5.2V1000h-5.2zM546.7 447.6h5.2V1000h-5.2zM554.2 537.2h5.2V1000h-5.2zM561.8 366.2h5.2V1000h-5.2zM569.4 201.6h5.2V1000h-5.2zM577 396.4h5.2V1000h-5.2zM592.1 226.3h5.2V1000h-5.2zM599.7 430.2h5.2V1000h-5.2zM607.3 478.7h5.2V1000h-5.2zM622.4 606.7h5.2V1000h-5.2zM637.6 554.6h5.2V1000h-5.2zM645.2 615h5.2V1000h-5.2zM652.7 687.2h5.2V1000h-5.2zM660.3 668.9h5.2V1000h-5.2zM675.5 513.4h5.2V1000h-5.2zM683 585.7h5.2V1000h-5.2zM713.3 340.6h5.2V1000h-5.2zM720.9 668h5.2V1000h-5.2zM728.5 753.1h5.2V1000h-5.2zM736.1 728.4h5.2V1000h-5.2zM743.6 443.9h5.2V1000h-5.2zM751.2 534.5h5.2V1000h-5.2zM758.8 593h5.2V1000h-5.2zM766.4 489.7h5.2V1000h-5.2zM781.5 536.3h5.2V1000h-5.2zM796.7 638.7h5.2V1000h-5.2zM804.2 541.8h5.2V1000h-5.2zM819.4 480.5h5.2V1000h-5.2zM834.5 444.9h5.2V1000h-5.2zM864.8 628.7h5.2V1000h-5.2zM887.6 461.3h5.2V1000h-5.2zM902.7 554.6h5.2V1000h-5.2zM910.3 628.7h5.2V1000h-5.2z"
+                      fill="var(--down-c)"
+                      opacity=".5"></path></svg
+                  ><div class="xc-tag"
+                    >Volumen <span data-k="v" class="num">201 Tsd.</span></div
+                  ></div
+                ><div class="xc-y"><span style="top: 12%">1,0 Mio.</span></div></div
+              ><div class="xc-pane" style="height: 66px"
+                ><div class="xc-plot"
+                  ><svg viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+                    <rect
+                      x="0"
+                      y="300"
+                      width="1000"
+                      height="400"
+                      fill="var(--c4)"
+                      opacity=".07"></rect>
+                    <path
+                      d="M0 300H1000M0 700H1000"
+                      stroke="var(--grid-strong)"
+                      vector-effect="non-scaling-stroke"></path>
+                    <path
+                      d="M3.8 350.3L11.4 320.4L18.9 424.5L26.5 368.8L34.1 358.7L41.7 348.9L49.2 374.5L56.8 403.8L64.4 459.1L72 439.7L79.5 414.7L87.1 449.3L94.7 413.1L102.3 473.5L109.8 463.4L117.4 399.2L125 341.4L132.6 372.7L140.2 461.5L147.7 439.2L155.3 562L162.9 520.6L170.5 560.3L178 571.2L185.6 576.9L193.2 585L200.8 600.3L208.3 497.7L215.9 499.3L223.5 489.2L231.1 498.3L238.6 506.5L246.2 533.7L253.8 579.1L261.4 597L268.9 463.9L276.5 415.7L284.1 440.2L291.7 426.4L299.2 424.3L306.8 459.2L314.4 408.6L322 368.4L329.5 435.7L337.1 363.1L344.7 389.3L352.3 424.3L359.8 388.8L367.4 394.7L375 345.1L382.6 323.3L390.2 310L397.7 297.2L405.3 296.5L412.9 269.6L420.5 254L428 245.7L435.6 204.4L443.2 283.8L450.8 323.6L458.3 295.1L465.9 310.7L473.5 333.7L481.1 369.6L488.6 322.1L496.2 286.1L503.8 288.5L511.4 327.8L518.9 386.3L526.5 345.5L534.1 379L541.7 320L549.2 397.4L556.8 462.3L564.4 462.8L572 489.7L579.5 487L587.1 423.2L594.7 457.3L602.3 442.9L609.8 510.8L617.4 524.4L625 573.6L632.6 579.2L640.2 647.6L647.7 672.1L655.3 667.8L662.9 728.7L670.5 731.7L678 750.1L685.6 760.2L693.2 667.5L700.8 539.4L708.3 513.1L715.9 504.6L723.5 569.1L731.1 573.5L738.6 581.8L746.2 603.8L753.8 608.8L761.4 659.1L768.9 660.5L776.5 614.2L784.1 674.2L791.7 647.3L799.2 681.2L806.8 709.8L814.4 616.2L822 690.2L829.5 668.5L837.1 725.1L844.7 628.9L852.3 592.4L859.8 503.8L867.4 506.4L875 467.6L882.6 460L890.2 476.3L897.7 447.2L905.3 492.8L912.9 488.2L920.5 430.6L928 407.7L935.6 405.7L943.2 350L950.8 287.4"
+                      fill="none"
+                      stroke="var(--c4)"
+                      stroke-width="1.25"
+                      vector-effect="non-scaling-stroke"></path></svg
+                  ><div class="xc-tag">RSI 14 <span class="num">71,3</span></div></div
+                ><div class="xc-y"
+                  ><span style="top: 30%">70</span><span style="top: 70%">30</span
+                  ><b style="top: 28.7%; --c: var(--c4); --tag-fg: #0c0e12">71,3</b></div
+                ></div
+              ><div class="xc-x"
+                ><span style="left: calc((100%) * 0.0265)">Mai</span
+                ><span style="left: calc((100%) * 0.1932)">Jun</span
+                ><span style="left: calc((100%) * 0.3523)">Jul</span
+                ><span style="left: calc((100%) * 0.5265)">Aug</span
+                ><span style="left: calc((100%) * 0.6856)">Sep</span
+                ><span style="left: calc((100%) * 0.8523)">Okt</span></div
+              ></div
+            ><div class="floatc num" role="group" aria-label="Zeitsteuerung"
+              ><button class="pz" aria-label="Pause"
+                ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></button
+              ><button aria-label="Langsamer"
+                ><svg class="ic" aria-hidden="true"><use href="#i-dash"></use></svg></button
+              ><span>10 min/s</span
+              ><button aria-label="Schneller"
+                ><svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg></button
+              ><button
+                ><svg class="ic" aria-hidden="true"><use href="#i-skip-end-fill"></use></svg
+                >Vorspulen</button
+              ></div
+            ></div
+          ><div class="rg"
+            ><button class="">1T</button><button class="">5T</button><button class="">1M</button
+            ><button class="on">6M</button><button class="">1J</button><button class="">5J</button
+            ><button class="">Max</button><span class="sep"></span
+            ><button aria-label="Zum Datum"
+              ><svg class="ic" aria-hidden="true"><use href="#i-calendar3"></use></svg></button
+            ><span class="end"
+              ><span><i class="dot o"></i>Europa bis 17:30</span
+              ><span><i class="dot o"></i>Schwellenl. bis 16:00</span
+              ><span><i class="dot"></i>Nordamerika ab 15:30</span
+              ><span><i class="dot"></i>Asien-Pazifik zu</span
+              ><span class="sep" style="margin: 0"></span><button>%</button><button>log</button
+              ><button class="on">auto</button></span
+            ></div
+          ></section
+        >
+        <aside class="pnl side" aria-label="Watchlist und Order"
+          ><div class="side-h"
+            ><span
+              >Watchlist
+              <svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg></span
+            ><span
+              ><svg class="ic" aria-hidden="true"><use href="#i-plus-lg"></use></svg> &nbsp;<svg
+                class="ic"
+                aria-hidden="true">
+                <use href="#i-three-dots"></use></svg></span></div
+          ><div class="wl">
+            <div class="wl-h"
+              ><span>Symbol</span><span>Letzter</span><span class="chg">Änd.</span
+              ><span>Änd. %</span></div
+            >
+            <div class="wl-g"
+              ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg
+              >WATCHLIST</div
+            ><a class="wl-r on" href="instrument-desktop.html"
+              ><span class="wl-s"
+                ><span class="av" aria-hidden="true">C</span
+                ><em title="Corvan Systems">CRVN</em></span
+              ><span>87,42</span><span class="chg up">+2,67</span><span class="up">+3,15 %</span></a
+            ><div class="wl-r"
+              ><span class="wl-s"
+                ><span class="av" aria-hidden="true">O</span
+                ><em title="Orelia Pharma">ORLA</em></span
+              ><span>4,128</span><span class="chg down">−0,078</span
+              ><span class="down">−1,85 %</span></div
+            ><div class="wl-r"
+              ><span class="wl-s"
+                ><span class="av" aria-hidden="true">D</span
+                ><em title="Dravo Mining">DRVO</em></span
+              ><span>0,8734</span><span class="chg up">+0,0447</span
+              ><span class="up">+5,40 %</span></div
+            ><div class="wl-r"
+              ><span class="wl-s"
+                ><span class="av" aria-hidden="true">L</span
+                ><em title="Lumetra Logistik">LMTR</em></span
+              ><span>46,90</span><span class="chg up">+0,06</span
+              ><span class="up">+0,12 %</span></div
+            >
+            <div class="wl-g"
+              ><svg class="ic" aria-hidden="true"><use href="#i-chevron-down"></use></svg>DEPOT</div
+            ><div class="wl-r"
+              ><span class="wl-s"
+                ><span class="av" aria-hidden="true">T</span
+                ><em title="Talvar World ETF">TLVW</em></span
+              ><span>70,11</span><span class="chg up">+0,58</span
+              ><span class="up">+0,84 %</span></div
+            ><div class="wl-r"
+              ><span class="wl-s"
+                ><span class="av" aria-hidden="true">H</span><em title="Halvion AG">HLVN</em></span
+              ><span>260,36</span><span class="chg up">+6,87</span
+              ><span class="up">+2,71 %</span></div
+            ><div class="wl-r"
+              ><span class="wl-s"
+                ><span class="av" aria-hidden="true">S</span
+                ><em title="Selmark Energie AG">SLMK</em></span
+              ><span>43,53</span><span class="chg down">−0,49</span
+              ><span class="down">−1,12 %</span></div
+            ><div class="wl-r"
+              ><span class="wl-s"
+                ><span class="av" aria-hidden="true">K</span
+                ><em title="Kalveth Health SE">KLVH</em></span
+              ><span>56,58</span><span class="chg up">+0,26</span
+              ><span class="up">+0,46 %</span></div
+            ><div class="wl-r"
+              ><span class="wl-s"
+                ><span class="av" aria-hidden="true">N</span
+                ><em title="Norvane Versorgung AG">NRVN</em></span
+              ><span>16,73</span><span class="chg down">−0,06</span
+              ><span class="down">−0,38 %</span></div
+            >
+            <div class="wl-g"
+              ><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"></use></svg
+              >INDIZES</div
+            > </div
+          ><div class="wg"
+            ><h3>Order <span>Corvan Systems</span></h3
+            ><div class="q2"
+              ><button><small>Verkaufen</small>87,38</button
+              ><button class="on"><small>Kaufen</small>87,46</button><i>0,08</i></div
+            >
+            <div class="seg2"
+              ><button class="on">Markt</button><button>Limit</button><button>Stop</button></div
+            >
+            <span class="f-l">Konto</span
+            ><div class="f-i"
+              >Quintrade · Verrechnung<svg class="ic" aria-hidden="true">
+                <use href="#i-chevron-down"></use></svg
+            ></div>
+            <span class="f-l">Stück</span
+            ><div class="f-i"
+              >5<span class="ib2"
+                ><svg class="ic" aria-hidden="true"><use href="#i-dash"></use></svg
+                ><svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg></span
+            ></div>
+            <div class="kv"><span>Kurswert (5 × 87,46)</span><span>437,30 €</span></div
+            ><div class="kv"><span>Orderentgelt</span><span>4,90 €</span></div
+            ><div class="kv tot"><span>Gesamt ca.</span><span>442,20 €</span></div
+            ><div class="kv"><span>Verfügbar → danach</span><span>504,69 → 62,49 €</span></div>
+            <button class="cta2">Kauforder prüfen</button>
+            <div class="oo"
+              ><b>Kauf Limit 10 × 84,00</b>offen bis 31.10. · 844,90 € reserviert</div
+            ></div
+          ><div class="wg"
+            ><div class="d-h"
+              ><span class="av" aria-hidden="true">C</span>Corvan Systems
+              <span class="pill">CRVN</span></div
+            >
+            <div class="d-p num">87,42<small>EUR</small></div
+            ><div class="up num">+2,67 (+3,15 %)</div
+            ><div class="d-s"><i></i>Handel offen bis 17:30 · Börse Belmar</div></div
+          >
+          <div class="wg"
+            ><h3>Performance</h3
+            ><div class="tiles"
+              ><div class="tile"><span class="up">+3,15 %</span><small>1 Tag</small></div
+              ><div class="tile"><span class="up">+8,5 %</span><small>5 Tage</small></div
+              ><div class="tile"><span class="up">+9,8 %</span><small>1 Monat</small></div
+              ><div class="tile"><span class="up">+21,7 %</span><small>lfd. Jahr</small></div
+              ><div class="tile"><span class="up">+32,3 %</span><small>1 Jahr</small></div
+              ><div class="tile"><span class="up">+118,4 %</span><small>5 Jahre</small></div></div
+            ></div
+          >
+          <div class="wg"
+            ><h3>Kennzahlen</h3
+            ><div class="kv"><span>Marktkapitalisierung</span><span>12,4 Mrd. €</span></div
+            ><div class="kv"><span>KGV</span><span>24,3</span></div
+            ><div class="kv"><span>Dividendenrendite</span><span>1,8 %</span></div
+            ><div class="kv"><span>Beta</span><span>1,24</span></div
+            ><div class="kv"><span>Volatilität 1 J.</span><span>31 %</span></div
+            ><div class="kv"><span>52 Wochen</span><span>61,20 – 89,90</span></div
+            ><div class="kv"><span>Volumen heute</span><span>201 Tsd.</span></div
+            ><div class="kv"><span>Ø Volumen</span><span>482 Tsd.</span></div
+            ><div class="kv"><span>Streubesitz</span><span>78 %</span></div></div
+          >
+          <div class="wg"
+            ><h3>Dividende <span>jährlich</span></h3
+            ><div class="kv"><span>2031 (Ex 12.05.)</span><span>1,56 €</span></div
+            ><div class="kv"><span>2030</span><span>1,42 €</span></div
+            ><div class="kv"><span>2029</span><span>1,30 €</span></div></div
+          >
+          <div class="wg"
+            ><h3>Profil</h3
+            ><p class="prof2 prose"
+              >Herausforderer der großen Anbieter von Industriesoftware: Corvan entwickelt
+              Steuerungssoftware und Sensorik für Fabriken und Logistikzentren.</p
+            ></div
+          ></aside
+        >
+        <nav class="pnl strip" aria-label="Bereiche"
+          ><a class="on" href="instrument-desktop.html" aria-label="Watchlist" title="Watchlist"
+            ><svg class="ic" aria-hidden="true"><use href="#i-star"></use></svg></a
+          ><a class="" href="depot-desktop.html" aria-label="Depot" title="Depot"
+            ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg></a
+          ><button aria-label="Orders" title="Orders"
+            ><svg class="ic" aria-hidden="true"><use href="#i-arrow-left-right"></use></svg
+            ><em>2</em></button
+          ><button aria-label="Konten &amp; Banken" title="Konten &amp; Banken"
+            ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg></button
+          ><button aria-label="Märkte" title="Märkte"
+            ><svg class="ic" aria-hidden="true"><use href="#i-graph-up-arrow"></use></svg></button
+          ><button aria-label="Steuern" title="Steuern"
+            ><svg class="ic" aria-hidden="true"><use href="#i-percent"></use></svg></button
+          ><button aria-label="Demnächst" title="Demnächst"
+            ><svg class="ic" aria-hidden="true"><use href="#i-calendar3"></use></svg></button
+          ><span class="sp"></span
+          ><button aria-label="Hilfe" title="Hilfe"
+            ><svg class="ic" aria-hidden="true"><use href="#i-question-circle"></use></svg></button
+          ><button aria-label="Einstellungen" title="Einstellungen"
+            ><svg class="ic" aria-hidden="true"><use href="#i-gear"></use></svg></button
+        ></nav>
+        <section class="pnl bp" aria-label="Handelspanel"
+          ><div class="bp-t" role="tablist"
+            ><button class="on" role="tab">Positionen<span class="c">5</span></button
+            ><button class="" role="tab">Orders<span class="c">2</span></button
+            ><button class="" role="tab">Historie</button
+            ><button class="" role="tab">Konten<span class="c">3</span></button
+            ><button class="" role="tab">Screener</button
+            ><button class="" role="tab">Demnächst<span class="c">5</span></button
+            ><button class="" role="tab">Protokoll</button
+            ><span class="end"
+              ><button class="tbn" aria-label="Panel maximieren"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-up"></use></svg></button></span></div
+          ><div class="ab2"
+            ><span>Depotwert<b>18.282,56 €</b></span
+            ><span>Bargeld<b>6.229,74 €</b></span
+            ><span>Verfügbar Quintrade<b>504,69 €</b></span
+            ><span>Reserviert<b>844,90 €</b></span
+            ><span>Unrealisiert<b class="up">+1.535,46 € (+9,2 %)</b></span
+            ><span>Heute<b class="up">+147,38 €</b></span></div
+          ><div class="bp-b"
+            ><table class="tt"
+              ><thead
+                ><tr
+                  ><th>Symbol</th><th>Stück</th><th>Einstand</th><th>Kurs</th><th>Wert €</th
+                  ><th>Heute €</th><th>Heute %</th><th>G/V €</th><th>G/V %</th><th>Anteil</th
+                  ><th></th></tr></thead
+              ><tbody
+                ><tr class=""
+                  ><td
+                    ><span class="sy"
+                      ><span class="av" aria-hidden="true">T</span>TLVW<small
+                        >Talvar World ETF</small
+                      ></span
+                    ></td
+                  ><td>120</td><td>63,05</td><td>70,11</td><td>8.413,20</td
+                  ><td class="up">+70,08</td><td class="up">+0,84 %</td><td class="up">+847,20</td
+                  ><td class="up">+11,2 %</td><td>46,0 %</td
+                  ><td
+                    ><button class="mb">Kaufen</button><button class="mb">Verkaufen</button></td
+                  ></tr
+                ><tr class=""
+                  ><td
+                    ><span class="sy"
+                      ><span class="av" aria-hidden="true">H</span>HLVN<small
+                        >Halvion AG</small
+                      ></span
+                    ></td
+                  ><td>15</td><td>208,96</td><td>260,36</td><td>3.905,40</td
+                  ><td class="up">+103,04</td><td class="up">+2,71 %</td><td class="up">+771,00</td
+                  ><td class="up">+24,6 %</td><td>21,4 %</td
+                  ><td
+                    ><button class="mb">Kaufen</button><button class="mb">Verkaufen</button></td
+                  ></tr
+                ><tr class=""
+                  ><td
+                    ><span class="sy"
+                      ><span class="av" aria-hidden="true">S</span>SLMK<small
+                        >Selmark Energie AG</small
+                      ></span
+                    ></td
+                  ><td>60</td><td>46,46</td><td>43,53</td><td>2.611,80</td
+                  ><td class="down">−29,58</td><td class="down">−1,12 %</td
+                  ><td class="down">−175,80</td><td class="down">−6,3 %</td><td>14,3 %</td
+                  ><td
+                    ><button class="mb">Kaufen</button><button class="mb">Verkaufen</button></td
+                  ></tr
+                ><tr class=""
+                  ><td
+                    ><span class="sy"
+                      ><span class="av" aria-hidden="true">K</span>KLVH<small
+                        >Kalveth Health SE</small
+                      ></span
+                    ></td
+                  ><td>35</td><td>54,46</td><td>56,58</td><td>1.980,30</td><td class="up">+9,07</td
+                  ><td class="up">+0,46 %</td><td class="up">+74,20</td><td class="up">+3,9 %</td
+                  ><td>10,8 %</td
+                  ><td
+                    ><button class="mb">Kaufen</button><button class="mb">Verkaufen</button></td
+                  ></tr
+                ><tr class=""
+                  ><td
+                    ><span class="sy"
+                      ><span class="av" aria-hidden="true">N</span>NRVN<small
+                        >Norvane Versorgung AG</small
+                      ></span
+                    ></td
+                  ><td>82</td><td>16,50</td><td>16,73</td><td>1.371,86</td
+                  ><td class="down">−5,23</td><td class="down">−0,38 %</td><td class="up">+18,86</td
+                  ><td class="up">+1,4 %</td><td>7,5 %</td
+                  ><td
+                    ><button class="mb">Kaufen</button><button class="mb">Verkaufen</button></td
+                  ></tr
+                ></tbody
+              ><tfoot
+                ><tr
+                  ><td>Summe</td><td></td><td>16.747,10</td><td></td><td>18.282,56</td
+                  ><td class="up">+147,38</td><td class="up">+0,81 %</td
+                  ><td class="up">+1.535,46</td><td class="up">+9,2 %</td><td>100 %</td
+                  ><td></td></tr></tfoot></table></div
+        ></section> </div
+    ></div>
+    <script>
+      (function () {
+        var de = function (v, d) {
+          return v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
+        };
+        var dp = function (v) {
+          return v >= 10 ? 2 : v >= 1 ? 3 : 4;
+        };
+        var sg = function (v, d) {
+          return (v > 0 ? '+' : v < 0 ? '\u2212' : '') + de(Math.abs(v), d);
+        };
+        document.querySelectorAll('[data-xc]').forEach(function (el) {
+          var D = JSON.parse(el.dataset.xc);
+          var plots = Array.prototype.slice.call(el.querySelectorAll('.xc-plot'));
+          var mk = function (c, p) {
+            var e = document.createElement('div');
+            e.className = c;
+            e.hidden = true;
+            p.appendChild(e);
+            return e;
+          };
+          var vs = plots.map(function (p) {
+            return mk('xc-v', p);
+          });
+          var hl = mk('xc-h', plots[0]);
+          var yl = mk('xc-yl', el.querySelector('.xc-y'));
+          var xl = mk('xc-xl', el.querySelector('.xc-x'));
+          var set = function (k, t, cls) {
+            el.querySelectorAll('[data-k="' + k + '"]').forEach(function (e) {
+              e.textContent = t;
+              if (cls !== undefined) {
+                e.classList.remove('up', 'down');
+                if (cls) e.classList.add(cls);
+              }
+            });
+          };
+          var legend = function (i) {
+            var r = D.r[i];
+            set('d', r[0]);
+            if (D.t === 'multi') {
+              D.n.forEach(function (_, s) {
+                var v = r[s + 1];
+                set('s' + s, sg(v, 1) + ' %');
+              });
+              return;
+            }
+            var prev = i ? D.r[i - 1][4] : r[1];
+            var d = dp(r[4]);
+            set('o', de(r[1], d));
+            set('h', de(r[2], d));
+            set('l', de(r[3], d));
+            set('c', de(r[4], d));
+            var c = r[4] - prev;
+            set(
+              'chg',
+              sg(c, d) + ' (' + sg((c / prev) * 100, 2) + ' %)',
+              c > 0 ? 'up' : c < 0 ? 'down' : '',
+            );
+            set('v', de(r[5], 0) + ' Tsd.');
+          };
+          var cur = D.r.length - 1;
+          var show = function (i, cy) {
+            cur = i;
+            var box = plots[0].getBoundingClientRect();
+            var left = ((i + 0.5) / (D.r.length + D.p)) * box.width;
+            vs.forEach(function (v) {
+              v.hidden = false;
+              v.style.left = left + 'px';
+            });
+            xl.hidden = false;
+            xl.style.left = left + 'px';
+            xl.textContent = D.r[i][0];
+            if (cy !== null && cy >= box.top && cy <= box.bottom) {
+              var y = cy - box.top;
+              hl.hidden = yl.hidden = false;
+              hl.style.top = yl.style.top = y + 'px';
+              var val = D.hi - (y / box.height) * (D.hi - D.lo);
+              yl.textContent = D.t === 'multi' ? sg(val, 1) + ' %' : de(val, dp(val));
+            } else {
+              hl.hidden = yl.hidden = true;
+            }
+            legend(i);
+          };
+          var hide = function () {
+            vs.concat([hl, yl, xl]).forEach(function (e) {
+              e.hidden = true;
+            });
+            cur = D.r.length - 1;
+            legend(cur);
+          };
+          el.addEventListener('pointermove', function (e) {
+            var box = plots[0].getBoundingClientRect();
+            var i = Math.floor(((e.clientX - box.left) / box.width) * (D.r.length + D.p));
+            show(Math.max(0, Math.min(D.r.length - 1, i)), e.clientY);
+          });
+          el.addEventListener('pointerleave', hide);
+          el.addEventListener('blur', hide);
+          el.addEventListener('keydown', function (e) {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            e.preventDefault();
+            show(
+              Math.max(0, Math.min(D.r.length - 1, cur + (e.key === 'ArrowLeft' ? -1 : 1))),
+              null,
+            );
+          });
+        });
+        var pal = document.querySelector('[data-palette]');
+        if (pal) {
+          document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') pal.hidden = true;
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+              e.preventDefault();
+              pal.hidden = !pal.hidden;
+            }
+          });
+          pal.addEventListener('click', function (e) {
+            if (e.target === pal) pal.hidden = true;
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

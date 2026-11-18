@@ -1,0 +1,1856 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Charting – Depot (Desktop)</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600&amp;display=swap"
+      rel="stylesheet" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          13px/1.4 Inter,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        color-scheme: dark;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      h1,
+      h2,
+      h3,
+      p,
+      ul {
+        margin: 0;
+        padding: 0;
+      }
+      ul {
+        list-style: none;
+      }
+      :focus-visible {
+        outline: 1px solid var(--focus);
+        outline-offset: -1px;
+      }
+      .ic {
+        width: 1em;
+        height: 1em;
+        flex: none;
+        display: inline-block;
+        vertical-align: -0.125em;
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+      }
+      .up {
+        color: var(--up);
+      }
+      .down {
+        color: var(--down);
+      }
+      .mut {
+        color: var(--mut);
+      }
+      .xc {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        --xc-y: 60px;
+        outline-offset: -1px;
+      }
+      .xc-pane {
+        position: relative;
+        display: flex;
+        min-height: 0;
+        border-bottom: 1px solid var(--grid-strong);
+      }
+      .xc-main {
+        flex: 1;
+      }
+      .xc-plot {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        cursor: crosshair;
+      }
+      .xc-plot > svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .xc-y {
+        position: relative;
+        width: var(--xc-y);
+        flex: none;
+        border-left: 1px solid var(--grid-strong);
+        font-size: 11px;
+        color: var(--mut);
+        font-variant-numeric: tabular-nums;
+      }
+      .xc-y span,
+      .xc-y b {
+        position: absolute;
+        left: 0;
+        right: 0;
+        padding: 0 6px;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        font-weight: 400;
+      }
+      .xc-y b {
+        color: #0c0e12;
+        background: var(--c);
+        padding: 1px 6px;
+        z-index: 1;
+      }
+      .xc-x {
+        position: relative;
+        height: 24px;
+        flex: none;
+        margin-right: var(--xc-y);
+        font-size: 11px;
+        color: var(--mut);
+        font-variant-numeric: tabular-nums;
+      }
+      .xc-x span {
+        position: absolute;
+        top: 5px;
+        transform: translateX(-50%);
+        white-space: nowrap;
+      }
+      .xc-v {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 0;
+        border-left: 1px dashed var(--cross);
+        pointer-events: none;
+      }
+      .xc-h {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 0;
+        border-top: 1px dashed var(--cross);
+        pointer-events: none;
+      }
+      .xc-yl,
+      .xc-xl {
+        position: absolute;
+        background: var(--cross-bg);
+        color: var(--cross-fg);
+        font-size: 11px;
+        padding: 1px 6px;
+        white-space: nowrap;
+        z-index: 2;
+        pointer-events: none;
+      }
+      .xc-yl {
+        left: 0;
+        right: 0;
+        transform: translateY(-50%);
+      }
+      .xc-xl {
+        top: 3px;
+        transform: translateX(-50%);
+      }
+      .xc [hidden] {
+        display: none;
+      }
+      .xc-line {
+        position: absolute;
+        left: 10px;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 1px 6px;
+        font-size: 11px;
+        background: var(--surface);
+        border: 1px solid var(--c);
+        color: var(--fg);
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .xc-mark {
+        position: absolute;
+        transform: translate(-50%, 0);
+        color: var(--c);
+        font-size: 10px;
+        line-height: 1;
+        text-align: center;
+        pointer-events: none;
+        font-weight: 600;
+      }
+      .xc-tag {
+        position: absolute;
+        left: 8px;
+        top: 4px;
+        font-size: 11px;
+        color: var(--mut);
+        pointer-events: none;
+      }
+      .leg {
+        position: absolute;
+        left: 8px;
+        top: 6px;
+        z-index: 1;
+        pointer-events: none;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .leg-r {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0 8px;
+        align-items: baseline;
+        font-variant-numeric: tabular-nums;
+      }
+      .leg-r i {
+        font-style: normal;
+        color: var(--mut);
+      }
+      .leg-d {
+        display: inline-block;
+        width: 10px;
+        height: 2px;
+        margin-right: 5px;
+        vertical-align: middle;
+        background: var(--c);
+      }
+      :root {
+        --bg: #0b0e14;
+        --panel: #131722;
+        --surface: #131722;
+        --line: #2a2e39;
+        --line-2: #363a45;
+        --line-s: #1e222d;
+        --fg: #e1e4ea;
+        --fg-2: #d1d4dc;
+        --mut: #8f94a1;
+        --acc: #2962ff;
+        --acc-l: #6d94ff;
+        --hover: #1e222d;
+        --sel: #1b2545;
+        --av: #2a2e39;
+        --pill: #2a2e39;
+        --up: #22ab94;
+        --down: #f7626e;
+        --up-c: #089981;
+        --down-c: #f23645;
+        --line-c: #2962ff;
+        --warn: #e0a526;
+        --focus: #2962ff;
+        --grid: #1c202b;
+        --grid-strong: #2a2e39;
+        --cross: #787b86;
+        --cross-bg: #363a45;
+        --cross-fg: #fff;
+        --c1: #3f7cff;
+        --c2: #d9751a;
+        --c4: #9a66f2;
+      }
+      .wl-h,
+      .wl-r {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 62px 54px 58px;
+        gap: 4px;
+        align-items: center;
+        padding: 0 10px;
+      }
+      .wl.c .wl-h,
+      .wl.c .wl-r {
+        grid-template-columns: minmax(0, 1fr) 62px 56px;
+      }
+      .wl.c .chg {
+        display: none;
+      }
+      .wl-h {
+        height: 24px;
+        font-size: 11px;
+        color: var(--mut);
+        text-align: right;
+      }
+      .wl-h span:first-child {
+        text-align: left;
+      }
+      .wl-g {
+        height: 24px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 8px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+        color: var(--mut);
+      }
+      .wl-r {
+        height: 27px;
+        font-size: 12px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        cursor: pointer;
+        position: relative;
+      }
+      .wl-r:hover {
+        background: var(--hover);
+      }
+      .wl-r.on {
+        background: var(--sel);
+      }
+      .wl-r.on::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--acc-l);
+      }
+      .wl-s {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        text-align: left;
+        min-width: 0;
+        font-weight: 500;
+      }
+      .wl-s em {
+        font-style: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .av {
+        width: 16px;
+        height: 16px;
+        flex: none;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 8.5px;
+        font-weight: 700;
+        background: var(--av);
+        color: var(--fg);
+      }
+      .wg {
+        padding: 10px 12px;
+        border-top: 1px solid var(--line);
+      }
+      .wg h3 {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 7px;
+      }
+      .wg h3 span {
+        font-weight: 400;
+        color: var(--mut);
+      }
+      .kv {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 12px;
+        line-height: 21px;
+        font-variant-numeric: tabular-nums;
+      }
+      .kv > span:first-child {
+        color: var(--mut);
+      }
+      .kv.tot {
+        font-weight: 600;
+        border-top: 1px solid var(--line);
+        margin-top: 3px;
+        padding-top: 3px;
+      }
+      .kv.tot > span:first-child {
+        color: var(--fg);
+      }
+      .q2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        position: relative;
+        margin-bottom: 8px;
+      }
+      .q2 button {
+        height: 44px;
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        line-height: 1.25;
+        font-variant-numeric: tabular-nums;
+        font-size: 14px;
+        font-weight: 600;
+        border: 1px solid var(--line-2);
+        color: var(--fg);
+      }
+      .q2 small {
+        font-size: 10.5px;
+        font-weight: 400;
+        color: var(--mut);
+      }
+      .q2 .on {
+        background: var(--acc);
+        border-color: var(--acc);
+        color: #fff;
+      }
+      .q2 .on small {
+        color: #e3e9ff;
+      }
+      .q2 i {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-style: normal;
+        background: var(--panel);
+        border: 1px solid var(--line-2);
+        border-radius: 3px;
+        padding: 0 4px;
+        font-size: 10.5px;
+        color: var(--mut);
+      }
+      .seg2 {
+        display: flex;
+        gap: 14px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 8px;
+        font-size: 12.5px;
+        color: var(--mut);
+      }
+      .seg2 button {
+        padding: 3px 0 5px;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+      }
+      .seg2 .on {
+        color: var(--fg);
+        border-bottom-color: var(--acc-l);
+      }
+      .f-l {
+        font-size: 11.5px;
+        color: var(--mut);
+        margin-bottom: 3px;
+        display: block;
+      }
+      .f-i {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 8px;
+        margin-bottom: 8px;
+        border: 1px solid var(--line-2);
+        border-radius: 4px;
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+      }
+      .f-i .ib2 {
+        display: inline-flex;
+        gap: 8px;
+        color: var(--mut);
+      }
+      .cta2 {
+        width: 100%;
+        height: 36px;
+        margin-top: 8px;
+        border-radius: 4px;
+        background: var(--acc);
+        color: #fff;
+        font-weight: 600;
+      }
+      .oo {
+        margin-top: 8px;
+        padding: 6px 8px;
+        border: 1px solid var(--line-2);
+        border-left: 2px solid var(--acc-l);
+        border-radius: 3px;
+        font-size: 11.5px;
+        color: var(--mut);
+      }
+      .oo b {
+        display: block;
+        color: var(--fg);
+        font-weight: 500;
+      }
+      .d-h {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-weight: 600;
+      }
+      .d-p {
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.2;
+        margin-top: 3px;
+      }
+      .d-p small {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--mut);
+        margin-left: 3px;
+      }
+      .d-s {
+        font-size: 11.5px;
+        color: var(--mut);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 2px;
+      }
+      .d-s i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--up);
+      }
+      .tiles {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+      }
+      .tile {
+        padding: 5px 2px;
+        text-align: center;
+        border-radius: 3px;
+        background: color-mix(in srgb, var(--up) 13%, transparent);
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      .tile small {
+        display: block;
+        font-size: 10.5px;
+        color: var(--mut);
+      }
+      .prose {
+        font-size: 12px;
+        color: var(--fg-2);
+        line-height: 1.5;
+      }
+      .ab2 {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 0 12px;
+        height: 30px;
+        font-size: 12px;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--line);
+        font-variant-numeric: tabular-nums;
+        overflow: hidden;
+      }
+      .ab2 span {
+        color: var(--mut);
+      }
+      .ab2 b {
+        font-weight: 500;
+        color: var(--fg);
+        margin-left: 4px;
+      }
+      .ab2 b.up {
+        color: var(--up);
+      }
+      .tt {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+      }
+      .tt th {
+        position: sticky;
+        top: 0;
+        background: var(--panel);
+        font-weight: 400;
+        color: var(--mut);
+        text-align: right;
+        padding: 4px 10px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+        z-index: 1;
+      }
+      .tt td {
+        text-align: right;
+        padding: 0 10px;
+        height: 27px;
+        white-space: nowrap;
+        border-bottom: 1px solid var(--line-s);
+      }
+      .tt th:first-child,
+      .tt td:first-child {
+        text-align: left;
+      }
+      .tt tr:hover td {
+        background: var(--hover);
+      }
+      .tt tr.on td {
+        background: var(--sel);
+      }
+      .tt .l {
+        text-align: left;
+      }
+      .tt tfoot td {
+        font-weight: 600;
+        border-bottom: 0;
+      }
+      .sy {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 500;
+      }
+      .sy small {
+        font-weight: 400;
+        color: var(--mut);
+        font-size: 11px;
+      }
+      .pill {
+        display: inline-block;
+        padding: 0 6px;
+        border-radius: 3px;
+        line-height: 17px;
+        font-size: 11px;
+        background: var(--pill);
+        color: var(--fg-2);
+      }
+      .pill.b {
+        color: var(--acc-l);
+        background: color-mix(in srgb, var(--acc-l) 16%, transparent);
+      }
+      .mb {
+        height: 21px;
+        padding: 0 7px;
+        border: 1px solid var(--line-2);
+        border-radius: 3px;
+        font-size: 11px;
+        color: var(--fg-2);
+        margin-left: 3px;
+      }
+      .mb:hover {
+        background: var(--hover);
+      }
+      .al {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 44px;
+        gap: 1px 8px;
+        font-size: 12px;
+        align-items: center;
+        margin-bottom: 7px;
+      }
+      .al span:nth-child(2) {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .al i {
+        grid-column: 1/-1;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--line);
+        overflow: hidden;
+        display: block;
+      }
+      .al i::before {
+        content: '';
+        display: block;
+        height: 100%;
+        width: var(--w);
+        background: var(--acc-l);
+        border-radius: 2px;
+      }
+      .note {
+        font-size: 11.5px;
+        color: var(--warn);
+        display: flex;
+        gap: 5px;
+        align-items: baseline;
+      }
+      .qt {
+        display: flex;
+        gap: 2px;
+        margin-top: 5px;
+        pointer-events: auto;
+        align-items: stretch;
+        font-variant-numeric: tabular-nums;
+      }
+      .qt button {
+        min-width: 74px;
+        padding: 2px 8px;
+        border-radius: 3px;
+        line-height: 1.2;
+        text-align: left;
+        font-size: 12.5px;
+        font-weight: 600;
+        background: var(--surface);
+        border: 1px solid var(--line-2);
+      }
+      .qt button:last-child {
+        text-align: right;
+        border-color: var(--acc-l);
+        color: var(--acc-l);
+      }
+      .qt small {
+        display: block;
+        font-size: 10px;
+        font-weight: 400;
+        color: var(--mut);
+      }
+      .qt span {
+        align-self: center;
+        font-size: 10.5px;
+        color: var(--mut);
+        padding: 0 4px;
+      }
+      .stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 26px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--line);
+        font-variant-numeric: tabular-nums;
+      }
+      .stats div {
+        font-size: 11.5px;
+        color: var(--mut);
+        white-space: nowrap;
+      }
+      .stats strong {
+        display: block;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--fg);
+      }
+      .stats strong.up {
+        color: var(--up);
+      }
+      .rg {
+        height: 30px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 8px;
+        font-size: 12px;
+        color: var(--mut);
+        border-top: 1px solid var(--line);
+        white-space: nowrap;
+        overflow: hidden;
+      }
+      .rg button {
+        padding: 2px 7px;
+        border-radius: 3px;
+      }
+      .rg button:hover {
+        background: var(--hover);
+        color: var(--fg);
+      }
+      .rg .on {
+        color: var(--acc-l);
+      }
+      .rg .end {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .rg .dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--mut);
+        margin-right: 4px;
+      }
+      .rg .dot.o {
+        background: var(--up);
+      }
+
+      .tv {
+        height: 100vh;
+        min-height: 700px;
+        min-width: 1240px;
+        display: grid;
+        grid-template-rows: 44px minmax(0, 1fr);
+        gap: 4px;
+        overflow: hidden;
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 8px;
+        background: var(--panel);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .sep {
+        width: 1px;
+        height: 22px;
+        background: var(--line);
+        margin: 0 5px;
+        flex: none;
+      }
+      .tbn {
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 8px;
+        border-radius: 4px;
+        color: var(--fg-2);
+      }
+      .tbn:hover {
+        background: var(--hover);
+      }
+      .tbn .ic {
+        font-size: 15px;
+      }
+      .tbn.on {
+        color: var(--acc-l);
+      }
+      .lg {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--acc);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        margin-right: 6px;
+        font-size: 13px;
+      }
+      .sym {
+        font-weight: 600;
+      }
+      .clock {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        height: 32px;
+        padding: 0 4px;
+        background: var(--hover);
+        border-radius: 4px;
+      }
+      .clock .tbn {
+        height: 26px;
+        padding: 0 6px;
+      }
+      .clock b {
+        font-weight: 500;
+        padding: 0 6px;
+      }
+      .av2 {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--line-2);
+        display: grid;
+        place-items: center;
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .trade {
+        height: 30px;
+        padding: 0 14px;
+        border-radius: 4px;
+        background: var(--acc);
+        color: #fff;
+        font-weight: 600;
+        margin-left: 6px;
+      }
+      .bdgw {
+        position: relative;
+      }
+      .bdgw em {
+        position: absolute;
+        right: 1px;
+        top: 1px;
+        min-width: 14px;
+        height: 14px;
+        border-radius: 7px;
+        font-style: normal;
+        font-size: 9.5px;
+        line-height: 14px;
+        text-align: center;
+        background: var(--down-c);
+        color: #fff;
+        padding: 0 3px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 44px minmax(0, 1fr) 304px 44px;
+        grid-template-rows: minmax(0, 1fr) var(--bp, 254px);
+        gap: 4px;
+        min-height: 0;
+        grid-template-areas: 't c r s' 'p p r s';
+      }
+      .pnl {
+        background: var(--panel);
+        min-height: 0;
+        min-width: 0;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .tools {
+        grid-area: t;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 5px 0;
+        gap: 1px;
+      }
+      .tools button,
+      .strip a,
+      .strip button {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 4px;
+        color: var(--fg-2);
+        font-size: 16px;
+        position: relative;
+      }
+      .tools button:hover,
+      .strip a:hover,
+      .strip button:hover {
+        background: var(--hover);
+      }
+      .tools .on,
+      .strip .on {
+        color: var(--acc-l);
+        background: var(--sel);
+      }
+      .tools hr {
+        width: 22px;
+        border: 0;
+        border-top: 1px solid var(--line);
+        margin: 4px 0;
+      }
+      .cw {
+        grid-area: c;
+        display: flex;
+        flex-direction: column;
+      }
+      .cw > .fill {
+        flex: 1;
+        min-height: 0;
+      }
+      .floatc {
+        position: absolute;
+        left: 50%;
+        bottom: var(--float, 34px);
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 3px;
+        background: var(--hover);
+        border: 1px solid var(--line-2);
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 2;
+        white-space: nowrap;
+      }
+      .floatc button {
+        height: 24px;
+        min-width: 26px;
+        padding: 0 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border-radius: 3px;
+      }
+      .floatc button:hover {
+        background: var(--line);
+      }
+      .floatc .pz {
+        color: var(--acc-l);
+      }
+      .floatc span {
+        padding: 0 6px;
+        color: var(--mut);
+      }
+      .side {
+        grid-area: r;
+        display: flex;
+        flex-direction: column;
+        overflow: auto;
+      }
+      .side-h {
+        height: 38px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        font-weight: 600;
+      }
+      .side-h .ic {
+        color: var(--mut);
+      }
+      .strip {
+        grid-area: s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+        padding: 5px 0;
+      }
+      .strip .sp {
+        flex: 1;
+      }
+      .strip em {
+        position: absolute;
+        right: 2px;
+        top: 2px;
+        min-width: 13px;
+        height: 13px;
+        border-radius: 7px;
+        font-style: normal;
+        font-size: 9px;
+        line-height: 13px;
+        background: var(--acc);
+        color: #fff;
+        text-align: center;
+        padding: 0 2px;
+      }
+      .bp {
+        grid-area: p;
+        display: flex;
+        flex-direction: column;
+      }
+      .bp-t {
+        height: 34px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        padding: 0 6px;
+        border-bottom: 1px solid var(--line);
+        font-size: 12.5px;
+        color: var(--mut);
+      }
+      .bp-t button {
+        height: 26px;
+        padding: 0 9px;
+        border-radius: 4px;
+        white-space: nowrap;
+      }
+      .bp-t button:hover {
+        background: var(--hover);
+      }
+      .bp-t .on {
+        color: var(--fg);
+        background: var(--hover);
+      }
+      .bp-t .c {
+        margin-left: 5px;
+        color: var(--mut);
+      }
+      .bp-t .end {
+        margin-left: auto;
+        display: flex;
+      }
+      .bp-b {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+      }
+      .cmp {
+        display: flex;
+        gap: 14px;
+        font-size: 12px;
+      }
+      .phs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 32px;
+        justify-content: center;
+        padding: 24px;
+        min-height: 100%;
+      }
+      .phw h2 {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--mut);
+        margin-bottom: 8px;
+      }
+      .ph {
+        width: 390px;
+        max-width: 100vw;
+        height: 844px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--panel);
+        border: 1px solid var(--line);
+      }
+      @media (max-width: 440px) {
+        .phs {
+          padding: 0;
+          gap: 0;
+        }
+        .phw h2 {
+          display: none;
+        }
+        .ph {
+          border: 0;
+        }
+      }
+      .m-t {
+        height: 46px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 6px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      .m-t h1 {
+        font-size: 15px;
+        font-weight: 600;
+        flex: 1;
+        padding-left: 6px;
+      }
+      .m-tm {
+        height: 32px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 6px;
+        font-size: 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      .m-tm .tbn {
+        height: 28px;
+        padding: 0 6px;
+      }
+      .m-tm .pz {
+        color: var(--acc-l);
+      }
+      .m-tm .r {
+        margin-left: auto;
+        color: var(--mut);
+      }
+      .m-b {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+      }
+      .m-c {
+        flex: 1;
+        min-height: 0;
+        --xc-y: 52px;
+      }
+      .m-rg {
+        height: 34px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        font-size: 12.5px;
+        color: var(--mut);
+        border-top: 1px solid var(--line);
+      }
+      .m-rg .on {
+        color: var(--acc-l);
+      }
+      .m-tr {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        padding: 8px;
+        flex: none;
+        border-top: 1px solid var(--line);
+      }
+      .m-tr button {
+        height: 44px;
+        border-radius: 4px;
+        line-height: 1.2;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+        border: 1px solid var(--line-2);
+      }
+      .m-tr .buy {
+        background: var(--acc);
+        border-color: var(--acc);
+        color: #fff;
+      }
+      .m-tr small {
+        display: block;
+        font-weight: 400;
+        font-size: 11px;
+        opacity: 0.85;
+      }
+      .m-n {
+        height: 54px;
+        flex: none;
+        display: flex;
+        border-top: 1px solid var(--line);
+      }
+      .m-n a,
+      .m-n button {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        font-size: 10px;
+        color: var(--mut);
+      }
+      .m-n .ic {
+        font-size: 18px;
+      }
+      .m-n .on {
+        color: var(--acc-l);
+      }
+      .m-hd {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+      .m-hd .big {
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .m-pr {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0 8px;
+        padding: 7px 12px;
+        border-bottom: 1px solid var(--line-s);
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+      }
+      .m-pr small {
+        font-size: 11.5px;
+        color: var(--mut);
+      }
+      .m-pr small.up {
+        color: var(--up);
+      }
+      .m-pr small.down {
+        color: var(--down);
+      }
+      .m-pr .rt {
+        text-align: right;
+      }
+      .m-chart {
+        height: 190px;
+        --xc-y: 52px;
+        border-bottom: 1px solid var(--line);
+      }
+      .m-wl .wl-r {
+        height: 44px;
+        font-size: 13px;
+      }
+      .m-wl .wl-h,
+      .m-wl .wl-r {
+        grid-template-columns: minmax(0, 1fr) 72px 68px;
+      }
+      .m-wl .av {
+        width: 24px;
+        height: 24px;
+        font-size: 11px;
+      }
+      @media (max-width: 1400px) {
+        .ab2 > span:last-child,
+        .rg .end > span:nth-child(2) {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="i-list" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5" />
+      </symbol>
+      <symbol id="i-briefcase" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5m1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0M1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5" />
+      </symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708" />
+      </symbol>
+      <symbol id="i-plus-circle" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+        <path
+          d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+      </symbol>
+      <symbol id="i-pause-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5" />
+      </symbol>
+      <symbol id="i-check2" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0" />
+      </symbol>
+      <symbol id="i-bell" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
+      </symbol>
+      <symbol id="i-crosshair" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8.5.5a.5.5 0 0 0-1 0v.518A7 7 0 0 0 1.018 7.5H.5a.5.5 0 0 0 0 1h.518A7 7 0 0 0 7.5 14.982v.518a.5.5 0 0 0 1 0v-.518A7 7 0 0 0 14.982 8.5h.518a.5.5 0 0 0 0-1h-.518A7 7 0 0 0 8.5 1.018zm-6.48 7A6 6 0 0 1 7.5 2.02v.48a.5.5 0 0 0 1 0v-.48a6 6 0 0 1 5.48 5.48h-.48a.5.5 0 0 0 0 1h.48a6 6 0 0 1-5.48 5.48v-.48a.5.5 0 0 0-1 0v.48A6 6 0 0 1 2.02 8.5h.48a.5.5 0 0 0 0-1zM8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4" />
+      </symbol>
+      <symbol id="i-rulers" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M1 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5v-1H2v-1h4v-1H4v-1h2v-1H2v-1h4V9H4V8h2V7H2V6h4V2h1v4h1V4h1v2h1V2h1v4h1V4h1v2h1V2h1v4h1V1a1 1 0 0 0-1-1z" />
+      </symbol>
+      <symbol id="i-zoom-in" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11M13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0" />
+        <path
+          d="M10.344 11.742q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1 6.5 6.5 0 0 1-1.398 1.4z" />
+        <path
+          fill-rule="evenodd"
+          d="M6.5 3a.5.5 0 0 1 .5.5V6h2.5a.5.5 0 0 1 0 1H7v2.5a.5.5 0 0 1-1 0V7H3.5a.5.5 0 0 1 0-1H6V3.5a.5.5 0 0 1 .5-.5" />
+      </symbol>
+      <symbol id="i-dash" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+      </symbol>
+      <symbol id="i-skip-end-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M12.5 4a.5.5 0 0 0-1 0v3.248L5.233 3.612C4.693 3.3 4 3.678 4 4.308v7.384c0 .63.692 1.01 1.233.697L11.5 8.753V12a.5.5 0 0 0 1 0z" />
+      </symbol>
+      <symbol id="i-calendar3" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857z" />
+        <path
+          d="M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2m3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2" />
+      </symbol>
+      <symbol id="i-three-dots" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3" />
+      </symbol>
+      <symbol id="i-exclamation-triangle" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z" />
+        <path
+          d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z" />
+      </symbol>
+      <symbol id="i-star" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
+      </symbol>
+      <symbol id="i-arrow-left-right" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5m14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5" />
+      </symbol>
+      <symbol id="i-bank" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="m8 0 6.61 3h.89a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H15v7a.5.5 0 0 1 .485.38l.5 2a.498.498 0 0 1-.485.62H.5a.498.498 0 0 1-.485-.62l.5-2A.5.5 0 0 1 1 13V6H.5a.5.5 0 0 1-.5-.5v-2A.5.5 0 0 1 .5 3h.89zM3.777 3h8.447L8 1zM2 6v7h1V6zm2 0v7h2.5V6zm3.5 0v7h1V6zm2 0v7H12V6zM13 6v7h1V6zm2-1V4H1v1zm-.39 9H1.39l-.25 1h13.72z" />
+      </symbol>
+      <symbol id="i-graph-up-arrow" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M0 0h1v15h15v1H0zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5" />
+      </symbol>
+      <symbol id="i-percent" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M13.442 2.558a.625.625 0 0 1 0 .884l-10 10a.625.625 0 1 1-.884-.884l10-10a.625.625 0 0 1 .884 0M4.5 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m0 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5m7 6a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m0 1a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" />
+      </symbol>
+      <symbol id="i-question-circle" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+        <path
+          d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286m1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94" />
+      </symbol>
+      <symbol id="i-gear" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0" />
+        <path
+          d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z" />
+      </symbol>
+      <symbol id="i-chevron-up" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z" />
+      </symbol>
+    </svg>
+    <div class="tv">
+      <header class="top"
+        ><a class="lg" href="../index.html" aria-label="Zur Mockup-Übersicht">P</a
+        ><button class="tbn" aria-label="Menü"
+          ><svg class="ic" aria-hidden="true"><use href="#i-list"></use></svg></button
+        ><span class="sep"></span
+        ><button class="tbn sym"
+          ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>Depot ·
+          Quintrade<svg class="ic" aria-hidden="true">
+            <use href="#i-chevron-down"></use></svg></button
+        ><button class="tbn"
+          ><svg class="ic" aria-hidden="true"><use href="#i-plus-circle"></use></svg
+          >Vergleichen</button
+        ><span class="sep"></span><button class="tbn on">Rendite</button
+        ><button class="tbn">Wert</button><button class="tbn">Dividenden</button
+        ><span style="flex: 1"></span>
+        <div class="clock num" role="group" aria-label="Spielzeit"
+          ><button class="tbn" style="color: var(--acc-l)" aria-label="Pause"
+            ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></button
+          ><b>Mo., 20.10.2031, 10:42</b></div
+        ><span class="sep"></span>
+        <span class="mut" style="font-size: 12px; padding: 0 6px"
+          ><svg class="ic" aria-hidden="true"><use href="#i-check2"></use></svg> Gespeichert
+          10:42</span
+        ><button class="tbn bdgw" aria-label="3 Meldungen"
+          ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg><em>3</em></button
+        ><span class="av2" title="Spieler Alex">A</span
+        ><button class="trade">Handeln</button></header
+      >
+      <div class="grid" style="--bp: 280px">
+        <nav class="pnl tools" aria-label="Zeichenwerkzeuge"
+          ><button class="on" aria-label="Fadenkreuz" title="Fadenkreuz"
+            ><svg class="ic" aria-hidden="true"><use href="#i-crosshair"></use></svg></button
+          ><button class="" aria-label="Messen" title="Messen"
+            ><svg class="ic" aria-hidden="true"><use href="#i-rulers"></use></svg></button
+          ><button class="" aria-label="Zoom" title="Zoom"
+            ><svg class="ic" aria-hidden="true"><use href="#i-zoom-in"></use></svg></button
+        ></nav>
+        <section class="pnl cw" aria-label="Wertentwicklung"
+          ><div class="stats"
+            ><div>Depotwert<strong class="">18.282,56 €</strong></div
+            ><div>Heute<strong class="up">+147,38 € · +0,81 %</strong></div
+            ><div>Unrealisiert<strong class="up">+1.535,46 € · +9,2 %</strong></div
+            ><div>Einstand<strong class="">16.747,10 €</strong></div
+            ><div>Erträge 2031<strong class="">300,10 €</strong></div></div
+          ><div class="fill" style="position: relative"
+            ><div
+              class="xc"
+              tabindex="0"
+              data-xc='{"t":"multi","p":3,"lo":-1.512,"hi":11.212,"n":["Depot","Talvar World"],"r":[["20.10.30",0,0],["25.10.30",-0.56,-0.12],["30.10.30",-0.32,0.08],["04.11.30",0.22,0.59],["09.11.30",0.02,0.93],["14.11.30",-0.59,1.3],["19.11.30",-0.57,1.57],["24.11.30",-0.28,1.82],["30.11.30",0.31,1.9],["05.12.30",-0.24,2.17],["10.12.30",-0.83,2.8],["15.12.30",-0.43,2.69],["20.12.30",-0.15,2.46],["25.12.30",0.66,3.16],["30.12.30",1.21,3.26],["05.01.31",1.21,3.61],["10.01.31",1.12,3.94],["15.01.31",2.49,3.54],["20.01.31",2.39,4.42],["25.01.31",2.04,5.08],["30.01.31",1.5,5.16],["04.02.31",1.6,5.45],["10.02.31",1.73,5.51],["15.02.31",1.61,5.19],["20.02.31",1.63,5.16],["25.02.31",1.83,5.31],["02.03.31",2.24,5.74],["07.03.31",2.87,6.02],["12.03.31",3.03,6.05],["18.03.31",2.14,6.57],["23.03.31",2.56,6.29],["28.03.31",1.86,6.61],["02.04.31",1.83,7.05],["07.04.31",1.12,6.94],["12.04.31",1.18,6.27],["17.04.31",0.83,5.93],["23.04.31",1,6.03],["28.04.31",2.73,6.24],["03.05.31",2.75,6.84],["08.05.31",3.26,6.47],["13.05.31",2.6,6.48],["18.05.31",2.51,6.74],["23.05.31",2.92,6.69],["29.05.31",2.92,5.8],["03.06.31",3.17,6.12],["08.06.31",3.28,7],["13.06.31",2.8,7.4],["18.06.31",3.16,7.06],["23.06.31",2.78,6.91],["28.06.31",3.83,7.01],["04.07.31",3.61,7.98],["09.07.31",4.04,8.24],["14.07.31",4.1,8.29],["19.07.31",4.67,8.92],["24.07.31",4.4,8.9],["29.07.31",5.01,9.66],["03.08.31",5,9.39],["09.08.31",5.76,9.22],["14.08.31",6.17,9.52],["19.08.31",6.31,10.11],["24.08.31",5.93,10.39],["29.08.31",6.42,10.53],["03.09.31",6.75,9.78],["08.09.31",7.76,9.5],["14.09.31",7.6,9.27],["19.09.31",7.99,9.07],["24.09.31",8.35,9.32],["29.09.31",8.58,9.19],["04.10.31",8.77,9.52],["09.10.31",8.94,9.57],["14.10.31",8.64,9.45],["20.10.31",8.1,9.5]]}'
+              ><div class="xc-pane xc-main"
+                ><div class="xc-plot"
+                  ><svg
+                    viewBox="0 0 1000 1000"
+                    preserveAspectRatio="none"
+                    role="img"
+                    aria-label="Zeitgewichtete Wertentwicklung über ein Jahr: Depot +8,1 %, Talvar World +9,5 %">
+                    <path
+                      d="M0 881.2H1000M0 724H1000M0 566.8H1000M0 409.6H1000M0 252.4H1000M0 95.2H1000M46.7 0V1000M126.7 0V1000M206.7 0V1000M286.7 0V1000M353.3 0V1000M433.3 0V1000M513.3 0V1000M593.3 0V1000M673.3 0V1000M753.3 0V1000M833.3 0V1000M913.3 0V1000"
+                      stroke="var(--grid)"
+                      fill="none"
+                      vector-effect="non-scaling-stroke"></path>
+                    <path
+                      d="M0 881.2H1000"
+                      stroke="var(--grid-strong)"
+                      vector-effect="non-scaling-stroke"></path>
+                    <path
+                      d="M6.7 881.2L20 925.2L33.3 906.3L46.7 863.9L60 879.6L73.3 927.6L86.7 926L100 903.2L113.3 856.8L126.7 900.1L140 946.4L153.3 915L166.7 893L180 829.3L193.3 786.1L206.7 786.1L220 793.2L233.3 685.5L246.7 693.3L260 720.9L273.3 763.3L286.7 755.4L300 745.2L313.3 754.7L326.7 753.1L340 737.4L353.3 705.1L366.7 655.6L380 643L393.3 713L406.7 680L420 735L433.3 737.4L446.7 793.2L460 788.4L473.3 816L486.7 802.6L500 666.6L513.3 665.1L526.7 625L540 676.8L553.3 683.9L566.7 651.7L580 651.7L593.3 632L606.7 623.4L620 661.1L633.3 632.8L646.7 662.7L660 580.2L673.3 597.5L686.7 563.7L700 558.9L713.3 514.1L726.7 535.4L740 487.4L753.3 488.2L766.7 428.5L780 396.3L793.3 385.2L806.7 415.1L820 376.6L833.3 350.7L846.7 271.3L860 283.9L873.3 253.2L886.7 224.9L900 206.8L913.3 191.9L926.7 178.5L940 202.1L953.3 244.6"
+                      fill="none"
+                      stroke="var(--c1)"
+                      stroke-width="2"
+                      stroke-linejoin="round"
+                      vector-effect="non-scaling-stroke"></path>
+                    <path
+                      d="M6.7 881.2L20 890.6L33.3 874.9L46.7 834.8L60 808.1L73.3 779L86.7 757.8L100 738.1L113.3 731.9L126.7 710.6L140 661.1L153.3 669.8L166.7 687.8L180 632.8L193.3 625L206.7 597.5L220 571.5L233.3 603L246.7 533.8L260 481.9L273.3 475.6L286.7 452.8L300 448.1L313.3 473.3L326.7 475.6L340 463.8L353.3 430L366.7 408L380 405.7L393.3 364.8L406.7 386.8L420 361.7L433.3 327.1L446.7 335.7L460 388.4L473.3 415.1L486.7 407.3L500 390.8L513.3 343.6L526.7 372.7L540 371.9L553.3 351.5L566.7 355.4L580 425.3L593.3 400.2L606.7 331L620 299.6L633.3 326.3L646.7 338.1L660 330.2L673.3 254L686.7 233.6L700 229.6L713.3 180.1L726.7 181.7L740 122L753.3 143.2L766.7 156.5L780 133L793.3 86.6L806.7 64.6L820 53.6L833.3 112.5L846.7 134.5L860 152.6L873.3 168.3L886.7 148.7L900 158.9L913.3 133L926.7 129L940 138.5L953.3 134.5"
+                      fill="none"
+                      stroke="var(--c2)"
+                      stroke-width="2"
+                      stroke-linejoin="round"
+                      vector-effect="non-scaling-stroke"></path></svg
+                  ><div class="leg"
+                    ><div class="leg-r"
+                      ><b style="font-weight: 600">Depot · Quintrade</b><i>zeitgewichtet · 1 Jahr</i
+                      ><i data-k="d">20.10.31</i></div
+                    ><div class="leg-r" style="gap: 0 14px"
+                      ><span
+                        ><span class="leg-d" style="--c: var(--c1)"></span>Depot
+                        <span data-k="s0">+8,1 %</span></span
+                      ><span
+                        ><span class="leg-d" style="--c: var(--c2)"></span>Talvar World
+                        <span data-k="s1">+9,5 %</span></span
+                      ></div
+                    ></div
+                  ></div
+                ><div class="xc-y"
+                  ><span style="top: 88.1%">0 %</span><span style="top: 72.4%">2 %</span
+                  ><span style="top: 56.7%">4 %</span><span style="top: 41%">6 %</span
+                  ><b style="top: 24.5%; --c: var(--c1); --tag-fg: #0c0e12">8,1 %</b
+                  ><b style="top: 13.5%; --c: var(--c2); --tag-fg: #0c0e12">9,5 %</b></div
+                ></div
+              ><div class="xc-x"
+                ><span style="left: calc((100%) * 0.0467)">Nov</span
+                ><span style="left: calc((100%) * 0.1267)">Dez</span
+                ><span style="left: calc((100%) * 0.2067)">2031</span
+                ><span style="left: calc((100%) * 0.2867)">Feb</span
+                ><span style="left: calc((100%) * 0.3533)">Mär</span
+                ><span style="left: calc((100%) * 0.4333)">Apr</span
+                ><span style="left: calc((100%) * 0.5133)">Mai</span
+                ><span style="left: calc((100%) * 0.5933)">Jun</span
+                ><span style="left: calc((100%) * 0.6733)">Jul</span
+                ><span style="left: calc((100%) * 0.7533)">Aug</span
+                ><span style="left: calc((100%) * 0.8333)">Sep</span
+                ><span style="left: calc((100%) * 0.9133)">Okt</span></div
+              ></div
+            ><div class="floatc num" role="group" aria-label="Zeitsteuerung"
+              ><button class="pz" aria-label="Pause"
+                ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></button
+              ><button aria-label="Langsamer"
+                ><svg class="ic" aria-hidden="true"><use href="#i-dash"></use></svg></button
+              ><span>10 min/s</span
+              ><button aria-label="Schneller"
+                ><svg class="ic" aria-hidden="true"><use href="#i-plus"></use></svg></button
+              ><button
+                ><svg class="ic" aria-hidden="true"><use href="#i-skip-end-fill"></use></svg
+                >Vorspulen</button
+              ></div
+            ></div
+          ><div class="rg"
+            ><button class="">1T</button><button class="">5T</button><button class="">1M</button
+            ><button class="">6M</button><button class="on">1J</button><button class="">5J</button
+            ><button class="">Max</button><span class="sep"></span
+            ><button aria-label="Zum Datum"
+              ><svg class="ic" aria-hidden="true"><use href="#i-calendar3"></use></svg></button
+            ><span class="end"
+              ><span><i class="dot o"></i>Europa bis 17:30</span
+              ><span><i class="dot o"></i>Schwellenl. bis 16:00</span
+              ><span><i class="dot"></i>Nordamerika ab 15:30</span
+              ><span><i class="dot"></i>Asien-Pazifik zu</span
+              ><span class="sep" style="margin: 0"></span><button>%</button><button>log</button
+              ><button class="on">auto</button></span
+            ></div
+          ></section
+        >
+        <aside class="pnl side" aria-label="Allokation"
+          ><div class="side-h"
+            ><span>Depot-Details</span
+            ><svg class="ic" aria-hidden="true"><use href="#i-three-dots"></use></svg></div
+          ><div class="wg"
+            ><h3>Allokation <span>Sektor</span></h3
+            ><div class="al"
+              ><span>ETF breit gestreut</span><span>46,0 %</span><i style="--w: 46%"></i></div
+            ><div class="al"
+              ><span>Technologie</span><span>21,4 %</span><i style="--w: 21.4%"></i></div
+            ><div class="al"><span>Energie</span><span>14,3 %</span><i style="--w: 14.3%"></i></div
+            ><div class="al"
+              ><span>Gesundheit</span><span>10,8 %</span><i style="--w: 10.8%"></i></div
+            ><div class="al"><span>Versorger</span><span>7,5 %</span><i style="--w: 7.5%"></i></div
+          ></div>
+          <div class="wg"
+            ><h3>Region <span>ETF durchgerechnet</span></h3
+            ><div class="al"><span>Europa</span><span>67,8 %</span><i style="--w: 67.8%"></i></div
+            ><div class="al"
+              ><span>Nordamerika</span><span>22,1 %</span><i style="--w: 22.1%"></i></div
+            ><div class="al"
+              ><span>Asien-Pazifik</span><span>6,4 %</span><i style="--w: 6.4%"></i></div
+            ><div class="al"
+              ><span>Schwellenländer</span><span>3,7 %</span><i style="--w: 3.7%"></i></div
+            ><div class="note"
+              ><svg class="ic" aria-hidden="true"><use href="#i-exclamation-triangle"></use></svg
+              ><span>Einzelaktien liegen alle in Europa.</span></div
+            ></div
+          ><div class="wg"
+            ><h3>Sparplan <span>aktiv</span></h3
+            ><div class="kv"><span>Talvar World ETF</span><span>250,00 €</span></div
+            ><div class="kv"><span>Nächste Ausführung</span><span>Sa., 01.11.</span></div
+            ><div class="kv"><span>Angelegt (10×)</span><span>2.500,00 €</span></div
+            ><div class="kv"><span>Kosten</span><span>0,00 €</span></div></div
+          ><div class="wg"
+            ><h3>Dividenden 2031 <span>248,00 €</span></h3
+            ><div class="kv"
+              ><span>24.10. Norvane (angekündigt)</span><span class="up">+28,70</span></div
+            ><div class="kv"><span>15.10. Kalveth</span><span class="up">+18,90</span></div
+            ><div class="kv"><span>15.09. Talvar</span><span class="up">+48,60</span></div
+            ><div class="kv"><span>16.06. Selmark</span><span class="up">+72,00</span></div
+            ><div class="kv"><span>15.05. Halvion</span><span class="up">+27,00</span></div></div
+          ></aside
+        >
+        <nav class="pnl strip" aria-label="Bereiche"
+          ><a class="" href="instrument-desktop.html" aria-label="Watchlist" title="Watchlist"
+            ><svg class="ic" aria-hidden="true"><use href="#i-star"></use></svg></a
+          ><a class="on" href="depot-desktop.html" aria-label="Depot" title="Depot"
+            ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg></a
+          ><button aria-label="Orders" title="Orders"
+            ><svg class="ic" aria-hidden="true"><use href="#i-arrow-left-right"></use></svg
+            ><em>2</em></button
+          ><button aria-label="Konten &amp; Banken" title="Konten &amp; Banken"
+            ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg></button
+          ><button aria-label="Märkte" title="Märkte"
+            ><svg class="ic" aria-hidden="true"><use href="#i-graph-up-arrow"></use></svg></button
+          ><button aria-label="Steuern" title="Steuern"
+            ><svg class="ic" aria-hidden="true"><use href="#i-percent"></use></svg></button
+          ><button aria-label="Demnächst" title="Demnächst"
+            ><svg class="ic" aria-hidden="true"><use href="#i-calendar3"></use></svg></button
+          ><span class="sp"></span
+          ><button aria-label="Hilfe" title="Hilfe"
+            ><svg class="ic" aria-hidden="true"><use href="#i-question-circle"></use></svg></button
+          ><button aria-label="Einstellungen" title="Einstellungen"
+            ><svg class="ic" aria-hidden="true"><use href="#i-gear"></use></svg></button
+        ></nav>
+        <section class="pnl bp" aria-label="Handelspanel"
+          ><div class="bp-t" role="tablist"
+            ><button class="on" role="tab">Positionen<span class="c">5</span></button
+            ><button class="" role="tab">Orders<span class="c">2</span></button
+            ><button class="" role="tab">Historie</button
+            ><button class="" role="tab">Konten<span class="c">3</span></button
+            ><button class="" role="tab">Screener</button
+            ><button class="" role="tab">Demnächst<span class="c">5</span></button
+            ><button class="" role="tab">Protokoll</button
+            ><span class="end"
+              ><button class="tbn" aria-label="Panel maximieren"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-up"></use></svg></button></span></div
+          ><div class="ab2"
+            ><span>Depotwert<b>18.282,56 €</b></span
+            ><span>Bargeld<b>6.229,74 €</b></span
+            ><span>Verfügbar Quintrade<b>504,69 €</b></span
+            ><span>Reserviert<b>844,90 €</b></span
+            ><span>Unrealisiert<b class="up">+1.535,46 € (+9,2 %)</b></span
+            ><span>Heute<b class="up">+147,38 €</b></span></div
+          ><div class="bp-b"
+            ><table class="tt"
+              ><thead
+                ><tr
+                  ><th>Symbol</th><th>Stück</th><th>Einstand</th><th>Kurs</th><th>Wert €</th
+                  ><th>Heute €</th><th>Heute %</th><th>G/V €</th><th>G/V %</th><th>Anteil</th
+                  ><th></th></tr></thead
+              ><tbody
+                ><tr class=""
+                  ><td
+                    ><span class="sy"
+                      ><span class="av" aria-hidden="true">T</span>TLVW<small
+                        >Talvar World ETF</small
+                      ></span
+                    ></td
+                  ><td>120</td><td>63,05</td><td>70,11</td><td>8.413,20</td
+                  ><td class="up">+70,08</td><td class="up">+0,84 %</td><td class="up">+847,20</td
+                  ><td class="up">+11,2 %</td><td>46,0 %</td
+                  ><td
+                    ><button class="mb">Kaufen</button><button class="mb">Verkaufen</button></td
+                  ></tr
+                ><tr class="on"
+                  ><td
+                    ><span class="sy"
+                      ><span class="av" aria-hidden="true">H</span>HLVN<small
+                        >Halvion AG</small
+                      ></span
+                    ></td
+                  ><td>15</td><td>208,96</td><td>260,36</td><td>3.905,40</td
+                  ><td class="up">+103,04</td><td class="up">+2,71 %</td><td class="up">+771,00</td
+                  ><td class="up">+24,6 %</td><td>21,4 %</td
+                  ><td
+                    ><button class="mb">Kaufen</button><button class="mb">Verkaufen</button></td
+                  ></tr
+                ><tr class=""
+                  ><td
+                    ><span class="sy"
+                      ><span class="av" aria-hidden="true">S</span>SLMK<small
+                        >Selmark Energie AG</small
+                      ></span
+                    ></td
+                  ><td>60</td><td>46,46</td><td>43,53</td><td>2.611,80</td
+                  ><td class="down">−29,58</td><td class="down">−1,12 %</td
+                  ><td class="down">−175,80</td><td class="down">−6,3 %</td><td>14,3 %</td
+                  ><td
+                    ><button class="mb">Kaufen</button><button class="mb">Verkaufen</button></td
+                  ></tr
+                ><tr class=""
+                  ><td
+                    ><span class="sy"
+                      ><span class="av" aria-hidden="true">K</span>KLVH<small
+                        >Kalveth Health SE</small
+                      ></span
+                    ></td
+                  ><td>35</td><td>54,46</td><td>56,58</td><td>1.980,30</td><td class="up">+9,07</td
+                  ><td class="up">+0,46 %</td><td class="up">+74,20</td><td class="up">+3,9 %</td
+                  ><td>10,8 %</td
+                  ><td
+                    ><button class="mb">Kaufen</button><button class="mb">Verkaufen</button></td
+                  ></tr
+                ><tr class=""
+                  ><td
+                    ><span class="sy"
+                      ><span class="av" aria-hidden="true">N</span>NRVN<small
+                        >Norvane Versorgung AG</small
+                      ></span
+                    ></td
+                  ><td>82</td><td>16,50</td><td>16,73</td><td>1.371,86</td
+                  ><td class="down">−5,23</td><td class="down">−0,38 %</td><td class="up">+18,86</td
+                  ><td class="up">+1,4 %</td><td>7,5 %</td
+                  ><td
+                    ><button class="mb">Kaufen</button><button class="mb">Verkaufen</button></td
+                  ></tr
+                ></tbody
+              ><tfoot
+                ><tr
+                  ><td>Summe</td><td></td><td>16.747,10</td><td></td><td>18.282,56</td
+                  ><td class="up">+147,38</td><td class="up">+0,81 %</td
+                  ><td class="up">+1.535,46</td><td class="up">+9,2 %</td><td>100 %</td
+                  ><td></td></tr></tfoot></table></div
+        ></section> </div
+    ></div>
+    <script>
+      (function () {
+        var de = function (v, d) {
+          return v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
+        };
+        var dp = function (v) {
+          return v >= 10 ? 2 : v >= 1 ? 3 : 4;
+        };
+        var sg = function (v, d) {
+          return (v > 0 ? '+' : v < 0 ? '\u2212' : '') + de(Math.abs(v), d);
+        };
+        document.querySelectorAll('[data-xc]').forEach(function (el) {
+          var D = JSON.parse(el.dataset.xc);
+          var plots = Array.prototype.slice.call(el.querySelectorAll('.xc-plot'));
+          var mk = function (c, p) {
+            var e = document.createElement('div');
+            e.className = c;
+            e.hidden = true;
+            p.appendChild(e);
+            return e;
+          };
+          var vs = plots.map(function (p) {
+            return mk('xc-v', p);
+          });
+          var hl = mk('xc-h', plots[0]);
+          var yl = mk('xc-yl', el.querySelector('.xc-y'));
+          var xl = mk('xc-xl', el.querySelector('.xc-x'));
+          var set = function (k, t, cls) {
+            el.querySelectorAll('[data-k="' + k + '"]').forEach(function (e) {
+              e.textContent = t;
+              if (cls !== undefined) {
+                e.classList.remove('up', 'down');
+                if (cls) e.classList.add(cls);
+              }
+            });
+          };
+          var legend = function (i) {
+            var r = D.r[i];
+            set('d', r[0]);
+            if (D.t === 'multi') {
+              D.n.forEach(function (_, s) {
+                var v = r[s + 1];
+                set('s' + s, sg(v, 1) + ' %');
+              });
+              return;
+            }
+            var prev = i ? D.r[i - 1][4] : r[1];
+            var d = dp(r[4]);
+            set('o', de(r[1], d));
+            set('h', de(r[2], d));
+            set('l', de(r[3], d));
+            set('c', de(r[4], d));
+            var c = r[4] - prev;
+            set(
+              'chg',
+              sg(c, d) + ' (' + sg((c / prev) * 100, 2) + ' %)',
+              c > 0 ? 'up' : c < 0 ? 'down' : '',
+            );
+            set('v', de(r[5], 0) + ' Tsd.');
+          };
+          var cur = D.r.length - 1;
+          var show = function (i, cy) {
+            cur = i;
+            var box = plots[0].getBoundingClientRect();
+            var left = ((i + 0.5) / (D.r.length + D.p)) * box.width;
+            vs.forEach(function (v) {
+              v.hidden = false;
+              v.style.left = left + 'px';
+            });
+            xl.hidden = false;
+            xl.style.left = left + 'px';
+            xl.textContent = D.r[i][0];
+            if (cy !== null && cy >= box.top && cy <= box.bottom) {
+              var y = cy - box.top;
+              hl.hidden = yl.hidden = false;
+              hl.style.top = yl.style.top = y + 'px';
+              var val = D.hi - (y / box.height) * (D.hi - D.lo);
+              yl.textContent = D.t === 'multi' ? sg(val, 1) + ' %' : de(val, dp(val));
+            } else {
+              hl.hidden = yl.hidden = true;
+            }
+            legend(i);
+          };
+          var hide = function () {
+            vs.concat([hl, yl, xl]).forEach(function (e) {
+              e.hidden = true;
+            });
+            cur = D.r.length - 1;
+            legend(cur);
+          };
+          el.addEventListener('pointermove', function (e) {
+            var box = plots[0].getBoundingClientRect();
+            var i = Math.floor(((e.clientX - box.left) / box.width) * (D.r.length + D.p));
+            show(Math.max(0, Math.min(D.r.length - 1, i)), e.clientY);
+          });
+          el.addEventListener('pointerleave', hide);
+          el.addEventListener('blur', hide);
+          el.addEventListener('keydown', function (e) {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            e.preventDefault();
+            show(
+              Math.max(0, Math.min(D.r.length - 1, cur + (e.key === 'ArrowLeft' ? -1 : 1))),
+              null,
+            );
+          });
+        });
+        var pal = document.querySelector('[data-palette]');
+        if (pal) {
+          document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') pal.hidden = true;
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+              e.preventDefault();
+              pal.hidden = !pal.hidden;
+            }
+          });
+          pal.addEventListener('click', function (e) {
+            if (e.target === pal) pal.hidden = true;
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PortfoliGo – Design-Mockups</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap"
+      rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0b0d10;
+        --panel: #121519;
+        --line: #262b33;
+        --line-soft: #1f242b;
+        --fg: #e9ecef;
+        --fg-muted: #9aa3ad;
+        --accent: #f2a93b;
+        --accent-hover: #ffc56b;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: 'IBM Plex Sans', system-ui, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      main {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 40px 16px;
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 18px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+      }
+      p {
+        margin: 0 0 24px;
+        color: var(--fg-muted);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--panel);
+        border: 1px solid var(--line);
+      }
+      th,
+      td {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line-soft);
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        color: var(--fg-muted);
+        text-transform: uppercase;
+      }
+      td small {
+        display: block;
+        color: var(--fg-muted);
+        font-size: 12px;
+      }
+      .tag {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        color: var(--accent);
+      }
+      a {
+        color: var(--accent);
+      }
+      a:hover {
+        color: var(--accent-hover);
+      }
+      ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>PORTFOLIGO · DESIGN-MOCKUPS</h1>
+      <p
+        >Statische Mockups für den UI-Overhaul. Alle Varianten zeigen denselben Spielstand: Mo.,
+        20.10.2031, 10:42. Beschreibung in <code>docs/design/README.md</code>.</p
+      >
+      <table>
+        <thead
+          ><tr><th>Variante</th><th>Vorbild</th><th>Seiten</th></tr></thead
+        >
+        <tbody>
+          <tr>
+            <td>A „Terminal“ <span class="tag">GEWÄHLT</span><small>Vorlage für AP 7.5</small></td>
+            <td>Eigenes Trading-Terminal</td>
+            <td><a href="terminal/index.html">5 Seiten, Desktop und Smartphone</a></td>
+          </tr>
+          <tr>
+            <td
+              >E „Editor“ <span class="tag">ENTWURF</span
+              ><small>Struktur und Darstellung nach VS Code</small></td
+            >
+            <td>VS Code</td>
+            <td>
+              <ul>
+                <li><a href="editor/instrument-desktop.html">Instrument (1440 px)</a></li>
+                <li><a href="editor/depot-desktop.html">Depot mit Befehlspalette (1440 px)</a></li>
+                <li><a href="editor/smartphone.html">Smartphone (390 px)</a></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td
+              >F „Charting“ <span class="tag">ENTWURF</span
+              ><small>Struktur und Darstellung nach TradingView</small></td
+            >
+            <td>TradingView</td>
+            <td>
+              <ul>
+                <li><a href="charting/instrument-desktop.html">Instrument (1440 px)</a></li>
+                <li><a href="charting/depot-desktop.html">Depot (1440 px)</a></li>
+                <li><a href="charting/smartphone.html">Smartphone (390 px)</a></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td
+              >G „Hybrid“ <span class="tag">ENTWURF</span
+              ><small>Aufbau nach VS Code, Inhalte nach TradingView</small></td
+            >
+            <td>VS Code + TradingView</td>
+            <td>
+              <ul>
+                <li><a href="hybrid/instrument-desktop.html">Instrument (1440 px)</a></li>
+                <li><a href="hybrid/depot-desktop.html">Depot im geteilten Editor (1440 px)</a></li>
+                <li><a href="hybrid/smartphone.html">Smartphone (390 px)</a></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td
+              >H „Werkbank“ <span class="tag">ENTWURF</span
+              ><small>Verbindet A und G, mit neuer Mobilansicht</small></td
+            >
+            <td>Terminal + Hybrid</td>
+            <td>
+              <ul>
+                <li><a href="werkbank/instrument-desktop.html">Instrument (1440 px)</a></li>
+                <li>
+                  <a href="werkbank/depot-desktop.html">Depot im geteilten Editor (1440 px)</a>
+                </li>
+                <li><a href="werkbank/smartphone.html">Smartphone, 9 Bildschirme (390 px)</a></li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,2844 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Werkbank – Smartphone</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap"
+      rel="stylesheet" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font:
+          13px/1.4 Inter,
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        color-scheme: dark;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        background: none;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      h1,
+      h2,
+      h3,
+      p,
+      ul {
+        margin: 0;
+        padding: 0;
+      }
+      ul {
+        list-style: none;
+      }
+      :focus-visible {
+        outline: 1px solid var(--focus);
+        outline-offset: -1px;
+      }
+      .ic {
+        width: 1em;
+        height: 1em;
+        flex: none;
+        display: inline-block;
+        vertical-align: -0.125em;
+      }
+      .num {
+        font-variant-numeric: tabular-nums;
+      }
+      .up {
+        color: var(--up);
+      }
+      .down {
+        color: var(--down);
+      }
+      .mut {
+        color: var(--mut);
+      }
+      .xc {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+        --xc-y: 60px;
+        outline-offset: -1px;
+      }
+      .xc-pane {
+        position: relative;
+        display: flex;
+        min-height: 0;
+        border-bottom: 1px solid var(--grid-strong);
+      }
+      .xc-main {
+        flex: 1;
+      }
+      .xc-plot {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        cursor: crosshair;
+      }
+      .xc-plot > svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .xc-y {
+        position: relative;
+        width: var(--xc-y);
+        flex: none;
+        border-left: 1px solid var(--grid-strong);
+        font-size: 11px;
+        color: var(--mut);
+        font-variant-numeric: tabular-nums;
+      }
+      .xc-y span,
+      .xc-y b {
+        position: absolute;
+        left: 0;
+        right: 0;
+        padding: 0 6px;
+        transform: translateY(-50%);
+        white-space: nowrap;
+        font-weight: 400;
+      }
+      .xc-y b {
+        color: #0c0e12;
+        background: var(--c);
+        padding: 1px 6px;
+        z-index: 1;
+      }
+      .xc-x {
+        position: relative;
+        height: 24px;
+        flex: none;
+        margin-right: var(--xc-y);
+        font-size: 11px;
+        color: var(--mut);
+        font-variant-numeric: tabular-nums;
+      }
+      .xc-x span {
+        position: absolute;
+        top: 5px;
+        transform: translateX(-50%);
+        white-space: nowrap;
+      }
+      .xc-v {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 0;
+        border-left: 1px dashed var(--cross);
+        pointer-events: none;
+      }
+      .xc-h {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 0;
+        border-top: 1px dashed var(--cross);
+        pointer-events: none;
+      }
+      .xc-yl,
+      .xc-xl {
+        position: absolute;
+        background: var(--cross-bg);
+        color: var(--cross-fg);
+        font-size: 11px;
+        padding: 1px 6px;
+        white-space: nowrap;
+        z-index: 2;
+        pointer-events: none;
+      }
+      .xc-yl {
+        left: 0;
+        right: 0;
+        transform: translateY(-50%);
+      }
+      .xc-xl {
+        top: 3px;
+        transform: translateX(-50%);
+      }
+      .xc [hidden] {
+        display: none;
+      }
+      .xc-line {
+        position: absolute;
+        left: 10px;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 1px 6px;
+        font-size: 11px;
+        background: var(--surface);
+        border: 1px solid var(--c);
+        color: var(--fg);
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .xc-mark {
+        position: absolute;
+        transform: translate(-50%, 0);
+        color: var(--c);
+        font-size: 10px;
+        line-height: 1;
+        text-align: center;
+        pointer-events: none;
+        font-weight: 600;
+      }
+      .xc-tag {
+        position: absolute;
+        left: 8px;
+        top: 4px;
+        font-size: 11px;
+        color: var(--mut);
+        pointer-events: none;
+      }
+      .leg {
+        position: absolute;
+        left: 8px;
+        top: 6px;
+        z-index: 1;
+        pointer-events: none;
+        font-size: 12px;
+        line-height: 1.55;
+      }
+      .leg-r {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0 8px;
+        align-items: baseline;
+        font-variant-numeric: tabular-nums;
+      }
+      .leg-r i {
+        font-style: normal;
+        color: var(--mut);
+      }
+      .leg-d {
+        display: inline-block;
+        width: 10px;
+        height: 2px;
+        margin-right: 5px;
+        vertical-align: middle;
+        background: var(--c);
+      }
+      :root {
+        --bg: #0b0d10;
+        --surface: #0b0d10;
+        --panel: #121519;
+        --raised: #181c22;
+        --sel: #1a1e24;
+        --line: #262b33;
+        --line-s: #1f242b;
+        --line-2: #2f353e;
+        --fg: #e9ecef;
+        --fg-2: #c9ced5;
+        --mut: #9aa3ad;
+        --acc: #f2a93b;
+        --acc-fg: #0b0d10;
+        --up: #33d17a;
+        --down: #ff6b6b;
+        --up-c: #33d17a;
+        --down-c: #ff6b6b;
+        --line-c: #4a86ff;
+        --grid: #171b21;
+        --grid-strong: #262b33;
+        --cross: #9aa3ad;
+        --cross-bg: #2f353e;
+        --cross-fg: #fff;
+        --c1: #4a86ff;
+        --c2: #c653b8;
+        --bar: #5c6672;
+        --focus: #f2a93b;
+        --mono: 'IBM Plex Mono', ui-monospace, Menlo, Consolas, monospace;
+      }
+      body {
+        font-family:
+          'IBM Plex Sans',
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .m,
+      .num {
+        font-family: var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .lb {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        color: var(--mut);
+        text-transform: uppercase;
+      }
+      .xc {
+        touch-action: pan-y;
+      }
+      .xc-y,
+      .xc-x,
+      .xc-yl,
+      .xc-xl,
+      .xc-line,
+      .leg-r {
+        font-family: var(--mono);
+      }
+      .xc-y {
+        font-size: 10.5px;
+      }
+      .xc-line {
+        font-size: 10.5px;
+      }
+      .leg {
+        font-size: 11.5px;
+        padding: 1px 4px;
+        margin: -1px -4px;
+        background: color-mix(in srgb, var(--bg) 80%, transparent);
+      }
+      .leg b {
+        font-family: 'IBM Plex Sans', sans-serif;
+      }
+      .lg-act {
+        display: none;
+      }
+      .xc.act .lg-act {
+        display: flex;
+      }
+      .xc.act .lg-idle {
+        display: none;
+      }
+      .pz {
+        display: none;
+      }
+      .paused .pz {
+        display: inline;
+      }
+      .paused .run {
+        display: none;
+      }
+
+      html,
+      body {
+        height: auto;
+        min-height: 100%;
+      }
+      body {
+        background: #060709;
+      }
+      .phs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 32px 28px;
+        justify-content: center;
+        padding: 24px;
+      }
+      .phw h2 {
+        font: 500 11px var(--mono);
+        letter-spacing: 0.06em;
+        color: var(--mut);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+      .ph {
+        position: relative;
+        width: 390px;
+        height: 844px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        font-size: 14px;
+      }
+      .phw:target .ph {
+        outline: 2px solid var(--acc);
+        outline-offset: 3px;
+      }
+      @media (max-width: 440px) {
+        .phs {
+          display: block;
+          padding: 0;
+        }
+        .phw {
+          display: none;
+        }
+        .phw h2 {
+          display: none;
+        }
+        .phw:target {
+          display: block;
+        }
+        .phs:not(:has(.phw:target)) .phw:first-child {
+          display: block;
+        }
+        .ph {
+          width: 100%;
+          height: 100vh;
+          height: 100dvh;
+          border: 0;
+        }
+        .phw:target .ph {
+          outline: 0;
+        }
+      }
+      .t {
+        height: 52px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 0 6px 0 14px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .t .ti {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font: 600 13px var(--mono);
+        letter-spacing: 0.06em;
+        white-space: nowrap;
+      }
+      .t .ti i {
+        width: 10px;
+        height: 10px;
+        background: var(--acc);
+        flex: none;
+      }
+      .t a.ti {
+        height: 44px;
+        font-weight: 500;
+        color: var(--fg-2);
+      }
+      .t a.ti .ic {
+        font-size: 14px;
+        color: var(--acc);
+      }
+      .ck {
+        height: 44px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-end;
+        padding: 0 6px;
+        font-family: var(--mono);
+        line-height: 1.15;
+      }
+      .ck b {
+        font-size: 16px;
+        font-weight: 600;
+      }
+      .ck small {
+        font-size: 10px;
+        color: var(--mut);
+        white-space: nowrap;
+      }
+      .pb {
+        width: 44px;
+        height: 44px;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        position: relative;
+        color: var(--fg-2);
+        flex: none;
+      }
+      .pb.ps {
+        color: var(--acc);
+        font-size: 16px;
+      }
+      .pb em {
+        position: absolute;
+        right: 6px;
+        top: 6px;
+        min-width: 15px;
+        height: 15px;
+        padding: 0 3px;
+        background: var(--acc);
+        color: var(--acc-fg);
+        font: 600 10px/15px var(--mono);
+        text-align: center;
+      }
+      .b {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .n {
+        height: 58px;
+        flex: none;
+        display: flex;
+        background: var(--panel);
+        border-top: 1px solid var(--line);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+      .n a {
+        flex: 1;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        color: var(--mut);
+        font: 500 9.5px var(--mono);
+        letter-spacing: 0.04em;
+        border-top: 2px solid transparent;
+        margin-top: -1px;
+      }
+      .n .ic {
+        font-size: 19px;
+      }
+      .n .on {
+        color: var(--acc);
+        border-top-color: var(--acc);
+        background: var(--sel);
+      }
+      .n em {
+        position: absolute;
+        top: 4px;
+        left: calc(50% + 12px);
+        min-width: 15px;
+        height: 15px;
+        background: var(--acc);
+        color: var(--acc-fg);
+        font: 600 10px/15px var(--mono);
+        font-style: normal;
+        text-align: center;
+      }
+      .h {
+        padding: 14px 16px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .h .v {
+        display: block;
+        font: 600 30px/1.15 var(--mono);
+        font-variant-numeric: tabular-nums;
+        margin-top: 3px;
+        letter-spacing: -0.01em;
+      }
+      .h .c {
+        font: 13px var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .g2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px 16px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .g2 strong,
+      .g3 strong {
+        display: block;
+        font: 500 14px/1.4 var(--mono);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .g3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .g3 strong {
+        font-size: 13px;
+      }
+      .cap {
+        display: block;
+        font-size: 11.5px;
+        color: var(--mut);
+      }
+      .se {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px 6px;
+      }
+      .se a {
+        font: 11px var(--mono);
+        color: var(--acc);
+        padding: 6px 0;
+      }
+      .r {
+        min-height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 16px;
+        border-bottom: 1px solid var(--line-s);
+      }
+      a.r:active,
+      button.r:active {
+        background: var(--raised);
+      }
+      button.r {
+        width: 100%;
+        text-align: left;
+      }
+      .r .a {
+        min-width: 0;
+      }
+      .r .a b {
+        display: block;
+        font-weight: 500;
+        font-size: 14.5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .r .a small,
+      .r .z small {
+        display: block;
+        font-size: 12px;
+        color: var(--mut);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .r .z {
+        flex: none;
+        text-align: right;
+        font-family: var(--mono);
+        font-variant-numeric: tabular-nums;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .r .z b {
+        display: block;
+        font-weight: 500;
+        font-size: 14px;
+      }
+      .r .z small {
+        font-size: 12px;
+      }
+      .r .z small.up {
+        color: var(--up);
+      }
+      .r .z small.down {
+        color: var(--down);
+      }
+      .r .z > .ic {
+        color: var(--mut);
+        font-size: 12px;
+      }
+      .r.s {
+        min-height: 50px;
+      }
+      .dt {
+        flex: none;
+        width: 58px;
+        font: 12px var(--mono);
+        color: var(--mut);
+      }
+      .ps2 {
+        display: flex;
+        flex: none;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .ps2 button {
+        flex: 1;
+        height: 44px;
+        position: relative;
+        font: 500 11px var(--mono);
+        letter-spacing: 0.05em;
+        color: var(--mut);
+        white-space: nowrap;
+      }
+      .ps2 .on {
+        color: var(--fg);
+      }
+      .ps2 .on::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 2px;
+        background: var(--acc);
+      }
+      .ps2.st0 {
+        top: 0;
+        position: sticky;
+        z-index: 3;
+      }
+      .ms {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 16px;
+        font-size: 12px;
+        color: var(--mut);
+        border-bottom: 1px solid var(--line-s);
+      }
+      .srch {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        height: 44px;
+        margin: 10px 16px;
+        padding: 0 12px;
+        background: var(--panel);
+        border: 1px solid var(--line-2);
+        color: var(--mut);
+      }
+      .add {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        width: calc(100% - 32px);
+        height: 44px;
+        margin: 12px 16px;
+        border: 1px dashed var(--line-2);
+        font: 11px var(--mono);
+        letter-spacing: 0.05em;
+        color: var(--mut);
+      }
+      .ih {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 10px 16px 11px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      .ih h1 {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.25;
+      }
+      .ih .s {
+        font: 11px var(--mono);
+        color: var(--mut);
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+      }
+      .ih .p {
+        text-align: right;
+        font-family: var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .ih .p b {
+        display: block;
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.2;
+      }
+      .ih .p span {
+        font-size: 12px;
+      }
+      .rg2 {
+        display: flex;
+        height: 45px;
+        border-bottom: 1px solid var(--line);
+      }
+      .rg2 button {
+        flex: 1;
+        font: 500 12px var(--mono);
+        color: var(--mut);
+      }
+      .rg2 .on {
+        color: var(--acc);
+        background: var(--sel);
+      }
+      .pc {
+        height: 264px;
+        --xc-y: 54px;
+        border-bottom: 1px solid var(--line);
+      }
+      .pc > div {
+        height: 100%;
+      }
+      .pc .xc-x {
+        height: 22px;
+      }
+      .leg {
+        left: 7px;
+        top: 5px;
+        font-size: 10.5px;
+      }
+      .chip {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 46px;
+        padding: 6px 16px;
+        border-bottom: 1px solid var(--line);
+        font-size: 13px;
+      }
+      .chip::before {
+        content: '';
+        width: 2px;
+        align-self: stretch;
+        background: var(--acc);
+        flex: none;
+      }
+      .chip span {
+        flex: 1;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .chip .ic {
+        color: var(--mut);
+        font-size: 12px;
+      }
+      details {
+        border-bottom: 1px solid var(--line-s);
+      }
+      summary {
+        min-height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        font-size: 14px;
+        cursor: pointer;
+        list-style: none;
+      }
+      summary::-webkit-details-marker {
+        display: none;
+      }
+      summary .ic {
+        color: var(--mut);
+        font-size: 12px;
+      }
+      details[open] summary .ic {
+        transform: rotate(90deg);
+      }
+      .dd {
+        padding: 0 16px 12px;
+      }
+      .kv {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        line-height: 24px;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .kv > :first-child {
+        color: var(--mut);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .kv > :last-child {
+        font-family: var(--mono);
+        font-variant-numeric: tabular-nums;
+      }
+      .kv.tot {
+        font-weight: 600;
+        border-top: 1px solid var(--line);
+        margin-top: 4px;
+        padding-top: 4px;
+      }
+      .kv.tot > :first-child {
+        color: var(--fg);
+      }
+      .pf {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--line);
+        border: 1px solid var(--line);
+      }
+      .pf div {
+        background: var(--bg);
+        padding: 6px 2px;
+        text-align: center;
+        font: 13px var(--mono);
+      }
+      .pf small {
+        display: block;
+        font:
+          11px 'IBM Plex Sans',
+          sans-serif;
+        color: var(--mut);
+      }
+      .ac {
+        flex: none;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 8px 12px;
+        background: var(--panel);
+        border-top: 1px solid var(--line);
+      }
+      .ac a {
+        height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        border: 1px solid var(--line-2);
+        font: 600 12px var(--mono);
+        letter-spacing: 0.04em;
+      }
+      .ac a span {
+        font-size: 14px;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0;
+      }
+      .ac .buy {
+        background: var(--acc);
+        border-color: var(--acc);
+        color: var(--acc-fg);
+      }
+      .scrim {
+        position: absolute;
+        inset: 0;
+        background: rgba(5, 6, 8, 0.72);
+        z-index: 5;
+      }
+      .sh {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        max-height: calc(100% - 56px);
+        overflow: auto;
+        z-index: 6;
+        background: var(--panel);
+        border-top: 2px solid var(--acc);
+        padding: 0 16px 16px;
+      }
+      .sh-h {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 50px;
+        margin-right: -10px;
+      }
+      .sh-h b {
+        font: 600 13px var(--mono);
+        letter-spacing: 0.05em;
+      }
+      .bg {
+        display: contents;
+      }
+      .sd2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 1px solid var(--line-2);
+        margin-bottom: 10px;
+      }
+      .sd2 button {
+        height: 44px;
+        font: 600 12px var(--mono);
+        letter-spacing: 0.06em;
+        color: var(--mut);
+      }
+      .sd2 .on {
+        background: var(--acc);
+        color: var(--acc-fg);
+      }
+      .ot2 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        border: 1px solid var(--line-2);
+        margin-bottom: 12px;
+      }
+      .ot2 button {
+        height: 44px;
+        font: 500 12px var(--mono);
+        color: var(--mut);
+      }
+      .ot2 button + button {
+        border-left: 1px solid var(--line-2);
+      }
+      .ot2 .on {
+        background: var(--sel);
+        color: var(--acc);
+      }
+      .fl2 {
+        display: block;
+        margin-bottom: 4px;
+      }
+      .fi2 {
+        height: 46px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 12px;
+        margin-bottom: 12px;
+        background: var(--bg);
+        border: 1px solid var(--line-2);
+        font-size: 14px;
+      }
+      .fi2 small {
+        font: 12px var(--mono);
+        color: var(--mut);
+      }
+      .st2 {
+        display: grid;
+        grid-template-columns: 52px 1fr 52px;
+        height: 52px;
+        margin-bottom: 12px;
+        background: var(--bg);
+        border: 1px solid var(--line-2);
+      }
+      .st2 button {
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        color: var(--fg-2);
+      }
+      .st2 span {
+        display: grid;
+        place-items: center;
+        font: 600 20px var(--mono);
+        border-left: 1px solid var(--line-2);
+        border-right: 1px solid var(--line-2);
+      }
+      .cs {
+        padding: 8px 12px;
+        background: var(--bg);
+        border: 1px solid var(--line-2);
+      }
+      .cta {
+        display: block;
+        width: 100%;
+        height: 52px;
+        margin-top: 12px;
+        background: var(--acc);
+        color: var(--acc-fg);
+        font: 600 13px var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .cta:disabled {
+        background: var(--raised);
+        color: var(--mut);
+      }
+      .note2 {
+        padding: 14px;
+        border: 1px solid var(--line-2);
+        font-size: 14px;
+        color: var(--fg-2);
+      }
+      .bigt {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        font-family: var(--mono);
+        margin-bottom: 12px;
+      }
+      .bigt b {
+        font-size: 34px;
+        font-weight: 600;
+        line-height: 1;
+      }
+      .bigt span {
+        font-size: 13px;
+        color: var(--mut);
+      }
+      .pw {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        height: 48px;
+        margin-bottom: 14px;
+        border: 1px solid var(--line-2);
+        font: 600 12px var(--mono);
+        letter-spacing: 0.06em;
+        color: var(--acc);
+      }
+      .spd {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--line-2);
+        border: 1px solid var(--line-2);
+        margin: 4px 0 14px;
+      }
+      .spd button {
+        height: 44px;
+        background: var(--panel);
+        font: 12px var(--mono);
+        color: var(--mut);
+      }
+      .spd .on {
+        background: var(--sel);
+        color: var(--acc);
+        font-weight: 600;
+      }
+      .sh .r {
+        padding-left: 0;
+        padding-right: 0;
+      }
+      .mk {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 12px;
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--mut);
+      }
+      .mk span {
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+      }
+      .dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--up);
+        margin-right: 6px;
+        flex: none;
+      }
+      .dot.off {
+        background: none;
+        border: 1px solid var(--mut);
+      }
+      .mix {
+        display: flex;
+        gap: 2px;
+        height: 6px;
+        margin-top: 12px;
+      }
+      .mix i {
+        display: block;
+        background: var(--bar);
+      }
+      .mix i:first-child {
+        background: var(--c1);
+      }
+      .al {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 4px 8px;
+        padding: 9px 16px;
+        font-size: 14px;
+      }
+      .al > :nth-child(2) {
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+      .al i {
+        grid-column: 1/-1;
+        height: 4px;
+        background: var(--line);
+        display: block;
+      }
+      .al i::before {
+        content: '';
+        display: block;
+        height: 100%;
+        width: var(--w);
+        background: var(--bar);
+      }
+      .btn2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 12px 16px;
+      }
+      .btn2 button {
+        height: 44px;
+        border: 1px solid var(--line-2);
+        font: 500 11.5px var(--mono);
+        letter-spacing: 0.05em;
+        color: var(--fg-2);
+      }
+      .oc {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .oc .top {
+        display: flex;
+        justify-content: space-between;
+        font: 11px var(--mono);
+        color: var(--mut);
+        letter-spacing: 0.05em;
+      }
+      .oc .mid2 {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin: 3px 0 1px;
+        font-size: 15px;
+        font-weight: 500;
+      }
+      .oc .mid2 b {
+        font: 600 16px var(--mono);
+      }
+      .oc small {
+        font-size: 12px;
+        color: var(--mut);
+      }
+      .oc .btn2 {
+        padding: 10px 0 0;
+      }
+      .pfc {
+        height: 230px;
+        --xc-y: 54px;
+        border-bottom: 1px solid var(--line);
+      }
+      .wl {
+        display: block;
+        width: 100%;
+        height: 78px;
+        margin-top: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="i-pause-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M5.5 3.5A1.5 1.5 0 0 1 7 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5m5 0A1.5 1.5 0 0 1 12 5v6a1.5 1.5 0 0 1-3 0V5a1.5 1.5 0 0 1 1.5-1.5" />
+      </symbol>
+      <symbol id="i-play-fill" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393" />
+      </symbol>
+      <symbol id="i-bell" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6" />
+      </symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+      </symbol>
+      <symbol id="i-grid-1x2" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M6 1H1v14h5zm9 0h-5v5h5zm0 9v5h-5v-5zM0 1a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1zm9 0a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1h-5a1 1 0 0 1-1-1zm1 8a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1z" />
+      </symbol>
+      <symbol id="i-graph-up" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07" />
+      </symbol>
+      <symbol id="i-briefcase" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M6.5 1A1.5 1.5 0 0 0 5 2.5V3H1.5A1.5 1.5 0 0 0 0 4.5v8A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-8A1.5 1.5 0 0 0 14.5 3H11v-.5A1.5 1.5 0 0 0 9.5 1zm0 1h3a.5.5 0 0 1 .5.5V3H6v-.5a.5.5 0 0 1 .5-.5m1.886 6.914L15 7.151V12.5a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5V7.15l6.614 1.764a1.5 1.5 0 0 0 .772 0M1.5 4h13a.5.5 0 0 1 .5.5v1.616L8.129 7.948a.5.5 0 0 1-.258 0L1 6.116V4.5a.5.5 0 0 1 .5-.5" />
+      </symbol>
+      <symbol id="i-bank" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="m8 0 6.61 3h.89a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H15v7a.5.5 0 0 1 .485.38l.5 2a.498.498 0 0 1-.485.62H.5a.498.498 0 0 1-.485-.62l.5-2A.5.5 0 0 1 1 13V6H.5a.5.5 0 0 1-.5-.5v-2A.5.5 0 0 1 .5 3h.89zM3.777 3h8.447L8 1zM2 6v7h1V6zm2 0v7h2.5V6zm3.5 0v7h1V6zm2 0v7H12V6zM13 6v7h1V6zm2-1V4H1v1zm-.39 9H1.39l-.25 1h13.72z" />
+      </symbol>
+      <symbol id="i-three-dots" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M3 9.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3m5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3" />
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+      </symbol>
+      <symbol id="i-plus-lg" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
+      </symbol>
+      <symbol id="i-chevron-left" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          fill-rule="evenodd"
+          d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
+      </symbol>
+      <symbol id="i-x-lg" viewBox="0 0 16 16" fill="currentColor">
+        <path
+          d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z" />
+      </symbol>
+      <symbol id="i-dash-lg" viewBox="0 0 16 16" fill="currentColor">
+        <path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8" />
+      </symbol>
+    </svg>
+    <div class="phs"
+      ><div class="phw" id="ueb"
+        ><h2>Übersicht</h2
+        ><section class="ph" aria-label="Übersicht"
+          ><header class="t"
+            ><div class="ti"><i></i>ÜBERSICHT</div
+            ><a
+              class="ck"
+              href="#zei"
+              aria-label="Spielzeit: Montag, 20.10.2031, 10:42, Zeitsteuerung öffnen"
+              ><b>10:42</b
+              ><small
+                >MO 20.10. · <span class="run sp-v">10 min/s</span
+                ><span class="pz">Pausiert</span></small
+              ></a
+            ><button class="pb ps" data-pause aria-label="Pause"
+              ><span class="run"
+                ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></span
+              ><span class="pz"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-play-fill"></use></svg></span></button
+            ><button class="pb" aria-label="3 ungelesene Meldungen"
+              ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg><em>3</em></button
+            ></header
+          ><div class="b"
+            ><section class="h"
+              ><span class="lb">Gesamtvermögen</span><span class="v">24.512,30 €</span
+              ><span class="c up">+147,38 € · +0,60 % heute</span
+              ><svg
+                class="wl"
+                viewBox="0 0 1000 240"
+                preserveAspectRatio="none"
+                role="img"
+                aria-label="Vermögensverlauf über ein Jahr, steigend">
+                <path
+                  d="M0 204.5 14 214.5 28 210.2 42 200.5 56 204.2 70 215.1 85 214.7 99 209.6 113 198.9 127 208.9 141 219.4 155 212.3 169 207.2 183 192.7 197 182.8 211 182.8 225 184.3 239 159.8 254 161.5 268 167.9 282 177.6 296 175.7 310 173.4 324 175.6 338 175.2 352 171.7 366 164.3 380 153 394 150 408 166.1 423 158.5 437 171 451 171.6 465 184.3 479 183.3 493 189.5 507 186.6 521 155.5 535 155 549 146 563 157.7 577 159.4 592 152.1 606 152 620 147.5 634 145.5 648 154.1 662 147.7 676 154.5 690 135.7 704 139.6 718 131.9 732 130.9 746 120.5 761 125.4 775 114.5 789 114.7 803 101 817 93.6 831 91.1 845 98 859 89.1 873 83.2 887 65.1 901 68 915 61 930 54.5 944 50.3 958 46.9 972 43.8 986 49.2 1000 59 L1000 240 L0 240 Z"
+                  fill="var(--c1)"
+                  fill-opacity=".1"></path>
+                <path
+                  d="M0 204.5 14 214.5 28 210.2 42 200.5 56 204.2 70 215.1 85 214.7 99 209.6 113 198.9 127 208.9 141 219.4 155 212.3 169 207.2 183 192.7 197 182.8 211 182.8 225 184.3 239 159.8 254 161.5 268 167.9 282 177.6 296 175.7 310 173.4 324 175.6 338 175.2 352 171.7 366 164.3 380 153 394 150 408 166.1 423 158.5 437 171 451 171.6 465 184.3 479 183.3 493 189.5 507 186.6 521 155.5 535 155 549 146 563 157.7 577 159.4 592 152.1 606 152 620 147.5 634 145.5 648 154.1 662 147.7 676 154.5 690 135.7 704 139.6 718 131.9 732 130.9 746 120.5 761 125.4 775 114.5 789 114.7 803 101 817 93.6 831 91.1 845 98 859 89.1 873 83.2 887 65.1 901 68 915 61 930 54.5 944 50.3 958 46.9 972 43.8 986 49.2 1000 59"
+                  fill="none"
+                  stroke="var(--c1)"
+                  stroke-width="2"
+                  vector-effect="non-scaling-stroke"></path></svg
+              ><div class="mix" aria-hidden="true"
+                ><i style="flex: 74.6"></i><i style="flex: 25.4"></i></div
+            ></section>
+            <div class="g2"
+              ><div
+                ><span class="cap">Wertpapiere · 74,6 %</span
+                ><strong class="">18.282,56 €</strong></div
+              ><div
+                ><span class="cap">Bargeld · 25,4 %</span><strong class="">6.229,74 €</strong></div
+              ><div><span class="cap">Seit Beginn</span><strong class="up">+9,80 %</strong></div
+              ><div
+                ><span class="cap">Benchmark</span><strong class="up">+11,30 %</strong></div
+              ></div
+            >
+            <div class="se"><span class="lb">Als Nächstes</span></div
+            ><div class="r s"
+              ><span class="dt">24.10.</span
+              ><span class="a" style="flex: 1"><b>Dividende Norvane</b></span
+              ><span class="z"><b class="up">+28,70 €</b></span></div
+            ><div class="r s"
+              ><span class="dt">31.10.</span><span class="a" style="flex: 1"><b>Gehalt</b></span
+              ><span class="z"><b class="up">+2.500,00 €</b></span></div
+            >
+            <div class="se"><span class="lb">Offen</span></div
+            ><a class="r" href="#ord"
+              ><span class="a"
+                ><b>2 offene Orders</b><small>844,90 € reserviert · 60 Stück gesperrt</small></span
+              ><span class="z"
+                ><span><b></b></span
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-right"></use></svg></span></a></div
+          ><nav class="n" aria-label="Bereiche"
+            ><a href="#ueb" class="on" aria-current="page"
+              ><svg class="ic" aria-hidden="true"><use href="#i-grid-1x2"></use></svg>ÜBERSICHT</a
+            ><a href="#mar" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-graph-up"></use></svg>MÄRKTE</a
+            ><a href="#dep" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>DEPOT</a
+            ><a href="#kon" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg>KONTEN</a
+            ><a href="#meh" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-three-dots"></use></svg>MEHR<em
+                >2</em
+              ></a
+            ></nav
+          ></section
+        ></div
+      ><div class="phw" id="mar"
+        ><h2>Märkte</h2
+        ><section class="ph" aria-label="Märkte"
+          ><header class="t"
+            ><div class="ti"><i></i>MÄRKTE</div
+            ><a
+              class="ck"
+              href="#zei"
+              aria-label="Spielzeit: Montag, 20.10.2031, 10:42, Zeitsteuerung öffnen"
+              ><b>10:42</b
+              ><small
+                >MO 20.10. · <span class="run sp-v">10 min/s</span
+                ><span class="pz">Pausiert</span></small
+              ></a
+            ><button class="pb ps" data-pause aria-label="Pause"
+              ><span class="run"
+                ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></span
+              ><span class="pz"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-play-fill"></use></svg></span></button
+            ><button class="pb" aria-label="3 ungelesene Meldungen"
+              ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg><em>3</em></button
+            ></header
+          ><div class="b"
+            ><div class="srch"
+              ><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg>Wertpapier
+              suchen</div
+            ><div class="ps2 st0" role="tablist"
+              ><button role="tab" data-t="mw:w" aria-selected="true" class="on">WATCHLIST</button
+              ><button role="tab" data-t="mw:d" aria-selected="false" class="">DEPOT</button
+              ><button role="tab" data-t="mw:i" aria-selected="false" class="">INDIZES</button></div
+            ><div class="ms"><i class="dot"></i>Europa offen bis 17:30 · 2 von 4 Börsen offen</div>
+            <div data-p="mw:w" class=""
+              ><a class="r" href="#ins"
+                ><span class="a"><b>Corvan Systems</b><small>CRVN</small></span
+                ><span class="z"
+                  ><span><b>87,42</b><small class="up">+3,15 %</small></span></span
+                ></a
+              ><div class="r"
+                ><span class="a"><b>Orelia Pharma</b><small>ORLA</small></span
+                ><span class="z"
+                  ><span><b>4,128</b><small class="down">−1,85 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>Dravo Mining</b><small>DRVO</small></span
+                ><span class="z"
+                  ><span><b>0,8734</b><small class="up">+5,40 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>Lumetra Logistik</b><small>LMTR</small></span
+                ><span class="z"
+                  ><span><b>46,90</b><small class="up">+0,12 %</small></span></span
+                ></div
+              ><button class="add"
+                ><svg class="ic" aria-hidden="true"><use href="#i-plus-lg"></use></svg>WERT
+                HINZUFÜGEN</button
+              ></div
+            >
+            <div data-p="mw:d" class="" hidden
+              ><div class="r"
+                ><span class="a"><b>Talvar World ETF</b><small>TLVW</small></span
+                ><span class="z"
+                  ><span><b>70,11</b><small class="up">+0,84 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>Halvion AG</b><small>HLVN</small></span
+                ><span class="z"
+                  ><span><b>260,36</b><small class="up">+2,71 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>Selmark Energie AG</b><small>SLMK</small></span
+                ><span class="z"
+                  ><span><b>43,53</b><small class="down">−1,12 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>Kalveth Health SE</b><small>KLVH</small></span
+                ><span class="z"
+                  ><span><b>56,58</b><small class="up">+0,46 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>Norvane Versorgung AG</b><small>NRVN</small></span
+                ><span class="z"
+                  ><span><b>16,73</b><small class="down">−0,38 %</small></span></span
+                ></div
+              ></div
+            >
+            <div data-p="mw:i" class="" hidden
+              ><div class="r"
+                ><span class="a"><b>TALVAR WORLD</b></span
+                ><span class="z"
+                  ><span><b>3.412,80</b><small class="up">+0,74 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>BELMAR 40</b></span
+                ><span class="z"
+                  ><span><b>14.208,55</b><small class="up">+0,62 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>OSTREL 100</b><small>Vortag</small></span
+                ><span class="z"
+                  ><span><b>8.951,20</b><small class="down">−0,21 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>KYRIN 50</b><small>Schluss</small></span
+                ><span class="z"
+                  ><span><b>2.304,66</b><small class="up">+1,08 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>SUDAR 30</b></span
+                ><span class="z"
+                  ><span><b>1.187,42</b><small class="up">+0,35 %</small></span></span
+                ></div
+              ></div
+            ></div
+          ><nav class="n" aria-label="Bereiche"
+            ><a href="#ueb" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-grid-1x2"></use></svg>ÜBERSICHT</a
+            ><a href="#mar" class="on" aria-current="page"
+              ><svg class="ic" aria-hidden="true"><use href="#i-graph-up"></use></svg>MÄRKTE</a
+            ><a href="#dep" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>DEPOT</a
+            ><a href="#kon" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg>KONTEN</a
+            ><a href="#meh" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-three-dots"></use></svg>MEHR<em
+                >2</em
+              ></a
+            ></nav
+          ></section
+        ></div
+      ><div class="phw" id="ins"
+        ><h2>Instrument</h2
+        ><section class="ph" aria-label="Instrument"
+          ><header class="t"
+            ><a class="ti" href="#mar"
+              ><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"></use></svg>MÄRKTE</a
+            ><a
+              class="ck"
+              href="#zei"
+              aria-label="Spielzeit: Montag, 20.10.2031, 10:42, Zeitsteuerung öffnen"
+              ><b>10:42</b
+              ><small
+                >MO 20.10. · <span class="run sp-v">10 min/s</span
+                ><span class="pz">Pausiert</span></small
+              ></a
+            ><button class="pb ps" data-pause aria-label="Pause"
+              ><span class="run"
+                ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></span
+              ><span class="pz"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-play-fill"></use></svg></span></button
+            ><button class="pb" aria-label="3 ungelesene Meldungen"
+              ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg><em>3</em></button
+            ></header
+          ><div class="b"
+            ><section class="ih"
+              ><div
+                ><h1>Corvan Systems</h1><span class="s">CRVN · BELMAR</span
+                ><span class="s" style="margin-top: 2px"
+                  ><i class="dot"></i>offen bis 17:30</span
+                ></div
+              ><div class="p"><b>87,42 €</b><span class="up">+2,67 · +3,15 %</span></div></section
+            >
+            <div class="rg2" role="tablist" aria-label="Zeitraum"
+              ><button>1T</button><button>5T</button
+              ><button role="tab" data-t="prg:1M" aria-selected="true" class="on">1M</button
+              ><button role="tab" data-t="prg:6M" aria-selected="false" class="">6M</button
+              ><button role="tab" data-t="prg:1J" aria-selected="false" class="">1J</button
+              ><button>5J</button></div
+            >
+            <div class="pc"
+              ><div data-p="prg:1M" class=""
+                ><div
+                  class="xc"
+                  tabindex="0"
+                  data-xc='{"t":"candle","p":2,"lo":73.393,"hi":88.637,"r":[["19.09.31",79.2,79.79,78.98,79.6,362],["22.09.31",79.42,79.52,78.47,78.61,395],["23.09.31",78.66,78.86,77.07,77.67,501],["24.09.31",77.51,79.87,77.49,79.15,511],["25.09.31",79.03,79.24,76.32,76.66,568],["26.09.31",76.55,77.27,76.07,77.05,413],["29.09.31",77.68,77.89,74.21,74.68,607],["30.09.31",74.68,76.69,74.54,76.65,496],["01.10.31",76.7,77.6,76.69,77.5,389],["02.10.31",77.71,79.89,76.81,79.89,612],["03.10.31",80.53,81.38,79.72,79.81,406],["06.10.31",79.74,81.39,79.27,80.96,472],["07.10.31",80.76,81.34,80.75,81.19,304],["08.10.31",81.99,82.51,79.69,80.78,589],["09.10.31",80.31,81.88,79.55,81.6,531],["10.10.31",81.48,82.54,79.98,80.48,487],["13.10.31",80.69,80.95,80.23,80.6,406],["14.10.31",81.34,83.02,81.21,82.18,509],["15.10.31",81.86,83.53,81.35,82.88,511],["16.10.31",82.08,83.23,81.15,82.94,499],["17.10.31",83.16,85.94,82.88,84.75,546],["20.10.31",84.57,87.82,84.32,87.42,201]]}'
+                  ><div class="xc-pane xc-main"
+                    ><div class="xc-plot"
+                      ><svg
+                        viewBox="0 0 1000 1000"
+                        preserveAspectRatio="none"
+                        role="img"
+                        aria-label="Tageskerzen eines Monats bis 87,42 €, Kauflimit 84,00 €">
+                        <path
+                          d="M0 894.6H1000M0 566.6H1000M0 238.6H1000M104.2 0V1000M354.2 0V1000M604.2 0V1000M854.2 0V1000"
+                          stroke="var(--grid)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M0 304.2H1000"
+                          stroke="var(--acc)"
+                          stroke-width="1"
+                          stroke-dasharray="5 4"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M20.8 580.4V633.5M145.8 575.1V731.3M229.2 745.7V824.4M312.5 783.7V924.8M354.2 724V783.7M395.8 573.8V775.9M479.2 475.4V614.5M520.8 478.7V517.4M604.2 443.3V596.1M729.2 368.5V487.2M770.8 335V478M812.5 354.7V491.1M854.2 176.9V377.7M895.8 53.6V283.2"
+                          stroke="var(--up-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M6.7 592.8h28.3v26.2h-28.3zM131.7 622.3h28.3v107.6h-28.3zM215 760.1h28.3v32.8h-28.3zM298.3 786.4h28.3v129.2h-28.3zM340 730.6h28.3v52.5h-28.3zM381.7 573.8h28.3v143h-28.3zM465 503.6h28.3v80h-28.3zM506.7 488.5h28.3v28.2h-28.3zM590 461.6h28.3v84.6h-28.3zM715 423.6h28.3v55.1h-28.3zM756.7 377.7h28.3v66.9h-28.3zM798.3 373.7h28.3v56.4h-28.3zM840 255h28.3v104.3h-28.3zM881.7 79.8h28.3v187h-28.3z"
+                          fill="var(--up-c)"></path>
+                        <path
+                          d="M62.5 598.1V667M104.2 641.4V758.8M187.5 616.4V808M270.8 705V946.4M437.5 476.1V585M562.5 401.9V586.9M645.8 400V567.9M687.5 504.3V551.5"
+                          stroke="var(--down-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M48.3 604.6h28.3v53.1h-28.3zM90 654.5h28.3v64.9h-28.3zM173.3 630.2h28.3v155.5h-28.3zM256.7 718.8h28.3v196.8h-28.3zM423.3 531.8h28.3v47.2h-28.3zM548.3 436h28.3v79.4h-28.3zM631.7 469.5h28.3v65.6h-28.3zM673.3 521.3h28.3v5.9h-28.3z"
+                          fill="var(--down-c)"></path>
+                        <path
+                          d="M20.8 471.3L62.5 485L104.2 502L145.8 507.8L187.5 521.3L229.2 531.3L270.8 547.8L312.5 562L354.2 580.7L395.8 593.5L437.5 607.1L479.2 612L520.8 615.8L562.5 620.2L604.2 620.3L645.8 623.6L687.5 622.2L729.2 615.6L770.8 608.8L812.5 596.5L854.2 579.6L895.8 550.7"
+                          fill="none"
+                          stroke="var(--c1)"
+                          stroke-width="1.25"
+                          vector-effect="non-scaling-stroke"></path></svg
+                      ><div class="leg"
+                        ><div class="leg-r lg-idle" style="color: var(--mut)"
+                          ><span
+                            ><span class="leg-d" style="--c: var(--c1)"></span>SMA 20</span
+                          ></div
+                        ><div class="leg-r lg-act"
+                          ><i data-k="d"></i><i>E</i><span data-k="o">84,57</span><i>H</i
+                          ><span data-k="h">87,82</span><i>T</i><span data-k="l">84,32</span><i>S</i
+                          ><span data-k="c">87,42</span></div
+                        ></div
+                      ></div
+                    ><div class="xc-y"
+                      ><span style="top: 89.5%">75,00</span><span style="top: 56.7%">80,00</span
+                      ><span style="top: 23.9%">85,00</span
+                      ><b style="top: 8%; --c: var(--up-c)">87,42</b
+                      ><b style="top: 30.4%; --c: var(--acc); --tag-fg: #0c0e12">L 84,00</b></div
+                    ></div
+                  ><div class="xc-x"
+                    ><span style="left: calc((100%) * 0.1042)">23.09.</span
+                    ><span style="left: calc((100%) * 0.3542)">01.10.</span
+                    ><span style="left: calc((100%) * 0.6042)">09.10.</span
+                    ><span style="left: calc((100%) * 0.8542)">17.10.</span></div
+                  ></div
+                ></div
+              ><div data-p="prg:6M" class="" hidden
+                ><div
+                  class="xc"
+                  tabindex="0"
+                  data-xc='{"t":"candle","p":3,"lo":73.269,"hi":90.841,"r":[["28.04.31",80.24,80.33,79.32,79.84,588],["29.04.31",79.84,80.85,79.58,80.51,468],["30.04.31",80.52,80.82,78.39,79.19,312],["01.05.31",79.21,80.88,78.73,80.4,529],["02.05.31",80.26,81.21,79.75,80.64,403],["05.05.31",80.51,80.97,79.97,80.87,556],["06.05.31",80.64,80.79,80.54,80.55,443],["07.05.31",80.63,81.05,80.12,80.18,453],["08.05.31",80.13,80.22,78.63,79.43,476],["09.05.31",79.09,80.14,79.08,79.76,613],["12.05.31",80.03,80.8,79.77,80.2,343],["13.05.31",80.26,80.41,79.38,79.75,323],["14.05.31",79.41,80.62,79,80.37,403],["15.05.31",80.25,80.37,78.94,79.55,572],["16.05.31",79.16,79.82,79.03,79.71,606],["19.05.31",79.56,81.25,78.66,80.84,666],["20.05.31",81.03,82.39,80.81,82.12,677],["21.05.31",81.91,81.92,81.52,81.71,994],["22.05.31",81.89,82.03,80.24,80.39,430],["23.05.31",80.83,80.85,80.28,80.83,412],["26.05.31",80.65,80.82,78.22,78.46,431],["27.05.31",78.29,79.65,78.01,79.26,401],["28.05.31",79.56,79.97,78.29,78.35,503],["29.05.31",78.4,78.78,77.7,78.09,490],["30.05.31",78.1,78.52,77.79,77.96,497],["02.06.31",77.92,78.41,77.38,77.78,574],["03.06.31",77.4,77.76,76.98,77.45,531],["04.06.31",77.28,79.52,76.81,79.17,413],["05.06.31",79.07,79.32,79.05,79.14,437],["06.06.31",79.12,79.88,78.96,79.32,405],["09.06.31",79.22,79.77,78.77,79.17,283],["10.06.31",79.12,79.35,78.78,79.04,443],["11.06.31",79.15,79.75,77.53,78.61,389],["12.06.31",78.92,79.5,76.95,77.83,724],["13.06.31",77.69,77.78,77.08,77.5,368],["16.06.31",77.51,80.23,77.46,79.57,734],["17.06.31",79.4,80.79,78.73,80.57,437],["18.06.31",80.46,81.05,79.72,80.18,542],["19.06.31",80.18,81.19,80.07,80.46,937],["20.06.31",80.73,81.18,80.01,80.5,427],["23.06.31",80.68,81.02,79.73,80,478],["24.06.31",80.04,81.86,79.89,80.95,396],["25.06.31",80.92,82.06,80.85,81.82,275],["26.06.31",81.82,82.01,80.73,80.84,447],["27.06.31",80.91,82.95,80.21,82.55,505],["30.06.31",82.6,83.13,82.1,82.14,575],["01.07.31",81.79,82.03,81.31,81.58,552],["02.07.31",81.75,82.89,81.64,82.41,543],["03.07.31",82.66,82.93,81.9,82.32,438],["04.07.31",82.17,84.52,81.59,83.56,279],["07.07.31",83.65,84.53,83.14,84.18,440],["08.07.31",84.14,84.89,83.25,84.57,229],["09.07.31",85.04,85.99,84.92,84.95,512],["10.07.31",84.88,85.19,84.55,84.97,395],["11.07.31",84.91,85.8,84.77,85.76,369],["14.07.31",85.74,86.33,85.24,86.26,804],["15.07.31",85.83,86.92,85.28,86.53,427],["16.07.31",86.38,89.34,86.25,88.08,436],["17.07.31",88.08,88.32,86.96,87.13,663],["18.07.31",86.94,87.29,86.3,86.61,461],["21.07.31",86.21,88.04,86.11,87.45,506],["22.07.31",87.18,88.12,86.67,87.25,535],["23.07.31",87.55,87.96,86.79,86.96,391],["24.07.31",87.35,88.17,86.09,86.5,380],["25.07.31",86.57,88.36,86.12,87.67,535],["28.07.31",87.95,89.22,87.73,88.73,369],["29.07.31",88.11,89.9,87.6,88.7,434],["30.07.31",88.91,89.8,87.69,88.22,844],["31.07.31",87.74,87.84,86.5,87.45,428],["01.08.31",87.5,88.75,87.25,88.42,631],["04.08.31",88.56,89.57,87.67,87.96,399],["05.08.31",88.08,89.8,87.86,89.5,375],["06.08.31",89.5,89.8,87.77,88.32,604],["07.08.31",88.63,89.8,87.11,87.16,506],["08.08.31",87.39,87.55,86.95,87.15,693],["11.08.31",87.22,87.76,86.63,86.66,873],["12.08.31",86.79,86.86,85.71,86.71,660],["13.08.31",86.51,88.13,85.08,87.99,564],["14.08.31",87.81,89.03,86.79,87.42,846],["15.08.31",87.73,88.06,87.41,87.71,623],["18.08.31",87.97,88.06,86.04,86.52,570],["19.08.31",85.95,86.56,85.43,86.26,252],["20.08.31",86.43,86.92,84.47,85.26,430],["21.08.31",84.77,85.21,84.69,85.14,490],["22.08.31",85.02,85.26,83.29,83.5,487],["25.08.31",83.25,83.52,82.27,82.8,421],["26.08.31",82.95,82.97,82.48,82.86,342],["27.08.31",82.98,83.88,80.69,80.9,362],["28.08.31",80.64,81.18,80.45,80.79,468],["29.08.31",80.55,81.91,79.29,80.1,532],["01.09.31",80.3,80.35,79.26,79.71,453],["02.09.31",79.93,81.06,79.92,80.96,395],["03.09.31",81.01,83.56,80.99,83.22,389],["04.09.31",83.64,83.84,83.6,83.78,445],["05.09.31",83.98,84.11,83.28,83.96,721],["08.09.31",84.09,84.68,82.1,82.45,363],["09.09.31",82.65,82.92,82.33,82.34,270],["10.09.31",82.32,83.12,82.08,82.14,297],["11.09.31",82.07,82.56,81.37,81.61,608],["12.09.31",81.73,82.21,81.41,81.49,509],["15.09.31",81.67,81.75,79.87,80.19,445],["16.09.31",80.3,80.5,78.93,80.15,558],["17.09.31",80.46,81.49,80.14,80.81,477],["18.09.31",81.04,81.47,78.45,79.2,507],["19.09.31",79.2,79.79,78.98,79.6,362],["22.09.31",79.42,79.52,78.47,78.61,395],["23.09.31",78.66,78.86,77.07,77.67,501],["24.09.31",77.51,79.87,77.49,79.15,511],["25.09.31",79.03,79.24,76.32,76.66,568],["26.09.31",76.55,77.27,76.07,77.05,413],["29.09.31",77.68,77.89,74.21,74.68,607],["30.09.31",74.68,76.69,74.54,76.65,496],["01.10.31",76.7,77.6,76.69,77.5,389],["02.10.31",77.71,79.89,76.81,79.89,612],["03.10.31",80.53,81.38,79.72,79.81,406],["06.10.31",79.74,81.39,79.27,80.96,472],["07.10.31",80.76,81.34,80.75,81.19,304],["08.10.31",81.99,82.51,79.69,80.78,589],["09.10.31",80.31,81.88,79.55,81.6,531],["10.10.31",81.48,82.54,79.98,80.48,487],["13.10.31",80.69,80.95,80.23,80.6,406],["14.10.31",81.34,83.02,81.21,82.18,509],["15.10.31",81.86,83.53,81.35,82.88,511],["16.10.31",82.08,83.23,81.15,82.94,499],["17.10.31",83.16,85.94,82.88,84.75,546],["20.10.31",84.57,87.82,84.32,87.42,201]]}'
+                  ><div class="xc-pane xc-main"
+                    ><div class="xc-plot"
+                      ><svg
+                        viewBox="0 0 1000 1000"
+                        preserveAspectRatio="none"
+                        role="img"
+                        aria-label="Tageskerzen über sechs Monate bis 87,42 €, Kauflimit 84,00 €">
+                        <path
+                          d="M0 901.5H1000M0 616.9H1000M0 332.4H1000M0 47.9H1000M27.1 0V1000M197.7 0V1000M360.5 0V1000M538.8 0V1000M701.6 0V1000M872.1 0V1000"
+                          stroke="var(--grid)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M0 389.3H1000"
+                          stroke="var(--acc)"
+                          stroke-width="1"
+                          stroke-dasharray="5 4"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M11.6 568.6V640.8M27.1 566.9V689.2M34.9 548.1V631.2M42.6 561.7V618.6M73.6 609V669.3M81.4 571.4V630M96.9 581.7V673.8M112.4 627.2V672.1M120.2 545.8V693.2M127.9 480.9V570.8M151.2 568.6V601M166.7 636.9V730.2M205.4 744.4V788.8M213.2 644.3V798.5M220.9 655.6V671M228.7 623.8V676.1M275.2 603.9V761.5M282.9 572V689.2M298.4 549.2V613M321.7 511.1V623.2M329.5 499.7V568.6M345 449.1V605M368.2 452.5V523.6M383.7 359.7V526.5M391.5 359.2V438.3M399.2 338.7V432M414.7 321.6V358M422.5 286.9V345.5M430.2 256.7V318.8M438 223.2V316.5M445.7 85.4V261.3M469 159.4V269.2M476.7 154.9V237.4M500 141.2V268.7M507.8 92.3V177.1M515.5 53.6V184.5M538.8 119V204.4M554.3 59.3V169.7M600.8 154.3V327.9M631.8 243.6V307.9M647.3 320.5V350.1M686 549.8V591.3M709.3 556.6V621.5M717.1 414.4V560.6M724.8 398.4V412.1M794.6 532.2V609M810.1 628.9V675M833.3 624.3V759.8M848.8 772.3V840.6M864.3 805.3V927.6M872.1 753.5V805.3M879.8 623.2V798.5M895.3 537.8V658.5M903.1 540.7V574.3M918.6 510V642.5M941.9 445.1V548.1M949.6 416.1V540.1M957.4 433.1V551.5M965.1 278.9V453.1M972.9 171.9V371.1"
+                          stroke="var(--up-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M9 587.9h5.3v38.1h-5.3zM24.5 594.2h5.3v67.7h-5.3zM32.2 580.5h5.3v21.6h-5.3zM40 567.4h5.3v20.5h-5.3zM71 630.6h5.3v38.1h-5.3zM78.8 605.6h5.3v9.7h-5.3zM94.3 595.9h5.3v54.6h-5.3zM109.8 633.4h5.3v31.3h-5.3zM117.5 569.1h5.3v72.8h-5.3zM125.3 496.3h5.3v62h-5.3zM148.5 569.7h5.3v2h-5.3zM164 659.1h5.3v55.2h-5.3zM202.8 762.1h5.3v2.8h-5.3zM210.5 664.2h5.3v107.6h-5.3zM218.3 665.9h5.3v4h-5.3zM226 655.6h5.3v11.4h-5.3zM272.6 641.4h5.3v117.2h-5.3zM280.3 584.5h5.3v66.6h-5.3zM295.8 590.8h5.3v15.9h-5.3zM319.1 562.9h5.3v51.8h-5.3zM326.8 513.4h5.3v51.2h-5.3zM342.3 471.8h5.3v93.3h-5.3zM365.6 479.8h5.3v37.6h-5.3zM381.1 414.4h5.3v79.1h-5.3zM388.8 379.1h5.3v30.2h-5.3zM396.6 356.9h5.3v24.5h-5.3zM412.1 334.1h5.3v5.1h-5.3zM419.8 289.2h5.3v48.4h-5.3zM427.6 260.7h5.3v29.6h-5.3zM435.3 245.3h5.3v39.8h-5.3zM443.1 157.1h5.3v96.7h-5.3zM466.4 193h5.3v70.6h-5.3zM474.1 204.4h5.3v4h-5.3zM497.4 180.5h5.3v62.6h-5.3zM505.1 120.2h5.3v44.4h-5.3zM512.9 121.9h5.3v33.6h-5.3zM536.1 137.8h5.3v52.4h-5.3zM551.6 76.3h5.3v80.8h-5.3zM598.1 162.3h5.3v84.2h-5.3zM629.1 260.7h5.3v17.6h-5.3zM644.7 324.4h5.3v21.1h-5.3zM683.4 572h5.3v8.5h-5.3zM706.7 562.3h5.3v58.6h-5.3zM714.4 433.7h5.3v125.8h-5.3zM722.2 401.8h5.3v8h-5.3zM791.9 570.8h5.3v19.9h-5.3zM807.4 639.7h5.3v22.8h-5.3zM830.7 665.3h5.3v93.3h-5.3zM846.2 784.8h5.3v28.5h-5.3zM861.7 807.6h5.3v112.1h-5.3zM869.5 759.2h5.3v45.5h-5.3zM877.2 623.2h5.3v124.1h-5.3zM892.7 562.3h5.3v69.4h-5.3zM900.5 549.2h5.3v24.5h-5.3zM916 525.9h5.3v73.4h-5.3zM939.2 492.9h5.3v47.8h-5.3zM947 453.1h5.3v58h-5.3zM954.7 449.6h5.3v48.9h-5.3zM962.5 346.6h5.3v90.5h-5.3zM970.2 194.7h5.3v162.2h-5.3z"
+                          fill="var(--up-c)"></path>
+                        <path
+                          d="M3.9 598.2V655.6M19.4 570.3V708.6M50.4 572V586.2M58.1 557.2V610.1M65.9 604.4V694.9M89.1 593.6V652.2M104.7 595.9V677.3M135.7 507.7V530.4M143.4 501.4V603.3M158.9 570.3V718.2M174.4 618.6V714.3M182.2 686.4V747.8M189.9 701.2V742.7M197.7 707.4V766M236.4 630V686.9M244.2 653.9V686.4M251.9 631.2V757.5M259.7 645.4V790.5M267.4 743.3V783.1M290.7 557.2V632.9M306.2 549.8V616.4M314 558.9V632.3M337.2 502.6V575.4M352.7 438.8V497.4M360.5 501.4V542.4M376 450.2V508.8M407 276.1V337M453.5 143.5V220.9M461.2 202.1V258.4M484.5 164V230.5M492.2 152V270.4M523.3 59.3V179.3M531 170.8V247.1M546.5 72.4V180.5M562 59.3V174.8M569.8 59.3V212.3M577.5 187.3V221.4M585.3 175.4V239.7M593 226.6V292M608.5 103.1V230.5M616.3 158.3V195.3M624 158.3V273.2M639.5 223.2V362.6M655 317.6V429.7M662.8 416.6V487.8M670.5 447.9V475.8M678.3 396.1V577.7M693.8 508.3V657.3M701.6 597V659.1M732.6 383.1V430.3M740.3 350.6V497.4M748.1 450.8V484.4M755.8 439.4V498.6M763.6 471.3V539M771.3 491.2V536.7M779.1 517.4V624.3M786.8 588.5V677.8M802.3 533.3V705.1M817.8 644.3V704M825.6 681.8V783.7M841.1 660.2V826.4M856.6 737V946.4M887.6 538.4V632.9M910.9 474.1V634.6M926.4 472.4V618.1M934.1 562.9V603.9"
+                          stroke="var(--down-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M1.2 603.3h5.3v22.8h-5.3zM16.7 587.4h5.3v75.7h-5.3zM47.8 580.5h5.3v5.1h-5.3zM55.5 581.1h5.3v25.6h-5.3zM63.3 609.5h5.3v39.8h-5.3zM86.5 602.1h5.3v29h-5.3zM102 602.7h5.3v39.8h-5.3zM133 508.3h5.3v11.4h-5.3zM140.8 509.4h5.3v85.4h-5.3zM156.3 580h5.3v124.6h-5.3zM171.8 642h5.3v68.9h-5.3zM179.5 708h5.3v17.6h-5.3zM187.3 725.1h5.3v8h-5.3zM195 735.3h5.3v8h-5.3zM233.8 661.3h5.3v2.8h-5.3zM241.6 667h5.3v4.6h-5.3zM249.3 665.3h5.3v30.7h-5.3zM257.1 678.4h5.3v62h-5.3zM264.8 748.4h5.3v10.8h-5.3zM288.1 590.8h5.3v15.9h-5.3zM303.6 575.4h5.3v13.1h-5.3zM311.3 578.2h5.3v38.7h-5.3zM334.6 513.4h5.3v55.8h-5.3zM350.1 469h5.3v26.2h-5.3zM357.8 515.1h5.3v12h-5.3zM373.3 465.6h5.3v19.3h-5.3zM404.3 330.1h5.3v5.1h-5.3zM450.9 157.1h5.3v54.1h-5.3zM458.6 222h5.3v18.8h-5.3zM481.9 187.3h5.3v33.6h-5.3zM489.6 198.7h5.3v48.4h-5.3zM520.6 109.9h5.3v39.3h-5.3zM528.4 176.5h5.3v16.5h-5.3zM543.9 129.8h5.3v34.1h-5.3zM559.4 76.3h5.3v67.1h-5.3zM567.1 125.8h5.3v83.7h-5.3zM574.9 196.4h5.3v13.7h-5.3zM582.6 206.1h5.3v31.9h-5.3zM590.4 230.5h5.3v4.6h-5.3zM605.9 172.5h5.3v22.2h-5.3zM613.6 177.1h5.3v2h-5.3zM621.4 163.4h5.3v82.5h-5.3zM636.9 251h5.3v66.6h-5.3zM652.4 331.3h5.3v86.5h-5.3zM660.2 432h5.3v25.6h-5.3zM667.9 449.1h5.3v5.1h-5.3zM675.7 447.4h5.3v118.4h-5.3zM691.2 585.6h5.3v25.6h-5.3zM698.9 599.9h5.3v33.6h-5.3zM729.9 390.5h5.3v2h-5.3zM737.7 384.2h5.3v93.3h-5.3zM745.4 466.1h5.3v17.6h-5.3zM753.2 484.9h5.3v10.2h-5.3zM760.9 499.1h5.3v26.2h-5.3zM768.7 518.5h5.3v13.7h-5.3zM776.4 521.9h5.3v84.2h-5.3zM784.2 599.9h5.3v8.5h-5.3zM799.7 557.8h5.3v104.7h-5.3zM815.2 649.9h5.3v46.1h-5.3zM822.9 693.2h5.3v56.3h-5.3zM838.4 672.1h5.3v134.9h-5.3zM854 749h5.3v170.7h-5.3zM885 586.8h5.3v41h-5.3zM908.2 503.7h5.3v68.9h-5.3zM923.7 532.7h5.3v56.9h-5.3zM931.5 577.7h5.3v5.1h-5.3z"
+                          fill="var(--down-c)"></path>
+                        <path
+                          d="M3.9 729.9L11.6 719.1L19.4 714.9L27.1 704.8L34.9 692.4L42.6 681.1L50.4 673.3L58.1 664.3L65.9 658.1L73.6 652.3L81.4 643.3L89.1 637.2L96.9 631L104.7 627.1L112.4 626.2L120.2 620L127.9 610.1L135.7 603.4L143.4 600.3L151.2 597.5L158.9 601.4L166.7 605L174.4 607.4L182.2 613.9L189.9 621.6L197.7 630.3L205.4 639.2L213.2 642L220.9 642.9L228.7 644.1L236.4 647L244.2 649.1L251.9 654.1L259.7 659L267.4 665.3L275.2 668.9L282.9 673.3L290.7 677.6L298.4 677.4L306.2 678.4L314 674L321.7 669.2L329.5 659.3L337.2 651.5L345 638.4L352.7 626L360.5 614.3L368.2 605L376 596L383.7 583.9L391.5 569.7L399.2 553.9L407 535.9L414.7 515.6L422.5 492.1L430.2 473.1L438 456.1L445.7 433.6L453.5 414.6L461.2 397.3L469 376.1L476.7 358.1L484.5 343.5L492.2 327.4L500 312.8L507.8 294.1L515.5 273.8L523.3 257.3L531 242.7L538.8 228.9L546.5 218.1L554.3 204.1L562 194.5L569.8 188.3L577.5 184.3L585.3 183.2L593 182.7L600.8 182.9L608.5 182.1L616.3 179L624 181.6L631.8 184.4L639.5 189.3L647.3 193.1L655 205L662.8 221.9L670.5 238.5L678.3 259.3L686 278.3L693.8 301.9L701.6 325.4L709.3 349.7L717.1 364.2L724.8 373.8L732.6 382.9L740.3 394.9L748.1 407.3L755.8 424L763.6 440.5L771.3 458.2L779.1 476.2L786.8 493.6L794.6 506.3L802.3 523.2L810.1 534.3L817.8 546.2L825.6 560.9L833.3 565.9L841.1 577.7L848.8 586.4L856.6 600.7L864.3 612.9L872.1 629.2L879.8 640.3L887.6 652.1L895.3 656.3L903.1 659.6L910.9 663.5L918.6 663.5L926.4 666.4L934.1 665.2L941.9 659.4L949.6 653.5L957.4 642.9L965.1 628.2L972.9 603.2"
+                          fill="none"
+                          stroke="var(--c1)"
+                          stroke-width="1.25"
+                          vector-effect="non-scaling-stroke"></path></svg
+                      ><div class="leg"
+                        ><div class="leg-r lg-idle" style="color: var(--mut)"
+                          ><span
+                            ><span class="leg-d" style="--c: var(--c1)"></span>SMA 20</span
+                          ></div
+                        ><div class="leg-r lg-act"
+                          ><i data-k="d"></i><i>E</i><span data-k="o">84,57</span><i>H</i
+                          ><span data-k="h">87,82</span><i>T</i><span data-k="l">84,32</span><i>S</i
+                          ><span data-k="c">87,42</span></div
+                        ></div
+                      ></div
+                    ><div class="xc-y"
+                      ><span style="top: 90.1%">75,00</span><span style="top: 61.7%">80,00</span
+                      ><span style="top: 33.2%">85,00</span><span style="top: 4.8%">90,00</span
+                      ><b style="top: 19.5%; --c: var(--up-c)">87,42</b
+                      ><b style="top: 38.9%; --c: var(--acc); --tag-fg: #0c0e12">L 84,00</b></div
+                    ></div
+                  ><div class="xc-x"
+                    ><span style="left: calc((100%) * 0.0271)">Mai</span
+                    ><span style="left: calc((100%) * 0.1977)">Jun</span
+                    ><span style="left: calc((100%) * 0.3605)">Jul</span
+                    ><span style="left: calc((100%) * 0.5388)">Aug</span
+                    ><span style="left: calc((100%) * 0.7016)">Sep</span
+                    ><span style="left: calc((100%) * 0.8721)">Okt</span></div
+                  ></div
+                ></div
+              ><div data-p="prg:1J" class="" hidden
+                ><div
+                  class="xc"
+                  tabindex="0"
+                  data-xc='{"t":"candle","p":2,"lo":59.478,"hi":91.622,"r":[["28.10.30",66.21,66.78,62.81,63.39,2618],["04.11.30",63.32,63.4,61.3,61.6,2710],["11.11.30",61.6,62.9,61.3,62.06,2633],["18.11.30",61.83,63,61.2,61.6,2760],["25.11.30",61.6,62.77,61.3,62.4,2190],["02.12.30",62.62,66.68,61.31,66.29,2333],["09.12.30",66.25,68.14,64.92,67.31,1744],["16.12.30",67.19,68.42,65.7,67.73,2498],["23.12.30",67.6,70.52,67.27,70.03,2089],["30.12.30",69.79,72.39,69.18,71.7,2475],["06.01.31",71.77,72.97,70.83,71.37,2204],["13.01.31",71.29,71.91,69.51,70.07,2049],["20.01.31",70.29,71.84,69.41,71.42,1979],["27.01.31",71.49,73.54,70.29,73.31,2101],["03.02.31",73.27,76.34,72.52,73.68,1921],["10.02.31",74.05,76.33,73.59,76.22,2137],["17.02.31",76.1,77.86,75.69,76.14,2581],["24.02.31",75.84,78.29,75.55,75.88,2586],["03.03.31",75.69,77.27,75.49,75.72,2512],["10.03.31",75.65,77.65,75.33,75.62,2724],["17.03.31",75.65,76.5,73.65,73.98,2310],["24.03.31",73.9,76.08,72.5,74.42,2725],["31.03.31",74.61,77.31,73.93,75.83,2259],["07.04.31",76.12,78.22,75.73,76.89,3068],["14.04.31",77.27,78.43,75.62,77.03,2118],["21.04.31",76.71,79.75,76.68,78.64,2234],["28.04.31",78.8,80.5,77.66,79.84,2255],["05.05.31",79.84,81.21,78.39,80.87,2268],["12.05.31",80.64,81.05,78.63,80.2,2328],["19.05.31",80.26,81.25,78.66,80.84,2570],["26.05.31",81.03,82.39,78.22,78.46,2944],["02.06.31",78.29,79.97,77.38,77.78,2465],["09.06.31",77.4,79.88,76.81,79.17,2069],["16.06.31",79.12,80.23,76.95,79.57,2658],["23.06.31",79.4,81.19,78.73,80,2821],["30.06.31",80.04,83.13,79.89,82.14,2198],["07.07.31",81.79,84.53,81.31,84.18,2252],["14.07.31",84.14,86.33,83.25,86.26,2309],["21.07.31",85.83,89.34,85.28,87.45,2493],["28.07.31",87.18,89.22,86.09,88.73,2210],["04.08.31",88.11,89.9,86.5,87.96,2736],["11.08.31",88.08,89.8,86.63,86.66,3051],["18.08.31",86.79,89.03,85.08,86.52,3263],["25.08.31",85.95,86.92,82.27,82.8,2080],["01.09.31",82.95,83.88,79.26,79.71,2157],["08.09.31",79.93,84.68,79.92,82.45,2313],["15.09.31",82.65,83.12,79.87,80.19,2129],["22.09.31",80.3,81.49,78.45,78.61,2299],["29.09.31",78.66,79.87,74.21,74.68,2600],["06.10.31",74.68,81.39,74.54,80.96,2375],["13.10.31",80.76,82.54,79.55,80.6,2317],["20.10.31",81.34,87.82,81.15,87.42,2266]]}'
+                  ><div class="xc-pane xc-main"
+                    ><div class="xc-plot"
+                      ><svg
+                        viewBox="0 0 1000 1000"
+                        preserveAspectRatio="none"
+                        role="img"
+                        aria-label="Wochenkerzen über ein Jahr bis 87,42 €, Kauflimit 84,00 €">
+                        <path
+                          d="M0 983.8H1000M0 672.7H1000M0 361.6H1000M0 50.5H1000M27.8 0V1000M101.9 0V1000M194.4 0V1000M268.5 0V1000M342.6 0V1000M435.2 0V1000M509.3 0V1000M583.3 0V1000M675.9 0V1000M750 0V1000M824.1 0V1000M916.7 0V1000"
+                          stroke="var(--grid)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M0 237.1H1000"
+                          stroke="var(--acc)"
+                          stroke-width="1"
+                          stroke-dasharray="5 4"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M46.3 893.5V943.3M83.3 897.6V943.3M101.9 775.9V943M120.4 730.5V830.7M138.9 721.8V806.4M157.4 656.5V757.6M175.9 598.3V698.2M231.5 615.4V691M250 562.5V663.6M268.5 475.4V594.3M287 475.7V561M305.6 428.1V495.6M324.1 414.8V500M342.6 446.5V501.9M398.1 483.5V594.9M416.7 445.2V550.4M435.2 416.9V494.4M472.2 369.3V464.8M490.7 346V434.4M509.3 323.9V411.6M546.3 322.7V403.2M601.9 365.3V460.8M620.4 354.4V456.4M638.9 324.5V401.1M657.4 264.2V365M675.9 220.6V320.8M694.4 164.6V260.5M713 71V197.3M731.5 74.7V172.1M842.6 216V364M916.7 318.3V531.4M953.7 118.3V325.8"
+                          stroke="var(--up-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M40 919.7h12.6v14.3h-12.6zM77 909.1h12.6v24.9h-12.6zM95.6 788.1h12.6v114.2h-12.6zM114.1 756.3h12.6v33h-12.6zM132.6 743.3h12.6v16.8h-12.6zM151.1 671.7h12.6v75.6h-12.6zM169.6 619.8h12.6v59.4h-12.6zM225.2 628.5h12.6v35.2h-12.6zM243.7 569.7h12.6v56.6h-12.6zM262.2 558.2h12.6v12.8h-12.6zM280.7 479.2h12.6v67.5h-12.6zM299.3 481.6h12.6v2h-12.6zM317.8 489.7h12.6v2h-12.6zM336.3 494.7h12.6v2h-12.6zM391.9 535.2h12.6v16.2h-12.6zM410.4 491.3h12.6v38h-12.6zM428.9 458.3h12.6v24h-12.6zM465.9 403.9h12.6v60h-12.6zM484.4 366.5h12.6v32.4h-12.6zM503 334.5h12.6v32h-12.6zM540 335.4h12.6v18h-12.6zM595.6 387.4h12.6v55.1h-12.6zM614.1 374.9h12.6v14h-12.6zM632.6 361.6h12.6v18.7h-12.6zM651.1 295h12.6v65.3h-12.6zM669.6 231.5h12.6v74.4h-12.6zM688.1 166.8h12.6v66h-12.6zM706.7 129.8h12.6v50.4h-12.6zM725.2 90h12.6v48.2h-12.6zM836.3 285.3h12.6v78.4h-12.6zM910.4 331.7h12.6v195.4h-12.6zM947.4 130.7h12.6v189.1h-12.6z"
+                          fill="var(--up-c)"></path>
+                        <path
+                          d="M9.3 772.8V896.3M27.8 878V943.3M64.8 890.4V946.4M194.4 580.3V646.8M213 613.2V687.9M361.1 434.7V506.8M379.6 470.4V559.1M453.7 410.4V497.8M527.8 328.9V404.2M564.8 287.2V416.9M583.3 362.5V443.1M750 53.6V159.3M768.5 56.7V155.3M787 80.6V203.5M805.6 146.3V290.9M824.1 240.9V384.6M861.1 264.5V365.6M879.6 315.2V409.8M898.1 365.6V541.7M935.2 282.5V375.6"
+                          stroke="var(--down-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M3 790.6h12.6v87.7h-12.6zM21.5 880.5h12.6v53.5h-12.6zM58.5 926.8h12.6v7.2h-12.6zM188.1 617.6h12.6v12.4h-12.6zM206.7 632.5h12.6v38h-12.6zM354.8 496.9h12.6v2h-12.6zM373.3 496.9h12.6v52h-12.6zM447.4 446.5h12.6v7.5h-12.6zM521.5 341.7h12.6v13.7h-12.6zM558.5 329.5h12.6v80h-12.6zM577 414.8h12.6v15.9h-12.6zM743.7 109.3h12.6v4.7h-12.6zM762.2 110.2h12.6v44.2h-12.6zM780.7 150.3h12.6v8.4h-12.6zM799.3 176.5h12.6v98h-12.6zM817.8 269.8h12.6v100.8h-12.6zM854.8 279.1h12.6v76.5h-12.6zM873.3 352.2h12.6v52.6h-12.6zM891.9 403.2h12.6v123.8h-12.6zM928.9 337.9h12.6v5h-12.6z"
+                          fill="var(--down-c)"></path></svg
+                      ><div class="leg"
+                        ><div class="leg-r lg-act"
+                          ><i data-k="d"></i><i>E</i><span data-k="o">81,34</span><i>H</i
+                          ><span data-k="h">87,82</span><i>T</i><span data-k="l">81,15</span><i>S</i
+                          ><span data-k="c">87,42</span></div
+                        ></div
+                      ></div
+                    ><div class="xc-y"
+                      ><span style="top: 98.4%">60,00</span><span style="top: 67.3%">70,00</span
+                      ><span style="top: 36.2%">80,00</span><span style="top: 5%">90,00</span
+                      ><b style="top: 13.1%; --c: var(--up-c)">87,42</b
+                      ><b style="top: 23.7%; --c: var(--acc); --tag-fg: #0c0e12">L 84,00</b></div
+                    ></div
+                  ><div class="xc-x"
+                    ><span style="left: calc((100%) * 0.0278)">Nov</span
+                    ><span style="left: calc((100%) * 0.1019)">Dez</span
+                    ><span style="left: calc((100%) * 0.1944)">2031</span
+                    ><span style="left: calc((100%) * 0.2685)">Feb</span
+                    ><span style="left: calc((100%) * 0.3426)">Mär</span
+                    ><span style="left: calc((100%) * 0.4352)">Apr</span
+                    ><span style="left: calc((100%) * 0.5093)">Mai</span
+                    ><span style="left: calc((100%) * 0.5833)">Jun</span
+                    ><span style="left: calc((100%) * 0.6759)">Jul</span
+                    ><span style="left: calc((100%) * 0.75)">Aug</span
+                    ><span style="left: calc((100%) * 0.8241)">Sep</span
+                    ><span style="left: calc((100%) * 0.9167)">Okt</span></div
+                  ></div
+                ></div
+              ></div
+            >
+            <a class="chip" href="#ord"
+              ><span>Offene Order: <b style="font-weight: 500">Kauf Limit 10 × 84,00</b></span
+              ><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"></use></svg
+            ></a>
+            <div class="g3"
+              ><div><span class="cap">Geld</span><strong class="">87,38</strong></div
+              ><div><span class="cap">Brief</span><strong class="">87,46</strong></div
+              ><div><span class="cap">Spread</span><strong class="">0,09 %</strong></div
+              ><div><span class="cap">KGV</span><strong class="">24,3</strong></div
+              ><div><span class="cap">Div.-Rendite</span><strong class="">1,8 %</strong></div
+              ><div><span class="cap">52 W.</span><strong class="">61,20–89,90</strong></div></div
+            ><details
+              ><summary
+                >Performance<svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-right"></use></svg></summary
+              ><div class="dd"
+                ><div class="pf"
+                  ><div><span class="up">+3,15 %</span><small>1 Tag</small></div
+                  ><div><span class="up">+8,5 %</span><small>5 Tage</small></div
+                  ><div><span class="up">+9,8 %</span><small>1 Monat</small></div
+                  ><div><span class="up">+21,7 %</span><small>lfd. Jahr</small></div
+                  ><div><span class="up">+32,3 %</span><small>1 Jahr</small></div
+                  ><div><span class="up">+118,4 %</span><small>5 Jahre</small></div></div
+                ></div
+              ></details
+            ><details
+              ><summary
+                >Kennzahlen<svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-right"></use></svg></summary
+              ><div class="dd"
+                ><div class="kv"><span>Marktkapitalisierung</span><span>12,4 Mrd. €</span></div
+                ><div class="kv"><span>KGV</span><span>24,3</span></div
+                ><div class="kv"><span>Dividendenrendite</span><span>1,8 %</span></div
+                ><div class="kv"><span>Beta</span><span>1,24</span></div
+                ><div class="kv"><span>Volatilität 1 J.</span><span>31 %</span></div
+                ><div class="kv"><span>52 Wochen</span><span>61,20 – 89,90</span></div
+                ><div class="kv"><span>Volumen heute</span><span>201 Tsd.</span></div
+                ><div class="kv"><span>Ø Volumen</span><span>482 Tsd.</span></div
+                ><div class="kv"><span>Streubesitz</span><span>78 %</span></div></div
+              ></details
+            ><details
+              ><summary
+                >Dividenden<svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-right"></use></svg></summary
+              ><div class="dd"
+                ><div class="kv"><span>2031 (Ex 12.05.)</span><span>1,56 €</span></div
+                ><div class="kv"><span>2030</span><span>1,42 €</span></div
+                ><div class="kv"><span>2029</span><span>1,30 €</span></div></div
+              ></details
+            ><details
+              ><summary
+                >Profil<svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-right"></use></svg></summary
+              ><div class="dd"
+                ><p style="font-size: 13px; line-height: 1.5; color: var(--fg-2)"
+                  >Herausforderer der großen Anbieter von Industriesoftware: Corvan entwickelt
+                  Steuerungssoftware und Sensorik für Fabriken und Logistikzentren.</p
+                ></div
+              ></details
+            ></div
+          ><div class="ac"
+            ><a href="#tic" data-set="sside:sell">VERKAUFEN<span>87,38</span></a
+            ><a class="buy" href="#tic" data-set="sside:buy">KAUFEN<span>87,46</span></a></div
+          ><nav class="n" aria-label="Bereiche"
+            ><a href="#ueb" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-grid-1x2"></use></svg>ÜBERSICHT</a
+            ><a href="#mar" class="on" aria-current="page"
+              ><svg class="ic" aria-hidden="true"><use href="#i-graph-up"></use></svg>MÄRKTE</a
+            ><a href="#dep" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>DEPOT</a
+            ><a href="#kon" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg>KONTEN</a
+            ><a href="#meh" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-three-dots"></use></svg>MEHR<em
+                >2</em
+              ></a
+            ></nav
+          ></section
+        ></div
+      ><div class="phw" id="tic"
+        ><h2>Order (Sheet)</h2
+        ><section class="ph" aria-label="Order (Sheet)"
+          ><div class="bg" inert
+            ><header class="t"
+              ><a class="ti" href="#mar"
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"></use></svg
+                >MÄRKTE</a
+              ><a
+                class="ck"
+                href="#zei"
+                aria-label="Spielzeit: Montag, 20.10.2031, 10:42, Zeitsteuerung öffnen"
+                ><b>10:42</b
+                ><small
+                  >MO 20.10. · <span class="run sp-v">10 min/s</span
+                  ><span class="pz">Pausiert</span></small
+                ></a
+              ><button class="pb ps" data-pause aria-label="Pause"
+                ><span class="run"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></span
+                ><span class="pz"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="#i-play-fill"></use></svg></span></button
+              ><button class="pb" aria-label="3 ungelesene Meldungen"
+                ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg
+                ><em>3</em></button
+              ></header
+            ><div class="b"
+              ><section class="ih"
+                ><div
+                  ><h1>Corvan Systems</h1><span class="s">CRVN · BELMAR</span
+                  ><span class="s" style="margin-top: 2px"
+                    ><i class="dot"></i>offen bis 17:30</span
+                  ></div
+                ><div class="p"><b>87,42 €</b><span class="up">+2,67 · +3,15 %</span></div></section
+              >
+              <div class="rg2" role="tablist" aria-label="Zeitraum"
+                ><button>1T</button><button>5T</button><button class="on">1M</button
+                ><button>6M</button><button>1J</button><button>5J</button></div
+              >
+              <div class="pc"
+                ><div
+                  class="xc"
+                  tabindex="0"
+                  data-xc='{"t":"candle","p":2,"lo":73.393,"hi":88.637,"r":[["19.09.31",79.2,79.79,78.98,79.6,362],["22.09.31",79.42,79.52,78.47,78.61,395],["23.09.31",78.66,78.86,77.07,77.67,501],["24.09.31",77.51,79.87,77.49,79.15,511],["25.09.31",79.03,79.24,76.32,76.66,568],["26.09.31",76.55,77.27,76.07,77.05,413],["29.09.31",77.68,77.89,74.21,74.68,607],["30.09.31",74.68,76.69,74.54,76.65,496],["01.10.31",76.7,77.6,76.69,77.5,389],["02.10.31",77.71,79.89,76.81,79.89,612],["03.10.31",80.53,81.38,79.72,79.81,406],["06.10.31",79.74,81.39,79.27,80.96,472],["07.10.31",80.76,81.34,80.75,81.19,304],["08.10.31",81.99,82.51,79.69,80.78,589],["09.10.31",80.31,81.88,79.55,81.6,531],["10.10.31",81.48,82.54,79.98,80.48,487],["13.10.31",80.69,80.95,80.23,80.6,406],["14.10.31",81.34,83.02,81.21,82.18,509],["15.10.31",81.86,83.53,81.35,82.88,511],["16.10.31",82.08,83.23,81.15,82.94,499],["17.10.31",83.16,85.94,82.88,84.75,546],["20.10.31",84.57,87.82,84.32,87.42,201]]}'
+                  ><div class="xc-pane xc-main"
+                    ><div class="xc-plot"
+                      ><svg
+                        viewBox="0 0 1000 1000"
+                        preserveAspectRatio="none"
+                        role="img"
+                        aria-label="Tageskerzen eines Monats bis 87,42 €, Kauflimit 84,00 €">
+                        <path
+                          d="M0 894.6H1000M0 566.6H1000M0 238.6H1000M104.2 0V1000M354.2 0V1000M604.2 0V1000M854.2 0V1000"
+                          stroke="var(--grid)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M0 304.2H1000"
+                          stroke="var(--acc)"
+                          stroke-width="1"
+                          stroke-dasharray="5 4"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M20.8 580.4V633.5M145.8 575.1V731.3M229.2 745.7V824.4M312.5 783.7V924.8M354.2 724V783.7M395.8 573.8V775.9M479.2 475.4V614.5M520.8 478.7V517.4M604.2 443.3V596.1M729.2 368.5V487.2M770.8 335V478M812.5 354.7V491.1M854.2 176.9V377.7M895.8 53.6V283.2"
+                          stroke="var(--up-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M6.7 592.8h28.3v26.2h-28.3zM131.7 622.3h28.3v107.6h-28.3zM215 760.1h28.3v32.8h-28.3zM298.3 786.4h28.3v129.2h-28.3zM340 730.6h28.3v52.5h-28.3zM381.7 573.8h28.3v143h-28.3zM465 503.6h28.3v80h-28.3zM506.7 488.5h28.3v28.2h-28.3zM590 461.6h28.3v84.6h-28.3zM715 423.6h28.3v55.1h-28.3zM756.7 377.7h28.3v66.9h-28.3zM798.3 373.7h28.3v56.4h-28.3zM840 255h28.3v104.3h-28.3zM881.7 79.8h28.3v187h-28.3z"
+                          fill="var(--up-c)"></path>
+                        <path
+                          d="M62.5 598.1V667M104.2 641.4V758.8M187.5 616.4V808M270.8 705V946.4M437.5 476.1V585M562.5 401.9V586.9M645.8 400V567.9M687.5 504.3V551.5"
+                          stroke="var(--down-c)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M48.3 604.6h28.3v53.1h-28.3zM90 654.5h28.3v64.9h-28.3zM173.3 630.2h28.3v155.5h-28.3zM256.7 718.8h28.3v196.8h-28.3zM423.3 531.8h28.3v47.2h-28.3zM548.3 436h28.3v79.4h-28.3zM631.7 469.5h28.3v65.6h-28.3zM673.3 521.3h28.3v5.9h-28.3z"
+                          fill="var(--down-c)"></path>
+                        <path
+                          d="M20.8 471.3L62.5 485L104.2 502L145.8 507.8L187.5 521.3L229.2 531.3L270.8 547.8L312.5 562L354.2 580.7L395.8 593.5L437.5 607.1L479.2 612L520.8 615.8L562.5 620.2L604.2 620.3L645.8 623.6L687.5 622.2L729.2 615.6L770.8 608.8L812.5 596.5L854.2 579.6L895.8 550.7"
+                          fill="none"
+                          stroke="var(--c1)"
+                          stroke-width="1.25"
+                          vector-effect="non-scaling-stroke"></path></svg
+                      ><div class="leg"
+                        ><div class="leg-r lg-idle" style="color: var(--mut)"
+                          ><span
+                            ><span class="leg-d" style="--c: var(--c1)"></span>SMA 20</span
+                          ></div
+                        ><div class="leg-r lg-act"
+                          ><i data-k="d"></i><i>E</i><span data-k="o">84,57</span><i>H</i
+                          ><span data-k="h">87,82</span><i>T</i><span data-k="l">84,32</span><i>S</i
+                          ><span data-k="c">87,42</span></div
+                        ></div
+                      ></div
+                    ><div class="xc-y"
+                      ><span style="top: 89.5%">75,00</span><span style="top: 56.7%">80,00</span
+                      ><span style="top: 23.9%">85,00</span
+                      ><b style="top: 8%; --c: var(--up-c)">87,42</b
+                      ><b style="top: 30.4%; --c: var(--acc); --tag-fg: #0c0e12">L 84,00</b></div
+                    ></div
+                  ><div class="xc-x"
+                    ><span style="left: calc((100%) * 0.1042)">23.09.</span
+                    ><span style="left: calc((100%) * 0.3542)">01.10.</span
+                    ><span style="left: calc((100%) * 0.6042)">09.10.</span
+                    ><span style="left: calc((100%) * 0.8542)">17.10.</span></div
+                  ></div
+                ></div
+              >
+              <a class="chip" href="#ord"
+                ><span>Offene Order: <b style="font-weight: 500">Kauf Limit 10 × 84,00</b></span
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"></use></svg
+              ></a>
+              <div class="g3"
+                ><div><span class="cap">Geld</span><strong class="">87,38</strong></div
+                ><div><span class="cap">Brief</span><strong class="">87,46</strong></div
+                ><div><span class="cap">Spread</span><strong class="">0,09 %</strong></div
+                ><div><span class="cap">KGV</span><strong class="">24,3</strong></div
+                ><div><span class="cap">Div.-Rendite</span><strong class="">1,8 %</strong></div
+                ><div><span class="cap">52 W.</span><strong class="">61,20–89,90</strong></div></div
+              ></div
+            ><nav class="n" aria-label="Bereiche"
+              ><a href="#ueb" class=""
+                ><svg class="ic" aria-hidden="true"><use href="#i-grid-1x2"></use></svg>ÜBERSICHT</a
+              ><a href="#mar" class="on" aria-current="page"
+                ><svg class="ic" aria-hidden="true"><use href="#i-graph-up"></use></svg>MÄRKTE</a
+              ><a href="#dep" class=""
+                ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>DEPOT</a
+              ><a href="#kon" class=""
+                ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg>KONTEN</a
+              ><a href="#meh" class=""
+                ><svg class="ic" aria-hidden="true"><use href="#i-three-dots"></use></svg>MEHR<em
+                  >2</em
+                ></a
+              ></nav
+            ></div
+          ><a class="scrim" href="#ins" aria-label="Schließen"></a
+          ><section class="sh" role="dialog" aria-label="ORDER · CORVAN SYSTEMS"
+            ><div class="sh-h"
+              ><b>ORDER · CORVAN SYSTEMS</b
+              ><a class="pb" href="#ins" aria-label="Schließen"
+                ><svg class="ic" aria-hidden="true"><use href="#i-x-lg"></use></svg></a></div
+            ><div class="sd2" role="tablist"
+              ><button role="tab" data-t="sside:buy" aria-selected="true" class="on">KAUFEN</button
+              ><button role="tab" data-t="sside:sell" aria-selected="false" class=""
+                >VERKAUFEN</button
+              ></div
+            >
+            <div data-p="sside:buy"
+              ><div class="ot2"
+                ><button class="on">Markt</button><button>Limit</button><button>Stop</button></div
+              >
+              <span class="lb fl2">Konto</span
+              ><div class="fi2">Quintrade<small>verfügbar 504,69 €</small></div>
+              <span class="lb fl2">Stück</span
+              ><div class="st2"
+                ><button data-q="-1" aria-label="Ein Stück weniger"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-dash-lg"></use></svg></button
+                ><span data-o="q">5</span
+                ><button data-q="1" aria-label="Ein Stück mehr"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-plus-lg"></use></svg></button
+              ></div>
+              <div class="cs"
+                ><div class="kv"
+                  ><span data-o="kl">Kurswert (5 × 87,46)</span
+                  ><span data-o="kw">437,30 €</span></div
+                ><div class="kv"><span>Orderentgelt</span><span>4,90 €</span></div
+                ><div class="kv tot"><span>Gesamt ca.</span><span data-o="tot">442,20 €</span></div
+                ><div class="kv"
+                  ><span>Verfügbar danach</span><span data-o="rest">62,49 €</span></div
+                ></div
+              >
+              <button class="cta" data-cta>Kauforder prüfen</button></div
+            >
+            <div data-p="sside:sell" hidden
+              ><p class="note2"
+                >Du hältst keine Corvan-Anteile. Verkaufen geht erst mit einer Position.</p
+              ></div
+            ></section
+          ></section
+        ></div
+      ><div class="phw" id="dep"
+        ><h2>Depot</h2
+        ><section class="ph" aria-label="Depot"
+          ><header class="t"
+            ><div class="ti"><i></i>DEPOT</div
+            ><a
+              class="ck"
+              href="#zei"
+              aria-label="Spielzeit: Montag, 20.10.2031, 10:42, Zeitsteuerung öffnen"
+              ><b>10:42</b
+              ><small
+                >MO 20.10. · <span class="run sp-v">10 min/s</span
+                ><span class="pz">Pausiert</span></small
+              ></a
+            ><button class="pb ps" data-pause aria-label="Pause"
+              ><span class="run"
+                ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></span
+              ><span class="pz"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-play-fill"></use></svg></span></button
+            ><button class="pb" aria-label="3 ungelesene Meldungen"
+              ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg><em>3</em></button
+            ></header
+          ><div class="b"
+            ><section class="h"
+              ><span class="lb">Depotwert · Quintrade</span><span class="v">18.282,56 €</span
+              ><span class="c up">+147,38 € · +0,81 % heute</span></section
+            >
+            <div class="g2"
+              ><div
+                ><span class="cap">Unrealisiert</span><strong class="up">+1.535,46 €</strong></div
+              ><div><span class="cap">in Prozent</span><strong class="up">+9,2 %</strong></div></div
+            >
+            <div class="ps2 st0" role="tablist"
+              ><button role="tab" data-t="dp:p" aria-selected="true" class="on">POSITIONEN</button
+              ><button role="tab" data-t="dp:v" aria-selected="false" class="">VERLAUF</button
+              ><button role="tab" data-t="dp:a" aria-selected="false" class="">ALLOKATION</button
+              ><button role="tab" data-t="dp:s" aria-selected="false" class=""
+                >SPARPLAN</button
+              ></div
+            >
+            <div data-p="dp:p" class=""
+              ><div class="r"
+                ><span class="a"><b>Talvar World ETF</b><small>120 × 70,11</small></span
+                ><span class="z"
+                  ><span><b>8.413,20 €</b><small class="up">+847,20 · +11,2 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>Halvion AG</b><small>15 × 260,36</small></span
+                ><span class="z"
+                  ><span><b>3.905,40 €</b><small class="up">+771,00 · +24,6 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>Selmark Energie AG</b><small>60 × 43,53</small></span
+                ><span class="z"
+                  ><span><b>2.611,80 €</b><small class="down">−175,80 · −6,3 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>Kalveth Health SE</b><small>35 × 56,58</small></span
+                ><span class="z"
+                  ><span><b>1.980,30 €</b><small class="up">+74,20 · +3,9 %</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"><b>Norvane Versorgung AG</b><small>82 × 16,73</small></span
+                ><span class="z"
+                  ><span><b>1.371,86 €</b><small class="up">+18,86 · +1,4 %</small></span></span
+                ></div
+              ></div
+            >
+            <div data-p="dp:v" class="" hidden
+              ><div class="pfc"
+                ><div
+                  class="xc"
+                  tabindex="0"
+                  data-xc='{"t":"multi","p":1,"lo":-1.512,"hi":11.212,"n":["Depot","Talvar World"],"r":[["20.10.30",0,0],["25.10.30",-0.56,-0.12],["30.10.30",-0.32,0.08],["04.11.30",0.22,0.59],["09.11.30",0.02,0.93],["14.11.30",-0.59,1.3],["19.11.30",-0.57,1.57],["24.11.30",-0.28,1.82],["30.11.30",0.31,1.9],["05.12.30",-0.24,2.17],["10.12.30",-0.83,2.8],["15.12.30",-0.43,2.69],["20.12.30",-0.15,2.46],["25.12.30",0.66,3.16],["30.12.30",1.21,3.26],["05.01.31",1.21,3.61],["10.01.31",1.12,3.94],["15.01.31",2.49,3.54],["20.01.31",2.39,4.42],["25.01.31",2.04,5.08],["30.01.31",1.5,5.16],["04.02.31",1.6,5.45],["10.02.31",1.73,5.51],["15.02.31",1.61,5.19],["20.02.31",1.63,5.16],["25.02.31",1.83,5.31],["02.03.31",2.24,5.74],["07.03.31",2.87,6.02],["12.03.31",3.03,6.05],["18.03.31",2.14,6.57],["23.03.31",2.56,6.29],["28.03.31",1.86,6.61],["02.04.31",1.83,7.05],["07.04.31",1.12,6.94],["12.04.31",1.18,6.27],["17.04.31",0.83,5.93],["23.04.31",1,6.03],["28.04.31",2.73,6.24],["03.05.31",2.75,6.84],["08.05.31",3.26,6.47],["13.05.31",2.6,6.48],["18.05.31",2.51,6.74],["23.05.31",2.92,6.69],["29.05.31",2.92,5.8],["03.06.31",3.17,6.12],["08.06.31",3.28,7],["13.06.31",2.8,7.4],["18.06.31",3.16,7.06],["23.06.31",2.78,6.91],["28.06.31",3.83,7.01],["04.07.31",3.61,7.98],["09.07.31",4.04,8.24],["14.07.31",4.1,8.29],["19.07.31",4.67,8.92],["24.07.31",4.4,8.9],["29.07.31",5.01,9.66],["03.08.31",5,9.39],["09.08.31",5.76,9.22],["14.08.31",6.17,9.52],["19.08.31",6.31,10.11],["24.08.31",5.93,10.39],["29.08.31",6.42,10.53],["03.09.31",6.75,9.78],["08.09.31",7.76,9.5],["14.09.31",7.6,9.27],["19.09.31",7.99,9.07],["24.09.31",8.35,9.32],["29.09.31",8.58,9.19],["04.10.31",8.77,9.52],["09.10.31",8.94,9.57],["14.10.31",8.64,9.45],["20.10.31",8.1,9.5]]}'
+                  ><div class="xc-pane xc-main"
+                    ><div class="xc-plot"
+                      ><svg
+                        viewBox="0 0 1000 1000"
+                        preserveAspectRatio="none"
+                        role="img"
+                        aria-label="Depot +8,1 %, Talvar World +9,5 % in einem Jahr">
+                        <path
+                          d="M0 881.2H1000M0 488.2H1000M0 95.2H1000M47.9 0V1000M294.5 0V1000M527.4 0V1000M774 0V1000"
+                          stroke="var(--grid)"
+                          fill="none"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M0 881.2H1000"
+                          stroke="var(--grid-strong)"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M6.8 881.2L20.5 925.2L34.2 906.3L47.9 863.9L61.6 879.6L75.3 927.6L89 926L102.7 903.2L116.4 856.8L130.1 900.1L143.8 946.4L157.5 915L171.2 893L184.9 829.3L198.6 786.1L212.3 786.1L226 793.2L239.7 685.5L253.4 693.3L267.1 720.9L280.8 763.3L294.5 755.4L308.2 745.2L321.9 754.7L335.6 753.1L349.3 737.4L363 705.1L376.7 655.6L390.4 643L404.1 713L417.8 680L431.5 735L445.2 737.4L458.9 793.2L472.6 788.4L486.3 816L500 802.6L513.7 666.6L527.4 665.1L541.1 625L554.8 676.8L568.5 683.9L582.2 651.7L595.9 651.7L609.6 632L623.3 623.4L637 661.1L650.7 632.8L664.4 662.7L678.1 580.2L691.8 597.5L705.5 563.7L719.2 558.9L732.9 514.1L746.6 535.4L760.3 487.4L774 488.2L787.7 428.5L801.4 396.3L815.1 385.2L828.8 415.1L842.5 376.6L856.2 350.7L869.9 271.3L883.6 283.9L897.3 253.2L911 224.9L924.7 206.8L938.4 191.9L952.1 178.5L965.8 202.1L979.5 244.6"
+                          fill="none"
+                          stroke="var(--c1)"
+                          stroke-width="2"
+                          stroke-linejoin="round"
+                          vector-effect="non-scaling-stroke"></path>
+                        <path
+                          d="M6.8 881.2L20.5 890.6L34.2 874.9L47.9 834.8L61.6 808.1L75.3 779L89 757.8L102.7 738.1L116.4 731.9L130.1 710.6L143.8 661.1L157.5 669.8L171.2 687.8L184.9 632.8L198.6 625L212.3 597.5L226 571.5L239.7 603L253.4 533.8L267.1 481.9L280.8 475.6L294.5 452.8L308.2 448.1L321.9 473.3L335.6 475.6L349.3 463.8L363 430L376.7 408L390.4 405.7L404.1 364.8L417.8 386.8L431.5 361.7L445.2 327.1L458.9 335.7L472.6 388.4L486.3 415.1L500 407.3L513.7 390.8L527.4 343.6L541.1 372.7L554.8 371.9L568.5 351.5L582.2 355.4L595.9 425.3L609.6 400.2L623.3 331L637 299.6L650.7 326.3L664.4 338.1L678.1 330.2L691.8 254L705.5 233.6L719.2 229.6L732.9 180.1L746.6 181.7L760.3 122L774 143.2L787.7 156.5L801.4 133L815.1 86.6L828.8 64.6L842.5 53.6L856.2 112.5L869.9 134.5L883.6 152.6L897.3 168.3L911 148.7L924.7 158.9L938.4 133L952.1 129L965.8 138.5L979.5 134.5"
+                          fill="none"
+                          stroke="var(--c2)"
+                          stroke-width="2"
+                          stroke-linejoin="round"
+                          vector-effect="non-scaling-stroke"></path></svg
+                      ><div class="leg"
+                        ><div class="leg-r" style="gap: 0 12px; color: var(--fg-2)"
+                          ><span><span class="leg-d" style="--c: var(--c1)"></span>Depot</span
+                          ><span
+                            ><span class="leg-d" style="--c: var(--c2)"></span>Talvar World</span
+                          ></div
+                        ></div
+                      ></div
+                    ><div class="xc-y"
+                      ><span style="top: 88.1%">0 %</span><span style="top: 48.8%">5 %</span
+                      ><b style="top: 24.5%; --c: var(--c1); --tag-fg: #0c0e12">8,1 %</b
+                      ><b style="top: 13.5%; --c: var(--c2); --tag-fg: #0c0e12">9,5 %</b></div
+                    ></div
+                  ><div class="xc-x"
+                    ><span style="left: calc((100%) * 0.0479)">Nov</span
+                    ><span style="left: calc((100%) * 0.2945)">Feb</span
+                    ><span style="left: calc((100%) * 0.5274)">Mai</span
+                    ><span style="left: calc((100%) * 0.774)">Aug</span></div
+                  ></div
+                ></div
+              ><div class="g2"
+                ><div><span class="cap">Depot · 1 Jahr</span><strong class="up">+8,1 %</strong></div
+                ><div
+                  ><span class="cap">Talvar World</span><strong class="up">+9,5 %</strong></div
+                ></div
+              ></div
+            >
+            <div data-p="dp:a" class="" hidden
+              ><div class="se"><span class="lb">Sektor</span></div
+              ><div class="al"
+                ><span>ETF breit gestreut</span><span>46,0 %</span><i style="--w: 46%"></i></div
+              ><div class="al"
+                ><span>Technologie</span><span>21,4 %</span><i style="--w: 21.4%"></i></div
+              ><div class="al"
+                ><span>Energie</span><span>14,3 %</span><i style="--w: 14.3%"></i></div
+              ><div class="al"
+                ><span>Gesundheit</span><span>10,8 %</span><i style="--w: 10.8%"></i></div
+              ><div class="al"
+                ><span>Versorger</span><span>7,5 %</span><i style="--w: 7.5%"></i></div
+            ></div>
+            <div data-p="dp:s" class="" hidden
+              ><div class="r"
+                ><span class="a"
+                  ><b>Talvar World ETF</b
+                  ><small>monatlich am 1. · vom Verrechnungskonto</small></span
+                ><span class="z"
+                  ><span><b>250,00 €</b><small class="">nächste 01.11.</small></span></span
+                ></div
+              ></div
+            ></div
+          ><nav class="n" aria-label="Bereiche"
+            ><a href="#ueb" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-grid-1x2"></use></svg>ÜBERSICHT</a
+            ><a href="#mar" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-graph-up"></use></svg>MÄRKTE</a
+            ><a href="#dep" class="on" aria-current="page"
+              ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>DEPOT</a
+            ><a href="#kon" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg>KONTEN</a
+            ><a href="#meh" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-three-dots"></use></svg>MEHR<em
+                >2</em
+              ></a
+            ></nav
+          ></section
+        ></div
+      ><div class="phw" id="kon"
+        ><h2>Konten</h2
+        ><section class="ph" aria-label="Konten"
+          ><header class="t"
+            ><div class="ti"><i></i>KONTEN</div
+            ><a
+              class="ck"
+              href="#zei"
+              aria-label="Spielzeit: Montag, 20.10.2031, 10:42, Zeitsteuerung öffnen"
+              ><b>10:42</b
+              ><small
+                >MO 20.10. · <span class="run sp-v">10 min/s</span
+                ><span class="pz">Pausiert</span></small
+              ></a
+            ><button class="pb ps" data-pause aria-label="Pause"
+              ><span class="run"
+                ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></span
+              ><span class="pz"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-play-fill"></use></svg></span></button
+            ><button class="pb" aria-label="3 ungelesene Meldungen"
+              ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg><em>3</em></button
+            ></header
+          ><div class="b"
+            ><section class="h"
+              ><span class="lb">Bargeld · 3 Konten</span><span class="v">6.229,74 €</span
+              ><span class="c" style="color: var(--mut)">verfügbar 5.384,84 €</span></section
+            >
+            <div class="r"
+              ><span class="a"><b>Girokonto</b><small>Belent Bank</small></span
+              ><span class="z"
+                ><span><b>1.367,51 €</b></span></span
+              ></div
+            ><div class="r"
+              ><span class="a"><b>Tagesgeld</b><small>Valum Direktbank</small></span
+              ><span class="z"
+                ><span><b>3.512,64 €</b></span></span
+              ></div
+            ><div class="r"
+              ><span class="a"
+                ><b>Verrechnungskonto</b><small>Quintrade · 844,90 € reserviert</small></span
+              ><span class="z"
+                ><span><b>1.349,59 €</b><small class="">verfügbar 504,69</small></span></span
+              ></div
+            >
+            <div class="btn2"><button>ÜBERWEISEN</button><button>KONTO ERÖFFNEN</button></div>
+            <div class="se"><span class="lb">Girokonto · Letzte Buchungen</span></div
+            ><div class="r s"
+              ><span class="dt">01.10.</span
+              ><span class="a" style="flex: 1"
+                ><b style="font-size: 13.5px">Kontoführung Oktober</b></span
+              ><span class="z"><b class="">−4,90</b></span></div
+            ><div class="r s"
+              ><span class="dt">01.10.</span
+              ><span class="a" style="flex: 1"
+                ><b style="font-size: 13.5px">Dauerauftrag Quintrade</b></span
+              ><span class="z"><b class="">−250,00</b></span></div
+            ><div class="r s"
+              ><span class="dt">01.10.</span
+              ><span class="a" style="flex: 1"
+                ><b style="font-size: 13.5px">Dauerauftrag Tagesgeld</b></span
+              ><span class="z"><b class="">−300,00</b></span></div
+            ><div class="r s"
+              ><span class="dt">30.09.</span
+              ><span class="a" style="flex: 1"><b style="font-size: 13.5px">Gehalt</b></span
+              ><span class="z"><b class="up">+2.500,00</b></span></div
+            ></div
+          ><nav class="n" aria-label="Bereiche"
+            ><a href="#ueb" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-grid-1x2"></use></svg>ÜBERSICHT</a
+            ><a href="#mar" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-graph-up"></use></svg>MÄRKTE</a
+            ><a href="#dep" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>DEPOT</a
+            ><a href="#kon" class="on" aria-current="page"
+              ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg>KONTEN</a
+            ><a href="#meh" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-three-dots"></use></svg>MEHR<em
+                >2</em
+              ></a
+            ></nav
+          ></section
+        ></div
+      ><div class="phw" id="meh"
+        ><h2>Mehr</h2
+        ><section class="ph" aria-label="Mehr"
+          ><header class="t"
+            ><div class="ti"><i></i>MEHR</div
+            ><a
+              class="ck"
+              href="#zei"
+              aria-label="Spielzeit: Montag, 20.10.2031, 10:42, Zeitsteuerung öffnen"
+              ><b>10:42</b
+              ><small
+                >MO 20.10. · <span class="run sp-v">10 min/s</span
+                ><span class="pz">Pausiert</span></small
+              ></a
+            ><button class="pb ps" data-pause aria-label="Pause"
+              ><span class="run"
+                ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></span
+              ><span class="pz"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-play-fill"></use></svg></span></button
+            ><button class="pb" aria-label="3 ungelesene Meldungen"
+              ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg><em>3</em></button
+            ></header
+          ><div class="b"
+            ><a class="r" href="#ord"
+              ><span class="a"><b>Orders</b><small>Offen, Historie, Sparpläne</small></span
+              ><span class="z"
+                ><span><b>2</b></span
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-right"></use></svg></span></a
+            ><div class="r"
+              ><span class="a"
+                ><b>Steuern</b><small>Sparerpauschbetrag 412,30 / 1.000 €</small></span
+              ><span class="z"
+                ><span><b></b></span
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-right"></use></svg></span></div
+            ><div class="r"
+              ><span class="a"><b>Benachrichtigungen</b><small>3 ungelesen</small></span
+              ><span class="z"
+                ><span><b>3</b></span
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-right"></use></svg></span></div
+            ><div class="r"
+              ><span class="a"><b>Glossar und Hilfe</b></span
+              ><span class="z"
+                ><span><b></b></span
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-right"></use></svg></span></div
+            ><div class="r"
+              ><span class="a"><b>Einstellungen</b><small>Gerät und Spieler</small></span
+              ><span class="z"
+                ><span><b></b></span
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"></use></svg></span
+            ></div>
+            <div class="se"><span class="lb">Spielstand</span></div
+            ><div class="dd"
+              ><div class="kv"><span>Spieler</span><span>Alex</span></div
+              ><div class="kv"><span>Seed</span><span>salbei-lotse-910</span></div
+              ><div class="kv"><span>Gespeichert</span><span>10:42</span></div></div
+            >
+            <div class="se"><span class="lb">Börsen</span></div
+            ><div class="dd"
+              ><div class="mk" style="margin: 0"
+                ><span><i class="dot"></i>Europa: offen bis 17:30</span
+                ><span><i class="dot"></i>Schwellenl.: offen bis 16:00</span
+                ><span><i class="dot off"></i>Nordamerika: ab 15:30</span
+                ><span><i class="dot off"></i>Asien-Pazifik: geschlossen</span></div
+              ></div
+            ></div
+          ><nav class="n" aria-label="Bereiche"
+            ><a href="#ueb" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-grid-1x2"></use></svg>ÜBERSICHT</a
+            ><a href="#mar" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-graph-up"></use></svg>MÄRKTE</a
+            ><a href="#dep" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>DEPOT</a
+            ><a href="#kon" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg>KONTEN</a
+            ><a href="#meh" class="on" aria-current="page"
+              ><svg class="ic" aria-hidden="true"><use href="#i-three-dots"></use></svg>MEHR<em
+                >2</em
+              ></a
+            ></nav
+          ></section
+        ></div
+      ><div class="phw" id="ord"
+        ><h2>Orders</h2
+        ><section class="ph" aria-label="Orders"
+          ><header class="t"
+            ><a class="ti" href="#meh"
+              ><svg class="ic" aria-hidden="true"><use href="#i-chevron-left"></use></svg>MEHR</a
+            ><a
+              class="ck"
+              href="#zei"
+              aria-label="Spielzeit: Montag, 20.10.2031, 10:42, Zeitsteuerung öffnen"
+              ><b>10:42</b
+              ><small
+                >MO 20.10. · <span class="run sp-v">10 min/s</span
+                ><span class="pz">Pausiert</span></small
+              ></a
+            ><button class="pb ps" data-pause aria-label="Pause"
+              ><span class="run"
+                ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></span
+              ><span class="pz"
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-play-fill"></use></svg></span></button
+            ><button class="pb" aria-label="3 ungelesene Meldungen"
+              ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg><em>3</em></button
+            ></header
+          ><div class="b"
+            ><div class="ps2 st0" role="tablist"
+              ><button role="tab" data-t="os:o" aria-selected="true" class="on">OFFEN · 2</button
+              ><button role="tab" data-t="os:h" aria-selected="false" class="">HISTORIE</button
+              ><button role="tab" data-t="os:s" aria-selected="false" class=""
+                >SPARPLÄNE · 1</button
+              ></div
+            >
+            <div data-p="os:o" class=""
+              ><article class="oc"
+                ><div class="top"><span>KAUF LIMIT</span><span>bis 31.10.</span></div
+                ><div class="mid2"><span>10 × Corvan Systems</span><b>84,00</b></div
+                ><small>844,90 € reserviert · Kurs 87,42 · −3,9 %</small
+                ><div class="btn2"><button>ÄNDERN</button><button>STREICHEN</button></div></article
+              ><article class="oc"
+                ><div class="top"><span>VERKAUF STOP</span><span>auf Widerruf</span></div
+                ><div class="mid2"><span>60 × Selmark Energie AG</span><b>40,00</b></div
+                ><small>60 Stück gesperrt · Kurs 43,53 · −8,1 %</small
+                ><div class="btn2"><button>ÄNDERN</button><button>STREICHEN</button></div></article
+              ></div
+            >
+            <div data-p="os:h" class="" hidden
+              ><div class="r"
+                ><span class="a"
+                  ><b>20 × Selmark Energie AG</b><small>17.10. 16:12 · Verkauf Markt</small></span
+                ><span class="z"
+                  ><span><b>+876,10 €</b><small class="">ausgeführt</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"
+                  ><b>5 × Halvion AG</b><small>12.10. 14:30 · Verkauf Limit 270,00</small></span
+                ><span class="z"
+                  ><span><b>–</b><small class="">gestrichen</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"
+                  ><b>10 × Corvan Systems</b><small>30.09. 17:30 · Kauf Limit 74,00</small></span
+                ><span class="z"
+                  ><span><b>–</b><small class="">abgelaufen</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"
+                  ><b>200 × Orelia Pharma</b><small>25.09. 13:05 · Kauf Limit 3,950</small></span
+                ><span class="z"
+                  ><span><b>–</b><small class="">gestrichen</small></span></span
+                ></div
+              ><div class="r"
+                ><span class="a"
+                  ><b>35 × Kalveth Health SE</b><small>12.08. 10:14 · Kauf Markt</small></span
+                ><span class="z"
+                  ><span><b>−1.906,10 €</b><small class="">ausgeführt</small></span></span
+                ></div
+              ></div
+            >
+            <div data-p="os:s" class="" hidden
+              ><div class="r"
+                ><span class="a"><b>Talvar World ETF</b><small>monatlich am 1.</small></span
+                ><span class="z"
+                  ><span><b>250,00 €</b><small class="">nächste 01.11.</small></span></span
+                ></div
+              ></div
+            ></div
+          ><nav class="n" aria-label="Bereiche"
+            ><a href="#ueb" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-grid-1x2"></use></svg>ÜBERSICHT</a
+            ><a href="#mar" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-graph-up"></use></svg>MÄRKTE</a
+            ><a href="#dep" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>DEPOT</a
+            ><a href="#kon" class=""
+              ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg>KONTEN</a
+            ><a href="#meh" class="on" aria-current="page"
+              ><svg class="ic" aria-hidden="true"><use href="#i-three-dots"></use></svg>MEHR<em
+                >2</em
+              ></a
+            ></nav
+          ></section
+        ></div
+      ><div class="phw" id="zei"
+        ><h2>Spielzeit (Sheet)</h2
+        ><section class="ph" aria-label="Spielzeit (Sheet)"
+          ><div class="bg" inert
+            ><header class="t"
+              ><div class="ti"><i></i>ÜBERSICHT</div
+              ><a
+                class="ck"
+                href="#zei"
+                aria-label="Spielzeit: Montag, 20.10.2031, 10:42, Zeitsteuerung öffnen"
+                ><b>10:42</b
+                ><small
+                  >MO 20.10. · <span class="run sp-v">10 min/s</span
+                  ><span class="pz">Pausiert</span></small
+                ></a
+              ><button class="pb ps" data-pause aria-label="Pause"
+                ><span class="run"
+                  ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></span
+                ><span class="pz"
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="#i-play-fill"></use></svg></span></button
+              ><button class="pb" aria-label="3 ungelesene Meldungen"
+                ><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg
+                ><em>3</em></button
+              ></header
+            ><div class="b"
+              ><section class="h"
+                ><span class="lb">Gesamtvermögen</span><span class="v">24.512,30 €</span
+                ><span class="c up">+147,38 € · +0,60 % heute</span
+                ><svg
+                  class="wl"
+                  viewBox="0 0 1000 240"
+                  preserveAspectRatio="none"
+                  role="img"
+                  aria-label="Vermögensverlauf über ein Jahr, steigend">
+                  <path
+                    d="M0 204.5 14 214.5 28 210.2 42 200.5 56 204.2 70 215.1 85 214.7 99 209.6 113 198.9 127 208.9 141 219.4 155 212.3 169 207.2 183 192.7 197 182.8 211 182.8 225 184.3 239 159.8 254 161.5 268 167.9 282 177.6 296 175.7 310 173.4 324 175.6 338 175.2 352 171.7 366 164.3 380 153 394 150 408 166.1 423 158.5 437 171 451 171.6 465 184.3 479 183.3 493 189.5 507 186.6 521 155.5 535 155 549 146 563 157.7 577 159.4 592 152.1 606 152 620 147.5 634 145.5 648 154.1 662 147.7 676 154.5 690 135.7 704 139.6 718 131.9 732 130.9 746 120.5 761 125.4 775 114.5 789 114.7 803 101 817 93.6 831 91.1 845 98 859 89.1 873 83.2 887 65.1 901 68 915 61 930 54.5 944 50.3 958 46.9 972 43.8 986 49.2 1000 59 L1000 240 L0 240 Z"
+                    fill="var(--c1)"
+                    fill-opacity=".1"></path>
+                  <path
+                    d="M0 204.5 14 214.5 28 210.2 42 200.5 56 204.2 70 215.1 85 214.7 99 209.6 113 198.9 127 208.9 141 219.4 155 212.3 169 207.2 183 192.7 197 182.8 211 182.8 225 184.3 239 159.8 254 161.5 268 167.9 282 177.6 296 175.7 310 173.4 324 175.6 338 175.2 352 171.7 366 164.3 380 153 394 150 408 166.1 423 158.5 437 171 451 171.6 465 184.3 479 183.3 493 189.5 507 186.6 521 155.5 535 155 549 146 563 157.7 577 159.4 592 152.1 606 152 620 147.5 634 145.5 648 154.1 662 147.7 676 154.5 690 135.7 704 139.6 718 131.9 732 130.9 746 120.5 761 125.4 775 114.5 789 114.7 803 101 817 93.6 831 91.1 845 98 859 89.1 873 83.2 887 65.1 901 68 915 61 930 54.5 944 50.3 958 46.9 972 43.8 986 49.2 1000 59"
+                    fill="none"
+                    stroke="var(--c1)"
+                    stroke-width="2"
+                    vector-effect="non-scaling-stroke"></path></svg
+                ><div class="mix" aria-hidden="true"
+                  ><i style="flex: 74.6"></i><i style="flex: 25.4"></i></div
+              ></section>
+              <div class="g2"
+                ><div
+                  ><span class="cap">Wertpapiere · 74,6 %</span
+                  ><strong class="">18.282,56 €</strong></div
+                ><div
+                  ><span class="cap">Bargeld · 25,4 %</span
+                  ><strong class="">6.229,74 €</strong></div
+                ><div><span class="cap">Seit Beginn</span><strong class="up">+9,80 %</strong></div
+                ><div
+                  ><span class="cap">Benchmark</span><strong class="up">+11,30 %</strong></div
+                ></div
+              >
+              <div class="se"><span class="lb">Als Nächstes</span></div
+              ><div class="r s"
+                ><span class="dt">24.10.</span
+                ><span class="a" style="flex: 1"><b>Dividende Norvane</b></span
+                ><span class="z"><b class="up">+28,70 €</b></span></div
+              ><div class="r s"
+                ><span class="dt">31.10.</span><span class="a" style="flex: 1"><b>Gehalt</b></span
+                ><span class="z"><b class="up">+2.500,00 €</b></span></div
+              >
+              <div class="se"><span class="lb">Offen</span></div
+              ><a class="r" href="#ord"
+                ><span class="a"
+                  ><b>2 offene Orders</b
+                  ><small>844,90 € reserviert · 60 Stück gesperrt</small></span
+                ><span class="z"
+                  ><span><b></b></span
+                  ><svg class="ic" aria-hidden="true">
+                    <use href="#i-chevron-right"></use></svg></span></a></div
+            ><nav class="n" aria-label="Bereiche"
+              ><a href="#ueb" class="on" aria-current="page"
+                ><svg class="ic" aria-hidden="true"><use href="#i-grid-1x2"></use></svg>ÜBERSICHT</a
+              ><a href="#mar" class=""
+                ><svg class="ic" aria-hidden="true"><use href="#i-graph-up"></use></svg>MÄRKTE</a
+              ><a href="#dep" class=""
+                ><svg class="ic" aria-hidden="true"><use href="#i-briefcase"></use></svg>DEPOT</a
+              ><a href="#kon" class=""
+                ><svg class="ic" aria-hidden="true"><use href="#i-bank"></use></svg>KONTEN</a
+              ><a href="#meh" class=""
+                ><svg class="ic" aria-hidden="true"><use href="#i-three-dots"></use></svg>MEHR<em
+                  >2</em
+                ></a
+              ></nav
+            ></div
+          ><a class="scrim" href="#ueb" aria-label="Schließen"></a
+          ><section class="sh" role="dialog" aria-label="SPIELZEIT"
+            ><div class="sh-h"
+              ><b>SPIELZEIT</b
+              ><a class="pb" href="#ueb" aria-label="Schließen"
+                ><svg class="ic" aria-hidden="true"><use href="#i-x-lg"></use></svg></a></div
+            ><div class="bigt"><b>10:42</b><span>Mo., 20.10.2031</span></div>
+            <button class="pw" data-pause aria-label="Pause"
+              ><span class="run"
+                ><svg class="ic" aria-hidden="true"><use href="#i-pause-fill"></use></svg></span
+              ><span class="pz"
+                ><svg class="ic" aria-hidden="true"><use href="#i-play-fill"></use></svg></span
+              ><span class="run">PAUSE</span><span class="pz">WEITER</span></button
+            >
+            <span class="lb">Geschwindigkeit</span
+            ><div class="spd"
+              ><button data-speed="0" aria-pressed="false" class="">1 s/s</button
+              ><button data-speed="1" aria-pressed="false" class="">1 min/s</button
+              ><button data-speed="2" aria-pressed="true" class="on">10 min/s</button
+              ><button data-speed="3" aria-pressed="false" class="">1 h/s</button
+              ><button data-speed="4" aria-pressed="false" class="">2 h/s</button
+              ><button data-speed="5" aria-pressed="false" class="">4 h/s</button
+              ><button data-speed="6" aria-pressed="false" class="">1 d/s</button
+              ><button data-speed="7" aria-pressed="false" class="">1 w/s</button></div
+            >
+            <span class="lb">Vorspulen bis</span
+            ><div class="r"
+              ><span class="a"
+                ><b>Nächste Börsenöffnung</b><small>Nordamerika, heute 15:30</small></span
+              ><span class="z"
+                ><span><b></b></span
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-right"></use></svg></span></div
+            ><div class="r"
+              ><span class="a"><b>Nächster Monatsanfang</b><small>Sa., 01.11.2031</small></span
+              ><span class="z"
+                ><span><b></b></span
+                ><svg class="ic" aria-hidden="true">
+                  <use href="#i-chevron-right"></use></svg></span></div
+            ><div class="r"
+              ><span class="a"><b>Datum wählen</b><small>höchstens ein Jahr voraus</small></span
+              ><span class="z"
+                ><span><b></b></span
+                ><svg class="ic" aria-hidden="true"><use href="#i-chevron-right"></use></svg></span
+            ></div>
+            <div class="mk"
+              ><span><i class="dot"></i>Europa: offen bis 17:30</span
+              ><span><i class="dot"></i>Schwellenl.: offen bis 16:00</span
+              ><span><i class="dot off"></i>Nordamerika: ab 15:30</span
+              ><span><i class="dot off"></i>Asien-Pazifik: geschlossen</span></div
+            ></section
+          ></section
+        ></div
+      ></div
+    >
+    <script>
+      (function () {
+        var de = function (v, d) {
+          return v.toLocaleString('de-DE', { minimumFractionDigits: d, maximumFractionDigits: d });
+        };
+        var dp = function (v) {
+          return v >= 10 ? 2 : v >= 1 ? 3 : 4;
+        };
+        var sg = function (v, d) {
+          return (v > 0 ? '+' : v < 0 ? '\u2212' : '') + de(Math.abs(v), d);
+        };
+        document.querySelectorAll('[data-xc]').forEach(function (el) {
+          var D = JSON.parse(el.dataset.xc);
+          var plots = Array.prototype.slice.call(el.querySelectorAll('.xc-plot'));
+          var mk = function (c, p) {
+            var e = document.createElement('div');
+            e.className = c;
+            e.hidden = true;
+            p.appendChild(e);
+            return e;
+          };
+          var vs = plots.map(function (p) {
+            return mk('xc-v', p);
+          });
+          var hl = mk('xc-h', plots[0]);
+          var yl = mk('xc-yl', el.querySelector('.xc-y'));
+          var xl = mk('xc-xl', el.querySelector('.xc-x'));
+          var set = function (k, t, cls) {
+            el.querySelectorAll('[data-k="' + k + '"]').forEach(function (e) {
+              e.textContent = t;
+              if (cls !== undefined) {
+                e.classList.remove('up', 'down');
+                if (cls) e.classList.add(cls);
+              }
+            });
+          };
+          var legend = function (i) {
+            var r = D.r[i];
+            set('d', r[0]);
+            if (D.t === 'multi') {
+              D.n.forEach(function (_, s) {
+                var v = r[s + 1];
+                set('s' + s, sg(v, 1) + ' %');
+              });
+              return;
+            }
+            var prev = i ? D.r[i - 1][4] : r[1];
+            var d = dp(r[4]);
+            set('o', de(r[1], d));
+            set('h', de(r[2], d));
+            set('l', de(r[3], d));
+            set('c', de(r[4], d));
+            var c = r[4] - prev;
+            set(
+              'chg',
+              sg(c, d) + ' (' + sg((c / prev) * 100, 2) + ' %)',
+              c > 0 ? 'up' : c < 0 ? 'down' : '',
+            );
+            set('v', de(r[5], 0) + ' Tsd.');
+          };
+          var cur = D.r.length - 1;
+          var show = function (i, cy) {
+            cur = i;
+            var box = plots[0].getBoundingClientRect();
+            var left = ((i + 0.5) / (D.r.length + D.p)) * box.width;
+            vs.forEach(function (v) {
+              v.hidden = false;
+              v.style.left = left + 'px';
+            });
+            xl.hidden = false;
+            xl.style.left = left + 'px';
+            xl.textContent = D.r[i][0];
+            if (cy !== null && cy >= box.top && cy <= box.bottom) {
+              var y = cy - box.top;
+              hl.hidden = yl.hidden = false;
+              hl.style.top = yl.style.top = y + 'px';
+              var val = D.hi - (y / box.height) * (D.hi - D.lo);
+              yl.textContent = D.t === 'multi' ? sg(val, 1) + ' %' : de(val, dp(val));
+            } else {
+              hl.hidden = yl.hidden = true;
+            }
+            legend(i);
+          };
+          var hide = function () {
+            vs.concat([hl, yl, xl]).forEach(function (e) {
+              e.hidden = true;
+            });
+            cur = D.r.length - 1;
+            legend(cur);
+          };
+          el.addEventListener('pointermove', function (e) {
+            var box = plots[0].getBoundingClientRect();
+            var i = Math.floor(((e.clientX - box.left) / box.width) * (D.r.length + D.p));
+            show(Math.max(0, Math.min(D.r.length - 1, i)), e.clientY);
+          });
+          el.addEventListener('pointerleave', hide);
+          el.addEventListener('blur', hide);
+          el.addEventListener('keydown', function (e) {
+            if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+            e.preventDefault();
+            show(
+              Math.max(0, Math.min(D.r.length - 1, cur + (e.key === 'ArrowLeft' ? -1 : 1))),
+              null,
+            );
+          });
+        });
+        var pal = document.querySelector('[data-palette]');
+        if (pal) {
+          document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') pal.hidden = true;
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+              e.preventDefault();
+              pal.hidden = !pal.hidden;
+            }
+          });
+          pal.addEventListener('click', function (e) {
+            if (e.target === pal) pal.hidden = true;
+          });
+        }
+      })();
+
+      (function () {
+        var all = function (s, r) {
+          return Array.prototype.slice.call((r || document).querySelectorAll(s));
+        };
+        var de = function (v) {
+          return v.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+        var activate = function (g, k) {
+          all('[data-t^="' + g + ':"]').forEach(function (b) {
+            var on = b.dataset.t === g + ':' + k;
+            b.classList.toggle('on', on);
+            b.setAttribute('aria-selected', on);
+          });
+          all('[data-p^="' + g + ':"]').forEach(function (p) {
+            p.hidden = p.dataset.p !== g + ':' + k;
+          });
+        };
+        var speeds = ['1 s/s', '1 min/s', '10 min/s', '1 h/s', '2 h/s', '4 h/s', '1 d/s', '1 w/s'];
+        var speed = 2;
+        var setSpeed = function (i) {
+          speed = Math.max(0, Math.min(speeds.length - 1, i));
+          all('.sp-v').forEach(function (e) {
+            e.textContent = speeds[speed];
+          });
+          all('[data-speed]').forEach(function (b) {
+            var on = +b.dataset.speed === speed;
+            b.classList.toggle('on', on);
+            b.setAttribute('aria-pressed', on);
+          });
+        };
+        var qty = 5;
+        var PRICE = 87.46,
+          FEE = 4.9,
+          AVAIL = 504.69;
+        var ticket = function () {
+          var kw = qty * PRICE,
+            tot = kw + FEE,
+            rest = AVAIL - tot,
+            ok = rest >= 0;
+          var out = function (k, t) {
+            all('[data-o="' + k + '"]').forEach(function (e) {
+              e.textContent = t;
+            });
+          };
+          out('q', qty);
+          out('kl', 'Kurswert (' + qty + ' × 87,46)');
+          out('kw', de(kw) + ' €');
+          out('tot', de(tot) + ' €');
+          out('rest', (ok ? '' : '\u2212') + de(Math.abs(rest)) + ' €');
+          all('[data-o="rest"]').forEach(function (e) {
+            e.classList.toggle('down', !ok);
+          });
+          all('[data-cta]').forEach(function (b) {
+            b.disabled = !ok;
+            b.textContent = ok ? 'Kauforder prüfen' : 'Guthaben reicht nicht';
+          });
+        };
+        document.addEventListener('click', function (e) {
+          var hit = function (s) {
+            return e.target.closest ? e.target.closest(s) : null;
+          };
+          var x;
+          if ((x = hit('[data-t]'))) {
+            var a = x.dataset.t.split(':');
+            activate(a[0], a[1]);
+          }
+          if ((x = hit('[data-set]'))) {
+            var b = x.dataset.set.split(':');
+            activate(b[0], b[1]);
+          }
+          if ((x = hit('[data-tg]'))) {
+            var off = document.querySelector('.wb').classList.toggle(x.dataset.tg);
+            x.setAttribute('aria-pressed', !off);
+            x.classList.toggle('on', !off);
+          }
+          if (hit('[data-pause]')) {
+            var p = document.body.classList.toggle('paused');
+            all('[data-pause]').forEach(function (b) {
+              b.setAttribute('aria-label', p ? 'Weiter' : 'Pause');
+            });
+          }
+          if ((x = hit('[data-speed]'))) setSpeed(+x.dataset.speed);
+          if ((x = hit('[data-sp]'))) setSpeed(speed + +x.dataset.sp);
+          if ((x = hit('[data-fold]'))) {
+            var s = x.parentNode.classList.toggle('shut');
+            x.setAttribute('aria-expanded', !s);
+          }
+          if ((x = hit('[data-q]'))) {
+            qty = Math.max(1, Math.min(99, qty + +x.dataset.q));
+            ticket();
+          }
+        });
+        all('[data-xc]').forEach(function (el) {
+          var on = function () {
+            el.classList.add('act');
+          };
+          var off = function () {
+            el.classList.remove('act');
+          };
+          el.addEventListener('pointerdown', on);
+          el.addEventListener('pointermove', on);
+          el.addEventListener('keydown', on);
+          el.addEventListener('pointerleave', off);
+          el.addEventListener('blur', off);
+        });
+      })();
+    </script>
+  </body>
+</html>
