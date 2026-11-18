@@ -34,7 +34,6 @@ jobs:
 
       # The host allows SFTP only, so stale hashed files are removed by mirroring:
       # lftp uploads first and then deletes what the build no longer contains.
-      # TODO: remove --dry-run once the log of the first run lists only stale build files.
       - name: Deploy via SFTP
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
@@ -46,5 +45,5 @@ jobs:
             set sftp:auto-confirm yes;
             set net:max-retries 3;
             open --env-password -u $SFTP_USER -p $SFTP_PORT sftp://$SFTP_HOST;
-            mirror --reverse --delete --verbose --parallel=4 --dry-run app-build-static /www/portfoligo;
+            mirror --reverse --delete --verbose --parallel=4 app-build-static /www/portfoligo;
             bye"

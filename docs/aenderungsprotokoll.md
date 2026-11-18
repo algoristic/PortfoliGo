@@ -8,6 +8,7 @@ Hier steht, was sich an Plan, Spezifikationen und Code geändert hat: das Ergebn
 
 ## 18.11.2026
 
+- **Deployment lädt wieder hoch (kein AP, TS §14.4).** `publish.yml` lief seit dem 15.11.2026 mit `--dry-run`, grüne Läufe veröffentlichten also nichts. Der Probelauf vom 17.11.2026 plant 154 Uploads und 866 Löschungen: 864 alte Dateien mit Hash, `prerendered-routes.json` und `assets/icon` aus der Ionic-Zeit, keine Datei, die nicht aus einem Build stammt. `--dry-run` ist entfernt; der nächste Push auf `main` lädt hoch und löscht diese Dateien. Lokal ist das nicht prüfbar, weil die Zugangsdaten nur in GitHub liegen.
 - **System-Tests warten auf das erste Rendern von Dialogen (kein AP, TS §14.1).** Publish-Lauf #73 scheiterte an `e2e/export-import.e2e.ts`: Die Felder eines Dialogs existieren sofort nach dem Öffnen, `[formField]` wird aber erst mit der ersten Change Detection gebunden. Eine Eingabe davor löst `NG0950` aus und geht verloren.
   - **Tests:** `expectDialogReady(page, testId)` in `e2e/fixtures.ts` wartet auf `<testId>.close`, eine Bindung von `app-dialog`. Alle Journeys, die direkt nach dem Öffnen ein Feld bedienen, rufen sie auf (Sprung, Import, Überweisung, Kontoeröffnung, Order-Maske, Sparplan).
   - **Prüfungen:** Reproduktion mit Eingabe vor dem ersten Rendern (`NG0950`, leeres Feld) und ohne Fehler nach dem Warten; `export-import` 5 × grün; Gate-Projekte `chromium` und `chromium-intl` in zwei von drei vollen Läufen grün (68 Tests).
