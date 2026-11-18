@@ -1,6 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 
-import { expect, test } from './fixtures';
+import { expect, expectDialogReady, test } from './fixtures';
 import { expectGameReady, getClock, getPausedBadge, getSpeed, getTogglePause } from './game.po';
 import { createPlayer } from './players.po';
 
@@ -50,6 +50,7 @@ async function boxesOf(locators: Locator[]): Promise<Box[]> {
 async function jumpTo(page: Page, date: string, text: string): Promise<void> {
   await getSpeed(page).click();
   await page.getByTestId('shell.header.speed.jump').click();
+  await expectDialogReady(page, 'clock.jump-dialog');
   await page.getByTestId('clock.jump-dialog.date-kind').check();
   await page.getByTestId('clock.jump-dialog.date').fill(date);
   await page.getByTestId('clock.jump-dialog.submit').click();

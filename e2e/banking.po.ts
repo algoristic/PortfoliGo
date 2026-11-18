@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from '@playwright/test';
 
+import { expectDialogReady } from './fixtures';
 import { getClock } from './game.po';
 
 // Page object of the accounts and the statement (AP 3.4).
@@ -25,6 +26,7 @@ export async function jumpTo(
   expected: string,
 ): Promise<void> {
   await page.getByTestId('shell.header.jump-button').click();
+  await expectDialogReady(page, 'clock.jump-dialog');
   await page.getByTestId('clock.jump-dialog.date-kind').check();
   await page.getByTestId('clock.jump-dialog.date').fill(date);
   await page.getByTestId('clock.jump-dialog.time').fill(time);
@@ -47,6 +49,7 @@ export const getSortButton = (page: Page, key: string): Locator =>
 /** Opens a savings account at the bank of the salary account through the dialog. */
 export async function openSavingsAccount(page: Page): Promise<void> {
   await page.getByTestId('banking.accounts.open-account').click();
+  await expectDialogReady(page, 'banking.open-account-dialog');
   await page.getByTestId('banking.open-account-dialog.kind.savings').check();
   await page.getByTestId('banking.open-account-dialog.submit').click();
   await expect(getAccountCard(page, 'acc-2')).toBeVisible();

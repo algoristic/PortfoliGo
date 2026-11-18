@@ -1,4 +1,4 @@
-import { expect, expectAccessible, test } from './fixtures';
+import { expect, expectAccessible, expectDialogReady, test } from './fixtures';
 import {
   expectClockRunsPast,
   expectGameReady,
@@ -53,6 +53,7 @@ test.describe('game clock', () => {
     // US-ZT-05: jump to the next month start; the pause stays.
     await selectSpeed(page, '1min', '1 min/s');
     await page.getByTestId('shell.header.jump-button').click();
+    await expectDialogReady(page, 'clock.jump-dialog');
     await page.getByTestId('clock.jump-dialog.next-month').check();
     await page.getByTestId('clock.jump-dialog.submit').click();
     await expect(getClock(page)).toHaveText('Mi., 01.05.2030, 00:00', { timeout: 30_000 });

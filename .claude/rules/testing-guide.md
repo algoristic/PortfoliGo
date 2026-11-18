@@ -100,6 +100,7 @@ They run the real code: store, effects, facades, services, worker code, child co
   - `@intl` adds `chromium-intl` (en-US, Los Angeles), because output must be de-DE and UTC regardless of the browser.
 - Select with `page.getByTestId(...)`. Assert texts and values derived from the calendar or the page structure, never model numbers: they change with every calibration. For determinism across engines, compare with the frozen constants (`GOLDEN_CHECKSUMS`).
 - Control time only through product features (pause, simulate, jump) and assert in the resting state. No `waitForTimeout`. Let a page finish loading before a reload or navigation that could cancel a lazy chunk.
+- After opening a dialog, call `expectDialogReady(page, '<testId>')` before using its fields, unless the test already waits for a bound state (`toBeChecked`, `toBeFocused`): input before the first change detection is lost (NG0950).
 - Add or extend a journey whenever an AP adds behaviour that only a real browser shows: the worker, persistence across reloads, several tabs, offline use, file download and upload, layout breakpoints, focus handling, output in other engines. Run a new journey locally with `--repeat-each=5` before keeping it.
 - Locally, `npm run e2e` and `npm run verify` run only the Chromium projects (`npm run test:e2e`). Firefox, WebKit and `mobile-webkit` run in CI (Playwright container); to run them locally, install their system libraries once (`sudo npx playwright install-deps`) and call `npx playwright test`.
 

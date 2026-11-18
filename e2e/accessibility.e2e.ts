@@ -1,6 +1,6 @@
 import { Locator, Page } from '@playwright/test';
 
-import { expect, expectAccessible, test } from './fixtures';
+import { expect, expectAccessible, expectDialogReady, test } from './fixtures';
 import { expectGameReady, getPausedBadge } from './game.po';
 import { createPlayer } from './players.po';
 import { recordTranslationWarnings, storeColorScheme, storeLanguage } from './settings.po';
@@ -122,12 +122,14 @@ test.describe('accessibility', () => {
 
       await open(page, `${game}/accounts`);
       await page.getByTestId('banking.accounts.transfer').click();
+      await expectDialogReady(page, 'banking.transfer-dialog');
       await page.getByTestId('banking.transfer-dialog.to').selectOption('acc-2');
       await expectAccessible(page);
       await page.getByTestId('banking.transfer-dialog.decline').click();
 
       await open(page, `${game}/markets/${INSTRUMENT}`);
       await page.getByTestId('trading.trade-actions.buy').click();
+      await expectDialogReady(page, 'trading.order-ticket');
       await page.getByTestId('trading.order-ticket.quantity').fill('1');
       await expect(page.getByTestId('trading.order-ticket.submit')).toBeVisible();
       await expectAccessible(page);
@@ -199,6 +201,7 @@ test.describe('accessibility', () => {
     await page.getByTestId('banking.open-account-dialog.submit').click();
     await expect(page.getByTestId('banking.open-account-dialog.submit')).toHaveCount(0);
     await page.getByTestId('trading.trade-actions.buy').click();
+    await expectDialogReady(page, 'trading.order-ticket');
     await page.getByTestId('trading.order-ticket.quantity').fill('1');
     await expect(
       page.getByRole('dialog').getByRole('region', { name: 'Cost preview' }),

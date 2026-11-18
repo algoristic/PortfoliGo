@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 
 import { jumpTo } from './banking.po';
-import { expect, expectAccessible, test } from './fixtures';
+import { expect, expectAccessible, expectDialogReady, test } from './fixtures';
 import { expectGameReady } from './game.po';
 import { createPlayer } from './players.po';
 
@@ -36,6 +36,7 @@ async function openDepotWithMoney(page: Page, game: string): Promise<void> {
   await page.goto(`${game}/accounts`);
   await expectGameReady(page);
   await page.getByTestId('banking.accounts.transfer').click();
+  await expectDialogReady(page, 'banking.transfer-dialog');
   await page.getByTestId('banking.transfer-dialog.to').selectOption('acc-2');
   await page.getByTestId('banking.transfer-dialog.amount').fill('2000');
   await page.getByTestId('banking.transfer-dialog.submit').click();
@@ -47,6 +48,7 @@ async function buyOne(page: Page, game: string, kind: 'limit' | 'market'): Promi
   await page.goto(`${game}/markets/${INSTRUMENT}`);
   await expectGameReady(page);
   await page.getByTestId('trading.trade-actions.buy').click();
+  await expectDialogReady(page, 'trading.order-ticket');
   await page.getByTestId('trading.order-ticket.quantity').fill('1');
   if (kind === 'limit') {
     await page.getByTestId('trading.order-ticket.type').selectOption('limit');
@@ -148,6 +150,7 @@ test.describe('trading on a phone', { tag: ['@mobile', '@phone'] }, () => {
     await page.goto(`${game}/markets/${INSTRUMENT}`);
     await expectGameReady(page);
     await page.getByTestId('trading.trade-actions.buy').click();
+    await expectDialogReady(page, 'trading.order-ticket');
     await page.getByTestId('trading.order-ticket.quantity').fill('1');
     await expectNoHorizontalScroll(page);
     await expectAccessible(page);

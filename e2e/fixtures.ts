@@ -57,6 +57,15 @@ export const test = base.extend<{ allowedPageErrors: readonly RegExp[]; pageErro
 
 export { expect };
 
+/**
+ * Waits for the first change detection of a dialog. Its controls exist as soon as it opens, but
+ * `[formField]` is bound only then; earlier input is lost (NG0950). The test ID of the close button
+ * is itself a binding of `app-dialog`.
+ */
+export async function expectDialogReady(page: Page, testId: string): Promise<void> {
+  await expect(page.getByTestId(`${testId}.close`)).toBeVisible();
+}
+
 /** No serious or critical WCAG 2.2 AA findings (NF-09); `exclude` takes CSS selectors. */
 export async function expectAccessible(page: Page, exclude: readonly string[] = []): Promise<void> {
   // Firefox of Playwright 1.65 (firefox-1572) crashes its content process (SIGSEGV) during axe's

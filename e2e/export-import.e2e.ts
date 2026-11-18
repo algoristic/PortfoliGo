@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 
 import { readFile } from 'node:fs/promises';
 
-import { expect, expectAccessible, test } from './fixtures';
+import { expect, expectAccessible, expectDialogReady, test } from './fixtures';
 import { expectGameReady, getClock, getPausedBadge, getSpeed } from './game.po';
 import { createPlayer } from './players.po';
 
@@ -13,6 +13,7 @@ import { createPlayer } from './players.po';
 async function jumpTo(page: Page, date: string, time: string, text: string): Promise<void> {
   await getSpeed(page).click();
   await page.getByTestId('shell.header.speed.jump').click();
+  await expectDialogReady(page, 'clock.jump-dialog');
   await page.getByTestId('clock.jump-dialog.date-kind').check();
   await page.getByTestId('clock.jump-dialog.date').fill(date);
   await page.getByTestId('clock.jump-dialog.time').fill(time);
@@ -90,6 +91,7 @@ test('copies the export to the clipboard and imports the pasted text', async ({
 
   await page.goto('#/players');
   await page.getByTestId('players.list.import').click();
+  await expectDialogReady(page, 'players.import-dialog');
   await page.getByTestId('players.import-dialog.text').fill(copied);
   await page.getByTestId('players.import-dialog.submit').click();
   await expect(page).toHaveURL(/#\/game\/p-[0-9a-f]{32}\/dashboard$/, { timeout: 30_000 });

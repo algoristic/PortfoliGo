@@ -1,6 +1,6 @@
 import { Page } from '@playwright/test';
 
-import { expect, expectAccessible, test } from './fixtures';
+import { expect, expectAccessible, expectDialogReady, test } from './fixtures';
 import { expectGameReady, getClock, getSpeed } from './game.po';
 import { createPlayer } from './players.po';
 
@@ -24,6 +24,7 @@ async function expectNoHorizontalScroll(page: Page): Promise<void> {
 async function jumpTo(page: Page, date: string, time: string, text: string): Promise<void> {
   await getSpeed(page).click();
   await page.getByTestId('shell.header.speed.jump').click();
+  await expectDialogReady(page, 'clock.jump-dialog');
   await page.getByTestId('clock.jump-dialog.date-kind').check();
   await page.getByTestId('clock.jump-dialog.date').fill(date);
   await page.getByTestId('clock.jump-dialog.time').fill(time);
@@ -49,6 +50,7 @@ async function buyOneShare(page: Page, game: string): Promise<void> {
   await page.goto(`${game}/accounts`);
   await expectGameReady(page);
   await page.getByTestId('banking.accounts.transfer').click();
+  await expectDialogReady(page, 'banking.transfer-dialog');
   await page.getByTestId('banking.transfer-dialog.to').selectOption('acc-2');
   await page.getByTestId('banking.transfer-dialog.amount').fill('2000');
   await page.getByTestId('banking.transfer-dialog.submit').click();
@@ -62,6 +64,7 @@ async function buyOneShare(page: Page, game: string): Promise<void> {
   await page.goto(`${game}/markets/${INSTRUMENT}`);
   await expectGameReady(page);
   await page.getByTestId('trading.trade-actions.buy').click();
+  await expectDialogReady(page, 'trading.order-ticket');
   await page.getByTestId('trading.order-ticket.quantity').fill('1');
   await expect(page.getByTestId('trading.order-ticket.total')).toBeVisible();
   await page.getByTestId('trading.order-ticket.submit').click();

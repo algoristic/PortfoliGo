@@ -1,7 +1,7 @@
 import { Page, Worker } from '@playwright/test';
 
 import { getAccountCard, openSavingsAccount } from './banking.po';
-import { expect, expectAccessible, test } from './fixtures';
+import { expect, expectAccessible, expectDialogReady, test } from './fixtures';
 import { expectGameReady, getSessionOverlay, recordOverlayHeadings } from './game.po';
 import { createPlayer } from './players.po';
 
@@ -49,6 +49,7 @@ test.describe('engine recovery', () => {
 
     // The restarted worker accepts new actions, and the account was opened once.
     await page.getByTestId('banking.accounts.open-account').click();
+    await expectDialogReady(page, 'banking.open-account-dialog');
     await page.getByTestId('banking.open-account-dialog.kind.savings').check();
     await page.getByTestId('banking.open-account-dialog.submit').click();
     await expect(getAccountCard(page, 'acc-3')).toBeVisible();
