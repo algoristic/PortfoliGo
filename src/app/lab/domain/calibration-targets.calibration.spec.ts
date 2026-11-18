@@ -3,6 +3,7 @@ import { median } from '@app/analysis/domain/statistics-logic';
 import {
   CALIBRATION_TARGETS,
   CalibrationTarget,
+  limitAt,
   LONG_TERM_LIMIT_YEARS,
   LONG_TERM_LIMITS,
   LongTermLimit,
@@ -97,7 +98,7 @@ describe('calibration targets on the broad seed set (TS §6.9, E-34)', () => {
       expectWithinLimit(
         `top five after ${years} years`,
         runs.map((run) => checkpoint(run, years)?.topFiveShare ?? Number.NaN),
-        LONG_TERM_LIMITS.topFiveShare,
+        limitAt(LONG_TERM_LIMITS.topFiveShare, years),
       );
     });
 
@@ -105,12 +106,12 @@ describe('calibration targets on the broad seed set (TS §6.9, E-34)', () => {
       expectWithinLimit(
         `below 1 € after ${years} years`,
         runs.map((run) => checkpoint(run, years)?.belowOneEuro.all ?? Number.NaN),
-        LONG_TERM_LIMITS.belowOneEuro,
+        limitAt(LONG_TERM_LIMITS.belowOneEuro, years),
       );
       expectWithinLimit(
         `at the floor after ${years} years`,
         runs.map((run) => checkpoint(run, years)?.atFloor ?? Number.NaN),
-        LONG_TERM_LIMITS.atFloor,
+        limitAt(LONG_TERM_LIMITS.atFloor, years),
       );
     });
   });

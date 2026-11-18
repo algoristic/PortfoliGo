@@ -846,7 +846,7 @@
     "uiLab-labNav-navLabel": "Lab navigation",
     "uiLab-longTermStatistics-measure": "Measure",
     "uiLab-longTermStatistics-years": "+{$INTERPOLATION} years",
-    "uiLab-longTermStatistics-limit": "Limit from +50 years",
+    "uiLab-longTermStatistics-checkpointLimit": " Limit +25 / +50 / +100 years ",
     "uiLab-longTermStatistics-legend": " As of the close of the last market day before the game start, or before the same date n years later. ",
     "uiLab-longTermStatistics-hint": " For the other reference dates, keep simulating (up to 100 years after the game start) and compute the statistics from the epoch. ",
     "uiLab-longTermStatistics-window": " Rolling windows ",

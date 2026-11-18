@@ -240,8 +240,11 @@ describe('SimulationPage', () => {
       expect(queryByTestId(page, 'lab.simulation.statistics.long-term.hint')).not.toBeNull();
       // Limits of E-22 (TS §6.9).
       expect(textOf(byTestId(page, 'lab.simulation.statistics.long-term.limit.top-five'))).toBe(
-        '≤ 40,0 %',
+        '≤ 45,0 % / ≤ 65,0 % / ≤ 65,0 %',
       );
+      expect(
+        textOf(byTestId(page, 'lab.simulation.statistics.long-term.limit.below-one-euro')),
+      ).toBe('≤ 10,0 %');
       expect(textOf(byTestId(page, 'lab.simulation.statistics.long-term.limit.max-price'))).toBe(
         '–',
       );

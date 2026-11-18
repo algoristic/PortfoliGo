@@ -10,7 +10,7 @@ export interface CheckpointRowView {
   id: string;
   label: string;
   values: { years: number; text: string }[];
-  /** Limit at the checkpoints of E-22, e.g. „≤ 40,0 %“; `–` without a limit. */
+  /** Limit at the checkpoints of E-22, e.g. „≤ 10,0 %“ or one per checkpoint; `–` without a limit. */
   limit: string;
 }
 

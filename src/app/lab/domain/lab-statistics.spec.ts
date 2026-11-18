@@ -335,11 +335,15 @@ describe('lab-statistics', () => {
       expect(value('world-worst-30y-return')).toBeNaN();
     });
 
-    it('passes the highest close and shows every new row as info', () => {
+    it('passes the highest close and shows the new rows without band as info', () => {
       expect(value('stock-max-price')).toBe(321);
-      for (const id of ['bear-markets-common', 'equal-weight-premium', 'negative-30y-share']) {
+      for (const id of ['bear-markets-common', 'negative-30y-share']) {
         expect(statistics.targets.find((row) => row.id === id)?.status).toBe('info');
       }
+      // The premiums have a band since AP 7.3e; the sample is too short for it.
+      expect(statistics.targets.find((row) => row.id === 'equal-weight-premium')?.status).toBe(
+        'short',
+      );
     });
   });
 

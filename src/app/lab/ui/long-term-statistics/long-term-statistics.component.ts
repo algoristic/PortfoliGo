@@ -8,7 +8,12 @@ import { formatOptional, formatPercent, formatPrice, MISSING_VALUE } from '@app/
 
 import { CheckpointColumn, CheckpointRowView, WindowRowView } from './long-term-statistics.model';
 
-import { LONG_TERM_LIMITS, LongTermLimit } from '../../domain/calibration-targets';
+import {
+  limitAt,
+  LONG_TERM_LIMIT_YEARS,
+  LONG_TERM_LIMITS,
+  LongTermLimit,
+} from '../../domain/calibration-targets';
 import {
   LongTermCheckpoint,
   LongTermStatistics,
@@ -52,7 +57,7 @@ export class LongTermStatisticsComponent {
         years: checkpoint.years,
         text: format(measure(checkpoint)),
       })),
-      limit: limitText(limit),
+      limit: checkpointLimitText(limit),
     });
     return [
       row(
@@ -129,6 +134,18 @@ export class LongTermStatisticsComponent {
       limit: limitText(limit?.years === windows.years ? limit : undefined),
     };
   }
+}
+
+/**
+ * Limits at the checkpoints of `LONG_TERM_LIMIT_YEARS`: one text when they are equal, else one per
+ * checkpoint, „≤ 45,0 % / ≤ 65,0 % / ≤ 65,0 %“.
+ */
+function checkpointLimitText(limit: LongTermLimit | undefined): string {
+  if (limit === undefined) {
+    return MISSING_VALUE;
+  }
+  const texts = LONG_TERM_LIMIT_YEARS.map((years) => limitText(limitAt(limit, years)));
+  return texts.every((text) => text === texts[0]) ? texts[0] : texts.join(' / ');
 }
 
 /** „≤ 40,0 %“, „≥ 1,5 %“ or „13,0 % – 20,0 %“; `–` without a limit. */

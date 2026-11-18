@@ -4,6 +4,9 @@ import {
   CALIBRATION_TARGETS,
   CalibrationTarget,
   CalibrationTargetId,
+  limitAt,
+  LONG_TERM_LIMIT_YEARS,
+  LongTermLimit,
   targetRows,
   targetStatus,
 } from './calibration-targets';
@@ -130,6 +133,33 @@ describe('calibration-targets', () => {
         value: Number.NaN,
         status: 'short',
       });
+    });
+  });
+
+  describe('limitAt', () => {
+    const general: LongTermLimit = { min: 0.1, max: 0.6, years: 10, openUntil: 'AP x.y' };
+
+    it('returns the general limit at every checkpoint without own bounds', () => {
+      for (const years of LONG_TERM_LIMIT_YEARS) {
+        expect(limitAt(general, years)).toBe(general);
+      }
+    });
+
+    it('replaces both bounds at a checkpoint with own bounds and keeps the rest', () => {
+      const limit: LongTermLimit = { ...general, atYears: { 25: { max: 0.45 } } };
+      expect(limitAt(limit, 25)).toStrictEqual({ max: 0.45, years: 10, openUntil: 'AP x.y' });
+      expect(limitAt(limit, 50)).toBe(limit);
+      expect(limitAt(limit, 100)).toBe(limit);
+    });
+
+    it('takes a lower bound of its own', () => {
+      const limit: LongTermLimit = { max: 0.6, atYears: { 100: { min: 0.2, max: 0.7 } } };
+      expect(limitAt(limit, 100)).toStrictEqual({ min: 0.2, max: 0.7 });
+    });
+
+    it('drops the general upper bound at a checkpoint with only a lower bound', () => {
+      const limit: LongTermLimit = { max: 0.6, atYears: { 50: { min: 0.2 } } };
+      expect(limitAt(limit, 50)).toStrictEqual({ min: 0.2 });
     });
   });
 });

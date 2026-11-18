@@ -3505,8 +3505,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="uiDashboard-dividendCalendar-perShare" datatype="html">
-        <source><x id="INTERPOLATION" equiv-text="{{ entry.perShare | formatCents }}"/> je Stück</source>
-        <target state="translated"><x id="INTERPOLATION" equiv-text="{{ entry.perShare | formatCents }}"/> per share</target>
+        <source><x id="INTERPOLATION" equiv-text="{{ entry.perShare | formatCents: 4 }}"/> je Stück</source>
+        <target state="translated"><x id="INTERPOLATION" equiv-text="{{ entry.perShare | formatCents: 4 }}"/> per share</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/dashboard/ui/dividend-calendar/dividend-calendar.component.html</context>
           <context context-type="linenumber">49,50</context>
@@ -6774,12 +6774,12 @@
           <context context-type="linenumber">14,15</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="uiLab-longTermStatistics-limit" datatype="html">
-        <source>Grenze ab +50 Jahre</source>
-        <target state="translated">Limit from +50 years</target>
+      <trans-unit id="uiLab-longTermStatistics-checkpointLimit" datatype="html">
+        <source> Grenze +25 / +50 / +100 Jahre </source>
+        <target state="translated"> Limit +25 / +50 / +100 years </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">19,22</context>
+          <context context-type="linenumber">20,23</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-legend" datatype="html">
@@ -6787,7 +6787,7 @@
         <target state="translated"> As of the close of the last market day before the game start, or before the same date n years later. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">47,51</context>
+          <context context-type="linenumber">49,53</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-hint" datatype="html">
@@ -6795,7 +6795,7 @@
         <target state="translated"> For the other reference dates, keep simulating (up to 100 years after the game start) and compute the statistics from the epoch. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">55,60</context>
+          <context context-type="linenumber">57,62</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-window" datatype="html">
@@ -6803,7 +6803,7 @@
         <target state="translated"> Rolling windows </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">69,71</context>
+          <context context-type="linenumber">71,73</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-count" datatype="html">
@@ -6811,7 +6811,7 @@
         <target state="translated">Count</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">71,72</context>
+          <context context-type="linenumber">73,74</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-min" datatype="html">
@@ -6819,7 +6819,7 @@
         <target state="translated">Minimum</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">72,73</context>
+          <context context-type="linenumber">74,75</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-median" datatype="html">
@@ -6827,7 +6827,7 @@
         <target state="translated">Median</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">73,74</context>
+          <context context-type="linenumber">75,76</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-max" datatype="html">
@@ -6835,7 +6835,7 @@
         <target state="translated">Maximum</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">74,75</context>
+          <context context-type="linenumber">76,77</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-medianLimit" datatype="html">
@@ -6843,7 +6843,7 @@
         <target state="translated"> Limit of the median </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">75,79</context>
+          <context context-type="linenumber">77,81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-windowYears" datatype="html">
@@ -6851,7 +6851,7 @@
         <target state="translated">(<x id="INTERPOLATION" equiv-text="{{ row.years }}"/> years)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.html</context>
-          <context context-type="linenumber">84,85</context>
+          <context context-type="linenumber">86,87</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-topFive" datatype="html">
@@ -6859,7 +6859,7 @@
         <target state="translated">Share of the five largest constituents in the world index</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">94</context>
+          <context context-type="linenumber">99</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-belowOneEuro" datatype="html">
@@ -6867,7 +6867,7 @@
         <target state="translated">Stocks below €1 (all)</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">95</context>
+          <context context-type="linenumber">100</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-belowOneEuroLarge" datatype="html">
@@ -6875,7 +6875,7 @@
         <target state="translated">Large caps below €1</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">96</context>
+          <context context-type="linenumber">101</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-belowOneEuroMid" datatype="html">
@@ -6883,7 +6883,7 @@
         <target state="translated">Mid caps below €1</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">97</context>
+          <context context-type="linenumber">102</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-belowOneEuroSmall" datatype="html">
@@ -6891,7 +6891,7 @@
         <target state="translated">Small caps below €1</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">98</context>
+          <context context-type="linenumber">103</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-atFloor" datatype="html">
@@ -6899,7 +6899,7 @@
         <target state="translated">Stocks at the price floor</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">99</context>
+          <context context-type="linenumber">104</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-maxPrice" datatype="html">
@@ -6907,7 +6907,7 @@
         <target state="translated">Highest stock price</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">100</context>
+          <context context-type="linenumber">105</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-indexVolatility" datatype="html">
@@ -6915,7 +6915,7 @@
         <target state="translated">World index, volatility of the last 261 days</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">101</context>
+          <context context-type="linenumber">106</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-windowReturn" datatype="html">
@@ -6923,7 +6923,7 @@
         <target state="translated">World index (total return), return p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">102</context>
+          <context context-type="linenumber">107</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-windowVolatility" datatype="html">
@@ -6931,7 +6931,7 @@
         <target state="translated">World index, volatility p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">103</context>
+          <context context-type="linenumber">108</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-longTermStatistics-windowDividendYield" datatype="html">
@@ -6939,7 +6939,7 @@
         <target state="translated">World index, dividend yield p.a.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/lab/ui/long-term-statistics/long-term-statistics.component.ts</context>
-          <context context-type="linenumber">104</context>
+          <context context-type="linenumber">109</context>
         </context-group>
       </trans-unit>
       <trans-unit id="uiLab-marketStatistics-period" datatype="html">

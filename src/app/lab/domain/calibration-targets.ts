@@ -19,13 +19,6 @@ export interface CalibrationTarget {
   openUntil?: string;
 }
 
-/**
- * Open after the recalibration of AP 7.3e: the product owner sets the bands of the premiums and
- * the limit of R12 for the five largest values from its measurement (E-22 new, 7.1b-01).
- */
-export const PRODUCT_OWNER_DECISION = 'product-owner decision';
-export const R12_DECISION = `${PRODUCT_OWNER_DECISION} (R12)`;
-
 export const CALIBRATION_TARGETS = [
   { id: 'world-return', unit: 'percent', min: 0.06, max: 0.08, minYears: 30 },
   { id: 'world-price-return', unit: 'percent' },
@@ -61,10 +54,10 @@ export const CALIBRATION_TARGETS = [
   // Volatility clustering of single shares: ACF(|r|, 1), median of the shares (7.1b-02).
   { id: 'stock-abs-autocorrelation-lag1', unit: 'number' },
   { id: 'stock-max-price', unit: 'number' },
-  // Premiums against the world total return index, log p. a. without costs (7.1b-01); info until the
-  // product owner sets their bands.
-  { id: 'equal-weight-premium', unit: 'percent', openUntil: PRODUCT_OWNER_DECISION },
-  { id: 'drawdown-strategy-premium', unit: 'percent', openUntil: PRODUCT_OWNER_DECISION },
+  // Premiums against the world total return index, log p. a. without costs (7.1b-01); bands set by
+  // the product owner after the measurement of AP 7.3e.
+  { id: 'equal-weight-premium', unit: 'percent', max: 0.03, minYears: 5 },
+  { id: 'drawdown-strategy-premium', unit: 'percent', max: 0.05, minYears: 5 },
   { id: 'negative-30y-share', unit: 'percent' },
   { id: 'clustering-lag1', unit: 'number', min: 0.1, max: 0.3, minYears: 5 },
   { id: 'clustering-mean', unit: 'number', min: 0, minYears: 5 },
@@ -90,24 +83,41 @@ export interface LongTermLimit {
   years?: number;
   /** As `CalibrationTarget.openUntil` (E-39). */
   openUntil?: string;
+  /** Bounds that replace `min` and `max` at single checkpoints. */
+  atYears?: Partial<Record<LongTermLimitYear, Pick<LongTermLimit, 'min' | 'max'>>>;
 }
 
 /** Checkpoints in game years at which the limits of the long-term measures apply (E-22). */
 export const LONG_TERM_LIMIT_YEARS = [25, 50, 100] as const;
+export type LongTermLimitYear = (typeof LONG_TERM_LIMIT_YEARS)[number];
 
 /**
  * Limits of the long-term behaviour (TS §6.9, E-22), checked in the median of the broad seed set
  * (E-34): at the checkpoints of `LONG_TERM_LIMIT_YEARS` and for the medians of the rolling windows.
  */
 export const LONG_TERM_LIMITS = {
-  // Above its limit after the recalibration of AP 7.3e: open until the product owner sets the limit
-  // of R12 (E-22 new).
-  topFiveShare: { max: 0.4, openUntil: R12_DECISION },
+  // R12 as set by the product owner after AP 7.3e (E-22 new): tighter at 25 years; ≤ 40 % only with
+  // the rebalanced indices of M9 (E-40).
+  topFiveShare: { max: 0.65, atYears: { 25: { max: 0.45 } } },
   belowOneEuro: { max: 0.1 },
   atFloor: { max: 0.02 },
   windowVolatility: { years: 10, min: 0.13, max: 0.2 },
   windowDividendYield: { years: 30, min: 0.015 },
 } as const satisfies Record<string, LongTermLimit>;
+
+/** The limit at a checkpoint: its own bounds from `atYears`, else the general ones. */
+export function limitAt(limit: LongTermLimit, years: LongTermLimitYear): LongTermLimit {
+  const bounds = limit.atYears?.[years];
+  if (bounds === undefined) {
+    return limit;
+  }
+  return {
+    ...(bounds.min === undefined ? {} : { min: bounds.min }),
+    ...(bounds.max === undefined ? {} : { max: bounds.max }),
+    ...(limit.years === undefined ? {} : { years: limit.years }),
+    ...(limit.openUntil === undefined ? {} : { openUntil: limit.openUntil }),
+  };
+}
 
 export type CalibrationTargetId = (typeof CALIBRATION_TARGETS)[number]['id'];
 
