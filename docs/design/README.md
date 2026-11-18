@@ -1,14 +1,14 @@
 # Design-Mockups
 
-Statische HTML-Mockups für den UI-Overhaul in M7, als Vorlage für AP 7.5 (`docs/projektplan.md`). Gewählt ist Variante A „Terminal“. Die Entwürfe B–D sowie die Terminal-Varianten A2–A4 wurden verworfen. E–H sind neue Entwürfe zum Vergleich. Sie sind nicht beschlossen und ändern AP 7.5 nicht.
+Statische HTML-Mockups für den UI-Overhaul in M7, als Vorlage für AP 7.5 (`docs/projektplan.md`). Gewählt ist Entwurf H „Werkbank“ (18.11.2026); er wird so umgesetzt. H verbindet A und G. A „Terminal“ bleibt die Vorlage für Gestaltung und Navigation und für die Inhalte der Seiten, die H am Desktop nicht zeigt (Übersicht, Konten und Banken, Orders). Die Entwürfe B–D, die Terminal-Varianten A2–A4 sowie E–G sind verworfen; G bleibt nur als Herkunft der Arbeitsfläche von H im Ordner.
 
-| Variante     | Ordner      | Vorbild für die Struktur | Vorbild für die Domäneninhalte | Status  |
-| ------------ | ----------- | ------------------------ | ------------------------------ | ------- |
-| A „Terminal“ | `terminal/` | eigenes Trading-Terminal | eigenes Trading-Terminal       | gewählt |
-| E „Editor“   | `editor/`   | VS Code                  | VS Code                        | Entwurf |
-| F „Charting“ | `charting/` | TradingView              | TradingView                    | Entwurf |
-| G „Hybrid“   | `hybrid/`   | VS Code                  | TradingView                    | Entwurf |
-| H „Werkbank“ | `werkbank/` | G, Navigation aus A      | G, Gestaltung aus A            | Entwurf |
+| Variante     | Ordner      | Vorbild für die Struktur | Vorbild für die Domäneninhalte | Status                     |
+| ------------ | ----------- | ------------------------ | ------------------------------ | -------------------------- |
+| A „Terminal“ | `terminal/` | eigenes Trading-Terminal | eigenes Trading-Terminal       | Grundlage von H            |
+| E „Editor“   | `editor/`   | VS Code                  | VS Code                        | verworfen                  |
+| F „Charting“ | `charting/` | TradingView              | TradingView                    | verworfen                  |
+| G „Hybrid“   | `hybrid/`   | VS Code                  | TradingView                    | verworfen, Grundlage von H |
+| H „Werkbank“ | `werkbank/` | G, Navigation aus A      | G, Gestaltung aus A            | gewählt                    |
 
 Die Mockups sind eine Vorlage, kein übernehmbarer Code. Farben stehen als Hex-Werte direkt im Markup und Texte haben keine i18n-IDs. In der App gelten weiter die Regeln aus `CLAUDE.md` §3–§5.
 
@@ -16,7 +16,7 @@ Die Mockups sind eine Vorlage, kein übernehmbarer Code. Farben stehen als Hex-W
 
 `index.html` im Browser öffnen, sie verlinkt alle Varianten. Ein Build ist nicht nötig. Die Schriften kommen von Google Fonts. Ohne Netz greift die Systemschrift.
 
-## Variante A „Terminal“
+## Variante A „Terminal“ (Grundlage von H)
 
 Der Einstieg ist `terminal/index.html`. Die Navigation verlinkt die Seiten untereinander. „Märkte“ führt auf die Instrumentseite, weil es keine eigene Märkte-Seite gibt. Steuern, Einstellungen und die „Alle …“-Links haben kein Ziel. A enthält keine Logik.
 
@@ -67,7 +67,7 @@ Auf dem Smartphone liegen Orders unter „Mehr“ in der unteren Leiste. Im Mock
 - Abbildung auf die `--pgo-*`-Tokens in `src/styles.css`.
 - Die Mockups wurden nicht im Browser auf Darstellungsfehler geprüft. Die Desktop-Seiten sind auf etwa 1000 px Höhe ausgelegt, das ist geschätzt.
 
-## Entwürfe E–G
+## Entwürfe E–G (verworfen)
 
 Jede Variante hat dieselben drei Dateien. Die Desktop-Seiten füllen das Browserfenster wie eine Anwendung und scrollen nur in den einzelnen Bereichen. Sie sind auf 1440 × 900 px ausgelegt und funktionieren ab 1280 × 800 px. Die Smartphone-Datei zeigt drei Bildschirme mit je 390 × 844 px, auf breiten Fenstern nebeneinander, auf dem Telefon untereinander.
 
@@ -131,14 +131,14 @@ Diese Elemente gehören zum Vorbild, sind aber in der Produktspezifikation nicht
 - **Nicht geprüft:** Firefox, Safari und echte Geräte.
 - **Offen:** Es gibt nur ein dunkles Theme, keine Farbpaare für Blau/Orange und keine Abbildung auf die `--pgo-*`-Tokens. Märkte, Konten, Orders und Steuern haben in E–G keine eigene Seite. Ihre Einträge in der Navigation haben kein Ziel, nur „Märkte“ führt in E auf die Instrumentseite.
 
-## Entwurf H „Werkbank“
+## Entwurf H „Werkbank“ (gewählt)
 
-H verbindet A und G: Der Desktop behält die Arbeitsfläche von G, Erscheinungsbild und Navigation kommen aus A. Die Mobilansicht ist neu entworfen und übernimmt nicht die Struktur des Desktops.
+H wird so umgesetzt, wie die drei Dateien ihn zeigen. H verbindet A und G: Der Desktop behält die Arbeitsfläche von G, Erscheinungsbild und Navigation kommen aus A. Die Mobilansicht ist neu entworfen und übernimmt nicht die Struktur des Desktops.
 
 | Datei                     | Inhalt                                                                                            |
 | ------------------------- | ------------------------------------------------------------------------------------------------- |
 | `instrument-desktop.html` | Corvan Systems: Kurskopf und Kerzenchart im Editor, Order und Details in der rechten Leiste       |
-| `depot-desktop.html`      | Geteilter Editor mit Depot-Rendite und Halvion AG, links Portfolio, rechts Allokation             |
+| `depot-desktop.html`      | Depot-Rendite im Editor, links Portfolio, rechts Allokation                                       |
 | `smartphone.html`         | Übersicht, Märkte, Instrument, Order, Depot, Konten, Mehr, Orders, Spielzeit als neun Bildschirme |
 
 ### Was woher kommt
@@ -149,11 +149,11 @@ H verbindet A und G: Der Desktop behält die Arbeitsfläche von G, Erscheinungsb
 | Bereiche mit Beschriftung: Übersicht, Märkte, Depot, Konten, Orders, Steuern | A        |
 | Große Spielzeit in der Kopfzeile, Index-Ticker, Börsenstatus in der Fußzeile | A        |
 | Kurskopf, Order-Ticket mit Kosten, untere Leiste auf dem Smartphone          | A        |
-| Seitenleisten, Editor-Tabs, geteilter Editor, Panel, Befehlssuche            | G        |
+| Seitenleisten, Editor-Tabs, Panel, Befehlssuche                              | G        |
 | Kerzenchart mit OHLC-Legende, Preisachsen-Marken, Orderlinie, Kaufmarken     | G        |
 | Handelstabellen im Panel                                                     | G        |
 
-Bewusst weggelassen: die Zeichenwerkzeuge und die Schnellhandel-Knöpfe im Chart. Die Zeichenwerkzeuge sind nicht spezifiziert. Geld und Brief stehen schon im Kurskopf, und der Kauf läuft über das Ticket mit Kostenanzeige.
+Bewusst weggelassen: der geteilte Editor, die Zeichenwerkzeuge und die Schnellhandel-Knöpfe im Chart. Der Editor zeigt immer nur einen Inhalt, weitere stehen als Tabs bereit. Die Zeichenwerkzeuge sind nicht spezifiziert. Geld und Brief stehen schon im Kurskopf, und der Kauf läuft über das Ticket mit Kostenanzeige.
 
 ### Mobilansicht
 

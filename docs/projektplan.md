@@ -1241,7 +1241,7 @@ Geplant am 15.11.2026 (E-37). Stufe 2 „Vollständiger Markt“ beginnt nach AP
 
 **Prüfungen (AP 7.1a–c, AP 7.2):** Das sind reine Prüfungen ohne Änderungen an Code oder Spezifikation; die Ergebnisse stehen je AP unter `docs/archiv/reviews/`, eine Kurzfassung im Änderungsprotokoll. Jede Prüfung läuft zweimal, unabhängig voneinander und auf demselben Stand: einmal mit Opus 5.5 (`claude-opus-5-5`, Subagent mit `model: opus`, `effort: high`) und einmal mit Fable 5.2 (`claude-fable-5-2`, `model: fable`, `effort: medium`). Keiner der beiden Läufe sieht das Ergebnis des anderen. Danach werden beide Einschätzungen gegenübergestellt und abgewogen: Übereinstimmungen, Widersprüche, Befunde nur eines Laufs; strittige Punkte werden nachgerechnet oder nachgemessen. Das Ergebnis geht als gemeinsame Befundliste mit Empfehlung an den Product Owner. Ergibt sich Handlungsbedarf, folgt daraus ein eigenes AP (AP 7.3).
 
-**UI-Overhaul (AP 7.4–7.8c):** Er schließt M7 ab, nach den Prüfungen und ihren Folge-APs, damit M8 und alle weiteren Meilensteine auf der neuen Oberfläche aufbauen. Die Vorlage des Product Owners liegt in `docs/design/` (Variante „Terminal“). AP 7.4 bereitet ohne neue Optik vor. Der Schnitt von AP 7.6–7.8c ist ein Platzhalter, den AP 7.5 bestätigt oder ändert.
+**UI-Overhaul (AP 7.4–7.8c):** Er schließt M7 ab, nach den Prüfungen und ihren Folge-APs, damit M8 und alle weiteren Meilensteine auf der neuen Oberfläche aufbauen. Die Vorlage des Product Owners liegt in `docs/design/` (Entwurf H „Werkbank“, gewählt am 18.11.2026). AP 7.4 bereitet ohne neue Optik vor. Der Schnitt von AP 7.6–7.8c ist ein Platzhalter, den AP 7.5 bestätigt oder ändert.
 
 #### AP 7.1a – Modellreview: Determinismus und Welt
 
@@ -1367,12 +1367,19 @@ Jeder Push auf `main` deployt; jedes Teil-AP trägt deshalb seinen Versionssprun
   - Auswirkungen auf die Tests (ARIA-Snapshots, Layout-Tests, `@phone`-Journeys) und auf die Barrierefreiheit (Kontraste ≥ 4,5:1 in beiden Themes, Farbpaare für Gewinn und Verlust).
   - Endgültiger Umfang und Schnitt von AP 7.6–7.8c in §6 und §4; neue Abhängigkeiten (Schrift, Icons) als Entscheidung in TS §16.
 - **Abnahme:** PS §10 und TS §11.5 beschreiben die neue Oberfläche. Der Schnitt ist bestätigt; offene Fragen sind entschieden oder stehen als Vorschlag in §3.
-- **Vorlage:** `docs/design/` (15.11.2026). Gewählt ist Variante A „Terminal“: statische HTML-Mockups von Übersicht, Depot, Konten und Banken, Orders und Instrument, je für Desktop (1440 px) und Smartphone (390 px), Einstieg `docs/design/terminal/index.html`. Gestaltung, Farben und Regeln stehen in `docs/design/README.md`, der gemeinsame Spielstand in `docs/design/spieldaten.md`. Die Mockups sind kein übernehmbarer Code (Hex-Werte im Markup, keine i18n-IDs, keine Logik).
+- **Vorlage:** `docs/design/` (18.11.2026), Einstieg `docs/design/index.html`. Gewählt ist Entwurf H „Werkbank“ und wird so umgesetzt:
+  - **Desktop:** die Arbeitsfläche aus G mit Bereichsleiste, primärer Seitenleiste (Portfolio, Watchlist), Editor mit Tabs, Panel mit Handelstabellen, sekundärer Leiste (Order-Ticket, Details) und Befehlssuche; Erscheinungsbild und Navigation aus A. Der Editor zeigt immer nur einen Inhalt, einen geteilten Editor gibt es nicht. Mockups: Instrument und Depot (1440 px).
+  - **Smartphone:** eigene Mobilansicht mit einer Aufgabe je Bildschirm (Übersicht, Märkte, Instrument, Order, Depot, Konten, Mehr, Orders, Spielzeit; 390 px).
+  - **A „Terminal“** bleibt Vorlage für Farben, Schrift und Regeln und für die Inhalte von Übersicht, Konten und Banken und Orders am Desktop, die H nicht als eigene Seite zeigt.
+
+  Gestaltung, Farben, Herkunft der Elemente und Regeln stehen in `docs/design/README.md`, der gemeinsame Spielstand in `docs/design/spieldaten.md`. Die Mockups sind kein übernehmbarer Code (Hex-Werte im Markup, keine i18n-IDs, keine Logik).
+
 - **Vor der Umsetzung klären:**
   - Entworfen ist nur das dunkle Theme. Helles Theme und Farbpaare Blau/Orange leitet das AP ab oder der PO liefert sie nach.
-  - Seiten ohne Mockup (Märkte, Steuern, Benachrichtigungen, Einstellungen, Hilfe, Über, Spielerbereich, Dialoge, Labor) leitet das AP aus der Gestaltung der Vorlage ab.
+  - Seiten ohne Mockup in H (am Desktop Übersicht, Konten und Banken, Orders aus den Inhalten von A; dazu Märkte, Steuern, Benachrichtigungen, Einstellungen, Hilfe, Über, Spielerbereich, Dialoge, Labor) leitet das AP aus der Gestaltung der Vorlage ab, ebenso Tablet und Querformat (in H nicht entworfen; unter 1240 px scrollt der Desktop).
+  - Elemente aus H, die PS und TS noch nicht beschreiben (Seitenleisten und Panel ein- und ausblenden, Editor-Tabs, Kerzenchart mit OHLC-Legende, Orderlinie und Kaufmarken), werden mit dem Abgleich in PS §10 und TS §11.5 aufgenommen; Volumen im Chart kommt erst mit US-CH-04 (M10).
 - **Hinweise:**
-  - Die Kontraste der Vorlage sind nicht gemessen, die Desktop-Höhe von etwa 1000 px ist geschätzt; beides prüft das AP im Browser.
+  - Die Kontraste von H sind für Text und Chart-Marken gemessen (≥ 4,5:1, nur dunkles Theme); das AP prüft sie für alle Token-Paare in beiden Themes.
   - IBM Plex Sans und Mono kommen in der Vorlage von Google Fonts. Die PWA muss offline laufen, die Schrift wird deshalb mitgeliefert (Abhängigkeit in TS §16, Lizenz auf „Über PortfoliGo“).
   - Index-Ticker und Statusleiste mit Speicherstand gelten für die ganze Shell und brauchen dort Projektionen (Indexkurse, Zeitpunkt der letzten Sicherung).
   - Die Instrumentseite zeigt KGV und Handelsvolumen. Beide kommen erst mit AP 10.2 und AP 10.6; der Overhaul zeigt nur, was es gibt.
