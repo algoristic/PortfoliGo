@@ -1,6 +1,8 @@
 # Design-Mockups
 
-Statische HTML-Mockups für den UI-Overhaul in M7, als Vorlage für AP 7.5 (`docs/projektplan.md`). Gewählt ist Entwurf H „Werkbank“ (18.11.2026); er wird so umgesetzt. H verbindet A und G. A „Terminal“ bleibt die Vorlage für Gestaltung und Navigation und für die Inhalte der Seiten, die H am Desktop nicht zeigt (Übersicht, Konten und Banken, Orders). Die Entwürfe B–D, die Terminal-Varianten A2–A4 sowie E–G sind verworfen; G bleibt nur als Herkunft der Arbeitsfläche von H im Ordner.
+> **Archiviert am 19.11.2026:** Der UI-Overhaul wurde gestrichen (E-37 ergänzt, Projektplan §6), die Mockups werden nicht umgesetzt.
+
+Statische HTML-Mockups für den UI-Overhaul in M7, die als Vorlage für AP 7.5 gedacht waren. Gewählt war Entwurf H „Werkbank“ (18.11.2026). H verbindet A und G. A „Terminal“ bleibt die Vorlage für Gestaltung und Navigation und für die Inhalte der Seiten, die H am Desktop nicht zeigt (Übersicht, Konten und Banken, Orders). Die Entwürfe B–D, die Terminal-Varianten A2–A4 sowie E–G sind verworfen; G bleibt nur als Herkunft der Arbeitsfläche von H im Ordner.
 
 | Variante     | Ordner      | Vorbild für die Struktur | Vorbild für die Domäneninhalte | Status                     |
 | ------------ | ----------- | ------------------------ | ------------------------------ | -------------------------- |

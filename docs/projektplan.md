@@ -1,6 +1,6 @@
 # PortfoliGo – Projektplan
 
-> **Status:** Entwurf v0.3 · **Stand:** 15.11.2026
+> **Status:** Entwurf v0.3 · **Stand:** 19.11.2026
 > **Grundlagen:** [Produktspezifikation](./specs/produktspezifikation.md) (PS) · [Technische Spezifikation](./specs/technische-spezifikation.md) (TS)
 
 Dieser Plan zerlegt PortfoliGo in Meilensteine und Arbeitspakete (AP). Ein AP ist so geschnitten, dass es in **einer Session** umgesetzt werden kann. Verweise wie `US-SP-01` zeigen auf User Stories der Produktspezifikation, `TS §3.2` auf Abschnitte der technischen Spezifikation, `E-02` auf Entscheidungen (TS §16).
@@ -29,7 +29,7 @@ flowchart TD
   M3 --> M5[M5 Handel, Depot, Steuern]
   M4 --> M5
   M5 --> M6[M6 Export, PWA, Abschluss Stufe 1]
-  M6 --> M7[M7 Prüfung des Rechenkerns, UI-Overhaul]
+  M6 --> M7[M7 Prüfung des Rechenkerns]
   M7 --> M8[M8 Kalender, Währungen, Zinsen, Inflation]
   M8 --> M9[M9 Anleihen, Rohstoffe, Edelmetalle, Fonds]
   M9 --> M10[M10 Unternehmen, Steuerdetails, Werkzeuge]
@@ -54,14 +54,14 @@ flowchart TD
 | M4          | 1     | Märkte im Trading-Look                             | Marktübersicht, Screener, Watchlist, Instrumentseite mit Live-Chart und Indikatoren         | 5   |
 | M5          | 1     | Kernspiel komplett                                 | Kaufen, verkaufen, Daueraufträge, Sparpläne, Steuern, Depot, Dashboard mit Benchmark        | 10  |
 | M6          | 1     | Datensicherheit, Installierbarkeit, Feinschliff    | Version 0.6.0: Export und Import, PWA, Einstellungen, Hintergrundmodi, Deutsch und Englisch | 9   |
-| M7          | 2     | Geprüfter Rechenkern, neue Oberfläche              | Befundlisten und Korrekturen aus den Prüfungen, WASM-Empfehlung, App im neuen Design        | 13  |
+| M7          | 2     | Geprüfter Rechenkern                               | Befundlisten und Korrekturen aus den Prüfungen, WASM-Empfehlung                             | 7   |
 | M8          | 2     | Kalender, Währungen, Zinsen und Inflation          | Feiertage, Kurse in Landeswährung, Leitzins und Zinskurve, Inflation, Tagesgeld, Festgeld   | 13  |
 | M9          | 2     | Neue Assetklassen                                  | Anleihen, Renten-ETFs, Rohstoffe, ETCs, physische Edelmetalle, aktive Fonds, Fondssteuer    | 14  |
 | M10         | 2     | Unternehmen, Steuerdetails und Werkzeuge           | Quartalszahlen, Splits und Übernahmen, Volumen, Trailing-Stop, Kursalarme, Steuerdetails    | 15  |
 
 **Empfohlene Reihenfolge:** M3, M4 und M5 sind abgeschlossen (M5 mit der einmaligen Erhöhung von `SCHEMA_VERSION` auf 6, §5, M5). In M6 sind AP 6.7 (weitere Modi für das Verhalten im Hintergrund, `SCHEMA_VERSION` 7), AP 6.1 (Export und Import, Formatversion 1 mit den neuen Spielereinstellungen), AP 6.2 (Einstellungen), AP 6.3 (PWA und Browser-Benachrichtigungen, `@angular/service-worker`), AP 6.4 (Performance und Robustheit, Verdichtung alter Tageskerzen), AP 6.5 (Barrierefreiheit, Glossar, Befehlspalette, rechtliche Hinweise), AP 6.8a (Sprachumschaltung: Mechanik) und AP 6.8b (englische Übersetzung, `i18n:check --strict` als Gate) fertig. AP 6.6 (Abschluss Stufe 1 als Version 0.6.0) ist umgesetzt und wartet auf das Deployment und den Selbsttest auf einem iOS-Gerät durch den PO; danach beginnt Stufe 2 mit M7. Version 1.0 kommt erst mit dem Public Release (M16, §6); bis dahin gelten die Versionsregeln vor 1.0 (TS §15), und E-25 ist erst vor M16 zu entscheiden. E-35 und die Ergänzungen zu E-10 sind entschieden (14.11.2026, §3). Die Sprachumschaltung (AP 6.8a, AP 6.8b) folgt nach AP 6.2; die Übersetzung kommt zuletzt, wenn alle Texte von M6 stehen. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
 
-**Stufe 2 (E-37, 15.11.2026):** Sie beginnt nach AP 6.6 mit M7 (Prüfungen, Korrekturen, UI-Overhaul). Danach kommt das Fundament, das Kalender und Kurse aller Instrumente ändert: Feiertage, Fremdwährungen, Zinsen und Inflation (M8). Erst darauf bauen die neuen Assetklassen (M9) und Unternehmen, Steuerdetails und Werkzeuge (M10) auf. Feiertage und Fremdwährungen standen früher in M10; Anleihen und Rohstoffe (in USD notiert) hätten sonst nachgebaut werden müssen. Jeder Meilenstein beginnt nach dem Abschluss-AP des vorigen mit einem Fachkonzept-AP (8.1, 9.1, 10.1), das die Stories und die TS-Abschnitte ausarbeitet und den Schnitt bestätigt (§6).
+**Stufe 2 (E-37, 15.11.2026):** Sie beginnt nach AP 6.6 mit M7 (Prüfungen und Korrekturen). Danach kommt das Fundament, das Kalender und Kurse aller Instrumente ändert: Feiertage, Fremdwährungen, Zinsen und Inflation (M8). Erst darauf bauen die neuen Assetklassen (M9) und Unternehmen, Steuerdetails und Werkzeuge (M10) auf. Feiertage und Fremdwährungen standen früher in M10; Anleihen und Rohstoffe (in USD notiert) hätten sonst nachgebaut werden müssen. Jeder Meilenstein beginnt nach dem Abschluss-AP des vorigen mit einem Fachkonzept-AP (8.1, 9.1, 10.1), das die Stories und die TS-Abschnitte ausarbeitet und den Schnitt bestätigt (§6).
 
 ## 2. Arbeitsweise in Sessions
 
@@ -119,7 +119,7 @@ Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevo
 | E-39 | Kalibrierung in Stufe 2 (TS §6.9)                   | Modell-APs vor dem Kalibrierungsschritt ihres Meilensteins markieren betroffene Ziele als „offen bis AP x.y“, damit die Suite grün bleibt; neue Ziele und Bänder entscheidet der PO im Fachkonzept | AP 8.3         |
 | E-40 | Instrumente mit Lebenszyklus (TS §6.10)             | Alle Instrumente einer Welt entstehen zur Epoche mit Notierungszeitraum, die Typed Arrays bleiben fest; das Ende einer Notierung schließt Bestände per Auszahlung oder geldloser Ausbuchung        | AP 9.2a        |
 
-**Bereits entschieden:** E-07 (`CLAUDE.md`), E-03 – Zufallsströme per MurmurHash3 x86_128, `sfc32`, eigene `detExp`/`detLog` (10.11.2026), E-09 – Geld in Cent, Stück in Millionstel, Kurse als Gleitkomma mit Preisraster (10.11.2026), E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6), E-06 – Tailwind CSS v4 mit angehobener Browserslist und Inter Variable als selbst gehostete Schrift (10.11.2026) sowie die Ergänzungen für `CLAUDE.md` aus TS §11.2 (10.11.2026, übernommen in AP 0.2), E-15 – Hash-Routing mit englischen Routenpfaden (10.11.2026), E-16 – Angular Aria neben dem CDK für Tabs und Menüs (10.11.2026), E-12 – Stufe 1 mit Aktien, ETFs und Indizes, CFDs bleiben in Stufe 3 (10.11.2026), E-13 – reale Regionen und Länder, fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen; Standardwelt nach TS §5.2 (10.11.2026), E-17 – Banking mit sofortiger Eröffnung und Überweisung, Dispo mit geduldeter Überziehung, Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (10.11.2026), E-02 – Tick = 1 Spielminute, Start Mo 01.04.2030 00:00, im Hintergrund Echtzeit (pro Spieler auf Pause umstellbar), eine Pause bleibt Pause (11.11.2026), E-18 – Handelszeiten je Region, Orders jederzeit, Ausführung in der Handelszeit (11.11.2026), E-04 – lightweight-charts 5.3.0 mit TradingView-Logo, lazy geladen; eigene SVG-Sparklines und -Donuts (Spike in AP 1.7, 11.11.2026), E-01 – autoritative Engine im Web Worker, NgRx hält nur Projektionen (12.11.2026), E-26 – die App bleibt bis 1.0 öffentlich, Impressum, Datenschutzhinweis und Hinweis „keine Anlageberatung“ erst in AP 6.5; das Risiko trägt der Product Owner (12.11.2026), E-27 – vierfache CPU-Drosselung (Chromium) statt Referenzgerät, Budgets Engine bei 1 w/s < 50 % eines Kerns und Spielstart < 6 s, erste Messung in M2 (12.11.2026), E-08 – Persistenz mit Ergänzungen: Marktzustände zu Monatsbeginn im eigenen Store (DB-Version 4), Write-ahead nur für Spielkommandos, Kommando-Log älter als der älteste Snapshot wird gelöscht, Uhr spätestens nach einem Spieltag gesichert, Tick des letzten `clock`-Ereignisses bei `pagehide` als Untergrenze; Tageskerzen bleiben je Spieler (12.11.2026), E-25 vor 1.0 – `SIM_VERSION` und `schemaVersion` ab AP 2.3, veraltete Spieler gesperrt (nur löschen; Zusage ab 1.0 offen bis AP 6.6) (12.11.2026), E-14 – Lebenshaltungskosten als Startparameter, Hausbank ist die erste Filialbank in Weltreihenfolge, Start pausiert, Vorgaben 10.000 € / 2.500 € / 1.800 € (12.11.2026). E-30 bis E-33 – Regionsfaktoren mit eigener Aktivität und Schwellenländer-Ziel als „Info“, Korrelationsziele über Large Caps, Zero-Beta-Rendite, Dividenden-Lebenszyklus (12.11.2026, Vorbereitung der Kalibrierung, AP 1.9b). E-34 – Prüfregel und Ziele der Kalibrierung: Median von `calib-1` bis `calib-5`, Korrelation zwischen Sektoren 0,2–0,4, Tagesprofil 1,3–2,0, Risikoklassen als Quintile (12.11.2026, AP 1.9c). E-11 – Steuern in Stufe 1: 25 % pauschal, 1.000 € Sparerpauschbetrag, ein Verlusttopf, ohne Soli und Kirchensteuer (13.11.2026). E-19 – Buchungstermine: Bank-Lauf 06:00, Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag des Monats (13.11.2026). E-17 ergänzt: Dispo je Bank nach dem Gehaltseingang bei ihr, geduldete Überziehung ohne Obergrenze (13.11.2026, TS §7.4). E-21 – Daueraufträge (US-BK-10) in Stufe 1 statt eines Abbuchungskontos je Sparplan; Sparpläne buchen nur vom Verrechnungskonto ihres Depots (13.11.2026, TS §7.4, §7.8). E-28 – ETF-Durchschau als Muss, zweite Vergleichsgröße, Story „Erste Schritte“ (US-UI-10, Soll) in Stufe 1, Depotübertrag (US-BK-12) als Story in Stufe 2 (13.11.2026). E-05 ergänzt: „Demnächst“ liest die planbaren Termine aus Terminplaner und Kalender mit Basisbeträgen, keine Vorausrechnung im MVP (13.11.2026, TS §8.1). E-05 – PWA im MVP mit `@angular/service-worker`, Capacitor als optionaler Meilenstein N1, Ports jetzt vorbereiten (14.11.2026, TS §13). E-10 – Exportformat mit gzip schon in Formatversion 1, ohne `commands`, Import startet pausiert (14.11.2026, TS §10). E-35 – Hintergrundmodi `keep-speed` und `custom-speed`, Pause-Frist `backgroundPauseAfter` auch bei geschlossener App, Lücken im Takt über 5 s zählen als Echtzeit, Auto-Pause verborgen in den neuen Modi (14.11.2026, TS §3.6, §3.7). E-36 – Deutsch und Englisch, Übersetzungen zur Laufzeit, ein Build, Standard Deutsch, Englisch als `en-GB` (14.11.2026, TS §11.9). E-25 ergänzt – App-Version bis 1.0 als `0.<Meilenstein>.<Patch>` (Abschluss M6 = 0.6.0), Version 1.0.0 mit dem Public Release in M16 (15.11.2026, TS §15). E-37 – Stufe 2 „Fundament zuerst“: M8 Kalender, Währungen, Zinsen und Inflation, M9 neue Assetklassen, M10 Unternehmen, Steuerdetails und Werkzeuge als ein Meilenstein; Fachkonzept-AP am Anfang jedes Meilensteins, UI-Overhaul nach Auswertung der Vorlage (15.11.2026, §6). E-38 – Versionssprünge in Stufe 2, E-41 – kein WebAssembly in Stufe 2, neu prüfen beim Start von N2, E-22 neu – Weg (a): `U_i` mit dauerhaftem und kleinem vorübergehendem Anteil, R12-Grenzen nach Messung in AP 7.3e, E-34 ergänzt – Prüfregel im Median von mindestens 20 Seeds, Bänder für einen typischen Seed, Bärenmärkte in heutiger Zählung, E-42 – kuratierte Namensliste statt Silbengenerator in M10, E-43 – Konvention der zeitgewichteten Rendite mit `SCHEMA_VERSION` (16.11.2026, Sichtung von AP 7.1a–c und 7.2). E-22 ergänzt – R12-Grenze Top 5 ≤ 45 % nach 25 und ≤ 65 % nach 50 und 100 Jahren, Bänder der Prämien ≤ 3 Punkte (Gleichgewichtung) und ≤ 5 Punkte (20 tiefste Abstände) (18.11.2026, AP 7.3e). Das Deployment ist laut Product Owner unter `https://algoristic.de/portfoligo/` per HTTPS erreichbar.
+**Bereits entschieden:** E-07 (`CLAUDE.md`), E-03 – Zufallsströme per MurmurHash3 x86_128, `sfc32`, eigene `detExp`/`detLog` (10.11.2026), E-09 – Geld in Cent, Stück in Millionstel, Kurse als Gleitkomma mit Preisraster (10.11.2026), E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6), E-06 – Tailwind CSS v4 mit angehobener Browserslist und Inter Variable als selbst gehostete Schrift (10.11.2026) sowie die Ergänzungen für `CLAUDE.md` aus TS §11.2 (10.11.2026, übernommen in AP 0.2), E-15 – Hash-Routing mit englischen Routenpfaden (10.11.2026), E-16 – Angular Aria neben dem CDK für Tabs und Menüs (10.11.2026), E-12 – Stufe 1 mit Aktien, ETFs und Indizes, CFDs bleiben in Stufe 3 (10.11.2026), E-13 – reale Regionen und Länder, fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen; Standardwelt nach TS §5.2 (10.11.2026), E-17 – Banking mit sofortiger Eröffnung und Überweisung, Dispo mit geduldeter Überziehung, Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (10.11.2026), E-02 – Tick = 1 Spielminute, Start Mo 01.04.2030 00:00, im Hintergrund Echtzeit (pro Spieler auf Pause umstellbar), eine Pause bleibt Pause (11.11.2026), E-18 – Handelszeiten je Region, Orders jederzeit, Ausführung in der Handelszeit (11.11.2026), E-04 – lightweight-charts 5.3.0 mit TradingView-Logo, lazy geladen; eigene SVG-Sparklines und -Donuts (Spike in AP 1.7, 11.11.2026), E-01 – autoritative Engine im Web Worker, NgRx hält nur Projektionen (12.11.2026), E-26 – die App bleibt bis 1.0 öffentlich, Impressum, Datenschutzhinweis und Hinweis „keine Anlageberatung“ erst in AP 6.5; das Risiko trägt der Product Owner (12.11.2026), E-27 – vierfache CPU-Drosselung (Chromium) statt Referenzgerät, Budgets Engine bei 1 w/s < 50 % eines Kerns und Spielstart < 6 s, erste Messung in M2 (12.11.2026), E-08 – Persistenz mit Ergänzungen: Marktzustände zu Monatsbeginn im eigenen Store (DB-Version 4), Write-ahead nur für Spielkommandos, Kommando-Log älter als der älteste Snapshot wird gelöscht, Uhr spätestens nach einem Spieltag gesichert, Tick des letzten `clock`-Ereignisses bei `pagehide` als Untergrenze; Tageskerzen bleiben je Spieler (12.11.2026), E-25 vor 1.0 – `SIM_VERSION` und `schemaVersion` ab AP 2.3, veraltete Spieler gesperrt (nur löschen; Zusage ab 1.0 offen bis AP 6.6) (12.11.2026), E-14 – Lebenshaltungskosten als Startparameter, Hausbank ist die erste Filialbank in Weltreihenfolge, Start pausiert, Vorgaben 10.000 € / 2.500 € / 1.800 € (12.11.2026). E-30 bis E-33 – Regionsfaktoren mit eigener Aktivität und Schwellenländer-Ziel als „Info“, Korrelationsziele über Large Caps, Zero-Beta-Rendite, Dividenden-Lebenszyklus (12.11.2026, Vorbereitung der Kalibrierung, AP 1.9b). E-34 – Prüfregel und Ziele der Kalibrierung: Median von `calib-1` bis `calib-5`, Korrelation zwischen Sektoren 0,2–0,4, Tagesprofil 1,3–2,0, Risikoklassen als Quintile (12.11.2026, AP 1.9c). E-11 – Steuern in Stufe 1: 25 % pauschal, 1.000 € Sparerpauschbetrag, ein Verlusttopf, ohne Soli und Kirchensteuer (13.11.2026). E-19 – Buchungstermine: Bank-Lauf 06:00, Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag des Monats (13.11.2026). E-17 ergänzt: Dispo je Bank nach dem Gehaltseingang bei ihr, geduldete Überziehung ohne Obergrenze (13.11.2026, TS §7.4). E-21 – Daueraufträge (US-BK-10) in Stufe 1 statt eines Abbuchungskontos je Sparplan; Sparpläne buchen nur vom Verrechnungskonto ihres Depots (13.11.2026, TS §7.4, §7.8). E-28 – ETF-Durchschau als Muss, zweite Vergleichsgröße, Story „Erste Schritte“ (US-UI-10, Soll) in Stufe 1, Depotübertrag (US-BK-12) als Story in Stufe 2 (13.11.2026). E-05 ergänzt: „Demnächst“ liest die planbaren Termine aus Terminplaner und Kalender mit Basisbeträgen, keine Vorausrechnung im MVP (13.11.2026, TS §8.1). E-05 – PWA im MVP mit `@angular/service-worker`, Capacitor als optionaler Meilenstein N1, Ports jetzt vorbereiten (14.11.2026, TS §13). E-10 – Exportformat mit gzip schon in Formatversion 1, ohne `commands`, Import startet pausiert (14.11.2026, TS §10). E-35 – Hintergrundmodi `keep-speed` und `custom-speed`, Pause-Frist `backgroundPauseAfter` auch bei geschlossener App, Lücken im Takt über 5 s zählen als Echtzeit, Auto-Pause verborgen in den neuen Modi (14.11.2026, TS §3.6, §3.7). E-36 – Deutsch und Englisch, Übersetzungen zur Laufzeit, ein Build, Standard Deutsch, Englisch als `en-GB` (14.11.2026, TS §11.9). E-25 ergänzt – App-Version bis 1.0 als `0.<Meilenstein>.<Patch>` (Abschluss M6 = 0.6.0), Version 1.0.0 mit dem Public Release in M16 (15.11.2026, TS §15). E-37 – Stufe 2 „Fundament zuerst“: M8 Kalender, Währungen, Zinsen und Inflation, M9 neue Assetklassen, M10 Unternehmen, Steuerdetails und Werkzeuge als ein Meilenstein; Fachkonzept-AP am Anfang jedes Meilensteins (15.11.2026, §6). E-38 – Versionssprünge in Stufe 2, E-41 – kein WebAssembly in Stufe 2, neu prüfen beim Start von N2, E-22 neu – Weg (a): `U_i` mit dauerhaftem und kleinem vorübergehendem Anteil, R12-Grenzen nach Messung in AP 7.3e, E-34 ergänzt – Prüfregel im Median von mindestens 20 Seeds, Bänder für einen typischen Seed, Bärenmärkte in heutiger Zählung, E-42 – kuratierte Namensliste statt Silbengenerator in M10, E-43 – Konvention der zeitgewichteten Rendite mit `SCHEMA_VERSION` (16.11.2026, Sichtung von AP 7.1a–c und 7.2). E-22 ergänzt – R12-Grenze Top 5 ≤ 45 % nach 25 und ≤ 65 % nach 50 und 100 Jahren, Bänder der Prämien ≤ 3 Punkte (Gleichgewichtung) und ≤ 5 Punkte (20 tiefste Abstände) (18.11.2026, AP 7.3e). E-37 ergänzt – kein UI-Overhaul in M7, AP 7.5–7.8c gestrichen, Vorlage archiviert unter `docs/archiv/design/` (19.11.2026). Das Deployment ist laut Product Owner unter `https://algoristic.de/portfoligo/` per HTTPS erreichbar.
 
 ## 4. Statusübersicht
 
@@ -196,13 +196,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 7.3d  | Korrekturen: Modelländerung Marktmodell            | fertig    | 7.3a                      |
 | 7.3e  | Korrekturen: Neukalibrierung                       | fertig    | 7.3d                      |
 | 7.4   | UI-Bausteine vereinheitlichen                      | fertig    | 6.6                       |
-| 7.5   | UI-Overhaul: Vorlage auswerten                     | offen     | 7.3b, 7.3c, 7.4           |
-| 7.6   | UI-Overhaul: Design-Grundlage                      | offen     | 7.5                       |
-| 7.7   | UI-Overhaul: Shell, Navigation, Spielerbereich     | offen     | 7.6                       |
-| 7.8a  | UI-Overhaul: Übersicht, Märkte, Instrument         | offen     | 7.7                       |
-| 7.8b  | UI-Overhaul: Depot, Position, Orders, Steuern      | offen     | 7.7                       |
-| 7.8c  | UI-Overhaul: Konten, Banken und übrige Seiten      | offen     | 7.7                       |
-| 7.9   | Abschluss M7 (Version 0.7.0)                       | offen     | 7.2, 7.3a–e, 7.8a–c       |
+| 7.9   | Abschluss M7 (Version 0.7.0)                       | offen     | 7.2, 7.3a–e, 7.4          |
 | 8.1   | Fachkonzept M8                                     | offen     | 7.9                       |
 | 8.2   | Kalender mit Feiertagen                            | offen     | 8.1                       |
 | 8.3   | Marktmodell und Engine mit Feiertagen              | offen     | 8.2                       |
@@ -418,7 +412,7 @@ flowchart TD
 ```mermaid
 flowchart TD
   AP6_6["6.6 Abschluss Stufe 1 (Version 0.6.0)"]
-  subgraph M7["M7 – Prüfung des Rechenkerns, UI-Overhaul"]
+  subgraph M7["M7 – Prüfung des Rechenkerns"]
     direction TB
     AP7_1a["7.1a Modellreview: Determinismus und Welt"]
     AP7_1b["7.1b Modellreview: Marktmodell und Kalibrierung"]
@@ -430,12 +424,6 @@ flowchart TD
     AP7_3d["7.3d Korrekturen: Modelländerung Marktmodell"]
     AP7_3e["7.3e Korrekturen: Neukalibrierung"]
     AP7_4["7.4 UI-Bausteine vereinheitlichen"]
-    AP7_5["7.5 UI-Overhaul: Vorlage auswerten"]
-    AP7_6["7.6 UI-Overhaul: Design-Grundlage"]
-    AP7_7["7.7 UI-Overhaul: Shell, Navigation, Spielerbereich"]
-    AP7_8a["7.8a UI-Overhaul: Übersicht, Märkte, Instrument"]
-    AP7_8b["7.8b UI-Overhaul: Depot, Position, Orders, Steuern"]
-    AP7_8c["7.8c UI-Overhaul: Konten, Banken und übrige Seiten"]
     AP7_9["7.9 Abschluss M7 (Version 0.7.0)"]
   end
   subgraph M8["M8 – Kalender, Währungen, Zinsen und Inflation"]
@@ -504,23 +492,13 @@ flowchart TD
   AP7_1c --> AP7_3c
   AP7_3a --> AP7_3d
   AP7_3d --> AP7_3e
-  AP7_3b --> AP7_5
-  AP7_3c --> AP7_5
-  AP7_4 --> AP7_5
-  AP7_5 --> AP7_6
-  AP7_6 --> AP7_7
-  AP7_7 --> AP7_8a
-  AP7_7 --> AP7_8b
-  AP7_7 --> AP7_8c
   AP7_2 --> AP7_9
   AP7_3a --> AP7_9
   AP7_3b --> AP7_9
   AP7_3c --> AP7_9
   AP7_3d --> AP7_9
   AP7_3e --> AP7_9
-  AP7_8a --> AP7_9
-  AP7_8b --> AP7_9
-  AP7_8c --> AP7_9
+  AP7_4 --> AP7_9
   AP7_9 --> AP8_1
   AP8_1 --> AP8_2
   AP8_2 --> AP8_3
@@ -1234,14 +1212,14 @@ Geplant am 15.11.2026 (E-37). Stufe 2 „Vollständiger Markt“ beginnt nach AP
 - Das Hauptbuch kennt nur Buchungen mit Geld. Ausbuchung, Split und Depotübertrag brauchen geldlose Buchungen (AP 9.2b).
 - Zeitabhängige Konditionen (Zinsen, gegebenenfalls Gebühren) lesen Engine und UI-Vorschauen über eine gemeinsame Funktion, nie als Kopie (AP 8.10).
 
-### M7 – Prüfung des Rechenkerns, UI-Overhaul
+### M7 – Prüfung des Rechenkerns
 
-**Ziel:** Der Rechenkern ist unabhängig geprüft und korrigiert, und die Oberfläche ist nach der Vorlage des Product Owners erneuert, bevor Stufe 2 neue Fachlichkeit baut.
-**Ergebnis:** Version 0.7.0 mit Befundlisten und Korrekturen der Prüfungen, einer Empfehlung zu WebAssembly und der App im neuen Design.
+**Ziel:** Der Rechenkern ist unabhängig geprüft und korrigiert, bevor Stufe 2 neue Fachlichkeit baut.
+**Ergebnis:** Version 0.7.0 mit Befundlisten und Korrekturen der Prüfungen und einer Empfehlung zu WebAssembly.
 
 **Prüfungen (AP 7.1a–c, AP 7.2):** Das sind reine Prüfungen ohne Änderungen an Code oder Spezifikation; die Ergebnisse stehen je AP unter `docs/archiv/reviews/`, eine Kurzfassung im Änderungsprotokoll. Jede Prüfung läuft zweimal, unabhängig voneinander und auf demselben Stand: einmal mit Opus 5.5 (`claude-opus-5-5`, Subagent mit `model: opus`, `effort: high`) und einmal mit Fable 5.2 (`claude-fable-5-2`, `model: fable`, `effort: medium`). Keiner der beiden Läufe sieht das Ergebnis des anderen. Danach werden beide Einschätzungen gegenübergestellt und abgewogen: Übereinstimmungen, Widersprüche, Befunde nur eines Laufs; strittige Punkte werden nachgerechnet oder nachgemessen. Das Ergebnis geht als gemeinsame Befundliste mit Empfehlung an den Product Owner. Ergibt sich Handlungsbedarf, folgt daraus ein eigenes AP (AP 7.3).
 
-**UI-Overhaul (AP 7.4–7.8c):** Er schließt M7 ab, nach den Prüfungen und ihren Folge-APs, damit M8 und alle weiteren Meilensteine auf der neuen Oberfläche aufbauen. Die Vorlage des Product Owners liegt in `docs/design/` (Entwurf H „Werkbank“, gewählt am 18.11.2026). AP 7.4 bereitet ohne neue Optik vor. Der Schnitt von AP 7.6–7.8c ist ein Platzhalter, den AP 7.5 bestätigt oder ändert.
+**UI-Bausteine (AP 7.4):** Wiederkehrende UI-Muster werden Bausteine in `shared/ui`, ohne neue Optik. Der zuvor geplante UI-Overhaul (AP 7.5–7.8c) ist gestrichen (19.11.2026, E-37 ergänzt); die Vorlage liegt in `docs/archiv/design/`.
 
 #### AP 7.1a – Modellreview: Determinismus und Welt
 
@@ -1353,78 +1331,18 @@ Jeder Push auf `main` deployt; jedes Teil-AP trägt deshalb seinen Versionssprun
 
 #### AP 7.4 – UI-Bausteine vereinheitlichen
 
-- **Umfang:** Vorbereitung des Overhauls ohne neue Optik. Muster, die heute als Klassenketten in vielen Templates stehen, werden Bausteine in `shared/ui` mit Beispiel auf `#/lab/components`, und die Seiten nutzen sie: Eingabefeld (rund 30 gleiche Klassenketten), Auswahl, Tabelle (26 rohe `<table>`), Karte (rund 96 Stellen neben `app-panel`). Danach ändert der Overhaul das Aussehen an wenigen Stellen statt in 146 Templates.
+- **Umfang:** keine neue Optik. Muster, die heute als Klassenketten in vielen Templates stehen, werden Bausteine in `shared/ui` mit Beispiel auf `#/lab/components`, und die Seiten nutzen sie: Eingabefeld (rund 30 gleiche Klassenketten), Auswahl, Tabelle (26 rohe `<table>`), Karte (rund 96 Stellen neben `app-panel`). Änderungen am Aussehen treffen danach wenige Stellen statt 146 Templates.
 - **Abnahme:** Es gibt keine sichtbare Änderung (Stichprobe im Browser hell und dunkel bei 1280 und 360 px). Alle Seiten-, Komponenten- und Systemtests sind unverändert grün, die `data-testid` bleiben, axe meldet keine neuen Befunde.
-- **Hinweis:** Das AP kann parallel zu den Prüfungen laufen. Die Bausteine übernehmen noch nicht die Optik der Vorlage in `docs/design/`, ihre Schnittstellen decken aber deren Muster ab (dichte Tabellen, Kennzahlenleiste, Panels mit Haarlinien).
+- **Hinweis:** Das AP kann parallel zu den Prüfungen laufen.
 - **Referenzen:** TS §11.5, §11.6; `CLAUDE.md` §3, §4
 - **Abhängig von:** AP 6.6
 
-#### AP 7.5 – UI-Overhaul: Vorlage auswerten
-
-- **Umfang:** nur Dokumentation. Die Vorlage des PO wird gesichtet und in ein Designkonzept übersetzt:
-  - Tokens (Farben, gegebenenfalls neue für Abstände, Radien, Typografie und Schatten), Schrift und Icons, Layout von Shell und Seiten, Bausteine.
-  - Abgleich mit PS §10 und TS §11.5, beide werden aktualisiert.
-  - Auswirkungen auf die Tests (ARIA-Snapshots, Layout-Tests, `@phone`-Journeys) und auf die Barrierefreiheit (Kontraste ≥ 4,5:1 in beiden Themes, Farbpaare für Gewinn und Verlust).
-  - Endgültiger Umfang und Schnitt von AP 7.6–7.8c in §6 und §4; neue Abhängigkeiten (Schrift, Icons) als Entscheidung in TS §16.
-- **Abnahme:** PS §10 und TS §11.5 beschreiben die neue Oberfläche. Der Schnitt ist bestätigt; offene Fragen sind entschieden oder stehen als Vorschlag in §3.
-- **Vorlage:** `docs/design/` (18.11.2026), Einstieg `docs/design/index.html`. Gewählt ist Entwurf H „Werkbank“ und wird so umgesetzt:
-  - **Desktop:** die Arbeitsfläche aus G mit Bereichsleiste, primärer Seitenleiste (Portfolio, Watchlist), Editor mit Tabs, Panel mit Handelstabellen, sekundärer Leiste (Order-Ticket, Details) und Befehlssuche; Erscheinungsbild und Navigation aus A. Der Editor zeigt immer nur einen Inhalt, einen geteilten Editor gibt es nicht. Mockups: Instrument und Depot (1440 px).
-  - **Smartphone:** eigene Mobilansicht mit einer Aufgabe je Bildschirm (Übersicht, Märkte, Instrument, Order, Depot, Konten, Mehr, Orders, Spielzeit; 390 px).
-  - **A „Terminal“** bleibt Vorlage für Farben, Schrift und Regeln und für die Inhalte von Übersicht, Konten und Banken und Orders am Desktop, die H nicht als eigene Seite zeigt.
-
-  Gestaltung, Farben, Herkunft der Elemente und Regeln stehen in `docs/design/README.md`, der gemeinsame Spielstand in `docs/design/spieldaten.md`. Die Mockups sind kein übernehmbarer Code (Hex-Werte im Markup, keine i18n-IDs, keine Logik).
-
-- **Vor der Umsetzung klären:**
-  - Entworfen ist nur das dunkle Theme. Helles Theme und Farbpaare Blau/Orange leitet das AP ab oder der PO liefert sie nach.
-  - Seiten ohne Mockup in H (am Desktop Übersicht, Konten und Banken, Orders aus den Inhalten von A; dazu Märkte, Steuern, Benachrichtigungen, Einstellungen, Hilfe, Über, Spielerbereich, Dialoge, Labor) leitet das AP aus der Gestaltung der Vorlage ab, ebenso Tablet und Querformat (in H nicht entworfen; unter 1240 px scrollt der Desktop).
-  - Elemente aus H, die PS und TS noch nicht beschreiben (Seitenleisten und Panel ein- und ausblenden, Editor-Tabs, Kerzenchart mit OHLC-Legende, Orderlinie und Kaufmarken), werden mit dem Abgleich in PS §10 und TS §11.5 aufgenommen; Volumen im Chart kommt erst mit US-CH-04 (M10).
-- **Hinweise:**
-  - Die Kontraste von H sind für Text und Chart-Marken gemessen (≥ 4,5:1, nur dunkles Theme); das AP prüft sie für alle Token-Paare in beiden Themes.
-  - IBM Plex Sans und Mono kommen in der Vorlage von Google Fonts. Die PWA muss offline laufen, die Schrift wird deshalb mitgeliefert (Abhängigkeit in TS §16, Lizenz auf „Über PortfoliGo“).
-  - Index-Ticker und Statusleiste mit Speicherstand gelten für die ganze Shell und brauchen dort Projektionen (Indexkurse, Zeitpunkt der letzten Sicherung).
-  - Die Instrumentseite zeigt KGV und Handelsvolumen. Beide kommen erst mit AP 10.2 und AP 10.6; der Overhaul zeigt nur, was es gibt.
-  - Tokens bleiben 6-stelliges Hex, weil die Charts Alpha-Suffixe anhängen (`readChartColors` in `charts/ui/price-chart/price-chart.utils.ts`, `src/testing/chart-platform.ts`). Hart codierte Farben stehen in `src/index.html` (`theme-color`) und in den Manifesten.
-- **Referenzen:** `docs/design/`; PS §10; TS §11.5, §11.10, §13
-- **Abhängig von:** AP 7.3b, AP 7.3c, AP 7.4 (die Modellarbeit in AP 7.3a, 7.3d und 7.3e läuft parallel zum Overhaul)
-
-#### AP 7.6 – UI-Overhaul: Design-Grundlage
-
-- **Umfang (Platzhalter bis AP 7.5):** Tokens in `src/styles.css` (hell, dunkel, Blau/Orange), Schrift, Bausteine in `shared/ui` im neuen Stil; `#/lab/components` und `#/lab/tokens` (Kontrastmessung) sind nachgeführt.
-- **Abnahme:** Kontraste aller Token-Paare ≥ 4,5:1 auf `#/lab/tokens`; Komponentenkatalog vollständig; axe ohne ernste oder kritische Befunde.
-- **Referenzen:** TS §11.5; E-06
-- **Abhängig von:** AP 7.5
-
-#### AP 7.7 – UI-Overhaul: Shell, Navigation, Spielerbereich
-
-- **Umfang (Platzhalter bis AP 7.5):** Kopfzeile mit Uhrleiste, Navigation, untere Leiste, Befehlspalette, Toasts; Spielerauswahl und „Spieler anlegen“.
-- **Abnahme:** Systemtest `e2e/clock-layout.e2e.ts` grün (die Uhrleiste bleibt stabil, AP 5.9); ARIA-Snapshot der Uhrleiste bewusst aktualisiert; Tastatur-Journey grün.
-- **Referenzen:** PS §10.2; TS §11.4
-- **Abhängig von:** AP 7.6
-
-#### AP 7.8a – UI-Overhaul: Übersicht, Märkte, Instrument
-
-- **Umfang (Platzhalter bis AP 7.5):** Übersicht mit Kacheln, Märkte (Übersicht, Screener, Watchlist), Instrumentseite mit Chart, Order-Ticket und die übrigen Dialoge dieser Bereiche.
-- **Abnahme:** Seitentests grün, `data-testid` erhalten; ARIA-Snapshot des Order-Tickets bewusst aktualisiert; Stichprobe im Browser auf Deutsch und Englisch bei 1280 und 360 px.
-- **Abhängig von:** AP 7.7
-
-#### AP 7.8b – UI-Overhaul: Depot, Position, Orders, Steuern
-
-- **Umfang (Platzhalter bis AP 7.5):** Depot, Positionsdetail, Orderbuch mit Sparplänen, Steuerseite und ihre Dialoge.
-- **Abnahme:** wie AP 7.8a.
-- **Abhängig von:** AP 7.7
-
-#### AP 7.8c – UI-Overhaul: Konten, Banken und übrige Seiten
-
-- **Umfang (Platzhalter bis AP 7.5):** Konten mit ihren Tabs, Kontoauszug, Bankenvergleich, Benachrichtigungen, Einstellungen, Hilfe und Glossar, „Über PortfoliGo“, Rahmen des Labors und ihre Dialoge.
-- **Abnahme:** wie AP 7.8a.
-- **Abhängig von:** AP 7.7
-
 #### AP 7.9 – Abschluss M7 (Version 0.7.0)
 
-- **Umfang:** `package.json` auf 0.7.0; Abschlusstest der neuen Oberfläche über alle Ansichten; Lücken der axe-Prüfung schließen (Positionsdetail, `#/lab/tokens`); README nachziehen.
+- **Umfang:** `package.json` auf 0.7.0; Abschlusstest über alle Ansichten; Lücken der axe-Prüfung schließen (Positionsdetail, `#/lab/tokens`); README nachziehen.
 - **Abnahme:** `e2e/accessibility.e2e.ts` über alle Hauptansichten in hell und dunkel, in beiden Sprachen und bei 360 px ohne ernste oder kritische Befunde; alle Teil-APs von AP 7.3 fertig; Version 0.7.0 deployt (Tag `v0.7.0` und Commit auf Anweisung).
 - **Referenzen:** TS §14.4, §15
-- **Abhängig von:** AP 7.2, AP 7.3a–e, AP 7.8a, AP 7.8b, AP 7.8c
+- **Abhängig von:** AP 7.2, AP 7.3a–e, AP 7.4
 
 ### M8 – Kalender, Währungen, Zinsen und Inflation
 

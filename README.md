@@ -26,7 +26,7 @@ Stufe 1 (M0 bis M6) ist abgeschlossen, aktuell ist Version 0.6.0. Spielbar sind:
 | Einstellungen      | Erscheinungsbild, Farben für Gewinn und Verlust, Verhalten im Hintergrund, Sprache               |
 | App                | installierbar als PWA, offline spielbar, Glossar und Kontexthilfe, Befehlspalette, Tastatur      |
 
-Als Nächstes folgt Stufe 2 mit M7 (Prüfung des Rechenkerns und neue Oberfläche, Vorlage in `docs/design/`). Bis 1.0 zählt die Version `0.<Meilenstein>.<Patch>`; Version 1.0 kommt mit dem Public Release (M16). Den aktuellen Stand je Arbeitspaket zeigt die Statusübersicht im [Projektplan](docs/projektplan.md#4-statusübersicht).
+Als Nächstes folgt Stufe 2 mit M7 (Prüfung des Rechenkerns). Bis 1.0 zählt die Version `0.<Meilenstein>.<Patch>`; Version 1.0 kommt mit dem Public Release (M16). Den aktuellen Stand je Arbeitspaket zeigt die Statusübersicht im [Projektplan](docs/projektplan.md#4-statusübersicht).
 
 Unter `#/lab` liegt zusätzlich ein **Simulations-Labor**, das generierte Welten, Kursverläufe und Statistiken des Marktmodells zeigt.
 
@@ -108,7 +108,6 @@ Erwartete Werte stammen nie aus dem getesteten Code, sondern aus Beispieltabelle
 | [Technische Spezifikation](docs/specs/technische-spezifikation.md) | Architektur, Zeit- und Marktmodell, Engine, Persistenz, Entscheidungen |
 | [Projektplan](docs/projektplan.md)                                 | Meilensteine, Arbeitspakete, Status, offene Entscheidungen             |
 | [Änderungsprotokoll](docs/aenderungsprotokoll.md)                  | Änderungen je Arbeitspaket, neueste zuerst                             |
-| [Design-Vorlage](docs/design/README.md)                            | Mockups für den UI-Overhaul in M7                                      |
 | [CLAUDE.md](CLAUDE.md) und `.claude/rules/`                        | Code-Konventionen und Ist-Stand je Bereich                             |
 
 ## Arbeitsweise

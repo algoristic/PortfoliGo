@@ -6,6 +6,13 @@ Hier steht, was sich an Plan, Spezifikationen und Code geändert hat: das Ergebn
 
 **Neueste Einträge stehen oben.** Ein neuer Eintrag kommt als erster Punkt unter die Überschrift des Tages; gibt es sie noch nicht, kommt sie über alle anderen. Für ein AP reichen die jüngsten Einträge und die Einträge zu seinen Abhängigkeiten (Suche nach `AP x.y`); das Dokument muss nicht ganz gelesen werden.
 
+## 19.11.2026
+
+- **UI-Overhaul gestrichen (kein AP, Product Owner).** Der Overhaul nach der Vorlage „Werkbank“ wird nicht umgesetzt; M7 heißt nur noch „Prüfung des Rechenkerns“.
+  - **Plan:** AP 7.5–7.8c entfallen, die Nummern werden nicht neu vergeben. AP 7.4 (UI-Bausteine, fertig) bleibt. AP 7.9 hängt an AP 7.2, 7.3a–e und 7.4.
+  - **Vorlage:** `docs/design/` liegt jetzt unter `docs/archiv/design/`, mit Hinweis im README.
+  - **Betroffen:** Projektplan §1, §3 (E-37 ergänzt), §4, §6; TS §11.5 (Bausteine), §16 (E-37); PS §8 (Ausbaustufen); README.
+
 ## 18.11.2026
 
 - **Deployment lädt wieder hoch (kein AP, TS §14.4).** `publish.yml` lief seit dem 15.11.2026 mit `--dry-run`, grüne Läufe veröffentlichten also nichts. Der Probelauf vom 17.11.2026 plant 154 Uploads und 866 Löschungen: 864 alte Dateien mit Hash, `prerendered-routes.json` und `assets/icon` aus der Ionic-Zeit, keine Datei, die nicht aus einem Build stammt. `--dry-run` ist entfernt; der nächste Push auf `main` lädt hoch und löscht diese Dateien. Lokal ist das nicht prüfbar, weil die Zugangsdaten nur in GitHub liegen.
