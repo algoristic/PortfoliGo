@@ -1,6 +1,6 @@
 # PortfoliGo – Produktspezifikation
 
-> **Status:** Entwurf v0.2 · **Stand:** 12.11.2026
+> **Status:** Entwurf v0.2 · **Stand:** 19.11.2026
 > **Siehe auch:** [Technische Spezifikation](./technische-spezifikation.md) · [Projektplan](../projektplan.md)
 
 Dieses Dokument beschreibt, _was_ PortfoliGo leisten soll und _warum_. Wie es umgesetzt wird, steht in der technischen Spezifikation. Punkte mit **(Vorschlag)** konkretisieren die Ideensammlung und müssen noch bestätigt werden. Sie sind zusätzlich als Entscheidung `E-xx` in der technischen Spezifikation (§16) geführt.

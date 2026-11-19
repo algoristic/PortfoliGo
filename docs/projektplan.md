@@ -59,7 +59,7 @@ flowchart TD
 | M9          | 2     | Neue Assetklassen                                  | Anleihen, Renten-ETFs, Rohstoffe, ETCs, physische Edelmetalle, aktive Fonds, Fondssteuer    | 14  |
 | M10         | 2     | Unternehmen, Steuerdetails und Werkzeuge           | Quartalszahlen, Splits und Übernahmen, Volumen, Trailing-Stop, Kursalarme, Steuerdetails    | 15  |
 
-**Empfohlene Reihenfolge:** M3, M4 und M5 sind abgeschlossen (M5 mit der einmaligen Erhöhung von `SCHEMA_VERSION` auf 6, §5, M5). In M6 sind AP 6.7 (weitere Modi für das Verhalten im Hintergrund, `SCHEMA_VERSION` 7), AP 6.1 (Export und Import, Formatversion 1 mit den neuen Spielereinstellungen), AP 6.2 (Einstellungen), AP 6.3 (PWA und Browser-Benachrichtigungen, `@angular/service-worker`), AP 6.4 (Performance und Robustheit, Verdichtung alter Tageskerzen), AP 6.5 (Barrierefreiheit, Glossar, Befehlspalette, rechtliche Hinweise), AP 6.8a (Sprachumschaltung: Mechanik) und AP 6.8b (englische Übersetzung, `i18n:check --strict` als Gate) fertig. AP 6.6 (Abschluss Stufe 1 als Version 0.6.0) ist umgesetzt und wartet auf das Deployment und den Selbsttest auf einem iOS-Gerät durch den PO; danach beginnt Stufe 2 mit M7. Version 1.0 kommt erst mit dem Public Release (M16, §6); bis dahin gelten die Versionsregeln vor 1.0 (TS §15), und E-25 ist erst vor M16 zu entscheiden. E-35 und die Ergänzungen zu E-10 sind entschieden (14.11.2026, §3). Die Sprachumschaltung (AP 6.8a, AP 6.8b) folgt nach AP 6.2; die Übersetzung kommt zuletzt, wenn alle Texte von M6 stehen. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
+**Empfohlene Reihenfolge:** M3, M4 und M5 sind abgeschlossen (M5 mit der einmaligen Erhöhung von `SCHEMA_VERSION` auf 6, §5, M5). In M6 sind AP 6.7 (weitere Modi für das Verhalten im Hintergrund, `SCHEMA_VERSION` 7), AP 6.1 (Export und Import, Formatversion 1 mit den neuen Spielereinstellungen), AP 6.2 (Einstellungen), AP 6.3 (PWA und Browser-Benachrichtigungen, `@angular/service-worker`), AP 6.4 (Performance und Robustheit, Verdichtung alter Tageskerzen), AP 6.5 (Barrierefreiheit, Glossar, Befehlspalette, rechtliche Hinweise), AP 6.8a (Sprachumschaltung: Mechanik) und AP 6.8b (englische Übersetzung, `i18n:check --strict` als Gate) fertig. AP 6.6 (Abschluss Stufe 1 als Version 0.6.0) ist umgesetzt und bleibt „in Arbeit“, bis der PO den Selbsttest auf einem iOS-Gerät gemacht hat. Stufe 2 läuft: M7 ist mit Version 0.7.0 abgeschlossen (AP 7.9, 19.11.2026), M8 hat mit dem Fachkonzept AP 8.1 begonnen (fertig 19.11.2026); AP 8.2 beginnt, sobald der PO die Vorschläge E-44–E-59 und die neuen Kalibrierungsziele gesichtet hat (mindestens E-44 und E-45). Version 1.0 kommt erst mit dem Public Release (M16, §6); bis dahin gelten die Versionsregeln vor 1.0 (TS §15), und E-25 ist erst vor M16 zu entscheiden. E-35 und die Ergänzungen zu E-10 sind entschieden (14.11.2026, §3). Die Sprachumschaltung (AP 6.8a, AP 6.8b) folgt nach AP 6.2; die Übersetzung kommt zuletzt, wenn alle Texte von M6 stehen. Ab AP 2.3 gibt es gespeicherte Spieler, die jede Modelländerung ungültig macht (TS §15); Änderungen am Marktmodell prüft seitdem die Kalibrierungs-Suite gegen die Ziele.
 
 **Stufe 2 (E-37, 15.11.2026):** Sie beginnt nach AP 6.6 mit M7 (Prüfungen und Korrekturen). Danach kommt das Fundament, das Kalender und Kurse aller Instrumente ändert: Feiertage, Fremdwährungen, Zinsen und Inflation (M8). Erst darauf bauen die neuen Assetklassen (M9) und Unternehmen, Steuerdetails und Werkzeuge (M10) auf. Feiertage und Fremdwährungen standen früher in M10; Anleihen und Rohstoffe (in USD notiert) hätten sonst nachgebaut werden müssen. Jeder Meilenstein beginnt nach dem Abschluss-AP des vorigen mit einem Fachkonzept-AP (8.1, 9.1, 10.1), das die Stories und die TS-Abschnitte ausarbeitet und den Schnitt bestätigt (§6).
 
@@ -113,13 +113,28 @@ Wird ein AP für eine Session zu groß, teilt Claude es (z. B. AP 3.4a und 3.4b)
 
 Diese Punkte sollte der Product Owner bestätigen oder ändern, spätestens bevor das genannte AP beginnt. Details und Begründungen stehen in TS §16 und den verlinkten Abschnitten. Am einfachsten ist es, alle Vorschläge gesammelt zu bestätigen und nur Abweichungen zu nennen; Claude trägt den Status dann in TS §16 ein.
 
-| ID   | Frage                                               | Vorschlag                                                                                                                                                                                          | Spätestens vor |
-| ---- | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| E-25 | Versionsregeln ab 1.0 (TS §15; vor 1.0 entschieden) | Umfang der Kompatibilitätszusage festlegen, z. B. aktuelle und vorige `simVersion` spielbar, ältere lesbar                                                                                         | M16            |
-| E-39 | Kalibrierung in Stufe 2 (TS §6.9)                   | Modell-APs vor dem Kalibrierungsschritt ihres Meilensteins markieren betroffene Ziele als „offen bis AP x.y“, damit die Suite grün bleibt; neue Ziele und Bänder entscheidet der PO im Fachkonzept | AP 8.3         |
-| E-40 | Instrumente mit Lebenszyklus (TS §6.10)             | Alle Instrumente einer Welt entstehen zur Epoche mit Notierungszeitraum, die Typed Arrays bleiben fest; das Ende einer Notierung schließt Bestände per Auszahlung oder geldloser Ausbuchung        | AP 9.2a        |
+| ID   | Frage                                               | Vorschlag                                                                                                                                                                                   | Spätestens vor |
+| ---- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| E-25 | Versionsregeln ab 1.0 (TS §15; vor 1.0 entschieden) | Umfang der Kompatibilitätszusage festlegen, z. B. aktuelle und vorige `simVersion` spielbar, ältere lesbar                                                                                  | M16            |
+| E-40 | Instrumente mit Lebenszyklus (TS §6.10)             | Alle Instrumente einer Welt entstehen zur Epoche mit Notierungszeitraum, die Typed Arrays bleiben fest; das Ende einer Notierung schließt Bestände per Auszahlung oder geldloser Ausbuchung | AP 9.2a        |
+| E-44 | Börsenfeiertage (TS §3.3)                           | Kalender je Börse nach der realen Hauptbörse, feste, Oster- und Wochentagsregeln mit Ersatztagen; keine Mondkalender, keine halben Handelstage                                              | AP 8.2         |
+| E-45 | Bankkalender (TS §3.1)                              | Mo–Fr ohne die bundeseinheitlichen Feiertage, Heiligabend und Silvester; für Bank-Lauf, Daueraufträge, Zahltage, Sitzungen, Festgeld                                                        | AP 8.2         |
+| E-46 | Feiertage im Marktmodell (TS §6.1)                  | Faktoren laufen an jedem Modelltag mit festen Stützpunkten und Ziehungen, Instrumente ruhen an Feiertagen ihrer Börse; Frage b (`Δ_T` je Börse) in AP 8.6                                   | AP 8.3         |
+| E-47 | Makromodell, eine Zentralbank (TS §6.11)            | Inflation, Preisindex, Leitzins, Kurve und Aufschläge des Euroraums; Kopplung nur vom Weltfaktor zum Makro; ausländische Zinsen als Differenz                                               | AP 8.4         |
+| E-48 | Leitzinsregel (TS §6.11)                            | Acht Sitzungen, Taylor-Regel mit Glättung 0,9, 25-bp-Raster, ±75 bp, Untergrenze −0,50 %, Wirkung ab dem nächsten Bankarbeitstag                                                            | AP 8.4         |
+| E-49 | Zinskurve und Aufschläge (TS §6.11)                 | Nelson-Siegel mit kurzem Ende am Leitzins und Niveau als einzigem OU-Prozess; Aufschläge je Rating aus der Volatilität des Weltfaktors                                                      | AP 8.4         |
+| E-50 | Währungen (TS §6.12)                                | Notierung in Landeswährung, Wechselkurse mit Zinsparität, Rückkehr und Weltkopplung, Faktoren in der Modellwährung, Indizes in fester Währung                                               | AP 8.5         |
+| E-51 | Zinsfaktor (TS §6.13)                               | Duration aus Sektor und Stil auf den 10-Jahres-Zins, ohne eigenen Zufall; keine Wechselkurswirkung auf Regionen in M8                                                                       | AP 8.6         |
+| E-52 | Konditionen zum Zeitpunkt t (TS §7.10)              | Eine Funktion `termsAt` für Engine und Abfragen; Gebühren und Sparerpauschbetrag bleiben in M8 nominal                                                                                      | AP 8.9         |
+| E-53 | Zinspolitik der Banken (TS §7.10)                   | Weitergabe und asymmetrische Verzögerung je Bank und Produkt, Raster 5 bp, Untergrenze 0                                                                                                    | AP 8.10        |
+| E-54 | Lockzins (TS §7.10)                                 | Direktbanken, Aufschlag 0,50–1,25 Pp. für 3–6 Monate bis zu einem Höchstbetrag; Neukunde nach zwölf Monaten ohne Tagesgeld                                                                  | AP 8.10        |
+| E-55 | Festgeld (TS §7.11)                                 | 3–60 Monate, ab 1.000 €, Satz aus der Kurve zum Abschluss, keine Verfügung vor Fälligkeit, Gutschrift am Jahrestag und bei Fälligkeit                                                       | AP 8.11        |
+| E-56 | Inflation im Haushalt (TS §7.14)                    | Gehalt und Lebenshaltung jährlich zum 01.01. nach dem Preisindex, Gehalt nie sinkend; Realwerte in Preisen des Spielbeginns                                                                 | AP 8.9         |
+| E-57 | Fremdwährung im Handel (TS §7.12)                   | Konten nur in Euro, Devisenkosten in Prozent je Bank, 3 % Wechselkurspuffer, Ausschüttungen ohne Devisenkosten                                                                              | AP 8.7a        |
+| E-58 | Direkthandel (TS §7.13)                             | Mo–Fr 08:00–23:00 nach Kalender `de`, Kurse in Euro aus dem indikativen Wert; Neobroker nur dort, Filialbanken nur Börse                                                                    | AP 8.8         |
+| E-59 | Formate je Währung (TS §11.9)                       | `Intl.NumberFormat` mit Währungssymbol der Sprache, Stellen nach dem Raster der Währung                                                                                                     | AP 8.7b        |
 
-**Bereits entschieden:** E-07 (`CLAUDE.md`), E-03 – Zufallsströme per MurmurHash3 x86_128, `sfc32`, eigene `detExp`/`detLog` (10.11.2026), E-09 – Geld in Cent, Stück in Millionstel, Kurse als Gleitkomma mit Preisraster (10.11.2026), E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6), E-06 – Tailwind CSS v4 mit angehobener Browserslist und Inter Variable als selbst gehostete Schrift (10.11.2026) sowie die Ergänzungen für `CLAUDE.md` aus TS §11.2 (10.11.2026, übernommen in AP 0.2), E-15 – Hash-Routing mit englischen Routenpfaden (10.11.2026), E-16 – Angular Aria neben dem CDK für Tabs und Menüs (10.11.2026), E-12 – Stufe 1 mit Aktien, ETFs und Indizes, CFDs bleiben in Stufe 3 (10.11.2026), E-13 – reale Regionen und Länder, fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen; Standardwelt nach TS §5.2 (10.11.2026), E-17 – Banking mit sofortiger Eröffnung und Überweisung, Dispo mit geduldeter Überziehung, Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (10.11.2026), E-02 – Tick = 1 Spielminute, Start Mo 01.04.2030 00:00, im Hintergrund Echtzeit (pro Spieler auf Pause umstellbar), eine Pause bleibt Pause (11.11.2026), E-18 – Handelszeiten je Region, Orders jederzeit, Ausführung in der Handelszeit (11.11.2026), E-04 – lightweight-charts 5.3.0 mit TradingView-Logo, lazy geladen; eigene SVG-Sparklines und -Donuts (Spike in AP 1.7, 11.11.2026), E-01 – autoritative Engine im Web Worker, NgRx hält nur Projektionen (12.11.2026), E-26 – die App bleibt bis 1.0 öffentlich, Impressum, Datenschutzhinweis und Hinweis „keine Anlageberatung“ erst in AP 6.5; das Risiko trägt der Product Owner (12.11.2026), E-27 – vierfache CPU-Drosselung (Chromium) statt Referenzgerät, Budgets Engine bei 1 w/s < 50 % eines Kerns und Spielstart < 6 s, erste Messung in M2 (12.11.2026), E-08 – Persistenz mit Ergänzungen: Marktzustände zu Monatsbeginn im eigenen Store (DB-Version 4), Write-ahead nur für Spielkommandos, Kommando-Log älter als der älteste Snapshot wird gelöscht, Uhr spätestens nach einem Spieltag gesichert, Tick des letzten `clock`-Ereignisses bei `pagehide` als Untergrenze; Tageskerzen bleiben je Spieler (12.11.2026), E-25 vor 1.0 – `SIM_VERSION` und `schemaVersion` ab AP 2.3, veraltete Spieler gesperrt (nur löschen; Zusage ab 1.0 offen bis AP 6.6) (12.11.2026), E-14 – Lebenshaltungskosten als Startparameter, Hausbank ist die erste Filialbank in Weltreihenfolge, Start pausiert, Vorgaben 10.000 € / 2.500 € / 1.800 € (12.11.2026). E-30 bis E-33 – Regionsfaktoren mit eigener Aktivität und Schwellenländer-Ziel als „Info“, Korrelationsziele über Large Caps, Zero-Beta-Rendite, Dividenden-Lebenszyklus (12.11.2026, Vorbereitung der Kalibrierung, AP 1.9b). E-34 – Prüfregel und Ziele der Kalibrierung: Median von `calib-1` bis `calib-5`, Korrelation zwischen Sektoren 0,2–0,4, Tagesprofil 1,3–2,0, Risikoklassen als Quintile (12.11.2026, AP 1.9c). E-11 – Steuern in Stufe 1: 25 % pauschal, 1.000 € Sparerpauschbetrag, ein Verlusttopf, ohne Soli und Kirchensteuer (13.11.2026). E-19 – Buchungstermine: Bank-Lauf 06:00, Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag des Monats (13.11.2026). E-17 ergänzt: Dispo je Bank nach dem Gehaltseingang bei ihr, geduldete Überziehung ohne Obergrenze (13.11.2026, TS §7.4). E-21 – Daueraufträge (US-BK-10) in Stufe 1 statt eines Abbuchungskontos je Sparplan; Sparpläne buchen nur vom Verrechnungskonto ihres Depots (13.11.2026, TS §7.4, §7.8). E-28 – ETF-Durchschau als Muss, zweite Vergleichsgröße, Story „Erste Schritte“ (US-UI-10, Soll) in Stufe 1, Depotübertrag (US-BK-12) als Story in Stufe 2 (13.11.2026). E-05 ergänzt: „Demnächst“ liest die planbaren Termine aus Terminplaner und Kalender mit Basisbeträgen, keine Vorausrechnung im MVP (13.11.2026, TS §8.1). E-05 – PWA im MVP mit `@angular/service-worker`, Capacitor als optionaler Meilenstein N1, Ports jetzt vorbereiten (14.11.2026, TS §13). E-10 – Exportformat mit gzip schon in Formatversion 1, ohne `commands`, Import startet pausiert (14.11.2026, TS §10). E-35 – Hintergrundmodi `keep-speed` und `custom-speed`, Pause-Frist `backgroundPauseAfter` auch bei geschlossener App, Lücken im Takt über 5 s zählen als Echtzeit, Auto-Pause verborgen in den neuen Modi (14.11.2026, TS §3.6, §3.7). E-36 – Deutsch und Englisch, Übersetzungen zur Laufzeit, ein Build, Standard Deutsch, Englisch als `en-GB` (14.11.2026, TS §11.9). E-25 ergänzt – App-Version bis 1.0 als `0.<Meilenstein>.<Patch>` (Abschluss M6 = 0.6.0), Version 1.0.0 mit dem Public Release in M16 (15.11.2026, TS §15). E-37 – Stufe 2 „Fundament zuerst“: M8 Kalender, Währungen, Zinsen und Inflation, M9 neue Assetklassen, M10 Unternehmen, Steuerdetails und Werkzeuge als ein Meilenstein; Fachkonzept-AP am Anfang jedes Meilensteins (15.11.2026, §6). E-38 – Versionssprünge in Stufe 2, E-41 – kein WebAssembly in Stufe 2, neu prüfen beim Start von N2, E-22 neu – Weg (a): `U_i` mit dauerhaftem und kleinem vorübergehendem Anteil, R12-Grenzen nach Messung in AP 7.3e, E-34 ergänzt – Prüfregel im Median von mindestens 20 Seeds, Bänder für einen typischen Seed, Bärenmärkte in heutiger Zählung, E-42 – kuratierte Namensliste statt Silbengenerator in M10, E-43 – Konvention der zeitgewichteten Rendite mit `SCHEMA_VERSION` (16.11.2026, Sichtung von AP 7.1a–c und 7.2). E-22 ergänzt – R12-Grenze Top 5 ≤ 45 % nach 25 und ≤ 65 % nach 50 und 100 Jahren, Bänder der Prämien ≤ 3 Punkte (Gleichgewichtung) und ≤ 5 Punkte (20 tiefste Abstände) (18.11.2026, AP 7.3e). E-37 ergänzt – kein UI-Overhaul in M7, AP 7.5–7.8c gestrichen, Vorlage archiviert unter `docs/archiv/design/` (19.11.2026). Das Deployment ist laut Product Owner unter `https://algoristic.de/portfoligo/` per HTTPS erreichbar.
+**Bereits entschieden:** E-07 (`CLAUDE.md`), E-03 – Zufallsströme per MurmurHash3 x86_128, `sfc32`, eigene `detExp`/`detLog` (10.11.2026), E-09 – Geld in Cent, Stück in Millionstel, Kurse als Gleitkomma mit Preisraster (10.11.2026), E-20 – Kursberechnung mit dem Brückenmodell (10.11.2026; Begründung und Messwerte in TS §3.2, §6.1 und §6.6), E-06 – Tailwind CSS v4 mit angehobener Browserslist und Inter Variable als selbst gehostete Schrift (10.11.2026) sowie die Ergänzungen für `CLAUDE.md` aus TS §11.2 (10.11.2026, übernommen in AP 0.2), E-15 – Hash-Routing mit englischen Routenpfaden (10.11.2026), E-16 – Angular Aria neben dem CDK für Tabs und Menüs (10.11.2026), E-12 – Stufe 1 mit Aktien, ETFs und Indizes, CFDs bleiben in Stufe 3 (10.11.2026), E-13 – reale Regionen und Länder, fiktive Unternehmen, Banken, Börsen, Indizes, Emittenten und Kennungen; Standardwelt nach TS §5.2 (10.11.2026), E-17 – Banking mit sofortiger Eröffnung und Überweisung, Dispo mit geduldeter Überziehung, Bankbelastungen dürfen Verrechnungskonten ins Minus bringen (10.11.2026), E-02 – Tick = 1 Spielminute, Start Mo 01.04.2030 00:00, im Hintergrund Echtzeit (pro Spieler auf Pause umstellbar), eine Pause bleibt Pause (11.11.2026), E-18 – Handelszeiten je Region, Orders jederzeit, Ausführung in der Handelszeit (11.11.2026), E-04 – lightweight-charts 5.3.0 mit TradingView-Logo, lazy geladen; eigene SVG-Sparklines und -Donuts (Spike in AP 1.7, 11.11.2026), E-01 – autoritative Engine im Web Worker, NgRx hält nur Projektionen (12.11.2026), E-26 – die App bleibt bis 1.0 öffentlich, Impressum, Datenschutzhinweis und Hinweis „keine Anlageberatung“ erst in AP 6.5; das Risiko trägt der Product Owner (12.11.2026), E-27 – vierfache CPU-Drosselung (Chromium) statt Referenzgerät, Budgets Engine bei 1 w/s < 50 % eines Kerns und Spielstart < 6 s, erste Messung in M2 (12.11.2026), E-08 – Persistenz mit Ergänzungen: Marktzustände zu Monatsbeginn im eigenen Store (DB-Version 4), Write-ahead nur für Spielkommandos, Kommando-Log älter als der älteste Snapshot wird gelöscht, Uhr spätestens nach einem Spieltag gesichert, Tick des letzten `clock`-Ereignisses bei `pagehide` als Untergrenze; Tageskerzen bleiben je Spieler (12.11.2026), E-25 vor 1.0 – `SIM_VERSION` und `schemaVersion` ab AP 2.3, veraltete Spieler gesperrt (nur löschen; Zusage ab 1.0 offen bis AP 6.6) (12.11.2026), E-14 – Lebenshaltungskosten als Startparameter, Hausbank ist die erste Filialbank in Weltreihenfolge, Start pausiert, Vorgaben 10.000 € / 2.500 € / 1.800 € (12.11.2026). E-30 bis E-33 – Regionsfaktoren mit eigener Aktivität und Schwellenländer-Ziel als „Info“, Korrelationsziele über Large Caps, Zero-Beta-Rendite, Dividenden-Lebenszyklus (12.11.2026, Vorbereitung der Kalibrierung, AP 1.9b). E-34 – Prüfregel und Ziele der Kalibrierung: Median von `calib-1` bis `calib-5`, Korrelation zwischen Sektoren 0,2–0,4, Tagesprofil 1,3–2,0, Risikoklassen als Quintile (12.11.2026, AP 1.9c). E-11 – Steuern in Stufe 1: 25 % pauschal, 1.000 € Sparerpauschbetrag, ein Verlusttopf, ohne Soli und Kirchensteuer (13.11.2026). E-19 – Buchungstermine: Bank-Lauf 06:00, Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag des Monats (13.11.2026). E-17 ergänzt: Dispo je Bank nach dem Gehaltseingang bei ihr, geduldete Überziehung ohne Obergrenze (13.11.2026, TS §7.4). E-21 – Daueraufträge (US-BK-10) in Stufe 1 statt eines Abbuchungskontos je Sparplan; Sparpläne buchen nur vom Verrechnungskonto ihres Depots (13.11.2026, TS §7.4, §7.8). E-28 – ETF-Durchschau als Muss, zweite Vergleichsgröße, Story „Erste Schritte“ (US-UI-10, Soll) in Stufe 1, Depotübertrag (US-BK-12) als Story in Stufe 2 (13.11.2026). E-05 ergänzt: „Demnächst“ liest die planbaren Termine aus Terminplaner und Kalender mit Basisbeträgen, keine Vorausrechnung im MVP (13.11.2026, TS §8.1). E-05 – PWA im MVP mit `@angular/service-worker`, Capacitor als optionaler Meilenstein N1, Ports jetzt vorbereiten (14.11.2026, TS §13). E-10 – Exportformat mit gzip schon in Formatversion 1, ohne `commands`, Import startet pausiert (14.11.2026, TS §10). E-35 – Hintergrundmodi `keep-speed` und `custom-speed`, Pause-Frist `backgroundPauseAfter` auch bei geschlossener App, Lücken im Takt über 5 s zählen als Echtzeit, Auto-Pause verborgen in den neuen Modi (14.11.2026, TS §3.6, §3.7). E-36 – Deutsch und Englisch, Übersetzungen zur Laufzeit, ein Build, Standard Deutsch, Englisch als `en-GB` (14.11.2026, TS §11.9). E-25 ergänzt – App-Version bis 1.0 als `0.<Meilenstein>.<Patch>` (Abschluss M6 = 0.6.0), Version 1.0.0 mit dem Public Release in M16 (15.11.2026, TS §15). E-37 – Stufe 2 „Fundament zuerst“: M8 Kalender, Währungen, Zinsen und Inflation, M9 neue Assetklassen, M10 Unternehmen, Steuerdetails und Werkzeuge als ein Meilenstein; Fachkonzept-AP am Anfang jedes Meilensteins (15.11.2026, §6). E-38 – Versionssprünge in Stufe 2, E-41 – kein WebAssembly in Stufe 2, neu prüfen beim Start von N2, E-22 neu – Weg (a): `U_i` mit dauerhaftem und kleinem vorübergehendem Anteil, R12-Grenzen nach Messung in AP 7.3e, E-34 ergänzt – Prüfregel im Median von mindestens 20 Seeds, Bänder für einen typischen Seed, Bärenmärkte in heutiger Zählung, E-42 – kuratierte Namensliste statt Silbengenerator in M10, E-43 – Konvention der zeitgewichteten Rendite mit `SCHEMA_VERSION` (16.11.2026, Sichtung von AP 7.1a–c und 7.2). E-22 ergänzt – R12-Grenze Top 5 ≤ 45 % nach 25 und ≤ 65 % nach 50 und 100 Jahren, Bänder der Prämien ≤ 3 Punkte (Gleichgewichtung) und ≤ 5 Punkte (20 tiefste Abstände) (18.11.2026, AP 7.3e). E-37 ergänzt – kein UI-Overhaul in M7, AP 7.5–7.8c gestrichen, Vorlage archiviert unter `docs/archiv/design/` (19.11.2026). E-39 – Kalibrierung in Stufe 2: Modell-APs vor dem Kalibrierungsschritt markieren betroffene Ziele als „offen bis AP x.y“, neue Ziele und Bänder entscheidet der PO im Fachkonzept (19.11.2026, TS §6.9). Das Deployment ist laut Product Owner unter `https://algoristic.de/portfoligo/` per HTTPS erreichbar.
 
 ## 4. Statusübersicht
 
@@ -197,7 +212,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 7.3e  | Korrekturen: Neukalibrierung                       | fertig    | 7.3d                      |
 | 7.4   | UI-Bausteine vereinheitlichen                      | fertig    | 6.6                       |
 | 7.9   | Abschluss M7 (Version 0.7.0)                       | fertig    | 7.2, 7.3a–e, 7.4          |
-| 8.1   | Fachkonzept M8                                     | offen     | 7.9                       |
+| 8.1   | Fachkonzept M8                                     | fertig    | 7.9                       |
 | 8.2   | Kalender mit Feiertagen                            | offen     | 8.1                       |
 | 8.3   | Marktmodell und Engine mit Feiertagen              | offen     | 8.2                       |
 | 8.4   | Makromodell: Preise, Leitzins, Zinskurve           | offen     | 8.3                       |
@@ -206,7 +221,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 8.7a  | Fremdwährung in Handel und Buchhaltung             | offen     | 8.5                       |
 | 8.7b  | Fremdwährung in der Oberfläche                     | offen     | 8.7a                      |
 | 8.8   | Direkthandel mit erweiterten Handelszeiten         | offen     | 8.3, 8.7a                 |
-| 8.9   | Inflation im Haushalt und Realwerte                | offen     | 8.4                       |
+| 8.9   | Inflation im Haushalt, Realwerte und Wirtschaft    | offen     | 8.4                       |
 | 8.10  | Bankzinsen am Leitzins und Lockzinsen              | offen     | 8.4                       |
 | 8.11  | Festgeld                                           | offen     | 8.10                      |
 | 8.12  | Abschluss M8 (Version 0.8.0)                       | offen     | 8.6, 8.7b, 8.8, 8.9, 8.11 |
@@ -437,7 +452,7 @@ flowchart TD
     AP8_7a["8.7a Fremdwährung in Handel und Buchhaltung"]
     AP8_7b["8.7b Fremdwährung in der Oberfläche"]
     AP8_8["8.8 Direkthandel mit erweiterten Handelszeiten"]
-    AP8_9["8.9 Inflation im Haushalt und Realwerte"]
+    AP8_9["8.9 Inflation im Haushalt, Realwerte und Wirtschaft"]
     AP8_10["8.10 Bankzinsen am Leitzins und Lockzinsen"]
     AP8_11["8.11 Festgeld"]
     AP8_12["8.12 Abschluss M8 (Version 0.8.0)"]
@@ -575,7 +590,7 @@ flowchart TD
   AP10_2b --> AP10_15
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP7_1a,AP7_1b,AP7_1c,AP7_2,AP7_3a,AP7_3b,AP7_3c,AP7_3d,AP7_3e,AP7_4,AP7_9 done
+  class AP7_1a,AP7_1b,AP7_1c,AP7_2,AP7_3a,AP7_3b,AP7_3c,AP7_3d,AP7_3e,AP7_4,AP7_9,AP8_1 done
   class AP6_6 active
 ```
 
@@ -1203,7 +1218,7 @@ Geplant am 15.11.2026 (E-37). Stufe 2 „Vollständiger Markt“ beginnt nach AP
 
 **Fachkonzept je Meilenstein:** Die Stories der Stufe 2 sind in PS §7.12 nur skizziert, die TS beschreibt die Erweiterungen in §6.10 als Skizze. Das erste AP von M8, M9 und M10 ist deshalb ein Fachkonzept. Es arbeitet die Stories des Meilensteins in PS §7 mit Akzeptanzkriterien und Priorität aus und schreibt die TS-Abschnitte mit Formeln, Beispieltabellen (Orakel der späteren Tests, `CLAUDE.md` §10) und Kalibrierungszielen. Die Entscheidungen legt es als Vorschlag in TS §16 und §3 an, und es bestätigt oder ändert den Schnitt der folgenden APs (Umfang, Abnahme mit benannten Tests, Abhängigkeiten). Ein Fachkonzept ändert keinen Code. Übergreifende Fragen entscheidet das Fachkonzept, das sie zuerst braucht, mit Blick auf die späteren Nutzer: AP 8.1 das Währungsmodell und die Konditionen zum Zeitpunkt t, AP 9.1 den Lebenszyklus von Instrumenten und den Steuerschritt zum Jahreswechsel. Bis zum jeweiligen Fachkonzept ist die Abnahme der übrigen APs eine Skizze.
 
-**Versionen und Kalibrierung:** Bis zum Public Release gelten die Regeln vor 1.0 (TS §15). Jede Modelländerung erhöht `SIM_VERSION` und sperrt bestehende Spieler. Wie oft `SCHEMA_VERSION` steigt und wie Modell-APs mit der Kalibrierungs-Suite umgehen, regeln die Vorschläge E-38 und E-39 (§3). Jeder Meilenstein hebt die App-Version mit seinem Abschluss-AP auf `0.<Meilenstein>.0`. Das Abschluss-AP setzt die Version in `package.json`; ein Git-Tag entfällt, deployt wird mit dem nächsten Push auf `main` (PO, 19.11.2026).
+**Versionen und Kalibrierung:** Bis zum Public Release gelten die Regeln vor 1.0 (TS §15). Jede Modelländerung erhöht `SIM_VERSION` und sperrt bestehende Spieler. Wie oft `SCHEMA_VERSION` steigt und wie Modell-APs mit der Kalibrierungs-Suite umgehen, regeln E-38 und E-39 (entschieden am 16.11. bzw. 19.11.2026, TS §16). Jeder Meilenstein hebt die App-Version mit seinem Abschluss-AP auf `0.<Meilenstein>.0`. Das Abschluss-AP setzt die Version in `package.json`; ein Git-Tag entfällt, deployt wird mit dem nächsten Push auf `main` (PO, 19.11.2026).
 
 **Vorgaben aus dem Code** (Erkundung vom 15.11.2026; Details in den APs und in TS §6.10):
 
@@ -1255,7 +1270,7 @@ Geplant am 15.11.2026 (E-37). Stufe 2 „Vollständiger Markt“ beginnt nach AP
 
 #### AP 7.3a–e – Korrekturen aus den Prüfungen
 
-Der PO hat die Befunde von AP 7.1a–c und AP 7.2 am 16.11.2026 gesichtet (Änderungsprotokoll, Entscheidungen E-22 neu, E-34 ergänzt, E-38, E-41, E-42, E-43). Die Befund-IDs verweisen auf die gemeinsamen Befundlisten in `docs/archiv/reviews/`. Nicht in AP 7.3 kommen: 7.1a-01 Namen (E-42, AP 10.2b), 7.1b-10 geglättete Dividenden (M9), 7.1c-08 geldgewichtete Rendite (später), 7.1c-12 Zinsgutschrift zum Periodenende (M8), 7.1c-13 Steuervereinfachungen (AP 9.11).
+Der PO hat die Befunde von AP 7.1a–c und AP 7.2 am 16.11.2026 gesichtet (Änderungsprotokoll, Entscheidungen E-22 neu, E-34 ergänzt, E-38, E-41, E-42, E-43). Die Befund-IDs verweisen auf die gemeinsamen Befundlisten in `docs/archiv/reviews/`. Nicht in AP 7.3 kommen: 7.1a-01 Namen (E-42, AP 10.2b), 7.1b-10 geglättete Dividenden (M9), 7.1c-08 geldgewichtete Rendite (später), 7.1c-12 Zinsgutschrift zum Periodenende (M8; Vorschlag des Fachkonzepts AP 8.1: nicht in M8, PO-Entscheidung, TS §7.7 und AP 8.10), 7.1c-13 Steuervereinfachungen (AP 9.11).
 
 Jeder Push auf `main` deployt; jedes Teil-AP trägt deshalb seinen Versionssprung selbst. AP 7.3d und 7.3e laufen auf einem Branch und kommen gemeinsam nach `main`, damit Modelländerung und Neukalibrierung ein einziger Golden-Master-Bruch mit `SIM_VERSION` 2 sind.
 
@@ -1357,154 +1372,165 @@ Jeder Push auf `main` deployt; jedes Teil-AP trägt deshalb seinen Versionssprun
   - **TS:** Feiertagsregeln je Börse und Bankarbeitstage (§3.1, §3.3); Makromodell mit Verbraucherpreisen, Leitzinsregel und Sitzungsterminen, Zinskurve und Kreditaufschlägen (§6); Währungsmodell (Wechselkurse als Prozesse, Kopplung an Zinsdifferenzen und Phase, Notierungswährung je Börse, Umrechnung in Indizes und ETFs); Zinsempfindlichkeit der Aktien; Inflation im Haushalt (Gehalt, Lebenshaltung, gegebenenfalls Gebühren); Bankzinsen am Leitzins, Lockzinsen und Festgeld (§7.3, §7.4); Direkthandel (Zeiten, Preisbildung, Aufschlag, anbietende Banken); Devisenkosten; Formate je Währung (§11.9).
   - **Ziele und Entscheidungen:** Beispieltabellen für alle neuen Regeln, neue Kalibrierungsziele mit Bändern (Inflation, Leitzins, Zinsniveau und -steigung, Volatilität der Wechselkurse, Zinsempfindlichkeit), Entscheidungen.
 - **Abnahme:** PS und TS beschreiben M8 vollständig, jede neue Regel hat eine Beispieltabelle. Ziele und Entscheidungen hat der PO bestätigt, oder sie stehen als Vorschlag in §3. Schnitt, Abnahme (mit benannten Tests) und Abhängigkeiten von AP 8.2–8.12 sind bestätigt oder angepasst.
-- **Vor der Umsetzung klären:** Das Währungsmodell wirkt auch auf die Rohstoffe in USD (M9) und die Quellensteuer (M10), die Konditionen zum Zeitpunkt t auch auf die Fonds (M9). Beides wird hier mit Blick auf diese Nutzer entschieden. Außerdem E-39 (Kalibrierung in Stufe 2).
+- **Stand (19.11.2026):** Fachkonzept geschrieben – Kalender (PS US-MK-18; TS §3.1, §3.3, §6.1, §6.5, §6.6, §6.8, §7.4), Makromodell, Währungen und Zinsfaktor (US-MK-10, US-MK-17; TS §6.11–§6.13, Ziele in §6.9), Wirtschaft (US-EK-04, US-BK-11, US-BK-13, Handelsteile von US-MK-10, -17, -18; TS §7.10–§7.14, §11.9, §12). Alle Beispieltabellen sind unabhängig nachgerechnet (Änderungsprotokoll). Die Entscheidungen E-44–E-59 und die neuen Ziele und Bänder (TS §6.9) stehen als Vorschlag in §3, TS §16 und §6.9 und warten auf den PO; E-39 hat der PO am 19.11.2026 bestätigt. Schnitt, Abnahmen und Abhängigkeiten von AP 8.2–8.12 sind unten angepasst. AP 8.2 beginnt erst nach der Sichtung durch den PO (E-44 und E-45 spätestens vor AP 8.2).
+- **Vor der Umsetzung klären:** Das Währungsmodell wirkt auch auf die Rohstoffe in USD (M9) und die Quellensteuer (M10), die Konditionen zum Zeitpunkt t auch auf die Fonds (M9). Beides wird hier mit Blick auf diese Nutzer entschieden (TS §6.12, §7.10, §7.12). Außerdem E-39 (Kalibrierung in Stufe 2, entschieden 19.11.2026).
 - **Referenzen:** PS §7.12, §8; TS §3, §6.10, §7.3, §7.4; E-12, E-17, E-18
 - **Abhängig von:** AP 7.9
 
 #### AP 8.2 – Kalender mit Feiertagen
 
-- **Umfang:** `clock/domain`: Feiertagsregeln je Land bzw. Börse (feste und bewegliche Feiertage, Ostern) und für die Bankarbeitstage. Ein Kalendermodul ersetzt die drei getrennten Werktagsprüfungen und die handgeschriebenen Schleifen über Markttage:
+- **Umfang:** Kalendermodul in `clock/domain` nach TS §3.1 mit allen Kalendern (`CalendarId`: `bank`, die elf Börsenkalender, `weekdays`), Ostern, Ersatzregeln und der kumulierten Tabelle (`openDaysBefore`, `openDayAt`, `addOpenDays`, `nextOpenDay`/`previousOpenDay`, `modelDaysBefore`). Es ersetzt die drei getrennten Werktagsprüfungen und die handgeschriebenen Schleifen über Markttage:
   - die Prüfungen `isWeekend`/`isBankWorkingDay` in `calendar-logic.ts`, `isMarketDay` in `market/domain/market-calendar.ts` und die in `trading-hours-logic.ts`;
   - die Schleifen u. a. in `price-source.ts`, `series-quote.ts`, `chart-candles.ts`, `dividend-logic.ts` und `etf-step.ts`.
 
-  Dazu kommen `TradingHours` und `isTradingTime`/`nextOpen`/`nextClose` mit Börse, `marketDaysBefore` als kumulierte Tabelle statt `weeks · 5` und die Aufrufer in Banking (Bank-Lauf, Daueraufträge, Kontoführung) und Trading (Gültigkeit, Sparpläne, Sprungdialog). Was den Markt betrifft (Markttage, Dividendentermine), stellt AP 8.3 um.
+  Der **Bankkalender wird wirksam** (E-45): Bank-Lauf (Gehalt, Lebenshaltung, Kontoführung, Zinsen, Depotgebühr), Daueraufträge und der Zahltag von Ausschüttungen (`addOpenDays('bank', exTag, 2)`). `TradingHours` trägt den Kalender (`{ open, close, calendar }`); `isTradingTime`/`nextOpen`/`nextClose`, Börsenstatus, Börsenliste mit `holiday`, Orderprüfung, Gültigkeit „bis Tagesende“, Sparpläne und Sprungdialog lesen ihn (TS §3.3). Die Börsen der Standardwelt tragen in AP 8.2 noch den Kalender `weekdays`; die echten Börsenkalender schaltet AP 8.3 zusammen mit dem Marktmodell ein (sonst stünden Orders an Feiertagen still, während die Kurse weiterlaufen).
 
 - **Abnahme:**
-  - Beispieltabellen der Feiertage über mehrere Jahre (Ostern gegen eine unabhängige Referenz) und der Bankarbeitstage (Gehalt am letzten, Lebenshaltung am ersten Bankarbeitstag) als Logiktests.
-  - Eigenschaften: Der nächste Markttag ist ein Markttag, die Zählung ist monoton.
-  - Engine-Szenarien für Bank-Lauf, Dauerauftrag und Sparplan an Feiertagen; Perf-Fall für `marketDaysBefore`.
-- **Referenzen:** US-MK-18; TS §3.1, §3.3; E-18, E-19
+  - Logiktests nach TS §3.1 und §3.3 „Tests (AP 8.2)“: Ostern 2020–2040 und Randjahre gegen die Tabelle, 1583–9999 gegen eine Meeus/Jones/Butcher-Implementierung im Test; Feiertage 2030 und 2032 je Kalender; Ersatztage 2030–2033; offene Tage je Jahr; `openDaysBefore` an den Stichtagen; erster und letzter Bankarbeitstag; `nextOpen`/`nextClose`/`isTradingTime` (`calendar-logic.spec.ts`, `trading-hours-logic.spec.ts`, `exchange-status-logic.spec.ts`, neue Spec des Kalendermoduls).
+  - Eigenschaften aus TS §3.1 mit fast-check (nächster offener Tag, Monotonie und Brute-Force-Zählung von `openDaysBefore`, Umkehrung `openDayAt`, höchstens sechs geschlossene Tage, erster ≤ letzter Bankarbeitstag); Mutationstests für die Regel- und Ersatzlogik.
+  - Engine-Szenarien: Bank-Lauf am Do 02.05.2030 und Gehalt am Mo 30.12.2030 (`banking-system.spec.ts`), Dauerauftrag mit Tag 1 im Mai und Tag 22 im April 2030 (`game-engine-standing-orders.spec.ts`), Zahltag einer Dividende über Ostern; Sparplan, Order „bis Tagesende“ und Börsenstatus mit einem Test-Kalender `de` an einer Testbörse (`game-engine-savings-plans.spec.ts`).
+  - Die mit „Stand Stufe 1“ markierten Beispiele der Bankbuchungen (TS §7.4: Termine der Daueraufträge, Abrechnung am 01.05.2030) sind nachgezogen; den Ablauf eines Handelstags am 01.05.2030 (TS §3.8) zieht AP 8.3 nach.
+  - Golden Master unverändert; `PLAYER_CHECKSUM` neu eingefroren (Lebenshaltung am 02.05.2030 statt 01.05.) und im Änderungsprotokoll vermerkt.
+  - Perf-Fall nach TS §3.1 (Aufbau aller Kalender bis Spielstart + 100 Jahre ≤ 20 ms, 10⁶ Abfragen `openDaysBefore` ≤ 100 ms); die Budgets kommen erst mit der Messung in TS §14.3.
+- **Referenzen:** US-MK-18; TS §3.1, §3.3, §3.8, §7.4, §7.8; E-18, E-19, E-44, E-45
 - **Abhängig von:** AP 8.1
 
 #### AP 8.3 – Marktmodell und Engine mit Feiertagen
 
-- **Umfang:** Tagesschritt mit geschlossenen Börsen:
-  - Stützpunkte und Aktivitätsgewichte je Tag statt fest für das ganze Spiel (`MarketContext.intervalYears`), Index- und ETF-Sitzungen (`closedShare`) je Tag.
-  - Dividenden-Ex-Tage und Zahltage; Ankündigung ohne die Abkürzung `MAX_ANNOUNCEMENT_CALENDAR_DAYS`.
-  - `tradingDaysPerYear` und die erwarteten Pfade (`factorPathAt`, `idioPathAt`) über die Markttage.
-  - Engine-Termine (Handelsbeginn und -schluss je Börse), Ablage der Tageskerzen (`marketDaysInYear`, `candleSlot`), Chart-Konstanten (`MARKET_DAYS_PER_MONTH`), Labor.
+- **Umfang:** Die Börsen der Standardwelt bekommen ihre Kalender (TS §3.3); das Marktmodell folgt E-46 (TS §6.1 „Feiertage im Marktmodell“):
+  - Phase, Faktoren und ETF-Faktor `k` laufen an jedem Modelltag mit festen Stützpunkten, Aktivitätsgewichten und Ziehungen; Instrumente haben an Feiertagen ihrer Börse keinen Tagesschritt und zählen ihre Zeit in Handelstagen (`idioPathAt` je Kalender, `t_e = openDaysBefore · Δ_T`).
+  - Index-Sitzungen und `EtfLayout.closedShare` je Tag (je Muster offener Börsen zwischengespeichert); `session-closed` nur für Börsen, die handeln.
+  - Dividenden: Ex-Tage auf Handelstagen der Börse, Ankündigung 20 Handelstage vorher über `openDayAt`, ohne die Abkürzung `MAX_ANNOUNCEMENT_CALENDAR_DAYS` (TS §6.5).
+  - Engine-Termine (Handelsbeginn und -schluss nur für handelnde Börsen), Ablage der Tageskerzen in Slots je Modelltag (`modelDaysInYear`, Feiertags-Slot `NaN` gilt nicht als fehlend), Chart-Konstanten, Labor (Annualisierung mit den Markttagen der Serie).
 - **Abnahme:**
-  - Determinismus-Vertrag (TS §4.6) mit Feiertagen: Stückelung, Snapshot und Nachrechnen sind bitgleich.
-  - An einem Feiertag einer Börse bewegt sich kein Kurs ihrer Aktien, die Faktoren laufen weiter.
-  - Golden Master bewusst neu gesetzt, `SIM_VERSION` erhöht; Kalibrierungs-Suite grün oder betroffene Ziele nach E-39 markiert; Budgets aus TS §14.3 eingehalten.
-- **Hinweis:** Die Stützpunkte des Tages ändern sich an Feiertagen, und jede Börse, die schließt, ändert die Ziehungen der Faktoren an diesem Tag. Das Fachkonzept legt fest, wie die Ziehreihenfolge stabil bleibt.
-- **Referenzen:** US-MK-18; TS §3.3, §4.6, §6.1, §6.2, §6.5, §6.6, §6.8; E-20, E-24
+  - Tests nach TS §6.1 „Tests (AP 8.3)“: Determinismus-Vertrag (TS §4.6) mit Feiertagen über Ostern und Weihnachten; Eigenschaft „an einem Feiertag einer Börse ändert sich kein `priceAt` ihrer Aktien und ETFs, die Faktorstände ändern sich“ (`market-properties.spec.ts`); Faktor- und Phasenpfade bitgleich mit dem Kalender `weekdays` für alle Börsen; Aktien einer Börse mit `weekdays` bitgleich mit dem Modell vor AP 8.3; Dividendentabelle TS §6.5 (`dividend-logic.spec.ts`, Engine-Ereignisse); Indexsitzung und `session-closed` am Labor Day und am Karfreitag; ETF-`k` an einem Feiertag; Tageskerzen (`candle-backfill.spec.ts`, `daily-candles.utils.spec.ts`).
+  - Beispiel „Ablauf eines Handelstags“ am 01.05.2030 (TS §3.8) nachgezogen.
+  - Golden Master und `PLAYER_CHECKSUM` bewusst neu gesetzt, `SIM_VERSION` erhöht; Kalibrierungs-Suite grün, die Ziele der Liste in TS §6.9 („Offen bis AP 8.6“, Zeile AP 8.3) nach E-39 markiert und ihr Messwert im Änderungsprotokoll; Budgets aus TS §14.3 eingehalten.
+- **Hinweis:** Der frühere Punkt „Stützpunkte und Aktivitätsgewichte je Tag“ entfällt durch E-46: Die Ziehreihenfolge bleibt stabil, weil kein Strom außer den Tagesströmen der Instrumente vom Kalender abhängt (TS §6.1, Tabelle der Ziehreihenfolge).
+- **Referenzen:** US-MK-18; TS §3.3, §3.8, §4.6, §6.1, §6.2, §6.5, §6.6, §6.8; E-20, E-24, E-44, E-46
 - **Abhängig von:** AP 8.2
 
 #### AP 8.4 – Makromodell: Preise, Leitzins, Zinskurve
 
-- **Umfang:** Makroprozesse im Marktzustand, gleich für alle Spieler:
-  - Verbraucherpreise, gekoppelt an die Marktphase.
-  - Leitzins mit Entscheidungen an festen Sitzungsterminen nach einer Regel auf Inflation und Konjunktur.
-  - Zinskurve nach Nelson-Siegel, Niveau und Steigung als Ornstein-Uhlenbeck-Prozesse.
-  - Kreditaufschläge je Rating, die in Krisen steigen.
+- **Umfang:** Makromodell nach TS §6.11 (E-47–E-49) im Marktzustand, gleich für alle Spieler:
+  - Verbraucherpreise (Inflation als Ornstein-Uhlenbeck-Prozess um ein Ziel an der geglätteten Konjunkturlücke, Preisindex je Monat).
+  - Leitzins an acht festen Sitzungsterminen nach der Taylor-Regel mit Glättung; Bekanntgabe um 14:15 als Ereignis `policy-rate-decided`, Wirkung ab dem nächsten Bankarbeitstag.
+  - Zinskurve nach Nelson-Siegel mit dem Niveau `L` als einzigem Ornstein-Uhlenbeck-Prozess (die Steigung folgt aus Niveau und Leitzins, abweichend von der früheren Skizze).
+  - Kreditaufschläge je Rating aus der Volatilität des Weltfaktors.
 
-  Technisch: ein eigener Schritt zwischen Phase und Faktoren (`stepFactorDay`) mit eigenen Strömen und Zuständen; Monatsbeginn-Zustände, Snapshot, Prüfsumme und Exportprüfung (`isMarket`); Abfragen der Werte bis zum aktuellen Tick. Das Labor bekommt eine Ansicht für Tageswerte (bisher gibt es nur Kursreihen und die Phasen-Zeitleiste) und eine Statistik gegen die neuen Ziele. Zentralbankentscheidungen sind strukturierte Ereignisse (Grundlage für M14).
+  Technisch: ein eigener Schritt zwischen Phase und Faktoren mit eigenen Strömen (`market/macro/init`, `market/macro/<tag>`) und Zustand `MarketState.macro`; Monatsbeginn-Zustände, Snapshot, `marketChecksum` und Exportprüfung (`isMarket`); Abfragen bis zum aktuellen Tick. Das Labor bekommt eine Ansicht für Tageswerte und eine Statistik gegen die neuen Ziele. Zentralbankentscheidungen sind strukturierte Ereignisse (Grundlage für M14).
 
 - **Abnahme:**
-  - Beispieltabellen für Leitzinsregel, Kurvenformel und Aufschläge.
-  - Eigenschaften: Die Kurve ist stetig, die Aufschläge sind nach Rating geordnet.
-  - Determinismus-Vertrag; Kalibrierungsziele für Inflation und Zinsen im Band; Golden Master um die Makrowerte erweitert, `SIM_VERSION` erhöht.
-- **Referenzen:** US-MK-10; TS §6.3, §6.10; E-20
+  - Tests nach TS §6.11 „Tests (AP 8.4)“: Beispieltabellen (Leitzinsregel, Sitzungstermine 2030 und 2038, Kurve, `L`, Inflationsschritt, Preisindex, Aufschläge) in `macro-logic.spec.ts`, `policy-rate-logic.spec.ts` und `yield-curve-logic.spec.ts`; Eigenschaften (Kurve stetig, `y(0) = i`, monoton für `C` = 0, Aufschläge streng nach Rating, Leitzins auf dem Raster und nie unter der Untergrenze).
+  - Determinismus-Vertrag mit Makrozustand; **Phase, Faktoren und alle Kurse bitgleich mit dem Modell vor AP 8.4** (Golden-Master-Prüfsummen der Kurse unverändert); neue Prüfsumme `macro` im Golden Master.
+  - Engine-Szenario `policy-rate-decided` um 14:15 am Sitzungstag, `Leitzins(t)` ab dem nächsten Bankarbeitstag.
+  - Kalibrierungsziele der Inflation, Zinsen und Aufschläge (TS §6.9) im Band.
+- **Offene Frage (PO):** Ob AP 8.4 `SIM_VERSION` erhöht, obwohl sich keine Kurse ändern. Vorschlag: ja, weil gespeicherte Marktzustände keinen Makrozustand haben und nicht weiterlaufen können (TS §6.11).
+- **Vor der Umsetzung klären:** Ziele und Bänder der Inflation, Zinsen und Aufschläge (TS §6.9, Vorschlag; Hinweise der Gegenprüfung zum Verhältnis BBB Krise ÷ Normal und zur Schwankung des 10-Jahres-Zinses).
+- **Referenzen:** US-MK-10; TS §4.2, §4.6, §6.3, §6.9, §6.11; E-20, E-39, E-47, E-48, E-49
 - **Abhängig von:** AP 8.3
 
 #### AP 8.5 – Wechselkurse und Notierung in Landeswährung
 
 - **Umfang:**
-  - Währung an Land, Börse und Instrument (Weltgenerierung).
-  - Wechselkurse als Prozesse nach dem Währungsmodell aus AP 8.1: im Tagesschritt mit Stützpunkten, dazwischen als Brücken über die vorhandenen Stützpunkte.
-  - Kurse, Preisraster und Kursuntergrenze in der Notierungswährung.
-  - Indizes mit Werten verschiedener Währungen und ETFs auf ausländische Indizes rechnen innerhalb der Minutenkurven um.
+  - Währung an Land, Börse und Instrument (Taxonomie, `CURRENCY_IDS`); Startkurse in Landeswährung aus den Euro-Startkursen (TS §6.12).
+  - Wechselkurse nach E-50: im Tagesschritt nach den Faktoren mit Stützpunkten, dazwischen als Brücken über die vorhandenen Stützpunkte; HKD fest an USD. Devisen bekommen eigene, nicht handelbare Serien mit Kerzen (Grundlage der Anzeige in AP 8.7b).
+  - Kurse, Preisraster und Kursuntergrenze in der Notierungswährung (Rastereinheit `u_c`).
+  - Indizes in fester Währung und ETFs auf ausländische Indizes rechnen innerhalb der Minutenkurven um.
   - `PriceSource`, `SupportValues`, `DayCurves` und Kerzen kennen die Währung; das Labor zeigt die Wechselkurse.
 - **Abnahme:**
-  - Beispieltabellen der Umrechnung (Index aus Werten in zwei Währungen, ETF-NAV in EUR).
-  - Eigenschaft: Wert in EUR = Wert in Landeswährung ÷ Wechselkurs zu jeder Minute.
-  - Determinismus-Vertrag; Golden Master erweitert, `SIM_VERSION` erhöht.
-- **Hinweis:** Indizes summieren heute `n_i · P_i / D` direkt. Der Index einer Region mit mehreren Währungen braucht deshalb Minutenwerte der Wechselkurse.
-- **Referenzen:** US-MK-17; TS §5.3, §6.1, §6.6, §6.7
+  - Tests nach TS §6.12 „Tests (AP 8.5)“: Beispieltabellen (Umrechnung, Wechselkursschritt, Brücke, Raster, Startkurse) in `currency-conversion.spec.ts` und `fx-step.spec.ts`; Eigenschaft „Wert in EUR = Wert in Landeswährung ÷ Wechselkurs zu jeder Minute“ für Aktien, Indizes und ETFs; **Index bitgleich mit der umgerechneten Summe der `priceAt`-Werte**; `ln S_HKD − ln S_USD = ln 7,80` zu jeder Minute; Brücken treffen die Stützpunkte; Wechselkurse am Wochenende konstant.
+  - **Phase und Faktoren bitgleich, Aktien in Euro bitgleich mit dem Modell vor AP 8.5**; Determinismus-Vertrag; Golden Master um `fx` erweitert, `SIM_VERSION` erhöht.
+  - Statistischer Test der Wechselkurse (Volatilität, Korrelation mit dem Weltschock, Rückkehr) in `fx.calibration.spec.ts`; Ziele der Wechselkurse im Band, Ziele der Liste in TS §6.9 (Zeile AP 8.5) nach E-39 markiert.
+- **Vorschlag (PO), neue Bankfelder der Welt:** Teil 3 des Fachkonzepts zieht jedes neue Bankfeld in dem AP, das es nutzt (`world/banks/fx` in AP 8.7a, `/direct` in AP 8.8, `/rates` in AP 8.10, `/term-deposits` in AP 8.11). Jedes dieser APs bräche dann die Weltprüfsumme und erhöhte `SIM_VERSION`, obwohl sich kein Kurs ändert. Empfehlung: Alle neuen Konditionen (Zinspolitik und Lockzins, Festgeld, Devisenkosten, Handelsplätze; TS §5.7, §7.10–§7.13) legt AP 8.5 an, das die Welt ohnehin ändert und `SIM_VERSION` ohnehin erhöht – aus den vier Strömen, Felder bis zu ihrem AP ohne Wirkung. Folgt der PO, hängt AP 8.10 zusätzlich von AP 8.5 ab (AP 8.7a, AP 8.8 und AP 8.11 tun es schon), und die Weltprüfsumme bricht in M8 nur einmal.
+- **Referenzen:** US-MK-17; TS §5.3, §5.7, §6.1, §6.6, §6.7, §6.12; E-50
 - **Abhängig von:** AP 8.4
 
 #### AP 8.6 – Zinsfaktor und Kalibrierung
 
-- **Umfang:** Wirkung des Zinsumfelds auf Aktien (Zinsempfindlichkeit nach Stil und Sektor: Growth negativ, Banken positiv) und, falls das Fachkonzept es vorsieht, der Wechselkurse auf die Regionen. Danach Kalibrierung aller Ziele auf `calib-1` bis `calib-5`, einschließlich der neuen Ziele aus AP 8.1 (Inflation, Zinsen, Wechselkurse, Zinsempfindlichkeit) und der Ziele, die AP 8.3–8.5 nach E-39 markiert haben; finale Parameter in TS §6.
-- **Abnahme:** wie AP 1.9c: Alle Ziele liegen im Median im Band, oder die Abweichung ist begründet und vom PO entschieden. Die Langzeitgrenzen sind eingehalten, keine Markierung „offen bis AP 8.6“ bleibt übrig, Golden Master und `SIM_VERSION` stehen im Änderungsprotokoll.
-- **Referenzen:** US-MK-10; TS §6.2, §6.9; E-22, E-34, E-39; R1, R12
+- **Umfang:** Zinsfaktor nach TS §6.13 (E-51): Duration aus Sektor und Stilladung auf `−(y₁₀ − ȳ₁₀)`, ohne eigenen Zufall; keine zusätzliche Wirkung der Wechselkurse auf die Regionen in M8. Danach Kalibrierung aller Ziele nach E-34 im Median von `broad-1` bis `broad-20`, einschließlich der neuen Ziele aus AP 8.1 (Inflation, Zinsen, Wechselkurse, Zinsempfindlichkeit, TS §6.9) und der Ziele, die AP 8.3–8.5 nach E-39 markiert haben; finale Parameter in TS §6.
+- **Abnahme:** Logiktest der Beispieltabelle (`rate-factor-logic.spec.ts`) und die Eigenschaften aus TS §6.13 (Aktie mit `D_i` = 0 bitgleich, Differenz zweier Aktien `(D_1 − D_2) · F_Zins`, `F_Zins` ändert sich nur um 00:00). Wie AP 1.9c: Alle Ziele liegen im Median im Band, oder die Abweichung ist begründet und vom PO entschieden. Die Langzeitgrenzen sind eingehalten, keine Markierung „offen bis AP 8.6“ bleibt übrig, Golden Master und `SIM_VERSION` stehen im Änderungsprotokoll.
+- **Entscheidet hier:** E-46 Frage b (`Δ_T` je Börse auf die mittleren Handelstage anpassen oder nicht).
+- **Referenzen:** US-MK-10; TS §6.2, §6.9, §6.13; E-22, E-34, E-39, E-46, E-51; R1, R12
 - **Abhängig von:** AP 8.5
 
 #### AP 8.7a – Fremdwährung in Handel und Buchhaltung
 
-- **Umfang:**
+- **Umfang:** nach TS §7.12 (E-57):
   - Quotes, Limits und Stopps in der Handelswährung.
-  - Umrechnung bei Kauf, Verkauf und Ausschüttung zum Kurs der Ausführung, mit Devisenkosten je Bank (Konditionen).
+  - Umrechnung bei Kauf, Verkauf und Ausschüttung zum Minutenwert der Ausführung, mit Devisenkosten je Bank (Bankfeld `DepotConditions.fxFee`).
   - Buchungen in EUR mit Kurs und Fremdbetrag in den Parametern; Bewertung, Vermögen und Performance in EUR.
-  - Steuer auf den Gewinn in EUR (Anschaffung und Veräußerung je zum Kurs des Tages).
-  - Reservierung mit Puffer für den Wechselkurs; Devisenkosten als Kostenart der Monatswerte; Projektion und Protokoll.
-- **Abnahme:** Beispieltabellen (Kauf und Verkauf mit Wechselkursänderung, Gewinn in Landeswährung bei Verlust in EUR, Ausschüttung in USD); Engine-Szenarien je Akzeptanzkriterium; Eigenschaften (Hauptbuch summiert auf 0, Lots in EUR); Mutationstests der Regeln.
-- **Referenzen:** US-MK-17; TS §7.1, §7.3, §7.5–§7.7, §7.9
+  - Steuer auf den Gewinn in EUR (Anschaffung und Veräußerung je zum Kurs der Ausführung).
+  - Dividenden in Fremdwährung (`PendingDistribution` mit `currency` und `foreignAmount`, Gutschrift ohne Devisenkosten).
+  - Reservierung mit Puffer für den Wechselkurs (`FX_RESERVATION_BUFFER`); Devisenkosten als neue Kostenart `fxCosts` der Monatswerte; Projektion und Protokoll.
+- **Abnahme:** Tests nach TS §7.12 „Tests (AP 8.7a)“: Beispieltabellen (Kauf und Verkauf mit Wechselkursänderung, Gewinn in Landeswährung bei Verlust in EUR, Ausschüttung in USD, Reservierung, Betragsorder) in `fx-order-logic.spec.ts`, `distribution-logic.spec.ts` und `order-reservation.spec.ts`; Eigenschaften (Hauptbuch summiert auf 0, Lots in EUR, Metamorphose `S` = 1 und `fxFee` `free` bitgleich mit TS §7.5); Engine-Szenarien je Akzeptanzkriterium von US-MK-17; Mutationstests für `fx-order-logic.ts` und die Änderungen in `order-reservation` und `distribution-logic`.
+- **Referenzen:** US-MK-17; TS §7.1, §7.3, §7.5–§7.7, §7.9, §7.12; E-57
 - **Abhängig von:** AP 8.5
 
 #### AP 8.7b – Fremdwährung in der Oberfläche
 
 - **Umfang:**
-  - Formatierung je Währung: `shared/util/format.ts` kennt heute nur EUR; dazu Pipes und Eingaben mit Währungssymbol.
-  - Kurskopf und Screener in Landeswährung mit Wert in EUR; Order-Ticket mit Umrechnung und Devisenkosten in der Kostenvorschau.
-  - Devisenkurse in „Märkte“, Positionen mit Währungsanteil; Texte und Übersetzungen.
-- **Abnahme:** Formattabellen für Deutsch und Englisch in TS §11.9 als Logiktests; Seitentests (Kauf einer US-Aktie mit Kostenvorschau, Depot mit Währungsanteil); Systemtest einer Journey mit Fremdwährung; axe.
-- **Referenzen:** US-MK-17; TS §11.9; E-36
+  - Formatierung je Währung nach TS §11.9 (E-59): `formatMoney` und `formatFxRate` in `shared/util/format.ts` (kennt heute nur EUR), dazu Pipes und Eingaben mit Währungssymbol.
+  - Kurskopf, Watchlist und Screener in Landeswährung mit Wert in EUR; Order-Ticket mit Umrechnung und Devisenkosten in der Kostenvorschau.
+  - Devisenkurse mit Tagesveränderung und Chart in „Märkte“ (Serien aus AP 8.5), Depot mit Aufteilung nach Währung; Texte und Übersetzungen.
+- **Abnahme:** Formattabellen für Deutsch und Englisch in TS §11.9 als Logiktests (Orakel `Intl.NumberFormat`); Seitentests (Kauf einer US-Aktie mit Kostenvorschau, Depot mit Währungsanteil, Devisenkurse in „Märkte“); Systemtest einer Journey mit Fremdwährung; axe.
+- **Referenzen:** US-MK-17; TS §11.9; E-36, E-59
 - **Abhängig von:** AP 8.7a
 
 #### AP 8.8 – Direkthandel mit erweiterten Handelszeiten
 
-- **Umfang:**
-  - Handelsplatz Direkthandel (Market Maker) mit erweiterten Zeiten nach dem Fachkonzept, auch für ausländische Werte in EUR.
-  - Quotes außerhalb der Börsenzeiten aus dem indikativen Wert (`indicativeAt`) mit Spread-Aufschlag, ohne neue Stützpunkte.
-  - Orders am gewählten Handelsplatz; die Gültigkeit „bis Tagesende“ richtet sich nach dessen Zeiten.
-  - Konditionen je Bank (welche Banken ihn anbieten, Entgelt); Handelsplatz im Order-Ticket und in der Kostenvorschau.
-- **Abnahme:** Beispieltabellen (Quote außerhalb der Börsenzeit, Ausführung einer Limit-Order am Abend); Engine-Szenarien; die Markt-Prüfsumme ist mit und ohne Direkthandel identisch; Seitentest des Order-Tickets; Perf-Fall, weil Orders außerhalb der Börsenzeit Minutenwerte verlangen.
-- **Hinweis:** Neobroker handeln schon über einen Market Maker mit Spread-Aufschlag (TS §5.7); der Direkthandel erweitert dieses Modell.
-- **Referenzen:** US-MK-18; TS §3.3, §5.7, §6.6, §6.7, §7.5; E-18
+- **Umfang:** nach TS §7.13 (E-58):
+  - Handelsplatz `direct` (Market Maker) Mo–Fr 08:00–23:00 an Handelstagen des Kalenders `de`, für alle Aktien und ETFs in EUR; ersetzt `market-maker` der Neobroker (`DepotConditions.venues`, Bankfeld aus `world/banks/direct`).
+  - Quote `directQuote` aus dem indikativen Wert (`indicativeAt`) und dem Wechselkurs der Minute mit Spread-Aufschlag, ohne neue Stützpunkte, Ziehungen oder Zustand.
+  - Orders am gewählten Handelsplatz (`OrderSpec.venue`); „bis Tagesende“ richtet sich nach dessen Zeiten; Termine für Beginn und Schluss ohne Marktwirkung.
+  - Handelsplatz im Order-Ticket und in der Kostenvorschau (Orderentgelt ohne Börsenentgelt und Devisenkosten).
+- **Abnahme:** Tests nach TS §7.13 „Tests (AP 8.8)“: Quotentabelle (`direct-quote-logic.spec.ts`), Gültigkeit am Direkthandel; Engine-Szenarien (Limit-Order am Abend, Market-Order um 07:00 wartet auf 08:00, Feiertag der Heimatbörse, Neobroker nur Direkthandel, Kosten ohne Börsenentgelt); **die Engine-Szenarien der Neobroker sind an den Direkthandel angepasst**; Eigenschaft: Markt-Prüfsumme gleich mit und ohne Direkthandelsorders; Seitentest des Order-Tickets; Perf-Fall „ein Spieljahr mit 20 Limit-Orders im Direkthandel“ (TS §7.13, Budget in §14.3 mit der Messung).
+- **Referenzen:** US-MK-18; TS §3.3, §5.7, §6.6, §6.7, §7.5, §7.13; E-18, E-58
 - **Abhängig von:** AP 8.3, AP 8.7a
 
-#### AP 8.9 – Inflation im Haushalt und Realwerte
+#### AP 8.9 – Inflation im Haushalt, Realwerte und Wirtschaftsansicht
 
 - **Umfang:**
-  - Gehalt und Lebenshaltungskosten steigen nach den Verbraucherpreisen (Rhythmus und Regel aus dem Fachkonzept, gegebenenfalls auch die Gebühren der Banken); die Karriere folgt erst in M13.
-  - Preisindex als Tagesreihe neben `DailyPoint`.
-  - Umschaltung Real/Nominal im Vermögensverlauf und in der Performance (Muster `NET_WORTH_CHART_VIEWS`); Kaufkraft des Bargelds; „Demnächst“ mit den angepassten Basisbeträgen.
-- **Abnahme:** Beispieltabelle der Anpassung über mehrere Jahre; Engine-Szenarien (Gehalt und Lebenshaltung nach einem Jahr Inflation); Seitentest der Übersicht in realer Ansicht mit Werten der Engine als Orakel.
+  - Gehalt und Lebenshaltung nach E-56 einmal im Jahr zum 01.01. nach dem Preisindex (`PlayerState.household`); Gebühren bleiben nominal (E-52). Die Karriere folgt erst in M13.
+  - Preisindex als Tagesreihe (`DailyPoint.priceIndex`).
+  - Umschaltung Real/Nominal im Vermögensverlauf und in der Performance (`VALUE_BASES`, Muster `NET_WORTH_CHART_VIEWS`); Kaufkraft des Bargelds; „Demnächst“ mit den angepassten Beträgen; `year-closed` mit den neuen Beträgen.
+  - **Ansicht „Wirtschaft“ in „Märkte“** (US-MK-10): Leitzins, Jahresinflation, Zinskurve heute und vor einem Jahr, Verlauf von Leitzins und Inflation, nächste Sitzungstermine; dazu die Benachrichtigung `policy-rate-decided` mit der neuen Kategorie `market` (TS §12). Die Devisenkurse zeigt AP 8.7b.
+- **Abnahme:** Tests nach TS §7.14 „Tests (AP 8.9)“: Beispieltabellen (Anpassung über mehrere Jahre, Realwerte) in `household-logic.spec.ts`; Eigenschaften (Gehalt monoton, Metamorphose VPI konstant); Engine-Szenarien in `game-engine-household.spec.ts` (Gehalt und Lebenshaltung nach einem Jahr Inflation, Jahreswechsel mit Benachrichtigung, Dispo-Rahmen nach der Anpassung) und für `policy-rate-decided` als Benachrichtigung; „Demnächst“ über den Jahreswechsel (`upcoming-logic.spec.ts`); Seitentests der Übersicht und der Performance in realer Ansicht mit Werten der Engine als Orakel und der Ansicht „Wirtschaft“; axe.
 - **Hinweis:** Gehalt und Lebenshaltung stehen heute fest in `PlayerState.start` (`#paySalary`, `#chargeLivingCosts`, `upcoming-inputs.ts`, `startInflows`). Der Sparerpauschbetrag bleibt nominal, weil er ein gesetzlicher Betrag ist.
-- **Referenzen:** US-MK-10, US-EK-04; PS §8 (bekannte Grenze von Stufe 1); TS §7.4, §7.9, §8.1
+- **Referenzen:** US-MK-10, US-EK-04; PS §8 (bekannte Grenze von Stufe 1); TS §6.11, §7.4, §7.9, §7.14, §8.1, §12; E-52, E-56
 - **Abhängig von:** AP 8.4
 
 #### AP 8.10 – Bankzinsen am Leitzins und Lockzinsen
 
-- **Umfang:**
-  - Habenzinsen (Tagesgeld, Verrechnungskonto) und Sollzinsen (Dispo, Überziehung) folgen dem Leitzins nach einer Zinspolitik je Bank (Abstand, Verzögerung, Rundung).
-  - Lockzins für Neukunden: Satz, Dauer und gegebenenfalls Höchstbetrag; „Neukunde“ ergibt sich aus den eigenen Konten bei der Bank.
-  - Eine gemeinsame Funktion „Konditionen zum Zeitpunkt t“ für Engine und UI-Vorschauen (Bankenvergleich, Konto eröffnen, Kontokarte, „Demnächst“).
-  - Benachrichtigung bei einer Zinsänderung.
-- **Abnahme:** Beispieltabellen (Zinsanpassung nach einer Leitzinsentscheidung, Lockzins mit Ablauf und Höchstbetrag); Engine-Szenarien; Seitentest des Bankenvergleichs mit aktuellem Satz.
+- **Umfang:** nach TS §7.10 (E-52–E-54):
+  - Eine Funktion `termsAt` (`banking/domain/terms-logic.ts`) für Engine und Abfragen; die Systeme der Engine kopieren die Konditionen nicht mehr im Konstruktor. Abfrage `bankTerms` für Bankenvergleich, „Konto eröffnen“ und Kontokarte.
+  - Haben-, Soll- und Dispozinsen folgen dem Leitzins nach der Zinspolitik je Bank (Weitergabe, asymmetrische Verzögerung, Raster 5 bp, Untergrenze 0); Zinsabgrenzung mit dem Satz des abgelaufenen Tags.
+  - Lockzins für Neukunden bei Direktbanken (Konto-Feld `teaser`, Ende mit `teaser-ended`).
+  - Ereignis und Benachrichtigung `interest-rate-changed` für gehaltene Produkte; „Demnächst“ mit feststehenden Zinsänderungen und dem Lockzinsende.
+- **Abnahme:** Tests nach TS §7.10 „Tests (AP 8.10)“: Beispieltabellen in `terms-logic.spec.ts` und `teaser-logic.spec.ts` (Bezug im Test per Brute Force); Eigenschaften über zufällige Leitzinspfade (Raster, Untergrenze, Monotonie, Bezug im Fenster, `b` = 0); Engine-Szenarien je Akzeptanzkriterium von US-BK-13 und dem Lockzins aus US-BK-11 in `game-engine-bank-rates.spec.ts`; Seitentest des Bankenvergleichs mit aktuellem Satz und Lockzins aus `bankTerms`; Mutationstests für `terms-logic.ts` und `teaser-logic.ts`.
+- **Teilung bei Bedarf:** AP 8.10a (`termsAt`, Zinspolitik, Benachrichtigung, `bankTerms`) und AP 8.10b (Lockzins).
 - **Hinweis:** Gelesen wird der Satz heute nur in `BankingSystem.#dailyInterest`. `#dayChange` rechnet den Markt vor der Zinsabgrenzung des Vortags; die Abgrenzung muss deshalb den Satz des abgelaufenen Tags nehmen. Die Konditionen kopieren heute mehrere Systeme im Konstruktor.
-- **Referenzen:** US-BK-11, US-BK-13; TS §5.7, §7.3, §7.4; E-17
+- **Vorschlag (PO), 7.1c-12:** Die Zinsgutschrift zum Periodenende bleibt auch in M8 aus (TS §7.7): Sie änderte Bank-Lauf, Abschlussvorschau, `openInterestPeriod` und „Demnächst“ für eine Verschiebung um einen Monat. Bisher ordnet §6 (M7, Sichtung der Befunde) sie M8 zu.
+- **Referenzen:** US-BK-11, US-BK-13; TS §5.7, §7.3, §7.4, §7.7, §7.10, §8.1, §8.2, §12; E-17, E-52, E-53, E-54
 - **Abhängig von:** AP 8.4
 
 #### AP 8.11 – Festgeld
 
-- **Umfang:**
-  - Neue Kontoart mit Laufzeit und Festzins; der Satz kommt aus der Zinskurve und den Konditionen der Bank zum Abschluss und steht im Spielerzustand am Konto.
-  - Eröffnung mit Betrag und Laufzeit; vor der Fälligkeit keine Verfügung (Überweisung, Dauerauftrag und Schließen gesperrt).
-  - Zinsen und Rückzahlung bei Fälligkeit als Termin je Konto (Muster `order-expiry`) auf ein Referenzkonto, Steuer auf die Zinsen.
-  - Dialog „Konto eröffnen“, Kontokarte, Kontoauszug, Bankenvergleich.
-- **Abnahme:** Beispieltabelle (Zinsen über die Laufzeit, Fälligkeit am Wochenende oder Feiertag); Engine-Szenarien je Akzeptanzkriterium; Seitentest: Festgeld anlegen, die Fälligkeit erscheint nach einem Sprung im Kontoauszug.
+- **Umfang:** nach TS §7.11 (E-55):
+  - Kontoart `term-deposit` mit Laufzeit und Festzins aus der Kurve zum Abschluss und dem Auf- oder Abschlag der Bank (Bankfeld aus `world/banks/term-deposits`); Kommando `openTermDeposit`.
+  - Vor der Fälligkeit keine Verfügung (Überweisung, Dauerauftrag und Schließen gesperrt; Hinderungsgründe `term-deposit`, `term-deposit-payout`).
+  - Zinsgutschrift am Jahrestag und bei Fälligkeit, Auszahlung am ersten Bankarbeitstag am oder nach dem Laufzeitende im Bank-Lauf-Schritt `term-deposits`, Steuer auf die Zinsen, Ereignis und Benachrichtigung `term-deposit-matured`.
+  - Dialog „Konto eröffnen“, Kontokarte, Kontoauszug, Bankenvergleich (`termDeposit12`), „Demnächst“.
+- **Abnahme:** Tests nach TS §7.11 „Tests (AP 8.11)“: Beispieltabellen (Satz, Endtag mit Monatsende, Auszahlungstag über den Bankkalender, Zinsen) in `term-deposit-logic.spec.ts`; Prüfungen des Kommandos als Tabelle (`bank-command-logic.spec.ts`); Engine-Szenarien je Akzeptanzkriterium in `game-engine-term-deposits.spec.ts`; Snapshot und Replay über die Fälligkeit (`engine-properties.spec.ts`); Seitentest: Festgeld anlegen, die Fälligkeit erscheint nach einem Sprung im Kontoauszug; Mutationstests für `term-deposit-logic.ts`.
 - **Hinweis:** `#creditInterest` behandelt heute jedes Konto außer Tagesgeld als monatlich; `transferError`, `CLOSING_BLOCKERS` und die Daueraufträge brauchen die neue Art.
-- **Referenzen:** US-BK-11; TS §7.3, §7.4, §8.2
+- **Referenzen:** US-BK-11; TS §7.3, §7.4, §7.11, §8.2, §12; E-45, E-55
 - **Abhängig von:** AP 8.10
 
 #### AP 8.12 – Abschluss M8 (Version 0.8.0)
 
-- **Umfang:** `package.json` auf 0.8.0; Abschlusstest nach Checkliste der Muss-Stories von M8; `SCHEMA_VERSION` nach E-38; README nachziehen.
-- **Abnahme:** Alle APs von M8 sind fertig und alle Muss-Stories von M8 erfüllt (Zuordnung am Ende von §6). Der Selbsttest der Golden-Master-Prüfsummen ist in Chromium, Firefox und WebKit grün (J11). Version 0.8.0 steht in `package.json`.
-- **Referenzen:** TS §4.6, §14.4, §15
+- **Umfang:** `package.json` auf 0.8.0; Abschlusstest nach Checkliste der Muss-Stories von M8; README nachziehen. **`SCHEMA_VERSION` einmal hier (E-38)** für alle Zustandsänderungen aus TS §7.10–§7.14: Kontoart `term-deposit` mit `termDeposit`, `teaser` am Tagesgeld, `PlayerState.household`, `venue` an Orders, `PendingDistribution` mit `currency` und `foreignAmount`, Kostenart `fxCosts` der Monatswerte, `DailyPoint.priceIndex`, neue Terminarten (`UPCOMING_KINDS`) und Benachrichtigungscodes.
+- **Abnahme:** Alle APs von M8 sind fertig und alle Muss-Stories von M8 erfüllt (Zuordnung am Ende von §6). Der Selbsttest der Golden-Master-Prüfsummen (mit `macro` und `fx`) ist in Chromium, Firefox und WebKit grün (J11). Version 0.8.0 steht in `package.json`.
+- **Referenzen:** TS §4.6, §14.4, §15; E-38
 - **Abhängig von:** AP 8.6, AP 8.7b, AP 8.8, AP 8.9, AP 8.11
 
 ### M9 – Anleihen, Rohstoffe, Edelmetalle und Fonds
@@ -1809,16 +1835,16 @@ AP 10.8, AP 10.10 und AP 10.11 hängen fachlich nur an M7 (Oberfläche) und lass
 
 ### Zuordnung der User Stories (Stufe 2)
 
-Stories der Stufe 2 (PS §7.12) und die Arbeitspakete, die sie umsetzen. Die Priorität ist ein Vorschlag; das Fachkonzept des Meilensteins legt sie mit dem PO fest. Die Abschluss-APs prüfen die Muss-Stories nach dieser Liste.
+Stories der Stufe 2 (PS §7.12) und die Arbeitspakete, die sie umsetzen. Die Priorität ist ein Vorschlag; das Fachkonzept des Meilensteins legt sie mit dem PO fest. Die Abschluss-APs prüfen die Muss-Stories nach dieser Liste. Für M8 sind Stories und Prioritäten im Fachkonzept AP 8.1 ausgearbeitet (PS §7.3–§7.5; Priorität der Story, einzelne Kriterien tragen (S) oder (K)); bestätigt sind sie mit der Sichtung durch den PO.
 
 | Story          | Priorität (Vorschlag) | Arbeitspakete                                          |
 | -------------- | --------------------- | ------------------------------------------------------ |
-| US-MK-18       | M (Direkthandel S)    | AP 8.2, AP 8.3; Direkthandel: AP 8.8                   |
+| US-MK-18       | M                     | AP 8.2, AP 8.3; Direkthandel: AP 8.8                   |
 | US-MK-17       | M                     | AP 8.5, AP 8.7a, AP 8.7b                               |
-| US-MK-10       | M                     | AP 8.4, AP 8.6; Realwerte: AP 8.9                      |
+| US-MK-10       | M                     | AP 8.4, AP 8.6; Wirtschaftsansicht, Realwerte: AP 8.9  |
 | US-EK-04 (neu) | M                     | AP 8.9                                                 |
 | US-BK-13 (neu) | M                     | AP 8.10                                                |
-| US-BK-11       | S                     | AP 8.10 (Lockzinsen), AP 8.11 (Festgeld)               |
+| US-BK-11       | M (Lockzins S)        | AP 8.10 (Lockzinsen), AP 8.11 (Festgeld)               |
 | US-MK-11       | M                     | AP 9.3–AP 9.6; Grundlage: AP 9.2a, AP 9.2b             |
 | US-MK-12       | M                     | AP 9.7, AP 9.8                                         |
 | US-MK-13       | S                     | AP 9.9                                                 |
