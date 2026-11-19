@@ -11,7 +11,7 @@ Die Oberfläche gibt es auf Deutsch und Englisch.
 
 ## Stand
 
-Stufe 1 (M0 bis M6) ist abgeschlossen, aktuell ist Version 0.6.0. Spielbar sind:
+Stufe 1 (M0 bis M6) und M7, der erste Meilenstein der Stufe 2, sind abgeschlossen; aktuell ist Version 0.7.0. Spielbar sind:
 
 | Bereich            | Inhalt                                                                                           |
 | ------------------ | ------------------------------------------------------------------------------------------------ |
@@ -26,7 +26,9 @@ Stufe 1 (M0 bis M6) ist abgeschlossen, aktuell ist Version 0.6.0. Spielbar sind:
 | Einstellungen      | Erscheinungsbild, Farben für Gewinn und Verlust, Verhalten im Hintergrund, Sprache               |
 | App                | installierbar als PWA, offline spielbar, Glossar und Kontexthilfe, Befehlspalette, Tastatur      |
 
-Als Nächstes folgt Stufe 2 mit M7 (Prüfung des Rechenkerns). Bis 1.0 zählt die Version `0.<Meilenstein>.<Patch>`; Version 1.0 kommt mit dem Public Release (M16). Den aktuellen Stand je Arbeitspaket zeigt die Statusübersicht im [Projektplan](docs/projektplan.md#4-statusübersicht).
+M7 hat den Rechenkern geprüft und korrigiert, ohne die Oberfläche neu zu gestalten: Reviews von Weltgenerierung, Marktmodell und Wirtschaftsmodell, ein Golden Master über viele Welten, ein Marktmodell mit vorübergehendem Anteil der Einzelrenditen und Volatilitäts-Clustering samt Neukalibrierung, eine robustere zeitgewichtete Rendite, kleinere Korrekturen (z. B. Mindest-Kurswert für Käufe, Dividenden mit vier Nachkommastellen) und vereinheitlichte UI-Bausteine. Spieler aus Version 0.6.0 sind wegen der geänderten Modell- und Schema-Version gesperrt und lassen sich nur löschen.
+
+Als Nächstes folgt M8 (Kalender mit Feiertagen, Fremdwährungen, Zinsen und Inflation). Bis 1.0 zählt die Version `0.<Meilenstein>.<Patch>`; Version 1.0 kommt mit dem Public Release (M16). Den aktuellen Stand je Arbeitspaket zeigt die Statusübersicht im [Projektplan](docs/projektplan.md#4-statusübersicht).
 
 Unter `#/lab` liegt zusätzlich ein **Simulations-Labor**, das generierte Welten, Kursverläufe und Statistiken des Marktmodells zeigt.
 

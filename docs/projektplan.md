@@ -196,7 +196,7 @@ Status: **offen**, **in Arbeit**, **fertig**.
 | 7.3d  | Korrekturen: Modelländerung Marktmodell            | fertig    | 7.3a                      |
 | 7.3e  | Korrekturen: Neukalibrierung                       | fertig    | 7.3d                      |
 | 7.4   | UI-Bausteine vereinheitlichen                      | fertig    | 6.6                       |
-| 7.9   | Abschluss M7 (Version 0.7.0)                       | offen     | 7.2, 7.3a–e, 7.4          |
+| 7.9   | Abschluss M7 (Version 0.7.0)                       | fertig    | 7.2, 7.3a–e, 7.4          |
 | 8.1   | Fachkonzept M8                                     | offen     | 7.9                       |
 | 8.2   | Kalender mit Feiertagen                            | offen     | 8.1                       |
 | 8.3   | Marktmodell und Engine mit Feiertagen              | offen     | 8.2                       |
@@ -575,7 +575,7 @@ flowchart TD
   AP10_2b --> AP10_15
   classDef done fill:#d1fae5,stroke:#059669,color:#064e3b
   classDef active fill:#fef3c7,stroke:#d97706,color:#78350f
-  class AP7_1a,AP7_1b,AP7_1c,AP7_2,AP7_3a,AP7_3b,AP7_3c,AP7_3d,AP7_3e,AP7_4 done
+  class AP7_1a,AP7_1b,AP7_1c,AP7_2,AP7_3a,AP7_3b,AP7_3c,AP7_3d,AP7_3e,AP7_4,AP7_9 done
   class AP6_6 active
 ```
 
@@ -1118,7 +1118,7 @@ AP 5.7 wurde nach §2.5 geteilt (14.11.2026) und ist mit allen drei Teilen ferti
 #### AP 6.6 – Abschluss Stufe 1 (Version 0.6.0)
 
 - **Umfang:** Versionsschema bis 1.0 einführen (`0.<Meilenstein>.<Patch>`, TS §15): `package.json` auf 0.6.0; README (Spielidee, Entwicklung, Deployment); CI/CD prüfen; Abschlusstest nach Checkliste aller Muss-Stories der Stufe 1.
-- **Abnahme:** Alle APs sind fertig und alle Muss-Stories der Stufe 1 erfüllt (Zuordnung am Ende von §5); der Selbsttest zeigt auch auf einem iOS-Gerät (Safari) die Golden-Master-Prüfsummen, in Chromium, Firefox und WebKit prüft das J11 bei jedem Push (TS §4.6); Version 0.6.0 deployt (Tag `v0.6.0` und Commit auf Anweisung).
+- **Abnahme:** Alle APs sind fertig und alle Muss-Stories der Stufe 1 erfüllt (Zuordnung am Ende von §5); der Selbsttest zeigt auch auf einem iOS-Gerät (Safari) die Golden-Master-Prüfsummen, in Chromium, Firefox und WebKit prüft das J11 bei jedem Push (TS §4.6); Version 0.6.0 in `package.json`.
 - **Verschoben in M16 (15.11.2026):** die `simVersion` einfrieren und die Kompatibilitätszusage aktivieren (E-25), den Hinweis vor 1.0 entfernen und die Versionsanzeige in den Einstellungen; die App bleibt bis zum Public Release eine Entwicklungsversion für den PO.
 - **Referenzen:** TS §4.6, §14.4, §15
 - **Abhängig von:** AP 6.4, AP 6.5, AP 3.5, AP 6.8b
@@ -1203,7 +1203,7 @@ Geplant am 15.11.2026 (E-37). Stufe 2 „Vollständiger Markt“ beginnt nach AP
 
 **Fachkonzept je Meilenstein:** Die Stories der Stufe 2 sind in PS §7.12 nur skizziert, die TS beschreibt die Erweiterungen in §6.10 als Skizze. Das erste AP von M8, M9 und M10 ist deshalb ein Fachkonzept. Es arbeitet die Stories des Meilensteins in PS §7 mit Akzeptanzkriterien und Priorität aus und schreibt die TS-Abschnitte mit Formeln, Beispieltabellen (Orakel der späteren Tests, `CLAUDE.md` §10) und Kalibrierungszielen. Die Entscheidungen legt es als Vorschlag in TS §16 und §3 an, und es bestätigt oder ändert den Schnitt der folgenden APs (Umfang, Abnahme mit benannten Tests, Abhängigkeiten). Ein Fachkonzept ändert keinen Code. Übergreifende Fragen entscheidet das Fachkonzept, das sie zuerst braucht, mit Blick auf die späteren Nutzer: AP 8.1 das Währungsmodell und die Konditionen zum Zeitpunkt t, AP 9.1 den Lebenszyklus von Instrumenten und den Steuerschritt zum Jahreswechsel. Bis zum jeweiligen Fachkonzept ist die Abnahme der übrigen APs eine Skizze.
 
-**Versionen und Kalibrierung:** Bis zum Public Release gelten die Regeln vor 1.0 (TS §15). Jede Modelländerung erhöht `SIM_VERSION` und sperrt bestehende Spieler. Wie oft `SCHEMA_VERSION` steigt und wie Modell-APs mit der Kalibrierungs-Suite umgehen, regeln die Vorschläge E-38 und E-39 (§3). Jeder Meilenstein hebt die App-Version mit seinem Abschluss-AP auf `0.<Meilenstein>.0`.
+**Versionen und Kalibrierung:** Bis zum Public Release gelten die Regeln vor 1.0 (TS §15). Jede Modelländerung erhöht `SIM_VERSION` und sperrt bestehende Spieler. Wie oft `SCHEMA_VERSION` steigt und wie Modell-APs mit der Kalibrierungs-Suite umgehen, regeln die Vorschläge E-38 und E-39 (§3). Jeder Meilenstein hebt die App-Version mit seinem Abschluss-AP auf `0.<Meilenstein>.0`. Das Abschluss-AP setzt die Version in `package.json`; ein Git-Tag entfällt, deployt wird mit dem nächsten Push auf `main` (PO, 19.11.2026).
 
 **Vorgaben aus dem Code** (Erkundung vom 15.11.2026; Details in den APs und in TS §6.10):
 
@@ -1340,7 +1340,8 @@ Jeder Push auf `main` deployt; jedes Teil-AP trägt deshalb seinen Versionssprun
 #### AP 7.9 – Abschluss M7 (Version 0.7.0)
 
 - **Umfang:** `package.json` auf 0.7.0; Abschlusstest über alle Ansichten; Lücken der axe-Prüfung schließen (Positionsdetail, `#/lab/tokens`); README nachziehen.
-- **Abnahme:** `e2e/accessibility.e2e.ts` über alle Hauptansichten in hell und dunkel, in beiden Sprachen und bei 360 px ohne ernste oder kritische Befunde; alle Teil-APs von AP 7.3 fertig; Version 0.7.0 deployt (Tag `v0.7.0` und Commit auf Anweisung).
+- **Abnahme:** `e2e/accessibility.e2e.ts` über alle Hauptansichten in hell und dunkel, in beiden Sprachen und bei 360 px ohne ernste oder kritische Befunde; alle Teil-APs von AP 7.3 fertig; Version 0.7.0 in `package.json`.
+- **Stand (19.11.2026):** fertig. Version 0.7.0 in `package.json`; `e2e/accessibility.e2e.ts` prüft alle Ansichten außerhalb und innerhalb des Spiels (mit `#/lab/tokens` und dem Positionsdetail) in hell und dunkel, auf Englisch und bei 360 px ohne ernste oder kritische Befunde; die beiden wackligen Tests vom 18.11.2026 warten auf die Projektion des Depots bzw. auf das erste Rendern der Order-Maske (Änderungsprotokoll). Deployt wird mit dem nächsten Push des PO auf `main`.
 - **Referenzen:** TS §14.4, §15
 - **Abhängig von:** AP 7.2, AP 7.3a–e, AP 7.4
 
@@ -1502,7 +1503,7 @@ Jeder Push auf `main` deployt; jedes Teil-AP trägt deshalb seinen Versionssprun
 #### AP 8.12 – Abschluss M8 (Version 0.8.0)
 
 - **Umfang:** `package.json` auf 0.8.0; Abschlusstest nach Checkliste der Muss-Stories von M8; `SCHEMA_VERSION` nach E-38; README nachziehen.
-- **Abnahme:** Alle APs von M8 sind fertig und alle Muss-Stories von M8 erfüllt (Zuordnung am Ende von §6). Der Selbsttest der Golden-Master-Prüfsummen ist in Chromium, Firefox und WebKit grün (J11). Version 0.8.0 ist deployt (Tag und Commit auf Anweisung).
+- **Abnahme:** Alle APs von M8 sind fertig und alle Muss-Stories von M8 erfüllt (Zuordnung am Ende von §6). Der Selbsttest der Golden-Master-Prüfsummen ist in Chromium, Firefox und WebKit grün (J11). Version 0.8.0 steht in `package.json`.
 - **Referenzen:** TS §4.6, §14.4, §15
 - **Abhängig von:** AP 8.6, AP 8.7b, AP 8.8, AP 8.9, AP 8.11
 
