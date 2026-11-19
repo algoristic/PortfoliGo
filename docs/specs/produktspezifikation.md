@@ -80,7 +80,7 @@ Es gibt kein „Game Over" und kein festes Spielziel. Motivation entsteht aus de
 - Die Spielzeit läuft in Ticks. Ein Tick entspricht einer Spielminute (E-02).
 - Der Anwender wählt die Geschwindigkeit – Echtzeit (1 s/s), 1 min/s, 10 min/s, 1 h/s, 2 h/s, 4 h/s, 1 d/s oder 1 w/s – und kann sie jederzeit ändern oder die Zeit anhalten.
 - Ist die App geschlossen, läuft die Zeit in Echtzeit weiter. Beim nächsten Öffnen wird die verstrichene Zeit nachberechnet. Dasselbe gilt, solange die App nicht sichtbar ist (z. B. Hintergrund-Tab); pro Spieler lässt sich stattdessen „im Hintergrund pausieren" einstellen. Außerdem lässt sich eine verborgene App mit der gewählten oder einer eigenen Geschwindigkeit weiterlaufen und nach einer Zeitspanne pausieren (E-35, AP 6.7). War das Spiel pausiert, bleibt es pausiert (E-02).
-- Börsen haben Handelszeiten. Orders lassen sich jederzeit erteilen und werden während der Handelszeit ausgeführt (E-18). Nachts und am Wochenende stehen Aktienkurse still. Banken buchen nur an Bankarbeitstagen (E-19).
+- Börsen haben Handelszeiten. Orders lassen sich jederzeit erteilen und werden während der Handelszeit ausgeführt (E-18). Nachts, am Wochenende und ab Stufe 2 an den Feiertagen ihrer Börse stehen Aktienkurse still. Banken buchen nur an Bankarbeitstagen (E-19).
 
 ### 4.4 Die simulierte Welt
 
@@ -244,13 +244,13 @@ Als Anwender möchte ich, dass das Spiel bei wichtigen Ereignissen anhält, dami
 **US-EK-01 – Monatliches Einkommen** · Stufe 1 · M
 Als Anwender möchte ich jeden Monat mein Gehalt erhalten, damit ich sparen und investieren kann.
 
-- Das Nettoeinkommen wird am letzten Bankarbeitstag des Monats auf dem Gehaltskonto gutgeschrieben (E-19).
+- Das Nettoeinkommen wird am letzten Bankarbeitstag des Monats auf dem Gehaltskonto gutgeschrieben (E-19). Ab Stufe 2 sind Feiertage keine Bankarbeitstage (US-MK-18); das Dezembergehalt kommt deshalb vor Silvester.
 - Die Buchung erscheint im Kontoauszug, z. B. „Gehalt April 2030".
 
 **US-EK-02 – Lebenshaltungskosten** · Stufe 1 · M
 Als Anwender möchte ich, dass monatlich realistisch schwankende Lebenshaltungskosten anfallen, damit mein Budget nicht trivial planbar ist.
 
-- Am ersten Bankarbeitstag des Monats (E-19) wird der Basisbetrag abgebucht, verändert um eine Schwankung von typischerweise ±5 % (maximal ±15 %).
+- Am ersten Bankarbeitstag des Monats (E-19; ab Stufe 2 ohne Feiertage, z. B. am 02.01. statt an Neujahr, US-MK-18) wird der Basisbetrag abgebucht, verändert um eine Schwankung von typischerweise ±5 % (maximal ±15 %).
 - Die Schwankung ist durch den Seed festgelegt: gleicher Seed, gleiche Beträge.
 
 **US-EK-03 – Monatsübersicht** · Stufe 1 · M
@@ -322,7 +322,7 @@ Als Anwender möchte ich, dass Zinsen und Gebühren gemäß den Konditionen gebu
 Als Anwender möchte ich regelmäßig einen festen Betrag automatisch zwischen meinen Konten überweisen, damit z. B. meine Sparpläne gedeckt sind, ohne dass ich jeden Monat von Hand überweise.
 
 - Angaben: Quellkonto, Zielkonto (zwei verschiedene offene eigene Konten), Betrag, Ausführungstag (1–28); Intervall monatlich.
-- Ausführung im Bank-Lauf um 06:00 am Ausführungstag bzw. am nächsten Bankarbeitstag, nach Gehalt, Zinsen, Lebenshaltung und Gebühren: Ein Dauerauftrag am Gehaltstag sieht das Gehalt schon.
+- Ausführung im Bank-Lauf um 06:00 am Ausführungstag bzw. am nächsten Bankarbeitstag, nach Gehalt, Zinsen, Lebenshaltung und Gebühren: Ein Dauerauftrag am Gehaltstag sieht das Gehalt schon. Ab Stufe 2 verschieben auch Feiertage des Bankkalenders die Ausführung (US-MK-18).
 - Reicht der verfügbare Betrag des Quellkontos nicht, fällt die Ausführung aus und der Anwender wird benachrichtigt; es gibt keine Teilüberweisung.
 - Daueraufträge lassen sich auf der Kontenseite anlegen, ändern, pausieren und löschen (E-21).
 - Ein Konto, das Quell- oder Zielkonto eines Dauerauftrags ist, lässt sich erst schließen, wenn der Dauerauftrag gelöscht ist. Mehrere Daueraufträge am selben Tag laufen in der Reihenfolge, in der sie angelegt wurden; ein Verwendungszweck ist optional.
@@ -368,6 +368,20 @@ Als Anwender möchte ich anstehende Dividenden meiner Werte sehen, damit ich Aus
 
 - Kalender mit Ex-Tagen und Zahltagen für Depot und Watchlist.
 - Nur angekündigte Termine (Aktien rund vier Wochen vor dem Ex-Tag); bei gehaltenen Werten mit dem erwarteten Betrag.
+
+**US-MK-18 – Börsenfeiertage und Direkthandel** · Stufe 2 · M
+Als Anwender möchte ich, dass Börsen an ihren Feiertagen geschlossen sind und Banken an Feiertagen nicht buchen, damit sich der Kalender wie ein echtes Börsen- und Finanzjahr anfühlt und ich Käufe, Sparpläne und Überweisungen danach planen kann.
+
+- Jede Börse schließt an den Feiertagen ihres Landes bzw. der realen Hauptbörse (Paris und Amsterdam wie Euronext): feste Feiertage, Feiertage um Ostern und Feiertage wie „3. Montag im Januar“, mit Ersatztagen für Feiertage am Wochenende, wo die reale Börse sie kennt. Mond- und Sonnenkalender (z. B. Chinesisches Neujahr, Diwali), einmalige Schließungen und verkürzte Handelstage gibt es nicht; ein Feiertag gilt ganztägig (TS §3.3, E-44).
+- Der Kalender ist für alle Spieler gleich und hängt nicht vom Seed ab.
+- An einem Feiertag ihrer Börse stehen die Kurse ihrer Aktien und ETFs still, wie am Wochenende. Der Markt läuft weiter: Börsen anderer Länder handeln, Indizes und indikative Werte bewegen sich, und am nächsten Handelstag eröffnet die Börse mit der aufgelaufenen Bewegung (Kurslücke).
+- Börsenstatus und Börsenliste (US-ZT-01) zeigen an einem Feiertag „geschlossen“ und die nächste Öffnung nach dem Feiertag; der Status nennt „Feiertag“ als Grund (S), mit dem Namen des Feiertags (K).
+- Orders werden an Feiertagen nicht ausgeführt; „bis Tagesende“ gilt bis zum Schluss des nächsten Handelstags der Börse. Sparpläne kaufen zur Eröffnung am nächsten Handelstag. „Nächste Börsenöffnung“ im Sprungdialog (US-ZT-05) überspringt Feiertage.
+- Dividenden haben ihren Ex-Tag nur an Handelstagen der Börse und werden 20 Handelstage vorher angekündigt (US-MK-06); der Zahltag ist der zweite Bankarbeitstag nach dem Ex-Tag.
+- Bankarbeitstage sind Montag bis Freitag ohne die bundeseinheitlichen Feiertage in Deutschland und ohne Heiligabend und Silvester (E-45). Gehalt (letzter), Lebenshaltung, Kontoführung, Zinsen und Gebühren (erster Bankarbeitstag des Monats) sowie Daueraufträge (nächster Bankarbeitstag) richten sich danach, nicht nach den Börsen. Ein Dauerauftrag, der einen Sparplan decken soll, kann deshalb nach dessen Termin laufen, wenn nur die Bank Feiertag hat.
+- „Demnächst“ auf der Übersicht (§10.3) und der Dividendenkalender zeigen die verschobenen Termine.
+- Eine Übersicht der kommenden Feiertage je Börse für die nächsten zwölf Monate gibt es in der Börsenliste (K).
+- **Direkthandel:** siehe AP 8.8 (Akzeptanzkriterien folgen im Teil „Direkthandel“ des Fachkonzepts AP 8.1).
 
 ### 7.6 Handel (HD)
 
@@ -636,7 +650,7 @@ Als Anwender möchte ich die App auf Deutsch oder Englisch nutzen.
 | US-MK-15 | Fundamentaldaten und Quartalszahlen (KGV, Gewinnwachstum, Berichtstermine)                                                   | 2     |
 | US-MK-16 | Unternehmensereignisse: Aktiensplits, Übernahmen, Insolvenzen, Börsengänge, Indexanpassungen                                 | 2     |
 | US-MK-17 | Fremdwährungen: Instrumente in USD, JPY usw., Wechselkurse und Devisenkosten                                                 | 2     |
-| US-MK-18 | Börsenfeiertage und Direkthandel mit erweiterten Handelszeiten                                                               | 2     |
+| US-MK-18 | Börsenfeiertage und Direkthandel: ausgearbeitet in [7.5](#75-märkte-und-instrumente-mk) (Direkthandel folgt)                 | 2     |
 | US-EK-04 | Einkommen und Kosten wachsen mit der Inflation: Gehalt und Lebenshaltung folgen den Verbraucherpreisen                       | 2     |
 | US-BK-11 | Festgeld und Neukunden-Lockzinsen                                                                                            | 2     |
 | US-BK-13 | Tagesgeld- und Dispozinsen folgen dem Leitzins                                                                               | 2     |
