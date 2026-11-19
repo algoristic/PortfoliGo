@@ -333,6 +333,7 @@ Weitere verworfene Alternativen:
 
 - Orders können jederzeit erteilt werden; ausgeführt werden sie während der Handelszeit (§7.5). So bleibt „jederzeit verkaufen" aus der Ideensammlung erhalten – unter realen Marktbedingungen.
 - Banken buchen an Bankarbeitstagen in einem **Bank-Lauf um 06:00 Uhr** Spielzeit (E-19).
+- **Direkthandel** (ab AP 8.8, §7.13): Montag bis Freitag 08:00–23:00 an Handelstagen des Kalenders `de`, für alle Aktien und ETFs in Euro; außerhalb der Sitzung der Heimatbörse mit indikativen Kursen.
 
 **Börsenfeiertage (Fachkonzept AP 8.1, Umsetzung AP 8.2 und AP 8.3; Vorschlag E-44):** Jede Börse hat einen Kalender (`Exchange.calendar` in der Taxonomie, fest und unabhängig vom Seed). Die fiktiven Börsen in realen Ländern (E-13) folgen der realen Hauptbörse ihres Landes; Paris und Amsterdam teilen den Kalender von Euronext. Die Regeln sind realistisch, aber bewusst vereinfacht:
 
@@ -773,6 +774,15 @@ Die Konditionen werden innerhalb typischer Spannen gezogen (E-17):
 | Neobroker             | –                                           | –       | Verrechnungskonto 1–2,5 % | kostenlos                        | 0–1 €                                         | kostenlos | Market Maker (Spread-Aufschlag), Bruchstücke |
 
 Die Standardwelt hat je zwei Filial- und Direktbanken sowie je ein bis zwei Online- und Neobroker. Beträge werden auf 10 Cent, Sätze auf 0,05 Prozentpunkte gerundet (Depotgebühr und Spread-Aufschlag auf 0,01, Überziehungsaufschlag auf 0,5 Prozentpunkte). Die Hausbank ist immer eine Filialbank (E-14); die Welt kennzeichnet sie nicht. Beim Anlegen des Spielers wird die erste Bank vom Typ `branch` in Weltreihenfolge Hausbank (entschieden 12.11.2026). Brokertypen führen nur Depots mit Verrechnungskonto. Börsenentgelt je Order: Filialbank 1,50–3 €, Onlinebroker 1,50–2,50 €. Jede Bank hat zusätzlich einen Sollzins für negative Verrechnungskonten (§7.4): Filialbank 9–13 %, Direktbank 7–10 %, Onlinebroker 8–11 %, Neobroker 7–10 %.
+
+**Konditionen ab M8 (Fachkonzept AP 8.1):** Die Welt zieht je Bank zusätzlich eine Zinspolitik für Tagesgeld, Verrechnungskonto und Dispo, bei Direktbanken einen Lockzins für Neukunden (§7.10), bei Filial- und Direktbanken Festgeld (§7.11), Devisenkosten (§7.12) und die Handelsplätze mit dem Aufschlag des Direkthandels (§7.13), jeweils aus einem eigenen Strom nach den bisherigen Ziehungen. Die bisherigen Sätze gelten bei einem Leitzins von 2,50 %; Engine und Vorschauen lesen alle Konditionen über `termsAt` (§7.10).
+
+| Typ          | Zinsen am Leitzins (Weitergabe)               | Lockzins                                            | Festgeld (zur Kurve) | Devisenkosten | Handelsplätze                     |
+| ------------ | --------------------------------------------- | --------------------------------------------------- | -------------------- | ------------- | --------------------------------- |
+| Filialbank   | Tagesgeld 0,10–0,30, Dispo und Soll 0,40–0,60 | –                                                   | −0,80 bis −0,30 Pp.  | 0,40–0,60 %   | Börse                             |
+| Direktbank   | Tagesgeld 0,60–0,90, Dispo und Soll 0,40–0,60 | +0,50–1,25 Pp., 3–6 Monate, 50.000 € oder 100.000 € | −0,30 bis +0,10 Pp.  | 0,20–0,30 %   | Börse, Direkthandel (0,05–0,15 %) |
+| Onlinebroker | Soll 0,40–0,60                                | –                                                   | –                    | 0,10–0,25 %   | Börse, Direkthandel (0,05–0,15 %) |
+| Neobroker    | Verrechnungskonto 0,80–1,00, Soll 0,40–0,60   | –                                                   | –                    | – (nur Euro)  | Direkthandel (0,05–0,20 %)        |
 
 ### 5.8 Große Welt (N2, optional)
 
@@ -1422,7 +1432,7 @@ Die neuen Ziele der Wechselkurse liegen ab AP 8.5 im Band, die der Zinsempfindli
 ### 6.10 Erweiterungen ab Stufe 2 (Skizze)
 
 - **Gemeinsames Schema:** Neue Assetklassen folgen dem Brückenmodell (§6.1) – Tagesschritt mit Stützpunkten, Minutenwerte per Brücke nur bei Bedarf. Für Prozesse mit Rückkehr zum Mittelwert (Rohstoffe, Zinsen) gibt es die Brücke des Ornstein-Uhlenbeck-Prozesses. Aktive Fonds haben wie in der Realität nur einen Tageskurs (NAV), Anleihen bewerten sich aus der Zinskurve, CFDs sind ein Hebel auf einen Basiswert ohne eigenen Kursprozess. So wächst die Rechenzeit im Spiel kaum mit der Zahl der Instrumente (§3.2).
-- **Zinsen und Inflation:** ausgearbeitet im Fachkonzept AP 8.1 – Verbraucherpreise, Leitzins, Zinskurve und Kreditaufschläge in §6.11, Zinsfaktor für Aktien in §6.13. Abweichend von dieser Skizze ist nur das Niveau der Kurve ein Ornstein-Uhlenbeck-Prozess; die Steigung folgt aus Niveau und Leitzins (§6.11). Wirkung auf Bankzinsen, Festgeld, Haushalt und Realwerte: §7 (AP 8.9–8.11), auf Anleihen: AP 9.3.
+- **Zinsen und Inflation:** ausgearbeitet im Fachkonzept AP 8.1 – Verbraucherpreise, Leitzins, Zinskurve und Kreditaufschläge in §6.11, Zinsfaktor für Aktien in §6.13. Abweichend von dieser Skizze ist nur das Niveau der Kurve ein Ornstein-Uhlenbeck-Prozess; die Steigung folgt aus Niveau und Leitzins (§6.11). Wirkung auf Bankzinsen und Lockzinsen: §7.10 (AP 8.10), Festgeld: §7.11 (AP 8.11), Haushalt und Realwerte: §7.14 (AP 8.9), auf Anleihen: AP 9.3.
 - **Anleihen:** Kupon, Laufzeit, Rating, Stückzinsen, Rückzahlung zu 100 %, Ausfälle bei schlechtem Rating.
 - **Rohstoffe:** mean-reverting Log-Preis (Schwartz-Ein-Faktor-Modell) mit Sprüngen und Saisonalität. Kopplung an Branchen: Öl wirkt positiv auf Öl & Gas, negativ auf Fluggesellschaften. Gold ist in Krisen ein sicherer Hafen (negative Ladung auf den Weltfaktor).
 - **Physische Edelmetalle:** Händler mit Ankaufs- und Verkaufskurs (Spanne 2–8 %), Haltefrist ein Jahr für Steuerfreiheit.
@@ -1440,7 +1450,7 @@ Die neuen Ziele der Wechselkurse liegen ab AP 8.5 im Band, die der Zinsempfindli
   - **Hauptbuch:** Es kennt nur Buchungen mit Geld (§7.2); Ausbuchung, Split und Depotübertrag brauchen geldlose Buchungen (AP 9.2b).
   - **Instrumente ohne Börsenzeit:** Aktive Fonds (NAV) und physische Edelmetalle (Händler) brauchen eigene Abläufe statt Orders mit Handelszeit (AP 9.9, AP 9.10b).
   - **Steuern:** Heute wird jede Steuer beim Ereignis einbehalten (§7.7). Edelmetalle, Freistellungsaufträge je Bank und Reste der Quellensteuer brauchen einen Steuerschritt zum Jahreswechsel (AP 9.9, AP 10.13, AP 10.14).
-  - **Konditionen zum Zeitpunkt t:** Bankkonditionen sind heute Teil der Welt und werden in Engine und UI-Vorschauen gelesen; zeitabhängige Zinsen laufen über eine gemeinsame Funktion (AP 8.10).
+  - **Konditionen zum Zeitpunkt t:** Bankkonditionen sind heute Teil der Welt und werden in Engine und UI-Vorschauen gelesen; zeitabhängige Zinsen laufen über eine gemeinsame Funktion `termsAt` (ausgearbeitet in §7.10, AP 8.10).
 
 ### 6.11 Makromodell: Preise, Leitzins, Zinskurve (Fachkonzept AP 8.1, Umsetzung AP 8.4; Vorschlag E-47)
 
@@ -2051,7 +2061,7 @@ Beispielbanken (Spezifikationstest `bank-comparison-logic.spec.ts`): b1 „Isane
 
 Die Konditionen in Worten (z. B. „0,00 € ab 700,00 € Geldeingang, sonst 5,40 € im Monat“, „0,25 %, mind. 10,00 €, max. 60,00 € + 3,00 € Börsenentgelt“) sind reine Formatierung in `banking/ui/labels/bank-conditions-text.ts`.
 
-**Zinsen** (`banking/domain/interest-logic.ts`, AP 3.1): taggenau nach act/365. Der Tageszins ist Tagessaldo × Satz ÷ 365 in Cent, ungerundet, auch im Schaltjahr; ein volles Schaltjahr bringt deshalb 366/365 des Jahreszinses. Habenzinsen sind positiv, Soll- und Dispozinsen negativ. Die Engine summiert die Tageszinsen in Tagesreihenfolge und rundet erst beim Buchen kaufmännisch auf Cent (`bookedInterest`).
+**Zinsen** (`banking/domain/interest-logic.ts`, AP 3.1): taggenau nach act/365. Der Tageszins ist Tagessaldo × Satz ÷ 365 in Cent, ungerundet, auch im Schaltjahr; ein volles Schaltjahr bringt deshalb 366/365 des Jahreszinses. Habenzinsen sind positiv, Soll- und Dispozinsen negativ. Die Engine summiert die Tageszinsen in Tagesreihenfolge und rundet erst beim Buchen kaufmännisch auf Cent (`bookedInterest`). Ab AP 8.10 ist der Satz der Satz des Tags nach der Zinspolitik der Bank (§7.10), Festgeld hat einen festen Satz (§7.11).
 
 - **Verrechnungskonto:** positive Tagessalden zu `clearingAccountRate`, negative zu `clearingAccountDebitRate`. Tagesgeld: `rate` auf positive Salden.
 - **Girokonto (Dispo):** Girokonten haben keinen Habenzins. Ein negativer Saldo wird bis zum Limit (Dispo-Rahmen des Kontos, §7.4) zu `rate` verzinst, der Teil darüber zu `rate + toleratedSurcharge` (geduldete Überziehung). Ohne Rahmen (Limit 0) gilt der erhöhte Satz auf den ganzen negativen Saldo. An der Limitgrenze ist der Tageszins stetig.
@@ -2184,7 +2194,7 @@ _Termine_ (`bank-run-logic.ts`): `bankRunPlan(tick)` nennt die Schritte des Bank
 8. **Sollzinsen** (`debit-interest`, Verrechnungskonten) für den Vormonat.
 9. **Daueraufträge** (`standing-orders`, seit AP 5.6a) an jedem Bankarbeitstag, an dem einer fällig ist, nach allen Gutschriften und Lastschriften (oben).
 
-Die Nummern entsprechen der Reihenfolge von `BANK_RUN_STEPS`.
+Die Nummern entsprechen der Reihenfolge von `BANK_RUN_STEPS`. Ab AP 8.11 folgt auf die Habenzinsen der Schritt `term-deposits` (Gutschrift am Jahrestag und Fälligkeit von Festgeld, §7.11); ab AP 8.9 kommen Gehalt und Lebenshaltung aus den angepassten Beträgen (§7.14).
 
 Innerhalb eines Schritts gilt die Eröffnungsreihenfolge der Konten. Monatswerte, Steuer und Lebenshaltung gehören zum Monat bzw. Jahr der Buchung: Die Zinsen für Dezember, gebucht am ersten Bankarbeitstag im Januar, zählen steuerlich zum neuen Jahr (Zuflussprinzip).
 
@@ -2394,6 +2404,7 @@ stateDiagram-v2
 | Stop S           | wenn Brief ≥ S: als Market            | wenn Geld ≤ S: als Market            |
 | Stop-Limit S / L | wenn Brief ≥ S: als Limit L           | wenn Geld ≤ S: als Limit L           |
 
+- **Ab M8:** Orders in Fremdwährung (Umrechnung, Devisenkosten, Reservierung) in §7.12, Handelsplatz Direkthandel in §7.13.
 - Geprüft wird pro Tick für jede offene Order eines Instruments mit offener Börse, zum Kurs `priceAt` des Ticks (§6.1). Bei Handelsbeginn gilt sofort der Eröffnungskurs mit Lücke – ein Stop-Loss kann so realistisch unter dem Stopkurs ausgeführt werden.
 - Keine Teilausführungen, keine Marktwirkung, unbegrenzte Liquidität.
 - **Deckung:** Eine Kauforder reserviert den geschätzten Betrag inklusive Kosten, bei Market- und Stop-Orders mit 5 % Puffer. Fehlt bei Ausführung die Deckung, wird die Order abgelehnt. Die Reservierung endet mit Ausführung, Storno oder Ablauf.
@@ -2598,8 +2609,8 @@ year end: net_y < 0 → lossCarryForward_y = net_y; der Sparerpauschbetrag verf�
 ```
 
 - Gebucht wird auf dem Konto des auslösenden Ereignisses (z. B. dem Verrechnungskonto des Depots).
-- **Vereinfachungen:** ein Verlusttopf für alle Erträge, bankübergreifend, kein Solidaritätszuschlag und keine Kirchensteuer, keine Teilfreistellung oder Vorabpauschale, keine Quellensteuer. Ausbau in Stufe 2.
-- **Zinsgutschrift als Vereinfachung (AP 7.3b, 7.1c-12):** Zinsen werden am ersten Bankarbeitstag nach der Periode gutgeschrieben (§7.4), nicht wie bei realen Banken zum Periodenende. Steuerlich zählen die Zinsen für Dezember deshalb zum neuen Jahr (Zuflussprinzip), die Zinsen eines Jahres verschieben sich um einen Monat. Das ist intern stimmig und kaum spürbar; die Buchung zum Periodenende kommt mit dem Zinsmodell in M8.
+- **Vereinfachungen:** ein Verlusttopf für alle Erträge, bankübergreifend, kein Solidaritätszuschlag und keine Kirchensteuer, keine Teilfreistellung oder Vorabpauschale, keine Quellensteuer. Ausbau in Stufe 2. Ab M8 zählen Festgeldzinsen als Zinsen (§7.11); Gewinne und Ausschüttungen in Fremdwährung gehen in Euro ein (§7.12).
+- **Zinsgutschrift als Vereinfachung (AP 7.3b, 7.1c-12):** Zinsen werden am ersten Bankarbeitstag nach der Periode gutgeschrieben (§7.4), nicht wie bei realen Banken zum Periodenende. Steuerlich zählen die Zinsen für Dezember deshalb zum neuen Jahr (Zuflussprinzip), die Zinsen eines Jahres verschieben sich um einen Monat. Das ist intern stimmig und kaum spürbar. Das Fachkonzept AP 8.1 schlägt vor, es auch in M8 dabei zu belassen (Frage an den PO, §7.10): Eine Buchung zum Periodenende müsste im Monatsabschluss um 00:00 vor dem Jahresabschluss buchen und änderte Bank-Lauf, Abschlussvorschau, `openInterestPeriod` und „Demnächst“, ohne dass Spieler mehr sähen als eine Verschiebung um einen Monat.
 - **Reihenfolge der Umsetzung:** Habenzinsen werden schon in AP 3.2 gebucht (§7.4). Der Kern dieses Abschnitts – Jahreszustand und Berechnung in `taxes/domain` – entsteht deshalb dort. AP 5.3 ergänzt Verkäufe, Dividenden, den Verlustvortrag über den Jahreswechsel, die Jahreshistorie und die Projektion.
 
 **Umsetzung (AP 3.2, `taxes/domain/tax-logic.ts`):** Die Engine führt einen Jahreszustand `TaxYear`: Jahr, Verlustvortrag aus dem Vorjahr (≤ 0), Summe der steuerpflichtigen Erträge des Jahres und bisher einbehaltene Steuer (Einbehalte − Erstattungen, stets `due_y`). `assessTaxableIncome(zustand, betrag)` verarbeitet ein Ereignis (Verluste negativ) und liefert den neuen Zustand und `delta`; `taxTransactionType(delta)` nennt den Buchungstyp (`null` bei 0, dann wird nichts gebucht). `closeTaxYear` (Jahresabschluss, 00:00 des 1. Januar) eröffnet das Folgejahr mit `min(0, net_y)` als Verlustvortrag. Konstanten `CAPITAL_INCOME_TAX_RATE` (0,25) und `SAVER_ALLOWANCE` (1.000 €). In M3 sind Habenzinsen die einzigen Ereignisse. Soll- und Dispozinsen sind nicht abzugsfähig und erreichen die Steuer nie. Ein Einbehalt ist nie größer als der auslösende Ertrag, eine Erstattung nie größer als der auslösende Verlust.
@@ -2704,6 +2715,7 @@ Nur Gewinne, der Pauschbetrag verfällt: 2030 Verkauf +600,00 € und Ausschütt
 - **Veränderung heute** (US-PF-01, entschieden 13.11.2026): ohne externe Zuflüsse (Einkommen, Lebenshaltung); sie zeigt also Markt, Zinsen, Kosten und Steuern.
 - **Benchmark:** Ein Schattenportfolio kauft Einheiten des Weltindex (Performanceindex): Startkapital und jeden Netto-Zufluss zum Tagesschlusskurs, ohne Kosten und Steuern.
 - **Zweite Vergleichsgröße** (US-PF-05, E-28, entschieden 13.11.2026): das Vermögen, wenn Startkapital und alle Zuflüsse auf dem Gehaltskonto geblieben wären.
+- **Ab M8:** Bewertung von Positionen in Fremdwährung in Euro (§7.12), reale Werte und Renditen in Preisen des Spielbeginns (§7.14).
 
 **Festlegungen (AP 5.7, 14.11.2026; Regeln in `portfolio/domain/performance-logic.ts`, Modelle in `models/performance.model.ts`, Test `performance-logic.spec.ts`):**
 
@@ -2787,6 +2799,279 @@ Beispiel: Depot A hält nach dem Verkauf von 4 Stück aus der Teilverkaufstabell
 | Depot A     | 11    | 1.127,80 €         | 102,527… €    | 1.210,00 € | +82,20 € | +44,80 €   | 0,00 €         | A 101,30 €, A 104,00 €             |
 | Alle Depots | 13    | 1.337,80 €         | 102,907… €    | 1.430,00 € | +92,20 € | +44,80 €   | 3,00 €         | A 101,30 €, B 105,00 €, A 104,00 € |
 
+### 7.10 Konditionen zum Zeitpunkt t und Bankzinsen am Leitzins (Fachkonzept AP 8.1, Umsetzung AP 8.10; Vorschlag E-52, E-53, E-54)
+
+Bis M7 sind die Konditionen Teil der Welt und fest (§5.7, §7.3). Ab AP 8.10 hängen Haben-, Soll- und Dispozinsen vom Leitzins ab, ab AP 8.11 Festgeldsätze von der Zinskurve (§6.11). Gebühren bleiben in M8 fest.
+
+**Eine Funktion für Engine und Vorschauen (Vorschlag E-52):**
+
+```ts
+termsAt(bank: Bank, rates: RatePort, day: number, customer?: CustomerAtBank): BankTermsAt
+```
+
+- **Eingaben:** `bank` mit den Weltkonditionen (`BankConditions` mit den neuen Feldern dieses Abschnitts und von §7.11–§7.13); `rates`, ein Port auf das Makromodell mit dem Leitzins je Tag (`policyRateBp(tag)`, der ab 00:00 des Tags gilt, §6.11) und der Kurve (`curve(tag, τ)`); `day`, der Tag, für den die Sätze gelten; `customer`, die Konten des Spielers bei der Bank (für „Neukunde“, unten; ohne Angabe gilt der Spieler als Neukunde).
+- **Ergebnis** (`BankTermsAt`, ganze Basispunkte): Regelsatz Tagesgeld, Lockzinsangebot mit Satz, Dauer, Höchstbetrag und `eligible`, Haben- und Sollzins des Verrechnungskontos, Dispozins und Satz der geduldeten Überziehung (Dispozins + `toleratedSurcharge`), Festgeldsätze je Laufzeit (§7.11). Gebühren, Devisenkosten und Handelsplätze gibt sie unverändert aus der Welt weiter, damit alle Leser dieselbe Quelle haben.
+- **Ort:** `banking/domain/terms-logic.ts`, rein und framework-frei. Die Engine ruft sie in der Zinsabgrenzung, bei Eröffnung von Tagesgeld und Festgeld, für Benachrichtigungen und für „Demnächst“ auf; der Worker beantwortet damit die Abfrage `bankTerms` (§8.2) für Bankenvergleich, „Konto eröffnen“ und Kontokarte. Die UI rechnet die Sätze nicht selbst, weil sie das Makromodell nicht kennt. Die Systeme der Engine (`BankingSystem`, `BankCommands`, `OrderSystem`, `SavingsPlanSystem`, `upcoming-inputs.ts`) kopieren die Konditionen nicht mehr im Konstruktor, sondern lesen die Banken der Welt und rufen `termsAt` (Hinweis AP 8.10).
+- **Was am Konto steht:** Sätze, die bei Abschluss feststehen (Lockzins, Festgeld), legt die Engine am Konto im Spielerzustand ab; `termsAt` liefert nur das Angebot zum Tag.
+- **Spätere Nutzer:** Fonds (AP 9.10b) bekommen Rabatt auf den Ausgabeaufschlag und Annahmeschluss als weiteres Feld der Weltkonditionen und lesen sie über dieselbe Funktion. Sollen Gebühren später mit der Inflation steigen, bekommt `rates` den Preisindex (§6.11) und `termsAt` passt die Pauschalen an; die Aufrufer ändern sich nicht. **In M8 bleiben Gebühren nominal (Vorschlag E-52):** Banken ändern Preise selten und sprunghaft, und eine Anpassung je Jahr änderte Kostenvorschau, Bankenvergleich und alle Gebührentabellen; der Sparerpauschbetrag ist ein gesetzlicher Betrag und bleibt ebenfalls (§7.14).
+
+**Zinspolitik je Bank (Vorschlag E-53):** Jede Bank hat je Produkt (Tagesgeld, Verrechnungskonto Haben, Verrechnungskonto Soll, Dispo) eine Zinspolitik `RatePolicy { baseBp, passThrough, fastDays, slowDays }`:
+
+```text
+Bezug_Haben(d) = min { Leitzins(s) : d − slow ≤ s ≤ d − fast }        Senkung nach fast, Erhöhung nach slow Tagen
+Bezug_Soll(d)  = max { Leitzins(s) : d − slow ≤ s ≤ d − fast }        Erhöhung nach fast, Senkung nach slow Tagen
+Satz(d)        = max(0, 5 · rund((base + b · (Bezug(d) − 250)) / 5))   ganze bp, Raster 0,05 Pp., kaufmännisch
+```
+
+- `d`, `s` sind Kalendertage; `Leitzins(s)` ist der Satz, der am Tag `s` gilt (er ändert sich nur um 00:00, §6.11), vor der Epoche der Startsatz. Weil der Leitzins eine Treppe ist, ist das Extremum über das Fenster das Extremum aus dem Wert am Fensteranfang und den Änderungen im Fenster.
+- `base` ist der Satz der Welt bei einem Leitzins von 2,50 % (Gleichgewicht, §6.11), also der heute gezogene Satz (§5.7); `b` (`passThrough`) die Weitergabequote. Die Asymmetrie ist bewusst: Banken geben Erhöhungen beim Haben spät und Senkungen früh weiter, beim Soll umgekehrt. Eine Erhöhung, die schon vor Ablauf von `slow` zurückgenommen wird, erreicht das Haben nie.
+- **Untergrenze 0** für alle Sätze: Negativzinsen für Privatkunden gab es real nur als Verwahrentgelt auf große Guthaben (2020–2022); das bildet das Spiel nicht ab. Girokonten haben weiter keinen Habenzins.
+- **Spannen der Welt** (Vorschlag; gezogen aus dem neuen Strom `world/banks/rates` in Bankreihenfolge, die bisherigen Ziehungen der Banken bleiben gleich, `worldChecksum` ändert sich durch die neuen Felder; Verzögerungen in Wochen):
+
+  | Produkt                        | Filialbank        | Direktbank       | Onlinebroker     | Neobroker        |
+  | ------------------------------ | ----------------- | ---------------- | ---------------- | ---------------- |
+  | Tagesgeld `b`                  | 0,10–0,30         | 0,60–0,90        | –                | –                |
+  | Tagesgeld `fast` / `slow`      | 2 / 4–8 Wochen    | 1 / 3–5 Wochen   | –                | –                |
+  | Verrechnungskonto Haben `b`    | 0 (Satz bleibt 0) | 0                | 0                | 0,80–1,00        |
+  | Verrechnungskonto Haben Wochen | –                 | –                | –                | 1 / 2–4          |
+  | Dispo und Sollzins `b`         | 0,40–0,60         | 0,40–0,60        | 0,40–0,60        | 0,40–0,60        |
+  | Dispo und Sollzins `fast/slow` | 0–1 / 6–12 Wochen | 0–1 / 4–8 Wochen | 0–1 / 4–8 Wochen | 0–1 / 4–8 Wochen |
+
+  `b` auf 0,05 gerundet. Plausibel: Bei einem Leitzins von 4,50 % zahlt eine Direktbank mit 2,30 % und `b` 0,8 dann 3,90 % auf Tagesgeld, eine Filialbank mit 0,25 % und 0,2 rund 0,65 %; ein Dispo von 9,45 % steigt bei `b` 0,5 auf 10,45 %, bei −0,50 % sinkt er auf 7,95 % (real 2021 rund 9,7 % bei Einlagesatz −0,50 %, 2023 rund 11,6 % bei 4 %).
+
+- **Zinsabgrenzung:** Der Tageszins eines Tags `d` rechnet mit `termsAt(bank, rates, d)`, dem Satz des abgelaufenen Tags. Hinweis AP 8.10: `#dayChange` führt den Markt-Tagesschritt für den neuen Tag vor der Abgrenzung des Vortags aus; die Abgrenzung darf deshalb nicht den Satz des neuen Tags lesen. Auch der Kontoabschluss (`settlement`) rechnet je Tag mit dessen Satz.
+- **Benachrichtigung:** Der Tageswechsel vergleicht für jede Bank, bei der der Spieler ein offenes Konto des Produkts hat, den Satz des neuen Tags mit dem des abgelaufenen; ändert er sich, entsteht das Ereignis `interest-rate-changed` (Bank, Produkt, alter und neuer Satz) und die gleichnamige Benachrichtigung (§12). Lockzins und Festgeld ändern sich nicht und melden nichts.
+- **„Demnächst“ (§8.1):** Zinsänderungen im Fenster, deren Eingaben feststehen. Für Tage nach jetzt gilt der bekannte Leitzins (einschließlich einer schon bekannt gegebenen Entscheidung mit `pendingFrom`); eine Änderung am Tag `d` wird nur gezeigt, wenn `d − fast` vor der frühesten noch unbekannten Wirkung liegt (dem Freitag nach der nächsten Sitzung, die noch nicht entschieden hat). Dann kann keine spätere Entscheidung sie noch ändern, und „Demnächst“ verrät nichts, was nicht schon bekannt ist.
+
+_Beispiele Zinspolitik_ (Skript zu AP 8.1; Leitzins 2,50 %, Sitzungen 2030 nach §6.11: Do 13.06. +25 bp wirksam ab Fr 14.06., Do 19.09. +50 bp ab Fr 20.09., Do 31.10. −25 bp ab Fr 01.11.; Test `terms-logic.spec.ts`):
+
+| Produkt                    | `base` | `b` | `fast` / `slow` | nach +25 bp (14.06.) | nach +50 bp (20.09.) | nach −25 bp (01.11.) |
+| -------------------------- | ------ | --- | --------------- | -------------------- | -------------------- | -------------------- |
+| Tagesgeld Direktbank       | 2,30 % | 0,8 | 7 / 28 Tage     | Fr 12.07.: 2,50 %    | Fr 18.10.: 2,90 %    | Fr 08.11.: 2,70 %    |
+| Tagesgeld Filialbank       | 0,25 % | 0,2 | 14 / 56 Tage    | Fr 09.08.: 0,30 %    | – (nie 0,40 %)       | Fr 15.11.: 0,35 %    |
+| Verrechnung Neobroker      | 2,00 % | 0,9 | 7 / 21 Tage     | Fr 05.07.: 2,25 %    | Fr 11.10.: 2,70 %    | Fr 08.11.: 2,45 %    |
+| Dispo Direktbank           | 9,45 % | 0,5 | 0 / 42 Tage     | Fr 14.06.: 9,60 %    | Fr 20.09.: 9,85 %    | Fr 13.12.: 9,70 %    |
+| Sollzins Verrechnung Neob. | 8,50 % | 0,5 | 7 / 56 Tage     | Fr 21.06.: 8,65 %    | Fr 27.09.: 8,90 %    | Fr 27.12.: 8,75 %    |
+
+Die Filialbank gibt die Anhebung auf 3,25 % nie weiter: Am 15.11. (20.09. + 56 Tage) liegt die Senkung vom 01.11. schon 14 Tage zurück, das Minimum des Fensters ist 3,00 %. Der Sollzins des Neobrokers bleibt bis zum 27.12. bei 8,90 %, weil das Fenster bis dahin Tage mit 3,25 % enthält.
+
+| `base` | `b` | Bezug   | roh      | Satz   | Fall                                   |
+| ------ | --- | ------- | -------- | ------ | -------------------------------------- |
+| 9,45 % | 0,5 | 2,75 %  | 957,5 bp | 9,60 % | halber Rasterschritt vom Nullpunkt weg |
+| 9,45 % | 0,5 | 3,25 %  | 982,5 bp | 9,85 % |                                        |
+| 1,72 % | 0,8 | 2,75 %  | 192 bp   | 1,90 % | auf 0,05 Pp. gerundet                  |
+| 2,30 % | 0,8 | 0,00 %  | 30 bp    | 0,30 % |                                        |
+| 2,30 % | 0,8 | −0,50 % | −10 bp   | 0,00 % | Untergrenze                            |
+| 0,25 % | 0,2 | −0,50 % | −35 bp   | 0,00 % | Untergrenze                            |
+| 9,45 % | 0,5 | −0,50 % | 795 bp   | 7,95 % |                                        |
+| 2,30 % | 0,8 | 4,50 %  | 390 bp   | 3,90 % |                                        |
+
+Zinsen mit dem Satz des abgelaufenen Tags: 10.000 € Tagesgeld bei der Direktbank im Juli 2030 – 1. bis 11.07. zu 2,30 % (63,013699 Cent je Tag), ab 12.07. zu 2,50 % (68,493151 Cent): 2.063,013699 Cent, gebucht 20,63 €. Die Abgrenzung des 11.07. (Tageswechsel Fr 12.07., 00:00) nimmt 2,30 %, obwohl um 00:00 schon 2,50 % gelten. Oktober 2030 (ab 18.10. 2,90 %): 22,77 €. Dispo Direktbank im Juni 2030 auf −3.000 € (im Rahmen): 13 Tage zu 9,45 %, 17 Tage zu 9,60 % = −2.351,095890 Cent, gebucht −23,51 €.
+
+**Lockzins für Neukunden (Vorschlag E-54):**
+
+- **Angebot:** `TeaserOffer { marginBp, months, capCents }` je Direktbank (Filialbanken und Broker: `null`); Aufschlag 0,50–1,25 Pp. (Raster 0,05), Dauer 3, 4 oder 6 Monate, Höchstbetrag 50.000 € oder 100.000 € (Strom `world/banks/rates`). Real werben Direktbanken mit 0,5–1,5 Punkten über dem Regelsatz für drei bis sechs Monate.
+- **Neukunde:** Bei der Bank ist kein Tagesgeldkonto des Spielers offen, und keines wurde am oder nach dem Tag zwölf Monate vor der Eröffnung geschlossen (`isNewCustomer`). So bringt Schließen und Wiedereröffnen den Lockzins erst nach einem Jahr wieder, ein zweites Konto gleichzeitig nie.
+- **Bei Eröffnung** als Neukunde legt die Engine am Tagesgeldkonto `teaser = { rateBp, untilDay, capCents }` ab: `rateBp = 5 · rund((Regelsatz am Eröffnungstag + marginBp) / 5)`, fest für die Dauer (garantierter Zins, er folgt dem Leitzins nicht); `untilDay` = Eröffnungstag plus `months` Monate, bei fehlendem Tag der letzte des Monats (31.10. + 4 Monate → 28.02.). Ab `untilDay` gilt nur der Regelsatz.
+- **Tageszins** an Tagen `d < untilDay`: `min(Saldo, cap) × max(Lockzins, Regelsatz(d)) + max(0, Saldo − cap) × Regelsatz(d)`, je ÷ 365 wie §7.3 (steigt der Regelsatz über den Lockzins, gilt er auch für den Teil bis zum Höchstbetrag); Gutschrift nach `payout` der Bank, Steuer wie bei Habenzinsen. Verrechnungskonten bekommen in M8 keinen Lockzins.
+- **Ende:** Der Tageswechsel auf `untilDay` erzeugt `teaser-ended` (Konto, Lockzins, Regelsatz) und eine Benachrichtigung (§12).
+
+_Beispiel Lockzins_ (Skript zu AP 8.1; Direktbank wie oben, Aufschlag 1,00 Pp., 4 Monate, bis 50.000 €; Tagesgeld mit 80.000 € eröffnet Mi 17.07.2030, Regelsatz dann 2,50 %, Lockzins 3,50 % bis vor So 17.11.2030; monatliche Gutschrift):
+
+| Monat   | Lockzinstage | Regelsatz       | Zinsen (Cent) | Gebucht  |
+| ------- | ------------ | --------------- | ------------- | -------- |
+| 07/2030 | 15           | 2,50 %          | 10.273,972603 | 102,74 € |
+| 08/2030 | 31           | 2,50 %          | 21.232,876712 | 212,33 € |
+| 09/2030 | 30           | 2,50 %          | 20.547,945205 | 205,48 € |
+| 10/2030 | 31           | 2,50 % / 2,90 % | 21.693,150685 | 216,93 € |
+| 11/2030 | 16           | 2,90 % / 2,70 % | 19.621,917808 | 196,22 € |
+| 12/2030 | 0            | 2,70 %          | 18.345,205479 | 183,45 € |
+
+Ohne Lockzins brächte der Juli 82,19 €. Über dem Höchstbetrag (30.000 €) gilt auch in der Lockzinszeit der Regelsatz, der sich am 18.10. und 08.11. ändert.
+
+| Vorher bei der Bank                          | Eröffnung     | Neukunde |
+| -------------------------------------------- | ------------- | -------- |
+| nie ein Tagesgeldkonto                       | beliebig      | ja       |
+| Tagesgeldkonto offen                         | beliebig      | nein     |
+| geschlossen Mi 17.07.2030                    | Mi 16.07.2031 | nein     |
+| geschlossen Mi 17.07.2030                    | Do 17.07.2031 | nein     |
+| geschlossen Mi 17.07.2030                    | Fr 18.07.2031 | ja       |
+| nur ein Girokonto oder Festgeld bei der Bank | beliebig      | ja       |
+
+**Anzeige:** Die Kontoprojektion trägt je Konto den aktuellen Satz (`rateBp`, bei Girokonten Dispo- und Überziehungssatz) und den Lockzins; der Bankenvergleich sortiert `savingsRate` nach dem Regelsatz heute und zeigt den Lockzins daneben („3,50 % für 4 Monate bis 50.000 €, danach 2,50 %“), dazu ein neues Merkmal `termDeposit12` (Festgeld 12 Monate, §7.11). Die Zinspolitik steht in Worten in der Kontokarte („folgt dem Leitzins zu 80 %, Erhöhungen nach 4 Wochen“).
+
+**Invarianten:** Jeder Satz liegt auf dem Raster von 5 bp und nie unter 0; er ist monoton (nicht fallend) im Leitzins; er ändert sich nur, wenn sich der Bezug ändert; mit `b` = 0 ist er konstant `base`; Bezug_Haben ≤ Leitzins(d − fast) ≤ Bezug_Soll; bei konstantem Leitzins 2,50 % sind alle Sätze gleich den Sätzen vor AP 8.10 (die Kalibrierung der Banken bleibt). Ein Lockzins ändert die Zinsen nur an Tagen vor `untilDay` und bringt nie weniger als der Regelsatz.
+
+**Tests (AP 8.10):** Beispieltabellen oben als Logiktests (`terms-logic.spec.ts`, `teaser-logic.spec.ts`; der Bezug im Test per Brute Force über die Tage des Fensters); Eigenschaften mit fast-check über zufällige Leitzinspfade (Raster, Untergrenze, Monotonie, Bezug im Fenster, `b` = 0); Engine-Szenarien je Akzeptanzkriterium von US-BK-13 und dem Lockzins aus US-BK-11 (`game-engine-bank-rates.spec.ts`: Abgrenzung mit dem Satz des abgelaufenen Tags über eine Sitzung, Kontoabschluss über eine Zinsänderung, Benachrichtigung nur für gehaltene Produkte, Lockzins mit Höchstbetrag und Ende, Neukunde nach Schließen); Seitentest des Bankenvergleichs mit aktuellem Satz und Lockzins aus der Abfrage `bankTerms`; Mutationstests für `terms-logic.ts` und `teaser-logic.ts`.
+
+### 7.11 Festgeld (Fachkonzept AP 8.1, Umsetzung AP 8.11; Vorschlag E-55)
+
+- **Kontoart** `term-deposit` (an `ACCOUNT_KINDS` angehängt). Filial- und Direktbanken bieten Festgeld an (`TermDepositConditions { marginBp }`: Filialbank −0,80 bis −0,30 Pp., Direktbank −0,30 bis +0,10 Pp., Strom `world/banks/term-deposits`), Broker nicht (`null`). Laufzeiten für alle Banken `TERM_DEPOSIT_MONTHS` = 3, 6, 12, 24, 36 und 60 Monate; Mindestbetrag 1.000,00 € (`TERM_DEPOSIT_MIN_AMOUNT`), kein Höchstbetrag.
+- **Satz:** `max(0, 5 · rund((Kurve(Tag, Monate ÷ 12) · 10⁴ + marginBp) / 5))` bp am Tag des Abschlusses (Kurve aus §6.11, Wert des Tags), fest für die Laufzeit und am Konto gespeichert.
+- **Eröffnen** (Kommando `openTermDeposit`: `bankId`, `months`, `amount`, `fromAccountId`, `payoutAccountId`), atomar: Prüfung in dieser Reihenfolge `unknown-bank`, `account-kind-not-offered`, `invalid-term`, `invalid-amount` (keine ganzen Cent), `amount-too-small` (unter 1.000 €), Quellkonto `unknown-account`/`account-closed`/`term-deposit-locked` (Festgeld als Quelle), `insufficient-funds` (über `availableAfterReservations`, also Guthaben plus freier Dispo, bei Verrechnungskonten abzüglich Reservierungen), Auszahlungskonto ein anderes offenes eigenes Konto außer Festgeld (`invalid-target`; das Quellkonto ist erlaubt und die Vorgabe der UI). Dann eröffnet die Engine das Konto (nächster Zählerstand, §7.2) mit `termDeposit = { rateBp, months, principal, endDay, payoutAccountId, nextCreditDay }` und bucht den Betrag als `transfer` (Referenz `termDepositId`) vom Quellkonto.
+- **Keine Verfügung vor Fälligkeit:** Überweisungen von und auf ein Festgeld und Daueraufträge mit ihm lehnen ab (`term-deposit-locked`); Schließen hat den neuen Hinderungsgrund `term-deposit` (an `CLOSING_BLOCKERS` angehängt). Ein Konto, das Auszahlungskonto eines laufenden Festgelds ist, lässt sich nicht schließen (`term-deposit-payout`, wie `standing-orders`). Eine vorzeitige Kündigung gibt es in M8 nicht (real meist ausgeschlossen oder mit Vorschusszins).
+- **Zinsen:** Abgrenzung täglich wie beim Tagesgeld zum festen Satz auf den Saldo des abgelaufenen Tags (act/365, §7.3); `#creditInterest` schreibt sie nicht monatlich gut, sondern am Jahrestag (Laufzeiten über 12 Monate) und bei Fälligkeit, jeweils im Bank-Lauf um 06:00 des ersten Bankarbeitstags am oder nach dem Termin. Gutschrift auf das Festgeldkonto selbst (Zinseszins in mehrjährigen Laufzeiten, wie bei Banken mit jährlicher Gutschrift üblich), Typ `credit-interest`, Steuer direkt danach auf demselben Konto (§7.7). Zinstage sind die Tage vom Eröffnungstag bis zum Vortag der Gutschrift; eine Fälligkeit, die auf einen Tag ohne Bankbetrieb fällt, verzinst die zusätzlichen Tage.
+- **Fälligkeit:** `endDay` = Eröffnungstag plus Laufzeit (fehlender Tag: letzter des Monats), Auszahlung am ersten Bankarbeitstag am oder nach `endDay` (Bankkalender, E-45). Der Bank-Lauf hat dafür den Schritt `term-deposits` nach `credit-interest` (Gutschriften vor Lastschriften, §7.4) und läuft auch an Tagen, an denen nur ein Festgeld fällig ist (`bankRunPlan`, wie bei Daueraufträgen). Der Schritt bucht je fälligem Festgeld (in Eröffnungsreihenfolge) die Zinsen mit Steuer, überweist den ganzen Saldo als `transfer` (Referenz `closedAccountId`) auf das Auszahlungskonto und schließt das Konto (`closedAt`). Ereignis `term-deposit-matured` (Konto, Auszahlungskonto, Auszahlung, Zinsen, Steuer) mit Benachrichtigung (§12). Neue Transaktionstypen braucht es nicht.
+- **Zählt als:** Bargeld im Vermögen (Saldo ohne aufgelaufene Zinsen wie jedes Konto, §7.9), Liquidität in der Allokation; Zinsen in den Monatswerten als Habenzinsen, kein Geldeingang für die Gebührenbefreiung.
+- **„Demnächst“** zeigt Jahrestag und Fälligkeit mit dem Zinsbetrag vor Steuer (er steht fest: Saldo und Satz ändern sich nicht).
+
+_Satz zum Abschluss_ (Skript zu AP 8.1; Kurven aus §6.11):
+
+| Kurve                                   | 3M       | 6M       | 12M      | 24M      | 36M      | 60M      |
+| --------------------------------------- | -------- | -------- | -------- | -------- | -------- | -------- |
+| Gleichgewicht, Kurve                    | 2,6578 % | 2,7992 % | 3,0403 % | 3,3954 % | 3,6353 % | 3,9214 % |
+| Direktbank −0,10 Pp.                    | 2,55 %   | 2,70 %   | 2,95 %   | 3,30 %   | 3,55 %   | 3,80 %   |
+| Filialbank −0,60 Pp.                    | 2,05 %   | 2,20 %   | 2,45 %   | 2,80 %   | 3,05 %   | 3,30 %   |
+| invers (`L` 4,5 %, `i` 5 %), Direktbank | 4,85 %   | 4,85 %   | 4,75 %   | 4,70 %   | 4,60 %   | 4,55 %   |
+| `L` 2 %, `i` −0,5 %, Direktbank         | 0,00 %   | 0,00 %   | 0,10 %   | 0,50 %   | 0,80 %   | 1,20 %   |
+
+_Zinsen und Fälligkeit_ (Skript zu AP 8.1; Test `term-deposit-logic.spec.ts`, Engine-Szenarien `game-engine-term-deposits.spec.ts`; Steuer bei ausgeschöpftem Sparerpauschbetrag):
+
+| Festgeld                | Eröffnet      | `endDay`      | Auszahlung (06:00) | Zinstage | Zinsen (Cent) | Gebucht  | Steuer   | Grund                      |
+| ----------------------- | ------------- | ------------- | ------------------ | -------- | ------------- | -------- | -------- | -------------------------- |
+| 6M, 10.000 € zu 2,80 %  | Mo 03.06.2030 | Di 03.12.2030 | Di 03.12.2030      | 183      | 14.038,356164 | 140,38 € | 35,10 €  |                            |
+| 12M, 10.000 € zu 2,95 % | Fr 31.05.2030 | Sa 31.05.2031 | Di 03.06.2031      | 368      | 29.742,465753 | 297,42 € | 74,36 €  | Wochenende, Pfingstmontag  |
+| 3M, 5.000 € zu 2,65 %   | Di 14.01.2031 | Mo 14.04.2031 | Di 15.04.2031      | 91       | 3.303,424658  | 33,03 €  | 8,26 €   | Ostermontag                |
+| 12M, 20.000 € zu 2,95 % | Di 24.12.2030 | Mi 24.12.2031 | Mo 29.12.2031      | 370      | 59.808,219178 | 598,08 € | 149,52 € | Heiligabend bis Wochenende |
+
+24 Monate, 10.000 € zu 3,30 %, eröffnet Mo 01.07.2030: Gutschrift am Jahrestag Di 01.07.2031 für 365 Tage 330,00 €, bei Fälligkeit Do 01.07.2032 für 366 Tage (Schalttag) auf 10.330,00 € 341,82 €, Auszahlung 10.671,82 €. Mit Steuer: 330,00 € − 82,50 €, dann 339,09 € auf 10.247,50 € − 84,77 €, Auszahlung 10.501,82 €. Das Festgeld vom 24.12.2030 zahlt am 29.12.2031 aus und zählt damit steuerlich zu 2031.
+
+**Invarianten:** Der Saldo eines Festgelds ändert sich nur durch Eröffnung, Zinsgutschrift, Steuer und Auszahlung; nach der Auszahlung ist er 0 und das Konto geschlossen; die Summe seiner Buchungen ist 0; die Auszahlung ist Betrag + Σ Zinsen − Σ Steuer; der Satz liegt auf 5 bp und nie unter 0; die Auszahlung liegt an einem Bankarbeitstag am oder nach `endDay` und höchstens sechs Kalendertage danach (§3.1).
+
+**Tests (AP 8.11):** Tabellen oben als Logiktests (Satz, Endtag mit Monatsende, Auszahlungstag über den Bankkalender, Zinsen); Prüfungen des Kommandos als Tabelle (`bank-command-logic.spec.ts`); Engine-Szenarien je Akzeptanzkriterium: Eröffnung vom Girokonto im Dispo, Überweisung und Dauerauftrag abgelehnt, Schließen gesperrt (beide Hinderungsgründe), Gutschrift am Jahrestag mit Steuer, Fälligkeit am Wochenende und Feiertag, Bank-Lauf nur für die Fälligkeit, Snapshot und Replay über die Fälligkeit (`engine-properties.spec.ts`); Seitentest: Festgeld anlegen, die Fälligkeit erscheint nach einem Sprung im Kontoauszug; Mutationstests für `term-deposit-logic.ts`.
+
+### 7.12 Fremdwährung in Handel und Buchhaltung (Fachkonzept AP 8.1, Umsetzung AP 8.7a; Vorschlag E-57)
+
+Instrumente notieren ab AP 8.5 in der Währung ihrer Börse (§6.12). Konten, Buchungen, Lots, Steuern, Bewertung und Performance bleiben in Euro.
+
+- **Konten nur in Euro (Vorschlag E-57):** In M8 gibt es kein Währungskonto. Begründung: Ein Fremdwährungskonto bräuchte eigene Salden je Währung im Hauptbuch, Zinsen in Fremdwährung und eine Besteuerung der Währungsgewinne (Fremdwährungsguthaben sind steuerlich eigene Wirtschaftsgüter mit FIFO je Währung, §23 EStG); für Privatanleger in Deutschland ist der Kauf über das Euro-Verrechnungskonto der Normalfall. Quellensteuer (AP 10.14) und Rohstoffe (AP 9.7) kommen ohne aus: Beträge in Fremdwährung stehen als Parameter an der Buchung.
+- **Handelswährung:** An der Heimatbörse (Handelsplatz `exchange`) die Notierungswährung `c` des Instruments; Quote, Limit, Stop, Kursuntergrenze und Preisraster gelten in `c`. Im Direkthandel immer Euro (§7.13). ETFs der Standardwelt notieren in Euro; für sie und alle Euro-Werte gilt `S` = 1, und alles Folgende ist bitgleich mit dem Stand vor AP 8.7a (Eigenschaft).
+- **Umrechnung bei Ausführung:** `S` = Minutenwert `Wechselkurs(c, Tick der Ausführung)` (§6.12, Mittelkurs). Kurswert in Fremdwährung `KW_c = Stück × Kurs` (ungerundet), **Kurswert** `KW = rund_Cent(KW_c ÷ S)` (`foreignMarketValue`, kaufmännisch wie `marketValue`), Orderentgelt `fee(orderFee, KW)` + Börsenentgelt, **Devisenkosten** `fee(fxFee, KW)` mit einem `FeeModel` je Bank (`DepotConditions.fxFee`; Welt: Filialbank `percent` 0,40–0,60 %, Direktbank 0,20–0,30 %, Onlinebroker 0,10–0,25 %, Raster 0,05 Pp., Strom `world/banks/fx`; Neobroker handeln nur im Direkthandel und haben `free`). Kauf: Belastung = KW + Orderentgelt + Börsenentgelt + Devisenkosten; Verkauf: Gutschrift = KW − alle drei. Real rechnen Banken mit einem Devisengeld- bzw. -briefkurs oder einer Devisenprovision; ein Prozentsatz auf den Kurswert ist gleichwertig und zeigt die Kosten getrennt.
+- **Buchung** (`executionTransaction`): wie §7.5, `external:bank:<id>:fees` erhält Orderentgelt + Börsenentgelt + Devisenkosten in einer Buchung; Textparameter zusätzlich `currency`, `fxRate` (`S`) und `fxCost`; `price` ist der Ausführungskurs in Handelswährung (Kontoauszug und Positionsdetail zeigen ihn mit Währung). Monatswerte: neue Kostenart `fxCosts` aus dem Parameter (`COST_KINDS`, US-PF-07); sie zählt zu `fees`, `orderFees` enthält sie nicht.
+- **Lots und Steuer:** Anschaffungskosten des Lots = Belastung in Euro (§7.6), Gutschrift nach Kosten in Euro; realisierter Gewinn und Steuer in Euro (wie §20 Abs. 4 EStG mit Umrechnung zum Zeitpunkt von Anschaffung und Veräußerung). Ein Gewinn in Landeswährung kann so ein Verlust in Euro sein.
+- **Reservierung:** geschätzter Kurswert in `c` wie §7.5 (Market zum Brief, Stop zum höheren von Brief und Stop, Limit zum Limit), umgerechnet mit dem aktuellen `S` und kaufmännisch auf Cent; Puffer auf den Euro-Kurswert: Market und Stop 5 % (`RESERVATION_BUFFER`) + 3 % für den Wechselkurs (`FX_RESERVATION_BUFFER`, Vorschlag), Limit und Stop-Limit 3 %; Kosten (Orderentgelt, Börsenentgelt, Devisenkosten) auf den Wert mit Puffer. Betragsorders reservieren den Betrag. Ändert sich `S`, wird nicht neu reserviert; fehlt bei Ausführung die Deckung, wird die Order abgelehnt (`insufficient-funds`, §7.5). Drei Punkte entsprechen bei 8 % Jahresvolatilität (EUR/USD, §6.12) etwa einer Standardabweichung über knapp zwei Monate; länger gültige Orders kann eine Wechselkursbewegung über den Puffer hinaus bringen, dann zählt wie heute der verfügbare Betrag bei der Ausführung.
+- **Betragsorders:** die größte Stückzahl im Raster der Bank, deren exakter Euro-Kurswert `KW_c ÷ S` plus die Kosten auf den gebuchten Kurswert den Betrag nicht übersteigt (Verfahren §7.5); Mindest-Kurswert 1,00 € in Euro.
+- **Ausschüttungen:** Der Anspruch entsteht am Ex-Tag in Notierungswährung: `foreignAmount` = Stück × Dividende je Aktie (§6.12), kaufmännisch auf Hundertstel von `c` (`PendingDistribution` bekommt `currency` und `foreignAmount`). Gutschrift am Zahltag um 06:00: Cent = `rund(foreignAmount ÷ S)` mit dem Minutenwert dieser Minute, ohne Devisenkosten (Vorschlag: Mindestentgelte würden kleine Dividenden aufzehren; die Abrechnung realer Banken nennt meist nur den Devisenkurs). Textparameter `currency`, `fxRate`, `foreignAmount`; Steuer auf den Euro-Betrag (§7.7). Vorher zeigen Dividendenkalender und „Demnächst“ den Betrag in Fremdwährung mit einem geschätzten Euro-Wert zum aktuellen Kurs. Quellensteuer (AP 10.14) behält von `foreignAmount` ein, bevor umgerechnet wird.
+- **Bewertung:** Positionswert = `rund_Cent(Stück × Geld_c ÷ S(t))` mit dem Minutenwert (außerhalb der Sitzung der letzte Kurs, der Wechselkurs bewegt sich weiter); ebenso Tageswerte der Depotgebühr, Vermögen und Performance. Die geschätzten Spread-Kosten `spreadCost` rechnen in `c` und werden mit `S` der Ausführung umgerechnet.
+- **Spätere Nutzer:** Rohstoff-ETCs und Rohstoffe in USD (AP 9.7) und Anleihen in Fremdwährung (AP 9.3) folgen denselben Regeln für jedes Instrument mit `currency ≠ EUR`.
+
+_Kauf und Verkauf mit Wechselkursänderung_ (Skript zu AP 8.1; Direktbank D: Orderentgelt 4,90 € + 0,25 %, max. 69,90 €, ohne Börsenentgelt, Devisenkosten 0,25 %; US-Aktie; Test `fx-order-logic.spec.ts`):
+
+| Ausführung               | `S`  | Kurswert in USD | Kurswert   | Orderentgelt | Devisenkosten | Belastung / Gutschrift | Realisiert | in USD  |
+| ------------------------ | ---- | --------------- | ---------- | ------------ | ------------- | ---------------------- | ---------- | ------- |
+| Kauf 10 zu 150,00 USD    | 1,10 | 1.500,00        | 1.363,64 € | 8,31 €       | 3,41 €        | −1.375,36 €            |            |         |
+| Verkauf 10 zu 160,00 USD | 1,25 | 1.600,00        | 1.280,00 € | 8,10 €       | 3,20 €        | +1.268,70 €            | −106,66 €  | +6,67 % |
+| Verkauf 10 zu 160,00 USD | 1,10 | 1.600,00        | 1.454,55 € | 8,54 €       | 3,64 €        | +1.442,37 €            | +67,01 €   | +6,67 % |
+| Verkauf 10 zu 150,00 USD | 1,00 | 1.500,00        | 1.500,00 € | 8,65 €       | 3,75 €        | +1.487,60 €            | +112,24 €  | 0 %     |
+| Verkauf 10 zu 140,00 USD | 1,10 | 1.400,00        | 1.272,73 € | 8,08 €       | 3,18 €        | +1.261,47 €            | −113,89 €  | −6,67 % |
+
+Die zweite Zeile ist der Fall „Gewinn in Landeswährung, Verlust in Euro“: Der Dollar verliert 12 % gegen den Euro (1,10 → 1,25), die Aktie gewinnt 6,67 %. Kauf 10 zu 150 USD bei `S` 1,10 an der Filialbank F (0,25 %, mind. 10 €, max. 60 €, Börsenentgelt 3,00 €, Devisenkosten 0,50 %): 1.363,64 € + 10,00 € + 3,00 € + 6,82 € = 1.383,46 €. Kauf 100 zu 2.450 JPY bei `S` 160 an D: 1.531,25 € + 8,73 € + 3,83 € = 1.543,81 €. Buchung des Kaufs an D: Verrechnungskonto −1.375,36 €, `external:market` +1.363,64 €, `external:bank:<D>:fees` +11,72 € (Monatswerte: `orderFees` 8,31 €, `fxCosts` 3,41 €), Stückbuchung +10; das Lot kostet 1.375,36 €. Spread-Kosten von 10 Stück zu 150,08 USD bei Mittelkurs 150,00 USD und `S` 1,10: 72,727… Cent → 0,73 €.
+
+_Ausschüttungen in Fremdwährung_ (Test `distribution-logic.spec.ts`):
+
+| Anspruch                    | `foreignAmount` | `S` am Zahltag | Gutschrift | Bemerkung                                    |
+| --------------------------- | --------------- | -------------- | ---------- | -------------------------------------------- |
+| 25 Stück × 0,85 USD         | 21,25 USD       | 1,08           | 19,68 €    | 1.967,59… Cent; Steuer 4,92 € (ausgeschöpft) |
+| 25 Stück × 0,85 USD         | 21,25 USD       | 1,12           | 18,97 €    | derselbe Anspruch, anderer Kurs              |
+| 12,5 Stück × 37,5 JPY       | 468,75 JPY      | 121            | 3,87 €     | 387,40 Cent                                  |
+| 0,333333 Stück × 0,4567 USD | 0,15 USD        | 1,10           | 0,14 €     | 15,22 Hundertstel → 15; 13,64 Cent → 14      |
+
+_Reservierung in Fremdwährung_ (D, `S` 1,10; Test `order-reservation.spec.ts`):
+
+| Kauforder                     | Kurswert in USD | Kurswert   | Puffer        | Orderentgelt | Devisenkosten | Reservierung |
+| ----------------------------- | --------------- | ---------- | ------------- | ------------ | ------------- | ------------ |
+| Market 10 Stück, Brief 150,10 | 1.501,00        | 1.364,55 € | 8 %: 109,16 € | 8,58 €       | 3,68 €        | 1.485,97 €   |
+| Limit 148,00, 10 Stück        | 1.480,00        | 1.345,45 € | 3 %: 40,36 €  | 8,36 €       | 3,46 €        | 1.397,63 €   |
+| Stop-Limit 152,00 / 153,00    | 1.530,00        | 1.390,91 € | 3 %: 41,73 €  | 8,48 €       | 3,58 €        | 1.444,70 €   |
+| Betrag 1.000,00 €             |                 |            |               |              |               | 1.000,00 €   |
+
+Ausführung der Limit-Order zu 148,00 USD: bei `S` 1,10 Belastung 1.357,07 €, bei 1,0682 1.397,33 € (noch im Puffer), bei 1,05 1.421,46 € und bei 1,00 1.492,30 € (über der Reservierung; ausgeführt nur, wenn die freien Mittel nach Freigabe der eigenen Reservierung reichen). Betragsorder 1.000,00 € zum Brief 150,10 USD, `S` 1,10, mit Bruchstücken: 7,256189 Stück, Kurswert 990,14 €, Orderentgelt 7,38 €, Devisenkosten 2,48 €, Belastung 1.000,00 €.
+
+**Invarianten:** Hauptbuch je Transaktion 0; Lots in Euro: Anschaffungskosten = Belastung der Käufe − `costBasis` der Verkäufe (wie §7.6); `KW = rund(KW_c ÷ S)` mit dem Minutenwert der Ausführung; mit `S` = 1 und `fxFee` `free` sind Ausführung, Buchung und Reservierung bitgleich mit §7.5 (metamorph); `fxCost ≥ 0`; die Steuer sieht nur Euro-Beträge.
+
+**Tests (AP 8.7a):** Tabellen oben als Logiktests; Eigenschaften (Hauptbuch, Lots in Euro, Metamorphose `S` = 1); Engine-Szenarien je Akzeptanzkriterium von US-MK-17 (Kauf und Verkauf einer US-Aktie über zwei Wechselkurse mit Steuer, Limit in USD über eine Wechselkursänderung bis zur Ablehnung, Ausschüttung in USD mit Steuer, Monatswerte `fxCosts`, Bewertung in Euro außerhalb der Sitzung); Mutationstests für `fx-order-logic.ts` und die Änderungen in `order-reservation`, `distribution-logic`.
+
+### 7.13 Direkthandel (Fachkonzept AP 8.1, Umsetzung AP 8.8; Vorschlag E-58)
+
+Neben der Heimatbörse gibt es den Direkthandel mit einem Market Maker, wie bei Tradegate oder Lang & Schwarz: längere Zeiten, Kurse in Euro, auch für ausländische Werte.
+
+- **Handelsplätze** (`TRADING_VENUES`): `exchange` (Heimatbörse des Instruments, Handelszeiten §3.3, Handelswährung `c`) und `direct` (Direkthandel; ersetzt das bisherige `market-maker` der Neobroker). `DepotConditions` bekommt statt `venue` und `spreadMarkup` die Angebote `venues: { exchange: boolean; direct: { spreadMarkup: number } | null }`.
+- **Zeiten:** Montag bis Freitag 08:00–23:00 an Handelstagen des Kalenders `de` (Vorschlag; wie die realen Direkthandelsplätze nach dem deutschen Börsenkalender, §3.3). Nie über Mitternacht: Um 00:00 springen Zinsfaktor und Makrowerte (§6.13). An Feiertagen der Heimatbörse quotiert der Direkthandel den ganzen Tag indikativ.
+- **Quote** (`directQuote`): Mittelkurs in Euro `mid = indicativeAt(serie, m) ÷ S_c(m)` (in der Sitzung der Heimatbörse ist `indicativeAt` gleich `priceAt`, §6.6; Wechselkurs als Minutenwert, §6.12); Spread wie §6.7 mit der Basis des Instruments, dem Faktor Volatilität, dem Faktor „Basiswert geschlossen“ (Aktie außerhalb ihrer Sitzung 1,75, ETF nach `closedShare`) und dem Aufschlag `venues.direct.spreadMarkup` der Bank; Preisraster in Euro. Keine neuen Stützpunkte, keine Ziehung, kein Zustand: Die Quote ist eine reine Funktion vorhandener Werte, die Markt-Prüfsumme ist mit und ohne Direkthandel identisch. Indizes bleiben nicht handelbar; die Kaufsperre an der Kursuntergrenze (E-22) prüft den Mittelkurs in `c`.
+- **Banken:** Filialbanken nur Börse; Direktbanken und Onlinebroker beide (Wahl je Order, Vorgabe Börse; Aufschlag 0,05–0,15 %, Strom `world/banks/direct`); Neobroker nur Direkthandel (Aufschlag wie bisher `spreadMarkup`, 0,05–0,20 %).
+- **Entgelt:** das Orderentgelt der Bank, kein Börsenentgelt und keine Devisenkosten (gehandelt wird in Euro; die Kosten der Umrechnung trägt der Market Maker im Spread).
+- **Orders:** `OrderSpec.venue` (Vorgabe: einziger bzw. erster Handelsplatz der Bank); geprüft wird in jeder Minute der Zeiten des Handelsplatzes (§7.5), „bis Tagesende“ endet mit dem nächsten Schluss des Handelsplatzes (23:00; erteilt um 23:30 bis 23:00 des nächsten Handelstags). Die Engine plant für den Direkthandel Termine für Beginn und Schluss ohne Marktwirkung, damit `runUntil` Ticks mit aktiven Orders nicht überspringt. Market-Orders außerhalb der Zeiten warten auf 08:00. Ändern des Handelsplatzes einer offenen Order gibt es nicht (stornieren und neu erteilen).
+- **Sparpläne** bleiben beim Termin zur Eröffnung der Heimatbörse (§7.8); bei einer Bank nur mit Direkthandel kaufen sie zur Quote des Direkthandels in dieser Minute.
+- **Bewertung** bleibt bankunabhängig zum Geldkurs der Heimatbörse ohne Aufschlag (§7.9), umgerechnet in Euro.
+- **Verhältnis zu §5.7:** Neobroker handeln bisher in der Börsenzeit mit Spread-Aufschlag; ab AP 8.8 ist das der Direkthandel mit längeren Zeiten. Die Engine-Szenarien der Neobroker werden angepasst.
+
+_Quote im Direkthandel_ (Skript zu AP 8.1; US-Aktie mit Basis-Spread 0,08 %, Faktor Volatilität 1, Aufschlag 0,10 %; deutsche Aktie ebenso; Test `direct-quote-logic.spec.ts`):
+
+| Zeitpunkt (Di 02.04.2030) | Heimatbörse | Mitte in `c`           | `S`    | Mitte in Euro | Spread  | Geld     | Brief    |
+| ------------------------- | ----------- | ---------------------- | ------ | ------------- | ------- | -------- | -------- |
+| 10:00, US-Aktie           | geschlossen | 150,00 USD (indikativ) | 1,1000 | 136,363636 €  | 0,240 % | 136,20 € | 136,53 € |
+| 18:00, US-Aktie           | geschlossen | 151,30 USD (indikativ) | 1,1050 | 136,923077 €  | 0,240 % | 136,75 € | 137,09 € |
+| 21:00, US-Aktie           | offen       | 151,20 USD             | 1,1100 | 136,216216 €  | 0,180 % | 136,09 € | 136,34 € |
+| 22:30, US-Aktie           | geschlossen | 151,50 USD (indikativ) | 1,1100 | 136,486486 €  | 0,240 % | 136,32 € | 136,66 € |
+| 08:30, deutsche Aktie     | geschlossen | 48,37 € (indikativ)    | 1      | 48,370000 €   | 0,240 % | 48,31 €  | 48,43 €  |
+| 10:00, deutsche Aktie     | offen       | 48,40 €                | 1      | 48,400000 €   | 0,180 % | 48,35 €  | 48,45 €  |
+
+Limit-Order am Abend: Kauf 10 Stück der US-Aktie zu Limit 136,40 € beim Neobroker (1,00 € je Order), erteilt um 10:00 „bis Tagesende“ (bis 23:00): um 10:00 und 18:00 liegt der Brief darüber, um 21:00 bei 136,34 € → Ausführung zu 136,34 €, Kurswert 1.363,40 €, Belastung 1.364,40 €; um 22:30 wäre sie nicht mehr ausgeführt worden. ETF mit Mittelkurs 52,40 € um 20:00, Basis 0,12 %, 60 % des Index geschlossen: Spread 0,274 %, Geld 52,32 € / Brief 52,48 €.
+
+**Invarianten:** `Geld ≤ Mitte ≤ Brief` und `Brief − Geld ≥` ein Rasterschritt; in der Sitzung der Heimatbörse und für Euro-Werte ist die Mitte gleich `priceAt`; Prüfsummen von Markt und Welt sind mit und ohne Orders im Direkthandel gleich; eine Order am Handelsplatz `exchange` verhält sich wie vor AP 8.8.
+
+**Tests (AP 8.8):** Tabelle oben als Logiktest; Gültigkeit am Direkthandel (Tabelle wie §7.5 mit 08:00–23:00 und Feiertagen `de`); Engine-Szenarien (Limit-Order am Abend, Market-Order um 07:00 wartet auf 08:00, Feiertag der Heimatbörse, Neobroker nur Direkthandel, Kosten ohne Börsenentgelt); Eigenschaft: Markt-Prüfsumme gleich mit und ohne Direkthandelsorders; Seitentest des Order-Tickets (Wahl des Handelsplatzes, Kostenvorschau); Perf-Fall „ein Spieljahr mit 20 Limit-Orders im Direkthandel“ (Minutenwerte der indikativen Kurse und Wechselkurse außerhalb der Sitzungen, §14.3).
+
+### 7.14 Inflation im Haushalt und Realwerte (Fachkonzept AP 8.1, Umsetzung AP 8.9; Vorschlag E-56)
+
+**Gehalt und Lebenshaltung (US-EK-04):**
+
+```text
+Faktor_J      = VPI(Januar J) ÷ VPI(Startmonat)                       Preisindex aus §6.11, Stand am Monatsersten
+Gehalt_J      = rund_Cent(Nettoeinkommen_Start · max_{J' ≤ J} Faktor_J')   nominal nie sinkend
+Lebenshaltung_J = rund_Cent(Lebenshaltung_Start · Faktor_J)                   Basisbetrag; Schwankung ±5 % darauf (§7.4)
+```
+
+- **Rhythmus (Vorschlag E-56):** einmal im Jahr zum 01.01. (Jahresabschluss um 00:00, nach dem Tageswechsel; der Preisindex des Januars steht dann fest, §6.11), wie Tariferhöhungen und Preisanpassungen von Mieten und Verträgen. Monatliche Anpassung wäre genauer, aber jede Lebenshaltungsbuchung hätte einen anderen Basisbetrag und das Gehalt stiege in Cent-Schritten, was niemand so erlebt. Im ersten Spieljahr gelten die Startbeträge, das erste Mal angepasst wird am 01.01.2031 mit der Teuerung seit dem Startmonat (April 2030).
+- **Bezug auf den Start statt Kette:** Gerechnet wird immer vom Startbetrag mit dem Verhältnis der Indizes; so häufen sich keine Rundungsreste. Das Gehalt sinkt bei Deflation nicht (Nominallohnstarrheit), die Lebenshaltung folgt dem Index in beide Richtungen.
+- **Was nicht steigt:** Gebühren der Banken (E-52), Sparerpauschbetrag (gesetzlicher Betrag), Mindestbeträge (Sparplan, Festgeld, Mindest-Kurswert). Der Dispo-Rahmen folgt dem Gehalt über das Fenster der Gehaltseingänge von selbst.
+- **Zustand:** `PlayerState.household = { year, netIncome, livingCosts }`, die Beträge des laufenden Jahres; der Jahresabschluss setzt sie neu. `start` (Startbedingungen) bleibt unverändert und ist der Bezug. `#paySalary`, `#chargeLivingCosts`, `upcoming-inputs.ts` und `startInflows` lesen `household` statt `start` (Hinweis AP 8.9).
+- **„Demnächst“:** Gehalt und Lebenshaltung mit den Beträgen aus `household`; Termine nach dem nächsten 01.01. erscheinen ohne Betrag mit dem Hinweis „wird zum 01.01. angepasst“, weil der Preisindex des Januars noch nicht feststeht.
+- **Jahresabschluss:** Die Benachrichtigung `year-closed` (§12) trägt zusätzlich die neuen Beträge (`netIncome`, `livingCosts`).
+
+_Anpassung über mehrere Jahre_ (Skript zu AP 8.1; Startmonat April 2030 mit VPI 120,00, Nettoeinkommen 2.500,00 €, Lebenshaltung 1.800,00 €; VPI Januar 2030 119,40; Test `household-logic.spec.ts`, Engine-Szenario `game-engine-household.spec.ts`):
+
+| Jahr | VPI Januar | Jahresrate | Faktor   | Gehalt     | Lebenshaltung (Basis) | Bemerkung                |
+| ---- | ---------- | ---------- | -------- | ---------- | --------------------- | ------------------------ |
+| 2030 | –          | –          | 1        | 2.500,00 € | 1.800,00 €            | Startbeträge             |
+| 2031 | 122,10     | +2,2613 %  | 1,017500 | 2.543,75 € | 1.831,50 €            | Teuerung seit April 2030 |
+| 2032 | 125,40     | +2,7027 %  | 1,045000 | 2.612,50 € | 1.881,00 €            |                          |
+| 2033 | 124,80     | −0,4785 %  | 1,040000 | 2.612,50 € | 1.872,00 €            | Deflation: Gehalt bleibt |
+| 2034 | 127,00     | +1,7628 %  | 1,058333 | 2.645,83 € | 1.905,00 €            |                          |
+| 2035 | 131,30     | +3,3858 %  | 1,094167 | 2.735,42 € | 1.969,50 €            |                          |
+
+Lebenshaltung Januar 2032 mit ε = +0,03: 1.881,00 € × 1,03 = 1.937,43 €. Dispo-Rahmen am Mo 03.02.2031 (Fenster November 2030 bis Januar 2031, Faktor 2): 2 × (2.500,00 + 2.500,00 + 2.543,75) ÷ 3 = 5.029,17 € → 5.029 €.
+
+**Realwerte:**
+
+- **Tagesreihe:** `DailyPoint` bekommt `priceIndex`, den Verbraucherpreisindex am Ende des Tags (`e^(ln VPI)` um 00:00 des Folgetags, §6.11; am Wochenende unverändert). `VPI₀` ist der Wert am Spielbeginn (00:00 des Spielstarts).
+- **Realer Wert** eines Betrags am Tag `d` in Preisen des Spielbeginns: `V_real = V · VPI₀ ÷ VPI_d` (Anzeige, auf Cent gerundet). **Reale Rendite** seit Spielbeginn: `index · VPI₀ ÷ VPI_d − 1`; im laufenden Jahr und annualisiert ebenso aus zwei Punkten (§7.9), weil die verkettete Rendite den Preisindex nur am Anfang und am Ende braucht. Benchmark und Vergleichsgröße real mit demselben Faktor. Die Monatsübersicht bleibt nominal.
+- **Umschaltung:** „Nominal“ und „Real“ im Vermögensverlauf und in der Performance (Muster `NET_WORTH_CHART_VIEWS`, `VALUE_BASES = ['nominal', 'real']`, Auswahl in der Seite, nicht gespeichert); real heißt in der UI „in Preisen von April 2030“.
+- **Kaufkraft:** Die Übersicht zeigt die Kaufkraft von 1 € seit Spielbeginn (`VPI₀ ÷ VPI_jetzt`) und den realen Wert des Bargelds (S).
+
+| Zeitpunkt                  | nominal     | VPI     | real        | real seit Start |
+| -------------------------- | ----------- | ------- | ----------- | --------------- |
+| Spielbeginn                | 10.000,00 € | 120,000 | 10.000,00 € | 0 %             |
+| nach 1 Jahr (+5 % nominal) | 10.500,00 € | 122,400 | 10.294,12 € | +2,9412 %       |
+| nach 2 Jahren              | 11.025,00 € | 124,848 | 10.596,89 € | +5,9689 %       |
+| Bargeld nach 2 Jahren      | 10.000,00 € | 124,848 | 9.611,69 €  | −3,8831 %       |
+
+Kaufkraft von 1 € bei VPI 131,30: 0,913938 €.
+
+**Invarianten:** Das Gehalt fällt nie; `Lebenshaltung_J ÷ Lebenshaltung_Start` weicht von `Faktor_J` nur durch die Rundung auf Cent ab; ohne Inflation (VPI konstant) sind alle Beträge, Tagesreihen und Kennzahlen gleich den nominalen und gleich dem Stand vor AP 8.9; der Sparerpauschbetrag ist in jedem Jahr 1.000 €; reale und nominale Rendite stehen in `(1 + r_real) = (1 + r) · VPI₀ ÷ VPI_d`.
+
+**Tests (AP 8.9):** Tabellen oben als Logiktests; Eigenschaften (Gehalt monoton, Metamorphose VPI konstant); Engine-Szenarien (Gehalt und Lebenshaltung nach einem Jahr Inflation mit dem VPI des Makromodells als Eingabe, Jahreswechsel mit Benachrichtigung, Dispo-Rahmen nach der Anpassung); Seitentest der Übersicht und der Performance in realer Ansicht mit Werten der Engine als Orakel; „Demnächst“ über den Jahreswechsel (`upcoming-logic.spec.ts`).
+
 ## 8. Engine
 
 ### 8.1 Bausteine
@@ -2804,7 +3089,7 @@ Beispiel: Depot A hält nach dem Verkauf von 4 Stück aus der Teilverkaufstabell
 - **Kursquelle:** `PriceSource` (`market/domain`) mit `priceAt(serie, tick, now)`, `quoteAt` und Kerzen über Tagesstützpunkten und Brücken (§6.1), mit einem Cache der Tagesverläufe; frisch gerechnete Tage übergibt die Engine per `rememberDay`. Der Cache gehört nicht zum Zustand. Die Engine sieht sie nur über den Kurs-Port `PricePort` (`priceAt`, `quoteAt`, `rememberDay`, §14.1); die Fabrik dafür übergibt der Host, damit er dieselbe `PriceSource` für Kerzen und Abos nutzt. Engine-Szenarien nutzen den Testmarkt `TestMarket` (`engine/domain/testing`) mit vorgegebenen Kursen.
 - **Terminplaner:** Prioritätswarteschlange (Binärheap) nach Tick und fester Rangfolge für Tageswechsel, Bank-Lauf, Dividenden, Sparpläne, Orderablauf sowie Monats- und Jahresabschluss.
 - **Worker-Host** (`engine/data-access/worker/engine.worker.ts`): Takt (§3.5), Sichtbarkeit (§3.6), Persistenz (§9), Abos und Drosselung (§8.4), Hintergrundauftrag für Tageskerzen (§6.8), Web Lock, Fehlerbehandlung. Umsetzung (AP 2.2): `EngineHost` (`engine-host.ts`) ist framework-frei; der Worker ist eine dünne Hülle darum. Prozessgrenzen sind Ports (`EngineHostPorts`): Wanduhr `now()`, `post(message)`, Schleifen-Timer (`set`/`clear`) und Speicher `EngineStorage`. Optionen: Welt je Seed (`createWorld`, Standard `generateWorld`), Kurs-Port-Fabrik `prices`, `EngineHostConfig`, Startgeschwindigkeit. Nachrichten werden nacheinander abgearbeitet; Engine-Ereignisse holt der Host nach jedem Durchlauf mit `drainEvents()` ab. In M2 leitete er keines an die UI weiter; seit AP 3.6 schickt er Benachrichtigungen und den Abwesenheitsbericht (§8.3, §12); bei `session-closed` schreibt er die Tageskerzen (AP 2.3, §6.8). Persistenz, Laden und Nachberechnung beschreibt §9.2, den Web Lock §9.4. Ausnahmen in der Schleife sind nicht behebbar: Der Host stoppt und sendet `fatal`.
-- **Ereignisvorschau:** Der Host kann eine Kopie des Zustands ohne Anwender-Eingriffe einige Tage vorausrechnen. An die UI (Widget „Demnächst") gehen nur **planbare, marktunabhängige Termine**: Gehalt, Lastschriften, Gebühren, Daueraufträge, Sparpläne, angekündigte Dividenden, Orderablauf. Marktabhängige Ereignisse (ausgelöste Stops, Ausführungen) würden künftige Kurse verraten; sie dienen nur der nativen Vorausplanung von Benachrichtigungen (§13) und werden nie vorab angezeigt. **(E-05, Ergänzung entschieden 13.11.2026)** Im MVP liest „Demnächst“ die planbaren Termine direkt aus Terminplaner und Kalender, mit Basisbeträgen statt der genauen Beträge: Die Schwankung der Lebenshaltungskosten soll nicht vorab sichtbar sein (US-EK-02). Im MVP gibt es keine Vorausrechnung; die Vorausrechnung auf einer Zustandskopie entsteht erst mit N1.
+- **Ereignisvorschau:** Der Host kann eine Kopie des Zustands ohne Anwender-Eingriffe einige Tage vorausrechnen. An die UI (Widget „Demnächst") gehen nur **planbare, marktunabhängige Termine**: Gehalt, Lastschriften, Gebühren, Daueraufträge, Sparpläne, angekündigte Dividenden, Orderablauf. Marktabhängige Ereignisse (ausgelöste Stops, Ausführungen) würden künftige Kurse verraten; sie dienen nur der nativen Vorausplanung von Benachrichtigungen (§13) und werden nie vorab angezeigt. **(E-05, Ergänzung entschieden 13.11.2026)** Im MVP liest „Demnächst“ die planbaren Termine direkt aus Terminplaner und Kalender, mit Basisbeträgen statt der genauen Beträge: Die Schwankung der Lebenshaltungskosten soll nicht vorab sichtbar sein (US-EK-02). Im MVP gibt es keine Vorausrechnung; die Vorausrechnung auf einer Zustandskopie entsteht erst mit N1. Ab M8 kommen hinzu: Gehalt und Lebenshaltung mit den angepassten Beträgen (§7.14), feststehende Zinsänderungen (§7.10), Lockzinsende (§7.10), Jahrestag und Fälligkeit von Festgeld (§7.11) und Ausschüttungen in Fremdwährung mit geschätztem Euro-Wert (§7.12); `UPCOMING_KINDS` werden um `rate-change`, `teaser-end`, `term-deposit-credit` und `term-deposit-maturity` ergänzt.
 
   **Umsetzung (AP 5.7b):** Reine Logik in `dashboard/domain/upcoming-logic.ts` (`upcoming(fromTick, days, inputs)`, Modelle in `models/upcoming.model.ts`, Test `upcoming-logic.spec.ts`); die Engine liest die Eingaben aus dem Zustand (`engine/domain/upcoming-inputs.ts`, `GameEngine.upcoming(days)`), ohne etwas vorauszurechnen. Horizont: **14 Kalendertage** (`UPCOMING_DAYS`, Festlegung; höchstens `MAX_UPCOMING_DAYS` = 28, damit der Bank-Lauf im Fenster höchstens einen Monat abrechnet). Im Fenster liegen die Termine mit `fromTick < tick ≤ fromTick + Tage`. Nur der Worker kennt: die Bank-Läufe (`bankRunPlan`) mit **Gehalt** und **Lebenshaltung als Basisbeträge** der Startbedingungen (US-EK-02), die **Kontoführung** je offenem Girokonto mit Betrag (`monthlyAccountFee` über die Geldeingänge des abgerechneten Monats; im laufenden Monat die bisherigen plus ein Gehalt, das das Fenster in diesem Monat noch gutschreibt; 0 € entfällt), die **Depotgebühr** des Vorquartals je offenem Depot einer Bank mit Gebühr **ohne Betrag** (sie folgt den Depotwerten), **angekündigte Ex-Tage** gehaltener Aktien mit dem Betrag je Stück (aus dem Marktzustand; heutige Ex-Tage vor der Eröffnung aus der geplanten `session-open`, dort auch ETFs) samt **Zahltag** mit der Ausschüttung für die heute gehaltenen Stück, und die **Zahltage** bereits erworbener Ansprüche (`pendingDistributions`). Daueraufträge, Sparpläne (nächste Ausführung) und der Ablauf aktiver Orders (`expiresAt`) kommen aus den Projektionen; die UI mischt sie in dasselbe Fenster (`upcomingEntries`, `dashboard/feature/state/dashboard.utils.ts`). Reihenfolge: Tick, dann Art in der Reihenfolge `UPCOMING_KINDS` (Zahltag, Gehalt, Lebenshaltung, Kontoführung, Depotgebühr, Dauerauftrag, Ex-Tag, Sparplan, Orderablauf), gleiche in ihrer Reihenfolge. Beträge sind Beträge ohne Vorzeichen; die Richtung folgt aus der Art.
 
@@ -2841,6 +3126,8 @@ Beispiel: Depot A hält nach dem Verkauf von 4 Stück aus der Teilverkaufstabell
 | `createSavingsPlan`, `changeSavingsPlan`, `setSavingsPlanPaused`, `deleteSavingsPlan`         | Sparpläne (AP 5.6b, §7.8)                                                                                                                |
 | `updateWatchlist`, `setAutoPause`, `setBackgroundMode`, `markNotificationsRead`               | Spielereinstellungen und Benachrichtigungen (`setAutoPause` je Ereignis-Code)                                                            |
 | `exportPlayer`, `importPlayer`                                                                | §10                                                                                                                                      |
+| `openTermDeposit`                                                                             | Festgeld eröffnen (ab AP 8.11, §7.11); `placeOrder` trägt ab AP 8.8 den Handelsplatz (`venue`, §7.13)                                    |
+| `query` `bankTerms`                                                                           | Konditionen aller Banken zum aktuellen Tag nach `termsAt` mit Lockzins-Berechtigung des Spielers (ab AP 8.10, §7.10)                     |
 
 **Klassen (E-08):** Nicht jede Nachricht ist ein Spielkommando.
 
@@ -3972,6 +4259,29 @@ Geschätzter Ausführungskurs der Vorschau (`estimatedExecutionPrice`, Geld 99,9
 | `formatPriceInput`              | `99.5`                  | `99,50`                  | `99.50`                  |
 | Relative Angaben („in 3 Tagen“) | –                       | `$localize`-Texte        | Übersetzung (AP 6.8b)    |
 
+**Formate je Währung (Fachkonzept AP 8.1, Umsetzung AP 8.7b; Vorschlag E-59):** `formatMoney(betrag, währung, stellen)` für Kurse und Beträge in Notierungswährung, `formatPrice` und `formatCents` bleiben für Euro. Symbol und Stellung kommen aus `Intl.NumberFormat` mit `style: 'currency'` und `currencyDisplay: 'symbol'` der Sprache (`de-DE` bzw. `en-GB`), damit Dollar-Währungen unterscheidbar bleiben (Deutsch „$“ und „CA$“, Englisch „US$“ und „CA$“). Nachkommastellen: Kurse nach dem Preisraster der Währung (`priceDecimals` mit `u_c`, §6.12), Beträge in Fremdwährung mit zwei Stellen, Yen ohne. Wechselkurse (`formatFxRate`) als „EUR/USD 1,1234“ mit vier Stellen, bei JPY und INR mit zwei. Orakel der Logiktests ist `Intl.NumberFormat` (ICU 78) mit diesen Optionen; die Tabelle stammt aus dem Skript zu AP 8.1:
+
+| Funktion       | Wert              | Deutsch (`de-DE`) | Englisch (`en-GB`) |
+| -------------- | ----------------- | ----------------- | ------------------ |
+| `formatMoney`  | `1234.56`, USD, 2 | `1.234,56␣$`      | `US$1,234.56`      |
+| `formatMoney`  | `-0.05`, USD, 2   | `-0,05␣$`         | `-US$0.05`         |
+| `formatMoney`  | `1234.56`, CAD, 2 | `1.234,56␣CA$`    | `CA$1,234.56`      |
+| `formatMoney`  | `1234.56`, AUD, 2 | `1.234,56␣AU$`    | `A$1,234.56`       |
+| `formatMoney`  | `47.5`, HKD, 2    | `47,50␣HK$`       | `HK$47.50`         |
+| `formatMoney`  | `9.512`, HKD, 3   | `9,512␣HK$`       | `HK$9.512`         |
+| `formatMoney`  | `8.002`, GBP, 3   | `8,002␣£`         | `£8.002`           |
+| `formatMoney`  | `1234.56`, CHF, 2 | `1.234,56␣CHF`    | `CHF␣1,234.56`     |
+| `formatMoney`  | `16200`, JPY, 0   | `16.200␣¥`        | `JP¥16,200`        |
+| `formatMoney`  | `850.3`, JPY, 1   | `850,3␣¥`         | `JP¥850.3`         |
+| `formatMoney`  | `4321`, INR, 0    | `4.321␣₹`         | `₹4,321`           |
+| `formatMoney`  | `1234.56`, BRL, 2 | `1.234,56␣R$`     | `R$1,234.56`       |
+| `formatMoney`  | `1234.56`, EUR, 2 | `1.234,56␣€`      | `€1,234.56`        |
+| `formatFxRate` | `1.1234`, USD     | `1,1234`          | `1.1234`           |
+| `formatFxRate` | `121.4567`, JPY   | `121,46`          | `121.46`           |
+| `formatFxRate` | `0.85371`, GBP    | `0,8537`          | `0.8537`           |
+
+Das Währungspaar steht als Text davor („EUR/USD“, nicht übersetzt). Eingaben von Limit und Stop in Fremdwährung nutzen `formatPriceInput`/`parsePriceInput` mit dem Währungssymbol als Suffix des Felds.
+
 **Begriffsliste DE → EN** (AP 6.8b; verbindlich für `src/locale/messages.en.xlf`, neue Texte folgen ihr):
 
 - **Sprache und Ton:** britisches Englisch (`en-GB`: colour, behaviour, centre, catalogue, realised, cancelled, licence als Substantiv). Das „du“ wird zum informellen „you“; Hinweise im Imperativ, knapp wie in modernen Finanz-Apps; Kurzformen sind erlaubt („can’t“, „couldn’t“). „Bitte“ entfällt meist („Bitte gib ein Datum ein.“ → „Enter a date.“). Fehlermeldungen: „… konnte nicht geladen werden.“ → „Couldn’t load …“.
@@ -4135,6 +4445,16 @@ Geschätzter Ausführungskurs der Vorschau (`estimatedExecutionPrice`, Geld 99,9
 | Selbsttest, Prüfsumme                                       | self-test, checksum                                        | Labor                                                                                                        |
 | Phasen Normal/Boom/Abschwung/Krise                          | Normal, Boom, Downturn, Crisis                             | Labor                                                                                                        |
 | Datum im Glossar (Spielstart)                               | Monday, 1 April 2030                                       | wörtlich im Text                                                                                             |
+| Leitzins, Zentralbank, Sitzung                              | policy rate, central bank, meeting                         |                                                                                                              |
+| Inflation, Preisindex, Kaufkraft                            | inflation, consumer price index, purchasing power          | „real“ → „real (in April 2030 prices)“                                                                       |
+| Zinskurve, Kreditaufschlag                                  | yield curve, credit spread                                 |                                                                                                              |
+| Festgeld, Laufzeit, Fälligkeit                              | fixed-term deposit, term, maturity                         | Auszahlungskonto → payout account                                                                            |
+| Lockzins, Neukunde, Regelsatz                               | introductory rate, new customer, standard rate             | Höchstbetrag → cap                                                                                           |
+| Zinspolitik, Weitergabe                                     | rate policy, pass-through                                  |                                                                                                              |
+| Fremdwährung, Wechselkurs, Devisenkurs                      | foreign currency, exchange rate, FX rate                   |                                                                                                              |
+| Devisenkosten, Handelswährung, Notierungswährung            | FX costs, trading currency, listing currency               |                                                                                                              |
+| Direkthandel, Handelsplatz                                  | off-exchange trading, trading venue                        | Heimatbörse → home exchange                                                                                  |
+| Nominal, Real                                               | Nominal, Real                                              | Umschaltung im Chart                                                                                         |
 
 ### 11.10 Barrierefreiheit
 
@@ -4190,6 +4510,10 @@ Geschätzter Ausführungskurs der Vorschau (`estimatedExecutionPrice`, Geld 99,9
 | `year-closed`              | Steuern   | Info     | ja    | nein    | nein                  |
 | `storage-quota-exceeded`   | System    | kritisch | ja    | nein    | nein                  |
 | `market-checksum-mismatch` | System    | Warnung  | ja    | nein    | nein                  |
+| `policy-rate-decided`      | Markt     | Info     | ja    | nein    | nein                  |
+| `interest-rate-changed`    | Konto     | Info     | ja    | nein    | nein                  |
+| `teaser-ended`             | Konto     | Hinweis  | nein  | nein    | nein                  |
+| `term-deposit-matured`     | Erträge   | Info     | ja    | nein    | nein                  |
 | `backup-reminder` (UI)     | System    | Hinweis  | ja    | nein    | –                     |
 
 - **Einstellbar je Code:** Toast, Browser-Benachrichtigung und Auto-Pause werden je Ereignis-Code eingestellt; die Einstellungsseite gruppiert die Codes nach Kategorie. Auto-Pause ist Teil des Spielerzustands (§9.3); Toast und Browser sind Geräteeinstellungen.
@@ -4198,6 +4522,7 @@ Geschätzter Ausführungskurs der Vorschau (`estimatedExecutionPrice`, Geld 99,9
 - **Browser-Benachrichtigungen** werden über `ServiceWorkerRegistration.showNotification()` angezeigt; der Konstruktor `new Notification()` ist unter Chrome für Android nicht verfügbar. Sie setzen daher den Service Worker der PWA voraus (AP 6.3). Praktisch wirken sie nur am Desktop: Smartphones halten die App im Hintergrund an, und unter iOS gibt es die Erlaubnis nur für installierte Web-Apps.
 - **Plattform-Port:** Ein `InjectionToken` `NOTIFICATION_PORT` mit `permission()`, `requestPermission()`, `notify(…)` und – nur nativ – `schedule(…)`. Die Web-Implementierung liegt in `notifications/data-access`; eine Capacitor-Implementierung kann später per Provider getauscht werden.
 - **Bündelung:** Gleichartige Ereignisse innerhalb einer Sekunde Echtzeit werden zusammengefasst („12 Sparpläne ausgeführt").
+- **Ab M8 (Fachkonzept AP 8.1):** neue Kategorie `market` (Markt) für `policy-rate-decided` (Parameter `oldBp`, `newBp`, `effectiveFrom`; aus dem Ereignis um 14:15, §6.11, Umsetzung mit der Wirtschaftsansicht, US-MK-10). `interest-rate-changed` (`bankId`, `product`, `oldBp`, `newBp`, §7.10), `teaser-ended` (`accountId`, `teaserBp`, `regularBp`, §7.10), `term-deposit-matured` (`accountId`, `payoutAccountId`, `amount`, `interest`, `tax`, §7.11); `year-closed` trägt zusätzlich `netIncome` und `livingCosts` des neuen Jahres (§7.14). Mehrere Zinsänderungen desselben Tags werden gebündelt („3 Zinssätze geändert“).
 
 **Umsetzung in Engine und Worker (AP 3.6, Teil a):** framework-freie Regeln in `notifications/domain`, Erzeugung in `engine/domain/notification-system.ts`, Speicherung, Auto-Pause und Bericht im `EngineHost`. Slice, Zentrum, Toasts, Zähler und Schalter beschreibt der Abschnitt zu Teil b unten.
 

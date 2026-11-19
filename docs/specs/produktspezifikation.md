@@ -121,6 +121,13 @@ Diese Merkmale sind zugleich die Dimensionen, nach denen der Anwender den Markt 
 | Sparplan                    | Regelmäßiger, automatischer Kauf eines Instruments für einen festen Betrag.                                           |
 | Gesamtvermögen              | Summe aller Kontosalden (Überziehungen mindern sie) und Depotwerte zum Geldkurs.                                      |
 | Benchmark                   | Vergleichsmaßstab: Wie stünde der Spieler da, wenn alle Zuflüsse ohne Kosten in den Weltindex geflossen wären?        |
+| Leitzins                    | Zinssatz der Zentralbank; Tagesgeld- und Dispozinsen der Banken folgen ihm (ab Stufe 2).                              |
+| Festgeld                    | Konto mit festem Zins und fester Laufzeit; vor der Fälligkeit nicht verfügbar (ab Stufe 2).                           |
+| Lockzins                    | Erhöhter Zins für Neukunden auf Tagesgeld, befristet und bis zu einem Höchstbetrag (ab Stufe 2).                      |
+| Wechselkurs                 | Einheiten einer Fremdwährung je Euro, z. B. EUR/USD 1,12 (ab Stufe 2).                                                |
+| Devisenkosten               | Entgelt der Bank für die Umrechnung beim Handel in Fremdwährung (ab Stufe 2).                                         |
+| Direkthandel                | Handel mit einem Market Maker der Bank in Euro, mit längeren Handelszeiten als die Börse (ab Stufe 2).                |
+| Real, nominal               | Real heißt in Preisen des Spielstarts, also um die Inflation bereinigt; nominal ist der Betrag in Euro.               |
 
 ## 6. Fachliches Domänenmodell
 
@@ -260,6 +267,16 @@ Als Anwender möchte ich sehen, wohin mein Geld im Monat geflossen ist, damit ic
 - Pro Monat: Einkommen, Lebenshaltung, Gebühren, Zinsen, Steuern, Erträge (Dividenden, Zinsen) und Sparquote.
 - Zum Monatsende gibt es eine Benachrichtigung mit dem Monatsabschluss (S).
 
+**US-EK-04 – Einkommen und Kosten wachsen mit der Inflation** · Stufe 2 · M
+Als Anwender möchte ich, dass mein Gehalt und meine Lebenshaltungskosten mit den Verbraucherpreisen steigen, damit lange Spiele realistisch bleiben und ich den Unterschied zwischen nominalem und realem Vermögen erlebe.
+
+- Zum 01.01. jedes Jahres werden Nettoeinkommen und Basisbetrag der Lebenshaltung an den Preisindex angepasst: Startbetrag × Preisindex des Januars ÷ Preisindex des Startmonats, auf Cent gerundet (TS §7.14, E-56). Die erste Anpassung ist am 01.01.2031 und enthält die Teuerung seit dem Spielstart.
+- Das Gehalt sinkt nominal nie; bei sinkenden Preisen bleibt es, die Lebenshaltung sinkt mit.
+- Die monatliche Schwankung der Lebenshaltung (US-EK-02) wirkt auf den angepassten Basisbetrag; der Dispo-Rahmen folgt dem höheren Gehalt über die Gehaltseingänge (US-BK-07).
+- Gebühren der Banken, der Sparerpauschbetrag und die Mindestbeträge (Sparplan, Festgeld, Order) bleiben nominal; die Startbedingungen im Profil ändern sich nicht.
+- „Demnächst“ zeigt die angepassten Beträge; Termine nach dem nächsten 01.01. stehen ohne Betrag mit dem Hinweis auf die Anpassung (S).
+- Der Jahresabschluss nennt das neue Gehalt und die neue Lebenshaltung (S).
+
 ### 7.4 Banken und Konten (BK)
 
 **US-BK-01 – Banken vergleichen** · Stufe 1 · M
@@ -328,6 +345,37 @@ Als Anwender möchte ich regelmäßig einen festen Betrag automatisch zwischen m
 - Daueraufträge lassen sich auf der Kontenseite anlegen, ändern, pausieren und löschen (E-21).
 - Ein Konto, das Quell- oder Zielkonto eines Dauerauftrags ist, lässt sich erst schließen, wenn der Dauerauftrag gelöscht ist. Mehrere Daueraufträge am selben Tag laufen in der Reihenfolge, in der sie angelegt wurden; ein Verwendungszweck ist optional.
 
+**US-BK-13 – Tagesgeld- und Dispozinsen folgen dem Leitzins** · Stufe 2 · M
+Als Anwender möchte ich, dass die Zinsen meiner Konten dem Leitzins folgen, damit sich eine Zinswende auf mein Erspartes und meine Schulden auswirkt und sich der Bankvergleich immer wieder lohnt.
+
+- Habenzinsen auf Tagesgeld und (bei Neobrokern) Verrechnungskonten sowie Dispo-, Überziehungs- und Sollzinsen folgen dem Leitzins nach der Zinspolitik der Bank: Weitergabe (Direktbanken geben viel weiter, Filialbanken wenig), Verzögerung (Erhöhungen beim Haben spät, beim Soll früh; Senkungen umgekehrt) und Raster von 0,05 Prozentpunkten (TS §7.10, E-53).
+- Die Zinspolitik ist aus dem Seed erzeugt und unterscheidet sich je Bank. Die heutigen Sätze der Welt gelten bei einem Leitzins von 2,50 %.
+- Habenzinsen werden nie negativ; Girokonten haben weiter keinen Habenzins; Gebühren ändern sich nicht.
+- Ein neuer Satz gilt ab 00:00 eines Tages; die Zinsen eines Tages rechnen taggenau mit dessen Satz, auch beim Kontoabschluss.
+- Bankenvergleich, „Konto eröffnen“ und Kontokarte zeigen den Satz von heute (M) und die Zinspolitik in Worten, z. B. „folgt dem Leitzins zu 80 %, Erhöhungen nach 4 Wochen“ (S).
+- Ändert sich ein Satz eines Produkts, von dem der Anwender ein Konto hat, erhält er eine Benachrichtigung (S).
+- „Demnächst“ zeigt Zinsänderungen, die schon feststehen (K).
+- Alle Banken lesen dieselbe Regel; Vorschau und Buchung rechnen gleich.
+
+**US-BK-11 – Festgeld und Neukunden-Lockzinsen** · Stufe 2 · M
+Als Anwender möchte ich Geld zu einem festen Zins anlegen und Lockangebote für Neukunden nutzen, damit ich zwischen Verfügbarkeit und Zins abwägen und Angebote vergleichen kann.
+
+_Festgeld (M):_
+
+- Filial- und Direktbanken bieten Festgeld mit 3, 6, 12, 24, 36 und 60 Monaten Laufzeit an. Der Satz ergibt sich aus der Zinskurve am Tag des Abschlusses und dem Auf- oder Abschlag der Bank, liegt nie unter 0 und gilt fest für die ganze Laufzeit (TS §7.11, E-55).
+- Eröffnung mit Bank, Laufzeit, Betrag (mindestens 1.000 €), Quellkonto und Auszahlungskonto; der Betrag wird sofort vom Quellkonto übertragen, höchstens der verfügbare Betrag.
+- Vor der Fälligkeit gibt es keine Verfügung: keine Überweisung, kein Dauerauftrag, kein Schließen. Das Auszahlungskonto lässt sich bis zur Fälligkeit nicht schließen; ein Hinweis erklärt den Grund.
+- Zinsen werden taggenau berechnet; bei Laufzeiten über ein Jahr werden sie am Jahrestag gutgeschrieben und mitverzinst, sonst bei Fälligkeit. Die Abgeltungsteuer wird wie bei anderen Zinsen einbehalten (US-ST-01).
+- Fällt das Laufzeitende auf ein Wochenende oder einen Feiertag des Bankkalenders, wird am nächsten Bankarbeitstag um 06:00 ausgezahlt; die zusätzlichen Tage werden verzinst.
+- Bei Fälligkeit gehen Betrag und Zinsen auf das Auszahlungskonto, das Festgeldkonto schließt, und der Anwender erhält eine Benachrichtigung (S).
+- Kontokarte (Satz, Laufzeitende, erwartete Zinsen) und Kontoauszug zeigen das Festgeld; „Demnächst“ zeigt Jahrestag und Fälligkeit; der Bankenvergleich zeigt die Festgeldsätze (S).
+
+_Lockzins (S):_
+
+- Direktbanken bieten Neukunden auf Tagesgeld einen Lockzins: einen Aufschlag auf den Satz von heute, fest für drei bis sechs Monate und bis zu einem Höchstbetrag; darüber und danach gilt der normale Satz (TS §7.10, E-54).
+- Neukunde ist, wer bei der Bank kein Tagesgeldkonto hat und in den zwölf Monaten vor der Eröffnung keines geschlossen hat.
+- „Konto eröffnen“ zeigt, ob der Lockzins gilt; die Kontokarte zeigt Satz, Ende und Höchstbetrag; zum Ende gibt es einen Hinweis (K).
+
 ### 7.5 Märkte und Instrumente (MK)
 
 **US-MK-01 – Marktübersicht** · Stufe 1 · M
@@ -383,7 +431,9 @@ Als Anwender möchte ich, dass sich Preise und Zinsen wie in einer echten Volksw
 - Leitzins, Jahresinflation und Zinskurve (heute und vor einem Jahr) sind in „Märkte“ zu sehen, mit dem Verlauf von Leitzins und Inflation und den nächsten Sitzungsterminen (S).
 - Eine Leitzinsentscheidung erzeugt eine Benachrichtigung (S); Zentralbankentscheidungen sind strukturierte Ereignisse für Newsticker und Wirtschaftskalender (US-NT-01, US-NT-02).
 - Preisindex, Leitzins und Zinskurve sind für alle Spieler mit demselben Seed gleich und hängen nicht von Spielerentscheidungen ab.
-- **Haushalt und Anzeige:** Gehalt und Lebenshaltung folgen den Verbraucherpreisen (US-EK-04), Real- und Nominalansicht und Kaufkraft des Bargelds siehe AP 8.9; Tagesgeld und Dispo am Leitzins siehe US-BK-13 und AP 8.10, Festgeld siehe US-BK-11 und AP 8.11 (Akzeptanzkriterien folgen im Teil „Wirtschaft“ des Fachkonzepts AP 8.1).
+- Gehalt und Lebenshaltung folgen den Verbraucherpreisen (US-EK-04), Tagesgeld- und Dispozinsen dem Leitzins (US-BK-13), Festgeld der Zinskurve (US-BK-11).
+- Vermögensverlauf und Performance lassen sich zwischen „Nominal“ und „Real“ umschalten; real heißt in Preisen des Spielstarts (TS §7.14). Rendite seit Spielbeginn, im laufenden Jahr und annualisiert, Benchmark und Vergleichsgröße gibt es in beiden Ansichten.
+- Die Übersicht zeigt die Kaufkraft von 1 € seit Spielbeginn und den realen Wert des Bargelds (S).
 
 **US-MK-17 – Fremdwährungen** · Stufe 2 · M
 Als Anwender möchte ich, dass ausländische Aktien in ihrer Landeswährung notieren und sich die Wechselkurse bewegen, damit ich das Währungsrisiko einer Anlage im Ausland verstehe und es in meiner Rendite in Euro sehe.
@@ -395,7 +445,16 @@ Als Anwender möchte ich, dass ausländische Aktien in ihrer Landeswährung noti
 - Indizes notieren in einer festen Währung: die Regionalindizes in der Leitwährung ihrer Region (Nordamerika und Schwellenländer US-Dollar, Europa Euro, Asien-Pazifik Yen), alle übrigen in Euro. Werte anderer Währungen rechnet der Index zu jeder Minute um.
 - ETFs auf Indizes in Fremdwährung haben einen Wert in Euro aus dem Index und dem Wechselkurs derselben Minute; die Wechselkursbewegung steckt im ETF-Kurs.
 - Wechselkurse sind für alle Spieler mit demselben Seed gleich und hängen nicht von Spielerentscheidungen ab; vergangene Kurse sind wie Aktienkurse minutengenau abrufbar.
-- Aktuelle Devisenkurse mit Chart in „Märkte“ siehe AP 8.7b; Handel in Fremdwährung (Umrechnung bei Kauf, Verkauf und Ausschüttung, Devisenkosten, Buchung und Steuer in Euro, Anzeige in Landeswährung mit Wert in Euro) siehe AP 8.7a und AP 8.7b (Akzeptanzkriterien folgen im Teil „Wirtschaft“ des Fachkonzepts AP 8.1).
+- Konten bleiben in Euro; ein Währungskonto gibt es nicht (TS §7.12, E-57).
+- An der Heimatbörse handelt der Anwender in der Notierungswährung: Kurs, Limit und Stop gelten in Landeswährung. Bei Ausführung wird zum Wechselkurs dieser Minute in Euro umgerechnet; die Bank berechnet dafür Devisenkosten nach ihren Konditionen (Prozent des Kurswerts; Neobroker handeln nur in Euro).
+- Buchung, Lots, Gewinn und Steuer sind in Euro: Anschaffungskosten zum Kurs des Kaufs, Erlös zum Kurs des Verkaufs. Ein Gewinn in Landeswährung kann so ein Verlust in Euro sein; der Kontoauszug zeigt Kurs, Betrag in Fremdwährung und Wechselkurs.
+- Kauforders in Fremdwährung reservieren mit einem Puffer für den Wechselkurs; reicht das Guthaben bei Ausführung nicht, wird die Order abgelehnt.
+- Dividenden ausländischer Aktien werden in Landeswährung angekündigt und am Zahltag zum Wechselkurs von 06:00 ohne Devisenkosten in Euro gutgeschrieben; die Steuer rechnet in Euro.
+- Positionen, Vermögen und Performance sind in Euro; der Wert einer ausländischen Position bewegt sich auch, wenn ihre Börse geschlossen ist, weil sich der Wechselkurs bewegt.
+- Devisenkosten zählen in „Erträge und Kosten“ als eigene Kostenart (US-PF-07).
+- Kurskopf, Watchlist und Screener zeigen Kurse in Landeswährung mit dem Wert in Euro (S); das Order-Ticket zeigt in der Kostenvorschau Kurswert in Landeswährung, Wechselkurs, Kurswert in Euro, Entgelte, Devisenkosten und Gesamtbetrag in Euro.
+- Beträge und Kurse erscheinen mit dem Symbol ihrer Währung in Deutsch und Englisch (TS §11.9, E-59).
+- „Märkte“ zeigt die Devisenkurse mit Tagesveränderung und Chart; das Depot zeigt die Aufteilung nach Währung (S).
 
 **US-MK-18 – Börsenfeiertage und Direkthandel** · Stufe 2 · M
 Als Anwender möchte ich, dass Börsen an ihren Feiertagen geschlossen sind und Banken an Feiertagen nicht buchen, damit sich der Kalender wie ein echtes Börsen- und Finanzjahr anfühlt und ich Käufe, Sparpläne und Überweisungen danach planen kann.
@@ -409,7 +468,10 @@ Als Anwender möchte ich, dass Börsen an ihren Feiertagen geschlossen sind und 
 - Bankarbeitstage sind Montag bis Freitag ohne die bundeseinheitlichen Feiertage in Deutschland und ohne Heiligabend und Silvester (E-45). Gehalt (letzter), Lebenshaltung, Kontoführung, Zinsen und Gebühren (erster Bankarbeitstag des Monats) sowie Daueraufträge (nächster Bankarbeitstag) richten sich danach, nicht nach den Börsen. Ein Dauerauftrag, der einen Sparplan decken soll, kann deshalb nach dessen Termin laufen, wenn nur die Bank Feiertag hat.
 - „Demnächst“ auf der Übersicht (§10.3) und der Dividendenkalender zeigen die verschobenen Termine.
 - Eine Übersicht der kommenden Feiertage je Börse für die nächsten zwölf Monate gibt es in der Börsenliste (K).
-- **Direkthandel:** siehe AP 8.8 (Akzeptanzkriterien folgen im Teil „Direkthandel“ des Fachkonzepts AP 8.1).
+- **Direkthandel** (TS §7.13, E-58): Direktbanken, Onlinebroker und Neobroker bieten den Direkthandel mit einem Market Maker an, Montag bis Freitag 08:00–23:00 außer an Feiertagen der deutschen Börse. Neobroker handeln nur dort, Filialbanken nur an der Börse; bei Direktbanken und Onlinebrokern wählt der Anwender den Handelsplatz im Order-Ticket.
+- Im Direkthandel werden alle Aktien und ETFs in Euro gehandelt, auch ausländische, ohne Börsenentgelt und ohne Devisenkosten. Außerhalb der Handelszeit der Heimatbörse stellt der Market Maker indikative Kurse mit breiterem Spread.
+- Orders gelten an ihrem Handelsplatz: „bis Tagesende“ endet um 23:00; eine Limit-Order auf eine US-Aktie kann so am Abend während der US-Sitzung oder morgens vor deren Öffnung ausgeführt werden.
+- Die Kostenvorschau zeigt Handelsplatz, Spread und Entgelt; die Kurse der Börse und ihre Historie ändern sich durch den Direkthandel nicht.
 
 ### 7.6 Handel (HD)
 
@@ -668,52 +730,52 @@ Als Anwender möchte ich die App auf Deutsch oder Englisch nutzen.
 
 ### 7.12 Spätere Ausbaustufen (Skizze)
 
-| ID       | Story (Kurzform)                                                                                                             | Stufe |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------- | ----- |
-| US-MK-10 | Zinsumfeld und Inflation: ausgearbeitet in [7.5](#75-märkte-und-instrumente-mk) (Gehalt und Kosten, Realwerte folgen später) | 2     |
-| US-MK-11 | Anleihen: Staats- und Unternehmensanleihen mit Kupon, Laufzeit, Rating, Stückzinsen und Rückzahlung                          | 2     |
-| US-MK-12 | Rohstoffe und ETCs                                                                                                           | 2     |
-| US-MK-13 | Physische Edelmetalle: Kauf beim Händler über das Barvermögen, hohe Spanne, steuerfrei nach einem Jahr Haltedauer            | 2     |
-| US-MK-14 | Aktive Fonds: Ausgabeaufschlag, höhere TER, Erfolg des Fondsmanagements                                                      | 2     |
-| US-MK-15 | Fundamentaldaten und Quartalszahlen (KGV, Gewinnwachstum, Berichtstermine)                                                   | 2     |
-| US-MK-16 | Unternehmensereignisse: Aktiensplits, Übernahmen, Insolvenzen, Börsengänge, Indexanpassungen                                 | 2     |
-| US-MK-17 | Fremdwährungen: ausgearbeitet in [7.5](#75-märkte-und-instrumente-mk) (Handel und Anzeige folgen)                            | 2     |
-| US-MK-18 | Börsenfeiertage und Direkthandel: ausgearbeitet in [7.5](#75-märkte-und-instrumente-mk) (Direkthandel folgt)                 | 2     |
-| US-EK-04 | Einkommen und Kosten wachsen mit der Inflation: Gehalt und Lebenshaltung folgen den Verbraucherpreisen                       | 2     |
-| US-BK-11 | Festgeld und Neukunden-Lockzinsen                                                                                            | 2     |
-| US-BK-13 | Tagesgeld- und Dispozinsen folgen dem Leitzins                                                                               | 2     |
-| US-BK-12 | Depotübertrag: Wertpapiere ohne Verkauf zu einer anderen Bank übertragen (E-28)                                              | 2     |
-| US-HD-10 | Trailing-Stop                                                                                                                | 2     |
-| US-HD-11 | Kursalarme („benachrichtige mich, wenn X > 50")                                                                              | 2     |
-| US-ST-10 | Teilfreistellung und Vorabpauschale bei Fonds und ETFs                                                                       | 2     |
-| US-ST-11 | Getrennte Verlusttöpfe (Aktien, Sonstiges) und Freistellungsaufträge je Bank                                                 | 2     |
-| US-ST-12 | Quellensteuer auf ausländische Dividenden mit Anrechnung                                                                     | 2     |
-| US-CH-03 | Vergleichschart: mehrere Instrumente und das eigene Depot normiert in %                                                      | 2     |
-| US-CH-04 | Weitere Indikatoren (RSI, MACD) und Handelsvolumen                                                                           | 2     |
-| US-PF-08 | Risikokennzahlen: Volatilität, maximaler Drawdown, Sharpe-Ratio                                                              | 2     |
-| US-CF-01 | CFD-Handel: CFD-Konto, Long- und Short-Positionen mit Hebel                                                                  | 3     |
-| US-CF-02 | CFD-Margin: Sicherheitsleistung, Finanzierungskosten, Margin-Call und Zwangsglattstellung                                    | 3     |
-| US-MK-19 | Große Welt: deutlich mehr Länder, Börsen, Branchen und Instrumente aller Assetklassen, bei gleichem Spieltempo               | N     |
-| US-MK-20 | Große Listen bedienen: Screener, Suche und Marktübersicht bleiben auch mit Tausenden Instrumenten schnell und übersichtlich  | N     |
-| US-RG-01 | Regel anlegen: „wenn Bedingung, dann Aktion", z. B. „wenn SMA20(X) > SMA50(X), dann kaufen"                                  | 3     |
-| US-RG-02 | Regeln aktivieren, deaktivieren und ihre Ausführungen protokollieren                                                         | 3     |
-| US-RG-03 | Backtest einer Regel auf der Kurshistorie                                                                                    | 3     |
-| US-RG-04 | Strategievorlagen (z. B. Trendfolge, Rebalancing)                                                                            | 3     |
-| US-LE-01 | Zufällige Lebensereignisse (z. B. Autoreparatur, Bonuszahlung), seed-basiert                                                 | 4     |
-| US-LE-02 | Upgrades (Auto, Wohnung, Weiterbildung) mit Auswirkung auf Kosten, Ereignisse und Einkommen                                  | 4     |
-| US-LE-03 | Versicherungen gegen Ereigniskosten                                                                                          | 4     |
-| US-LE-04 | Karriere und Gehaltsentwicklung                                                                                              | 4     |
-| US-NT-01 | Newsticker zu Markt-, Branchen- und Unternehmensereignissen                                                                  | 4     |
-| US-NT-02 | Wirtschaftskalender (Zentralbanktermine, Quartalszahlen)                                                                     | 4     |
-| US-GA-01 | Achievements: Erfolge mit Kategorien und Stufen (z. B. erste Dividende, Vermögensschwellen, Bärenmarkt durchgehalten)        | 4     |
-| US-GA-02 | Spielziele und Herausforderungen mit Frist (z. B. „100.000 € Depotwert bis 2040")                                            | 4     |
-| US-GA-03 | Übersicht der Erfolge mit Fortschritt; Freischalten per Toast und Meldung im Newsticker                                      | 4     |
-| US-ER-01 | Erben: Ein Nachfolger startet mit dem Vermögen nach Erbschaftsteuer                                                          | 5     |
-| US-ER-02 | Prestige: dauerhafte Startvorteile für Nachfolger                                                                            | 5     |
-| US-ER-03 | Familienchronik über mehrere Generationen                                                                                    | 5     |
-| US-NA-01 | Native Android-App                                                                                                           | N     |
-| US-NA-02 | Vorausgeplante Benachrichtigungen bei geschlossener App                                                                      | N     |
-| US-NA-03 | Native iOS-App                                                                                                               | N     |
+| ID       | Story (Kurzform)                                                                                                            | Stufe |
+| -------- | --------------------------------------------------------------------------------------------------------------------------- | ----- |
+| US-MK-10 | Zinsumfeld und Inflation: ausgearbeitet in [7.5](#75-märkte-und-instrumente-mk)                                             | 2     |
+| US-MK-11 | Anleihen: Staats- und Unternehmensanleihen mit Kupon, Laufzeit, Rating, Stückzinsen und Rückzahlung                         | 2     |
+| US-MK-12 | Rohstoffe und ETCs                                                                                                          | 2     |
+| US-MK-13 | Physische Edelmetalle: Kauf beim Händler über das Barvermögen, hohe Spanne, steuerfrei nach einem Jahr Haltedauer           | 2     |
+| US-MK-14 | Aktive Fonds: Ausgabeaufschlag, höhere TER, Erfolg des Fondsmanagements                                                     | 2     |
+| US-MK-15 | Fundamentaldaten und Quartalszahlen (KGV, Gewinnwachstum, Berichtstermine)                                                  | 2     |
+| US-MK-16 | Unternehmensereignisse: Aktiensplits, Übernahmen, Insolvenzen, Börsengänge, Indexanpassungen                                | 2     |
+| US-MK-17 | Fremdwährungen: ausgearbeitet in [7.5](#75-märkte-und-instrumente-mk)                                                       | 2     |
+| US-MK-18 | Börsenfeiertage und Direkthandel: ausgearbeitet in [7.5](#75-märkte-und-instrumente-mk)                                     | 2     |
+| US-EK-04 | Einkommen und Kosten wachsen mit der Inflation: ausgearbeitet in [7.3](#73-einkommen-und-kosten-ek)                         | 2     |
+| US-BK-11 | Festgeld und Neukunden-Lockzinsen: ausgearbeitet in [7.4](#74-banken-und-konten-bk)                                         | 2     |
+| US-BK-13 | Tagesgeld- und Dispozinsen folgen dem Leitzins: ausgearbeitet in [7.4](#74-banken-und-konten-bk)                            | 2     |
+| US-BK-12 | Depotübertrag: Wertpapiere ohne Verkauf zu einer anderen Bank übertragen (E-28)                                             | 2     |
+| US-HD-10 | Trailing-Stop                                                                                                               | 2     |
+| US-HD-11 | Kursalarme („benachrichtige mich, wenn X > 50")                                                                             | 2     |
+| US-ST-10 | Teilfreistellung und Vorabpauschale bei Fonds und ETFs                                                                      | 2     |
+| US-ST-11 | Getrennte Verlusttöpfe (Aktien, Sonstiges) und Freistellungsaufträge je Bank                                                | 2     |
+| US-ST-12 | Quellensteuer auf ausländische Dividenden mit Anrechnung                                                                    | 2     |
+| US-CH-03 | Vergleichschart: mehrere Instrumente und das eigene Depot normiert in %                                                     | 2     |
+| US-CH-04 | Weitere Indikatoren (RSI, MACD) und Handelsvolumen                                                                          | 2     |
+| US-PF-08 | Risikokennzahlen: Volatilität, maximaler Drawdown, Sharpe-Ratio                                                             | 2     |
+| US-CF-01 | CFD-Handel: CFD-Konto, Long- und Short-Positionen mit Hebel                                                                 | 3     |
+| US-CF-02 | CFD-Margin: Sicherheitsleistung, Finanzierungskosten, Margin-Call und Zwangsglattstellung                                   | 3     |
+| US-MK-19 | Große Welt: deutlich mehr Länder, Börsen, Branchen und Instrumente aller Assetklassen, bei gleichem Spieltempo              | N     |
+| US-MK-20 | Große Listen bedienen: Screener, Suche und Marktübersicht bleiben auch mit Tausenden Instrumenten schnell und übersichtlich | N     |
+| US-RG-01 | Regel anlegen: „wenn Bedingung, dann Aktion", z. B. „wenn SMA20(X) > SMA50(X), dann kaufen"                                 | 3     |
+| US-RG-02 | Regeln aktivieren, deaktivieren und ihre Ausführungen protokollieren                                                        | 3     |
+| US-RG-03 | Backtest einer Regel auf der Kurshistorie                                                                                   | 3     |
+| US-RG-04 | Strategievorlagen (z. B. Trendfolge, Rebalancing)                                                                           | 3     |
+| US-LE-01 | Zufällige Lebensereignisse (z. B. Autoreparatur, Bonuszahlung), seed-basiert                                                | 4     |
+| US-LE-02 | Upgrades (Auto, Wohnung, Weiterbildung) mit Auswirkung auf Kosten, Ereignisse und Einkommen                                 | 4     |
+| US-LE-03 | Versicherungen gegen Ereigniskosten                                                                                         | 4     |
+| US-LE-04 | Karriere und Gehaltsentwicklung                                                                                             | 4     |
+| US-NT-01 | Newsticker zu Markt-, Branchen- und Unternehmensereignissen                                                                 | 4     |
+| US-NT-02 | Wirtschaftskalender (Zentralbanktermine, Quartalszahlen)                                                                    | 4     |
+| US-GA-01 | Achievements: Erfolge mit Kategorien und Stufen (z. B. erste Dividende, Vermögensschwellen, Bärenmarkt durchgehalten)       | 4     |
+| US-GA-02 | Spielziele und Herausforderungen mit Frist (z. B. „100.000 € Depotwert bis 2040")                                           | 4     |
+| US-GA-03 | Übersicht der Erfolge mit Fortschritt; Freischalten per Toast und Meldung im Newsticker                                     | 4     |
+| US-ER-01 | Erben: Ein Nachfolger startet mit dem Vermögen nach Erbschaftsteuer                                                         | 5     |
+| US-ER-02 | Prestige: dauerhafte Startvorteile für Nachfolger                                                                           | 5     |
+| US-ER-03 | Familienchronik über mehrere Generationen                                                                                   | 5     |
+| US-NA-01 | Native Android-App                                                                                                          | N     |
+| US-NA-02 | Vorausgeplante Benachrichtigungen bei geschlossener App                                                                     | N     |
+| US-NA-03 | Native iOS-App                                                                                                              | N     |
 
 ## 8. Ausbaustufen
 
@@ -727,7 +789,7 @@ Als Anwender möchte ich die App auf Deutsch oder Englisch nutzen.
 | 5     | „Langzeitspiel"             | Game-Loop über Generationen: Erben, Prestige, Familienchronik und weitere Langzeitziele                                                                                                                                                                                                                                                                                                                                                            | M17          |
 | N     | „Optional"                  | App für Android und iOS mit Capacitor, vorausgeplante Benachrichtigungen; große Welt mit deutlich mehr Instrumenten                                                                                                                                                                                                                                                                                                                                | N1, N2       |
 
-**Bekannte Grenze von Stufe 1:** Gehalt, Lebenshaltungskosten, Gebühren und Sparerpauschbetrag bleiben nominal fest; Inflation und Gehaltsentwicklung folgen in Stufe 2 und 4. In sehr langen Spielen verlieren Einkommen und Gebühren deshalb gegenüber dem Vermögen an Gewicht. Wie sich der Markt über Jahrzehnte verhält, klärt E-22 (TS §6.4).
+**Bekannte Grenze von Stufe 1:** Gehalt, Lebenshaltungskosten, Gebühren und Sparerpauschbetrag bleiben nominal fest; Inflation und Gehaltsentwicklung folgen in Stufe 2 und 4. Ab M8 folgen Gehalt und Lebenshaltung den Verbraucherpreisen (US-EK-04); Gebühren und Sparerpauschbetrag bleiben nominal (TS §7.10, §7.14). In sehr langen Spielen verlieren Einkommen und Gebühren deshalb gegenüber dem Vermögen an Gewicht. Wie sich der Markt über Jahrzehnte verhält, klärt E-22 (TS §6.4).
 
 **(E-12, entschieden)** Die Ideensammlung nennt Aktien, ETFs/ETCs, CFDs, Anleihen, Rohstoffe und Edelmetalle als Kern des Spiels. Damit das MVP überschaubar bleibt, enthält Stufe 1 nur Aktien und ETFs (plus Indizes als Referenz); die übrigen Klassen folgen in Stufe 2 und 3. Inflation ist in der Ideensammlung für später vorgemerkt und wird in Stufe 2 zusammen mit dem Zinsumfeld umgesetzt, weil beide fachlich zusammenhängen (Leitzins reagiert auf Inflation).
 
