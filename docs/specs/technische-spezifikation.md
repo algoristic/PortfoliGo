@@ -641,7 +641,7 @@ const rng = createStream(seedKey, `market/instrument/${instrumentId}/${dayIndex}
 ```
 
 - Der Startzustand jedes Stroms ist MurmurHash3 x86_128 über die 16 Bytes von `seedKey` (little-endian) gefolgt von den UTF-8-Bytes eines stabilen Schlüssels; h1–h4 werden zu a, b, c und Zähler von `sfc32` (schnell, gute statistische Qualität, 128-Bit-Zustand). Die ersten 12 Ausgaben werden verworfen. Mit 128 Bit sind Kollisionen zwischen Strömen praktisch ausgeschlossen – bei nur 32 Bit gäbe es schon in einem Spieljahrzehnt Hunderte identische Ströme (rund 2,5 Mio. Ströme ergeben rund 700–850 gleiche Paare, AP 7.1a).
-- Beispiele für Schlüssel: `world/companies`, `world/indices`, `world/etfs`, `world/banks` (je ein Strom pro Stufe der Weltgenerierung, §5.1), `world/dividends` (Ex-Tag-Rhythmus aller Unternehmen und Beginn der Zahlungen der übrigen, E-33; nach den Banken gezogen, damit sich die übrigen Attribute nicht verschieben), `world/etf-terms` (Startkurs der ETFs und Ex-Tag-Rhythmus der ausschüttenden, danach gezogen), `market/regime/<tag>`, `market/factor/<id>/init` (Startzustand an der Epoche, §6.2), `market/factor/<id>/<tag>` (Tagesschritt), `market/factor/<id>/<tag>/bridge/<intervall>` (Minutenwerte), `market/instrument/<id>/<tag>` (Tagesschritt), `market/instrument/<id>/<tag>/bridge` (Minutenwerte), `market/etfs/<tag>` (Tracking-Rauschen aller ETFs, eine Zahl je ETF in ETF-Reihenfolge; ein Strom je ETF kostete rund 25 ms Vorlauf, neue ETFs werden angehängt und verschieben die übrigen nicht), `life/living-costs/<monat>`.
+- Beispiele für Schlüssel: `world/companies`, `world/indices`, `world/etfs`, `world/banks` (je ein Strom pro Stufe der Weltgenerierung, §5.1), `world/dividends` (Ex-Tag-Rhythmus aller Unternehmen und Beginn der Zahlungen der übrigen, E-33; nach den Banken gezogen, damit sich die übrigen Attribute nicht verschieben), `world/etf-terms` (Startkurs der ETFs und Ex-Tag-Rhythmus der ausschüttenden, danach gezogen), `market/regime/<tag>`, `market/factor/<id>/init` (Startzustand an der Epoche, §6.2), `market/factor/<id>/<tag>` (Tagesschritt), `market/factor/<id>/<tag>/bridge/<intervall>` (Minutenwerte), `market/instrument/<id>/<tag>` (Tagesschritt), `market/instrument/<id>/<tag>/bridge` (Minutenwerte), `market/etfs/<tag>` (Tracking-Rauschen aller ETFs, eine Zahl je ETF in ETF-Reihenfolge; ein Strom je ETF kostete rund 25 ms Vorlauf, neue ETFs werden angehängt und verschieben die übrigen nicht), `market/macro/init` und `market/macro/<tag>` (Makromodell, ab AP 8.4, §6.11), `market/fx/<währung>/init`, `market/fx/<währung>/<tag>` und `market/fx/<währung>/<tag>/bridge/<intervall>` (Wechselkurse, ab AP 8.5, §6.12), `life/living-costs/<monat>`.
 - `<tag>` ist der Tagesindex seit der Epoche (`dayIndex`), Faktor-IDs sind `world`, `region:<id>`, `sector:<id>`, `industry:<id>`, `style` und `size`. Für Schlüssel, die sich nur im angehängten Tagesindex unterscheiden, hasht `StreamFamily` (`simulation/util`) Seed-Schlüssel und Präfix nur einmal; das Ergebnis ist bitgleich zu `createStream` mit dem vollständigen Schlüssel. Ein optionaler Suffix nach dem Tagesindex (`create(tag, utf8Encode('/bridge'))`) deckt die Brückenströme ab.
 - **Vorteile:** Ströme sind unabhängig (ein neues Instrument verschiebt keine anderen Kurse); jeder Tag eines Faktors oder Instruments lässt sich einzeln neu erzeugen – die Grundlage des Brückenmodells (§6.1); Spielerentscheidungen ziehen nie aus Marktströmen. Mit Feiertagen entstehen die Tagesströme eines Instruments nur an Handelstagen seiner Börse; alle übrigen Ströme ziehen an jedem Modelltag gleich (ab AP 8.3, §6.1).
 
@@ -686,7 +686,8 @@ Der Vertrag besteht aus eingefrorenen Prüfsummen und aus Relationen, die für j
   - die Tageseröffnungen und -schlüsse aller Kurs- und Performance-Indizes 2020;
   - die Tageseröffnungen und -schlüsse aller ETFs 2020;
   - den Marktzustand zum Spielstart nach dem ganzen Vorlauf;
-  - `worlds`: die `worldChecksum` der Seeds `worlds-1` bis `worlds-20` (AP 7.3a).
+  - `worlds`: die `worldChecksum` der Seeds `worlds-1` bis `worlds-20` (AP 7.3a);
+  - ab AP 8.4 `macro` (Tageswerte des Makromodells 2020 und Leitzinsentscheidungen bis zum Spielstart, §6.11), ab AP 8.5 `fx` (Wechselkurse, §6.12).
 
   Seltene Pfade der Weltgenerierung kommen in `golden-1` nicht unbedingt vor (vor AP 7.3d: Nichtzahler mit Beginn zur Epoche, kleine oder leere Sektoren; beide gibt es seit AP 7.3d nicht mehr). Deshalb prüfen die Logik-Tests zusätzlich `GOLDEN_WORLDS_CHECKSUM` über die Welten von `worlds-1` bis `worlds-200` (`worldsChecksum`, rund 1,5 s); der Selbsttest rechnet nur die ersten 20 als Prüfsumme `worlds`. `computeGoldenChecksums(seed)` berechnet die sieben Prüfsummen in einem Lauf, unter der Falle für nicht exakte `Math`-Funktionen (§4.4). Das Modul ist framework-frei und läuft deshalb auch im Worker (Selbsttest, §14.2). Prüfsumme: inkrementeller MurmurHash3 x86_128 über die Float64-Bytes (little-endian), als 32 Hex-Zeichen; `-0` und `0` unterscheiden sich, NaN wird kanonisch gehasht (`Checksum` in `simulation/util`). Ändert sich eine Prüfsumme, ändert sich die Welt für bestehende Seeds – dann ist `simVersion` zu erhöhen (§15).
 
@@ -728,10 +729,11 @@ Alle Mengen und Verteilungen stehen zentral in einer Weltkonfiguration (`DEFAULT
 
 | Dimension              | Wirkung im Modell                                                                                                  |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Region                 | Regionsfaktor, Handelszeiten; ab Stufe 2 Währung                                                                   |
+| Region                 | Regionsfaktor, Handelszeiten; Leitwährung der Regionalindizes (ab AP 8.5, §6.12)                                   |
+| Land                   | Notierungswährung der Börse und ihrer Aktien (ab AP 8.5, §6.12)                                                    |
 | Sektor, Branche        | Sektor- und Branchenfaktor mit mehrjährigen Trends                                                                 |
 | Größe                  | Größenfaktor (Small-Cap-Risiko und kleine Prämie von 1,5 % p. a., AP 1.9c), Spread, idiosynkratische Vola, Sprünge |
-| Stil                   | Value-/Growth-Faktor; ab Stufe 2 Zinsempfindlichkeit                                                               |
+| Stil                   | Value-/Growth-Faktor; mit dem Sektor die Zinsempfindlichkeit (ab AP 8.6, §6.13)                                    |
 | Konjunkturabhängigkeit | Beta zum Weltfaktor (defensiv < 1 < zyklisch)                                                                      |
 | Dividendenprofil       | Ausschüttungen und Ex-Tag-Abschläge                                                                                |
 | Risiko                 | Risikoklasse aus der vollen modellierten Volatilität (Faktoren, idiosynkratischer Anteil, Sprünge; §5.4)           |
@@ -845,6 +847,8 @@ X_b wird als Stützpunkt gesetzt, nicht aus der Brücke errechnet.
 | `market/factor/<id>/<tag>/bridge/<intervall>` | unverändert, bei Bedarf                                                                                                               |
 | `market/instrument/<id>/<tag>` und `…/bridge` | nur an Handelstagen der Börse des Instruments; an ihren Feiertagen nicht erzeugt                                                      |
 | `market/etfs/<tag>`                           | unverändert: eine Zahl je ETF in ETF-Reihenfolge an jedem Modelltag, auch für ETFs, deren Börse geschlossen ist                       |
+| `market/macro/<tag>`                          | ab AP 8.4 an jedem Modelltag `z_π`, dann `z_L`; der Leitzins zieht nichts (§6.11)                                                     |
+| `market/fx/<währung>/<tag>` und `…/bridge`    | ab AP 8.5 an jedem Modelltag `z_d`, dann je Intervall der festen Stützpunkte eine Normalverteilung (§6.12)                            |
 | `world/…`, `life/living-costs/<monat>`        | unverändert (nicht tagesbezogen)                                                                                                      |
 
 Daraus folgen zwei Prüfungen: Die Faktor- und Phasenpfade mit Feiertagen sind bitgleich mit denen ohne Feiertage (Kalender `weekdays` für alle Börsen); und die Kurse der Aktien einer Börse mit Kalender `weekdays` sind bitgleich mit dem Modell vor AP 8.3, auch wenn alle anderen Börsen Feiertage haben (Stromunabhängigkeit, §4.6; Indizes und ETFs mischen Börsen und ändern sich). Verworfen wurde, Stützpunkte und Aktivitätsgewichte je Tag aus den offenen Börsen zu bilden: Das änderte die Intervallanteile `Δ_kj` und damit jeden Faktorpfad an jedem Feiertag irgendeiner Börse, brauchte Tabellen je Muster offener Börsen und eine Regel für Tage, an denen die Gewichte aller offenen Börsen null sind; die Wirkung (Faktorvarianz in die Stunden der offenen Börsen verschieben) wäre klein.
@@ -875,14 +879,15 @@ Ohne Sprünge stimmen die Werte bis auf die Stichprobenschwankung überein. Mit 
 
 ### 6.2 Faktoren
 
-| Faktor                | Anzahl | Wirkung                            |
-| --------------------- | ------ | ---------------------------------- |
-| Welt                  | 1      | Konjunktur und Marktphasen         |
-| Region                | 4      | regionale Entwicklung              |
-| Sektor                | 11     | Sektorzyklen                       |
-| Branche               | 31     | Branchentrends                     |
-| Stil (Value – Growth) | 1      | Stilrotation                       |
-| Größe (Small – Large) | 1      | Small-Cap-Risiko und kleine Prämie |
+| Faktor                | Anzahl | Wirkung                                          |
+| --------------------- | ------ | ------------------------------------------------ |
+| Welt                  | 1      | Konjunktur und Marktphasen                       |
+| Region                | 4      | regionale Entwicklung                            |
+| Sektor                | 11     | Sektorzyklen                                     |
+| Branche               | 31     | Branchentrends                                   |
+| Stil (Value – Growth) | 1      | Stilrotation                                     |
+| Größe (Small – Large) | 1      | Small-Cap-Risiko und kleine Prämie               |
+| Zins (ab AP 8.6)      | 1      | Zinsempfindlichkeit, ohne eigenen Zufall (§6.13) |
 
 Dynamik je Faktor im Tagesschritt (Handelstag, Δ_T = 1/261 Jahr). Reihenfolge: Marktphase (§6.3), Trend, Stützpunkte, Volatilität für den Folgetag.
 
@@ -983,7 +988,7 @@ Minuten: U(o + j) = U_open + B(j) + Σ_(τ ≤ o + j) J
 - **Sprünge `J`:** Poisson-Prozess, Häufigkeit und Streuung je Größenklasse (§5.4), Größe normalverteilt mit leicht negativem Mittel (−1 %). Der **Kompensator** `−λ_i · Δ_T · μ_J` und `−½ · v_J` im dauerhaften Anteil sorgen dafür, dass Sprünge nur Risiko und Schiefe erzeugen: `E[e^U]` wächst bis zur zweiten Ordnung mit `α_i · h(t) + z_i · t`, unabhängig von Volatilität und Sprüngen. Riskantere Werte rentieren deshalb im Erwartungswert der einfachen Rendite gleich und im Median schlechter (der dauerhafte Anteil senkt den Median um `½ · v_P` p. a.); eine kleine Mehrrendite bleibt nur aus der Rückkehr des vorübergehenden Anteils (§6.9, Prämien). Bis AP 7.3c hieß es hier, riskantere Werte rentierten „nicht mehr systematisch schlechter“; tatsächlich rentierten sie mit der vollen Rückkehr systematisch besser (7.1b-01). Der Rest dritter Ordnung (`λ · E[J³] / 6`) liegt unter 0,05 % p. a. Anzahl, Minuten `τ` und Größen der Sprünge eines Tages zieht der Tagesschritt; die Brücke addiert jeden Sprung ab seiner Minute. `τ` liegt gleichverteilt in `o + 1 … c`, damit die Eröffnung Stützpunkt bleibt; ein Sprung in der Schlussminute ist im Schlusskurs enthalten. Sprünge zur Eröffnung sind nicht vorgesehen (Entscheidung AP 1.9a).
 - **Ziehreihenfolge** je Instrument und Tag (Strom `market/instrument/<id>/<tag>`): `ε_on`, `ε`, Anzahl der Sprünge, je Sprung Minute und Größe (unverändert seit AP 1.9a; der vorübergehende Teil zieht nichts). Die Brücke (AP 1.5) zieht aus einem eigenen Strom.
 - **Startzustand:** `U_i = T_i = 0` an der Epoche, `c_i = ln(Startkurs)` (§5.4); Eröffnung und Schluss sind `c_i + Σ_k β_ik · F_k + U_i` zur Öffnungs- bzw. Schlusszeit der Börse. Jeder Sprung ist ein strukturiertes Ereignis, das zu seiner Minute ausgelöst wird – später Stoff für den Newsticker.
-- Kursuntergrenze 0,01 € (in der Kursfunktion, für Stützpunkte und Minutenkurse gleich). Aktiensplits (Stufe 2) halten Kurse in plausiblen Bereichen.
+- Kursuntergrenze 0,01 € (in der Kursfunktion, für Stützpunkte und Minutenkurse gleich; ab AP 8.5 `0,01 · u_c` in der Notierungswährung, §6.12). Aktiensplits (Stufe 2) halten Kurse in plausiblen Bereichen.
 - **Langzeitverhalten (E-22, AP 1.9a; neu AP 7.3d):** Nur `T_i` kehrt zurück; weder gezahlte Dividenden noch Sprünge noch der dauerhafte Anteil werden wieder hereingeholt, deshalb braucht der Zielpfad keinen Dividendenabschlag mehr (bis AP 7.3c enthielt er `D_i`, §6.5). Kein neuer Parameter-Zustand: `h`, `g` und `t` hängen nur vom Tag ab (`idioPathAt`, `transientTargetAt`, `idioDayScale` in `market/domain/market-context.ts`; Formeln in `idio-path-logic.ts` und `idio-volatility-logic.ts`); neu im Zustand ist nur `T_i`. Gegen die Konzentration über Jahrzehnte wirken jetzt vor allem die Rückkehr der Unterfaktoren (§6.2), das abklingende Alpha, die Zero-Beta-Rendite und der Dividenden-Lebenszyklus; der Querschnitt läuft aber wieder auseinander (Messung AP 7.3e in §6.9, Median von `broad-1…20`: Top 5 nach 100 Jahren 63 %, unter 1 € 8,8 %, an der Untergrenze 1,0 %; nach AP 7.3d vor der Neukalibrierung 67 %, 26,5 % und 9,3 %). Vor AP 1.9a (ganz ohne Rückkehr und mit dauerhaftem Alpha) notierten nach 100 Jahren 29 % aller Aktien unter 1 € und 9 % an der Untergrenze. An der Kursuntergrenze kann ein Kurs nur noch steigen; Kauforders werden dort abgelehnt (§7.5). Neugewichtung und Insolvenzen folgen in M9 (E-40).
 
 **Beispiele** (Test `idio-path-logic.spec.ts`, `μ_J` = −1 %, `r_z` = 5 %, Halbwertszeiten 15 bzw. 10 Jahre; erwarteter Pfad zum mittleren Varianzfaktor `q = 1`; nachgerechnet mit einem eigenen Python-Skript aus den Formeln oben, AP 7.3d):
@@ -1121,7 +1126,7 @@ ask    = roundUp(mid × (1 + spread/2), priceStep(mid))     mit ask − bid ≥ 
 - Faktor Volatilität (E-23): `volFactor = min(3, max(1, s_Welt / s̄_Welt))` mit der Volatilität des Weltfaktors des Tages und ihrem Ziel in der Referenzphase; in Krisen also bis × 3. Faktor Basiswert geschlossen: × 1,5–2. Aufschlag des Handelsplatzes: bei Neobrokern 0,05–0,20 %.
 - **Umsetzung (AP 1.6b, `market/domain/quote-logic.ts`):** Die Basis liegt deterministisch in der Spanne der Größenklasse: logarithmisch nach Marktkapitalisierung, der größte Wert der Klasse bekommt die Untergrenze, der kleinste die Obergrenze; ETFs ebenso nach Fondsvolumen. Faktor Volatilität (AP 1.9a, `spreadVolFactor`): stetig aus `MarketDay.factorVols` des Weltfaktors, Obergrenze `maxVolFactor` (Start 3); vor dem ersten Handelstag 1. Die Volatilität des Tages steht ab 00:00 fest und lässt sich ohnehin aus den Kursen ablesen; die Marktphase bleibt verborgen (§6.3). Faktor Basiswert geschlossen (Start 1,75) wirkt anteilig: `1 + (f − 1) · Anteil geschlossen`; eine Aktie gilt außerhalb ihrer Sitzung als geschlossen, ein ETF nach dem Gewicht seines Index zur Epoche, dessen Börsen im Intervall geschlossen sind (`EtfLayout.closedShare`). Den Aufschlag des Handelsplatzes (`BankConditions.spreadMarkup`) übergibt der Aufrufer; der Markt kennt keine Banken. `PriceSource.quoteAt(serie, tick, now, aufschlag)` liefert `{ mid, bid, ask, spread }` mit `mid = priceAt`; Indizes sind nicht handelbar. Alle Parameter stehen in `MarketConfig.spreads`; in AP 1.9c mit realen Spannen an Präsenzbörsen abgeglichen und unverändert übernommen. Mit den kalibrierten Phasen liegt die Volatilität des Weltfaktors in Krisen beim rund Dreifachen ihres Ziels, der Faktor Volatilität erreicht dann seine Obergrenze 3.
 - **Warum nicht nach Phase (E-23):** Ein Stufenfaktor je Phase (Boom und normal 1, Abschwung 1,5, Krise 2,5) sprang am ersten Tag eines Abschwungs bzw. einer Krise; wer den Spread beobachtete, konnte jeden Phasenwechsel handeln, während der Trend der Phase erst mit einer Halbwertszeit von rund drei Monaten folgt.
-- **Preisraster** `priceStep`: ab 10 € 0,01 €; von 1 € bis 10 € 0,001 €; unter 1 € 0,0001 €. Geld wird ab-, Brief aufgerundet, und der Spread beträgt mindestens einen Rasterschritt. Ohne diese Regel fielen bei günstigen Aktien Geld- und Briefkurs zusammen (bei 8 € Mittelkurs und 0,05 % Spread ergäbe Rundung auf Cent 8,00 € / 8,00 €).
+- **Preisraster** `priceStep`: ab 10 € 0,01 €; von 1 € bis 10 € 0,001 €; unter 1 € 0,0001 €. Geld wird ab-, Brief aufgerundet, und der Spread beträgt mindestens einen Rasterschritt. Ohne diese Regel fielen bei günstigen Aktien Geld- und Briefkurs zusammen (bei 8 € Mittelkurs und 0,05 % Spread ergäbe Rundung auf Cent 8,00 € / 8,00 €). Ab AP 8.5 gilt das Raster in der Notierungswährung mit der Rastereinheit `u_c` (§6.12).
 - **Ausnahme an den Stufengrenzen (AP 7.1b, 7.3b; 7.1b-08):** Gerundet wird mit dem Raster des **Mittelkurses**, wie die Formel oben sagt, nicht mit dem Raster der jeweiligen Seite. Liegt der Mittelkurs knapp unter einer Stufengrenze (1 € oder 10 €), kann der Brief darüber liegen und hat dann mehr Nachkommastellen als sein eigenes Raster (Mitte 9,998 € bei 0,25 % ergibt Brief 10,011 €, Mitte 0,9999 € Brief 1,0012 €); liegt er knapp darüber, rundet der Geldkurs auf das gröbere Raster ab und der effektive Spread verdoppelt sich etwa (Mitte 10,004 € ergibt Geld 9,99 €). Die Wirkung liegt bei Zehntelpunkten an zwei Kursgrenzen. Ein Runden je Seite auf das eigene Raster änderte Ausführungskurse bestehender Spielstände und kommt erst mit einer ohnehin fälligen Änderung der Kursbildung.
 
 ### 6.8 Kerzen und Historie
@@ -1142,7 +1147,7 @@ ask    = roundUp(mid × (1 + spread/2), priceStep(mid))     mit ask − bid ≥ 
     - **Abfrage:** `candles` liest für verdichtete Jahre die Wochen-Datensätze (`loadWeeklyCandles`) und nie Stützwerte: Eine Wochenabfrage fügt die Teile einer Woche über den Jahreswechsel und mit Tageskerzen des Nachbarjahrs wieder zusammen (`weeklyCandles`); eine Tagesabfrage zeigt in verdichteten Jahren je Woche eine Kerze am ersten Markttag des Teils, danach Tageskerzen. Tagescharts (1d für 6M und 1J, wählbar bis 5J) erreichen verdichtete Jahre nur beim Zurückscrollen um mehr als 20 Jahre; dort stehen dann Wochenkerzen im Tageschart (ohne eigenen Hinweis, die Zeitachse zeigt die Daten). Einzelne Tage ließen sich exakt neu berechnen (`recomputeSupportDays`, Minutenverläufe), das bleibt einer späteren Ausbaustufe vorbehalten.
     - **Tests:** Beispieltabelle und Eigenschaften (Verdichtung = Aggregation der Tageskerzen je Woche und Jahr; Teile wieder zusammengefügt = Wochenkerzen) in `candle-consolidation-logic.spec.ts`, Wochen-Datensätze gegen eine Brute-Force-Referenz in `daily-candles.utils.spec.ts`, Planung in `candle-consolidation.spec.ts` und `candle-backfill.spec.ts`, Host-Test `engine-host-consolidation.spec.ts` (IndexedDB, fünf statt 20 Jahre: vollständige Jahre verdichtet, ein unvollständiges bleibt, Wochen- und Tagesabfrage über den Jahreswechsel, nach dem Neuladen nichts doppelt). Keine neue DB-Version: Der Schlüssel `[playerId, instrumentId, resolution, bucket]` sieht `1w` seit Version 3 vor; `SCHEMA_VERSION` bleibt, weil Snapshots unverändert sind.
   - **Gepufferte Schreibvorgänge:** Der Host sammelt die Kerzen (Handelsschluss und Auftrag) im Speicher und schreibt sie alle 5 s (`candleWriteIntervalMs`), mit jedem Snapshot (also auch bei `hidden`/`pagehide` und am Ende von Vorspulen und Nachberechnung), beim Entladen und bevor ein drittes Kalenderjahr in den Puffer käme; ein Schreibvorgang liest und schreibt je Serie und Jahr einen Bucket. Geht der Puffer bei einem Absturz verloren, findet der Auftrag die fehlenden Tage beim nächsten Laden in den gespeicherten `NaN` und ergänzt Eröffnung, Schluss, Hoch und Tief (Test „nach Absturz verlorene Kerzen“).
-- **Marktzustände zu Monatsbeginn:** Im Arbeitsspeicher bleibt zu jedem Monatsbeginn der vollständige Marktzustand: Faktorzustände, unternehmensspezifische Anteile `U_i`, letzte Log-Schlusskurse, nächste Ex-Tage mit angekündigten Beträgen, `R` je Index sowie `k`, Topf und nächster Ex-Tag je ETF (Standardwelt rund 7 kB je Monat). Jeder vergangene Tag entsteht daraus mit höchstens einem Monat Tagesschritten bitgleich neu (`recomputeSupportDays`). Die Einträge werden mitgespeichert (E-08, rund 80 kB je Spieljahr, eigener Store, §9.1) und beim Laden (AP 2.3) gelesen. Der Aufbau durch volle Tagesschritte seit der Epoche (rund 45 ms je Spieljahr) kostete bei jedem Laden eines Spielers mit 80 Spieljahren rund 3,6 s auf dem Entwicklungsrechner. Faktorzustände allein ließen sich schneller nachrechnen. `U_i` müsste dann aber je Instrument seit der Epoche nachgerechnet werden, und ab AP 1.6 hängt es über die Ex-Tag-Abschläge von den Faktoren ab.
+- **Marktzustände zu Monatsbeginn:** Im Arbeitsspeicher bleibt zu jedem Monatsbeginn der vollständige Marktzustand: Faktorzustände, unternehmensspezifische Anteile `U_i`, letzte Log-Schlusskurse, nächste Ex-Tage mit angekündigten Beträgen, `R` je Index sowie `k`, Topf und nächster Ex-Tag je ETF (Standardwelt rund 7 kB je Monat; ab AP 8.4 und AP 8.5 dazu Makro- und Wechselkurszustand, rund 250 Byte). Jeder vergangene Tag entsteht daraus mit höchstens einem Monat Tagesschritten bitgleich neu (`recomputeSupportDays`). Die Einträge werden mitgespeichert (E-08, rund 80 kB je Spieljahr, eigener Store, §9.1) und beim Laden (AP 2.3) gelesen. Der Aufbau durch volle Tagesschritte seit der Epoche (rund 45 ms je Spieljahr) kostete bei jedem Laden eines Spielers mit 80 Spieljahren rund 3,6 s auf dem Entwicklungsrechner. Faktorzustände allein ließen sich schneller nachrechnen. `U_i` müsste dann aber je Instrument seit der Epoche nachgerechnet werden, und ab AP 1.6 hängt es über die Ex-Tag-Abschläge von den Faktoren ab.
 - **Historie eines Instruments:** Seine Tagesstützpunkte lassen sich aus den Marktzuständen zu Monatsbeginn und seinen eigenen Strömen neu berechnen (§4.2), ohne andere Instrumente; ab der Epoche reicht dafür die Faktorhistorie (`recomputeInstrumentHistory`). Jeder vergangene Tag ist so minutengenau abrufbar.
 - **Vorlauf:** Von der Epoche (01.01.2020) bis zum Spielstart laufen dieselben Tagesschritte wie im Spiel; ein Sonderverfahren gibt es nicht. Charts aller Zeiträume haben ab dem ersten Spieltag Daten, auch Intraday-Charts.
 - **Chart-Auflösung je Zeitraum:** automatisch 1T → 1m, 5T → 15m, 1M → 1h, 6M und 1J → 1d, 5J und Max → 1w; ab AP 5.8 wählt der Anwender auch eine andere Auflösung, soweit der Zeitraum sie zulässt (§11.7). Zwischenstufen werden beim Abruf aggregiert.
@@ -1370,27 +1375,400 @@ Phasenanteile über 110 Jahre unverändert 47 / 39 / 13 / 3 % (AP 1.9c). Mit den
 
 Alle Ziele und Grenzen liegen im Median im Band. Einzelne Seeds weichen ab, das ist Rauschen eines Laufs: Rendite (`calib-4` 4,7 %, `calib-2` und `calib-3` 8,9 / 9,6 %; ein Lauf über 110 Jahre streut um rund 1,4 Punkte), Bärenmärkte (`calib-1` 10, `calib-3` 23 Episoden in 110 Jahren), Korrelation zwischen Sektoren (`calib-3` 0,47 mit 31 % Large-Cap-Volatilität; der Vorlauf dieses Seeds hat 25 % Krisenzeit, in Krisen steigen die Korrelationen), Cluster (`calib-4` 0,34), Overnight (`calib-5` Nordamerika 37 %, `calib-3` Europa 35,1 %, `calib-4` Asien-Pazifik 61 %). Am knappsten liegen im Median Indexvolatilität (14,2 % bei Untergrenze 14 %), Overnight Europa (34,0 % bei 35 %) und die Korrelationen (0,57 / 0,39 bei 0,6 / 0,4); diese Größen hängen über das Varianzbudget zusammen (Zielkonflikt oben). Der größte Drawdown von rund 73 % in 110 Jahren ist hoch, aber plausibel (MSCI World seit 1970 rund −55 %, US-Aktien 1929–1932 rund −86 %); eine Brownsche Bewegung mit 18 % Volatilität und 7 % Drift käme im Mittel auf rund 60 %, die Krisenphasen vertiefen ihn. Die Kalibrierung lief mit einem Mess-Harness außerhalb des Repos (dieselben Funktionen wie das Labor, Konfiguration als Parameter, fünf Seeds parallel); die Werte der Tabelle stimmen mit der Kalibrierungs-Suite überein.
 
+**Ziele aus M8 (Fachkonzept AP 8.1; Vorschlag für den PO, E-39).** Mit Makromodell (§6.11), Währungen (§6.12) und Zinsfaktor (§6.13) kommen neue Ziele hinzu, und für die bestehenden ist festzulegen, in welcher Währung gemessen wird. Ziele und Bänder sind Vorschläge; der PO entscheidet sie vor AP 8.4. Die Prüfregel bleibt E-34 (Median von `broad-1…20`, Ziele mit Mindestdauer bis zehn Jahre über Vorlauf und langen Lauf, die übrigen über den langen Lauf).
+
+_Währung der Messung (Vorschlag):_ Weltindex, globale Indizes und Prämien in Euro (Blick des Spielers, Vergleich mit realen Indizes in Euro); breite Regionalindizes in ihrer Leitwährung (§6.12, so bleiben die Overnight-Ziele frei vom Wechselkurs); Aktien (Volatilität, Kurtosis, Korrelationen, Overnight-Anteil, Tagesprofil, Dividendenrendite, Clustering) in der Notierungswährung, wie die realen Studien hinter den Zielen; Langzeitgrenzen: Gewichte der Top 5 in Euro (`n_i · P_i / S_c`), „unter 1 €“ mit dem Wert in Euro, die Kursuntergrenze in der Notierungswährung.
+
+_Neue Ziele (Vorschlag):_
+
+| Größe                                 | Ziel (Vorschlag)      | Messung                                                                                                                                       | Reale Referenz (Größenordnung)                                                                                       | Probe (Skript) |
+| ------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------- |
+| Inflation, Mittel                     | 1,5–2,5 %             | Mittel der Jahresraten des VPI (monatlich, §6.11); ab 10 Jahren                                                                               | Ziel der EZB 2 %; HVPI Euroraum 1999–2024 im Mittel rund 2,1 %                                                       | 2,11 %         |
+| Inflation, Streuung                   | 0,8–2,0 Punkte        | Standardabweichung der Jahresraten; ab 10 Jahren                                                                                              | HVPI 1999–2019 rund 0,9, mit 2021–2023 rund 1,8; Deutschland 1970–2024 rund 1,9                                      | 1,18           |
+| Inflation, negative Jahresrate        | Info                  | Anteil der Monate                                                                                                                             | Euroraum 1999–2024 rund 3–4 % der Monate                                                                             | 3,2 %          |
+| Leitzins, Mittel                      | 1,5–3,5 %             | Mittel der Tageswerte; ab 30 Jahren                                                                                                           | neutraler Nominalzins `r* + π̄` rund 2–3 %; EZB-Hauptrefinanzierungssatz 1999–2024 rund 1,6 %, Fed 1990–2024 rund 3 % | 2,67 %         |
+| Leitzins, Streuung                    | 1,0–2,5 Punkte        | Standardabweichung der Tageswerte; ab 30 Jahren                                                                                               | EZB 1999–2024 rund 1,5, Fed 1990–2024 rund 2,2                                                                       | 1,53           |
+| Leitzins, Änderungen                  | 20–45 % der Sitzungen | Anteil der Sitzungen mit geändertem Satz; ab 10 Jahren                                                                                        | Fed 1990–2024 rund 40 %, EZB 1999–2024 rund 20–25 %                                                                  | 37 %           |
+| Leitzins an der Untergrenze           | Info                  | Anteil der Tage                                                                                                                               | EZB 2014–2022 (Einlagesatz −0,5 % von 2019 bis 2022)                                                                 | 2,2 %          |
+| 10-Jahres-Zins, Mittel                | 3–5 %                 | Mittel der Tageswerte `y(10)`; ab 30 Jahren                                                                                                   | Bundesanleihen 1990–2024 rund 3,4 %, US-Treasuries rund 4,5 %                                                        | 4,26 %         |
+| Steigung 10J − 3M, Mittel             | 0,75–2,0 Punkte       | Mittel der Tageswerte `y(10) − y(0,25)`; ab 10 Jahren                                                                                         | USA 1962–2024 rund 1,6, Deutschland rund 1,3                                                                         | 1,51           |
+| Inverse Kurve                         | 5–25 % der Tage       | Anteil der Tage mit `y(10) < y(0,25)`; ab 30 Jahren                                                                                           | USA 1962–2024 rund 13 % der Monate, Deutschland ähnlich                                                              | 16 %           |
+| 10-Jahres-Zins, Schwankung            | 0,5–1,2 Punkte        | Standardabweichung der Änderungen über 261 Modelltage; ab 10 Jahren                                                                           | Bund und Treasury 1990–2024 rund 0,8–1,0                                                                             | 0,59           |
+| Kreditaufschlag BBB, Median           | 1,0–2,0 %             | Median der Tageswerte; ab 10 Jahren                                                                                                           | ICE BofA BBB OAS 1997–2024 rund 1,5–1,8 %                                                                            | 1,49 %         |
+| Kreditaufschlag BBB, Krise ÷ Normal   | 1,8–3,5               | Mittel in Tagen der Phase Krise ÷ Mittel in Tagen der Phase Normal (das Labor kennt die Phase); ab 30 Jahren                                  | 2008 und 2020 das 2,5- bis 4-Fache                                                                                   | 2,35 (Formel)  |
+| Wechselkurs EUR/USD, Volatilität      | 6–11 %                | Log-Änderungen von `S` zwischen den Schlüssen des Weltindex (22:00) × √261; ab 5 Jahren                                                       | 1999–2024 rund 8–9 %                                                                                                 | 8,0 %          |
+| Wechselkurs EUR/JPY, Volatilität      | 8–13 %                | wie EUR/USD                                                                                                                                   | rund 10–11 %                                                                                                         | 10,0 %         |
+| Wechselkurs EUR/CHF, Volatilität      | 4–9 %                 | wie EUR/USD                                                                                                                                   | rund 5–7 % (seit 2015)                                                                                               | 6,0 %          |
+| übrige Wechselkurse, Volatilität      | Info                  | wie EUR/USD                                                                                                                                   | GBP rund 7–8 %, AUD rund 10 %, BRL rund 15 %                                                                         | 7–15 %         |
+| Korrelation EUR/JPY mit dem Weltindex | 0,2–0,5               | Pearson der Log-Änderungen von `S_JPY` und der Log-Tagesrenditen des Weltindex (Kursindex, Euro); ab 5 Jahren                                 | rund 0,3–0,5 (Yen als sicherer Hafen, 2008–2024)                                                                     | 0,42 (Faktor)  |
+| Korrelation EUR/AUD mit dem Weltindex | −0,5 bis −0,15        | wie EUR/JPY                                                                                                                                   | rund −0,3 bis −0,5                                                                                                   | −0,35 (Faktor) |
+| Rückkehr der Wechselkurse             | Info                  | Halbwertszeit der Abweichung `y_c` (Regression über Jahresdaten)                                                                              | Kaufkraftparität 3–5 Jahre (Rogoff 1996)                                                                             | –              |
+| Zinsempfindlichkeit Growth − Value    | −10 bis −3 % je Punkt | Steigung der Tagesrenditedifferenz (gleichgewichtet, oberes gegen unteres Drittel der Stilladung, Notierungswährung) auf `Δy₁₀`; ab 10 Jahren | Growth gegen Value rund −5 bis −8 % je 100 bp (2013, 2022)                                                           | −4,2 (Formel)  |
+| Zinsempfindlichkeit Finanzen − Welt   | +1 bis +6 % je Punkt  | wie oben, Sektorindex Finanzen gegen Weltindex (Kursindizes)                                                                                  | Bankenindizes rund +3 bis +5 % je 100 bp                                                                             | –              |
+
+Die Spalte „Probe“ stammt aus dem vereinfachten Skript zu AP 8.1 (Median über 20 Seeds und 110 Jahre, §6.11; „Faktor“ = gegen den Weltfaktor statt den Weltindex, „Formel“ = aus den Parametern gerechnet). Sie zeigt, dass die Bänder erreichbar sind; gemessen wird im Labor. Die Ziele zur Zinsempfindlichkeit kommen erst mit AP 8.6; Inflation, Zinsen und Aufschläge mit AP 8.4, Wechselkurse mit AP 8.5.
+
+_Offen bis AP 8.6 (E-39, Vorschlag):_ AP 8.6 kalibriert den Meilenstein. Davor dürfen die Modell-APs nur die Ziele markieren, die sie nachweislich verschieben, und nennen den Messwert im Änderungsprotokoll:
+
+| AP     | darf markieren                                                                                                                                                                    | Grund                                                                                                                      |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| AP 8.3 | Overnight-Anteile (Nordamerika, Europa, Asien-Pazifik, Aktien), Volatilität der Large Caps, Korrelation zwischen Sektoren, Bärenmärkte, Prämien                                   | Feiertage verlängern Lücken und senken die Handelstage je Jahr (§6.1); diese Ziele liegen schon heute nah an ihren Grenzen |
+| AP 8.4 | keine                                                                                                                                                                             | ändert keinen Kurs (§6.11); die neuen Ziele der Inflation und Zinsen liegen ab AP 8.4 im Band                              |
+| AP 8.5 | Weltindex (Rendite, Volatilität, Kurtosis, Bärenmärkte, Cluster, Dividendenrendite), Prämien, Top 5 und „unter 1 €“ der Langzeitgrenzen, Median der 10-Jahres-Fenster Volatilität | Messung in Euro mit der Abweichung `y_c` der Wechselkurse; Ziele in Notierungswährung und Regionalindizes bleiben gedeckt  |
+| AP 8.6 | keine                                                                                                                                                                             | Kalibrierungsschritt: danach ist kein Ziel offen                                                                           |
+
+Die neuen Ziele der Wechselkurse liegen ab AP 8.5 im Band, die der Zinsempfindlichkeit ab AP 8.6.
+
 ### 6.10 Erweiterungen ab Stufe 2 (Skizze)
 
 - **Gemeinsames Schema:** Neue Assetklassen folgen dem Brückenmodell (§6.1) – Tagesschritt mit Stützpunkten, Minutenwerte per Brücke nur bei Bedarf. Für Prozesse mit Rückkehr zum Mittelwert (Rohstoffe, Zinsen) gibt es die Brücke des Ornstein-Uhlenbeck-Prozesses. Aktive Fonds haben wie in der Realität nur einen Tageskurs (NAV), Anleihen bewerten sich aus der Zinskurve, CFDs sind ein Hebel auf einen Basiswert ohne eigenen Kursprozess. So wächst die Rechenzeit im Spiel kaum mit der Zahl der Instrumente (§3.2).
-- **Zinsen und Inflation:** Verbraucherpreise als eigener Prozess, gekoppelt an die Marktphase. Der Leitzins wird alle sechs Wochen entschieden und reagiert auf Inflation und Konjunktur. Die Zinskurve folgt Nelson-Siegel mit Niveau und Steigung als Ornstein-Uhlenbeck-Prozessen, Kreditaufschläge hängen vom Rating ab und steigen in Krisen. Wirkung: Anleihekurse (Barwert), Tagesgeldzinsen der Banken, Zinsfaktor für Aktien (Growth negativ, Banken positiv), Lohn- und Kostenentwicklung, Realwertanzeige.
+- **Zinsen und Inflation:** ausgearbeitet im Fachkonzept AP 8.1 – Verbraucherpreise, Leitzins, Zinskurve und Kreditaufschläge in §6.11, Zinsfaktor für Aktien in §6.13. Abweichend von dieser Skizze ist nur das Niveau der Kurve ein Ornstein-Uhlenbeck-Prozess; die Steigung folgt aus Niveau und Leitzins (§6.11). Wirkung auf Bankzinsen, Festgeld, Haushalt und Realwerte: §7 (AP 8.9–8.11), auf Anleihen: AP 9.3.
 - **Anleihen:** Kupon, Laufzeit, Rating, Stückzinsen, Rückzahlung zu 100 %, Ausfälle bei schlechtem Rating.
 - **Rohstoffe:** mean-reverting Log-Preis (Schwartz-Ein-Faktor-Modell) mit Sprüngen und Saisonalität. Kopplung an Branchen: Öl wirkt positiv auf Öl & Gas, negativ auf Fluggesellschaften. Gold ist in Krisen ein sicherer Hafen (negative Ladung auf den Weltfaktor).
 - **Physische Edelmetalle:** Händler mit Ankaufs- und Verkaufskurs (Spanne 2–8 %), Haltefrist ein Jahr für Steuerfreiheit.
 - **Aktive Fonds:** Ausgabeaufschlag, höhere TER, Fondsmanager-Alpha mit Mittelwert leicht unter null nach Kosten.
 - **Fundamentaldaten:** latente Ertragskraft je Unternehmen, Quartalsberichte mit Überraschung (Kurssprung), Rückkehr der Bewertung (KGV) zum Branchenniveau.
-- **Unternehmensereignisse, Währungen:** Splits, Übernahmen, Insolvenzen, Börsengänge; Wechselkurse als Faktoren, Instrumente in Fremdwährung.
+- **Unternehmensereignisse:** Splits, Übernahmen, Insolvenzen, Börsengänge.
+- **Währungen:** ausgearbeitet im Fachkonzept AP 8.1 in §6.12 (Notierung in Landeswährung, Wechselkurse als Prozesse, Umrechnung in Indizes und ETFs).
 - **CFDs:** Hebel nach den ESMA-Grenzen für Privatkunden (30:1 Hauptwährungspaare, 20:1 Hauptindizes und Gold, 10:1 Rohstoffe, 5:1 Aktien), Margin, tägliche Finanzierungskosten, Zwangsglattstellung bei 50 % Margin-Level, keine Nachschusspflicht.
 - **Newsticker:** Sprünge, Trendwechsel, Phasenwechsel und Zentralbankentscheidungen sind bereits strukturierte Ereignisse; der Newsticker formuliert sie mit Textvorlagen. Die Phase „Krise“ ist ein Volatilitätsregime, keine Richtungsaussage (§6.3, 7.1b-12): Der Newsticker meldet sie als unruhige Märkte mit starken Schwankungen, nicht als fallende Kurse, weil der Markt nach jeder zweiten Krise höher steht als zu ihrem Beginn.
 - **Querschnitt (Planung der Stufe 2, 15.11.2026):** Reihenfolge und Schnitt stehen im Projektplan §6 (E-37); die Fachkonzepte AP 8.1, AP 9.1 und AP 10.1 arbeiten die Abschnitte hier aus. Vorgaben aus dem Ist-Stand des Codes:
   - **Keine neuen Stützpunkte:** Makroprozesse, Wechselkurse und Rohstoffe bewegen sich wie die Faktoren über die vorhandenen Stützpunkte (§6.2), Direkthandel und Annahmeschluss der Fonds lesen Werte zwischen ihnen. Neue Stützpunkte würden die Zahl der Ziehungen je Faktor und Tag und damit jeden Faktorpfad ändern.
   - **Kalender:** ausgearbeitet im Fachkonzept AP 8.1 – Kalendermodul, Bankkalender und Börsenfeiertage in §3.1 und §3.3, Wirkung auf das Marktmodell in §6.1 („Feiertage im Marktmodell“), §6.5, §6.6 und §6.8 (AP 8.2, AP 8.3). Stützpunkte, Aktivitätsgewichte und Ziehungen der Faktoren bleiben; Instrumente ruhen an Feiertagen ihrer Börse, Sitzungen von Indizes und `closedShare` gelten je Tag.
-  - **Währungen:** Indizes summieren Kurse innerhalb der Minutenkurven (§6.6), Werte in verschiedenen Währungen brauchen deshalb Minutenwerte der Wechselkurse; Preisraster, Kursuntergrenze und Formatierung kennen bisher nur EUR (AP 8.5, AP 8.7a, AP 8.7b).
+  - **Währungen:** ausgearbeitet in §6.12 – Minutenwerte der Wechselkurse über die vorhandenen Stützpunkte, Umrechnung innerhalb der Minutenkurven, Preisraster und Kursuntergrenze je Währung (AP 8.5); Formatierung je Währung in AP 8.7b.
   - **Lebenszyklus (E-40):** Die Welt ist ab der Epoche statisch, Zusammensetzung und Teiler der Indizes sind fest. Fälligkeiten, Börsengänge, Übernahmen und Insolvenzen bekommen Instrumente mit Notierungszeitraum, die zur Epoche vorab erzeugt werden (AP 9.2a, AP 9.2b).
   - **Hauptbuch:** Es kennt nur Buchungen mit Geld (§7.2); Ausbuchung, Split und Depotübertrag brauchen geldlose Buchungen (AP 9.2b).
   - **Instrumente ohne Börsenzeit:** Aktive Fonds (NAV) und physische Edelmetalle (Händler) brauchen eigene Abläufe statt Orders mit Handelszeit (AP 9.9, AP 9.10b).
   - **Steuern:** Heute wird jede Steuer beim Ereignis einbehalten (§7.7). Edelmetalle, Freistellungsaufträge je Bank und Reste der Quellensteuer brauchen einen Steuerschritt zum Jahreswechsel (AP 9.9, AP 10.13, AP 10.14).
   - **Konditionen zum Zeitpunkt t:** Bankkonditionen sind heute Teil der Welt und werden in Engine und UI-Vorschauen gelesen; zeitabhängige Zinsen laufen über eine gemeinsame Funktion (AP 8.10).
+
+### 6.11 Makromodell: Preise, Leitzins, Zinskurve (Fachkonzept AP 8.1, Umsetzung AP 8.4; Vorschlag E-47)
+
+Das Makromodell erzeugt Verbraucherpreise, Leitzins, Zinskurve und Kreditaufschläge des Euroraums. Wie die Kurse sind sie eine Funktion von Seed, Simulationsversion und Spielzeit, für alle Spieler gleich und unabhängig von Spielerentscheidungen. Die Kopplung läuft in eine Richtung: Das Makromodell liest den Weltfaktor (Trend und Volatilität), Phase und Faktoren lesen nichts aus dem Makromodell. Kurse hängen erst über die Wechselkurse (§6.12, AP 8.5) und den Zinsfaktor (§6.13, AP 8.6) vom Makromodell ab.
+
+**Eine Zentralbank (Vorschlag E-47):** Modelliert wird nur die Zentralbank des Euroraums (in der UI „Zentralbank“, fiktiv wie die Börsen, E-13). Konten, Festgeld und Steuern der Welt sind in Euro (E-11), und für die Wechselkurse genügen Zinsdifferenzen der übrigen Währungen zum Euro (§6.12). Weitere Zentralbanken mit eigener Regel bräuchten je Währungsraum eigene Inflation und Konjunktur, also ein zweites, drittes … Makromodell, ohne dass Spieler davon mehr sähen als die Zinsdifferenz. Ausländische Kurzfristzinsen sind deshalb `i_c = i + d_c` mit einer Differenz `d_c` als Ornstein-Uhlenbeck-Prozess (§6.12); Anleihen in Landeswährung (AP 9.3) nehmen die Kurve des Euroraums plus `d_c`. Eine eigene Regel etwa für den US-Dollar kann mit dem Newsticker (M14) folgen und ersetzt dann `d_USD`.
+
+**Größen und Zustand** (`MarketState.macro`, Typed Arrays wie der übrige Marktzustand):
+
+| Größe                 | Zeichen       | Einheit            | Zustand                                        | Schritt                                    |
+| --------------------- | ------------- | ------------------ | ---------------------------------------------- | ------------------------------------------ |
+| Inflationsrate        | `π`           | stetige Rate p. a. | `inflation`                                    | an jedem Modelltag, Ornstein-Uhlenbeck     |
+| Verbraucherpreisindex | `ln VPI`      | Log, 0 zur Epoche  | `logPriceIndex`                                | an jedem Modelltag, `+ π · Δ_T`            |
+| Leitzins              | `i`           | ganze Basispunkte  | `policyRateBp`, `pendingRateBp`, `pendingFrom` | an Sitzungsterminen, Regel unten           |
+| Niveau der Zinskurve  | `L`           | Rate p. a.         | `curveLevel`                                   | an jedem Modelltag, Ornstein-Uhlenbeck     |
+| Zinskurve, Aufschläge | `y(τ)`, `s_R` | Rate p. a.         | kein Zustand                                   | reine Funktionen von `L`, `i` und `s_Welt` |
+
+**Zeitpunkte (Treppe):** Der Makroschritt eines Modelltags läuft im Tagesschritt um 00:00 und rechnet die Werte zum Ende des Tages (24:00). Über den Tag gilt der Wert von 00:00, also der Stand nach dem vorigen Modelltag; am Wochenende gilt der Stand von Freitag 24:00. Die Werte von 24:00 bleiben bis dahin intern (§4.5 Regel 7). Brücken zwischen den Stützpunkten braucht M8 nicht: Banken lesen Tageswerte (Tageszins, Festgeld zum Abschluss, AP 8.10, AP 8.11), und weil um 00:00 keine Börse handelt (22:00–01:00, §3.3), erscheint ein Sprung der Treppe in Kursen erst zur nächsten Eröffnung (§6.13). Brauchen Anleihen (AP 9.3) Minutenwerte der Kurve, kann M9 eine Brücke von 00:00 nach 24:00 über die vorhandenen Stützpunkte ergänzen, ohne die Ziehungen der Tage zu ändern (Frage für AP 9.1).
+
+**Reihenfolge im Tagesschritt:** Phase (§6.3) → Makro → Faktoren (§6.2) → Wechselkurse (§6.12) → Instrumente → Indizes → ETFs. Der Makroschritt liest nur Werte vom Beginn des Tages: den Trend `m_W` des Weltfaktors nach dem vorigen Modelltag, die Volatilität `s_Welt` des Tages (`MarketState.logVol`, gilt ab 00:00, wie beim Spread, §6.7) und seinen eigenen Zustand. Er zieht aus eigenen Strömen und schreibt nichts, was Phase oder Faktoren lesen. **Deshalb sind die Pfade von Phase und Faktoren bitgleich mit denen ohne Makromodell, und AP 8.4 ändert keinen Kurs** (Test).
+
+**Konjunkturlücke:** `G = c_G · (m_W − m̄*)` mit `c_G` = 0,25 und `m̄* = Σ_p π_p · m̄_p` = 7,9230 % (stationärer Mittelwert der Trendziele des Weltfaktors über die Zeitanteile der Phasen, §6.3; aus der Konfiguration berechnet, kein Parameter). Der Trend folgt der Phase mit rund 2,8 Monaten Halbwertszeit (§6.3). Die Lücke ist deshalb geglättet und verrät einen Phasenwechsel nicht am selben Tag (wie der Spread-Faktor, E-23). Voll angepasst ergibt sie im Aufschwung +0,77, normal +0,27, im Abschwung −0,98 und in der Krise −2,98 Prozentpunkte.
+
+**Verbraucherpreise:**
+
+```text
+π̄_d          = π̄ + φ_π · G                                         Inflationsziel des Tages
+π(d + 1)     = π̄_d + (π(d) − π̄_d) · e^(−κ_π·Δ_T) + η_π · √((1 − e^(−2κ_π·Δ_T)) / (2κ_π)) · z_π
+ln VPI(d + 1) = ln VPI(d) + π(d) · Δ_T
+VPI(Monat)   = 100 · e^(ln VPI am Monatsersten 00:00)                 Basis 01.01.2020 = 100
+Jahresrate(Monat) = VPI(Monat) / VPI(Monat − 12) − 1                   ab Januar 2021
+```
+
+- Parameter (Vorschlag): `π̄` = 2 % stetig (2,02 % Jahresrate), Halbwertszeit 1 Jahr (`κ_π` = ln 2), `η_π` = 1,4 % (stationäre Streuung aus dem Rauschen 1,19 Punkte), `φ_π` = 0,8. Das Ziel des Tages liegt damit im Aufschwung bei 2,6 %, in der Krise bei −0,4 %; im Mittel über die Phasen bei 2 %.
+- Der Schritt ist die exakte Lösung des Ornstein-Uhlenbeck-Prozesses über einen Modelltag (`e^(−κ·Δ_T)` einmal im Marktkontext mit `detExp`). Inflation ist ein Prozess der Kaufkraft, nicht der Kurse: Sie bewegt sich an jedem Modelltag, unabhängig von Feiertagen; am Wochenende ruht sie wie die Faktoren, 261 Schritte je Jahr ergeben genau die Jahresrate.
+- Der **Preisindex eines Monats** ist der Stand zum Monatsanfang und enthält die Teuerung bis zum Ende des Vormonats; er steht ab 00:00 des Monatsersten fest. Monate mit 20 bzw. 23 Modelltagen haben bei gleicher Rate eine etwas andere Monatsteuerung (bei 3 %: × 1,0023015 bzw. × 1,0026472). Nutzer: Haushalt und Realwerte (AP 8.9).
+- **Startzustand:** `ln VPI` = 0; `π` und `L` aus ihrer stationären Verteilung um die Ziele bei Lücke 0 (Strom `market/macro/init`), Leitzins aus der Regel unten ohne Glättung (`i*` der Epoche, auf 25 bp gerundet, ohne Schrittgrenze).
+
+_Beispiele Inflationsschritt_ (Skript zu AP 8.1; `κ_π` = 0,693147, `e^(−κ_π·Δ_T)` = 0,997347787; konstantes Ziel über die Dauer, dann ist der Schritt über `n` Modelltage ein exakter Schritt mit `n · Δ_T`; Test `macro-logic.spec.ts`):
+
+| π      | Lücke `G`  | Ziel `π̄_d` | Dauer       | Erwartung | Streuung |
+| ------ | ---------- | ---------- | ----------- | --------- | -------- |
+| 2,00 % | 0          | 2,000 %    | 1 Modelltag | 2,0000 %  | 0,0865 % |
+| 5,00 % | 0          | 2,000 %    | 1 Modelltag | 4,9920 %  | 0,0865 % |
+| 5,00 % | 0          | 2,000 %    | 1 Jahr      | 3,5000 %  | 1,0297 % |
+| 5,00 % | 0          | 2,000 %    | 2 Jahre     | 2,7500 %  | 1,1513 % |
+| 0,00 % | −2,98 Pkt. | −0,384 %   | 1 Jahr      | −0,1920 % | 1,0297 % |
+| 2,00 % | +0,77 Pkt. | 2,616 %    | ½ Jahr      | 2,1804 %  | 0,8408 % |
+| 8,00 % | 0          | 2,000 %    | 3 Jahre     | 2,7500 %  | 1,1797 % |
+
+Preisindex: 261 Modelltage mit `π` = 2 % ergeben VPI 102,020134 (Jahresrate 2,0201 %); bei konstant 2 % stünde der VPI zum Spielstart (2.673 Modelltage nach der Epoche) bei 122,7313.
+
+**Leitzins (Vorschlag E-48):**
+
+- **Sitzungstermine:** acht im Jahr, fest und für alle Spieler gleich. Stichtage 25.01., 08.03., 19.04., 07.06., 19.07., 13.09., 25.10. und 13.12.; Sitzung ist der erste Donnerstag am oder nach dem Stichtag, der Bankarbeitstag ist (sonst der nächste Bankarbeitstag; 2020–2229 fällt keiner auf einen Feiertag). Die Abstände liegen bei 6–8 Wochen (42–56 Tage, im Sommer am längsten), wie bei der EZB. Termine richten sich nach dem Bankkalender (E-45), nicht nach den Börsen: Die Zentralbank ist eine Behörde des Euroraums, und ihre Entscheidung wirkt auf Bankzinsen.
+- **Bekanntgabe und Wirkung:** Die Entscheidung entsteht im Tagesschritt des Sitzungstags (00:00) aus den Werten vom Tagesbeginn, bleibt intern und wird um 14:15 als Ereignis bekannt (`policy-rate-decided` mit altem und neuem Satz und dem Tag der Wirkung; strukturiertes Ereignis für Benachrichtigungen und den Newsticker, M14). Sie gilt ab dem nächsten Bankarbeitstag 00:00 (`pendingRateBp`, `pendingFrom`); bis dahin liefert `Leitzins(t)` den alten Satz. Auch unveränderte Sätze werden gemeldet. Die Sitzungstermine sind vorab bekannt, die Entscheidung nicht.
+- **Regel** (Taylor-Regel mit Glättung; Eingaben `π` und `G` vom Beginn des Sitzungstags):
+
+  ```text
+  i*     = r* + π + a_π · (π − π̄) + a_G · G                         Zielzins
+  roh    = (1 − ρ) · (i* − i_alt)                                     in Basispunkten
+  Schritt = 25 · rund(roh / 25)                                       kaufmännisch, halbe Schritte vom Nullpunkt weg
+  Schritt = min(+75, max(−75, Schritt))
+  i_neu  = max(i_min, i_alt + Schritt)
+  ```
+
+  Parameter (Vorschlag): `r*` = 0,5 % (neutraler Realzins, Schätzungen für den Euroraum 0–1 %), `a_π` = `a_G` = 0,5 (Taylor 1993), `ρ` = 0,9 je Sitzung (Halbwertszeit rund sieben Sitzungen), Untergrenze `i_min` = −0,50 % (tiefster Einlagesatz der EZB). Der Satz liegt immer auf dem Raster von 25 bp; als ganze Basispunkte gerechnet, entstehen keine Rundungsreste. Im Gleichgewicht (`π = π̄`, `G` = 0) ist `i*` = 2,5 %.
+
+_Beispiele Leitzinsregel_ (Skript zu AP 8.1; `m̄*` = 7,9230 %; Test `policy-rate-logic.spec.ts`):
+
+| alt (bp) | π       | `m_W`    | Lücke `G` | `i*`     | roh (bp) | Schritt | neu (bp) | Fall                            |
+| -------- | ------- | -------- | --------- | -------- | -------- | ------- | -------- | ------------------------------- |
+| 250      | 2,00 %  | 7,923 %  | 0         | 2,500 %  | 0,00     | 0       | 250      | Gleichgewicht                   |
+| 250      | 2,00 %  | 9,000 %  | +0,269 %  | 2,635 %  | 1,35     | 0       | 250      | unter einem halben Schritt      |
+| 250      | 2,70 %  | 9,000 %  | +0,269 %  | 3,685 %  | 11,85    | 0       | 250      | knapp unter einem halben        |
+| 250      | 3,50 %  | 11,000 % | +0,769 %  | 5,135 %  | 26,35    | +25     | 275      | Anhebung                        |
+| 200      | 5,00 %  | 9,000 %  | +0,269 %  | 7,135 %  | 51,35    | +50     | 250      | doppelter Schritt               |
+| 150      | 6,00 %  | 11,000 % | +0,769 %  | 8,885 %  | 73,85    | +75     | 225      | dreifacher Schritt              |
+| −50      | 8,00 %  | 11,000 % | +0,769 %  | 11,885 % | 123,85   | +75     | 25       | auf +75 begrenzt (gerundet 125) |
+| 400      | 2,00 %  | 4,000 %  | −0,981 %  | 2,010 %  | −19,90   | −25     | 375      | Senkung im Abschwung            |
+| 300      | 1,00 %  | −4,000 % | −2,981 %  | −0,490 % | −34,90   | −25     | 275      | Krise                           |
+| 100      | 0,00 %  | −4,000 % | −2,981 %  | −1,990 % | −29,90   | −25     | 75       | Krise, niedriger Satz           |
+| 0        | −0,50 % | −4,000 % | −2,981 %  | −2,740 % | −27,40   | −25     | −25      | negativer Satz                  |
+| −25      | 1,00 %  | −2,000 % | −2,481 %  | −0,240 % | 0,10     | 0       | −25      | Ziel erreicht                   |
+| −50      | −1,00 % | −4,000 % | −2,981 %  | −3,490 % | −29,90   | −25     | −50      | an der Untergrenze              |
+
+_Sitzungen 2030_ (wirksam jeweils am Freitag danach): Do 31.01., 14.03., 25.04., 13.06., 25.07., 19.09., 31.10., 19.12.2030. Ist der Freitag Karfreitag, gilt der Dienstag nach Ostern: Do 22.04.2038 → Di 27.04.2038 (2020–2229 dreizehnmal, zuerst 2038).
+
+Die Glättung ist bewusst stark: In einer Krise sinkt der Satz um 25 bp je Sitzung, also um rund 0,75 Punkte in einer mittleren Krise von fünf Monaten; reale Zentralbanken senkten 2008 und 2020 schneller. Eine Sonderregel für Krisen würde die Phase verraten (E-23); die Probe unten liegt mit dieser Glättung bei der realen Häufigkeit von Änderungen.
+
+**Zinskurve nach Nelson-Siegel (Vorschlag E-49):**
+
+```text
+y(τ)  = β₀ + β₁ · f₁(τ) + β₂ · f₂(τ)                     Nullkuponzins p. a. für die Laufzeit τ in Jahren
+f₁(τ) = (1 − e^(−τ/λ)) / (τ/λ),  f₁(0) = 1
+f₂(τ) = f₁(τ) − e^(−τ/λ),          f₂(0) = 0
+β₀    = L          Niveau (langes Ende, τ → ∞)
+β₁    = i − L      kurzes Ende am Leitzins: y(0) = i
+β₂    = C          Krümmung, fest
+
+L(d + 1) = L̄_d + (L(d) − L̄_d) · e^(−κ_L·Δ_T) + η_L · √((1 − e^(−2κ_L·Δ_T)) / (2κ_L)) · z_L
+L̄_d      = r* + π̄ + t_p + w_π · (π(d) − π̄)
+```
+
+- Parameter (Vorschlag): `λ` = 1,5 Jahre, `C` = 0, Laufzeitprämie `t_p` = 2,0 % (`L̄` = 4,5 %), Halbwertszeit von `L` 5 Jahre, `η_L` = 0,7 % (stationäre Streuung 1,33 Punkte), `w_π` = 0,5. Im Gleichgewicht ist der 10-Jahres-Zins `ȳ₁₀` = 4,2004 %.
+- **Steigung:** Das kurze Ende hängt am Leitzins, das lange an `L`; die Steigung `L − i` folgt aus beiden. Sie ist kein eigener Ornstein-Uhlenbeck-Prozess, wie die Skizze vorsah (§6.10): Ein zweiter Prozess für die Steigung müsste zum Leitzins passen und brauchte eine Regel, die ihn wieder dorthin zieht. So bleibt es bei einem Prozess (`L`), und inverse Kurven entstehen, wenn die Zentralbank gegen hohe Inflation über das lange Ende hinaus anhebt (wie 2006/07 oder 2023). Verworfen: eine Kopplung von `L` an die Konjunkturlücke; sie senkte das lange Ende im Abschwung vor dem trägen Leitzins und erzeugte in der Probe inverse Kurven in Rezessionen statt am Ende von Aufschwüngen.
+- Zinsen sind Jahreszinsen (jährliche Verzinsung); der Barwert einer Zahlung nach `τ` Jahren ist `(1 + y(τ))^(−τ)`, gerechnet als `detExp(−τ · detLog(1 + y(τ)))`. Festgeld nimmt den Satz der Kurve zur Laufzeit am Tag des Abschlusses (AP 8.11), Anleihen bewerten sich aus Kurve und Aufschlag (AP 9.3). `Kurve(t, τ)` ist für jedes `τ ≥ 0` definiert und stetig; für `C` = 0 liegt `y(τ)` zwischen `i` und `L` und ist monoton in `τ`.
+
+_Beispiele Zinskurve_ (Skript zu AP 8.1; `f₁` / `f₂` für `λ` = 1,5: 3M 0,921110 / 0,074628, 1J 0,729874 / 0,216457, 2J 0,552302 / 0,288705, 5J 0,289298 / 0,253624, 10J 0,149809 / 0,148536, 30J 0,050000 / 0,050000; Test `yield-curve-logic.spec.ts`):
+
+| `L`    | `i`     | `λ` | `C`     | 3M        | 1J       | 2J       | 5J       | 10J      | 30J      | Fall              |
+| ------ | ------- | --- | ------- | --------- | -------- | -------- | -------- | -------- | -------- | ----------------- |
+| 4,50 % | 2,50 %  | 1,5 | 0       | 2,6578 %  | 3,0403 % | 3,3954 % | 3,9214 % | 4,2004 % | 4,4000 % | Gleichgewicht     |
+| 4,50 % | 5,00 %  | 1,5 | 0       | 4,9606 %  | 4,8649 % | 4,7762 % | 4,6446 % | 4,5749 % | 4,5250 % | invers            |
+| 3,00 % | 0,00 %  | 1,5 | 0       | 0,2367 %  | 0,8104 % | 1,3431 % | 2,1321 % | 2,5506 % | 2,8500 % | Leitzins null     |
+| 2,00 % | −0,50 % | 1,5 | 0       | −0,3028 % | 0,1753 % | 0,6192 % | 1,2768 % | 1,6255 % | 1,8750 % | negatives Ende    |
+| 5,00 % | 2,00 %  | 1,5 | −1,00 % | 2,1620 %  | 2,5939 % | 3,0544 % | 3,8785 % | 4,4020 % | 4,8000 % | mit Krümmung      |
+| 4,50 % | 2,50 %  | 3   | 0       | 2,5811 %  | 2,7992 % | 3,0403 % | 3,5267 % | 3,9214 % | 4,3000 % | langsamerer Abbau |
+
+_Beispiele Niveau `L`_ (Skript zu AP 8.1; `e^(−κ_L·Δ_T)` = 0,999468994):
+
+| `L`    | π      | Dauer       | Ziel `L̄_d` | Erwartung | Streuung |
+| ------ | ------ | ----------- | ---------- | --------- | -------- |
+| 4,50 % | 2,00 % | 1 Modelltag | 4,500 %    | 4,5000 %  | 0,0433 % |
+| 6,00 % | 2,00 % | 1 Modelltag | 4,500 %    | 5,9992 %  | 0,0433 % |
+| 6,00 % | 2,00 % | 1 Jahr      | 4,500 %    | 5,8058 %  | 0,6542 % |
+| 4,50 % | 4,00 % | 1 Jahr      | 5,500 %    | 4,6294 %  | 0,6542 % |
+| 3,00 % | 2,00 % | 5 Jahre     | 4,500 %    | 3,7500 %  | 1,1513 % |
+
+**Kreditaufschläge je Rating (Vorschlag E-49):** `s_R(d) = s̄_R · v^(e_R)` mit `v = min(4, max(0,5, s_Welt / s̄_Welt))`, der Volatilität des Weltfaktors am Tag `d` relativ zu ihrem Ziel in der Referenzphase (dieselbe Größe wie der Spread-Faktor, §6.7; vor dem ersten Modelltag `v` = 1). Der Aufschlag gilt für alle Laufzeiten gleich (`y(τ) + s_R`); eine Laufzeitstruktur der Aufschläge entscheidet AP 9.1. Kein Zustand, keine Ziehung. Weil Basis und Exponent mit schlechterem Rating steigen, sind die Aufschläge für jedes `v ≥ 0,5` streng nach Rating geordnet (im Skript für `v` = 0,5 … 4 in Schritten von 0,001 geprüft). In Krisen steigen sie auf das 1,6-Fache (AAA) bis 3,5-Fache (CCC).
+
+| Rating | `s̄_R`  | `e_R` | `v` = 0,5 | Aufschwung (0,788) | Normal (1) | Abschwung (1,364) | `v` = 2  | Krise (3,131) | `v` ≥ 4  |
+| ------ | ------ | ----- | --------- | ------------------ | ---------- | ----------------- | -------- | ------------- | -------- |
+| AAA    | 0,40 % | 0,4   | 0,303 %   | 0,364 %            | 0,400 %    | 0,453 %           | 0,528 %  | 0,631 %       | 0,696 %  |
+| AA     | 0,60 % | 0,5   | 0,424 %   | 0,533 %            | 0,600 %    | 0,701 %           | 0,849 %  | 1,062 %       | 1,200 %  |
+| A      | 0,90 % | 0,6   | 0,594 %   | 0,780 %            | 0,900 %    | 1,084 %           | 1,364 %  | 1,785 %       | 2,068 %  |
+| BBB    | 1,50 % | 0,75  | 0,892 %   | 1,254 %            | 1,500 %    | 1,893 %           | 2,523 %  | 3,531 %       | 4,243 %  |
+| BB     | 2,80 % | 0,9   | 1,500 %   | 2,259 %            | 2,800 %    | 3,702 %           | 5,225 %  | 7,822 %       | 9,750 %  |
+| B      | 4,20 % | 1,0   | 2,100 %   | 3,309 %            | 4,200 %    | 5,727 %           | 8,400 %  | 13,152 %      | 16,800 % |
+| CCC    | 8,50 % | 1,1   | 3,965 %   | 6,539 %            | 8,500 %    | 11,956 %          | 18,220 % | 29,834 %      | 39,056 % |
+
+Die Spalten der Phasen nehmen das Volaziel der Phase (§6.3) als `s_Welt`; die realisierte Volatilität schwankt um sie. Reale Größenordnung (ICE BofA Option-Adjusted Spreads, Euro und USD, 1997–2024): BBB im Median rund 1,5–1,8 %, im Herbst 2008 rund 7–8 %, im März 2020 rund 4,5 %; B rund 4–5 % bzw. 15–20 %.
+
+**Abfragen** (reine Funktionen, bis zum aktuellen Tick; Worker, `market/domain`): `Leitzins(t)` (Basispunkte, Treppe mit Wirkung ab `pendingFrom`), `Sitzungstermine(jahr)` und `Leitzinsentscheidungen(von, bis)` (nur bekannt gegebene), `Inflation(t)` (Rate des Tages), `Preisindex(monat)` und `Jahresrate(monat)` (nur Monate, deren Erster ≤ `now` ist), `Kurve(t, τ)` und `Aufschlag(t, rating)`. Vergangene Werte rechnet der Worker aus den Monatsbeginn-Zuständen nach (§6.8): Der Makroschritt braucht nur Trend und Volatilität des Weltfaktors, also die Faktor-Tagesschritte, keine Instrumente. Eine Abfrage nach `now` wirft wie bei Kursen einen Fehler (§4.6).
+
+**Ströme und Ziehreihenfolge:** `market/macro/init` (`π`, dann `L`) und `market/macro/<tag>` an jedem Modelltag (`z_π`, dann `z_L`); der Leitzins zieht nichts. Die Ströme der Phase und der Faktoren bleiben unverändert (Tabelle der Ziehreihenfolge, §6.1).
+
+**Snapshot, Prüfsumme, Export:** Der Makrozustand gehört zum Marktzustand: Monatsbeginn-Zustände (rund 40 Byte je Monat zusätzlich), Snapshot und `marketChecksum` nehmen ihn auf, die Prüfung des Exports (`isMarket`, §10.3) verlangt die neuen Felder mit endlichen Werten und `policyRateBp` als ganze Zahl auf dem Raster von 25. Der Golden Master (§4.6) bekommt eine Prüfsumme `macro` über die Tageswerte (`π`, `ln VPI`, `i`, `L`) aller Modelltage 2020 und die Leitzinsentscheidungen bis zum Spielstart; die übrigen Prüfsummen außer dem Marktzustand zum Spielstart bleiben gleich (Kurse unverändert). Ob AP 8.4 dafür `SIM_VERSION` erhöht, entscheidet der PO (Vorschlag: ja, weil gespeicherte Marktzustände ohne Makrozustand nicht weiterlaufen können; `SCHEMA_VERSION` nach E-38).
+
+**Tests (AP 8.4):** Beispieltabellen oben (Leitzinsregel, Sitzungstermine 2030 und 2038, Kurve, `L`, Inflationsschritt, Preisindex, Aufschläge) als Logiktests; Eigenschaften mit fast-check: `y(0) = i`, Kurve stetig in `τ` (auch bei `τ → 0`), für `C` = 0 zwischen `i` und `L` und monoton, Aufschläge streng nach Rating geordnet und monoton in `v`; der Leitzins ändert sich nur zu `pendingFrom` nach einer Sitzung, liegt immer auf dem Raster von 25 bp, nie unter `i_min`, `|Schritt| ≤ 75`; `VPI` wächst genau dann, wenn `π > 0`. Determinismus-Vertrag (§4.6: Stückelung, Snapshot, Bedarf gegen Vorabberechnung, Abfragegrenze) mit Makrozustand; Phase, Faktoren und alle Kurse bitgleich mit dem Modell vor AP 8.4 (Golden-Master-Prüfsummen der Kurse unverändert); Engine-Szenario: Ereignis `policy-rate-decided` um 14:15 am Sitzungstag, `Leitzins(t)` ab dem nächsten Bankarbeitstag; Kalibrierungsziele der Inflation und Zinsen (§6.9) im Band. Labor: Ansicht der Tageswerte (Leitzins, Inflation, Kurve, Aufschläge) und Statistik gegen die neuen Ziele.
+
+**Probe (Skript zu AP 8.1, vereinfachtes Modell):** Phasen, Trend und Volatilität des Weltfaktors nach §6.2 und §6.3 ohne Unterfaktoren, Makro und Wechselkurse nach diesem Abschnitt und §6.12, Tagesschritte über 110 Jahre ab der Epoche, 20 Seeds; Median (Spanne der Seeds): Jahresrate der Inflation im Mittel 2,11 % (1,50–2,60 %), Streuung 1,18 Punkte (1,01–1,42), Monate mit negativer Jahresrate 3,2 %; Leitzins im Mittel 2,67 % (1,78–3,38 %), Streuung 1,53 Punkte, 5–95 %-Quantil 0,00–5,25 %, an der Untergrenze 2,2 % der Tage; Änderung an 37 % der Sitzungen (34–43 %), unmittelbare Umkehr fast nie; 10-Jahres-Zins im Mittel 4,26 %, Steigung 10J − 3M 1,51 Punkte, invers an 16 % der Tage (4–25 %), Streuung der Jahresänderung des 10-Jahres-Zinses 0,59 Punkte; Aufschlag BBB im Median 1,49 %. Das ist keine Messung des Modells, sondern eine Prüfung, dass die vorgeschlagenen Parameter die Ziele erreichen können; die Messung macht AP 8.4 im Labor.
+
+### 6.12 Währungen und Wechselkurse (Fachkonzept AP 8.1, Umsetzung AP 8.5; Vorschlag E-50)
+
+Ab AP 8.5 notieren Aktien in der Währung ihres Landes. Basiswährung bleibt der Euro: Konten, Buchungen, Vermögen, Steuern und Performance sind in Euro (Umrechnung in Handel und Buchhaltung: AP 8.7a). Dieser Abschnitt legt die Währungen, die Wechselkurse als Prozesse und die Umrechnung in Indizes und ETFs fest; er ist die übergreifende Entscheidung des Fachkonzepts M8 für die späteren Nutzer: Rohstoffe notieren in USD (AP 9.7, `S_USD` als Umrechnung), Staatsanleihen in Landeswährung mit der Kurve `y(τ) + d_c` (AP 9.3), Quellensteuer auf Dividenden in Fremdwährung (AP 10.14: Betrag in Notierungswährung, Umrechnung zum Kurs der Gutschrift).
+
+**Quotierung:** Ein Wechselkurs `S_c` gibt die Einheiten der Währung `c` je 1 Euro an (Mengennotierung wie die Referenzkurse der EZB, angezeigt als „EUR/USD 1,12“). Ein Wert in `c` ist in Euro `V_EUR = V_c / S_c`, in einer anderen Währung `X` gilt `V_X = V_c · S_X / S_c`; `S_EUR` = 1.
+
+**Währungen der Standardwelt** (Taxonomie, fest und unabhängig vom Seed; `Country.currency`, Börsen und Instrumente erben die Währung ihres Landes; `CURRENCY_IDS` in fester Reihenfolge, neue werden angehängt):
+
+| Währung | Länder (Börsen)                      | `S_c,0` zur Epoche | `d̄_c`   | `b_c` | `s_c`  | Volatilität (Ziel) | Rastereinheit `u_c` |
+| ------- | ------------------------------------ | ------------------ | ------- | ----- | ------ | ------------------ | ------------------- |
+| EUR     | Deutschland, Frankreich, Niederlande | 1                  | –       | –     | –      | –                  | 1                   |
+| USD     | USA                                  | 1,12               | +0,50 % | +0,05 | 8,0 %  | 8 %                | 1                   |
+| CAD     | Kanada                               | 1,46               | +0,25 % | −0,10 | 7,9 %  | 8 %                | 1                   |
+| GBP     | Großbritannien                       | 0,85               | +0,75 % | −0,05 | 7,0 %  | 7 %                | 1                   |
+| CHF     | Schweiz                              | 1,08               | −1,25 % | +0,15 | 5,6 %  | 6 %                | 1                   |
+| JPY     | Japan                                | 121                | −1,50 % | +0,30 | 9,1 %  | 10 %               | 100                 |
+| AUD     | Australien                           | 1,60               | +1,00 % | −0,25 | 9,4 %  | 10 %               | 1                   |
+| HKD     | Hongkong                             | 7,80 · `S_USD`     | wie USD | –     | –      | wie USD            | 10                  |
+| INR     | Indien                               | 80                 | +4,00 % | −0,15 | 7,7 %  | 8 %                | 100                 |
+| BRL     | Brasilien                            | 4,50               | +5,00 % | −0,35 | 14,2 % | 15 %               | 1                   |
+
+- `S_c,0`: gerundete reale Kurse von Anfang 2020, `d̄_c`: langfristige Zins- bzw. Inflationsdifferenz zum Euro (real 2000–2024: Inflationsdifferenzen USD +0,4, GBP +0,5, CHF −1,6, JPY −1,9, CAD +0,1, AUD +0,6, INR +3,9, BRL +4,2 Punkte, Leitzinsdifferenzen meist größer), `b_c`: Kopplung an den Weltfaktor (unten), `s_c`: eigene Volatilität, so gewählt, dass `√(s_c² + b_c² · 14 %²)` die Zielvolatilität ergibt (14 % = realisierte Volatilität des Weltfaktors). Alle Werte Vorschlag.
+- **HKD** ist fest an den USD gebunden: `ln S_HKD = ln 7,80 + ln S_USD`, ohne eigenen Zustand und Strom (die reale Bandbreite 7,75–7,85 entfällt). Euro-Länder haben keinen Prozess.
+- **Notierung:** Aktien in der Währung ihrer Börse; ETFs in Euro (alle an der deutschen Börse, §5.6); Indizes nach der Regel unten. Marktkapitalisierung, Größenklassen und Startkurse zieht die Welt weiter in Euro zur Epoche (`world/companies` unverändert); der Startkurs in Landeswährung ist `Startkurs_EUR · S_c,0` (z. B. 50 € → 56 USD, 6.050 JPY; 5 € → 400 INR), ungerundet wie heute.
+
+**Prozess** (Vorschlag E-50):
+
+```text
+ln S_c(t) = ln S_c,0 + Q_c(t) + y_c(t)
+
+Q_c   Gleichgewichtspfad (ungedeckte Zinsparität und relative Kaufkraftparität):
+      Q_c(24:00) = Q_c(00:00) + (i_c − i) · Δ_T        i_c = max(i + d_c, −0,75 %), Werte des Tages (Treppe)
+d_c   Zinsdifferenz, Ornstein-Uhlenbeck um d̄_c (Halbwertszeit 3 Jahre, η_d = 0,68 %, stationär 1 Punkt):
+      d_c(d + 1) = d̄_c + (d_c(d) − d̄_c) · e^(−κ_d·Δ_T) + η_d · √((1 − e^(−2κ_d·Δ_T)) / (2κ_d)) · z_d
+y_c   Abweichung vom Gleichgewicht, an den Stützpunkten g_1 … g_n des Tages (§6.2):
+      y_c(g_j) = y_c(g_(j−1)) − (1 − e^(−θ_FX·Δ_T)) · y_c(0) · w_j + b_c · (ΔF_W,j − μ_W · Δ_W,j) + s_c · √(w_j · Δ_T) · z_j
+      w_j = (g_j − g_(j−1)) / 1440                    Zeitanteil des Intervalls (Devisen handeln rund um die Uhr)
+      Δ_W,j, ΔF_W,j                                   Intervallanteil und Zuwachs des Weltfaktors (§6.2)
+      μ_W = m_W − ½ · s_W²                           Drift des Weltfaktors am Tag, also b_c · s_W · √Δ_W,j · z_W,j
+```
+
+- **Gleichgewicht:** Der Kurs folgt im Erwartungswert der Zinsdifferenz (Währungen mit höheren Zinsen werten ab), und weil `d_c` zugleich als Inflationsdifferenz gilt, ist das zugleich die relative Kaufkraftparität. Zinsen sind so kein Gratisgewinn: Ein Carry-Trade bringt im Erwartungswert nichts (real verdienen Carry-Strategien etwas, die „Forward-Premium-Anomalie“; sie würde eine ausnutzbare Strategie schaffen, wie die Prämien in §6.9).
+- **Abweichung:** `y_c` kehrt mit `θ_FX` (Halbwertszeit 4 Jahre; Literatur zur Kaufkraftparität 3–5 Jahre) zum Gleichgewicht zurück; die stationäre Streuung liegt bei rund 1,7 Jahresvolatilitäten (EUR/USD rund 13,6 %). Der Rückzug eines Tages verteilt sich wie bei den Faktoren auf die Intervalle (§6.2, E-22).
+- **Sichere Häfen und Rohstoffwährungen:** `b_c` überträgt den Schock des Weltfaktors: Fällt der Weltfaktor, sinkt `S_CHF` und `S_JPY` (Franken und Yen werten auf), `S_AUD` und `S_BRL` steigen (werten ab). Korrelation der Tagesänderungen mit dem Weltschock: CHF +0,35, JPY +0,42, USD +0,09, GBP −0,10, CAD −0,17, INR −0,26, BRL −0,33, AUD −0,35. Weil der Schock in `y_c` eingeht, kehrt auch die Krisenbewegung über Jahre zurück und baut keinen Trend auf. Keine Kopplung an die Phase selbst: Sie wirkt über die Volatilität des Weltfaktors.
+- **Zeit und Kalender:** Wechselkurse bewegen sich an jedem Modelltag rund um die Uhr, auch an Börsenfeiertagen; am Wochenende ruhen sie wie die Faktoren (Freitag 24:00 = Montag 00:00).
+- **Startzustand:** `Q_c = y_c = 0` zur Epoche (`S_c` = `S_c,0`), `d_c` aus der stationären Verteilung (Strom `market/fx/<währung>/init`).
+
+**Minutenwerte:** Indizes und ETFs brauchen Wechselkurse zu jeder Minute (§6.6). Zwischen zwei Stützpunkten:
+
+```text
+Q_c(m) = Q_c(00:00) + (i_c − i) · Δ_T · m / 1440                     linear über den Modelltag
+y_c(m) = y_c(g_(j−1)) + u · (y_c(g_j) − y_c(g_(j−1))) + b_c · B̂_W(m) + B̂_c(m)     u = (m − g_(j−1)) / (g_j − g_(j−1))
+B̂_W(m) = F_W(m) − F_W(g_(j−1)) − u · ΔF_W,j                         Brückenanteil des Weltfaktors (§6.2)
+B̂_c    Brownsche Brücke von 0 nach 0 mit Varianz s_c² · Δ_T / 1440 je Minute (Strom …/bridge/<intervall>)
+y_c(g_j) wird als Stützpunkt gesetzt (§4.5 Regel 8)
+```
+
+Die bedingte Varianz einer Minute ist `(b_c² · s_W² · Δ_W,j + s_c² · w_j · Δ_T) · u · (1 − u)`, weil auch die Brücke des Weltfaktors innerhalb eines Intervalls eine gleichmäßige Varianz je Minute hat; das entspricht einem Ornstein-Uhlenbeck-Prozess bis auf Terme der Ordnung `θ_FX · Δ_T` (eine OU-Brücke ist nicht nötig). Wechselkurs-Minutenwerte brauchen die Brücken des Weltfaktors im selben Intervall; die exakten Indizes rechnen sie ohnehin.
+
+**Faktoren wirken in der Modellwährung (Vorschlag E-50):**
+
+```text
+ln P_i(t) = c_i + Σ_k β_ik · F_k(t) + U_i(t) + Q_c(t)          in der Notierungswährung c der Börse von i
+c_i       = ln(Startkurs_EUR · S_c,0)
+P_i / S_c = e^(c_i − ln S_c,0 + Σ_k β_ik · F_k + U_i − y_c)      in Euro
+```
+
+Faktoren und `U_i` beschreiben die Bewegung in einer gemeinsamen Modellwährung, die dem Euro im Gleichgewicht entspricht. Der Kurs in Landeswährung wächst zusätzlich mit der Zins- und Inflationsdifferenz `Q_c`; der Kurs in Euro trägt die Abweichung `−y_c` (mit der Kopplung an den Weltfaktor), aber keine Drift aus der Zinsdifferenz. Begründung:
+
+1. **Realistisch:** Der Kurs einer US-Aktie in Dollar bewegt sich nicht mit EUR/USD; in Euro schon. Brasilianische Kurse steigen in Real mit der höheren Inflation, in Euro nicht systematisch schneller.
+2. **Kalibrierung bleibt gedeckt:** Renditen in Euro bekommen keine Drift aus `d̄_c` (sonst verlören Aktien in BRL in Euro jedes Jahr rund 5 Punkte, und der Weltindex in Euro läge rund einen halben Punkt tiefer); Volatilitäten und Korrelationen in Landeswährung bleiben, wie sie sind.
+3. **Bitgleich, wo nichts geschieht:** Für Aktien in Euro ist `Q = y = 0`, ihre Kurse sind bitgleich mit dem Modell vor AP 8.5; Phase und Faktoren lesen keine Wechselkurse und bleiben bitgleich (Test). Die Ziehungen der Instrumente ändern sich nicht.
+
+Verworfen: (a) Faktoren in Euro, Kurs in Landeswährung = Euro-Kurs × `S_c` – Dollar-Kurse bewegten sich mit jedem Wechselkurs; (b) Faktoren in Landeswährung ohne `Q_c` – die Zinsdifferenz drückte Renditen in Euro je Währung unterschiedlich, und alle Kalibrierungsziele in Euro verschöben sich.
+
+`Q_c` ist im Tag linear, ändert sich aber nur um wenige Hunderttausendstel je Tag (BRL bei 5 Punkten Differenz 1,9 · 10⁻⁴); es geht in Eröffnung, Schluss und Minutenkurse ein, ohne Ziehung. Über Jahrzehnte steigen Kurse in BRL und INR deutlich (100 Jahre mit +5 Punkten: × 148); die Genauigkeit der `Float32`-Kerzen (§6.8) und R12 betrifft das wie das Wachstum aller Kurse bis zu den Splits (M9).
+
+**Preisraster und Kursuntergrenze in der Notierungswährung:** `priceStep_c(p) = u_c · priceStep(p / u_c)` mit dem Raster aus §6.7 und der Rastereinheit `u_c` der Tabelle oben, Kursuntergrenze `0,01 · u_c`. Für Währungen mit Einheit 1 gilt das Raster aus §6.7 unverändert.
+
+| Währung | Mittelkurs | Raster | Untergrenze |
+| ------- | ---------- | ------ | ----------- |
+| EUR     | 8          | 0,001  | 0,01        |
+| USD     | 150        | 0,01   | 0,01        |
+| JPY     | 16.200     | 1      | 1           |
+| JPY     | 850        | 0,1    | 1           |
+| JPY     | 64         | 0,01   | 1           |
+| INR     | 4.321      | 1      | 1           |
+| HKD     | 47,5       | 0,01   | 0,1         |
+| HKD     | 9,5        | 0,001  | 0,1         |
+
+Spreads sind relativ und bleiben (§6.7). Dividenden legt die Welt als Rendite fest; der Betrag je Aktie entsteht in der Notierungswährung (auf `0,0001 · u_c` gerundet; `dividendCents` hält dann Hundertstel der Notierungswährung), Ex-Tag-Abschlag und `R` wie heute in Landeswährung. Gutschrift, Umrechnung und Quellensteuer: AP 8.7a, AP 10.14.
+
+**Indizes (Vorschlag E-50):** Jeder Index hat eine feste Währung `X`: die breiten Regional- und Leitindizes die Leitwährung ihrer Region (Nordamerika USD, Europa EUR, Asien-Pazifik JPY, Schwellenländer USD wie bei realen Indexanbietern), alle übrigen (Weltindex, Sektor-, Small-Cap- und Dividendenindex) EUR. Regionalindizes in ihrer Leitwährung halten die Overnight-Ziele (§6.9) frei vom Wechselkursrauschen der übrigen Stunden; globale Indizes in Euro sind der Blick des Spielers und die Basis der ETFs.
+
+```text
+I_X(m) = Σ_i n_i · P_i(m) · S_X(m) / S_(c_i)(m) / D        in fester Reihenfolge der Konstituenten; für c_i = X entfällt der Faktor
+D      = Σ_i n_i · P_i,0 · S_X,0 / S_(c_i),0 / I_0          zur Epoche, konstant
+```
+
+- Werte geschlossener Börsen gehen mit ihrem letzten Kurs und dem Wechselkurs der Minute ein; in der Sitzung des Index bewegt er sich deshalb auch mit den Wechselkursen. Eröffnung und Schluss des Index sind Stützpunkte: `SupportValues` braucht dafür `S` an den Grenzen, das sind Stützpunkte der Wechselkurse.
+- **Performanceindex:** Die Dividendenpunkte eines Werts gehen zur Eröffnung seiner Börse am Ex-Tag mit `S_X / S_(c_i)` dieser Minute in `R` ein (§6.6).
+- **ETFs:** `NAV_EUR(m) = k · TR_X(m) / S_X(m)` (thesaurierend) bzw. `k · I_X(m) / S_X(m) + Topf` (ausschüttend), `k₀ = Startkurs / (I_X,0 / S_X,0)`; der Topf ist in Euro, die Dividenden der Werte fließen mit `1 / S_(c_i)` zur Eröffnung ihrer Börse hinein. Für Indizes in Euro ändert sich nichts. Indikative Werte (§6.6) rechnen ebenso mit den Minutenwerten der Wechselkurse.
+- **Eigenschaft:** Zu jeder Minute ist der Wert in Euro der Wert in Landeswährung geteilt durch den Wechselkurs derselben Minute, für Aktien, Indizes und ETFs; ein Index ist bitgleich mit der Summe der umgerechneten `priceAt`-Werte in der Formel oben (Test wie in §6.6).
+
+_Beispiele Umrechnung_ (Skript zu AP 8.1; Test `currency-conversion.spec.ts`):
+
+| Fall                                                                         | Werte                                                                         | Ergebnis                                   |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------------------------------------ |
+| Summe in EUR: 100 × US-Aktie, 200 × deutsche Aktie zu 50 €                   | US-Aktie 150 USD, `S_USD` 1,10                                                | 23.636,363636 € (in USD 26.000)            |
+|                                                                              | `S_USD` 1,00 / 1,25                                                           | 25.000 € / 22.000 €                        |
+| Index in EUR, Start 1.000 zur Epoche (140 USD, 48 €, `S_USD,0` 1,12)         | `D`                                                                           | 22,1                                       |
+|                                                                              | 150 USD, 50 €, `S_USD` 1,12 / 1,10 / 1,00                                     | 1.058,500323 / 1.069,518717 / 1.131,221719 |
+| Index in JPY: 1.000 × 2.500 JPY und 500 × 40 AUD                             | `S_JPY` 110, `S_AUD` 1,60                                                     | 3.875.000 JPY = 35.227,272727 €            |
+| ETF in EUR auf Index in USD, Startkurs 50 €, Index 4.000 USD, `S_USD,0` 1,12 | `k₀`                                                                          | 0,014                                      |
+|                                                                              | Index 4.000 / 4.200 / 4.200 / 4.000 USD bei `S_USD` 1,12 / 1,12 / 1,05 / 1,25 | 50 € / 52,50 € / 56 € / 44,80 €            |
+
+_Beispiele Wechselkursschritt_ (ein Modelltag, Skript zu AP 8.1; `1 − e^(−θ_FX·Δ_T)` = 0,000663714; Erwartung und Streuung der Änderung von `ln S` zwischen 00:00 und 24:00; Test `fx-step.spec.ts`):
+
+| Währung | `i`    | `d_c`   | `i_c`   | Zuwachs `Q_c`  | `y_c(0)` | Rückkehr       | Erwartung      | Streuung (`s_W`)       |
+| ------- | ------ | ------- | ------- | -------------- | -------- | -------------- | -------------- | ---------------------- |
+| USD     | 2,50 % | +0,50 % | 3,00 %  | 1,915709·10⁻⁵  | 0        | 0              | 1,915709·10⁻⁵  | 4,961346·10⁻³ (9,9 %)  |
+| USD     | 2,50 % | +0,50 % | 3,00 %  | 1,915709·10⁻⁵  | +0,10    | −6,637137·10⁻⁵ | −4,721428·10⁻⁵ | 4,961346·10⁻³ (9,9 %)  |
+| JPY     | 2,50 % | −1,50 % | 1,00 %  | −5,747126·10⁻⁵ | −0,20    | +1,327427·10⁻⁴ | +7,527148·10⁻⁵ | 8,053937·10⁻³ (31 %)   |
+| BRL     | 4,00 % | +5,00 % | 9,00 %  | 1,915709·10⁻⁴  | +0,05    | −3,318569·10⁻⁵ | +1,583852·10⁻⁴ | 9,263400·10⁻³ (13,5 %) |
+| CHF     | 0,00 % | −1,25 % | −0,75 % | −2,873563·10⁻⁵ | 0        | 0              | −2,873563·10⁻⁵ | 3,586118·10⁻³ (9,9 %)  |
+
+Die letzte Zeile zeigt die Untergrenze von `i_c` (`0 − 1,25 %` → −0,75 %). Gleichgewichtskurs nach zehn Jahren bei konstantem `d̄_c`: USD 1,1774, JPY 104,1457, BRL 7,4192, CHF 0,9531.
+
+_Beispiele Brücke_ (Brownsche Brücke mit gleichmäßiger Varianz je Minute; Erwartung `a + u · (b − a)`, Varianz `V · u · (1 − u)` mit der Varianz `V` des Intervalls):
+
+| von  | nach  | Minuten | `V`           | Minute | Erwartung | Varianz       |
+| ---- | ----- | ------- | ------------- | ------ | --------- | ------------- |
+| 0    | 0,01  | 360     | 6,130268·10⁻⁶ | 180    | 0,005     | 1,532567·10⁻⁶ |
+| 0    | 0,01  | 360     | 6,130268·10⁻⁶ | 90     | 0,0025    | 1,149425·10⁻⁶ |
+| 0,02 | −0,01 | 480     | 1,277139·10⁻⁵ | 120    | 0,0125    | 2,394636·10⁻⁶ |
+
+(`V` der ersten Zeilen: 8 % Volatilität über 360 von 1.440 Minuten eines Modelltags, der dritten 10 % über 480 Minuten.)
+
+**Ströme und Ziehreihenfolge:** `market/fx/<währung>/init` (`d_c`), `market/fx/<währung>/<tag>` an jedem Modelltag (`z_d`, dann je Intervall der festen Stützpunkte eine Normalverteilung `z_j`, auch in Intervallen ohne offene Börse), `market/fx/<währung>/<tag>/bridge/<intervall>` bei Bedarf. Je Währung ein eigener Strom: Eine neue Währung verschiebt die übrigen nicht. Die Weltschocks liest der Schritt aus den Stützpunkten des Weltfaktors und zieht sie nicht neu.
+
+**Zustand, Snapshot, Abfragen:** `MarketState.fx` hält je Währung (ohne EUR und HKD) `Q_c`, `y_c` (Stand 24:00 des letzten Modelltags) und `d_c`; der `MarketDay` die Stützpunkte `ln S_c(g_j)`. Monatsbeginn-Zustände, Snapshot, Prüfsumme und `isMarket` nehmen sie auf wie den Makrozustand (§6.11). Abfragen: `Wechselkurs(c, t)` (Minutenwert bis `now`; vor der Epoche `S_c,0`), Devisenkerzen wie bei Serien (Wechselkurse bekommen Serien hinter den ETFs, nicht handelbar wie Indizes; Tageskerzen zum Schluss des Modelltags, 24:00), `Kurs in Euro(serie, t)`. Golden Master: Prüfsumme `fx` über die Tagesstützpunkte aller Wechselkurse 2020 und Minutenwerte einer festen Stichprobe; die Prüfsummen der Kurse ändern sich für alle Serien mit Fremdwährung (Indizes und ETFs in jedem Fall), `SIM_VERSION` steigt.
+
+**Tests (AP 8.5):** Beispieltabellen oben (Umrechnung, Wechselkursschritt, Raster, Startkurse) als Logiktests; Eigenschaft „Wert in EUR = Wert in Landeswährung ÷ Wechselkurs zu jeder Minute“ für Aktien, Indizes und ETFs (fast-check über Serien und Minuten), Index bitgleich mit der Summe der umgerechneten Werte; `ln S_HKD − ln S_USD = ln 7,80` zu jeder Minute; Brücken treffen die Stützpunkte bitgenau; Wechselkurse am Wochenende konstant; Phase und Faktoren bitgleich, Aktien in Euro bitgleich mit dem Modell vor AP 8.5; Determinismus-Vertrag; Golden Master erweitert, `SIM_VERSION` erhöht; Kalibrierung nach E-39 (§6.9); statistischer Test der Wechselkurse (Volatilität, Korrelation mit dem Weltschock, Rückkehr) in `fx.calibration.spec.ts`.
+
+### 6.13 Zinsfaktor (Fachkonzept AP 8.1, Umsetzung AP 8.6; Vorschlag E-51)
+
+Aktien reagieren auf das Zinsniveau: Steigt der 10-Jahres-Zins, fallen Wachstumswerte und zinsempfindliche Sektoren, Banken gewinnen. Umgesetzt als Faktor ohne eigenen Zufall:
+
+```text
+F_Zins(t) = −(y₁₀(t) − ȳ₁₀)                    y₁₀ = Kurve(t, 10), ȳ₁₀ = 4,2004 % (Gleichgewicht, §6.11)
+ln P_i(t) = … + D_i · F_Zins(t)                 als weiterer Summand von Σ_k β_ik · F_k(t)
+D_i       = D_Sektor + D_Stil · β_i,Stil         Zinsduration in Jahren; β_i,Stil ∈ [−1; 1] (Value negativ, Growth positiv)
+```
+
+- **Größenordnung (Vorschlag):** `D_Stil` = 3; `D_Sektor`: Immobilien 6, Versorger 5, Technologie 4, Basiskonsum 3, Gesundheit 2, Kommunikation 2, zyklischer Konsum 2, Industrie 1, Grundstoffe 0, Energie −1, Finanzen −3. Ein Wachstumswert der Technologie mit Stilladung 1 verliert bei +1 Punkt im 10-Jahres-Zins 6,8 % (`e^(−0,07)`), eine Value-Bank mit −0,7 gewinnt 5,2 %. Reale Größenordnung: Wachstums- gegen Value-Aktien rund −5 bis −8 % je 100 bp (2013, 2022), Bankenindizes rund +3 bis +5 %, Immobilien und Versorger rund −5 bis −8 %; der Gesamtmarkt reagiert je nach Zeitraum mit beiden Vorzeichen. Feinabstimmung in AP 8.6 gegen die Ziele in §6.9.
+- **Kein neuer Zufall, keine neuen Ziehungen:** `F_Zins` ist eine Funktion des Makrozustands (Treppe, §6.11) und hat keine Brücke. `D_i` folgt im Marktkontext aus Sektor und Stilladung der Welt, ist also kein neues Weltattribut und zieht nichts (`worldChecksum` unverändert). Phase und übrige Faktoren bleiben bitgleich; die Kurse aller Aktien ändern sich (`SIM_VERSION`).
+- **Sprung um 00:00:** `F_Zins` ändert sich nur um 00:00 eines Modelltags oder mit dem Wirksamwerden eines Leitzinses (ebenfalls 00:00). Weil um 00:00 kein Handelsplatz handelt (auch nicht der Direkthandel, AP 8.8), erscheint die Änderung in Kursen als Teil der Eröffnungslücke und in indikativen Werten als kleiner Schritt um Mitternacht. Ein Handelsplatz mit Handel um Mitternacht bräuchte eine Brücke von `F_Zins`.
+- **Mittelwert und Konvexität:** `y₁₀` ist stationär um `ȳ₁₀` (Streuung rund 1,2–1,4 Punkte); der Term erzeugt deshalb keinen Trend, nur Schwankung um das Niveau. Seine Konvexität `½ · D_i² · Var(y₁₀)` (bei `D` = 7 rund 0,4 % im Niveau) bleibt unkompensiert; der Kompensator der übrigen Terme (§6.4) ändert sich nicht.
+- **Wechselkurse auf Regionen (Vorschlag):** keine zusätzliche Wirkung in M8. Die Wirkung auf den Euro-Wert trägt schon `−y_c` (§6.12); eine Wirkung des Wechselkurses auf die Kurse in Landeswährung (schwacher Yen hebt japanische Exporteure) bräuchte eine Exportquote je Unternehmen und passt zu den Fundamentaldaten (M10).
+
+_Beispiele Zinsfaktor_ (Skript zu AP 8.1; Test `rate-factor-logic.spec.ts`):
+
+| Sektor      | `β_Stil` | `D_i` | `Δy₁₀`    | `Δ ln P` | Faktor   |
+| ----------- | -------- | ----- | --------- | -------- | -------- |
+| Technologie | 1        | 7,0   | +1 Pkt.   | −0,0700  | 0,932394 |
+| Technologie | 1        | 7,0   | −0,5 Pkt. | +0,0350  | 1,035620 |
+| Technologie | 0,4      | 5,2   | +1 Pkt.   | −0,0520  | 0,949329 |
+| Finanzen    | −0,7     | −5,1  | +1 Pkt.   | +0,0510  | 1,052323 |
+| Versorger   | −0,4     | 3,8   | +1 Pkt.   | −0,0380  | 0,962713 |
+| Energie     | −1       | −4,0  | −0,5 Pkt. | −0,0200  | 0,980199 |
+| Industrie   | 0        | 1,0   | +1 Pkt.   | −0,0100  | 0,990050 |
+
+Ein Punkt mehr im Niveau `L` hebt den 10-Jahres-Zins bei festem Leitzins um 0,8502 Punkte, eine Leitzinsanhebung um 25 bp bei festem `L` um 0,0375 Punkte (`f₁(10)` = 0,149809).
+
+**Tests (AP 8.6):** Beispieltabelle als Logiktest; Eigenschaften: Eine Aktie mit `D_i` = 0 ist bitgleich mit dem Modell vor AP 8.6; für zwei Aktien mit gleichen übrigen Größen ist `ln P_1 − ln P_2 = (D_1 − D_2) · F_Zins` zu jeder Minute; `F_Zins` ändert sich nur um 00:00. Statistischer Test (Kalibrierung): Die Steigung der Tagesrenditen auf `Δy₁₀` liegt bei `−D_i` (Mittel über Aktien gleicher Duration). Danach Kalibrierung aller Ziele (§6.9).
 
 ## 7. Wirtschaftsmodell
 

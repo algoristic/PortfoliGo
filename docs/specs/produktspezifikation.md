@@ -89,6 +89,7 @@ Alles wird aus dem Seed erzeugt: Namen und Konditionen der Banken, Unternehmen m
 - **Weltwirtschaft und Marktphasen:** Aufschwung, Normalphase, Abschwung, Krise – mit jeweils anderer Rendite, Schwankung und anderem Gleichlauf der Kurse.
 - **Regionen:** Nordamerika, Europa, Asien-Pazifik, Schwellenländer – mit eigener Entwicklung und eigenen Handelszeiten. Was nachts in Asien passiert, zeigt sich morgens in einer Kurslücke in Europa.
 - **Sektoren und Branchen:** Der Energiesektor kann insgesamt wachsen, während die Branche „Öl & Gas" schrumpft und „Erneuerbare Energien" boomt. Branchentrends halten Monate bis Jahre.
+- **Zinsen, Inflation und Währungen (ab Stufe 2):** Eine Zentralbank entscheidet über den Leitzins, Preise steigen mit der Inflation, ausländische Aktien notieren in ihrer Währung, und Wechselkurse schwanken – in Krisen suchen Anleger sichere Häfen.
 - **Unternehmensmerkmale:** Größe (Large, Mid, Small Cap), Stil (Value, Growth), Konjunkturabhängigkeit, Dividendenpolitik und unternehmensspezifische Nachrichten, die Kurssprünge auslösen.
 
 Diese Merkmale sind zugleich die Dimensionen, nach denen der Anwender den Markt filtert und sein Portfolio auswertet (Allokation nach Assetklasse, Region und Sektor).
@@ -369,6 +370,33 @@ Als Anwender möchte ich anstehende Dividenden meiner Werte sehen, damit ich Aus
 - Kalender mit Ex-Tagen und Zahltagen für Depot und Watchlist.
 - Nur angekündigte Termine (Aktien rund vier Wochen vor dem Ex-Tag); bei gehaltenen Werten mit dem erwarteten Betrag.
 
+**US-MK-10 – Zinsumfeld und Inflation** · Stufe 2 · M
+Als Anwender möchte ich, dass sich Preise und Zinsen wie in einer echten Volkswirtschaft entwickeln, damit ich Zinsentscheidungen und Inflation erlebe und ihre Wirkung auf Anlagen, Ersparnisse und Kaufkraft einplanen kann.
+
+- Die Verbraucherpreise steigen im Mittel um rund 2 % im Jahr, schwanken über die Jahre und hängen an der Konjunktur: im Aufschwung etwas mehr, in Abschwung und Krise weniger, selten kurz unter null (TS §6.11).
+- Ein monatlicher Preisindex (01.01.2020 = 100) und die Jahresrate der Inflation sind für jeden vergangenen Monat abrufbar; der Index eines Monats steht ab dem Monatsersten fest.
+- Die Zentralbank des Euroraums entscheidet an acht festen Sitzungsterminen im Jahr (Donnerstag, etwa alle sechs Wochen) über den Leitzins, nach einer festen Regel aus Inflation und Konjunktur: in Schritten von 0,25 Prozentpunkten, höchstens 0,75 je Sitzung, nicht unter −0,50 %. Die Entscheidung wird am Sitzungstag um 14:15 Uhr bekannt und gilt ab dem nächsten Bankarbeitstag. Die Termine sind vorab bekannt, die Entscheidung nicht.
+- Eine Zinskurve für Laufzeiten von 3 Monaten bis 30 Jahren: Das kurze Ende folgt dem Leitzins, das lange Ende bewegt sich langsam mit eigener Schwankung. Meist steigt die Kurve mit der Laufzeit; hebt die Zentralbank gegen hohe Inflation stark an, wird sie invers.
+- Kreditaufschläge je Rating (AAA bis CCC) liegen über der Kurve, sind nach Rating geordnet und steigen in unruhigen Märkten, bei schlechten Ratings stärker (Grundlage für Anleihen, US-MK-11).
+- Leitzins, Zinskurve und Inflation verraten die Marktphase nicht am Tag ihres Wechsels; sie reagieren geglättet auf die Konjunktur.
+- Aktien reagieren auf das Zinsniveau: Steigende lange Zinsen belasten Wachstumswerte und zinsempfindliche Sektoren (Immobilien, Versorger), Banken profitieren (TS §6.13).
+- Leitzins, Jahresinflation und Zinskurve (heute und vor einem Jahr) sind in „Märkte“ zu sehen, mit dem Verlauf von Leitzins und Inflation und den nächsten Sitzungsterminen (S).
+- Eine Leitzinsentscheidung erzeugt eine Benachrichtigung (S); Zentralbankentscheidungen sind strukturierte Ereignisse für Newsticker und Wirtschaftskalender (US-NT-01, US-NT-02).
+- Preisindex, Leitzins und Zinskurve sind für alle Spieler mit demselben Seed gleich und hängen nicht von Spielerentscheidungen ab.
+- **Haushalt und Anzeige:** Gehalt und Lebenshaltung folgen den Verbraucherpreisen (US-EK-04), Real- und Nominalansicht und Kaufkraft des Bargelds siehe AP 8.9; Tagesgeld und Dispo am Leitzins siehe US-BK-13 und AP 8.10, Festgeld siehe US-BK-11 und AP 8.11 (Akzeptanzkriterien folgen im Teil „Wirtschaft“ des Fachkonzepts AP 8.1).
+
+**US-MK-17 – Fremdwährungen** · Stufe 2 · M
+Als Anwender möchte ich, dass ausländische Aktien in ihrer Landeswährung notieren und sich die Wechselkurse bewegen, damit ich das Währungsrisiko einer Anlage im Ausland verstehe und es in meiner Rendite in Euro sehe.
+
+- Jede Börse notiert in der Währung ihres Landes: US-Dollar, kanadischer Dollar, britisches Pfund, Schweizer Franken, Yen, australischer Dollar, Hongkong-Dollar, indische Rupie und brasilianischer Real; Deutschland, Frankreich und die Niederlande in Euro (TS §6.12). ETFs werden weiter an der deutschen Börse in Euro gehandelt.
+- Wechselkurse werden als Fremdwährung je Euro angegeben (EUR/USD 1,12 = 1,12 US-Dollar je Euro); ein Wert in Euro ist der Wert in Landeswährung geteilt durch den Kurs.
+- Wechselkurse bewegen sich wochentags rund um die Uhr, auch an Börsenfeiertagen; am Wochenende ruhen sie. Sie schwanken je Währung verschieden stark (Franken wenig, Real stark), folgen langfristig der Zins- und Inflationsdifferenz zum Euro und kehren über Jahre zu einem Gleichgewicht zurück. Franken und Yen werten in Krisen eher auf, Rohstoff- und Schwellenländerwährungen eher ab. Der Hongkong-Dollar ist fest an den US-Dollar gebunden.
+- Kurse, Geld- und Briefkurs, Preisraster, Kursuntergrenze und Dividenden je Aktie gelten in der Notierungswährung. Der Kurs einer Aktie in Landeswährung bewegt sich nicht mit dem Wechselkurs, ihr Wert in Euro schon.
+- Indizes notieren in einer festen Währung: die Regionalindizes in der Leitwährung ihrer Region (Nordamerika und Schwellenländer US-Dollar, Europa Euro, Asien-Pazifik Yen), alle übrigen in Euro. Werte anderer Währungen rechnet der Index zu jeder Minute um.
+- ETFs auf Indizes in Fremdwährung haben einen Wert in Euro aus dem Index und dem Wechselkurs derselben Minute; die Wechselkursbewegung steckt im ETF-Kurs.
+- Wechselkurse sind für alle Spieler mit demselben Seed gleich und hängen nicht von Spielerentscheidungen ab; vergangene Kurse sind wie Aktienkurse minutengenau abrufbar.
+- Aktuelle Devisenkurse mit Chart in „Märkte“ siehe AP 8.7b; Handel in Fremdwährung (Umrechnung bei Kauf, Verkauf und Ausschüttung, Devisenkosten, Buchung und Steuer in Euro, Anzeige in Landeswährung mit Wert in Euro) siehe AP 8.7a und AP 8.7b (Akzeptanzkriterien folgen im Teil „Wirtschaft“ des Fachkonzepts AP 8.1).
+
 **US-MK-18 – Börsenfeiertage und Direkthandel** · Stufe 2 · M
 Als Anwender möchte ich, dass Börsen an ihren Feiertagen geschlossen sind und Banken an Feiertagen nicht buchen, damit sich der Kalender wie ein echtes Börsen- und Finanzjahr anfühlt und ich Käufe, Sparpläne und Überweisungen danach planen kann.
 
@@ -642,14 +670,14 @@ Als Anwender möchte ich die App auf Deutsch oder Englisch nutzen.
 
 | ID       | Story (Kurzform)                                                                                                             | Stufe |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------- | ----- |
-| US-MK-10 | Zinsumfeld und Inflation: Leitzins, Zinskurve und Verbraucherpreise; Kaufkraftverlust des Bargelds, Real- und Nominalansicht | 2     |
+| US-MK-10 | Zinsumfeld und Inflation: ausgearbeitet in [7.5](#75-märkte-und-instrumente-mk) (Gehalt und Kosten, Realwerte folgen später) | 2     |
 | US-MK-11 | Anleihen: Staats- und Unternehmensanleihen mit Kupon, Laufzeit, Rating, Stückzinsen und Rückzahlung                          | 2     |
 | US-MK-12 | Rohstoffe und ETCs                                                                                                           | 2     |
 | US-MK-13 | Physische Edelmetalle: Kauf beim Händler über das Barvermögen, hohe Spanne, steuerfrei nach einem Jahr Haltedauer            | 2     |
 | US-MK-14 | Aktive Fonds: Ausgabeaufschlag, höhere TER, Erfolg des Fondsmanagements                                                      | 2     |
 | US-MK-15 | Fundamentaldaten und Quartalszahlen (KGV, Gewinnwachstum, Berichtstermine)                                                   | 2     |
 | US-MK-16 | Unternehmensereignisse: Aktiensplits, Übernahmen, Insolvenzen, Börsengänge, Indexanpassungen                                 | 2     |
-| US-MK-17 | Fremdwährungen: Instrumente in USD, JPY usw., Wechselkurse und Devisenkosten                                                 | 2     |
+| US-MK-17 | Fremdwährungen: ausgearbeitet in [7.5](#75-märkte-und-instrumente-mk) (Handel und Anzeige folgen)                            | 2     |
 | US-MK-18 | Börsenfeiertage und Direkthandel: ausgearbeitet in [7.5](#75-märkte-und-instrumente-mk) (Direkthandel folgt)                 | 2     |
 | US-EK-04 | Einkommen und Kosten wachsen mit der Inflation: Gehalt und Lebenshaltung folgen den Verbraucherpreisen                       | 2     |
 | US-BK-11 | Festgeld und Neukunden-Lockzinsen                                                                                            | 2     |
